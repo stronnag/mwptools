@@ -766,6 +766,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#normative-guide" class="md-nav__link">
+    Normative guide
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#first-time" class="md-nav__link">
     First time
   </a>
@@ -789,13 +796,6 @@
           <li class="md-nav__item">
   <a href="#accessing-the-serial-port" class="md-nav__link">
     Accessing the serial port
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#legacy" class="md-nav__link">
-    Legacy
   </a>
   
 </li>
@@ -1235,6 +1235,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#normative-guide" class="md-nav__link">
+    Normative guide
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#first-time" class="md-nav__link">
     First time
   </a>
@@ -1258,13 +1265,6 @@
           <li class="md-nav__item">
   <a href="#accessing-the-serial-port" class="md-nav__link">
     Accessing the serial port
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#legacy" class="md-nav__link">
-    Legacy
   </a>
   
 </li>
@@ -1390,8 +1390,8 @@
 <h1 id="build-install-mwp-generic">Build / install mwp (Generic)<a class="headerlink" href="#build-install-mwp-generic" title="Permanent link">#</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">#</a></h2>
 <p>If you just want to install <a href="https://github.com/stronnag/mwptools">mwp</a> on a Debian /derivative (includin WSL), x64_64, then you can install the binary <code>.deb</code> package from the <a href="https://github.com/stronnag/mwptools/releases">Release Area</a>.</p>
+<p>For Arch Linux, you can install the AUR package <code>mwptools-git</code></p>
 <p>Otherwise, if you're using a different (not Debian based) distribution, just curious about building mwptools, you want to explore other tools and scripts in the repository or you're using a different architecture (ia32, Arm7, aarch64, riscV, ppc etc.), then you can build from source.</p>
-<p>For Arch Linux, you can install using the AUR package <code>mwptools-git</code></p>
 <p>The <strong>mwptools</strong> suite is built using the <a href="https://mesonbuild.com/SimpleStart.html">meson</a> and <a href="https://ninja-build.org/">ninja</a> toolchain. For most users these will be automatically provided by a <code>build-essentials</code> type of package transparently to the user.</p>
 <p>Prior to late May 2021, the build system used a convoluted <code>Makefile</code>.</p>
 <p>For Debian and derivatives there is a <a href="#easy-first-time-install-on-debian-and-ubuntu">"one stop" installation script</a>, as well as a x86_64 "Release" <code>.deb</code> archive.</p>
@@ -1404,9 +1404,11 @@ The migration to <code>meson</code> and <code>ninja</code> solves this problem a
 <pre><code>git clean -fd -fx
 git pull
 </code></pre>
+<h3 id="normative-guide">Normative guide<a class="headerlink" href="#normative-guide" title="Permanent link">#</a></h3>
+<p>Note that the normative build reference is the <code>INSTALL</code> file in the source tree. This is most current documentation.</p>
 <h3 id="first-time">First time<a class="headerlink" href="#first-time" title="Permanent link">#</a></h3>
-<p>Set up the <code>meson</code> build system from the top level:</p>
-<pre><code>meson build --buildtype=release --strip [--prefix $HOME/.local]
+<p>Set up the <code>meson</code> build system from the top level. Note that <code>_build</code> is a directory that is created by <code>meson setup</code>; you can use what ever name you wish, and can have multiple build directories for different options (e.g <code>_build</code> for local and <code>_sysbuild</code> for system wide installations.</p>
+<pre><code>meson setup _build --buildtype=release --strip [--prefix $HOME/.local]
 </code></pre>
 <ul>
 <li>For a user / non-system install, set <code>--prefix $HOME/.local</code><ul>
@@ -1436,7 +1438,7 @@ apt install libegl1-mesa-dev
 apt install gstreamer1.0-gtk3
 </code></pre></div>
 <h3 id="build-and-update">Build and update<a class="headerlink" href="#build-and-update" title="Permanent link">#</a></h3>
-<pre><code>cd build
+<pre><code>cd _build
 # for a local install (and cygwin)
 ninja install
 # for system install
@@ -1450,12 +1452,6 @@ ninja &amp;&amp; sudo ninja install
 <li>FreeBSD: <code>sudo pw group mod dialer -m $USER</code></li>
 <li>Windows/WSL: Not needed, no serial pass-through. Use the <a href="../mwp-in-Windows-11---WSL-G/#serial-device">ser2udp</a> bridge instead.</li>
 </ul>
-<h3 id="legacy">Legacy<a class="headerlink" href="#legacy" title="Permanent link">#</a></h3>
-<p>For now, some of the legacy <code>Makefiles</code> remain, and can be used similar to before, e.g. :</p>
-<pre><code>cd mwptools/src/mwp
-make &amp;&amp; sudo make install
-</code></pre>
-<p>At some stage, more of the Makefiles will be removed (or just rot into uselessness).</p>
 <h2 id="files-built-installed">Files built / installed<a class="headerlink" href="#files-built-installed" title="Permanent link">#</a></h2>
 <h3 id="default">Default<a class="headerlink" href="#default" title="Permanent link">#</a></h3>
 <table>
@@ -1479,7 +1475,7 @@ make &amp;&amp; sudo make install
 <td>Mission elevation / terrain analysis</td>
 </tr>
 <tr>
-<td><code>qproxy</code></td>
+<td><code>gmproxy</code></td>
 <td>Proxy for certain commercial TMS</td>
 </tr>
 <tr>
@@ -1502,6 +1498,10 @@ make &amp;&amp; sudo make install
 <td><code>flashgo</code></td>
 <td>Tools to examine, download logs and erase from dataflash</td>
 </tr>
+<tr>
+<td><code>bproxy</code></td>
+<td>Black maps tiles, for those covert operations</td>
+</tr>
 </tbody>
 </table>
 <div class="admonition note">
@@ -1512,7 +1512,7 @@ make &amp;&amp; sudo make install
 <h3 id="optional">Optional<a class="headerlink" href="#optional" title="Permanent link">#</a></h3>
 <p>These are only built by explicit target name; they will be installed if built.</p>
 <pre><code># one of more of the following targets
-ninja bproxy ublox-geo ublox-cli
+ninja ublox-geo ublox-cli
 sudo ninja install
 </code></pre>
 <table>
@@ -1523,10 +1523,6 @@ sudo ninja install
 </tr>
 </thead>
 <tbody>
-<tr>
-<td><code>bproxy</code></td>
-<td>Black tile map proxy, for those anonymous needs</td>
-</tr>
 <tr>
 <td><code>ublox-cli</code></td>
 <td>Ublox GPS tool</td>
@@ -1539,7 +1535,8 @@ sudo ninja install
 </table>
 <h3 id="troubleshooting-and-hints">Troubleshooting and Hints<a class="headerlink" href="#troubleshooting-and-hints" title="Permanent link">#</a></h3>
 <h4 id="migrate-from-a-system-install-to-a-user-install">Migrate from a system install to a user install<a class="headerlink" href="#migrate-from-a-system-install-to-a-user-install" title="Permanent link">#</a></h4>
-<pre><code>cd build
+<p>Either use separate build directories, or reconfigure.</p>
+<pre><code>cd _build
 sudo ninja uninstall
 meson --reconfigure --prefix=$HOME/.local
 ninja install
@@ -1548,7 +1545,7 @@ ninja install
 <p>If you install to system locations, it is possible that <code>sudo ninja install</code> will write as <code>root</code> to some of the install files, and they become non-writable to the normal user.</p>
 <ul>
 <li>In the <code>build</code> directory, run <code>sudo chown -R $USER .</code></li>
-<li>Consider migrating to a local install</li>
+<li>Consider migrating to a local install.</li>
 </ul>
 <h3 id="help">Help!!!!<a class="headerlink" href="#help" title="Permanent link">#</a></h3>
 <h4 id="youve-installed-a-new-version-but-you-still-get-the-old-one">You've installed a new version but you still get the old one!<a class="headerlink" href="#youve-installed-a-new-version-but-you-still-get-the-old-one" title="Permanent link">#</a></h4>
@@ -1595,12 +1592,12 @@ fi
 <h4 id="ninja-error-loading-buildninja-no-such-file-or-directory">"ninja: error: loading 'build.ninja': No such file or directory<a class="headerlink" href="#ninja-error-loading-buildninja-no-such-file-or-directory" title="Permanent link">#</a></h4>
 <p>Something, or persons unknown has removed this file.</p>
 <pre><code>cd mwptools
-meson setup --reconfigure  build --prefix ~/.local
-cd build
+meson setup --reconfigure _build --prefix ~/.local
+cd _build
 ninja install
 </code></pre>
 <h4 id="error-dependency-not-found-tried-pkgconfig">ERROR: Dependency "?????" not found, tried pkgconfig<a class="headerlink" href="#error-dependency-not-found-tried-pkgconfig" title="Permanent link">#</a></h4>
-<p><a href="https://github.com/stronnag/mwptools">mwp</a> requires a new dependency. This will be documented in the wiki <a href="https://github.com/stronnag/mwptools/wiki/Recent-Changes">Recent Changes</a> document.</p>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> requires a new dependency. This ~~will~~ should be documented in the wiki <a href="https://github.com/stronnag/mwptools/wiki/Recent-Changes">Recent Changes</a> document.</p>
 <ul>
 <li>Install the newly required dependencies</li>
 <li>Rerun your build</li>
@@ -1718,7 +1715,7 @@ ninja install
   <small>
     
       Last update:
-      2023-10-12
+      2023-10-18
     
   </small>
 </div>
