@@ -1,4 +1,4 @@
-project('mwptools', 'c', 'vala', version : '6.294.669')
+project('mwptools', 'c', 'vala', version : '6.294.686')
 
 # vala / clang16 workaround
 if meson.get_compiler('c').get_id() == 'clang'
@@ -37,9 +37,6 @@ executable('mwp',
 executable('cliterm', sources: [clisrcs, clicommon], dependencies: [ clideps ],
   include_directories : common_inc_dir, vala_args : [dopts, cli_v_args], install : true)
 
-executable('gmproxy', sources: proxsrc, dependencies: [ proxdeps ],
-	   vala_args : dopts,  install : true)
-
 executable('bproxy', sources: bproxsrc, dependencies: [ proxdeps ],
 	   vala_args : dopts, install : true)
 
@@ -63,6 +60,9 @@ executable('mwp-area-planner', sources: [apsrcs, apuisrcs, apcommon], dependenci
 executable('flashdl', sources: [fdlsrcs, fccommon], dependencies: [ fdldeps ],
 	   include_directories : common_inc_dir, vala_args : [dopts, fdl_v_args],
 	   install : false, build_by_default: false )
+
+executable('gmproxy', sources: proxsrc, dependencies: [ proxdeps ],
+	   vala_args : dopts,  install : false)
 
 subdir('src/bbox-replay')
 
