@@ -14,6 +14,7 @@ public class TelemTracker {
 	public struct SecDev {
 		MWSerial dev;
 		string name;
+		string devalias;
         string alias;
         Status status;
 		bool userdef;
@@ -62,7 +63,7 @@ public class TelemTracker {
         if (fp != null) {
 			fp.write("# name, hint, alias\n".data);
 			foreach (var sd in secdevs) {
-				if (sd.userdef) {
+				if (sd.userdef && sd.name != "" && sd.status != TelemTracker.Status.UNDEF) {
 					fp.write("%s,%s,%s\n".printf(sd.name, MWSerial.pmask_to_name(sd.pmask), sd.alias).data);
 				}
 			}
@@ -76,21 +77,7 @@ public class TelemTracker {
         }
         var s = new SecDevDialog(this);
         s.destroy.connect(() => {
-                for(int n = 0; n < secdevs.length; n++) {
-                    if(secdevs[n].status != xstat[n]) {
-                        switch (secdevs[n].status) {
-                        case Status.USED:
-                        start_reader(n);
-                        break;
-                        case Status.PRESENT:
-                        case Status.UNDEF:
-                        if (xstat[n] ==  Status.USED) {
-                            stop_reader(n);
-                        }
-                        break;
-                        }
-                    }
-                }
+				save_data();
             });
         s.run();
     }
@@ -107,19 +94,24 @@ public class TelemTracker {
 
 
     public void add(string sname) {
-		stderr.printf("DBG TT Add %s\n", sname);
-
 		bool found = false;
         string devname = null;
+		string devalias = null;
         MWSerial.PMask pmask = MWSerial.PMask.AUTO;
         var parts = sname.split(",", 3);
-		devname = parts[0];
-		if(parts.length > 1 && parts[1].strip().length > 0) {
-			pmask = MWSerial.name_to_pmask(parts[1]);
+		var sparts = parts[0].split(" ");
+		devname = sparts[0];
+		if (sparts.length > 1) {
+			devalias = sparts[1];
+			if (parts.length > 1 ) {
+				if (parts[1].strip().length > 0) {
+					pmask = MWSerial.name_to_pmask(parts[1]);
+				}
+			}
 		}
 
 		for(int n = 0; n < secdevs.length; n++) {
-			if (secdevs[n].name == devname) {
+			if (secdevs[n].name == devname || secdevs[n].name == devalias) {
 				secdevs[n].status = Status.PRESENT;
 				found = true;
 				break;
@@ -130,22 +122,23 @@ public class TelemTracker {
 			var s = SecDev();
 			s.userdef = (parts.length > 1);
 			s.status = Status.PRESENT;
-			var sparts = devname.split(" ");
-			if (sparts.length == 2) {
-				s.name = sparts[1];
-			} else {
-				s.name = devname;
-			}
+			s.name = devname;
 			if (parts.length == 3) {
 				s.alias = parts[2];
 			} else {
-				string suffix;
-				if (sname.has_prefix("/dev/")) {
-					suffix = s.name[5:s.name.length];
-				} else {
-					suffix = s.name;
+				if (s.name.length > 0) {
+					string suffix;
+					if (sname.has_prefix("/dev/")) {
+						suffix = s.name[5:s.name.length];
+					} else {
+						suffix = s.name;
+					}
+					if (devalias == null) {
+						s.alias = "TTRK-%s".printf(suffix);
+					} else {
+						s.alias = devalias;
+					}
 				}
-				s.alias = "TTRK-%s".printf(suffix);
 			}
 			s.dev = null;
 			s.pmask = pmask;
@@ -156,6 +149,7 @@ public class TelemTracker {
 
     public void remove(string sname) {
         disable(sname);
+        changed();
     }
 
     public void enable(string sname) {
@@ -180,7 +174,19 @@ public class TelemTracker {
         changed();
     }
 
-    private void start_reader(int n) {
+	/* Avoid UI timeouts with unavailble BT devices */
+	public async bool start_reader_async(int n) {
+		var thr = new Thread<bool> (null, () => {
+				var res = start_reader(n);
+				Idle.add (start_reader_async.callback);
+				return res;
+			});
+		yield;
+		return thr.join();
+	}
+
+    public bool start_reader(int n) {
+		bool ok = true;
         if (secdevs[n].dev == null) {
             secdevs[n].dev = new MWSerial();
         }
@@ -213,13 +219,16 @@ public class TelemTracker {
                 secdevs[n].dev.set_pmask(secdevs[n].pmask);
                 secdevs[n].dev.set_auto_mpm(secdevs[n].pmask == MWSerial.PMask.AUTO);
             } else {
-                MWPLog.message("Radar reader %s\n", fstr);
+                MWPLog.message("Secondary reader %s\n", fstr);
+				ok = false;
             }
         }
+		return ok;
     }
 
-    private void stop_reader(int n) {
+    public void stop_reader(int n) {
         if (secdevs[n].dev.available) {
+			MWPLog.message("stop secondary reader %s\n", secdevs[n].name);
             secdevs[n].dev.close();
         }
         secdevs[n].dev = null;
@@ -494,16 +503,26 @@ public class  SecDevDialog : Gtk.Window {
         tt = _tt;
         this.title = "Telemetry Tracker";
 
-        var sd_ok = new Gtk.Button.with_label("Close");
-        sd_ok.clicked.connect(() => {
-                this.destroy();
-            });
-
-        var bsave = new Gtk.Button.with_label("Save");
-        bsave.clicked.connect(() => {
-                tt.save_data();
-            });
-
+        var radd = new Gtk.Button.from_icon_name("list-add");
+        radd.clicked.connect(() => {
+				tt.add(",Auto");
+			});
+		var rdel = new Gtk.Button.from_icon_name("list-remove");
+        rdel.clicked.connect(() => {
+				Gtk.TreeIter iter;
+				foreach (var t in list_selected_refs()) {
+					var path = t.get_path ();
+					sd_liststore.get_iter (out iter, path);
+					/* FIXME Stop first */
+					int idx = 0;
+                    sd_liststore.get (iter, Column.ID, &idx);
+					if (tt.secdevs[idx].status == TelemTracker.Status.USED) {
+						tt.stop_reader(idx);
+					}
+					tt.secdevs[idx].status = TelemTracker.Status.UNDEF;
+					sd_liststore.remove(ref iter);
+				}
+			});
 		//        var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 3);
         var grid = new Gtk.Grid ();
         grid.set_vexpand (true);
@@ -518,15 +537,25 @@ public class  SecDevDialog : Gtk.Window {
                                               );
 
             tview = new Gtk.TreeView.with_model (sd_liststore);
+			tview.get_selection().set_mode(Gtk.SelectionMode.MULTIPLE);
+
             tview.set_hexpand(true);
             tview.set_vexpand (true);
             tview.set_fixed_height_mode (true);
             //            tview.set_model (sd_liststore);
-            tview.insert_column_with_attributes (-1, "Device",
-                                                 new Gtk.CellRendererText (), "text",
-                                                 Column.NAME);
+			var cell = new Gtk.CellRendererText ();
+            tview.insert_column_with_attributes (-1, "Device", cell, "text", Column.NAME);
+            cell.set_property ("editable", true);
+            ((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
+                    Gtk.TreeIter iter;
+                    int idx=0;
+                    sd_liststore.get_iter(out iter, new Gtk.TreePath.from_string(path));
+                    sd_liststore.get (iter, Column.ID, &idx);
+                    tt.secdevs[idx].name = new_text;
+                    sd_liststore.set (iter, Column.NAME,new_text);
+                });
 
-            var cell = new Gtk.CellRendererText ();
+            cell = new Gtk.CellRendererText ();
             tview.insert_column_with_attributes (-1, "Alias", cell, "text", Column.ALIAS);
             cell.set_property ("editable", true);
             ((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
@@ -536,6 +565,7 @@ public class  SecDevDialog : Gtk.Window {
                     sd_liststore.get (iter, Column.ID, &idx);
                     tt.secdevs[idx].alias = new_text;
                     sd_liststore.set (iter, Column.ALIAS,new_text);
+					tt.secdevs[idx].userdef = true;
                 });
 
             var tcell = new Gtk.CellRendererToggle();
@@ -548,6 +578,18 @@ public class  SecDevDialog : Gtk.Window {
                     sd_liststore.get (iter, Column.ID, &idx);
                     tt.secdevs[idx].status = (tt.secdevs[idx].status == TelemTracker.Status.USED) ? TelemTracker.Status.PRESENT : TelemTracker.Status.USED;
                     sd_liststore.set (iter, Column.STATUS, (tt.secdevs[idx].status == TelemTracker.Status.USED));
+					if (tt.secdevs[idx].status == TelemTracker.Status.USED) {
+						tt.start_reader_async.begin(idx, (obj,res) => {
+								var rok = 	tt.start_reader_async.end(res);
+								if (rok == false) {
+									tt.secdevs[idx].status == TelemTracker.Status.PRESENT;
+									sd_liststore.set (iter, Column.STATUS, false);
+								}
+							});
+					} else {
+						tt.stop_reader(idx);
+					}
+					//					tt.secdevs[idx].userdef = true;
                 });
 
             Gtk.TreeIter iter;
@@ -584,6 +626,8 @@ public class  SecDevDialog : Gtk.Window {
                     sd_liststore.get (iter_val, Column.ID, &idx);
                     sd_liststore.set (iter_val, Column.PMASK, hint);
                     tt.secdevs[idx].pmask = pmask;
+					tt.secdevs[idx].userdef = true;
+
                 });
 
             int [] widths = {30, 40, 8, 10};
@@ -609,7 +653,7 @@ public class  SecDevDialog : Gtk.Window {
                     redraw();
                 });
         } else {
-            var nodevs = new Gtk.Label("No tracking devices available");
+            var nodevs = new Gtk.Label("No telemetry tracking devices available");
             nodevs.set_margin_bottom(2);
             nodevs.set_margin_top(2);
             nodevs.set_margin_start(8);
@@ -617,26 +661,33 @@ public class  SecDevDialog : Gtk.Window {
             grid.attach (nodevs, 0, 0, 1, 1);
         }
 		Gtk.ButtonBox bbox = new Gtk.ButtonBox (Gtk.Orientation.HORIZONTAL);
-        bbox.set_layout (Gtk.ButtonBoxStyle.EXPAND);
-        bbox.set_spacing (5);
-        sd_ok.set_hexpand(false);
-        bsave.set_halign(Gtk.Align.START);
-		sd_ok.set_halign(Gtk.Align.END);
-        bsave.set_hexpand(false);
-		bsave.sensitive = false;
-		foreach (var sd in tt.secdevs) {
-			if (sd.userdef) {
-				bsave.sensitive = true;
-				break;
-			}
-		}
-		bbox.add(bsave);
-		bbox.add(sd_ok);
+		bbox.set_layout (Gtk.ButtonBoxStyle.START);
+        radd.set_halign(Gtk.Align.START);
+        rdel.set_halign(Gtk.Align.START);
+		radd.set_tooltip_text("Append a row");
+		rdel.set_tooltip_text("Delete selected row(s)");
+		bbox.add(radd);
+		bbox.add(rdel);
+		bbox.set_child_non_homogeneous(radd, true);
+		bbox.set_child_non_homogeneous(rdel, true);
         grid.attach (bbox, 0, 1, 1, 1);
         this.add(grid);
     }
 
-    private int populate_view() {
+    private List<Gtk.TreeRowReference> list_selected_refs() {
+	List<Gtk.TreeRowReference> list = new List<Gtk.TreeRowReference> ();
+        Gtk.TreeModel m;
+        var sel = tview.get_selection();
+        var rows = sel.get_selected_rows(out m);
+
+        foreach (var r in rows) {
+            var rr = new Gtk.TreeRowReference (m, r);
+            list.append(rr);
+        }
+        return list;
+    }
+
+	private int populate_view() {
         Gtk.TreeIter iter;
         int n = 0;
         foreach(var s in tt.secdevs) {

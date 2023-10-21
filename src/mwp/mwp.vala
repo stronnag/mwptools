@@ -8912,7 +8912,7 @@ public class MWP : Gtk.Application {
             } else {
                 if (ttrk.is_used(serdev)) {
                     mwp_warning_box("The selected device is use for Telemetry Tracking\n", Gtk.MessageType.WARNING, 60);
-                return;
+					return;
                 }
                 ttrk.disable(serdev);
                 MWPLog.message("Trying OS open for %s\n", serdev);
