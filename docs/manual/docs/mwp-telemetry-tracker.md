@@ -7,7 +7,7 @@ The {{mwp}} "Telemetry Tracking" function allows additional vehicles to be track
 One use case is:
 
 * The "primary" user is connected using either RX Telemetry or a legacy telemetry radio (3DR, HC-12, LoRA) and uses {{mwp}} as a ground station, displaying the vehicle icon, track, information widgets in the "dock" and maybe audio prompts.
-* One or more "secondary" users also wish to have their vehicle's tracking symbol displayed on the {{mwp}} map. These secondary users connect to {{mwp}} from their RX using Bluetooth, USB (or perhaps WiFi). This is somewhat analogous to INAV-Radar.
+* One or more "secondary" users also wish to have their vehicle's tracking symbol displayed on the {{mwp}} map. These secondary users connect to {{mwp}} from their RX using Bluetooth, USB (or perhaps WiFi). This is somewhat analogous to tracking by INAV-Radar.
 * For RX Telemetry, it is necessary to set a RX UART to "Telemetry Mirror"; this is supported by both EdgeTX and OpenTX.
 
 This capability builds on extant {{mwp}} features.
@@ -68,7 +68,7 @@ The default icon may be [overridden by the user](mwp-Configuration.md/#settings-
 
 ## Constraints
 
-Linux preferred, due to the `udev` dependency for device enumeration. On other platforms it will be necessary to define devices _a priori_ using the `~/.config/mwp/secdevs` file. Currently, entries may be edited in the UI and saved, but cannot be inserted or deleted (other than by editing the file). At some stage a full GUI editor will be provided.
+Linux preferred, due to the `udev` dependency for device enumeration. On other platforms it will be necessary to define devices _a priori_ using the `~/.config/mwp/secdevs` file. This file is maintained by the "Telemetry Tracker" GUI editor.
 
 An example `secdevs` file might be:
 
