@@ -1161,7 +1161,7 @@
 <p>One use case is:</p>
 <ul>
 <li>The "primary" user is connected using either RX Telemetry or a legacy telemetry radio (3DR, HC-12, LoRA) and uses <a href="https://github.com/stronnag/mwptools">mwp</a> as a ground station, displaying the vehicle icon, track, information widgets in the "dock" and maybe audio prompts.</li>
-<li>One or more "secondary" users also wish to have their vehicle's tracking symbol displayed on the <a href="https://github.com/stronnag/mwptools">mwp</a> map. These secondary users connect to <a href="https://github.com/stronnag/mwptools">mwp</a> from their RX using Bluetooth, USB (or perhaps WiFi). This is somewhat analogous to INAV-Radar.</li>
+<li>One or more "secondary" users also wish to have their vehicle's tracking symbol displayed on the <a href="https://github.com/stronnag/mwptools">mwp</a> map. These secondary users connect to <a href="https://github.com/stronnag/mwptools">mwp</a> from their RX using Bluetooth, USB (or perhaps WiFi). This is somewhat analogous to tracking by INAV-Radar.</li>
 <li>For RX Telemetry, it is necessary to set a RX UART to "Telemetry Mirror"; this is supported by both EdgeTX and OpenTX.</li>
 </ul>
 <p>This capability builds on extant <a href="https://github.com/stronnag/mwptools">mwp</a> features.</p>
@@ -1198,10 +1198,8 @@
 <p>The "Telemery Tracking" device(s) may be assigned from the "View" / "Telemetry Tracker" menu option (Control-Shift T).</p>
 <p><img alt="Telemetry Tracker" src="../images/ttrk-select.png" width="70%" /></p>
 <ul>
-<li>The IP entries devices are for testing; they cannot be auto-detected so must be defined by the environment variable <code>MWP_SECDEVS</code>. This environment variable describes one or more devices, each with optional "Alias" text. The "device" part comprises a mandatory device name, and a optional alias, separated by a space; multiple devices are separated by a pipe symbol (<code>|</code>). For example:
-        <div class="highlight"><pre><span></span><code>MWP_SECDEVS=udp://:23456 Replay 0|udp://:23457 Replay 1|udp://:23458 Replay 2|udp://:23459 Replay 3|tcp://localhost:43210 Sport player
-</code></pre></div></li>
-<li>The IP devices are defined from <code>MWP_SECDEVS</code>; each of these has a user-defined alias. The latter two of the UDP aliases have had the alias edited by the user.</li>
+<li>The IP entries devices are for testing; they cannot be auto-detected so must be defined by the file <code>~/.config/mwp/secdevs</code>. This file lists zero or more devices, each with protocol and optional "Alias" text.</li>
+<li>The IP devices are defined from the file; each of these has a user-defined alias. The latter two of the UDP aliases have had the alias edited by the user.</li>
 <li>The USB device node is auto-detected and automatically aliased <code>TTRK-ttyACM0</code>. The user can edit / override this alias if she so wishes.</li>
 <li>The two bluetooth devices (<code>35:53:*</code>) have aliases defined at the operating system level.  The user can edit / override this alias if she so wishes.</li>
 <li>If <code>/dev/ttyACM0</code> is subsequently connected as the primary device, it will not appear in this list.</li>
@@ -1217,14 +1215,22 @@
 <p>All "Telemetry Tracked" vehicles use a common icon (<code>inav-telem.svg</code>).
 The default icon may be <a href="../mwp-Configuration/#settings-precedence-and-user-updates">overridden by the user</a> if so desired.</p>
 <h2 id="constraints">Constraints<a class="headerlink" href="#constraints" title="Permanent link">#</a></h2>
-<p>Linux preferred, due to the <code>udev</code> dependency for device enumeration. On other platforms it will be necessary to define devices <em>a priori</em> using the <code>MWP_SECDEV</code> environment variable (which may be set the <code>~/.config/mwp/cmdopts</code> <a href="../mwp-Configuration/#cmdopts">configuration file</a>).</p>
+<p>Linux preferred, due to the <code>udev</code> dependency for device enumeration. On other platforms it will be necessary to define devices <em>a priori</em> using the <code>~/.config/mwp/secdevs</code> file. This file is maintained by the "Telemetry Tracker" GUI editor.</p>
+<p>An example <code>secdevs</code> file might be:</p>
+<pre><code># name, hint, alias
+udp://:23456,Auto,Replay 0
+udp://:23457,CRSF,Replay 1
+udp://:23458,MPM
+udp://:23459,INAV
+tcp://localhost:43210,Sport,Sport player
+</code></pre>
 
   <hr>
 <div class="md-source-file">
   <small>
     
       Last update:
-      2023-08-12
+      2023-10-21
     
   </small>
 </div>
