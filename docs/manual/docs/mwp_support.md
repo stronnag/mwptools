@@ -18,8 +18,8 @@ There is a "rolling release" [release note on the wiki](https://github.com/stron
 ### How, where
 
 * [**GitHub Issues preferred**](https://github.com/stronnag/mwptools/issues)
-* INAV discord (#off-topic)
-    * Most likely you will be requested to raise a [GitHub Issue](https://github.com/stronnag/mwptools/issues) for non-trivial cases or if there is an [Information requirement](#information-requirements). Hint, you can cut out the middle-man here.
+* INAV discord (`#off-topic`)
+    * Most likely you will be requested to raise a [GitHub Issue](https://github.com/stronnag/mwptools/issues) for non-trivial cases or if there is an [Information requirement](#information-requirements). Hint, you can easily cut out the middle-man here.
 * See also [Information requirements](#information-requirements)
 
 ### Supported OS
@@ -36,6 +36,7 @@ There is a "rolling release" [release note on the wiki](https://github.com/stron
 * Non-proprietary video driver.
 * qemu/kvm virtualised instances.
 * Little endian (big endian never tested).
+* Recent release of mwp
 
 ### Information requirements
 
