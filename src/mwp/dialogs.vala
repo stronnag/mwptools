@@ -301,21 +301,17 @@ public class VarioBox : GLib.Object {
     public Gtk.Box vbox;
     private Gtk.Image vimage;
     private Gtk.Label vlabel;
-    private static string mono;
     private Gdk.Pixbuf up;
     private Gdk.Pixbuf down;
     private Gdk.Pixbuf none;
-    private uint lastfs = 0;
     private string uparrow;
     private string downarrow;
     private string doublearrow;
+	private uint last_w;
+	private uint fs;
+	private uint last_fs;
 
     public VarioBox() {
-        if(MonoFont.fixed) {
-            mono = "face=\"monospace\"";
-        } else
-            mono = "";
-
         vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 2);
         uparrow = MWPUtils.find_conf_file("up-arrow.svg", "pixmaps");
         downarrow = MWPUtils.find_conf_file("down-arrow.svg", "pixmaps");
@@ -325,14 +321,23 @@ public class VarioBox : GLib.Object {
         vlabel  = new Gtk.Label("");
         vbox.pack_start(vimage, true, true,0);
         vbox.pack_start(vlabel, true, true,0);
-        update(true, 0);
+		vbox.size_allocate.connect((a) => {
+				if (a.width != last_w) {
+					last_w = a.width;
+					Idle.add(() => {
+							fs =  a.width/8;
+							return false;
+						});
+				}
+			});
+
+		update(true, 0);
         vbox.show_all();
     }
 
     public void update(bool visible, int16 vs) {
         if(visible) {
-            uint fs = FlightBox.fh1*75/100;
-            if(fs != lastfs) {
+            if(fs != last_fs) {
                 try {
                     var isz = (int)(fs *4);
                     up =  new Gdk.Pixbuf.from_file_at_scale(uparrow, isz, isz, true);
@@ -341,7 +346,7 @@ public class VarioBox : GLib.Object {
                 } catch (Error e) {
                     stderr.printf("loading pixmaps: %s\n", e.message);
                 }
-                lastfs = fs;
+                last_fs = fs;
             }
 
             if (vs > 0) {
@@ -354,7 +359,7 @@ public class VarioBox : GLib.Object {
 
             var v = Units.speed(((double)vs)/100.0);
 //            vimage.set_from_icon_name (str, Gtk.IconSize.DIALOG);
-            vlabel.set_markup("<span %s font='%u'>%6.2f</span>%s".printf(mono, fs, v, Units.speed_units()));
+            vlabel.set_markup("<span face='monospace' font='%u'>%6.2f</span>%s".printf(fs, v, Units.speed_units()));
         }
     }
 
@@ -382,7 +387,8 @@ public class DirnBox : GLib.Object {
     public Gtk.Box dbox;
     private Gtk.Label dlabel1;
     private Gtk.Label dlabel2;
-
+	private uint last_w;
+	private uint fs;
     public DirnBox(Gtk.Builder builder, bool horz=false) {
         var grid1 = builder.get_object ("dgrid1") as Gtk.Grid;
         var grid2 = builder.get_object ("dgrid2") as Gtk.Grid;
@@ -391,12 +397,22 @@ public class DirnBox : GLib.Object {
         dbox = new Gtk.Box ((horz) ? Gtk.Orientation.HORIZONTAL : Gtk.Orientation.VERTICAL, 0);
         dbox.pack_start(grid1, true, true,0);
         dbox.pack_start(grid2, true, true,0);
-        dbox.show_all();
+
+		dbox.size_allocate.connect((a) => {
+				if (a.width != last_w) {
+					last_w = a.width;
+					Idle.add(() => {
+							fs =  a.width/5;
+							update(true);
+							return false;
+						});
+				}
+			});
+		dbox.show_all();
     }
 
     public void update(bool visible) {
         if(visible) {
-            uint fs = FlightBox.fh1/2;
             dlabel1.set_label("<span font='%u'>%03d°</span>".
                               printf(fs,NavStatus.hdr));
             dlabel2.set_label("<span font='%u'>%03d°</span>".
@@ -422,10 +438,14 @@ public class FlightBox : GLib.Object {
     private bool _allow_resize = true;
     private Gtk.Grid grid;
     private Gtk.Window _w;
-    public static uint fh1=20;
     public int last_w = 0;
-    public static string mono;
-    private int fontfact;
+	private uint fh0;
+	private uint fh1;
+	private uint fh2;
+	private uint fh3;
+	private Pango.FontDescription fdesc;
+	private Pango.Layout layout;
+	private bool changed;
 
     public void allow_resize(bool exp) {
         grid.expand = _allow_resize = exp;
@@ -444,32 +464,25 @@ public class FlightBox : GLib.Object {
         big_alt = builder.get_object ("big_alt") as Gtk.Label;
         big_spd = builder.get_object ("big_spd") as Gtk.Label;
         big_sats = builder.get_object ("big_sats") as Gtk.Label;
-        fontfact = MWP.conf.fontfact;
 
-        if(MonoFont.fixed) {
-            mono = "face=\"monospace\"";
-            fontfact -= 1;
-        } else
-            mono = "";
-
+		fdesc = Pango.FontDescription.from_string ("Monospace");
+		layout = big_lat.get_layout();
+		layout.set_font_description (fdesc);
 		vbox.size_allocate.connect((a) => {
-                if(_allow_resize && a.width != last_w) {
-                    fh1 = a.width*MWP.conf.fontfact/100;
-                    Idle.add(() => {
+				if (a.width != last_w) {
+					changed = true;
+					last_w = a.width;
+					Idle.add(() => {
 							update(true);
+							changed = false;
 							return false;
 						});
-                    if(MonoFont.fixed) {
-                        fh1 = fh1 * 90/100;
-                    }
-                }
-                last_w = a.width;
-            });
-        vbox.show_all();
+				}
+			});
+		vbox.show_all();
     }
 
     public void check_size() {
-        fh1 = last_w*MWP.conf.fontfact/100;
         update(true);
     }
 
@@ -486,87 +499,125 @@ public class FlightBox : GLib.Object {
         return stext;
     }
 
+	private void get_size_for_text(string text, out Allocation a) {
+		int width;
+		int height;
+		a = {0,0};
+		layout.set_markup(text,-1);
+		layout.get_pixel_size (out width, out height);
+		a.width =  width;
+		a.height = height;
+	}
+
+	private uint set_text_for_allocation(Allocation a, string fmt, int nf=1) {
+		var done = false;
+		string s="";
+		uint fhx = 96;
+		Allocation ta;
+		var twidth = a.width /2;
+		while (!done) {
+			if (nf == 1) {
+				s = fmt.printf(fhx);
+			} else {
+				s = fmt.printf(fhx, fhx/2);
+			}
+			get_size_for_text(s, out ta);
+			if (ta.width < twidth) {
+				done = true;
+			}
+			var dec = fhx/12;
+			if (dec == 0) dec = 1;
+			fhx -= dec;
+			//			stderr.printf("   try %u (%u)\n", fhx, dec);
+			if (fhx <= 4)
+				done = true;
+		}
+		return fhx;
+	}
+
     public void update(bool visible) {
-       if(visible) {
-           string stext;
-           var fh2 = (MWP.conf.dms) ? fh1*45/100 : fh1/2;
-           if(fh1 > 96)
-               fh1 = 96;
+		if(visible) {
+			double falt = (double)NavStatus.alti.estalt/100.0;
+			falt =  Units.distance(falt);
+			if(falt < 0.0 || falt > 20.0)
+				falt = Math.round(falt);
+			var s = PosFormat.lat(GPSInfo.lat,MWP.conf.dms);
+			var fmtlat = "<span face='monospace' font='%%u'>%s</span>".printf(s);
+			s = PosFormat.lon(GPSInfo.lon, MWP.conf.dms);
+			var fmtlon = "<span face='monospace' font='%%u'>%s</span>".printf(s);
 
-           var fh3 = fh1*90/100;
-           var fh4 = fh1;
+			var brg = NavStatus.cg.direction;
+			if(brg < 0)
+				brg += 360;
+			if(NavStatus.recip)
+				brg = ((brg + 180) % 360);
 
-           double falt = (double)NavStatus.alti.estalt/100.0;
-           falt =  Units.distance(falt);
+			var fmtrng = "Range <span face='monospace' font='%%u'>%.0f</span>%s".printf(Units.distance(NavStatus.cg.range), Units.distance_units());
+			var fmtbrg = "Bearing <span face='monospace' font='%%u'>%03d°</span>".printf(brg);
 
-           if(falt < 0.0 || falt > 20.0)
-               falt = Math.round(falt);
+			var fmthdr = "Heading <span face='monospace' font='%%u'>%03d°</span>".printf(NavStatus.hdr);
+			var fmtalt = "Alt <span face='monospace' font='%%u'>%s</span>%s".printf(trimfp(falt), Units.distance_units());
 
-           if(falt > 9999.0 || falt < -999.0)
-               fh3 = fh3 * 60/100;
-           else if(falt > 999.0 || falt < -99.0)
-               fh3 = fh3 * 75 /100;
-
-           var s=PosFormat.lat(GPSInfo.lat,MWP.conf.dms);
-           big_lat.set_label("<span %s font='%u'>%s</span>".printf(mono,fh2,s));
-           s=PosFormat.lon(GPSInfo.lon,MWP.conf.dms);
-           big_lon.set_label("<span %s font='%u'>%s</span>".printf(mono,fh2,s));
-           var brg = NavStatus.cg.direction;
-           if(brg < 0)
-               brg += 360;
-           if(NavStatus.recip)
-               brg = ((brg + 180) % 360);
-
-           if(NavStatus.cg.range > 9999.0)
-               fh4 = fh4 * 60/100;
-           else if(NavStatus.cg.range > 999.0)
-               fh4 = fh4 * 75 /100;
-
-           big_rng.set_label(
-               "Range <span %s font='%u'>%.0f</span>%s".printf(
-                   mono, fh4,
-                   Units.distance(NavStatus.cg.range),
-                   Units.distance_units()
-                                                            ));
-           big_bearing.set_label("Bearing <span %s font='%u'>%03d°</span>".printf(mono, fh1,brg));
-           big_hdr.set_label("Heading <span %s font='%u'>%03d°</span>".printf(mono, fh3,NavStatus.hdr));
-
-           stext = trimfp(falt);
-           big_alt.set_label(
-               "Alt <span %s font='%u'>%s</span>%s".printf(
-                   mono, fh3,
-                   stext,
-                   Units.distance_units() ));
-
-           var fhsp = fh1;
-
-           var spd = Units.speed(GPSInfo.spd);
-           if(MonoFont.fixed == false && spd >= 100)
-               fhsp = fh1*75/100;
-
-           stext = trimfp(spd);
-
-           big_spd.set_label(
-               "Speed <span %s font='%u'>%s</span>%s".printf(
-                   mono, fhsp,
-                   stext,
-                   Units.speed_units() ) );
-           string hdoptxt="";
-           if(GPSInfo.hdop != -1.0 && GPSInfo.hdop < 100.0) {
-               string htxt;
-               if(GPSInfo.hdop > 9.95)
-                   htxt = "%.0f".printf(GPSInfo.hdop);
-               else if(GPSInfo.hdop > 0.95)
+			var spd = Units.speed(GPSInfo.spd);
+			var fmtspd = "Speed <span face='monospace' font='%%u'>%s</span>%s".printf(trimfp(spd), Units.speed_units());
+			string hdoptxt="";
+			if(GPSInfo.hdop != -1.0 && GPSInfo.hdop < 100.0) {
+				string htxt;
+				if(GPSInfo.hdop > 9.95)
+					htxt = "%.0f".printf(GPSInfo.hdop);
+				else if(GPSInfo.hdop > 0.95)
                    htxt = "%.1f".printf(GPSInfo.hdop);
-               else
-                   htxt = "%.2f".printf(GPSInfo.hdop);
+				else
+					htxt = "%.2f".printf(GPSInfo.hdop);
+				hdoptxt = " / <span font='%%u'>%s</span>".printf(htxt);
+			}
 
-               hdoptxt = " / <span font='%u'>%s</span>".printf(fh2,htxt);
-           }
-           var slabel = "Sats <span %s font='%u'>%d</span> %s%s".printf(
-               mono, fh1, GPSInfo.nsat,Units.fix(GPSInfo.fix), hdoptxt);
-           big_sats.set_label(slabel);
-       }
+			var fmtsat = "Sats <span face='monospace' font='%%u'>%d</span> %s%s".printf(GPSInfo.nsat, Units.fix(GPSInfo.fix), hdoptxt);
+		   /*
+			* Lat         Lon
+			* Range       Bearing
+			* Heading     Alt
+			* Speed       Sats fix
+		   */
+			if(changed) {
+				Allocation alloc;
+				grid.get_allocation(out alloc);
+				//				MWPLog.message("DBG Update %u %u %s\n", alloc.width, alloc.height, changed.to_string());
+				var ft0 = set_text_for_allocation(alloc, fmtlat);
+				var ft1 = set_text_for_allocation(alloc, fmtlon);
+				fh0 = (ft1 > ft0) ? ft0 : ft1;
+				ft0 = set_text_for_allocation(alloc, fmtrng);
+				ft1 = set_text_for_allocation(alloc, fmtbrg);
+				fh1 = (ft1 > ft0) ? ft0 : ft1;
+				ft0 = set_text_for_allocation(alloc, fmtbrg);
+				ft1 = set_text_for_allocation(alloc, fmtalt);
+				fh2 = (ft1 > ft0) ? ft0 : ft1;
+				ft0 = set_text_for_allocation(alloc, fmtspd);
+				ft1 = set_text_for_allocation(alloc, fmtsat, 2);
+				fh3 = (ft1 > ft0) ? ft0 : ft1;
+			}
+
+			var blat = fmtlat.printf(fh0);
+			var blon = fmtlon.printf(fh0);
+			big_lat.set_label(blat);
+			big_lon.set_label(blon);
+
+			var brange = fmtrng.printf(fh1);
+			var bbrg = fmtbrg.printf(fh1);
+			big_rng.set_label(brange);
+			big_bearing.set_label(bbrg);
+
+			var bhdr = fmthdr.printf(fh2);
+			var balt = fmtalt.printf(fh2);
+			big_hdr.set_label(bhdr);
+			big_alt.set_label(balt);
+
+			var bspd = fmtspd.printf(fh3);
+			var bsat = fmtsat.printf(fh3, fh3/2);
+
+			big_spd.set_label(bspd);
+			big_sats.set_label(bsat);
+		}
    }
 }
 
@@ -1358,8 +1409,11 @@ public class RadioStatus : GLib.Object {
     private Gtk.Label rssi_value;
 	private Gtk.Label rssi_title;
     private Gtk.LevelBar bar;
+	private uint fs;
+	private uint last_w;
+	private ushort last_r;
 
-    public RadioStatus(Gtk.Builder builder) {
+	public RadioStatus(Gtk.Builder builder) {
         mode = Radio_modes.UNDEF;
 
         grid0 = builder.get_object ("grid4a") as Gtk.Grid;
@@ -1378,21 +1432,35 @@ public class RadioStatus : GLib.Object {
         rssi_title = builder.get_object ("rssi_title") as Gtk.Label;
         box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
         box.pack_start(grid1, true, true,0);
+		mode = Radio_modes.UNDEF;
+		box.size_allocate.connect((a) => {
+				if (a.width != last_w) {
+					last_w = a.width;
+					Idle.add(() => {
+							fs =  a.width/5;
+							update_rssi(last_r,true);
+							return false;
+						});
+				}
+			});
         box.show_all();
-    }
+	}
 
     private void unset_rssi_mode() {
         mode = Radio_modes.UNDEF;
     }
 
     private void set_modes(Radio_modes r) {
-        var l = box.get_children();
-        Gtk.Grid g = (r == Radio_modes.THREEDR) ? grid0 : grid1;
-        if(l.first().data != g) {
-            box.remove(l.first().data);
-            box.pack_start(g, true,true,0);
-        }
-    }
+		if (r != mode) {
+			var l = box.get_children();
+			Gtk.Grid g = (r == Radio_modes.THREEDR) ? grid0 : grid1;
+			if(l.first().data != g) {
+				box.remove(l.first().data);
+				box.pack_start(g, true,true,0);
+			}
+			mode = r;
+		}
+	}
 
 	public void set_title(uint8 idx=0) {
 		string [] titles = {"RSSI", "LQ"};
@@ -1402,16 +1470,15 @@ public class RadioStatus : GLib.Object {
 		rssi_title.set_label(lab);
 	}
 
+
 	public void update_rssi(ushort rssi, bool visible) {
+		last_r = rssi;
         if(visible) {
             if(mode !=  Radio_modes.RSSI)
                 set_modes(Radio_modes.RSSI);
-            uint fs = FlightBox.fh1/2;
-            rssi_value.set_label("<span %s font='%u'>%s</span>".printf(
-                                     FlightBox.mono, fs,rssi.to_string()));
+            rssi_value.set_label("<span face='monospace' font='%u'>%s</span>".printf(fs, rssi.to_string()));
             ushort pct = rssi*100/1023;
-            rssi_pct.set_label("<span %s font='%u'>%d%%</span>".printf(
-                                   FlightBox.mono,fs,pct));
+            rssi_pct.set_label("<span face='monospace' font='%u'>%d%%</span>".printf(fs, pct));
             bar.set_value(rssi);
         }
     }
