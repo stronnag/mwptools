@@ -336,7 +336,6 @@ Note also that the resize step is no longer required, as {{ mwp }} scales the ic
 | `MWP_POS_OFFSET` | The fake position offset "delta-lat,delta-lon" |
 | `MWP_PREF_DEVICE` | The serial device (from the preferences set) to display as default |
 | `MWP_PRINT_RAW` | If defined, output hex bytes from serial I/O |
-| `MWP_SECDEVS` | A list of [secondary devices](mwp-telemetry-tracker.md/#user-interface) for [Telemetry Tracking](mwp-telemetry-tracker.md) |
 | `MWP_SERIAL_HOST` | The host for the magic `udp://__MWP_SERIAL_HOST` name (default undefined)  |
 | `MWP_TIME_FMT` | The time format for log output; by default "%FT%T%z", any GLib2 DateTime (strftime-like) format may be used; "%T.%f" works well on modern GLib. |
 
