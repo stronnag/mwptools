@@ -100,7 +100,8 @@ public class Units :  GLib.Object {
 				su = "km";
 			}
 			break;
-		case 1, 2:
+		case 1:
+		case 2:
 			var du = Units.distance(d);
 			if (!isalt) {
 				if (d < 1609.344) {
