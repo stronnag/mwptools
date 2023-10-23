@@ -60,7 +60,6 @@ public class MWPSettings : GLib.Object {
     public string mavph {get; set; default=null;}
     public string mavrth {get; set; default=null;}
     public double window_p {get; set; default=72;}
-    public int fontfact {get; set; default = 11;}
     public int ahsize {get; set; default = 32;}
     public uint gpsintvl {get; set; default = 2000;}
     public string uilang {get; private set; default=null;}
@@ -102,7 +101,6 @@ public class MWPSettings : GLib.Object {
     public bool manage_power {get; set; default=false;}
     public uint max_radar { get; set; default=4; }
     public string kmlpath {get; private set; default=null;}
-    public bool fixedfont {get; set; default=true;}
     public bool ucmissiontags {get; set; default=false;}
     public bool missionmetatag {get; set; default=false;}
     public string load_safehomes {get; set; default=null;}
@@ -238,8 +236,6 @@ public class MWPSettings : GLib.Object {
             mavrth = settings.get_string ("mavrth");
         if(s == null || s == "pwdw-p")
             window_p = settings.get_double("pwdw-p");
-        if(s == null || s == "font-fv")
-            fontfact = settings.get_int("font-fv");
         if(s == null || s == "ah-size")
             ahsize = settings.get_int("ah-size");
         if(s == null || s == "uilang")
@@ -378,9 +374,6 @@ public class MWPSettings : GLib.Object {
 
         if(s == null || s == "manage-power")
             manage_power = settings.get_boolean("manage-power");
-
-        if(s == null || s == "fixedfont")
-            fixedfont = settings.get_boolean ("fixedfont");
 
         if(s == null || s == "uc-mission-tags")
             ucmissiontags = settings.get_boolean ("uc-mission-tags");

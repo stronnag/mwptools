@@ -199,19 +199,16 @@ public class PosFormat : GLib.Object {
 }
 
 public class MonoFont : Object {
-    public static bool fixed = false;
     public static void apply(Gtk.Widget w) {
-        if(fixed) {
-            var lsc = w.get_style_context();
-            try {
-                var css1 = new Gtk.CssProvider ();
-                css1.load_from_data(".monolabel {font-family: monospace;}");
-                lsc.add_provider(css1, 801);
-                lsc.add_class("monolabel");
-            } catch (Error e) {
-                stderr.printf("label context %s\n", e.message);
-            }
-        }
+		var lsc = w.get_style_context();
+		try {
+			var css1 = new Gtk.CssProvider ();
+			css1.load_from_data(".monolabel {font-family: monospace;}");
+			lsc.add_provider(css1, 801);
+			lsc.add_class("monolabel");
+		} catch (Error e) {
+			stderr.printf("label context %s\n", e.message);
+		}
     }
 }
 

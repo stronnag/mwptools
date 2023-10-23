@@ -81,8 +81,61 @@ public class Units :  GLib.Object {
             fix--;
         return dfix[fix];
     }
-}
 
+	public static void scaled_distance(double d, out string sd, out string su, bool isalt=false) {
+		sd = "0";
+		su = "?";
+		switch (MWP.conf.p_distance) {
+		case 0: // m
+			if (d < 10000) {
+				sd = "%.0f".printf(d);
+				su = dnames[MWP.conf.p_distance];
+			} else {
+				d /= 1000;
+				if (d < 100) {
+					sd = "%.1f".printf(d);
+				} else {
+					sd = "%.0f".printf(d);
+				}
+				su = "km";
+			}
+			break;
+		case 1, 2:
+			var du = Units.distance(d);
+			if (!isalt) {
+				if (d < 1609.344) {
+					sd = "%.0f".printf(du);
+					su = dnames[MWP.conf.p_distance];
+				} else {
+					du = d / 1609.344;
+					if (du < 100.0) {
+						sd = "%.1f".printf(du);
+					} else {
+						sd = "%.0f".printf(du);
+					}
+					su = "mi";
+				}
+			} else {
+				d *= 3.2808399;
+				if (d < 10000) {
+					sd = "%.0f".printf(d);
+					su = "ft";
+				} else {
+					d /= 1000;
+					if (d < 100) {
+						sd = "%.1f".printf(d);
+					} else {
+						sd = "%.0f".printf(d);
+					}
+					su="kft";
+				}
+			}
+			break;
+		default:
+			break;
+		}
+	}
+}
 
 public class OdoView : GLib.Object {
     private Gtk.Dialog dialog;
@@ -445,7 +498,6 @@ public class FlightBox : GLib.Object {
 	private uint fh3;
 	private Pango.FontDescription fdesc;
 	private Pango.Layout layout;
-	private bool changed;
 
     public void allow_resize(bool exp) {
         grid.expand = _allow_resize = exp;
@@ -470,11 +522,9 @@ public class FlightBox : GLib.Object {
 		layout.set_font_description (fdesc);
 		vbox.size_allocate.connect((a) => {
 				if (a.width != last_w) {
-					changed = true;
 					last_w = a.width;
 					Idle.add(() => {
-							update(true);
-							changed = false;
+							update(true, a);
 							return false;
 						});
 				}
@@ -483,7 +533,6 @@ public class FlightBox : GLib.Object {
     }
 
     public void check_size() {
-        update(true);
     }
 
     public void annul() {
@@ -525,17 +574,15 @@ public class FlightBox : GLib.Object {
 			if (ta.width < twidth) {
 				done = true;
 			}
-			var dec = fhx/12;
-			if (dec == 0) dec = 1;
+			var dec = 1 + fhx/12;
 			fhx -= dec;
-			//			stderr.printf("   try %u (%u)\n", fhx, dec);
 			if (fhx <= 4)
 				done = true;
 		}
-		return fhx;
+		return (fhx & ~1);
 	}
 
-    public void update(bool visible) {
+    public void update(bool visible, Allocation? alloc=null) {
 		if(visible) {
 			double falt = (double)NavStatus.alti.estalt/100.0;
 			falt =  Units.distance(falt);
@@ -552,11 +599,15 @@ public class FlightBox : GLib.Object {
 			if(NavStatus.recip)
 				brg = ((brg + 180) % 360);
 
-			var fmtrng = "Range <span face='monospace' font='%%u'>%.0f</span>%s".printf(Units.distance(NavStatus.cg.range), Units.distance_units());
+			string sd;
+			string su;
+			Units.scaled_distance(NavStatus.cg.range, out sd, out su, false);
+			var fmtrng = "Range <span face='monospace' font='%%u'>%s</span>%s".printf(sd, su);
 			var fmtbrg = "Bearing <span face='monospace' font='%%u'>%03d°</span>".printf(brg);
 
 			var fmthdr = "Heading <span face='monospace' font='%%u'>%03d°</span>".printf(NavStatus.hdr);
-			var fmtalt = "Alt <span face='monospace' font='%%u'>%s</span>%s".printf(trimfp(falt), Units.distance_units());
+			Units.scaled_distance(falt, out sd, out su, true);
+			var fmtalt = "Alt <span face='monospace' font='%%u'>%s</span>%s".printf(sd,su);
 
 			var spd = Units.speed(GPSInfo.spd);
 			var fmtspd = "Speed <span face='monospace' font='%%u'>%s</span>%s".printf(trimfp(spd), Units.speed_units());
@@ -579,10 +630,7 @@ public class FlightBox : GLib.Object {
 			* Heading     Alt
 			* Speed       Sats fix
 		   */
-			if(changed) {
-				Allocation alloc;
-				grid.get_allocation(out alloc);
-				//				MWPLog.message("DBG Update %u %u %s\n", alloc.width, alloc.height, changed.to_string());
+			if(alloc != null) {
 				var ft0 = set_text_for_allocation(alloc, fmtlat);
 				var ft1 = set_text_for_allocation(alloc, fmtlon);
 				fh0 = (ft1 > ft0) ? ft0 : ft1;
@@ -595,6 +643,7 @@ public class FlightBox : GLib.Object {
 				ft0 = set_text_for_allocation(alloc, fmtspd);
 				ft1 = set_text_for_allocation(alloc, fmtsat, 2);
 				fh3 = (ft1 > ft0) ? ft0 : ft1;
+				//				MWPLog.message("DBG Update %u %u %u %u\n", fh0, fh1, fh2, fh3);
 			}
 
 			var blat = fmtlat.printf(fh0);

@@ -226,10 +226,8 @@ This *may* not be installed by default, but should be available via the OS packa
 | dump-unknown | dump unknown | dump unknown message payload (debug aid) | false |
 | espeak-voice | Default espeak voice | Default espeak voice (see espeak documentation) | "en" |
 | fctype | Force fc type | Forces fc type (mw,mwnav,bf,cf) | "auto" |
-| fixedfont | Use a fixed font for Flight View | Use a fixed font for Flight View | true |
 | flash-warn | Flash storage warning | If a dataflash is configured for black box, and this key is non-zero, a warning in generated if the data flash is greater than "flash-warn" percent full. | 0 |
 | flite-voice-file | Default flite voice file | Default flite voice file (full path, *.flitevox), see flite documentation) | "" |
-| font-fv | flight view font scaling | Scales the flight view widget. Smaller screens may need a lower value | 12 |
 | forward | Types of message to forward | Types of message to forward (none, LTM, minLTM, minMAV, all) | "minLTM" |
 | geouser | User account on geonames.org | A user account to query geonames.org for blackbox log timezone info. A default account of 'mwptools' is provided; however users are requested to create their own account. | "mwptools" |
 | gpsd-host | gpsd provider | Provider for GCS location via gpsd. Default is "localhost", can be set to other host name or IP address. Setting blank ("") disables. | "localhost" |

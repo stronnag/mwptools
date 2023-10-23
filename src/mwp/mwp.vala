@@ -2163,9 +2163,6 @@ public class MWP : Gtk.Application {
         }
         vcol = new VCol();
 
-        MonoFont.fixed = conf.fixedfont;
-        MWPLog.message("Fixed font %s\n", MonoFont.fixed.to_string());
-
         odoview = new OdoView(builder,window,conf.stats_timeout);
         navstatus = new NavStatus(builder, vcol, conf.recip);
         radstatus = new RadioStatus(builder);
