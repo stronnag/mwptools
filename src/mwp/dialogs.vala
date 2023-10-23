@@ -363,22 +363,25 @@ public class VarioBox : GLib.Object {
 	private uint last_w;
 	private uint fs;
 	private uint last_fs;
+	private TextAlloc tac;
 
     public VarioBox() {
-        vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 2);
+		var vs = "<span font_family='monospace' font='%u'>000.0</span>xx";
+		tac = new TextAlloc(28);
+		vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 2);
         uparrow = MWPUtils.find_conf_file("up-arrow.svg", "pixmaps");
         downarrow = MWPUtils.find_conf_file("down-arrow.svg", "pixmaps");
         doublearrow = MWPUtils.find_conf_file("double-arrow.svg", "pixmaps");
 
         vimage = new Gtk.Image();
         vlabel  = new Gtk.Label("");
-        vbox.pack_start(vimage, true, true,0);
-        vbox.pack_start(vlabel, true, true,0);
+        vbox.pack_start(vimage, false, false,0);
+        vbox.pack_start(vlabel, false, false,0); //t,t => f,t
 		vbox.size_allocate.connect((a) => {
 				if (a.width != last_w) {
 					last_w = a.width;
 					Idle.add(() => {
-							fs =  a.width/8;
+							fs = tac.set_text_for_allocation(a, vs, 1);
 							return false;
 						});
 				}
@@ -392,7 +395,7 @@ public class VarioBox : GLib.Object {
         if(visible) {
             if(fs != last_fs) {
                 try {
-                    var isz = (int)(fs *4);
+                    var isz = (int)(5*fs/2);
                     up =  new Gdk.Pixbuf.from_file_at_scale(uparrow, isz, isz, true);
                     down = new Gdk.Pixbuf.from_file_at_scale(downarrow, isz, isz, true);
                     none = new Gdk.Pixbuf.from_file_at_scale(doublearrow, isz, isz, true);
@@ -412,7 +415,7 @@ public class VarioBox : GLib.Object {
 
             var v = Units.speed(((double)vs)/100.0);
 //            vimage.set_from_icon_name (str, Gtk.IconSize.DIALOG);
-            vlabel.set_markup("<span face='monospace' font='%u'>%6.2f</span>%s".printf(fs, v, Units.speed_units()));
+            vlabel.set_markup("<span face='monospace' font='%u'>%.1f</span>%s".printf(fs, v, Units.speed_units()));
         }
     }
 
@@ -442,7 +445,11 @@ public class DirnBox : GLib.Object {
     private Gtk.Label dlabel2;
 	private uint last_w;
 	private uint fs;
+	private TextAlloc tac;
+
     public DirnBox(Gtk.Builder builder, bool horz=false) {
+		tac = new TextAlloc(32);
+		var vs = "<span font_family='monospace' font='%u'>000</span>x";
         var grid1 = builder.get_object ("dgrid1") as Gtk.Grid;
         var grid2 = builder.get_object ("dgrid2") as Gtk.Grid;
         dlabel1  = builder.get_object ("dlabel1") as Gtk.Label;
@@ -450,12 +457,11 @@ public class DirnBox : GLib.Object {
         dbox = new Gtk.Box ((horz) ? Gtk.Orientation.HORIZONTAL : Gtk.Orientation.VERTICAL, 0);
         dbox.pack_start(grid1, true, true,0);
         dbox.pack_start(grid2, true, true,0);
-
 		dbox.size_allocate.connect((a) => {
 				if (a.width != last_w) {
 					last_w = a.width;
 					Idle.add(() => {
-							fs =  a.width/5;
+							fs = tac.set_text_for_allocation(a, vs, 1);
 							update(true);
 							return false;
 						});
@@ -478,6 +484,54 @@ public class DirnBox : GLib.Object {
     }
 }
 
+public class TextAlloc : Object {
+	private Gtk.Label lab;
+	private Pango.FontDescription fdesc;
+	private Pango.Layout layout;
+	private int maxfs;
+	public TextAlloc (int _maxfs = 64) {
+		maxfs = _maxfs;
+		fdesc = Pango.FontDescription.from_string ("Monospace");
+		lab = new Gtk.Label("");
+		layout = lab.get_layout();
+		layout.set_font_description (fdesc);
+	}
+
+	private void get_size_for_text(string text, out Allocation a) {
+		int width;
+		int height;
+		a = {0,0};
+		layout.set_markup(text,-1);
+		layout.get_pixel_size (out width, out height);
+		a.width =  width;
+		a.height = height;
+	}
+
+	public uint set_text_for_allocation(Allocation a, string fmt, int nf=1) {
+		var done = false;
+		string s="";
+		uint fhx = maxfs;
+		Allocation ta;
+		var twidth = a.width;
+		while (!done) {
+			if (nf == 1) {
+				s = fmt.printf(fhx);
+			} else {
+				s = fmt.printf(fhx, fhx/2);
+			}
+			get_size_for_text(s, out ta);
+			if (ta.width < twidth) {
+				done = true;
+			}
+			var dec = 1 + fhx/12;
+			fhx -= dec;
+			if (fhx <= 4)
+				done = true;
+		}
+		return (fhx & ~1);
+	}
+}
+
 public class FlightBox : GLib.Object {
     private Gtk.Label big_lat;
     private Gtk.Label big_lon;
@@ -488,7 +542,6 @@ public class FlightBox : GLib.Object {
     private Gtk.Label big_spd;
     private Gtk.Label big_sats;
     public Gtk.Box vbox {get; private set;}
-    private bool _allow_resize = true;
     private Gtk.Grid grid;
     private Gtk.Window _w;
     public int last_w = 0;
@@ -496,12 +549,7 @@ public class FlightBox : GLib.Object {
 	private uint fh1;
 	private uint fh2;
 	private uint fh3;
-	private Pango.FontDescription fdesc;
-	private Pango.Layout layout;
-
-    public void allow_resize(bool exp) {
-        grid.expand = _allow_resize = exp;
-    }
+	private TextAlloc tac;
 
     public FlightBox(Gtk.Builder builder, Gtk.Window pw) {
         _w = pw;
@@ -516,10 +564,7 @@ public class FlightBox : GLib.Object {
         big_alt = builder.get_object ("big_alt") as Gtk.Label;
         big_spd = builder.get_object ("big_spd") as Gtk.Label;
         big_sats = builder.get_object ("big_sats") as Gtk.Label;
-
-		fdesc = Pango.FontDescription.from_string ("Monospace");
-		layout = big_lat.get_layout();
-		layout.set_font_description (fdesc);
+		tac  = new TextAlloc(48);
 		vbox.size_allocate.connect((a) => {
 				if (a.width != last_w) {
 					last_w = a.width;
@@ -548,39 +593,6 @@ public class FlightBox : GLib.Object {
         return stext;
     }
 
-	private void get_size_for_text(string text, out Allocation a) {
-		int width;
-		int height;
-		a = {0,0};
-		layout.set_markup(text,-1);
-		layout.get_pixel_size (out width, out height);
-		a.width =  width;
-		a.height = height;
-	}
-
-	private uint set_text_for_allocation(Allocation a, string fmt, int nf=1) {
-		var done = false;
-		string s="";
-		uint fhx = 96;
-		Allocation ta;
-		var twidth = a.width /2;
-		while (!done) {
-			if (nf == 1) {
-				s = fmt.printf(fhx);
-			} else {
-				s = fmt.printf(fhx, fhx/2);
-			}
-			get_size_for_text(s, out ta);
-			if (ta.width < twidth) {
-				done = true;
-			}
-			var dec = 1 + fhx/12;
-			fhx -= dec;
-			if (fhx <= 4)
-				done = true;
-		}
-		return (fhx & ~1);
-	}
 
     public void update(bool visible, Allocation? alloc=null) {
 		if(visible) {
@@ -631,17 +643,18 @@ public class FlightBox : GLib.Object {
 			* Speed       Sats fix
 		   */
 			if(alloc != null) {
-				var ft0 = set_text_for_allocation(alloc, fmtlat);
-				var ft1 = set_text_for_allocation(alloc, fmtlon);
+				alloc.width /= 2;
+				var ft0 = tac.set_text_for_allocation(alloc, fmtlat);
+				var ft1 = tac.set_text_for_allocation(alloc, fmtlon);
 				fh0 = (ft1 > ft0) ? ft0 : ft1;
-				ft0 = set_text_for_allocation(alloc, fmtrng);
-				ft1 = set_text_for_allocation(alloc, fmtbrg);
+				ft0 = tac.set_text_for_allocation(alloc, fmtrng);
+				ft1 = tac.set_text_for_allocation(alloc, fmtbrg);
 				fh1 = (ft1 > ft0) ? ft0 : ft1;
-				ft0 = set_text_for_allocation(alloc, fmtbrg);
-				ft1 = set_text_for_allocation(alloc, fmtalt);
+				ft0 = tac.set_text_for_allocation(alloc, fmtbrg);
+				ft1 = tac.set_text_for_allocation(alloc, fmtalt);
 				fh2 = (ft1 > ft0) ? ft0 : ft1;
-				ft0 = set_text_for_allocation(alloc, fmtspd);
-				ft1 = set_text_for_allocation(alloc, fmtsat, 2);
+				ft0 = tac.set_text_for_allocation(alloc, fmtspd);
+				ft1 = tac.set_text_for_allocation(alloc, fmtsat, 2);
 				fh3 = (ft1 > ft0) ? ft0 : ft1;
 				//				MWPLog.message("DBG Update %u %u %u %u\n", fh0, fh1, fh2, fh3);
 			}
@@ -1461,10 +1474,11 @@ public class RadioStatus : GLib.Object {
 	private uint fs;
 	private uint last_w;
 	private ushort last_r;
+	private TextAlloc tac;
 
 	public RadioStatus(Gtk.Builder builder) {
+		tac = new TextAlloc(24);
         mode = Radio_modes.UNDEF;
-
         grid0 = builder.get_object ("grid4a") as Gtk.Grid;
 		rxerr_label = builder.get_object ("rxerrlab") as Gtk.Label;
         fixerr_label = builder.get_object ("fixerrlab") as Gtk.Label;
@@ -1482,11 +1496,13 @@ public class RadioStatus : GLib.Object {
         box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
         box.pack_start(grid1, true, true,0);
 		mode = Radio_modes.UNDEF;
+		var vs = "<span font_family='monospace' font='%u'>0000</span>";
+
 		box.size_allocate.connect((a) => {
 				if (a.width != last_w) {
 					last_w = a.width;
 					Idle.add(() => {
-							fs =  a.width/5;
+							fs = tac.set_text_for_allocation(a, vs, 1);
 							update_rssi(last_r,true);
 							return false;
 						});
@@ -1637,14 +1653,14 @@ public class NavStatus : GLib.Object {
     private static string ns_state = null;
 
     private int _vn;
-    private int _fs;
+    private uint _fs;
 
     private int efdin;
     private Pid epid;
     private bool replaying = false;
-
     private string[]fuelunits = {"", "%", "mAh", "mWh"};
-
+	private TextAlloc tac;
+	private uint last_w;
     public enum SPK {
         Volts = 1,
         GPS = 2,
@@ -1669,6 +1685,8 @@ public class NavStatus : GLib.Object {
         _vn = -1;
         nm_pts = 255;
 
+		tac = new TextAlloc(80);
+
         grid = builder.get_object ("grid3") as Gtk.Grid;
         gps_mode_label = builder.get_object ("gps_mode_lab") as Gtk.Label;
         nav_state_label = builder.get_object ("nav_status_label") as Gtk.Label;
@@ -1681,36 +1699,93 @@ public class NavStatus : GLib.Object {
         nav_altitude_label = builder.get_object ("altitude_label") as Gtk.Label;
         nav_attitude_label = builder.get_object ("attitude_label") as Gtk.Label;
         enabled = true;
-/*
-        voltlabel = new Gtk.Label("");
-        voltbox = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 2);
-        voltbox.pack_start (voltlabel, true, true, 1);
-        voltbox.size_allocate.connect((a) => {
-                var fh1 = a.width/4;
-                var fh2 = a.height / 2;
-                _fs = (fh1 < fh2) ? fh1 : fh2;
-            });
 
-        voltlabel.set_use_markup (true);
-*/
-        voltbox = builder.get_object ("powerbox") as Gtk.Box;
-        voltlabel = builder.get_object ("volts_label") as Gtk.Label;
-        amplabel = builder.get_object ("amps_label") as Gtk.Label;
-        mahlabel = builder.get_object ("mah_label") as Gtk.Label;
-        voltbox.size_allocate.connect((a) => {
-                var fh1 = a.width / 4;
-                var fh2 = a.height / 2;
-                _fs = (fh1 < fh2) ? fh1 : fh2;
-            });
-
+        voltlabel = new Gtk.Label("n/a");
+        amplabel = new Gtk.Label("");
+        mahlabel = new Gtk.Label("");
+        voltbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 2);
+		var currbox = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 2);
+		currbox.pack_start (amplabel, true, false, 1);
+		currbox.pack_start (mahlabel, true, false, 1);
+        voltbox.pack_start (voltlabel, false, false, 1);
+		voltbox.pack_start (currbox, false, false, 1);
         voltlabel.set_use_markup (true);
         amplabel.set_use_markup (true);
         mahlabel.set_use_markup (true);
+        voltbox.size_allocate.connect((a) => {
+				if (a.width != last_w) {
+					last_w = a.width;
+					Idle.add(() => {
+							get_vfont(a);
+							return false;
+						});
+				}
+            });
+
         volt_update("n/a",-1, 0f,true);
         grid.show_all();
+	}
+
+
+	private void get_vfont(Allocation a) {
+		var vs = "<span font_family='monospace' font='%u'>00.0v</span>";
+		_fs = tac.set_text_for_allocation(a, vs, 1);
+	}
+
+    public void volt_update(string s, int n, float v, bool visible) {
+        volts = v;
+        if (n == -1)
+            n = vc.levels.length-1;
+
+        if(visible) {
+            if(n != _vn) {
+                var lsc = voltbox.get_style_context();
+                if(_vn != -1) {
+                    lsc.remove_class(vc.levels[_vn].colour);
+                }
+                lsc.add_class(vc.levels[n].colour);
+                _vn = n;
+            }
+
+            uint vfh = _fs;
+            uint afh = 0;
+
+            if (n == -1 || s == "n/a" || ampsok == false) {
+                amplabel.hide();
+                mahlabel.hide();
+                amplabel.set_label("");
+                mahlabel.set_label("");
+                centiA = 0;
+                mah = 0;
+                ampsok = false;
+            } else {
+                vfh = _fs ;
+                afh = _fs *4 / 10;
+                string ampslbl;
+                double ca = centiA / 100.0;
+                if(centiA > 9999)
+                    ampslbl = "%.0f".printf(ca);
+                else if (centiA > 99)
+                    ampslbl = "%.1f".printf(ca);
+                else
+                    ampslbl = "%.2f".printf(ca);
+
+                amplabel.set_label("<span font_family='monospace' font='%u'>%sA</span>".printf(afh, ampslbl));
+                if(mah > 0 && fuelidx  > 0 && fuelidx < 4)
+                    mahlabel.set_label("<span font_family='monospace' font='%u'>%5u%s</span>".printf(afh, mah,fuelunits[fuelidx]));
+            }
+
+            var vs = "<span font_family='monospace' font='%u'>%s</span>".printf(vfh,s);
+            voltlabel.set_label(vs);
+            if(afh > 0) {
+                amplabel.show();
+                mahlabel.show();
+            }
+        }
     }
 
-    public void set_audio_status(uint8 s) {
+
+	public void set_audio_status(uint8 s) {
         say_state = s;
     }
 
@@ -1962,58 +2037,6 @@ public class NavStatus : GLib.Object {
             centiA = c.centiA;
             mah = c.mah;
             fuelidx = _fi; // units type
-        }
-    }
-
-    public void volt_update(string s, int n, float v, bool visible) {
-        volts = v;
-        if (n == -1)
-            n = vc.levels.length-1;
-
-        if(visible) {
-            if(n != _vn) {
-                var lsc = voltbox.get_style_context();
-                if(_vn != -1) {
-                    lsc.remove_class(vc.levels[_vn].colour);
-                }
-                lsc.add_class(vc.levels[n].colour);
-                _vn = n;
-            }
-
-            int vfh = _fs;
-            int afh = 0;
-
-            if (n == -1 || s == "n/a" || ampsok == false) {
-                amplabel.hide();
-                mahlabel.hide();
-                amplabel.set_label("");
-                mahlabel.set_label("");
-                centiA = 0;
-                mah = 0;
-                ampsok = false;
-            } else {
-                vfh = _fs * 9 /10 ;
-                afh = _fs *3 / 10;
-                string ampslbl;
-                double ca = centiA / 100.0;
-                if(centiA > 9999)
-                    ampslbl = "%.0f".printf(ca);
-                else if (centiA > 99)
-                    ampslbl = "%.1f".printf(ca);
-                else
-                    ampslbl = "%.2f".printf(ca);
-
-                amplabel.set_label("<span font_family='monospace' font='%d'>%sA</span>".printf(afh, ampslbl));
-                if(mah > 0 && fuelidx  > 0 && fuelidx < 4)
-                    mahlabel.set_label("<span font_family='monospace' font='%d'>%5u%s</span>".printf(afh, mah,fuelunits[fuelidx]));
-            }
-
-            var vs = "<span font_family='monospace' font='%d'>%s</span>".printf(vfh,s);
-            voltlabel.set_label(vs);
-            if(afh > 0) {
-                amplabel.show();
-                mahlabel.show();
-            }
         }
     }
 

@@ -2768,8 +2768,8 @@ public class MWP : Gtk.Application {
         start_poll_timer();
         lastp = new Timer();
 
-        pane.pack1(embed,true, true);
-        pane.pack2(box, true, true);
+        pane.pack1(embed,false, true); // t,,t
+        pane.pack2(box, false, true);  // t, t
 
 		sticks = new Sticks.StickWindow(window, conf.show_sticks);
 
@@ -2803,20 +2803,11 @@ public class MWP : Gtk.Application {
 				return false;
 			});
 
-        pane.button_press_event.connect((evt) => {
-                fbox.allow_resize(true);
-                return false;
-            });
-
         pane.button_release_event.connect((evt) => {
                 if (evt.button == 1) {
                     conf.window_p = 100.0* (double)pane.position /(double) (pane.max_position - pane.min_position);
                     conf.save_pane();
                 }
-                Timeout.add(500, () => {
-                            fbox.allow_resize(false);
-                        return Source.REMOVE;
-                    });
                 return false;
             });
 		MWPLog.message("Show main window\n");
@@ -2864,7 +2855,7 @@ public class MWP : Gtk.Application {
         lman = new LayMan(dock, confdir,layfile,DOCKLETS.NUMBER);
 
         box.pack_start (dockbar, false, false, 0);
-        box.pack_end (dock, true, true, 0);
+        box.pack_end (dock, false, true, 0); // ex true
 
         dockitem = new DockItem[DOCKLETS.NUMBER];
 		var icon_theme = IconTheme.get_default();
