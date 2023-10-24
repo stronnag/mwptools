@@ -8798,10 +8798,11 @@ public class MWP : Gtk.Application {
     private bool try_forwarder(out string fstr) {
         fstr = null;
         if(!fwddev.available) {
-            if(fwddev.open_w(forward_device, 0, out fstr) == true) {
+            if(fwddev.open_w(forward_device, 0) == true) {
                 fwddev.set_mode(MWSerial.Mode.SIM);
                 MWPLog.message("set forwarder %s\n", forward_device);
             } else {
+				fwddev.get_error_message(out fstr);
                 MWPLog.message("Forwarder %s\n", fstr);
             }
         }
@@ -8904,7 +8905,7 @@ public class MWP : Gtk.Application {
                 }
                 ttrk.disable(serdev);
                 MWPLog.message("Trying OS open for %s\n", serdev);
-                ostat = msp.open_w(serdev, conf.baudrate, out estr);
+                ostat = msp.open_w(serdev, conf.baudrate);
             }
 
             if (ostat == true) {
@@ -8949,6 +8950,7 @@ public class MWP : Gtk.Application {
                         serstate = SERSTATE.TELEM;
                 }
             } else {
+				msp.get_error_message(out estr);
                 if (autocon == false || autocount == 0) {
                     mwp_warning_box("Unable to open serial device\n%s\nPlease verify you are a member of the owning group\nTypically \"dialout\" or \"uucp\"\n".printf(estr), Gtk.MessageType.WARNING, 60);
                 }

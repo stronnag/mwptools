@@ -445,7 +445,7 @@ public class MWSerial : Object {
     private bool relaxed;
 	private PMask pmask;
 	private bool mpm_auto = false;
-
+	private int lasterr = 0;
 	public static bool debug;
 
 	public enum MemAlloc {
@@ -770,14 +770,24 @@ public class MWSerial : Object {
   return open(device, 0, out estr);
   }
 */
+	public void get_error_message(out string estr) {
+		estr = "";
+		uint8 [] sbuf = new uint8[1024];
+		var s = MwpSerial.error_text(lasterr, sbuf, 1024);
+		estr = "%s %s (%d)".printf(devname, s,lasterr);
+		MWPLog.message("%s\n", estr);
+	}
 
     public bool open(string device, uint rate, out string estr) {
-        if(open_w(device, rate, out estr)) {
+		estr="";
+        if(open_w(device, rate)) {
             if(fwd == false)
                 setup_reader();
             else
                 set_noblock();
-        }
+        } else  {
+			get_error_message(out estr);
+		}
         return available;
     }
 
@@ -805,8 +815,7 @@ public class MWSerial : Object {
         return host;
     }
 
-    public bool open_w(string _device, uint rate, out string estr) {
-        int lasterr = 0;
+    public bool open_w(string _device, uint rate) {
         string device;
         int n;
 
@@ -816,8 +825,6 @@ public class MWSerial : Object {
             device = _device.substring(0,n);
 		}
         devname = device;
-		estr=null;
-
         print_raw = (Environment.get_variable("MWP_PRINT_RAW") != null);
         commode = 0;
 
@@ -884,10 +891,6 @@ public class MWSerial : Object {
 		lasterr=Posix.errno;
 
         if(fd < 0) {
-            uint8 [] sbuf = new uint8[1024];
-            var s = MwpSerial.error_text(lasterr, sbuf, 1024);
-            estr = "%s %s (%d)".printf(device, s,lasterr);
-            MWPLog.message("%s\n", estr);
             fd = -1;
             available = false;
         } else {
