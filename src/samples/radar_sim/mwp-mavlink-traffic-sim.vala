@@ -109,21 +109,24 @@ public class RadarSim : Object {
     }
 
     private void open_serial() {
-        bool res;
-        string estr;
         msp = new MWSerial();
         msp.set_mode(MWSerial.Mode.SIM);
-
-        if((res = msp.open(dev, baud, out estr)) == true) {
-            msp.serial_lost.connect(() => {
-                    if(tid > 0)
-                        Source.remove(tid);
-                    ml.quit();
-                });
-        } else {
-            MWPLog.message("open failed serial %s %s\n", dev, estr);
-            ml.quit();
-        }
+		msp.open_async.begin(dev, baud,  (obj,res) => {
+				var ok = msp.open_async.end(res);
+				if (ok) {
+					msp.setup_reader();
+					msp.serial_lost.connect(() => {
+							if(tid > 0)
+								Source.remove(tid);
+							ml.quit();
+						});
+				} else {
+					string estr;
+					msp.get_error_message(out estr);
+		            MWPLog.message("open failed serial %s %s\n", dev, estr);
+					ml.quit();
+				}
+			});
     }
 
     private void transmit_radar(TrafficReport r) {

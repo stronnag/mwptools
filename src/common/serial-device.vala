@@ -445,7 +445,7 @@ public class MWSerial : Object {
     private bool relaxed;
 	private PMask pmask;
 	private bool mpm_auto = false;
-
+	private int lasterr = 0;
 	public static bool debug;
 
 	public enum MemAlloc {
@@ -770,14 +770,34 @@ public class MWSerial : Object {
   return open(device, 0, out estr);
   }
 */
+	public void get_error_message(out string estr) {
+		estr = "";
+		uint8 [] sbuf = new uint8[1024];
+		var s = MwpSerial.error_text(lasterr, sbuf, 1024);
+		estr = "%s %s (%d)".printf(devname, s,lasterr);
+		MWPLog.message("%s\n", estr);
+	}
 
-    public bool open(string device, uint rate, out string estr) {
-        if(open_w(device, rate, out estr)) {
+	public async bool open_async(string device, uint rate) {
+		var thr = new Thread<bool> (device, () => {
+				var res = open_w(device, rate);
+				Idle.add (open_async.callback);
+				return res;
+			});
+		yield;
+		return thr.join();
+	}
+
+	public bool open(string device, uint rate, out string estr) {
+		estr="";
+        if(open_w(device, rate)) {
             if(fwd == false)
                 setup_reader();
             else
                 set_noblock();
-        }
+        } else  {
+			get_error_message(out estr);
+		}
         return available;
     }
 
@@ -805,29 +825,25 @@ public class MWSerial : Object {
         return host;
     }
 
-    public bool open_w(string _device, uint rate, out string estr) {
-        int lasterr = 0;
-        string device;
+	public bool open_w (string _device, uint rate) {
+		string device;
         int n;
-
-        if((n = _device.index_of_char(' ')) == -1) {
-            device = _device;
+		if((n = _device.index_of_char(' ')) == -1) {
+			device = _device;
 		} else {
-            device = _device.substring(0,n);
+			device = _device.substring(0,n);
 		}
-        devname = device;
-		estr=null;
+		devname = device;
+		print_raw = (Environment.get_variable("MWP_PRINT_RAW") != null);
+		commode = 0;
 
-        print_raw = (Environment.get_variable("MWP_PRINT_RAW") != null);
-        commode = 0;
-
-        if(device.length == 17 && device[2] == ':' && device[5] == ':' && device[8] == ':' && device[11] == ':' && device[14] == ':') {
-            fd = BTSocket.connect(device, &lasterr);
-            if (fd != -1) {
-                commode = ComMode.FD|ComMode.STREAM|ComMode.BT;
-                set_noblock();
-            }
-        } else {
+		if(device.length == 17 && device[2] == ':' && device[5] == ':' && device[8] == ':' && device[11] == ':' && device[14] == ':') {
+			fd = BTSocket.connect(device, &lasterr);
+			if (fd != -1) {
+				commode = ComMode.FD|ComMode.STREAM|ComMode.BT;
+				set_noblock();
+			}
+		} else {
 			var u = UriParser.parse(device);
 			if (u != null) {
 				string host = null;
@@ -872,28 +888,23 @@ public class MWSerial : Object {
 					setup_ip(host, port, remhost, remport);
 				}
 			} else {
-                commode = ComMode.STREAM|ComMode.TTY;
-                var parts = device.split ("@");
-                if(parts.length == 2) {
-                    device  = parts[0];
-                    rate = int.parse(parts[1]);
-                }
-                fd = MwpSerial.open(device, (int)rate);
-            }
+				commode = ComMode.STREAM|ComMode.TTY;
+				var parts = device.split ("@");
+				if(parts.length == 2) {
+					device  = parts[0];
+					rate = int.parse(parts[1]);
+				}
+				fd = MwpSerial.open(device, (int)rate);
+			}
 		}
 		lasterr=Posix.errno;
-
-        if(fd < 0) {
-            uint8 [] sbuf = new uint8[1024];
-            var s = MwpSerial.error_text(lasterr, sbuf, 1024);
-            estr = "%s %s (%d)".printf(device, s,lasterr);
-            MWPLog.message("%s\n", estr);
-            fd = -1;
-            available = false;
-        } else {
-            available = true;
-        }
-        return available;
+		if(fd < 0) {
+			fd = -1;
+			available = false;
+		} else {
+			available = true;
+		}
+		return available;
     }
 
     public bool open_fd(int _fd, int rate, bool rawfd = false) {

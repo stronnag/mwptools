@@ -363,3 +363,35 @@ namespace SportDev {
     int16 vario;
     double volts;
 }
+
+namespace Utils {
+	public static bool permawarn;
+	public void warning_box(string warnmsg,
+							Gtk.MessageType klass=Gtk.MessageType.WARNING,
+							int timeout = 0) {
+        var msg = new Gtk.MessageDialog.with_markup (null, 0, klass,
+                                                     Gtk.ButtonsType.OK, warnmsg, null);
+
+        var bin = msg.get_message_area() as Gtk.Container;
+        var glist = bin.get_children();
+		//        glist.foreach((i) => {
+		for(unowned GLib.List<weak Gtk.Widget> lp = glist.first(); lp != null; lp = lp.next) {
+			var i = lp.data;
+			if (i.get_class().get_name() == "GtkLabel")
+				((Gtk.Label)i).set_selectable(true);
+		}
+
+        if(timeout > 0 && permawarn == false) {
+            Timeout.add_seconds(timeout, () => {
+                    msg.destroy();
+                    return Source.CONTINUE;
+                });
+        }
+        msg.response.connect ((response_id) => {
+                msg.destroy();
+            });
+
+        msg.set_title("MWP Notice");
+        msg.show();
+    }
+}

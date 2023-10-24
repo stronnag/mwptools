@@ -267,17 +267,22 @@ public class Flashdl : Object {
 
     private void open_device(string d) {
         if(!msp.available) {
-            string estr;
-            if(msp.open(d, baud, out estr) == true) {
-                MWPLog.message("Opened %s\n", d);
-                Timeout.add(250, () => {
-                        msp.send_command(MSP.Cmds.FC_VARIANT, null, 0);
-                        return Source.REMOVE;
-                    });
-            } else {
-                MWPLog.message("open failed %s\n", estr);
-            }
-        }
+			msp.open_async.begin(d, baud,  (obj,res) => {
+					var ok = msp.open_async.end(res);
+					if (ok) {
+						msp.setup_reader();
+						Timeout.add(250, () => {
+								msp.send_command(MSP.Cmds.FC_VARIANT, null, 0);
+								return Source.REMOVE;
+							});
+						MWPLog.message("Opened %s\n", d);
+					} else {
+						string estr;
+						msp.get_error_message(out estr);
+						MWPLog.message("open failed %s\n", estr);
+					}
+				});
+		}
     }
 
     private void run() {
