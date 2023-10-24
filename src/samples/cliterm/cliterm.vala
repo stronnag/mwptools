@@ -70,6 +70,7 @@ class CliTerm : Object {
             });
 
 		msp.serial_event.connect((cmd, buf, len, flags, err) => {
+				//				stderr.printf("msp %u %u %s\r\n", cmd, len, err.to_string());
 				if (!err && cmd == MSP.Cmds.FC_VERSION) {
 					inavvers = buf[0];
 					if(inavvers > 4 && cli_delay != null) {
@@ -138,23 +139,31 @@ class CliTerm : Object {
 	}
 
     private void open_device(string device) {
-        string estr;
+
         print ("open %s\r\n",device);
-        if(msp.open(device, baud, out estr) == true) {
-			if(noinit == false) {
-				msp.pmode = MWSerial.ProtoMode.NORMAL;
-				msp.send_command(MSP.Cmds.FC_VERSION, null,0);
-				Timeout.add(1000,() => {
+		msp.open_async.begin(device, baud,  (obj,res) => {
+				var ok = msp.open_async.end(res);
+				if (ok) {
+					msp.setup_reader();
+					if(noinit) {
 						msp.pmode = MWSerial.ProtoMode.CLI;
-						return false;
-					});
-			} else {
-				msp.pmode = MWSerial.ProtoMode.CLI;
-			}
-        } else {
-            print("open failed %s\r\n", estr);
-        }
-    }
+					} else {
+						msp.pmode = MWSerial.ProtoMode.NORMAL;
+						msp.send_command(MSP.Cmds.FC_VERSION, null,0);
+						Timeout.add(2000,() => {
+								if (msp.pmode != MWSerial.ProtoMode.CLI) {
+									msp.pmode = MWSerial.ProtoMode.CLI;
+								}
+								return false;
+							});
+					}
+				} else {
+					string estr;
+					msp.get_error_message(out estr);
+					print("open failed %s\r\n", estr);
+				}
+			});
+	}
 
     public void run() {
         Posix.termios newtio = {0}, oldtio = {0};
