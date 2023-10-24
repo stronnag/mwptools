@@ -58,7 +58,7 @@ public class MWP : Gtk.Application {
 
     public static MWPSettings conf;
     private MWSerial msp;
-    private MWSerial fwddev;
+    private Forwarder fwddev;
     private Gtk.Button conbutton;
     private Gtk.ComboBoxText dev_entry;
     private Gtk.Label verlab;
@@ -268,12 +268,13 @@ public class MWP : Gtk.Application {
 	private struct RadarDev {
 		MWSerial dev;
 		string name;
+		uint tid;
 	}
 	private RadarDev[] radardevs;
 
     private TelemTracker ttrk;
 
-    private uint radartid = -1;
+	//    private uint radartid = -1;
 	private Sticks.StickWindow sticks;
 	private bool sticks_ok = false;
 
@@ -610,9 +611,8 @@ public class MWP : Gtk.Application {
     private string xlib;
     private bool is_wayland = false;
     private bool xnopoll = false;
-
-        /* Options parsing */
     private bool permawarn = false;
+        /* Options parsing */
     private string mission;
     private string kmlfile;
     private string serial;
@@ -976,17 +976,30 @@ public class MWP : Gtk.Application {
             lman.save_config();
         }
 
-        if(msp.available)
+        if(msp.available) {
+			//			stderr.printf("DBG close serdev\n");
             msp.close();
+		}
 #if MQTT
         if (mqtt.available)
             mqtt_available = mqtt.mdisconnect();
 #endif
+		//		stderr.printf("DBG close radardev\n");
 		foreach (var r in radardevs) {
+			if (r.tid != 0) {
+				Source.remove(r.tid);
+			}
 			if(r.dev != null && r.dev.available)
 				r.dev.close();
 		}
-        // stop any previews / replays
+		//		stderr.printf("DBG done radardev\n");
+
+		if (fwddev.available()) {
+			//			stderr.printf("DBG close fwddev\n");
+			fwddev.close();
+			//			stderr.printf("DBG done fwddev\n");
+		}
+		// stop any previews / replays
         ls.quit();
         stop_replayer();
         mss.quit();
@@ -1080,6 +1093,7 @@ public class MWP : Gtk.Application {
         } else {
 			parse_cli_options();
 		}
+		Utils.permawarn = permawarn;
 	}
 
 	private string? validate_cli_file(string fn) {
@@ -2551,8 +2565,7 @@ public class MWP : Gtk.Application {
             msp.set_relaxed(true);
         }
 
-        if(forward_device != null)
-            fwddev = new MWSerial.forwarder();
+		fwddev = new Forwarder(forward_device);
 
         radar_plot = new SList<RadarPlot?>();
 
@@ -2590,12 +2603,9 @@ public class MWP : Gtk.Application {
 					radardevs += r;
 				}
 			}
-			if(radardevs.length > 0) {
-				try_radar_dev();
-				Timeout.add_seconds(15, () => {
-						try_radar_dev();
-						return Source.CONTINUE;
-					});
+
+			foreach (var r in radardevs) {
+				try_radar_dev(r);
 			}
 		}
 
@@ -2981,7 +2991,7 @@ public class MWP : Gtk.Application {
                     audio_cb.active = true; // the user will hear this ...
                     navstatus.host_power(s);
                     MWPLog.message("%s\n", s);
-                    mwp_warning_box(s, Gtk.MessageType.ERROR, 30);
+                    Utils.warning_box(s, Gtk.MessageType.ERROR, 30);
                 });
         }
 
@@ -5986,7 +5996,7 @@ public class MWP : Gtk.Application {
 			MWPCursor.set_normal_cursor(window);
 			wp_reset_poller();
 			validatelab.set_text("⚠"); // u+26a0
-			mwp_warning_box("Upload cancelled", Gtk.MessageType.ERROR,10);
+			Utils.warning_box("Upload cancelled", Gtk.MessageType.ERROR,10);
             return;
 		}
         w.wp_no = *rp++;
@@ -6021,7 +6031,7 @@ public class MWP : Gtk.Application {
 				MWPLog.message("Download completed #%d\n", nwp);
 				validatelab.set_text("✔"); // u+2714
 			} else {
-				mwp_warning_box("Fallback safe mission, 0 points", Gtk.MessageType.INFO,10);
+				Utils.warning_box("Fallback safe mission, 0 points", Gtk.MessageType.INFO,10);
 				MWPLog.message("Fallback safe mission\n");
 			}
 			MWPCursor.set_normal_cursor(window);
@@ -6294,7 +6304,7 @@ public class MWP : Gtk.Application {
             MWPLog.message("Process MSP %s\n", cmd.to_string());
         }
 
-        if(fwddev != null && fwddev.available) {
+        if(fwddev.available()) {
             if(cmd < MSP.Cmds.LTM_BASE && conf.forward == FWDS.ALL) {
                 fwddev.send_command(cmd, raw, len);
             }
@@ -6502,7 +6512,7 @@ public class MWP : Gtk.Application {
                     navstatus.amp_hide(true);
 
                 if(conf.need_telemetry && (0 == (fmask & MSP.Feature.TELEMETRY)))
-                    mwp_warning_box("TELEMETRY requested but not enabled in iNav", Gtk.MessageType.ERROR);
+                    Utils.warning_box("TELEMETRY requested but not enabled in iNav", Gtk.MessageType.ERROR);
                 queue_cmd(MSP.Cmds.BLACKBOX_CONFIG,null,0);
                 break;
 
@@ -6522,7 +6532,7 @@ public class MWP : Gtk.Application {
                     var pct = 100 * used  / fsize;
                     MWPLog.message ("Data Flash %u /  %u (%u%%)\n", used, fsize, pct);
                     if(conf.flash_warn > 0 && pct > conf.flash_warn)
-                        mwp_warning_box("Data flash is %u%% full".printf(pct),
+                        Utils.warning_box("Data flash is %u%% full".printf(pct),
                                         Gtk.MessageType.WARNING);
                 } else
                     MWPLog.message("Flash claims to be 0 bytes!!\n");
@@ -6901,7 +6911,7 @@ public class MWP : Gtk.Application {
                                wpi.max_wp, wpi.wp_count, wpi.wps_valid);
 				if((wpmgr.wp_flag & WPDL.GETINFO) != 0) {
 					string s = "Waypoints in FC\nMax: %u / Mission points: %u Valid: %s".printf(wpi.max_wp, wpi.wp_count, (wpi.wps_valid==1) ? "Yes" : "No");
-                    mwp_warning_box(s, Gtk.MessageType.INFO, 5);
+                    Utils.warning_box(s, Gtk.MessageType.INFO, 5);
 					wpmgr.wp_flag &= ~WPDL.GETINFO;
 				}
 				if ((wpmgr.wp_flag & WPDL.DOWNLOAD) != 0) {
@@ -7209,7 +7219,7 @@ public class MWP : Gtk.Application {
                                 wpmgr.wp_flag = WPDL.RESET_POLLER;
                                 wp_reset_poller();
                             validatelab.set_text("✔"); // u+2714
-							mwp_warning_box("Mission uploaded", Gtk.MessageType.INFO,5);
+							Utils.warning_box("Mission uploaded", Gtk.MessageType.INFO,5);
 						} else if ((wpmgr.wp_flag & WPDL.FOLLOW_ME) !=0 ) {
                             request_wp(254);
                             wpmgr.wp_flag &= ~WPDL.FOLLOW_ME;
@@ -7253,7 +7263,7 @@ public class MWP : Gtk.Application {
                     if(inav)
                         queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
 					validatelab.set_text("✔"); // u+2714
-					mwp_warning_box("Mission uploaded", Gtk.MessageType.INFO,5);
+					Utils.warning_box("Mission uploaded", Gtk.MessageType.INFO,5);
 				}
                 break;
 
@@ -8442,7 +8452,7 @@ public class MWP : Gtk.Application {
 		var wps = MultiM.missonx_to_wps(msx, id);
 		var  mlim = (id == -1) ? msx.length : 1;
 		if(wps.length > wp_max || mlim > MAXMULTI) {
-			mwp_warning_box(
+			Utils.warning_box(
 				"Mission set exceeds FC limits:\nWP: %d/%d\nSegments: %d/%u".printf(wps.length, wp_max, mlim, MAXMULTI), Gtk.MessageType.ERROR);
 			return;
 		}
@@ -8480,7 +8490,7 @@ public class MWP : Gtk.Application {
                 MWPCursor.set_normal_cursor(window);
                 MWPLog.message("%s operation probably failed\n", reason);
                 string wmsg = "%s operation timeout.\nThe upload has probably failed".printf(reason);
-                mwp_warning_box(wmsg, Gtk.MessageType.ERROR);
+                Utils.warning_box(wmsg, Gtk.MessageType.ERROR);
 
                 if((wpmgr.wp_flag & WPDL.CALLBACK) != 0)
                     upload_callback(-2);
@@ -8709,7 +8719,7 @@ public class MWP : Gtk.Application {
                 msp.close();
             replayer = Player.NONE;
         }
-        if(fwddev != null && fwddev.available)
+        if(fwddev.available())
             fwddev.close();
 
         set_replay_menus(true);
@@ -8795,55 +8805,27 @@ public class MWP : Gtk.Application {
         Varios.idx = 0;
     }
 
-    private bool try_forwarder(out string fstr) {
-        fstr = null;
-        if(!fwddev.available) {
-            if(fwddev.open_w(forward_device, 0) == true) {
-                fwddev.set_mode(MWSerial.Mode.SIM);
-                MWPLog.message("set forwarder %s\n", forward_device);
-            } else {
-				fwddev.get_error_message(out fstr);
-                MWPLog.message("Forwarder %s\n", fstr);
-            }
-        }
-        return fwddev.available;
-    }
-
-    private void dump_radar_db() {
-        var dt = new DateTime.now_local ();
-        var fn  = "/tmp/radar_%s.log".printf(dt.format("%F_%H%M%S"));
-        var fp = FileStream.open(fn,"w");
-        if(fp != null) {
-			for(unowned SList<RadarPlot?>lp = radar_plot; lp != null; lp = lp.next) {
-				//            radar_plot.@foreach ((r) => {
-				var r = lp.data;
-                    fp.printf("%u\t%s\t%.6f\t%.6f\t%u/%u\t%u\t%u\t%u\t%s\n",
-                              r.id, r.name, r.latitude, r.longitude,
-                              r.lasttick, nticks, r.state, r.lq,
-                              r.source, r.posvalid.to_string());
-                }
-        }
-    }
-
-    private void try_radar_dev() {
-		foreach (var r in radardevs) {
-			string fstr = null;
-			if(!r.dev.available) {
-				if(r.dev.open (r.name, 115200, out fstr) == true) {
-					MWPLog.message("start radar reader %s\n", r.name);
-					if(rawlog)
-						r.dev.raw_logging(true);
-
-					if(radartid == -1) {
-						radartid = Timeout.add_seconds(300, () => {
-								dump_radar_db();
-								return Source.CONTINUE;
-							});
+    private void try_radar_dev(RadarDev r) {
+		if(is_shutdown)
+			return;
+		if(!r.dev.available) {
+			r.dev.open_async.begin(r.name, 0, (obj,res) => {
+					var ok = r.dev.open_async.end(res);
+					if (ok) {
+						MWPLog.message("start radar reader %s\n", r.name);
+						if(rawlog)
+							r.dev.raw_logging(true);
+					} else {
+						string fstr;
+						r.dev.get_error_message(out fstr);
+						MWPLog.message("Radar reader %s\n", fstr);
 					}
-				} else {
-					MWPLog.message("Radar reader %s\n", fstr);
-				}
-			}
+					r.tid = Timeout.add_seconds(15, () => {
+							r.tid = 0;
+							try_radar_dev(r);
+							return false;
+						});
+				});
 		}
     }
 
@@ -8869,7 +8851,6 @@ public class MWP : Gtk.Application {
 #endif
         } else {
             var serdev = dev_entry.get_active_text();
-            string estr="";
             bool ostat = false;
             if (MwpMisc.is_cygwin()) {
                 if (serdev.has_prefix("COM")) {
@@ -8879,9 +8860,8 @@ public class MWP : Gtk.Application {
             }
 
             serstate = SERSTATE.NONE;
-
             if(lookup_radar(serdev) || serdev == forward_device) {
-                mwp_warning_box("The selected device is assigned to a special function (radar / forwarding).\nPlease choose another device", Gtk.MessageType.WARNING, 60);
+                Utils.warning_box("The selected device is assigned to a special function (radar / forwarding).\nPlease choose another device", Gtk.MessageType.WARNING, 60);
                 return;
             } else if (serdev.has_prefix("mqtt://") ||
                        serdev.has_prefix("ssl://") ||
@@ -8894,73 +8874,72 @@ public class MWP : Gtk.Application {
                 nopoll = true;
                 autocon_cb.active = false;
                 serstate = SERSTATE.TELEM;
+				serial_complete_setup(serdev, ostat);
 #else
-                mwp_warning_box("MQTT is not enabled in this build\nPlease see the wiki for more information\nhttps://github.com/stronnag/mwptools/wiki/mqtt---bulletgcss-telemetry\n", Gtk.MessageType.WARNING, 60);
+                Utils.warning_box("MQTT is not enabled in this build\nPlease see the wiki for more information\nhttps://github.com/stronnag/mwptools/wiki/mqtt---bulletgcss-telemetry\n", Gtk.MessageType.WARNING, 60);
                 return;
 #endif
             } else {
                 if (ttrk.is_used(serdev)) {
-                    mwp_warning_box("The selected device is use for Telemetry Tracking\n", Gtk.MessageType.WARNING, 60);
+                    Utils.warning_box("The selected device is use for Telemetry Tracking\n", Gtk.MessageType.WARNING, 60);
 					return;
                 }
                 ttrk.disable(serdev);
                 MWPLog.message("Trying OS open for %s\n", serdev);
-                ostat = msp.open_w(serdev, conf.baudrate);
+				conbutton.sensitive = false;
+				msp.open_async.begin(serdev, conf.baudrate, (obj,res) => {
+						ostat = msp.open_async.end(res);
+						serial_complete_setup(serdev,ostat);
+					});
             }
-
-            if (ostat == true) {
-                xarm_flags=0xffff;
-                lastrx = lastok = nticks;
-                init_state();
-                init_sstats();
-                MWPLog.message("Connected %s %s\n", serdev, nopoll.to_string());
-                set_replay_menus(false);
-                if(rawlog == true) {
-                    msp.raw_logging(true);
-                }
-                conbutton.set_label("Disconnect");
-                if(forward_device != null) {
-                    string fstr;
-                    if(try_forwarder(out fstr) == false) {
-                        uint8 retry = 0;
-                        Timeout.add(500, () => {
-                                if (!msp.available)
-                                    return false;
-                                bool ret = !try_forwarder(out fstr);
-                                if(ret && retry++ == 5) {
-                                    mwp_warning_box(
-                                        "Failed to open forwarding device: %s\n".printf(fstr),
-                                        Gtk.MessageType.ERROR,10);
-                                    ret = false;
-                                }
-                                return ret;
-                            });
-                    }
-                }
-                if (!mqtt_available) {
-					var pmask = (MWSerial.PMask)(int.parse(dev_protoc.active_id));
-					set_pmask_poller(pmask);
-                    msp.setup_reader();
-					MWPLog.message("Serial ready\n");
-                    if(nopoll == false && !mqtt_available ) {
-                        serstate = SERSTATE.NORMAL;
-                        queue_cmd(MSP.Cmds.IDENT,null,0);
-                        run_queue();
-                    } else
-                        serstate = SERSTATE.TELEM;
-                }
-            } else {
-				msp.get_error_message(out estr);
-                if (autocon == false || autocount == 0) {
-                    mwp_warning_box("Unable to open serial device\n%s\nPlease verify you are a member of the owning group\nTypically \"dialout\" or \"uucp\"\n".printf(estr), Gtk.MessageType.WARNING, 60);
-                }
-                autocount = ((autocount + 1) % 12);
-            }
-            reboot_status();
         }
     }
 
-    private void anim_cb(bool forced=false) {
+	private void serial_complete_setup(string serdev, bool ostat) {
+		conbutton.sensitive = true;
+		if (ostat == true) {
+			xarm_flags=0xffff;
+			lastrx = lastok = nticks;
+			init_state();
+			init_sstats();
+			MWPLog.message("Connected %s %s\n", serdev, nopoll.to_string());
+			set_replay_menus(false);
+			if(rawlog == true) {
+				msp.raw_logging(true);
+			}
+			conbutton.set_label("Disconnect");
+			if(forward_device != null) {
+				fwddev.try_open(msp);
+			}
+			if (!mqtt_available) {
+				var pmask = (MWSerial.PMask)(int.parse(dev_protoc.active_id));
+				set_pmask_poller(pmask);
+				msp.setup_reader();
+				MWPLog.message("Serial ready\n");
+				if(nopoll == false && !mqtt_available ) {
+					serstate = SERSTATE.NORMAL;
+					queue_cmd(MSP.Cmds.IDENT,null,0);
+					run_queue();
+				} else
+					serstate = SERSTATE.TELEM;
+			}
+		} else {
+			string estr = null;
+			msp.get_error_message(out estr);
+			if (autocon == false || autocount == 0) {
+				Utils.warning_box("""Unable to open serial device:
+Error: <i>%s</i>
+
+* Check that <u>%s</u> is available / connected.
+* Please verify you are a member of the owning group, typically 'dialout' or 'uucp'""".printf(estr, serdev), Gtk.MessageType.WARNING, 60);
+			}
+			autocount = ((autocount + 1) % 12);
+		}
+		reboot_status();
+	}
+
+
+	private void anim_cb(bool forced=false) {
         if(pos_is_centre) {
             poslabel.set_text(PosFormat.pos(ly,lx,conf.dms));
             if (map_moved() || forced) {
@@ -9204,7 +9183,7 @@ public class MWP : Gtk.Application {
 				mlim++;
 			}
 			if (mlim > MAXMULTI) {
-				mwp_warning_box("Mission set count (%d) exceeds firmware maximum of 9.\nYou will not be able to download the whole set to the FC".printf(mlim), Gtk.MessageType.WARNING, 30);
+				Utils.warning_box("Mission set count (%d) exceeds firmware maximum of 9.\nYou will not be able to download the whole set to the FC".printf(mlim), Gtk.MessageType.WARNING, 30);
 			}
 		} else {
 			msx = _msx;
@@ -9212,7 +9191,7 @@ public class MWP : Gtk.Application {
 		}
 
 		if (nwp > wp_max) {
-			mwp_warning_box("Total number of WP (%u) exceeds firmware maximum (%u).\nYou will not be able to download the whole set to the FC".printf(nwp,wp_max), Gtk.MessageType.WARNING, 30);
+			Utils.warning_box("Total number of WP (%u) exceeds firmware maximum (%u).\nYou will not be able to download the whole set to the FC".printf(nwp,wp_max), Gtk.MessageType.WARNING, 30);
 		}
 		if (msx.length > 0) {
 			_ms = setup_mission_from_mm();
@@ -9345,7 +9324,7 @@ public class MWP : Gtk.Application {
             last_file = fname;
             update_title_from_file(fname);
         } else if (warn) {
-			mwp_warning_box("Failed to open file");
+			Utils.warning_box("Failed to open file");
 		}
     }
 
@@ -9394,34 +9373,6 @@ public class MWP : Gtk.Application {
         return bb;
     }
 
-    public void mwp_warning_box(string warnmsg,
-                                 Gtk.MessageType klass=Gtk.MessageType.WARNING,
-                                 int timeout = 0) {
-        var msg = new Gtk.MessageDialog.with_markup (window, 0, klass,
-                                                     Gtk.ButtonsType.OK, warnmsg, null);
-
-        var bin = msg.get_message_area() as Gtk.Container;
-        var glist = bin.get_children();
-		//        glist.foreach((i) => {
-		for(unowned GLib.List<weak Gtk.Widget> lp = glist.first(); lp != null; lp = lp.next) {
-			var i = lp.data;
-			if (i.get_class().get_name() == "GtkLabel")
-				((Gtk.Label)i).set_selectable(true);
-		}
-
-        if(timeout > 0 && permawarn == false) {
-            Timeout.add_seconds(timeout, () => {
-                    msg.destroy();
-                    return Source.CONTINUE;
-                });
-        }
-        msg.response.connect ((response_id) => {
-                msg.destroy();
-            });
-
-        msg.set_title("MWP Notice");
-        msg.show();
-    }
 
     private void on_file_open(bool append=false) {
         Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
@@ -9912,7 +9863,7 @@ public class MWP : Gtk.Application {
 				start_download();
 			}
 		} else {
-			mwp_warning_box("No WPs in FC to download\nMaybe 'Restore' is needed?",
+			Utils.warning_box("No WPs in FC to download\nMaybe 'Restore' is needed?",
 							Gtk.MessageType.WARNING, 10);
 		}
     }
