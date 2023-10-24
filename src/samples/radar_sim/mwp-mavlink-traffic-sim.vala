@@ -109,8 +109,6 @@ public class RadarSim : Object {
     }
 
     private void open_serial() {
-        bool res;
-        string estr;
         msp = new MWSerial();
         msp.set_mode(MWSerial.Mode.SIM);
 		msp.open_async.begin(dev, baud,  (obj,res) => {
