@@ -1737,7 +1737,7 @@ public class ListBox : GLib.Object {
                 todel += i;
             } else {
                 var msg = "Cowardly refusing to delete JUMP target  WP %d".printf(i);
-                mp.mwp_warning_box(msg, Gtk.MessageType.ERROR, 60);
+                Utils.warning_box(msg, Gtk.MessageType.ERROR, 60);
                 return;
             }
         }
@@ -2392,7 +2392,7 @@ public class ListBox : GLib.Object {
                             mp.markers.add_list_store(this);
                         }
                     } else {
-                        mp.mwp_warning_box("Plot Error: %s".printf(lastline), Gtk.MessageType.ERROR, 60);
+                        Utils.warning_box("Plot Error: %s".printf(lastline), Gtk.MessageType.ERROR, 60);
                     }
                     FileUtils.unlink(outfn);
                     if(replname != null)

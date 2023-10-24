@@ -44,7 +44,6 @@ class FCMgr :Object {
     private uint8 [] inbuf;
     private uint inp = 0;
     private uint linp = 0;
-    private string estr="";
     private bool logging = false;
     private State state;
     private uint tid = 0;
@@ -339,21 +338,29 @@ class FCMgr :Object {
 
         dmgr.device_added.connect((sdev) => {
                 MWPLog.message("Discovered %s\n", sdev);
-                if(!msp.available)
-                    if(sdev == dev || dev == null)
-                        if(msp.open(sdev, baud, out estr) == false)
-                            MWPLog.message("Failed to open %s\n", estr);
-                        else {
-                            if(tid != 0) {
-                                Source.remove(tid);
-                                tid = 0;
-                            }
-                            msp.pmode = MWSerial.ProtoMode.NORMAL;
-                            tid = Timeout.add_seconds(1, () => {
-                                    try_connect();
-                                    return true;
-                                });
-                        }
+                if(!msp.available) {
+                    if(sdev == dev || dev == null) {
+						msp.open_async.begin(sdev, baud,  (obj,res) => {
+								var ok = msp.open_async.end(res);
+								if (ok) {
+									if(tid != 0) {
+										Source.remove(tid);
+										tid = 0;
+									}
+									msp.setup_reader();
+									msp.pmode = MWSerial.ProtoMode.NORMAL;
+									tid = Timeout.add_seconds(1, () => {
+											try_connect();
+											return true;
+										});
+								} else {
+									string estr;
+									msp.get_error_message(out estr);
+									MWPLog.message("Failed to open %s\n", estr);
+								}
+							});
+					}
+				}
             });
 
         dmgr.device_removed.connect((sdev) => {
@@ -476,12 +483,18 @@ class FCMgr :Object {
             });
 
         if(dev != null)
-            if(msp.open(dev, baud, out estr) == false) {
-                MWPLog.message("open failed %s\n", estr);
-            } else {
-                MWPLog.message("Opening %s\n", dev);
-                etid = Idle.add(() => { try_connect(); return false; });
-            }
+			msp.open_async.begin(dev, baud, (obj,res) => {
+					var ok = msp.open_async.end(res);
+					if (ok) {
+						MWPLog.message("Opening %s\n", dev);
+						msp.setup_reader();
+						etid = Idle.add(() => { try_connect(); return false; });
+					} else {
+						string estr;
+						msp.get_error_message(out estr);
+						MWPLog.message("open failed %s\n", estr);
+					}
+				});
     }
 
     public void run() {

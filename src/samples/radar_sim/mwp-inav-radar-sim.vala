@@ -244,28 +244,33 @@ public class RadarSim : Object {
         msp = new MWSerial();
         msp.set_mode(MWSerial.Mode.NORMAL);
         stderr.printf("Set up serial %s\n", dev);
-        bool res;
-        string estr;
-        if((res = msp.open(dev, baud, out estr)) == true) {
-            msp.serial_lost.connect(() => {
-                    stderr.printf("Lost connection\n");
-                    if(tid > 0) {
-                        Source.remove(tid);
-                        tid = 0;
-                    }
-                    Timeout.add_seconds(10, () => {
-                            open_serial();
-                            return Source.REMOVE;
-                        });
-                });
-            msp.serial_event.connect((s,cmd,raw,len,xflags,errs) => {
-                    handle_radar(cmd,raw,len,xflags,errs);
-                });
-            msp.send_command(MSP.Cmds.NAME, null, 0);
-        } else {
-            MWPLog.message("open failed serial %s %s\n", dev, estr);
-            ml.quit();
-        }
+
+		msp.open_async.begin(dev, baud,  (obj,res) => {
+				var ok = msp.open_async.end(res);
+				if (ok) {
+					msp.setup_reader();
+					msp.serial_lost.connect(() => {
+							stderr.printf("Lost connection\n");
+							if(tid > 0) {
+								Source.remove(tid);
+								tid = 0;
+							}
+							Timeout.add_seconds(10, () => {
+									open_serial();
+									return Source.REMOVE;
+								});
+						});
+					msp.serial_event.connect((s,cmd,raw,len,xflags,errs) => {
+							handle_radar(cmd,raw,len,xflags,errs);
+						});
+					msp.send_command(MSP.Cmds.NAME, null, 0);
+				} else {
+					string estr;
+					msp.get_error_message(out estr);
+					MWPLog.message("open failed serial %s %s\n", dev, estr);
+					ml.quit();
+				}
+			});
     }
 
     private void transmit_radar(RadarPlot r) {
