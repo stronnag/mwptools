@@ -18,6 +18,9 @@ mwpcommon = files('btdev.c',
 		  'json_io.vala',
 		  'devman.vala')
 
+
+
+
 clicommon = files('btdev.c',
 	    	  'cserial.c',
 		  'serial-device.vala',
@@ -56,14 +59,22 @@ apcommon = files('utils.vala',
 		 'geocalc.vala',
 		 'mspcmd.vala')
 
+
 common_inc_dir = []
 common_inc_dir += include_directories('.')
 vapi_dir = meson.current_source_dir()
 
-#install_data(
-#  'mwp_icon.svg',
-#  rename:  'mwp.svg',
-#  install_dir: get_option('datadir') / 'mwp'
-#)
+gatt_c_args = []
+gatt_deps = []
+ldirs = ['/usr/lib', '/usr/local/lib']
+gattlib = meson.get_compiler('c').find_library('gattlib', dirs: ldirs, required: false)
+if gattlib.found()
+  gatt_c_args += '-D HAVE_GATTLIB'
+  gatt_deps += gattlib
+endif
+
+gatt_deps += dependency('gio-2.0')
+gatt_src = files('mwp-gatt-bridge.c')
+gatt_v_args = [ '--pkg', 'mwp-gatt-bridge' ]
 
 install_data('mwp_icon.svg', install_dir: get_option('datadir') / 'icons/hicolor/scalable/apps')

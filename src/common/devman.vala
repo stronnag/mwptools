@@ -22,7 +22,14 @@
 
 public enum DevMask {
     USB = 1,
-    BT = 2
+    BT = 2,
+	BTLE = 4,
+}
+
+public struct DevDef {
+        string name;
+        string alias;
+        DevMask type;
 }
 
 #if LINUX
@@ -31,14 +38,15 @@ public class DevManager {
     private DBusObjectManager manager;
     private BluezAdapterProperties adapter;
     private HashTable<ObjectPath, HashTable<string, HashTable<string, Variant>>> objects;
-    public signal void device_added (string s);
+    public signal void device_added (DevDef dd);
     public signal void device_removed (string s);
-    private string[] bt_serials;
+	public static SList<DevDef?> serials;
     private DevMask mask;
 
-    public DevManager(DevMask _dm=(DevMask.BT|DevMask.USB)) {
+    public DevManager(DevMask _dm=(DevMask.BT|DevMask.BTLE|DevMask.USB)) {
         mask = _dm;
-        bt_serials={};
+		serials = new SList<DevDef?>();
+		//usb_serials = new SList<DevDef?>();
         uc = new GUdev.Client({"tty"});
         uc.uevent.connect((action,dev) => {
                 if(dev.get_property("ID_BUS") == "usb") {
@@ -47,9 +55,17 @@ public class DevManager {
                         switch (action) {
                             case "add":
                                 print_device(dev);
-                                device_added(ds);
+								var dd = usbdesc(dev);
+                                device_added(dd);
                                 break;
                             case "remove":
+								for( unowned var lp = serials; lp != null; ) {
+									unowned var xlp = lp;
+									lp = lp.next;
+									if(((DevDef)xlp.data).name == ds) {
+                                        serials.remove_link(xlp);
+									}
+								}
                                 device_removed(ds);
                                 break;
                         }
@@ -86,10 +102,6 @@ public class DevManager {
         }
     }
 
-    public string[] get_bt_serial_devices() {
-        return bt_serials;
-    }
-
     private void find_adapter() {
 		//        objects.foreach((path, ifaces) => {
 		List <unowned ObjectPath> lk = objects.get_keys();
@@ -107,16 +119,20 @@ public class DevManager {
     private void add_device(ObjectPath path, HashTable<string, Variant> props) {
         var uuids = props.get("UUIDs");
         var u0 = uuids.get_strv();
-        if (u0 != null && u0[0] != null) {
-            if(u0[0].contains("00001101")) {
-                StringBuilder sb = new StringBuilder(props.get("Address").get_string());
-                sb.append_c(' ');
-                sb.append(props.get("Alias").get_string());
-                bt_serials += sb.str;
-                if((mask & DevMask.BT) != 0)
-                    device_added(sb.str);
-            }
-        }
+		foreach(var u in u0) {
+			if(u.contains("00001101") ||
+			   u == "0000abf0-0000-1000-8000-00805f9b34fb" ||
+			   u == "0000ffe0-0000-1000-8000-00805f9b34fb" ||
+			   u == "6e400001-b5a3-f393-e0a9-e50e24dcca9e" ||
+			   u == "00001000-0000-1000-8000-00805f9b34fb") {
+				DevDef dd = {};
+				dd.name = props.get("Address").get_string();
+				dd.alias = props.get("Alias").get_string();
+				dd.type = u.contains("00001101") ? DevMask.BT : DevMask.BTLE;
+				serials.append(dd);
+				device_added(dd);
+			}
+		}
     }
 
     private void find_devices() {
@@ -143,17 +159,34 @@ public class DevManager {
             add_device(path, props);
     }
 
-    public string[] get_serial_devices() {
-        string [] dlist={};
+    public void get_serial_devices() {
         var devs = uc.query_by_subsystem("tty");
         foreach (var d in devs) {
             if(d.get_property("ID_BUS") == "usb") {
                 print_device(d);
-                dlist += d.get_device_file().dup();
+				var dd = usbdesc(d);
+				device_added(dd);
             }
         }
-        return dlist;
     }
+	private DevDef usbdesc(GUdev.Device dev) {
+		DevDef dd = {};
+		dd.name = dev.get_device_file().dup();
+		dd.alias =  dev.get_property("ID_MODEL").dup();
+		dd.type = DevMask.USB;
+		serials.append(dd);
+		return dd;
+	}
+
+	public static DevMask get_type_for_name(string name) {
+		for( unowned SList<DevDef?> lp = serials; lp != null; lp = lp.next) {
+			var dd = (DevDef)lp.data;
+			if(dd.name == name) {
+				return dd.type;
+			}
+		}
+		return 0;
+	}
 }
 
 /*
@@ -504,7 +537,7 @@ public class BluezDevice : BluezInterface {
 #else
 public class DevManager {
     private string []empty_devs;
-    public signal void device_added (string s);
+    public signal void device_added (DevDef s);
     public signal void device_removed (string s);
     private DevMask mask;
 
@@ -512,22 +545,27 @@ public class DevManager {
         mask = _dm;
         empty_devs={};
     }
-
-    public string[] get_bt_serial_devices() {
-        return empty_devs;
-    }
-
-    public string[] get_serial_devices() {
-        return empty_devs;
-    }
 }
 #endif
 
 #if TEST
+
+namespace MWPLog {
+    void message(string format, ...) {
+        var args = va_list();
+        var now = new DateTime.now_local ();
+        StringBuilder sb = new StringBuilder();
+        sb.append(now.format("%T.%f"));
+        sb.append_c(' ');
+        sb.append_vprintf(format, args);
+        stderr.puts(sb.str);
+    }
+}
+
 public int main(string?[] args) {
     var d =  new DevManager();
-    d.device_added.connect((s) => {
-            print("Add %s\n", s);
+    d.device_added.connect((dd) => {
+            print("Add %s %s %d\n", dd.name, dd.alias, dd.type);
         });
     d.device_removed.connect((s) => {
             print("Remove %s\n", s);

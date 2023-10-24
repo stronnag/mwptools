@@ -99,7 +99,7 @@ public class TelemTracker {
 		string devalias = null;
         MWSerial.PMask pmask = MWSerial.PMask.AUTO;
         var parts = sname.split(",", 3);
-		var sparts = parts[0].split(" ");
+		var sparts = parts[0].split(" ",2);
 		devname = sparts[0];
 		if (sparts.length > 1) {
 			devalias = sparts[1];

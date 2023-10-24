@@ -1,4 +1,4 @@
-project('mwptools', 'c', 'vala', version : '6.297.689')
+project('mwptools', 'c', 'vala', version : '6.297.769')
 
 # vala / clang16 workaround
 if meson.get_compiler('c').get_id() == 'clang'
@@ -26,28 +26,44 @@ subdir('docs')
 configuration_inc = include_directories('.')
 
 executable('mwp',
-	   sources: [mwpsrcs, mwpcommon, mwpvers_h],
-	   dependencies: mwpdeps,
+	   sources: [mwpsrcs, mwpcommon, gatt_src, mwpvers_h],
+	   dependencies: [mwpdeps, gatt_deps],
 	   link_with: libmwpvers,
 	   include_directories : [common_inc_dir, configuration_inc],
-	   vala_args : [dopts, mwp_v_args],
-	   c_args: mwp_c_args,
-	   install : true)
+	   vala_args : [dopts, mwp_v_args, gatt_v_args],
+	   c_args: [mwp_c_args, gatt_c_args],
+	   install : true
+          )
 
-executable('cliterm', sources: [clisrcs, clicommon], dependencies: [ clideps ],
-  include_directories : common_inc_dir, vala_args : [dopts, cli_v_args], install : true)
+executable('cliterm',
+           sources: [clisrcs, clicommon, gatt_src],
+           dependencies: [ clideps, gatt_deps ],
+           include_directories : common_inc_dir,
+           vala_args : [dopts, cli_v_args, gatt_v_args ],
+           c_args: gatt_c_args,
+           install : true)
 
-executable('bproxy', sources: bproxsrc, dependencies: [ proxdeps ],
-	   vala_args : dopts, install : true)
+executable('bproxy',
+           sources: bproxsrc,
+           dependencies: [ proxdeps ],
+	   vala_args : dopts,
+           install : true)
 
-executable('fc-get', sources: [fcsrcs, fccommon], dependencies: [ fcdeps ],
-  include_directories : common_inc_dir, vala_args : [dopts, fc_v_args], install : true)
+executable('fc-get',
+           sources: [fcsrcs, fccommon, gatt_src],
+           dependencies: [ fcdeps, gatt_deps ],
+           include_directories : common_inc_dir,
+           vala_args : [dopts, fc_v_args, gatt_v_args ],
+           c_args: gatt_c_args,
+           install : true)
 
-executable('ublox-geo',sources: [ ublxgsrcs, ublxguisrc, ublxgcommon]
-	   , dependencies: [ ublxgdeps ],
+executable('ublox-geo',
+           sources: [ ublxgsrcs, ublxguisrc, ublxgcommon],
+	   dependencies: [ ublxgdeps ],
 	   include_directories : common_inc_dir,
 	   vala_args : [dopts, ublx_v_args],
-	   install:false, build_by_default: false )
+	   install:false,
+           build_by_default: false )
 
 executable('ublox-cli', sources: [ublxcsrcs, ublxccommon], dependencies: [ ublxcdeps ],
 	   include_directories : common_inc_dir, vala_args : [dopts, ublx_v_args],
@@ -57,12 +73,19 @@ executable('mwp-area-planner', sources: [apsrcs, apuisrcs, apcommon], dependenci
 	   include_directories : common_inc_dir, vala_args : [dopts, ap_v_args],
 	   install:true )
 
-executable('flashdl', sources: [fdlsrcs, fccommon], dependencies: [ fdldeps ],
-	   include_directories : common_inc_dir, vala_args : [dopts, fdl_v_args],
-	   install : false, build_by_default: false )
+executable('flashdl',
+           sources: [fdlsrcs, fccommon],
+           dependencies: [ fdldeps ],
+	   include_directories : common_inc_dir,
+           vala_args : [dopts, fdl_v_args],
+	   install : false,
+           build_by_default: false )
 
-executable('gmproxy', sources: proxsrc, dependencies: [ proxdeps ],
-	   vala_args : dopts,  install : false)
+executable('gmproxy',
+           sources: proxsrc,
+           dependencies: [ proxdeps ],
+	   vala_args : dopts,
+           install : false)
 
 subdir('src/bbox-replay')
 

@@ -455,9 +455,9 @@ public class DirnBox : GLib.Object {
         var grid2 = builder.get_object ("dgrid2") as Gtk.Grid;
         dlabel1  = builder.get_object ("dlabel1") as Gtk.Label;
         dlabel2  = builder.get_object ("dlabel2") as Gtk.Label;
-        dbox = new Gtk.Box ((horz) ? Gtk.Orientation.HORIZONTAL : Gtk.Orientation.VERTICAL, 0);
-        dbox.pack_start(grid1, true, true,0);
-        dbox.pack_start(grid2, true, true,0);
+        dbox = new Gtk.Box ((horz) ? Gtk.Orientation.HORIZONTAL : Gtk.Orientation.VERTICAL, 2);
+        dbox.pack_start(grid1, true, true, 2);
+        dbox.pack_start(grid2, true, true, 2);
 		dbox.size_allocate.connect((a) => {
 				if (a.width != last_w) {
 					last_w = a.width;
