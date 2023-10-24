@@ -8902,7 +8902,7 @@ public class MWP : Gtk.Application {
 			lastrx = lastok = nticks;
 			init_state();
 			init_sstats();
-			MWPLog.message("Connected %s %s\n", serdev, nopoll.to_string());
+			MWPLog.message("Connected %s (nopoll %s)\n", serdev, nopoll.to_string());
 			set_replay_menus(false);
 			if(rawlog == true) {
 				msp.raw_logging(true);
@@ -8915,7 +8915,7 @@ public class MWP : Gtk.Application {
 				var pmask = (MWSerial.PMask)(int.parse(dev_protoc.active_id));
 				set_pmask_poller(pmask);
 				msp.setup_reader();
-				MWPLog.message("Serial ready\n");
+				MWPLog.message("Serial %s ready\n", serdev);
 				if(nopoll == false && !mqtt_available ) {
 					serstate = SERSTATE.NORMAL;
 					queue_cmd(MSP.Cmds.IDENT,null,0);
