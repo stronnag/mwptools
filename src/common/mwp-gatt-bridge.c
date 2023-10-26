@@ -212,7 +212,7 @@ char * mwp_gatt_devnode(gattclient_t *gc) {
 }
 #else
 
-void mwp_gatt_bridge(gattclient_t *gc, int *done) {
+void mwp_gatt_bridge(gattclient_t *gc) {
 }
 gattclient_t * new_mwp_gatt(char *uuid, int*status) {
   if (status) {
@@ -222,29 +222,5 @@ gattclient_t * new_mwp_gatt(char *uuid, int*status) {
 }
 char * mwp_gatt_devnode(gattclient_t *gc) {
   return NULL;
-}
-#endif
-
-#ifdef TEST
-int done = 0;
-void cc_handler(int dummy) {
-  done = 1;
-}
-
-int main(int argc, char *argv[]) {
-  char* devid;
-  gattclient_t *gc;
-  int ret = 0;
-
-  devid = (argc == 2) ? argv[1] : "60:55:F9:A5:7B:16";
-  gc = new_mwp_gatt(devid, &ret);
-  if (gc != NULL) {
-    printf("PTS = %s\n", mwp_gatt_devnode(gc));
-    signal(SIGINT, cc_handler);
-    mwp_gatt_bridge(gc, &done);
-  } else {
-    fprintf(stderr, "failed to open %s %d\n", devid, ret);
-  }
-  return 0;
 }
 #endif
