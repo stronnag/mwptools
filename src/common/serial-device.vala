@@ -883,6 +883,7 @@ public class MWSerial : Object {
 				var gc = new GattClient (device, out status);
 				if (gc != null) {
 					unowned var gatdev = gc.get_devnode();
+					MWPLog.message("Mapping GATT channels to %s\n", gatdev);
 					commode = ComMode.STREAM|ComMode.TTY;
 					fd = MwpSerial.open(gatdev, (int)rate);
 					gatt_async.begin(gc, (obj,res) => {

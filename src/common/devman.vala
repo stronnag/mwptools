@@ -103,7 +103,6 @@ public class DevManager {
     }
 
     private void find_adapter() {
-		//        objects.foreach((path, ifaces) => {
 		List <unowned ObjectPath> lk = objects.get_keys();
 		for (unowned var lp = lk.first(); lp != null; lp = lp.next) {
 			var path = lp.data;
@@ -116,21 +115,35 @@ public class DevManager {
         }
     }
 
+	private bool extant (string name) {
+		bool found = false;
+		for(unowned var lp = serials; lp != null; lp = lp.next) {
+			if (((DevDef)lp.data).name == name) {
+				found = true;
+				break;
+			}
+		}
+		return found;
+	}
+
     private void add_device(ObjectPath path, HashTable<string, Variant> props) {
-        var uuids = props.get("UUIDs");
-        var u0 = uuids.get_strv();
-		foreach(var u in u0) {
-			if(u.contains("00001101") ||
-			   u == "0000abf0-0000-1000-8000-00805f9b34fb" ||
-			   u == "0000ffe0-0000-1000-8000-00805f9b34fb" ||
-			   u == "6e400001-b5a3-f393-e0a9-e50e24dcca9e" ||
-			   u == "00001000-0000-1000-8000-00805f9b34fb") {
-				DevDef dd = {};
-				dd.name = props.get("Address").get_string();
-				dd.alias = props.get("Alias").get_string();
-				dd.type = u.contains("00001101") ? DevMask.BT : DevMask.BTLE;
-				serials.append(dd);
-				device_added(dd);
+		var name = props.get("Address").get_string();
+		if (!extant(name)) {
+			var uuids = props.get("UUIDs");
+			var u0 = uuids.get_strv();
+			foreach(var u in u0) {
+				if(u.has_prefix("00001101-0000-1000-8000") ||
+				   u == "0000abf0-0000-1000-8000-00805f9b34fb" ||
+				   u == "0000ffe0-0000-1000-8000-00805f9b34fb" ||
+				   u == "6e400001-b5a3-f393-e0a9-e50e24dcca9e" ||
+				   u == "00001000-0000-1000-8000-00805f9b34fb") {
+					DevDef dd = {};
+					dd.name = name;
+					dd.alias = props.get("Alias").get_string();
+					dd.type = u.contains("00001101") ? DevMask.BT : DevMask.BTLE;
+					serials.append(dd);
+					device_added(dd);
+				}
 			}
 		}
     }

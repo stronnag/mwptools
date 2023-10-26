@@ -1213,6 +1213,9 @@ public class MWP : Gtk.Application {
 #if MQTT
         MWPLog.message("MQTT enabled via the \"%s\" library\n", MwpMQTT.provider());
 #endif
+#if GATTLIB
+        MWPLog.message("BLE serial enabled\n");
+#endif
         vbsamples = new float[MAXVSAMPLE];
 
         devman = new DevManager();
