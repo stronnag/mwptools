@@ -545,6 +545,9 @@ public class DevManager {
         mask = _dm;
 		serials = new SList<DevDef?>();
     }
+    public void get_serial_devices() {
+	}
+
 	public static DevMask get_type_for_name(string name) {
 		return 0;
 	}
