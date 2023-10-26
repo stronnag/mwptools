@@ -137,12 +137,15 @@ public class DevManager {
 				   u == "0000ffe0-0000-1000-8000-00805f9b34fb" ||
 				   u == "6e400001-b5a3-f393-e0a9-e50e24dcca9e" ||
 				   u == "00001000-0000-1000-8000-00805f9b34fb") {
-					DevDef dd = {};
-					dd.name = name;
-					dd.alias = props.get("Alias").get_string();
-					dd.type = u.contains("00001101") ? DevMask.BT : DevMask.BTLE;
-					serials.append(dd);
-					device_added(dd);
+					var alias = props.get("Alias").get_string();
+					if (!alias.contains("Keyboard")) { // yes, I have one (not SB t1)
+						DevDef dd = {};
+						dd.name = name;
+						dd.alias = alias;
+						dd.type = u.contains("00001101") ? DevMask.BT : DevMask.BTLE;
+						serials.append(dd);
+						device_added(dd);
+					}
 				}
 			}
 		}
