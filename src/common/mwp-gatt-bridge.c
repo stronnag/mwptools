@@ -214,13 +214,18 @@ char * mwp_gatt_devnode(gattclient_t *gc) {
 
 void mwp_gatt_bridge(gattclient_t *gc) {
 }
+
 gattclient_t * new_mwp_gatt(char *uuid, int*status) {
   if (status) {
     *status = GATT_UNAVAIL;
   }
   return NULL;
 }
+
 char * mwp_gatt_devnode(gattclient_t *gc) {
   return NULL;
+}
+
+void mwp_gatt_close(gattclient_t *gc) {
 }
 #endif
