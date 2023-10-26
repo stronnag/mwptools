@@ -331,16 +331,23 @@ class FCMgr :Object {
         msp = new MWSerial();
         oldmode  =  msp.pmode;
         mode = (issetting) ? Mode.SET : Mode.GET;
-        dmgr = new DevManager(DevMask.USB);
-        var devs = dmgr.get_serial_devices();
-        if(devs.length == 1)
-            dev = devs[0];
+        dmgr = new DevManager();
+        dmgr.get_serial_devices();
+
+		if(dev == null) {
+			if(DevManager.serials.length() == 1) {
+				var dx = DevManager.serials.nth_data(0);
+				if (dx.type == DevMask.USB) {
+					dev = dx.name;
+				}
+			}
+		}
 
         dmgr.device_added.connect((sdev) => {
-                MWPLog.message("Discovered %s\n", sdev);
+				//                MWPLog.message("Discovered %s\n", sdev.name);
                 if(!msp.available) {
-                    if(sdev == dev || dev == null) {
-						msp.open_async.begin(sdev, baud,  (obj,res) => {
+                    if(sdev.name == dev || dev == null) {
+						msp.open_async.begin(sdev.name, baud,  (obj,res) => {
 								var ok = msp.open_async.end(res);
 								if (ok) {
 									if(tid != 0) {

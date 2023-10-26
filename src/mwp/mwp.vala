@@ -1213,10 +1213,13 @@ public class MWP : Gtk.Application {
 #if MQTT
         MWPLog.message("MQTT enabled via the \"%s\" library\n", MwpMQTT.provider());
 #endif
+#if GATTLIB
+        MWPLog.message("BLE serial enabled\n");
+#endif
         vbsamples = new float[MAXVSAMPLE];
 
         devman = new DevManager();
-
+		devman.get_serial_devices();
         hwstatus[0] = 1; // Assume OK
 
         conf = new MWPSettings();
@@ -2642,8 +2645,9 @@ public class MWP : Gtk.Application {
             });
 
 #endif
-        devman.device_added.connect((s) => {
-                if(s != null && s.contains(" ") || msp.available)
+        devman.device_added.connect((dd) => {
+				string s = devname_for_dd(dd);
+                if(dev_is_bt(dd) || msp.available)
                     append_combo(dev_entry, s);
                 else
                     prepend_combo(dev_entry, s);
@@ -4542,19 +4546,35 @@ public class MWP : Gtk.Application {
         return ret;
     }
 
+	private bool dev_is_bt(DevDef dd) {
+		return ((dd.type & (DevMask.BT|DevMask.BTLE)) != 0);
+	}
+
+	private string devname_for_dd(DevDef dd) {
+		StringBuilder sbd = new StringBuilder();
+		sbd.append(dd.name);
+		sbd.append_c(' ');
+		sbd.append(dd.alias);
+		return sbd.str;
+	}
+
     public void build_serial_combo() {
         dev_entry.remove_all ();
-        foreach (var s in devman.get_serial_devices()) {
-			prepend_combo(dev_entry, s);
-		}
+		DevManager.serials.foreach((dd) => {
+				if (!dev_is_bt(dd)) {
+					prepend_combo(dev_entry, devname_for_dd(dd));
+				}
+			});
 
         foreach(string a in conf.devices) {
             dev_entry.append_text(a);
         }
 
-        foreach (var s in devman.get_bt_serial_devices()) {
-			append_combo(dev_entry, s);
-		}
+		DevManager.serials.foreach((dd) => {
+				if (dev_is_bt(dd)) {
+					append_combo(dev_entry, devname_for_dd(dd));
+				}
+			});
     }
 
     private string?[] list_combo(Gtk.ComboBoxText cbtx, int id=0) {

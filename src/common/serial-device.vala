@@ -446,6 +446,7 @@ public class MWSerial : Object {
 	private PMask pmask;
 	private bool mpm_auto = false;
 	private int lasterr = 0;
+	private DevMask dtype;
 	public static bool debug;
 
 	public enum MemAlloc {
@@ -564,7 +565,14 @@ public class MWSerial : Object {
         }
     }
 
-    public int randomUDP(int[] res) {
+	public void set_dmask(DevMask dm) {
+		dtype = dm;
+	}
+	public DevMask get_dmask() {
+		return dtype;
+	}
+
+	public int randomUDP(int[] res) {
         int result = -1;
         setup_ip(null,0);
         if (fd > -1) {
@@ -825,6 +833,17 @@ public class MWSerial : Object {
         return host;
     }
 
+
+	public async bool gatt_async (GattClient gc) {
+        var thr = new Thread<bool> ("mwp-ble", () => {
+                        gc.bridge();
+                        Idle.add (gatt_async.callback);
+                        return true;
+                });
+        yield;
+        return thr.join();
+	}
+
 	public bool open_w (string _device, uint rate) {
 		string device;
         int n;
@@ -838,10 +857,46 @@ public class MWSerial : Object {
 		commode = 0;
 
 		if(device.length == 17 && device[2] == ':' && device[5] == ':' && device[8] == ':' && device[11] == ':' && device[14] == ':') {
-			fd = BTSocket.connect(device, &lasterr);
-			if (fd != -1) {
-				commode = ComMode.FD|ComMode.STREAM|ComMode.BT;
-				set_noblock();
+			int dmask = 0;
+			int ncnt = 0;
+			while (( dmask = DevManager.get_type_for_name(device)) == 0) {
+				Thread.usleep(1000);
+				ncnt += 1;
+				if(ncnt > 5000)
+					break;
+			}
+			if (dmask == 0) {
+				fd = -1;
+				available = false;
+				lasterr = Posix.ETIMEDOUT;
+				return false;
+			}
+
+			if(dmask == DevMask.BT) {
+				fd = BTSocket.connect(device, &lasterr);
+				if (fd != -1) {
+					commode = ComMode.FD|ComMode.STREAM|ComMode.BT;
+					set_noblock();
+				}
+			} else {
+				int status = 0;
+				var gc = new GattClient (device, out status);
+				if (gc != null) {
+					unowned var gatdev = gc.get_devnode();
+					MWPLog.message("Mapping GATT channels to %s\n", gatdev);
+					commode = ComMode.STREAM|ComMode.TTY;
+					fd = MwpSerial.open(gatdev, (int)rate);
+					gatt_async.begin(gc, (obj,res) => {
+							gatt_async.end(res);
+							gc = null;
+						});
+				} else {
+					stderr.printf("BLE Fails, %d\n", status);
+					fd = -1;
+					available = false;
+					lasterr = Posix.ETIMEDOUT;
+					return false;
+				}
 			}
 		} else {
 			var u = UriParser.parse(device);

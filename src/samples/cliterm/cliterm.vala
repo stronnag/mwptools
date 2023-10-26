@@ -44,23 +44,34 @@ class CliTerm : Object {
         MWPLog.set_time_format("%T");
         ml = new MainLoop();
         msp= new MWSerial();
-        dmgr = new DevManager(DevMask.USB);
+		dmgr = new DevManager();
+		dmgr.get_serial_devices();
 
-        var devs = dmgr.get_serial_devices();
-        if(dev == null && devs.length == 1)
-            dev = devs[0];
+		if (dev == null) {
+			if(DevManager.serials.length() == 1) {
+				var dx = DevManager.serials.nth_data(0);
+				if (dx.type == DevMask.USB) {
+					dev = dx.name;
+				}
+			}
+		}
+
+        dmgr.device_added.connect((sdev) => {
+				if (dev == null) {
+					if(!msp.available && sdev.type == DevMask.USB) {
+						open_device(sdev.name);
+					}
+				}
+            });
+
+        dmgr.device_removed.connect((sdev) => {
+				if(!msp.available)
+					msp.close();
+            });
 
         if(dev != null)
             open_device(dev);
 
-        dmgr.device_added.connect((sdev) => {
-                if(!msp.available)
-                    open_device(sdev);
-            });
-
-        dmgr.device_removed.connect((sdev) => {
-                msp.close();
-            });
 
         msp.cli_event.connect((buf,len) => {
                 if(sendpass)
@@ -139,8 +150,7 @@ class CliTerm : Object {
 	}
 
     private void open_device(string device) {
-
-        print ("open %s\r\n",device);
+        print ("opening  %s ...\r\n",device);
 		msp.open_async.begin(device, baud,  (obj,res) => {
 				var ok = msp.open_async.end(res);
 				if (ok) {
