@@ -18,10 +18,9 @@
 #define GATT_NODEV 4
 #define GATT_UNAVAIL 255
 
-#ifdef HAVE_GATTLIB
-#include <gattlib.h>
 #include "mwp-gatt-bridge.h"
 
+#ifdef HAVE_GATTLIB
 
 typedef struct {
   char *name;

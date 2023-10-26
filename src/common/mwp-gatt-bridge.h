@@ -1,5 +1,10 @@
 #include <stdint.h>
+
+#ifdef HAVE_GATTLIB
 #include <gattlib.h>
+#else
+typedef void gatt_connection_t;
+#endif
 
 typedef struct {
   gatt_connection_t* connection;
