@@ -211,7 +211,7 @@ char * mwp_gatt_devnode(gattclient_t *gc) {
   return gc->uxdev;
 }
 #else
-typedef void gattclient_t;
+
 void mwp_gatt_bridge(gattclient_t *gc, int *done) {
 }
 gattclient_t * new_mwp_gatt(char *uuid, int*status) {
