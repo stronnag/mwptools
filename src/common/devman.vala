@@ -536,16 +536,21 @@ public class BluezDevice : BluezInterface {
 }
 #else
 public class DevManager {
-    private string []empty_devs;
     public signal void device_added (DevDef s);
     public signal void device_removed (string s);
     private DevMask mask;
+	public static SList<DevDef?> serials;
 
     public DevManager(DevMask _dm=(DevMask.BT|DevMask.USB)) {
         mask = _dm;
-        empty_devs={};
+		serials = new SList<DevDef?>();
     }
+	public static DevMask get_type_for_name(string name) {
+		return 0;
+	}
 }
+
+
 #endif
 
 #if TEST
