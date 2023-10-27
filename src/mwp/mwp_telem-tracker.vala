@@ -4,6 +4,7 @@ public class TelemTracker {
     private const double RAD2DEG = 57.29578;
 
     public signal void changed();
+    public signal void pending(bool val);
 
     public enum Status {
         UNDEF = 0,
@@ -19,6 +20,7 @@ public class TelemTracker {
         Status status;
 		bool userdef;
         MWSerial.PMask pmask;
+		bool pending;
 	}
 
     internal SecDev[] secdevs;
@@ -93,28 +95,33 @@ public class TelemTracker {
     }
 
 
-    public void add(string sname) {
+    public void add(string? sname) {
 		bool found = false;
-        string devname = null;
-		string devalias = null;
+        string devname = "";
+		string devalias = "";
+		string[] parts={};
         MWSerial.PMask pmask = MWSerial.PMask.AUTO;
-        var parts = sname.split(",", 3);
-		var sparts = parts[0].split(" ",2);
-		devname = sparts[0];
-		if (sparts.length > 1) {
-			devalias = sparts[1];
-			if (parts.length > 1 ) {
-				if (parts[1].strip().length > 0) {
-					pmask = MWSerial.name_to_pmask(parts[1]);
+		if (sname != null) {
+			parts = sname.split(",", 3);
+			var sparts = parts[0].split(" ",2);
+			if (sparts.length > 0) {
+				devname = sparts[0];
+				if (sparts.length > 1) {
+					devalias = sparts[1];
+					if (parts.length > 1 ) {
+						if (parts[1].strip().length > 0) {
+							pmask = MWSerial.name_to_pmask(parts[1]);
+						}
+					}
 				}
 			}
-		}
 
-		for(int n = 0; n < secdevs.length; n++) {
-			if (secdevs[n].name == devname || secdevs[n].name == devalias) {
-				secdevs[n].status = Status.PRESENT;
-				found = true;
-				break;
+			for(int n = 0; n < secdevs.length; n++) {
+				if (secdevs[n].name == devname || secdevs[n].name == devalias) {
+					secdevs[n].status = Status.PRESENT;
+					found = true;
+					break;
+				}
 			}
 		}
 
@@ -174,19 +181,7 @@ public class TelemTracker {
         changed();
     }
 
-	/* Avoid UI timeouts with unavailble BT devices */
-	public async bool start_reader_async(int n) {
-		var thr = new Thread<bool> (null, () => {
-				var res = start_reader(n);
-				Idle.add (start_reader_async.callback);
-				return res;
-			});
-		yield;
-		return thr.join();
-	}
-
-    public bool start_reader(int n) {
-		bool ok = true;
+    public void start_reader(int n) {
         if (secdevs[n].dev == null) {
             secdevs[n].dev = new MWSerial();
         }
@@ -210,20 +205,29 @@ public class TelemTracker {
                 stop_reader(n);
             });
 
-        string fstr = null;
-        if(! secdevs[n].dev.available) {
-            if(secdevs[n].dev.open (secdevs[n].name, 115200, out fstr) == true) {
-                MWPLog.message("start secondary reader %s\n", secdevs[n].name);
-                if(mp.rawlog)
-                    secdevs[n].dev.raw_logging(true);
-                secdevs[n].dev.set_pmask(secdevs[n].pmask);
-                secdevs[n].dev.set_auto_mpm(secdevs[n].pmask == MWSerial.PMask.AUTO);
-            } else {
-                MWPLog.message("Secondary reader %s\n", fstr);
-				ok = false;
-            }
-        }
-		return ok;
+		if(! secdevs[n].dev.available) {
+			pending(true);
+			secdevs[n].pending = true;
+			secdevs[n].dev.open_async.begin(secdevs[n].name, 0,  (obj,res) => {
+					var ok = secdevs[n].dev.open_async.end(res);
+					secdevs[n].pending = false;
+					pending(false);
+					if (ok) {
+						secdevs[n].dev.setup_reader();
+						MWPLog.message("start secondary reader %s\n", secdevs[n].name);
+						if(mp.rawlog)
+							secdevs[n].dev.raw_logging(true);
+						secdevs[n].dev.set_pmask(secdevs[n].pmask);
+						secdevs[n].dev.set_auto_mpm(secdevs[n].pmask == MWSerial.PMask.AUTO);
+					} else {
+						string fstr = null;
+						secdevs[n].dev.get_error_message(out fstr);
+						MWPLog.message("Secondary reader %s\n", fstr);
+						secdevs[n].status = TelemTracker.Status.PRESENT;
+						changed();
+					}
+				});
+		}
     }
 
     public void stop_reader(int n) {
@@ -505,7 +509,7 @@ public class  SecDevDialog : Gtk.Window {
 
         var radd = new Gtk.Button.from_icon_name("list-add");
         radd.clicked.connect(() => {
-				tt.add(",Auto");
+				tt.add(null);
 			});
 		var rdel = new Gtk.Button.from_icon_name("list-remove");
         rdel.clicked.connect(() => {
@@ -551,9 +555,9 @@ public class  SecDevDialog : Gtk.Window {
                     int idx=0;
                     sd_liststore.get_iter(out iter, new Gtk.TreePath.from_string(path));
                     sd_liststore.get (iter, Column.ID, &idx);
-                    tt.secdevs[idx].name = new_text;
-                    sd_liststore.set (iter, Column.NAME,new_text);
-                });
+					tt.secdevs[idx].name = new_text;
+					sd_liststore.set (iter, Column.NAME,new_text);
+				});
 
             cell = new Gtk.CellRendererText ();
             tview.insert_column_with_attributes (-1, "Alias", cell, "text", Column.ALIAS);
@@ -566,7 +570,7 @@ public class  SecDevDialog : Gtk.Window {
                     tt.secdevs[idx].alias = new_text;
                     sd_liststore.set (iter, Column.ALIAS,new_text);
 					tt.secdevs[idx].userdef = true;
-                });
+					});
 
             var tcell = new Gtk.CellRendererToggle();
             tview.insert_column_with_attributes (-1, "Enable",
@@ -576,16 +580,10 @@ public class  SecDevDialog : Gtk.Window {
                     int idx = 0;
                     sd_liststore.get_iter(out iter, new Gtk.TreePath.from_string(p));
                     sd_liststore.get (iter, Column.ID, &idx);
-                    tt.secdevs[idx].status = (tt.secdevs[idx].status == TelemTracker.Status.USED) ? TelemTracker.Status.PRESENT : TelemTracker.Status.USED;
-                    sd_liststore.set (iter, Column.STATUS, (tt.secdevs[idx].status == TelemTracker.Status.USED));
+					tt.secdevs[idx].status = (tt.secdevs[idx].status == TelemTracker.Status.USED) ? TelemTracker.Status.PRESENT : TelemTracker.Status.USED;
+					sd_liststore.set (iter, Column.STATUS, (tt.secdevs[idx].status == TelemTracker.Status.USED));
 					if (tt.secdevs[idx].status == TelemTracker.Status.USED) {
-						tt.start_reader_async.begin(idx, (obj,res) => {
-								var rok = 	tt.start_reader_async.end(res);
-								if (rok == false) {
-									tt.secdevs[idx].status == TelemTracker.Status.PRESENT;
-									sd_liststore.set (iter, Column.STATUS, false);
-								}
-							});
+						tt.start_reader(idx);
 					} else {
 						tt.stop_reader(idx);
 					}
@@ -614,21 +612,20 @@ public class  SecDevDialog : Gtk.Window {
                                                  combo, "text", Column.PMASK);
 
             combo.changed.connect((path, iter_new) => {
+					int idx=0;
                     Gtk.TreeIter iter_val;
-                    Value val;
-                    int idx=0;
-                    MWSerial.PMask pmask;
-                    combo_model.get_value (iter_new, 0, out val);
-                    string hint = (string)val;
-                    combo_model.get_value (iter_new, 1, out val);
-                    pmask = (MWSerial.PMask)val;
                     sd_liststore.get_iter (out iter_val, new Gtk.TreePath.from_string (path));
                     sd_liststore.get (iter_val, Column.ID, &idx);
-                    sd_liststore.set (iter_val, Column.PMASK, hint);
-                    tt.secdevs[idx].pmask = pmask;
+					Value val;
+					MWSerial.PMask pmask;
+					combo_model.get_value (iter_new, 0, out val);
+					string hint = (string)val;
+					combo_model.get_value (iter_new, 1, out val);
+					pmask = (MWSerial.PMask)val;
+					sd_liststore.set (iter_val, Column.PMASK, hint);
+					tt.secdevs[idx].pmask = pmask;
 					tt.secdevs[idx].userdef = true;
-
-                });
+				});
 
             int [] widths = {30, 40, 8, 10};
             for (int j = Column.NAME; j < Column.ID; j++) {
@@ -651,6 +648,9 @@ public class  SecDevDialog : Gtk.Window {
             grid.attach (scrolled, 0, 0, 1, 1);
             tt.changed.connect(() => {
                     redraw();
+                });
+            tt.pending.connect((v) => {
+					this.sensitive = !v;
                 });
         } else {
             var nodevs = new Gtk.Label("No telemetry tracking devices available");

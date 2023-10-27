@@ -881,7 +881,7 @@ public class MWSerial : Object {
 			} else {
 				int status = 0;
 				var gc = new GattClient (device, out status);
-				if (gc != null) {
+				if (status == 0) {
 					unowned var gatdev = gc.get_devnode();
 					MWPLog.message("Mapping GATT channels to %s\n", gatdev);
 					commode = ComMode.STREAM|ComMode.TTY;
@@ -891,7 +891,7 @@ public class MWSerial : Object {
 							gc = null;
 						});
 				} else {
-					stderr.printf("BLE Fails, %d\n", status);
+					//					stderr.printf("BLE Fails, %d\n", status);
 					fd = -1;
 					available = false;
 					lasterr = Posix.ETIMEDOUT;
