@@ -149,7 +149,6 @@ public class TelemTracker {
 			s.dev = null;
 			s.pmask = pmask;
 			secdevs += s;
-			stderr.printf("DBG add for %u\n",secdevs.length);
 			changed();
 		}
     }
