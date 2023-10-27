@@ -45,13 +45,17 @@ public class Forwarder : Object {
 					} else {
 						if (msp.available) {
 							rcount += 1;
-							if (rcount < 5) {
-								try_open(msp);
-							} else {
+							if(rcount < 5) {
+								MWPLog.message("retry forwarder %s\n", devname);
+								Timeout.add_seconds(30, () => {
+										try_open(msp);
+										return false;
+									});
+ 							} else {
 								string fstr;
 								fwddev.get_error_message(out fstr);
 								Utils.warning_box(
-									"Failed to open forwarding device: %s\n".printf(fstr),
+									"Failed to open forwarding device %s after 5 attempts: %s\n".printf(devname, fstr),
 									Gtk.MessageType.ERROR,10);
 							}
 						}
