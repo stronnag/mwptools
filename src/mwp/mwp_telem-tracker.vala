@@ -20,7 +20,6 @@ public class TelemTracker {
         Status status;
 		bool userdef;
         MWSerial.PMask pmask;
-		bool pending;
 	}
 
     internal SecDev[] secdevs;
@@ -207,10 +206,8 @@ public class TelemTracker {
 
 		if(! secdevs[n].dev.available) {
 			pending(true);
-			secdevs[n].pending = true;
 			secdevs[n].dev.open_async.begin(secdevs[n].name, 0,  (obj,res) => {
 					var ok = secdevs[n].dev.open_async.end(res);
-					secdevs[n].pending = false;
 					pending(false);
 					if (ok) {
 						secdevs[n].dev.setup_reader();
@@ -232,11 +229,17 @@ public class TelemTracker {
 
     public void stop_reader(int n) {
         if (secdevs[n].dev.available) {
-			MWPLog.message("stop secondary reader %s\n", secdevs[n].name);
-            secdevs[n].dev.close();
-        }
-        secdevs[n].dev = null;
-    }
+			MWPLog.message("stopping secondary reader %s\n", secdevs[n].name);
+			pending(true);
+			secdevs[n].dev.close_async.begin((obj,res) => {
+					secdevs[n].dev.close_async.end(res);
+					secdevs[n].status = TelemTracker.Status.PRESENT;
+					secdevs[n].dev = null;
+					pending(false);
+					changed();
+				});
+		}
+	}
 
     private void  process_ltm_mav(MWSerial s, MSP.Cmds cmd, uint8[] raw, uint len,
                                   uint8 xflags, bool errs, int n) {

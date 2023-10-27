@@ -106,7 +106,6 @@ void close_serial(int fd) {
 }
 
 #ifdef __CYGWIN__
-
 static int set_attributes(int fd, serial_opts_t *sopts, int *aspeed) {
   // heresy, but quite a nice API
   HANDLE hdl = (HANDLE)get_osfhandle(fd);

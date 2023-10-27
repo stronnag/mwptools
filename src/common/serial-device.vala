@@ -987,7 +987,7 @@ public class MWSerial : Object {
                 tag = 0;
             }
             if((commode & ComMode.TTY) == ComMode.TTY) {
-                MwpSerial.close(fd);
+				MwpSerial.close(fd);
                 fd = -1;
             }
             else if ((commode & ComMode.FD) == ComMode.FD)
@@ -1005,6 +1005,16 @@ public class MWSerial : Object {
             fd = -1;
         }
     }
+
+	public async void close_async() {
+		var thr = new Thread<void> ("aclose",  () => {
+				close();
+				Idle.add (close_async.callback);
+				return;
+			});
+		yield;
+		thr.join();
+	}
 
     public SerialStats dump_stats() {
         if(stime == 0)
