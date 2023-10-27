@@ -1,4 +1,4 @@
-// Handle Secondary Devices
+ // Handle Secondary Devices
 
 public class TelemTracker {
     private const double RAD2DEG = 57.29578;
@@ -149,6 +149,7 @@ public class TelemTracker {
 			s.dev = null;
 			s.pmask = pmask;
 			secdevs += s;
+			stderr.printf("DBG add for %u\n",secdevs.length);
 			changed();
 		}
     }
@@ -495,9 +496,10 @@ public class  SecDevDialog : Gtk.Window {
     private Gtk.TreeView tview;
     private Gtk.ListStore sd_liststore;
     private Gtk.ListStore combo_model;
+	private Gtk.Grid grid;
+	private TelemTracker tt;
 
-    private TelemTracker tt;
-    enum Column {
+	enum Column {
         NAME,
         ALIAS,
         STATUS,
@@ -530,139 +532,8 @@ public class  SecDevDialog : Gtk.Window {
 					sd_liststore.remove(ref iter);
 				}
 			});
-		//        var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 3);
-        var grid = new Gtk.Grid ();
-        grid.set_vexpand (true);
 
-        if(tt.secdevs.length > 0) {
-            sd_liststore = new Gtk.ListStore (Column.NO_COLS,
-                                              typeof (string),
-                                              typeof (string),
-                                              typeof (bool),
-                                              typeof (string),
-                                              typeof(int)
-                                              );
-
-            tview = new Gtk.TreeView.with_model (sd_liststore);
-			tview.get_selection().set_mode(Gtk.SelectionMode.MULTIPLE);
-
-            tview.set_hexpand(true);
-            tview.set_vexpand (true);
-            tview.set_fixed_height_mode (true);
-            //            tview.set_model (sd_liststore);
-			var cell = new Gtk.CellRendererText ();
-            tview.insert_column_with_attributes (-1, "Device", cell, "text", Column.NAME);
-            cell.set_property ("editable", true);
-            ((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
-                    Gtk.TreeIter iter;
-                    int idx=0;
-                    sd_liststore.get_iter(out iter, new Gtk.TreePath.from_string(path));
-                    sd_liststore.get (iter, Column.ID, &idx);
-					tt.secdevs[idx].name = new_text;
-					sd_liststore.set (iter, Column.NAME,new_text);
-				});
-
-            cell = new Gtk.CellRendererText ();
-            tview.insert_column_with_attributes (-1, "Alias", cell, "text", Column.ALIAS);
-            cell.set_property ("editable", true);
-            ((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
-                    Gtk.TreeIter iter;
-                    int idx=0;
-                    sd_liststore.get_iter(out iter, new Gtk.TreePath.from_string(path));
-                    sd_liststore.get (iter, Column.ID, &idx);
-                    tt.secdevs[idx].alias = new_text;
-                    sd_liststore.set (iter, Column.ALIAS,new_text);
-					tt.secdevs[idx].userdef = true;
-					});
-
-            var tcell = new Gtk.CellRendererToggle();
-            tview.insert_column_with_attributes (-1, "Enable",
-                                                 tcell, "active", Column.STATUS);
-            tcell.toggled.connect((p) => {
-                    Gtk.TreeIter iter;
-                    int idx = 0;
-                    sd_liststore.get_iter(out iter, new Gtk.TreePath.from_string(p));
-                    sd_liststore.get (iter, Column.ID, &idx);
-					tt.secdevs[idx].status = (tt.secdevs[idx].status == TelemTracker.Status.USED) ? TelemTracker.Status.PRESENT : TelemTracker.Status.USED;
-					sd_liststore.set (iter, Column.STATUS, (tt.secdevs[idx].status == TelemTracker.Status.USED));
-					if (tt.secdevs[idx].status == TelemTracker.Status.USED) {
-						tt.start_reader(idx);
-					} else {
-						tt.stop_reader(idx);
-					}
-					//					tt.secdevs[idx].userdef = true;
-                });
-
-            Gtk.TreeIter iter;
-            combo_model = new Gtk.ListStore (2, typeof (string), typeof(MWSerial.PMask));
-            combo_model.append (out iter);
-            combo_model.set (iter, 0, "Auto", 1, MWSerial.PMask.AUTO);
-            combo_model.append (out iter);
-            combo_model.set (iter, 0, "INAV", 1, MWSerial.PMask.INAV);
-            combo_model.append (out iter);
-            combo_model.set (iter, 0, "SPort", 1, MWSerial.PMask.SPORT);
-            combo_model.append (out iter);
-            combo_model.set (iter, 0, "CRSF", 1, MWSerial.PMask.CRSF);
-            combo_model.append (out iter);
-            combo_model.set (iter, 0, "MPM", 1, MWSerial.PMask.MPM);
-
-            Gtk.CellRendererCombo combo = new Gtk.CellRendererCombo ();
-            combo.set_property ("editable", true);
-            combo.set_property ("model", combo_model);
-            combo.set_property ("text-column", 0);
-            combo.set_property ("has-entry", false);
-            tview.insert_column_with_attributes (-1, "Hint",
-                                                 combo, "text", Column.PMASK);
-
-            combo.changed.connect((path, iter_new) => {
-					int idx=0;
-                    Gtk.TreeIter iter_val;
-                    sd_liststore.get_iter (out iter_val, new Gtk.TreePath.from_string (path));
-                    sd_liststore.get (iter_val, Column.ID, &idx);
-					Value val;
-					MWSerial.PMask pmask;
-					combo_model.get_value (iter_new, 0, out val);
-					string hint = (string)val;
-					combo_model.get_value (iter_new, 1, out val);
-					pmask = (MWSerial.PMask)val;
-					sd_liststore.set (iter_val, Column.PMASK, hint);
-					tt.secdevs[idx].pmask = pmask;
-					tt.secdevs[idx].userdef = true;
-				});
-
-            int [] widths = {30, 40, 8, 10};
-            for (int j = Column.NAME; j < Column.ID; j++) {
-                var scol =  tview.get_column(j);
-                if(scol!=null) {
-                    scol.set_min_width(7*widths[j]);
-                    scol.resizable = true;
-                    scol.set_sort_column_id(j);
-                }
-            }
-
-            var n =populate_view();
-            var scrolled = new Gtk.ScrolledWindow (null, null);
-            scrolled.set_policy (Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC);
-            scrolled.min_content_height = (2+n)*30;
-            //scrolled.min_content_width = 320;
-            scrolled.add(tview);
-            scrolled.propagate_natural_height = true;
-            scrolled.propagate_natural_width = true;
-            grid.attach (scrolled, 0, 0, 1, 1);
-            tt.changed.connect(() => {
-                    redraw();
-                });
-            tt.pending.connect((v) => {
-					this.sensitive = !v;
-                });
-        } else {
-            var nodevs = new Gtk.Label("No telemetry tracking devices available");
-            nodevs.set_margin_bottom(2);
-            nodevs.set_margin_top(2);
-            nodevs.set_margin_start(8);
-            nodevs.set_margin_end(8);
-            grid.attach (nodevs, 0, 0, 1, 1);
-        }
+		create_view();
 		Gtk.ButtonBox bbox = new Gtk.ButtonBox (Gtk.Orientation.HORIZONTAL);
 		bbox.set_layout (Gtk.ButtonBoxStyle.START);
         radd.set_halign(Gtk.Align.START);
@@ -675,10 +546,134 @@ public class  SecDevDialog : Gtk.Window {
 		bbox.set_child_non_homogeneous(rdel, true);
         grid.attach (bbox, 0, 1, 1, 1);
         this.add(grid);
+		tt.changed.connect(() => {
+				redraw();
+			});
+		tt.pending.connect((v) => {
+				this.sensitive = !v;
+			});
     }
 
+	private void create_view() {
+        grid = new Gtk.Grid ();
+        grid.set_vexpand (true);
+		sd_liststore = new Gtk.ListStore (Column.NO_COLS,
+										  typeof (string),
+										  typeof (string),
+										  typeof (bool),
+										  typeof (string),
+										  typeof(int)
+										  );
+
+		tview = new Gtk.TreeView.with_model (sd_liststore);
+		tview.get_selection().set_mode(Gtk.SelectionMode.MULTIPLE);
+
+		tview.set_hexpand(true);
+		tview.set_vexpand (true);
+		tview.set_fixed_height_mode (true);
+		//            tview.set_model (sd_liststore);
+		var cell = new Gtk.CellRendererText ();
+		tview.insert_column_with_attributes (-1, "Device", cell, "text", Column.NAME);
+		cell.set_property ("editable", true);
+		((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
+				Gtk.TreeIter iter;
+				int idx=0;
+				sd_liststore.get_iter(out iter, new Gtk.TreePath.from_string(path));
+				sd_liststore.get (iter, Column.ID, &idx);
+				tt.secdevs[idx].name = new_text;
+				sd_liststore.set (iter, Column.NAME,new_text);
+			});
+
+		cell = new Gtk.CellRendererText ();
+		tview.insert_column_with_attributes (-1, "Alias", cell, "text", Column.ALIAS);
+		cell.set_property ("editable", true);
+		((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
+				Gtk.TreeIter iter;
+				int idx=0;
+				sd_liststore.get_iter(out iter, new Gtk.TreePath.from_string(path));
+				sd_liststore.get (iter, Column.ID, &idx);
+				tt.secdevs[idx].alias = new_text;
+				sd_liststore.set (iter, Column.ALIAS,new_text);
+				tt.secdevs[idx].userdef = true;
+			});
+
+		var tcell = new Gtk.CellRendererToggle();
+		tview.insert_column_with_attributes (-1, "Enable",
+											 tcell, "active", Column.STATUS);
+		tcell.toggled.connect((p) => {
+				Gtk.TreeIter iter;
+				int idx = 0;
+				sd_liststore.get_iter(out iter, new Gtk.TreePath.from_string(p));
+				sd_liststore.get (iter, Column.ID, &idx);
+				tt.secdevs[idx].status = (tt.secdevs[idx].status == TelemTracker.Status.USED) ? TelemTracker.Status.PRESENT : TelemTracker.Status.USED;
+				sd_liststore.set (iter, Column.STATUS, (tt.secdevs[idx].status == TelemTracker.Status.USED));
+				if (tt.secdevs[idx].status == TelemTracker.Status.USED) {
+					tt.start_reader(idx);
+				} else {
+					tt.stop_reader(idx);
+				}
+					//					tt.secdevs[idx].userdef = true;
+			});
+
+		Gtk.TreeIter iter;
+		combo_model = new Gtk.ListStore (2, typeof (string), typeof(MWSerial.PMask));
+		combo_model.append (out iter);
+		combo_model.set (iter, 0, "Auto", 1, MWSerial.PMask.AUTO);
+		combo_model.append (out iter);
+		combo_model.set (iter, 0, "INAV", 1, MWSerial.PMask.INAV);
+		combo_model.append (out iter);
+		combo_model.set (iter, 0, "SPort", 1, MWSerial.PMask.SPORT);
+		combo_model.append (out iter);
+		combo_model.set (iter, 0, "CRSF", 1, MWSerial.PMask.CRSF);
+		combo_model.append (out iter);
+		combo_model.set (iter, 0, "MPM", 1, MWSerial.PMask.MPM);
+
+		Gtk.CellRendererCombo combo = new Gtk.CellRendererCombo ();
+		combo.set_property ("editable", true);
+		combo.set_property ("model", combo_model);
+		combo.set_property ("text-column", 0);
+		combo.set_property ("has-entry", false);
+		tview.insert_column_with_attributes (-1, "Hint", combo, "text", Column.PMASK);
+
+		combo.changed.connect((path, iter_new) => {
+				int idx=0;
+				Gtk.TreeIter iter_val;
+				sd_liststore.get_iter (out iter_val, new Gtk.TreePath.from_string (path));
+				sd_liststore.get (iter_val, Column.ID, &idx);
+				Value val;
+				MWSerial.PMask pmask;
+				combo_model.get_value (iter_new, 0, out val);
+				string hint = (string)val;
+				combo_model.get_value (iter_new, 1, out val);
+				pmask = (MWSerial.PMask)val;
+				sd_liststore.set (iter_val, Column.PMASK, hint);
+				tt.secdevs[idx].pmask = pmask;
+				tt.secdevs[idx].userdef = true;
+			});
+
+		int [] widths = {30, 40, 8, 10};
+		for (int j = Column.NAME; j < Column.ID; j++) {
+			var scol =  tview.get_column(j);
+			if(scol!=null) {
+				scol.set_min_width(7*widths[j]);
+				scol.resizable = true;
+				scol.set_sort_column_id(j);
+			}
+		}
+
+		var n =populate_view();
+		var scrolled = new Gtk.ScrolledWindow (null, null);
+		scrolled.set_policy (Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC);
+		scrolled.min_content_height = (2+n)*30;
+		//scrolled.min_content_width = 320;
+		scrolled.add(tview);
+		scrolled.propagate_natural_height = true;
+		scrolled.propagate_natural_width = true;
+		grid.attach (scrolled, 0, 0, 1, 1);
+	}
+
     private List<Gtk.TreeRowReference> list_selected_refs() {
-	List<Gtk.TreeRowReference> list = new List<Gtk.TreeRowReference> ();
+		List<Gtk.TreeRowReference> list = new List<Gtk.TreeRowReference> ();
         Gtk.TreeModel m;
         var sel = tview.get_selection();
         var rows = sel.get_selected_rows(out m);
