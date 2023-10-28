@@ -68,7 +68,7 @@ void mwp_gatt_close(gattclient_t *gc) {
   }
 }
 
-gattclient_t * new_mwp_gatt(char *uuid, int*status) {
+gattclient_t * new_mwp_gatt(char *uuid, gatt_err_e *status) {
   uuid_t characteristic_tx_uuid;
   uuid_t characteristic_rx_uuid;
 
@@ -204,20 +204,42 @@ char * mwp_gatt_devnode(gattclient_t *gc) {
 }
 #else
 
-void mwp_gatt_bridge(gattclient_t *gc) {
+void mwp_gatt_close(gattclient_t *gc) {
 }
 
-gattclient_t * new_mwp_gatt(char *uuid, int*status) {
+void mwp_gatt_bridge(gattclient_t *gc) {
+}
+gattclient_t * new_mwp_gatt(char *uuid, gatt_err_e *status) {
   if (status) {
     *status = GATT_UNAVAIL;
   }
   return NULL;
 }
-
 char * mwp_gatt_devnode(gattclient_t *gc) {
   return NULL;
 }
+#endif
 
-void mwp_gatt_close(gattclient_t *gc) {
+#ifdef TEST
+int done = 0;
+void cc_handler(int dummy) {
+  done = 1;
+}
+
+int main(int argc, char *argv[]) {
+  char* devid;
+  gattclient_t *gc;
+  int ret = 0;
+
+  devid = (argc == 2) ? argv[1] : "60:55:F9:A5:7B:16";
+  gc = new_mwp_gatt(devid, &ret);
+  if (gc != NULL) {
+    printf("PTS = %s\n", mwp_gatt_devnode(gc));
+    signal(SIGINT, cc_handler);
+    mwp_gatt_bridge(gc, &done);
+  } else {
+    fprintf(stderr, "failed to open %s %d\n", devid, ret);
+  }
+  return 0;
 }
 #endif

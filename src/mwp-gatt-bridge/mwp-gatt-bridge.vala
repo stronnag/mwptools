@@ -1,3 +1,4 @@
+#if !USE_TV
 public class GattTest : Application {
 	private string? addr;
 	private GattClient gc;
@@ -118,3 +119,9 @@ public class GattTest : Application {
 		return 0;
 	}
 }
+#else
+public static int main (string[] args) {
+	stderr.printf("Not available");
+	return 127;
+}
+#endif

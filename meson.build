@@ -94,7 +94,7 @@ executable('mwp-gatt-bridge',
            sources: [gatt_app_src, gatt_src],
            dependencies: [gatt_deps],
            include_directories : common_inc_dir,
-           vala_args : [ gatt_v_args, gatt_app_v_args ],
+           vala_args : [ dopts, gatt_v_args, gatt_app_v_args ],
            c_args: gatt_c_args,
            install_tag: 'gatt',
            install: true

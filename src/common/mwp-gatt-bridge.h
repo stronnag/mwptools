@@ -26,6 +26,6 @@ typedef struct {
 } gattclient_t;
 
 extern void mwp_gatt_close(gattclient_t *);
-extern gattclient_t * new_mwp_gatt(char *, int*);
+extern gattclient_t * new_mwp_gatt(char *, gatt_err_e*);
 extern void mwp_gatt_bridge(gattclient_t *);
 extern char * mwp_gatt_devnode(gattclient_t *);

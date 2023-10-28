@@ -2,7 +2,7 @@
 [Compact]
 public class GattClient {
 	[CCode (cname = "new_mwp_gatt")]
-	public GattClient(string? addr, out int status);
+	public GattClient(string? addr, out Gatt_Status status);
 	[CCode (cname = "mwp_gatt_bridge")]
 	public void bridge();
 	[CCode (cname = "mwp_gatt_devnode")]

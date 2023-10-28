@@ -882,7 +882,7 @@ public class MWSerial : Object {
 				int status = 0;
 				var gc = new GattClient (device, out status);
 				if (status == 0) {
-					unowned var gatdev = gc.get_devnode();
+					unowned string gatdev = gc.get_devnode();
 					MWPLog.message("Mapping GATT channels to %s\n", gatdev);
 					commode = ComMode.STREAM|ComMode.TTY;
 					fd = MwpSerial.open(gatdev, (int)rate);
@@ -1006,14 +1006,14 @@ public class MWSerial : Object {
         }
     }
 
-	public async void close_async() {
-		var thr = new Thread<void> ("aclose",  () => {
+	public async bool close_async() {
+		var thr = new Thread<bool> ("aclose",  () => {
 				close();
 				Idle.add (close_async.callback);
-				return;
+				return true;
 			});
 		yield;
-		thr.join();
+		return thr.join();
 	}
 
     public SerialStats dump_stats() {
