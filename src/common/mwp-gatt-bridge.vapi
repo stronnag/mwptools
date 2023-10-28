@@ -8,3 +8,13 @@ public class GattClient {
 	[CCode (cname = "mwp_gatt_devnode")]
 	public unowned string get_devnode();
 }
+[CCode (cname = "gatt_err_e", cprefix = "GATT_", has_type_id = false)]
+public enum Gatt_Status {
+    OK,
+    CONNFAIL,
+    NOTFAIL,
+	CCFAIL,
+	NODEV,
+	NOCHAR,
+	UNAVAIL
+}

@@ -10,11 +10,14 @@ SRC1=$(APP1).vala
 
 COMMOND=../../common
 
-COMMON=$(COMMOND)/serial-device.vala $(COMMOND)/geocalc.vala  $(COMMOND)/utils.vala $(COMMOND)/mspcmd.vala  $(COMMOND)/mspmsg.vala $(COMMOND)/mwplog.vala  $(COMMOND)/btdev.c $(COMMOND)/cserial.c $(COMMOND)/sede.vala $(COMMOND)/mwp_uriparser.vala
+COMMON=$(COMMOND)/serial-device.vala $(COMMOND)/geocalc.vala  $(COMMOND)/utils.vala $(COMMOND)/mspcmd.vala  $(COMMOND)/mspmsg.vala $(COMMOND)/mwplog.vala  $(COMMOND)/btdev.c $(COMMOND)/cserial.c $(COMMOND)/sede.vala $(COMMOND)/mwp_uriparser.vala $(COMMOND)/mwp-gatt-bridge.c $(COMMOND)/devman.vala
 
-PKGS=--pkg posix --pkg linux --pkg gio-2.0
+PKGS=--pkg posix --pkg linux --pkg gio-2.0 --pkg mwpfuncs --pkg mwp-gatt-bridge
+PKGS+=--pkg gudev-1.0
 
-OPTS+= --vapidir $(COMMOND) -X -I$(COMMOND) --pkg mwpfuncs
+
+OPTS+= --vapidir $(COMMOND) -X -I$(COMMOND)
+
 
 all: $(APP) $(APP1)
 

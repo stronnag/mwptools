@@ -10,7 +10,7 @@ For example:
 
 ```
 # Make the GATT connection
-$ mwp-gatt-bridge 60:55:F9:A5:7B:16
+$ mwp-gatt-bridge --address 60:55:F9:A5:7B:16
 60:55:F9:A5:7B:16 <=> pseudo-terminal:  /dev/pts/7
 ```
 
@@ -29,9 +29,12 @@ Note that when the application using the pseudo-terminal terminates, the  pseudo
 
 ## Installation
 
-`mwp-gatt-bridge` is not built by default, in order to build it, from the mwptools top level:
+`mwp-gatt-bridge` is not installed  by default, in order to install it , from the mwptools top level:
 
-`$ ninja -C _build mwp-gatt-bridge install`
+``` shell
+meson compile -C _build
+meson install -C _build --no-rebuild --only-changed --tags gatt
+```
 
 ## Environment
 

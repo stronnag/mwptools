@@ -1,4 +1,4 @@
-project('mwptools', 'c', 'vala', version : '6.301.450')
+project('mwptools', 'c', 'vala', version : '6.301.505')
 
 # vala / clang16 workaround
 if meson.get_compiler('c').get_id() == 'clang'
@@ -75,18 +75,20 @@ executable('mwp-area-planner', sources: [apsrcs, apuisrcs, apcommon], dependenci
 	   install:true )
 
 executable('flashdl',
-           sources: [fdlsrcs, fccommon],
-           dependencies: [ fdldeps ],
+           sources: [fdlsrcs, fccommon,  gatt_src],
+           dependencies: [ fdldeps, gatt_deps],
 	   include_directories : common_inc_dir,
-           vala_args : [dopts, fdl_v_args],
-	   install : false,
-           build_by_default: false )
+           vala_args : [dopts, fdl_v_args, gatt_v_args ],
+	   install_tag : 'flashdl',
+           install: true,
+          )
 
 executable('gmproxy',
            sources: proxsrc,
            dependencies: [ proxdeps ],
 	   vala_args : dopts,
-           install : false)
+           install_tag: 'gmproxy',
+           install: true)
 
 executable('mwp-gatt-bridge',
            sources: [gatt_app_src, gatt_src],
@@ -94,7 +96,7 @@ executable('mwp-gatt-bridge',
            include_directories : common_inc_dir,
            vala_args : [ gatt_v_args, gatt_app_v_args ],
            c_args: gatt_c_args,
-           build_by_default: false,
+           install_tag: 'gatt',
            install: true
           )
 

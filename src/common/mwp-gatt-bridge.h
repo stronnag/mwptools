@@ -6,6 +6,16 @@
 typedef void gatt_connection_t;
 #endif
 
+typedef enum {
+  GATT_OK=0,
+  GATT_CONNFAIL=1,
+  GATT_NOTFAIL=2,
+  GATT_CCFAIL=3,
+  GATT_NODEV=4,
+  GATT_NOCHAR=5,
+  GATT_UNAVAIL=255,
+} gatt_err_e;
+
 typedef struct {
   gatt_connection_t* connection;
   char *name;

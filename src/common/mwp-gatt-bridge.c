@@ -10,14 +10,6 @@
 #include <unistd.h>
 #include <stdbool.h>
 
-#define GATT_OK 0
-#define GATT_CONNFAIL 1
-#define GATT_NOTFAIL 2
-#define GATT_NOCHAR 5
-#define GATT_CCFAIL 3
-#define GATT_NODEV 4
-#define GATT_UNAVAIL 255
-
 #include "mwp-gatt-bridge.h"
 
 #ifdef HAVE_GATTLIB
