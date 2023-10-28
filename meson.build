@@ -1,4 +1,4 @@
-project('mwptools', 'c', 'vala', version : '6.301.505')
+project('mwptools', 'c', 'vala', version : '6.301.588', meson_version : '>= 0.60')
 
 # vala / clang16 workaround
 if meson.get_compiler('c').get_id() == 'clang'
@@ -146,7 +146,7 @@ if nogo == false and gook == true and gotrim != ''
 endif
 
 meson.add_install_script('meson/post_install.sh')
-if meson.version().version_compare('> 0.58')
+if meson.version().version_compare('>= 0.59')
   gnome.post_install(
     glib_compile_schemas: true,
     gtk_update_icon_cache: true,
