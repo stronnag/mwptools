@@ -65,6 +65,32 @@ apt install libegl1-mesa-dev
 apt install gstreamer1.0-gtk3
 ```
 
+### Additional Libraries (BLE)
+
+In order to support Bluetooth Low Energy (BLE) devices, a third party library, [gattlib](https://github.com/labapart/gattlib) is required. This library is not included in most (any) distributions, so if the user requires that {{ mwp }} supports BLE serial devices, she must install  [gattlib](https://github.com/labapart/gattlib) prior to building  {{ mwp }}.
+
+
+    git clone https://github.com/labapart/gattlib.git
+    cd gattlib/
+    mkdir _build
+    cd _build/
+    cmake -G Ninja -DGATTLIB_PYTHON_INTERFACE=OFF -DCMAKE_INSTALL_PREFIX=/usr \
+     -DCMAKE_BUILD_TYPE=MinSizeRel ..  # [1], [2]
+    ninja                              # [1]
+    sudo ninja install                 # [3]
+
+note 0 : On Debian, you may need `sudo apt install libpcre3-dev`; for Fedora `sudo dnf install bluez-libs-devel pcre-devel`
+note 1 : you can use `make` if you prefer.
+note 2 : defaults are prefix `/usr/local` and Debug build
+note 3 : there are release packages for x86_64 Debian et al, Fedora.
+
+Then rebuild mwptools in its entirety. If the mwptools `meson` setup  had already been performed, it must be refreshed.
+
+    cd /path/to/mwptools
+    meson setup _build --reconfigure
+
+Then build normally. When built with [gattlib](https://github.com/labapart/gattlib), {{ mwp }} supports BLE devices in the same way as legacy BT devices.
+
 ### Build and update
 
     cd _build

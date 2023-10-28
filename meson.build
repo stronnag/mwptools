@@ -1,4 +1,4 @@
-project('mwptools', 'c', 'vala', version : '6.299.568')
+project('mwptools', 'c', 'vala', version : '6.301.450')
 
 # vala / clang16 workaround
 if meson.get_compiler('c').get_id() == 'clang'
@@ -21,6 +21,7 @@ subdir('src/mwp')
 subdir('src/fc-cli')
 subdir('src/qproxy')
 subdir('src/samples/')
+subdir('src/mwp-gatt-bridge')
 subdir('docs')
 
 configuration_inc = include_directories('.')
@@ -86,6 +87,16 @@ executable('gmproxy',
            dependencies: [ proxdeps ],
 	   vala_args : dopts,
            install : false)
+
+executable('mwp-gatt-bridge',
+           sources: [gatt_app_src, gatt_src],
+           dependencies: [gatt_deps],
+           include_directories : common_inc_dir,
+           vala_args : [ gatt_v_args, gatt_app_v_args ],
+           c_args: gatt_c_args,
+           build_by_default: false,
+           install: true
+          )
 
 subdir('src/bbox-replay')
 
