@@ -230,16 +230,21 @@ public class Flashdl : Object {
         msp = new MWSerial();
         dmgr = new DevManager(DevMask.USB);
 
-        var devs = dmgr.get_serial_devices();
-        if(devs.length == 1)
-            dev = devs[0];
+        dmgr.get_serial_devices();
+		if(dev == null) {
+			if(DevManager.serials.length() == 1) {
+				var dx = DevManager.serials.nth_data(0);
+				if (dx.type == DevMask.USB) {
+					dev = dx.name;
+				}
+			}
+		}
 
         if(dev != null)
             open_device(dev);
 
         dmgr.device_added.connect((sdev) => {
-                if(!msp.available)
-                    open_device(sdev);
+				open_device(sdev.name);
             });
 
         dmgr.device_removed.connect((sdev) => {
