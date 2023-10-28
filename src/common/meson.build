@@ -1,4 +1,3 @@
-
 mwpcommon = files('btdev.c',
 		  'cserial.c',
 		  'mwp_glinfo.c',
