@@ -833,6 +833,22 @@ public class MWSerial : Object {
         return host;
     }
 
+    private bool valid_bt_name(string addr) {
+        var nok = 0;
+        if (addr != null) {
+            var parts = addr.split(":");
+            if (parts.length == 6) {
+                foreach(var p in parts) {
+                    if(p.length == 2) {
+                        if (p[0].isxdigit() && p[1].isxdigit()) {
+                            nok += 1;
+                        }
+                    }
+                }
+            }
+        }
+        return (nok == 6);
+    }
 
 	public async bool gatt_async (GattClient gc) {
         var thr = new Thread<bool> ("mwp-ble", () => {
@@ -856,7 +872,7 @@ public class MWSerial : Object {
 		print_raw = (Environment.get_variable("MWP_PRINT_RAW") != null);
 		commode = 0;
 
-		if(device.length == 17 && device[2] == ':' && device[5] == ':' && device[8] == ':' && device[11] == ':' && device[14] == ':') {
+		if (valid_bt_name(device)) {
 			int dmask = 0;
 			int ncnt = 0;
 			while (( dmask = DevManager.get_type_for_name(device)) == 0) {

@@ -3193,7 +3193,8 @@ public class MWP : Gtk.Application {
     private bool is_kml_loaded(string name) {
         var found = false;
         for (int i = 0; i < kmls.length ; i++) {
-            if(name == kmls.index(i).get_filename()) {
+            if(name == kmls.index(i).get_name()
+			   /*|| name ==  kmls.index(i).get_filename()*/) {
                 found = true;
                 break;
             }
@@ -3294,7 +3295,7 @@ public class MWP : Gtk.Application {
     }
 
     private void kml_remove_dialog() {
-        var dialog = new Dialog.with_buttons ("Remove KML", null,
+        var dialog = new Dialog.with_buttons ("Remove Overlays", null,
                                               DialogFlags.DESTROY_WITH_PARENT,
                                               "Cancel", ResponseType.CANCEL,
                                               "OK", ResponseType.OK);
@@ -3306,7 +3307,7 @@ public class MWP : Gtk.Application {
         CheckButton[] btns = {};
 
         for (int i = 0; i < kmls.length ; i++) {
-            var s = kmls.index(i).get_filename();
+            var s = kmls.index(i).get_name();
             var button = new Gtk.CheckButton.with_label(s);
             btns += button;
             box.pack_start (button, false, false, 0);
