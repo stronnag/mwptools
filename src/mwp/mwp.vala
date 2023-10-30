@@ -3308,7 +3308,9 @@ public class MWP : Gtk.Application {
 
         for (int i = 0; i < kmls.length ; i++) {
             var s = kmls.index(i).get_name();
+			var fk = kmls.index(i).get_filename();
             var button = new Gtk.CheckButton.with_label(s);
+			button.tooltip_text = "%s : %s".printf(s, fk);
             btns += button;
             box.pack_start (button, false, false, 0);
         }
