@@ -87,12 +87,12 @@ public class Units :  GLib.Object {
 		su = "?";
 		switch (MWP.conf.p_distance) {
 		case 0: // m
-			if (d < 10000) {
+			if (d.abs() < 10000.0) {
 				sd = "%.0f".printf(d);
 				su = dnames[MWP.conf.p_distance];
 			} else {
 				d /= 1000;
-				if (d < 100) {
+				if (d.abs() < 100.0) {
 					sd = "%.1f".printf(d);
 				} else {
 					sd = "%.0f".printf(d);
@@ -104,12 +104,12 @@ public class Units :  GLib.Object {
 		case 2:
 			var du = Units.distance(d);
 			if (!isalt) {
-				if (d < 1609.344) {
+				if (d.abs() < 1609.344) {
 					sd = "%.0f".printf(du);
 					su = dnames[MWP.conf.p_distance];
 				} else {
 					du = d / 1609.344;
-					if (du < 100.0) {
+					if (du.abs() < 100.0) {
 						sd = "%.1f".printf(du);
 					} else {
 						sd = "%.0f".printf(du);
@@ -118,12 +118,12 @@ public class Units :  GLib.Object {
 				}
 			} else {
 				d *= 3.2808399;
-				if (d < 10000) {
+				if (d.abs() < 10000.0) {
 					sd = "%.0f".printf(d);
 					su = "ft";
 				} else {
 					d /= 1000;
-					if (d < 100) {
+					if (d.abs() < 100.0) {
 						sd = "%.1f".printf(d);
 					} else {
 						sd = "%.0f".printf(d);

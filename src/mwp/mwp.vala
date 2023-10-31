@@ -5637,9 +5637,9 @@ public class MWP : Gtk.Application {
             uint32 bx32;
             SEDE.deserialise_u32(raw+6, out bx32);
             bxflag = bx32;
-        } else
+        } else {
             SEDE.deserialise_u64(raw+13, out bxflag);
-
+		}
         lmask = (angle_mask|horz_mask);
 
         armed = ((bxflag & arm_mask) == arm_mask) ? 1 : 0;
@@ -6591,6 +6591,7 @@ public class MWP : Gtk.Application {
 
                             msp_get_status = (vi.fc_api < 0x200) ? MSP.Cmds.STATUS :
                                 (vi.fc_vers >= FCVERS.hasV2STATUS) ? MSP.Cmds.INAV_STATUS : MSP.Cmds.STATUS_EX;
+							stderr.printf("DBG Status cmd %u %x\n", msp_get_status, msp_get_status);
                             // ugly hack for jh flip32 franken builds post 1.73
                             if((vi.board == "AFNA" || vi.board == "CC3D") &&
                                msp_get_status == MSP.Cmds.INAV_STATUS)
@@ -6724,6 +6725,7 @@ public class MWP : Gtk.Application {
                 }
                 raw[len] = 0;
                 boxnames = (string)raw;
+				MWPLog.message("BOXNAMES: %s\n", boxnames);
                 string []bsx = boxnames.split(";");
                 int i = 0;
                 foreach(var bs in bsx) {
