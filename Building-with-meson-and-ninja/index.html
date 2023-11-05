@@ -787,6 +787,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#additional-libraries-ble" class="md-nav__link">
+    Additional Libraries (BLE)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#build-and-update" class="md-nav__link">
     Build and update
   </a>
@@ -1256,6 +1263,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#additional-libraries-ble" class="md-nav__link">
+    Additional Libraries (BLE)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#build-and-update" class="md-nav__link">
     Build and update
   </a>
@@ -1437,6 +1451,26 @@ apt install libegl1-mesa-dev
 # For some ARM boards, (RPi3 for example), you may need
 apt install gstreamer1.0-gtk3
 </code></pre></div>
+<h3 id="additional-libraries-ble">Additional Libraries (BLE)<a class="headerlink" href="#additional-libraries-ble" title="Permanent link">#</a></h3>
+<p>In order to support Bluetooth Low Energy (BLE) devices, a third party library, <a href="https://github.com/labapart/gattlib">gattlib</a> is required. This library is not included in most (any) distributions, so if the user requires that <a href="https://github.com/stronnag/mwptools">mwp</a> supports BLE serial devices, she must install  <a href="https://github.com/labapart/gattlib">gattlib</a> prior to building  <a href="https://github.com/stronnag/mwptools">mwp</a>.</p>
+<pre><code>git clone https://github.com/labapart/gattlib.git
+cd gattlib/
+mkdir _build
+cd _build/
+cmake -G Ninja -DGATTLIB_PYTHON_INTERFACE=OFF -DCMAKE_INSTALL_PREFIX=/usr \
+ -DCMAKE_BUILD_TYPE=MinSizeRel ..  # [1], [2]
+ninja                              # [1]
+sudo ninja install                 # [3]
+</code></pre>
+<p>note 0 : On Debian, you may need <code>sudo apt install libpcre3-dev</code>; for Fedora <code>sudo dnf install bluez-libs-devel pcre-devel</code>
+note 1 : you can use <code>make</code> if you prefer.
+note 2 : defaults are prefix <code>/usr/local</code> and Debug build
+note 3 : there are release packages for x86_64 Debian et al, Fedora.</p>
+<p>Then rebuild mwptools in its entirety. If the mwptools <code>meson</code> setup  had already been performed, it must be refreshed.</p>
+<pre><code>cd /path/to/mwptools
+meson setup _build --reconfigure
+</code></pre>
+<p>Then build normally. When built with <a href="https://github.com/labapart/gattlib">gattlib</a>, <a href="https://github.com/stronnag/mwptools">mwp</a> supports BLE devices in the same way as legacy BT devices.</p>
 <h3 id="build-and-update">Build and update<a class="headerlink" href="#build-and-update" title="Permanent link">#</a></h3>
 <pre><code>cd _build
 # for a local install (and cygwin)
@@ -1715,7 +1749,7 @@ ninja install
   <small>
     
       Last update:
-      2023-10-18
+      2023-10-28
     
   </small>
 </div>
