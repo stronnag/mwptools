@@ -29,6 +29,7 @@ There is a "rolling release" [release note on the wiki](https://github.com/stron
 * Ubuntu latest and latest LTS (prior release where latest is also LTS).
 * Fedora latest
 * FreeBSD latest `RELEASE`
+* Supported Desktop Enviroment / Window Managers: basically must comply with XDG standards, specifically GNOME, KDE, xfce, LXqt, labwc, wayfire.
 
 ### Supported infrastructure
 
