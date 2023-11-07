@@ -6,6 +6,7 @@ if meson.get_compiler('c').get_id() == 'clang'
 endif
 
 nogo = get_option('nogo')
+with_gatt = get_option('with-gatt')
 
 conf_data = configuration_data()
 conf_data.set('version', meson.project_version())

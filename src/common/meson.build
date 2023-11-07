@@ -67,9 +67,7 @@ gatt_c_args = []
 gatt_v_args = []
 gatt_deps = []
 
-pygatt = dependency('python3-gattlib', required: false)
-
-if not pygatt.found()
+if with_gatt
   ldirs = ['/usr/lib', '/usr/local/lib']
   gattlib = meson.get_compiler('c').find_library('gattlib', dirs: ldirs, required: false)
   if gattlib.found()
@@ -77,8 +75,6 @@ if not pygatt.found()
     gatt_deps += gattlib
     gatt_v_args += '--define=GATTLIB'
   endif
-else
-  message('GATT/Disabled due to conflicting python3-gattlib')
 endif
 
 gatt_deps += dependency('gio-2.0')
