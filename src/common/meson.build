@@ -66,12 +66,19 @@ vapi_dir = meson.current_source_dir()
 gatt_c_args = []
 gatt_v_args = []
 gatt_deps = []
-ldirs = ['/usr/lib', '/usr/local/lib']
-gattlib = meson.get_compiler('c').find_library('gattlib', dirs: ldirs, required: false)
-if gattlib.found()
-  gatt_c_args += '-D HAVE_GATTLIB'
-  gatt_deps += gattlib
-  gatt_v_args += '--define=GATTLIB'
+
+pygatt = dependency('python3-gattlib', required: false)
+
+if not pygatt.found()
+  ldirs = ['/usr/lib', '/usr/local/lib']
+  gattlib = meson.get_compiler('c').find_library('gattlib', dirs: ldirs, required: false)
+  if gattlib.found()
+    gatt_c_args += '-D HAVE_GATTLIB'
+    gatt_deps += gattlib
+    gatt_v_args += '--define=GATTLIB'
+  endif
+else
+  message('GATT/Disabled due to conflicting python3-gattlib')
 endif
 
 gatt_deps += dependency('gio-2.0')
