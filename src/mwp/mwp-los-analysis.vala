@@ -183,6 +183,7 @@ public class LOSSlider : Gtk.Window {
 		var bbox = new Gtk.ButtonBox (Gtk.Orientation.HORIZONTAL);
 		var button = new Gtk.Button.with_label ("Perform LOS");
 		button.clicked.connect(() => {
+				terminate_plots();
 				run_elevation_tool();
 			});
 		bbox.set_layout (Gtk.ButtonBoxStyle.END);
