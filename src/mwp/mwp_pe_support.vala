@@ -143,7 +143,12 @@ public class FakeHome : GLib.Object {
         return p;
     }
 
-    public void show_fake_home(bool state) {
+	public void freeze_home(bool act) {
+		homep.set_draggable(act);
+		homep.set_selectable(act);
+	}
+
+	public void show_fake_home(bool state) {
         if(state != is_visible) {
             if(state) {
                 homep.set_draggable(true);

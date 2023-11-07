@@ -358,9 +358,15 @@ public class ListBox : GLib.Object {
 		marker_menu.show_all();
     }
 
+	private void freeze_points(bool act) {
+		fhome.freeze_home(act);
+		mp.markers.freeze_mission(act);
+	}
+
 	private void LOS_analysis() {
 		var losa = new LOSSlider(mp.window, mp.view);
 		losa.destroy.connect (() => {
+				freeze_points(true);
 			});
 
         HomePos hp={0,0,false};
@@ -369,6 +375,7 @@ public class ListBox : GLib.Object {
             fhome.get_fake_home(out hp.hlat, out hp.hlon);
         }
 		var ms = to_mission();
+		freeze_points(false);
 		losa.run(ms, hp, mpop_no);
 	}
 

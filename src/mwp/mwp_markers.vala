@@ -775,6 +775,15 @@ public class MWPMarkers : GLib.Object {
         posring.hide();
     }
 
+	public void freeze_mission(bool act) {
+		var mlist = markers.get_markers();
+		for (unowned GLib.List<weak Champlain.Marker> lp = mlist.first(); lp != null; lp = lp.next) {
+			var m = (MWPLabel)lp.data;
+			m.set_draggable(act);
+			m.set_selectable(act);
+		}
+	}
+
     public void remove_all() {
         path.remove_all();
         hpath.remove_all();

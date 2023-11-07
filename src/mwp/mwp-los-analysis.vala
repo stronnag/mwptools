@@ -42,10 +42,10 @@ public class LOSPoint : Object {
         fmpt.set_color (red);
         fmpt.set_text_color(white);
         view.add_layer (fmlayer);
+		players = {};
 	}
 
-	~LOSPoint() {
-		show_los(false);
+	public void clear() {
 		foreach(var p in players) {
 			p.remove_all();
 			_view.remove_layer(p);
@@ -189,13 +189,14 @@ public class LOSSlider : Gtk.Window {
 		bbox.set_layout (Gtk.ButtonBoxStyle.END);
 		bbox.add (button);
 		box.pack_start (bbox, false, false, 1);
-		this.default_width = (600);
-		_w.sensitive = false;
+		this.default_width = 600;
 		set_transient_for (_w);
+		_w.sensitive = false;
 		lp = new LOSPoint(view);
 		this.destroy.connect(() => {
 				_w.sensitive = true;
 				Utils.terminate_plots();
+				lp.clear();
 				lp = null;
 			});
 		this.add(box);
