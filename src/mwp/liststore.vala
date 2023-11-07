@@ -836,11 +836,7 @@ public class ListBox : GLib.Object {
 			altview.destroy();
 			altview = null;
 		}
-        try {
-            string [] killargs = {"pkill", "gnuplot" };
-            Process.spawn_async ("/", killargs, null,
-                                 SpawnFlags.SEARCH_PATH, null, null);
-        } catch {}
+		Utils.terminate_plots();
     }
 
     private void update_land_offset(int[]elevs) {

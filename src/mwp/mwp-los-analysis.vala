@@ -183,17 +183,19 @@ public class LOSSlider : Gtk.Window {
 		var bbox = new Gtk.ButtonBox (Gtk.Orientation.HORIZONTAL);
 		var button = new Gtk.Button.with_label ("Perform LOS");
 		button.clicked.connect(() => {
-				terminate_plots();
+				Utils.terminate_plots();
 				run_elevation_tool();
 			});
 		bbox.set_layout (Gtk.ButtonBoxStyle.END);
 		bbox.add (button);
 		box.pack_start (bbox, false, false, 1);
 		this.default_width = (600);
+		_w.sensitive = false;
 		set_transient_for (_w);
 		lp = new LOSPoint(view);
 		this.destroy.connect(() => {
-				terminate_plots();
+				_w.sensitive = true;
+				Utils.terminate_plots();
 				lp = null;
 			});
 		this.add(box);
@@ -235,9 +237,7 @@ public class LOSSlider : Gtk.Window {
 					try {
 						ok =  los.wait_check_async.end(res);
 						msg = msg.chomp();
-						MWPLog.message("DBG: LOS child <%s>\n", msg);
 						var havelos  = (msg[0] == '0');
-						MWPLog.message("DBG: LOS to POI %s\n", havelos.to_string());
 						lp.add_path(_hp.hlat,  _hp.hlon, lat, lon, havelos);
 					}  catch (Error e) {
 						MWPLog.message("LOS Spawn %s\n", e.message);
@@ -247,15 +247,4 @@ public class LOSSlider : Gtk.Window {
 			MWPLog.message("LOS Spawn %s\n", e.message);
 		}
     }
-
-	private void terminate_plots() {
-		try {
-			var kplt = new Subprocess(0, "pkill", "gnuplot");
-			kplt.wait_check_async.begin(null, (obj,res) => {
-					try {
-						kplt.wait_check_async.end(res);
-					}  catch {}
-				});
-		} catch {}
-	}
 }

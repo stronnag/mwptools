@@ -394,4 +394,17 @@ namespace Utils {
         msg.set_title("MWP Notice");
         msg.show();
     }
+
+	public void terminate_plots() {
+		try {
+			var kplt = new Subprocess(0, "pkill", "gnuplot");
+			kplt.wait_check_async.begin(null, (obj,res) => {
+					try {
+						kplt.wait_check_async.end(res);
+					}  catch {}
+				});
+		} catch {}
+	}
+
+
 }
