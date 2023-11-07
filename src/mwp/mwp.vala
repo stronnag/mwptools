@@ -977,14 +977,12 @@ public class MWP : Gtk.Application {
         }
 
         if(msp.available) {
-			//			stderr.printf("DBG close serdev\n");
             msp.close();
 		}
 #if MQTT
         if (mqtt.available)
             mqtt_available = mqtt.mdisconnect();
 #endif
-		//		stderr.printf("DBG close radardev\n");
 		foreach (var r in radardevs) {
 			if (r.tid != 0) {
 				Source.remove(r.tid);
@@ -992,12 +990,9 @@ public class MWP : Gtk.Application {
 			if(r.dev != null && r.dev.available)
 				r.dev.close();
 		}
-		//		stderr.printf("DBG done radardev\n");
 
 		if (fwddev.available()) {
-			//			stderr.printf("DBG close fwddev\n");
 			fwddev.close();
-			//			stderr.printf("DBG done fwddev\n");
 		}
 		// stop any previews / replays
         ls.quit();
@@ -3108,7 +3103,7 @@ public class MWP : Gtk.Application {
         double dist =0,cse = 0;
         fmpt.get_followme(out lat, out lon);
         Geo.csedist(GPSInfo.lat, GPSInfo.lon, lat, lon, out dist, out cse);
-        MWPLog.message("DBG: SET lat=%.6f lon=%.6f %.0fm %.0f°\n", lat, lon, dist*1852.0, cse);
+        MWPLog.message("Followme: SET lat=%.6f lon=%.6f %.0fm %.0f°\n", lat, lon, dist*1852.0, cse);
         MSP_WP [] wps={};
         MSP_WP wp = MSP_WP();
         wp.wp_no = 255;
@@ -3125,7 +3120,6 @@ public class MWP : Gtk.Application {
         wpmgr.wps = wps;
         wpmgr.wp_flag = WPDL.FOLLOW_ME;
         var nb = serialise_wp(wp, buf);
-        MWPLog.message("DBG act=%d la=%d lo=%d alt=%d cse=%d\n", wp.action, wp.lat,  wp.lon, wp.altitude, wp.p1);
         queue_cmd(MSP.Cmds.SET_WP, buf, nb);
     }
 
@@ -6591,7 +6585,6 @@ public class MWP : Gtk.Application {
 
                             msp_get_status = (vi.fc_api < 0x200) ? MSP.Cmds.STATUS :
                                 (vi.fc_vers >= FCVERS.hasV2STATUS) ? MSP.Cmds.INAV_STATUS : MSP.Cmds.STATUS_EX;
-							stderr.printf("DBG Status cmd %u %x\n", msp_get_status, msp_get_status);
                             // ugly hack for jh flip32 franken builds post 1.73
                             if((vi.board == "AFNA" || vi.board == "CC3D") &&
                                msp_get_status == MSP.Cmds.INAV_STATUS)
@@ -7225,7 +7218,6 @@ public class MWP : Gtk.Application {
 						validatelab.set_text("WP:%3d".printf(wpmgr.wpidx+1));
 						queue_cmd(MSP.Cmds.SET_WP, wtmp, nb);
 					} else {
-                        MWPLog.message("DBG: WP Flag %s\n", wpmgr.wp_flag.to_string());
                         MWPCursor.set_normal_cursor(window);
 						remove_tid(ref upltid);
 
@@ -7809,7 +7801,6 @@ public class MWP : Gtk.Application {
                 rp = SEDE.deserialise_i16(rp, out ele);
                 rp = SEDE.deserialise_i16(rp, out rud);
                 SEDE.deserialise_i16(rp, out thr);
-//                stderr.printf("DBG: Tr frame a:%d e:%d r:%d t:%d\n", ail, ele, rud, thr);
 				sticks.update(ail, ele, rud, thr);
 				break;
 

@@ -336,6 +336,12 @@ public class ListBox : GLib.Object {
         terrain_popitem.sensitive = false;
         marker_menu.add (terrain_popitem);
 
+		item = new Gtk.MenuItem.with_label ("LOS Analysis");
+        item.activate.connect (() => {
+                LOS_analysis();
+            });
+        marker_menu.add (item);
+
         marker_menu.add (new Gtk.SeparatorMenuItem ());
         pop_editor_item = new Gtk.MenuItem.with_label ("Mission Editor");
         pop_editor_item.activate.connect (() => {
@@ -348,8 +354,23 @@ public class ListBox : GLib.Object {
                 clear_mission();
             });
         marker_menu.add (item);
-        marker_menu.show_all();
+
+		marker_menu.show_all();
     }
+
+	private void LOS_analysis() {
+		var losa = new LOSSlider(mp.window, mp.view);
+		losa.destroy.connect (() => {
+			});
+
+        HomePos hp={0,0,false};
+        if(fhome != null && FakeHome.is_visible) {
+            hp.valid = true;
+            fhome.get_fake_home(out hp.hlat, out hp.hlon);
+        }
+		var ms = to_mission();
+		losa.run(ms, hp, mpop_no);
+	}
 
     private void  toggle_editor_state() {
         if(mp.mwpdh.floating) {
