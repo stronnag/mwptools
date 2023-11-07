@@ -249,7 +249,7 @@ public class LOSSlider : Gtk.Window {
 
 	private void terminate_plots() {
 		try {
-			var kplt = new Subprocess(0, "pkill", "-f", "gnuplot");
+			var kplt = new Subprocess(0, "pkill", "gnuplot");
 			kplt.wait_check_async.begin(null, (obj,res) => {
 					try {
 						kplt.wait_check_async.end(res);
