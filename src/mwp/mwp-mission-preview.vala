@@ -34,15 +34,15 @@ private struct HeadingMode {
     double poi_lon;
 }
 
-public class  MissionPreviewer : GLib.Object {
-    public struct LegPreview {
-        int p1;
-        int p2;
-        double cse;
-        double legd;
-        double dist;
-    }
+public struct LegPreview {
+	int p1;
+	int p2;
+	double cse;
+	double legd;
+	double dist;
+}
 
+public class  MissionPreviewer : GLib.Object {
     private const int MAXSLEEP = 20*1000; // 10 time speedup
     private const double MSPEED = 10.0;
     private const double MHERTZ = 5.0; // nominal reporting rate
@@ -67,6 +67,10 @@ public class  MissionPreviewer : GLib.Object {
         running = true;
         head_mode = {0};
     }
+
+	public MissionItem get_mi(int j) {
+		return mi[j];
+	}
 
     public void stop() {
         running = false;
@@ -328,9 +332,16 @@ public class  MissionPreviewer : GLib.Object {
 		return plist;
     }
 
-    public  LegPreview[]  check_mission (Mission ms, HomePos h) {
+    public  LegPreview[]  check_mission (Mission ms, HomePos h, bool minjmp=false) {
         mi = ms.get_ways();
-        return iterate_mission(h);
+		if(minjmp) {
+			for(var j = 0; j < mi.length; j++) {
+                if (mi[j].action == MSP.Action.JUMP) {
+					mi[j].param2 = 1;
+				}
+			}
+		}
+		return iterate_mission(h);
     }
 
     public Thread<int> run_mission (Mission ms, HomePos h) {

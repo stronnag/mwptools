@@ -28,7 +28,9 @@ mwpsrcs = files('mwp.vala', 'liststore.vala', 'mwp_markers.vala',
 		'mwp-sbs-decoder.vala', 'mwp-helpers.vala',
 		'mwp-sticks.vala', 'mwp_splash.vala', 'wpeditpopover.vala',
 		'mwp-measure.vala', 'mwp_rraw.vala', 'mwp_followme_ph.vala',
-                'mwp_telem-tracker.vala', 'mwp-forwarder.vala')
+                'mwp_telem-tracker.vala', 'mwp-forwarder.vala',
+                'mwp-los-analysis.vala'
+               )
 
 ublxguisrc = files('settings.vala',  'mapsources.vala')
 

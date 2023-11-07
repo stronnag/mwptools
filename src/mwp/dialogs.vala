@@ -657,7 +657,6 @@ public class FlightBox : GLib.Object {
 				ft0 = tac.set_text_for_allocation(alloc, fmtspd);
 				ft1 = tac.set_text_for_allocation(alloc, fmtsat, 2);
 				fh3 = (ft1 > ft0) ? ft0 : ft1;
-				//				MWPLog.message("DBG Update %u %u %u %u\n", fh0, fh1, fh2, fh3);
 			}
 
 			var blat = fmtlat.printf(fh0);

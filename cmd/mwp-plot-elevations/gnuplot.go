@@ -30,7 +30,7 @@ func getGnuplotCaps() int {
 	return ttypes
 }
 
-func Gnuplot_mission(mpts []Point, gnd []int) {
+func Gnuplot_mission(mpts []Point, gnd []int, spt bool) int {
 	req := 0
 	if Conf.Noplot == false {
 		req |= 1
@@ -39,7 +39,7 @@ func Gnuplot_mission(mpts []Point, gnd []int) {
 		req |= 2
 	}
 	if req == 0 {
-		return
+		return -1
 	}
 	np := len(mpts)
 	mr := mpts[np-1].D
@@ -124,7 +124,7 @@ set x2tics (`)
 	w.WriteString(`set xlabel "Distance"
 set bmargin 3
 set offsets graph 0,0,0.01,0
-set title "Mission Elevation"
+set title "Terrain Analysis"
 set ylabel "Elevation"
 show label
 set xrange [ 0 : ]
@@ -139,7 +139,11 @@ set yrange [ `)
 	if req&2 == 2 {
 		fmt.Fprintf(w, "set terminal svg size 960 320 dynamic background rgb 'white' font 'sans,8' rounded\nset output \"%s\"\n", Conf.Svgfile)
 	}
-	fmt.Fprintf(w, "plot '%s' using 1:2 t \"Terrain\" w filledcurve y1=%d lt -1 lw 2  lc rgb \"#40a4cbb8\", '%s' using 1:2 t \"Mission\" w lines lt -1 lw 2  lc rgb \"red\"", tfname, minz, mfname)
+	mstr := "Mission"
+	if spt {
+		mstr = "LOS"
+	}
+	fmt.Fprintf(w, "plot '%s' using 1:2 t \"Terrain\" w filledcurve y1=%d lt -1 lw 2  lc rgb \"#40a4cbb8\", '%s' using 1:2 t \"%s\" w lines lt -1 lw 2  lc rgb \"red\"", tfname, minz, mfname, mstr)
 	if Conf.Margin != 0 {
 		fmt.Fprintf(w, ", '%s' using 1:3 t \"Margin %dm\" w lines lt -1 lw 2  lc rgb \"web-blue\"", tfname, Conf.Margin)
 	}
@@ -158,5 +162,7 @@ replot`)
 	err = gp.Run()
 	if err != nil {
 		log.Fatalf("gnuplot failed with %s\n", err)
+		return -1
 	}
+	return gp.Process.Pid
 }
