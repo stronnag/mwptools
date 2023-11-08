@@ -81,7 +81,9 @@ public class MWP : Gtk.Application {
     private bool centreon = false;
     private bool naze32 = false;
     private bool mission_eeprom = false;
-    public GtkChamplain.Embed embed;
+    private GtkChamplain.Embed embed;
+	private Gtk.Box dockbox;
+	private Gtk.MenuBar  _menubar;
     private PrefsDialog prefs;
     private SwitchDialog swd;
     private SetPosDialog setpos;
@@ -1191,6 +1193,13 @@ public class MWP : Gtk.Application {
         return ok;
 	}
 
+	public void mwin_freeze(bool act) {
+		dockbox.sensitive = act;
+		_menubar.sensitive = act;
+		actmission.sensitive = act;
+		wp_edit_button.sensitive = act;
+	}
+
     private void create_main_window() {
         gpsstats = {0, 0, 0, 0, 9999, 9999, 9999};
         lastmission = {};
@@ -1523,10 +1532,10 @@ public class MWP : Gtk.Application {
         zoomer = builder.get_object ("spinbutton1") as Gtk.SpinButton;
         actmission = builder.get_object ("act_mission") as Gtk.ComboBoxText;
         var mm = builder.get_object ("menubar") as MenuModel;
-        Gtk.MenuBar  menubar = new MenuBar.from_model(mm);
+        _menubar = new MenuBar.from_model(mm);
 
         if(x_fl2ltm) {
-            update_menu_labels(menubar);
+            update_menu_labels(_menubar);
         }
 
 
@@ -1539,7 +1548,7 @@ public class MWP : Gtk.Application {
         this.set_menubar(mm);
         var hb = builder.get_object ("hb") as HeaderBar;
         window.set_show_menubar(false);
-        hb.pack_start(menubar);
+        hb.pack_start(_menubar);
 
         fsmenu_button = builder.get_object("fsmenu_button") as Gtk.MenuButton;
 
@@ -2458,7 +2467,7 @@ public class MWP : Gtk.Application {
         var grid =  builder.get_object ("grid1") as Gtk.Grid;
         gpsinfo = new GPSInfo(grid, conf.deltaspeed);
 
-        var box = new Gtk.Box (Gtk.Orientation.HORIZONTAL,2);
+        dockbox = new Gtk.Box (Gtk.Orientation.HORIZONTAL,2);
 
         var pane = builder.get_object ("paned1") as Gtk.Paned;
 		pane.wide_handle = true;
@@ -2777,7 +2786,7 @@ public class MWP : Gtk.Application {
         lastp = new Timer();
 
         pane.pack1(embed,false, true); // t,,t
-        pane.pack2(box, false, true);  // t, t
+        pane.pack2(dockbox, false, true);  // t, t
 
 		sticks = new Sticks.StickWindow(window, conf.show_sticks);
 
@@ -2862,8 +2871,8 @@ public class MWP : Gtk.Application {
         dockbar.set_style (dbstyle);
         lman = new LayMan(dock, confdir,layfile,DOCKLETS.NUMBER);
 
-        box.pack_start (dockbar, false, false, 0);
-        box.pack_end (dock, false, true, 0); // ex true
+        dockbox.pack_start (dockbar, false, false, 0);
+        dockbox.pack_end (dock, false, true, 0); // ex true
 
         dockitem = new DockItem[DOCKLETS.NUMBER];
 		var icon_theme = IconTheme.get_default();
@@ -2903,7 +2912,7 @@ public class MWP : Gtk.Application {
         dock.add_item (dockitem[DOCKLETS.DBOX], DockPlacement.BOTTOM);
         dock.add_item (dockitem[DOCKLETS.VBOX], DockPlacement.BOTTOM);
         dock.add_item (dockitem[DOCKLETS.MISSION], DockPlacement.BOTTOM);
-        box.show_all();
+        dockbox.show_all();
 
         if(!lman.load_init()) {
             dockitem[DOCKLETS.ARTHOR].iconify_item ();
