@@ -206,6 +206,7 @@ public class ListBox : GLib.Object {
     private Gtk.MenuItem terrain_item;
     private Gtk.MenuItem terrain_popitem;
     private Gtk.MenuItem los_popitem;
+    private Gtk.MenuItem losauto_popitem;
     private Gtk.MenuItem replicate_item;
     private Gtk.MenuItem speedz_item;
     private Gtk.MenuItem speedv_item;
@@ -345,6 +346,13 @@ public class ListBox : GLib.Object {
 		los_popitem.sensitive = false;
 		marker_menu.add (los_popitem);
 
+		losauto_popitem = new Gtk.MenuItem.with_label ("Auto LOS");
+		losauto_popitem.activate.connect (() => {
+				LOS_analysis(true);
+			});
+		losauto_popitem.sensitive = false;
+		marker_menu.add (losauto_popitem);
+
         marker_menu.add (new Gtk.SeparatorMenuItem ());
         pop_editor_item = new Gtk.MenuItem.with_label ("Mission Editor");
         pop_editor_item.activate.connect (() => {
@@ -366,7 +374,7 @@ public class ListBox : GLib.Object {
 		mp.markers.freeze_mission(act);
 	}
 
-	private void LOS_analysis() {
+	private void LOS_analysis(bool auto=false) {
 		var losa = new LOSSlider(mp.window, mp.view);
 		losa.destroy.connect (() => {
 				freeze_points(true);
@@ -379,7 +387,7 @@ public class ListBox : GLib.Object {
         }
 		var ms = to_mission();
 		freeze_points(false);
-		losa.run(ms, hp, mpop_no);
+		losa.run(ms, hp, mpop_no, auto);
 	}
 
     private void  toggle_editor_state() {
@@ -2206,6 +2214,9 @@ public class ListBox : GLib.Object {
             state = false;
         terrain_item.sensitive = state;
         los_popitem.sensitive = state;
+		if (Environment.get_variable("MWP_BING_KEY") != null) {
+			losauto_popitem.sensitive = state;
+		}
     }
 
     private void set_replicate_item(bool state) {

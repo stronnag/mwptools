@@ -120,6 +120,8 @@ public class LOSSlider : Gtk.Window {
 	private LegPreview []plist;
 	private HomePos _hp;
 	private Gtk.Scale slider;
+	private Gtk.Button button;
+	private static bool is_running;
 	public LOSSlider (Gtk.Window? _w, Champlain.View view) {
 		this.title = "LOS Analysis";
 		this.window_position = Gtk.WindowPosition.CENTER;
@@ -180,7 +182,7 @@ public class LOSSlider : Gtk.Window {
 			});
 		box.pack_start (slider, true, false, 1);
 		var bbox = new Gtk.ButtonBox (Gtk.Orientation.HORIZONTAL);
-		var button = new Gtk.Button.with_label ("Perform LOS");
+		button = new Gtk.Button.with_label ("Perform LOS");
 		button.clicked.connect(() => {
 				Utils.terminate_plots();
 				run_elevation_tool();
@@ -196,37 +198,69 @@ public class LOSSlider : Gtk.Window {
 		}
 
 		this.destroy.connect(() => {
+				is_running = false;
 				_w.sensitive = true;
-				Utils.terminate_plots();
 				LOSPoint.clear();
+				Utils.terminate_plots();
 			});
 		this.add(box);
 		this.show_all();
 	}
 
-	public void run(Mission ms, HomePos hp, int wpno) {
+	public void run(Mission ms, HomePos hp, int wpno, bool auto) {
 		_hp = hp;
+		is_running = true;
 		mt = new MissionPreviewer();
 		plist =  mt.check_mission(ms, hp, true);
 		maxd =  plist[plist.length-1].dist;
 		LOSPoint.show_los(true);
-		var j = 0;
-		for (j = 0; j < plist.length; j++) {
-			if(plist[j].p2 + 1 == wpno) {
-				break;
+		if (!auto) {
+			var j = 0;
+			for (j = 0; j < plist.length; j++) {
+				if(plist[j].p2 + 1 == wpno) {
+					break;
+				}
+			}
+			var adist = plist[j].dist;
+			var pct = (int)(1000.0*adist/maxd);
+			slider.set_value(pct);
+		} else {
+			Utils.terminate_plots();
+			slider.sensitive = false;
+			button.sensitive = false;
+			for(var dp = 0.0; dp < 1000; dp += 10) {
+				if(is_running)
+					slider.set_value(dp);
+				else
+					break;
+				while(Gtk.events_pending())
+					Gtk.main_iteration();
+				if (is_running)
+					run_elevation_tool(true);
+				else
+					break;
+				while(Gtk.events_pending())
+					Gtk.main_iteration();
+			}
+			if(is_running) {
+				slider.sensitive = true;
+				button.sensitive = true;
 			}
 		}
-		var adist = plist[j].dist;
-		var pct = (int)(1000.0*adist/maxd);
-		slider.set_value(pct);
 	}
 
-    private void run_elevation_tool() {
+    private void run_elevation_tool(bool auto=false) {
         double lat,lon;
 		double alt;
-        string[] spawn_args = {"mwp-plot-elevations"};
-        spawn_args += "-home=%.8f,%.8f".printf(_hp.hlat, _hp.hlon);
 		LOSPoint.get_lospt(out lat, out lon, out alt);
+		if ((lat == 0 && lon == 0) || ((lat - _hp.hlat).abs() < 1e-5 && (lon - _hp.hlon).abs() < 1e-5)) {
+			return;
+		}
+		string[] spawn_args = {"mwp-plot-elevations"};
+		if (auto) {
+			spawn_args += "-no-graph";
+		}
+        spawn_args += "-home=%.8f,%.8f".printf(_hp.hlat, _hp.hlon);
 		spawn_args += "-single=%.8f,%.8f,%.0f".printf(lat, lon, alt);
         MWPLog.message("LOS %s\n", string.joinv(" ",spawn_args));
 		var msg = "";
@@ -239,7 +273,9 @@ public class LOSSlider : Gtk.Window {
 						ok =  los.wait_check_async.end(res);
 						msg = msg.chomp();
 						var havelos  = (msg[0] == '0');
-						LOSPoint.add_path(_hp.hlat,  _hp.hlon, lat, lon, havelos);
+						if (is_running) {
+							LOSPoint.add_path(_hp.hlat,  _hp.hlon, lat, lon, havelos);
+						}
 					}  catch (Error e) {
 						MWPLog.message("LOS Spawn %s\n", e.message);
 					}

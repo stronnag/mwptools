@@ -238,12 +238,19 @@ public class BingMap : Object {
 		return ms;
 	}
 
-    public async void get_source() {
-        StringBuilder sb = new StringBuilder(BingMap.BURI);
-		var bk=Environment.get_variable("MWP_BING_KEY");
-		if (bk == null) {
-			bk = (string)Base64.decode(BingMap.KENC);
+	private string validate_key() {
+		var bk0 = Environment.get_variable("MWP_BING_KEY");
+		var bk1 = (string)Base64.decode(BingMap.KENC);
+		if (bk0 != null) {
+			return bk0;
+		} else {
+			return bk1;
 		}
+	}
+
+	public async void get_source() {
+        StringBuilder sb = new StringBuilder(BingMap.BURI);
+		var bk = validate_key();
 		sb.append(bk);
         var session = new Soup.Session ();
         var message = new Soup.Message ("GET", sb.str);
