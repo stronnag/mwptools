@@ -26,7 +26,6 @@ public class LOSPoint : Object {
 	private static Champlain.MarkerLayer fmlayer;
 	private static Champlain.PathLayer []players;
     private static Champlain.Label fmpt;
-    private static bool is_visible = false;
 	private static Champlain.View _view;
 	private static double xlat;
 	private static double xlon;
@@ -60,13 +59,10 @@ public class LOSPoint : Object {
 	}
 
 	public static void show_los(bool state) {
-		if(state != is_visible) {
-            if(state) {
-				fmlayer.show_all_markers();
-			} else {
-                fmlayer.hide_all_markers();
-            }
-            is_visible = state;
+		if(state) {
+			fmlayer.show_all_markers();
+		} else {
+			fmlayer.hide_all_markers();
 		}
 	}
 
@@ -183,7 +179,7 @@ public class LOSSlider : Gtk.Window {
 		slider = new Gtk.Scale.with_range (Gtk.Orientation.HORIZONTAL, 0, 1000, 1);
 		slider.draw_value = false;
 		slider.value_changed.connect (() => {
-				if (_auto) {
+				if (!_auto) {
 					var ppos = slider.get_value ();
 					update_from_pos(ppos);
 				}
