@@ -11,9 +11,11 @@
 
 There are a number of issues to take into consideration.
 
-* Online DEM varies [significantly](Mission-Elevation-Plot-and-Terrain-Analysis/#datum)
+* Online DEMs (Digital Elevation Model) vary [significantly](Mission-Elevation-Plot-and-Terrain-Analysis/#datum), with implications for accuracy.
 * Bing Elevations (BE) limits a single query to 1024 points, the data is 30m grid (best case). BE is actually more generous than most online sources.
 * The mwp uses the lesser of (mission length / 30) (metres) or 1024 points.
+
+Please be aware of the these accuracy / fidelity issues when evaluating the results on any elevation analysis.
 
 ## Invocation
 
@@ -39,7 +41,7 @@ This restriction means that the mission cannot be changed while a LOS Analysis i
 
 In the image below, the user has selected "LOS Analysis" from the right mouse menu at WP9. The slider is positioned appropriate to WP9. Note that if the mission contains JUMP WPs, these are executed once only (regardless of the mission setting). This is why the slider might appear less advanced compared to the mission length if the JUMP is ignored. The user can reposition the WP using the slider.
 
-When "Perform LOS" is clicked, the LOS is calculated between planned home (brown icon, lower left) and the red "⨁" "Point of Interest" (POI) icon. This is displayed as a terrain slide with the LOS line superimposed over the terrain elevation. The line is red as there is no LOS (it would be green where there is LOS). A red "dot-dash" is also displayed on the map.
+When "Perform LOS" is clicked, the LOS is calculated between planned home (brown icon, lower left) and the red "⨁" "Point of Interest" (POI) icon. This is displayed as a terrain plot with the LOS line superimposed over the terrain elevation. The line is red as there is no LOS (it would be green where there is LOS). A red "dot-dash" is also displayed on the map.
 
 The user may repeat the "move slider" / "Perform LOS" action as required. The prior terrain plot is removed each time "Perform LOS" is selected; the lines on the map are removed when the slider dialog is closed.
 
@@ -47,7 +49,7 @@ The user may repeat the "move slider" / "Perform LOS" action as required. The pr
 
 ### Auto LOS
 
-If the user has specified a [user supplied Bing API key](#user-bing-api-key), then an "Auto LOS" analysis can be run.
+If the user has specified a [user supplied Bing API key](#user-bing-api-key), then an Auto LOS analysis can be run. The analysis is iterated along the mission path automatically.
 
 ![Auto LOS](images/auto-los.png)
 
