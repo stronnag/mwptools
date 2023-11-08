@@ -329,6 +329,7 @@ Note also that the resize step is no longer required, as {{ mwp }} scales the ic
 | ------------- | ----- |
 | `CFG_UGLY_XML` | Generate ugly multi-mission XML, so as not to confuse the inav configurator |
 | `MWP_ARGS` | Extra command line arguments |
+| `MWP_BING_KEY` | A user provided BING API key (e.g. for [Auto LOS](mwp-los-tool.md#auto-los)) |
 | `MWP_BLACK_TILE` | Specify a black tile to be used by the Black Tiles map proxy |
 | `MWP_IGNORE_SATS` | Consider LTM positions valid even with low satellite count |
 | `MWP_LOG_DIR` | Location of console logs ($HOME if undefined) |
