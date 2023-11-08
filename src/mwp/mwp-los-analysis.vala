@@ -192,14 +192,12 @@ public class LOSSlider : Gtk.Window {
 		box.pack_start (bbox, false, false, 1);
 		this.default_width = 600;
 		set_transient_for (_w);
-		_w.sensitive = false;
 		if (LOSPoint.is_init == false) {
 			LOSPoint.init(view);
 		}
 
 		this.destroy.connect(() => {
 				is_running = false;
-				_w.sensitive = true;
 				LOSPoint.clear();
 				Utils.terminate_plots();
 			});

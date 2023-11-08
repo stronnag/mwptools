@@ -377,6 +377,7 @@ public class ListBox : GLib.Object {
 	private void LOS_analysis(bool auto=false) {
 		var losa = new LOSSlider(mp.window, mp.view);
 		losa.destroy.connect (() => {
+				mp.window.sensitive = true;
 				freeze_points(true);
 			});
 
@@ -386,6 +387,7 @@ public class ListBox : GLib.Object {
             fhome.get_fake_home(out hp.hlat, out hp.hlon);
         }
 		var ms = to_mission();
+		mp.window.sensitive = false;
 		freeze_points(false);
 		losa.run(ms, hp, mpop_no, auto);
 	}

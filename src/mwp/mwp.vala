@@ -81,7 +81,7 @@ public class MWP : Gtk.Application {
     private bool centreon = false;
     private bool naze32 = false;
     private bool mission_eeprom = false;
-    private GtkChamplain.Embed embed;
+    public GtkChamplain.Embed embed;
     private PrefsDialog prefs;
     private SwitchDialog swd;
     private SetPosDialog setpos;
