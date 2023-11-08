@@ -240,7 +240,11 @@ public class BingMap : Object {
 
     public async void get_source() {
         StringBuilder sb = new StringBuilder(BingMap.BURI);
-        sb.append((string)Base64.decode(BingMap.KENC));
+		var bk=Environment.get_variable("MWP_BING_KEY");
+		if (bk == null) {
+			bk = (string)Base64.decode(BingMap.KENC);
+		}
+		sb.append(bk);
         var session = new Soup.Session ();
         var message = new Soup.Message ("GET", sb.str);
 #if COLDSOUP

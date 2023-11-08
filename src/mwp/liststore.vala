@@ -205,6 +205,7 @@ public class ListBox : GLib.Object {
     private Gtk.MenuItem delta_item;
     private Gtk.MenuItem terrain_item;
     private Gtk.MenuItem terrain_popitem;
+    private Gtk.MenuItem los_popitem;
     private Gtk.MenuItem replicate_item;
     private Gtk.MenuItem speedz_item;
     private Gtk.MenuItem speedv_item;
@@ -328,19 +329,21 @@ public class ListBox : GLib.Object {
             });
         marker_menu.add (pop_preview_item);
 
-        terrain_popitem = new Gtk.MenuItem.with_label ("Terrain Analysis");
-        terrain_popitem.activate.connect (() => {
-                terrain_mission();
-            });
 
-        terrain_popitem.sensitive = false;
-        marker_menu.add (terrain_popitem);
+		terrain_popitem = new Gtk.MenuItem.with_label ("Terrain Analysis");
+		terrain_popitem.activate.connect (() => {
+				terrain_mission();
+			});
 
-		item = new Gtk.MenuItem.with_label ("LOS Analysis");
-        item.activate.connect (() => {
-                LOS_analysis();
-            });
-        marker_menu.add (item);
+		terrain_popitem.sensitive = false;
+		marker_menu.add (terrain_popitem);
+
+		los_popitem = new Gtk.MenuItem.with_label ("LOS Analysis");
+		los_popitem.activate.connect (() => {
+				LOS_analysis();
+			});
+		los_popitem.sensitive = false;
+		marker_menu.add (los_popitem);
 
         marker_menu.add (new Gtk.SeparatorMenuItem ());
         pop_editor_item = new Gtk.MenuItem.with_label ("Mission Editor");
@@ -947,7 +950,6 @@ public class ListBox : GLib.Object {
 
     public void create_view(MWP _mp) {
         mp = _mp;
-		stderr.printf(":DBG: List view %p\n", mp.view);
         fhome = new FakeHome(mp.view);
         MWP.SERSTATE ss = MWP.SERSTATE.NONE;
         make_menu();
@@ -2203,6 +2205,7 @@ public class ListBox : GLib.Object {
         if(mp.x_plot_elevations_rb == false)
             state = false;
         terrain_item.sensitive = state;
+        los_popitem.sensitive = state;
     }
 
     private void set_replicate_item(bool state) {

@@ -8,8 +8,8 @@ import (
 	"io/ioutil"
 	"math"
 	"net/http"
+	"os"
 	"strings"
-	//	"os"
 )
 
 type BingRes struct {
@@ -64,7 +64,12 @@ func parse_response(js []byte) []int {
 
 func Get_elevations(p []Point, nsamp int) ([]int, error) {
 	var elev []int
-	astr, _ := base64.StdEncoding.DecodeString(KENC)
+
+	astr := os.Getenv("MWP_BING_KEY")
+	if astr == "" {
+		bs, _ := base64.StdEncoding.DecodeString(KENC)
+		astr = string(bs)
+	}
 	var sb strings.Builder
 	sb.WriteString("http://dev.virtualearth.net/REST/v1/Elevation/")
 	if nsamp == 0 {
@@ -73,7 +78,7 @@ func Get_elevations(p []Point, nsamp int) ([]int, error) {
 		sb.WriteString("Polyline/")
 	}
 	sb.WriteString("?key=")
-	sb.Write(astr)
+	sb.WriteString(astr)
 	if nsamp != 0 {
 		sb.WriteString(fmt.Sprintf("&samp=%d", nsamp))
 	}

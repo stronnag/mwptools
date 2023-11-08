@@ -239,7 +239,7 @@ public class MWP : Gtk.Application {
     private bool x_aplog;
     private bool x_fl2ltm;
     private bool x_rawreplay;
-    public bool x_plot_elevations_rb {get; private set; default= false;}
+    public bool x_plot_elevations_rb;
 
     private Array<KmlOverlay> kmls;
     private FakeOffsets fakeoff;
@@ -2194,7 +2194,6 @@ public class MWP : Gtk.Application {
 		view = embed.get_view();
         view.set_reactive(true);
 		view.animate_zoom = true;
-		stderr.printf(":DBG: View %p\n", view);
         var place_editor = new PlaceEdit(window, view);
         setpos.place_edit.connect(() => {
                 place_editor.show();
@@ -10055,13 +10054,6 @@ Error: <i>%s</i>
     }
 
     private static string? read_env_args() {
-		/***
-		var u = Posix.utsname();
-		if (!u.release.contains("microsoft-standard-WSL")) {
-			if(Environment.get_variable("GDK_BACKEND") == null)
-				Environment.set_variable("GDK_BACKEND", "x11", true);
-		}
-		****/
 		var s1 = read_cmd_opts();
         var s2 = Environment.get_variable("MWP_ARGS");
         var sb = new StringBuilder();
