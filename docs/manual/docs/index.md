@@ -27,6 +27,7 @@ You can also [download this manual as PDF](pdf/mwptools.pdf) for offline referen
     * {{ inav }} [Safehome editor](mwp-safehomes-editor.md)
     * [Automatic mission shape](mission-editor.md#add-shape) generation, block moves, animated mission preview.
     * [Terrain Analysis](Mission-Elevation-Plot-and-Terrain-Analysis.md) with WP mission rewrite to safe elevation margins
+    * [Line of sight Analysis](mwp-los-tool.md) along a WP mission file.
     * Favourite sites editor
     * KML/KMZ static overlays
 
