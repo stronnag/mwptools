@@ -30,7 +30,7 @@ func getGnuplotCaps() int {
 	return ttypes
 }
 
-func Gnuplot_mission(mpts []Point, gnd []int, spt bool) int {
+func Gnuplot_mission(mpts []Point, gnd []int, spt bool, lok int) int {
 	req := 0
 	if Conf.Noplot == false {
 		req |= 1
@@ -143,7 +143,11 @@ set yrange [ `)
 	if spt {
 		mstr = "LOS"
 	}
-	fmt.Fprintf(w, "plot '%s' using 1:2 t \"Terrain\" w filledcurve y1=%d lt -1 lw 2  lc rgb \"#40a4cbb8\", '%s' using 1:2 t \"%s\" w lines lt -1 lw 2  lc rgb \"red\"", tfname, minz, mfname, mstr)
+	lcol := "red"
+	if spt && lok == 0 {
+		lcol = "#2E8B57"
+	}
+	fmt.Fprintf(w, "plot '%s' using 1:2 t \"Terrain\" w filledcurve y1=%d lt -1 lw 2  lc rgb \"#40a4cbb8\", '%s' using 1:2 t \"%s\" w lines lt -1 lw 2  lc rgb \"%s\"", tfname, minz, mfname, mstr, lcol)
 	if Conf.Margin != 0 {
 		fmt.Fprintf(w, ", '%s' using 1:3 t \"Margin %dm\" w lines lt -1 lw 2  lc rgb \"web-blue\"", tfname, Conf.Margin)
 	}

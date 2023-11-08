@@ -23,16 +23,17 @@ using GtkChamplain;
 
 
 public class LOSPoint : Object {
-	private Champlain.MarkerLayer fmlayer;
-	private Champlain.PathLayer []players;
-    private Champlain.Label fmpt;
-    private bool is_visible = false;
-	private bool has_loc;
-	private Champlain.View _view;
-	private double xlat;
-	private double xlon;
-	private double xalt;
-	public LOSPoint(Champlain.View view) {
+	private static Champlain.MarkerLayer fmlayer;
+	private static Champlain.PathLayer []players;
+    private static Champlain.Label fmpt;
+    private static bool is_visible = false;
+	private static Champlain.View _view;
+	private static double xlat;
+	private static double xlon;
+	private static double xalt;
+	public static bool is_init ;
+
+	public static void init(Champlain.View view) {
 		_view = view;
         Clutter.Color red = {0xff, 0x0, 0x0, 0xa0};
         Clutter.Color white = { 0xff,0xff,0xff, 0xff};
@@ -42,45 +43,47 @@ public class LOSPoint : Object {
         fmpt.set_color (red);
         fmpt.set_text_color(white);
         view.add_layer (fmlayer);
+		fmlayer.add_marker(fmpt);
+		fmlayer.hide_all_markers();
+		var pp = fmlayer.get_parent();
+		pp.set_child_above_sibling(fmlayer, null);
 		players = {};
 	}
 
-	public void clear() {
+	public static void clear() {
 		foreach(var p in players) {
 			p.remove_all();
 			_view.remove_layer(p);
 		}
-		fmlayer.remove_all();
-		_view.remove_layer(fmlayer);
-    }
+		players = {};
+		fmlayer.hide_all_markers();
+	}
 
-	public void show_los(bool state) {
+	public static void show_los(bool state) {
 		if(state != is_visible) {
             if(state) {
-				fmlayer.add_marker(fmpt);
-                var pp = fmlayer.get_parent();
-                pp.set_child_above_sibling(fmlayer, null);
+				fmlayer.show_all_markers();
 			} else {
-                fmlayer.remove_marker(fmpt);
+                fmlayer.hide_all_markers();
             }
             is_visible = state;
 		}
 	}
-	public void set_lospt(double lat, double lon, double relalt) {
-        has_loc = true;
+
+	public static void set_lospt(double lat, double lon, double relalt) {
         fmpt.set_location (lat, lon);
 		xlat = lat;
 		xlon = lon;
 		xalt = relalt;
 	}
 
-    public void get_lospt(out double lat, out double lon, out double relalt) {
+    public static void get_lospt(out double lat, out double lon, out double relalt) {
         lat = xlat;
         lon = xlon;
 		relalt = xalt;
     }
 
-	public void add_path(double lat0, double lon0, double lat1, double lon1, bool ok) {
+	public static void add_path(double lat0, double lon0, double lat1, double lon1, bool ok) {
         Clutter.Color red1 = {0xf0, 0x0, 0x0, 0x60};
         Clutter.Color green1 = {0x0, 0xf0, 0x0, 0x60};
         var pmlayer = new Champlain.PathLayer();
@@ -109,13 +112,9 @@ public class LOSPoint : Object {
 		_view.add_layer (pmlayer);
 	}
 
-    public bool has_location() {
-        return has_loc;
-    }
 }
 
 public class LOSSlider : Gtk.Window {
-	private LOSPoint lp;
 	private double maxd;
 	private MissionPreviewer mt;
 	private LegPreview []plist;
@@ -177,7 +176,7 @@ public class LOSSlider : Gtk.Window {
 				dalt = (ealt - salt);
 				var palt =  deltad / plist[j].legd;
 				var fdalt = salt + dalt*palt;
-				lp.set_lospt(nlat, nlon, fdalt);
+				LOSPoint.set_lospt(nlat, nlon, fdalt);
 			});
 		box.pack_start (slider, true, false, 1);
 		var bbox = new Gtk.ButtonBox (Gtk.Orientation.HORIZONTAL);
@@ -192,12 +191,14 @@ public class LOSSlider : Gtk.Window {
 		this.default_width = 600;
 		set_transient_for (_w);
 		_w.sensitive = false;
-		lp = new LOSPoint(view);
+		if (LOSPoint.is_init == false) {
+			LOSPoint.init(view);
+		}
+
 		this.destroy.connect(() => {
 				_w.sensitive = true;
 				Utils.terminate_plots();
-				lp.clear();
-				lp = null;
+				LOSPoint.clear();
 			});
 		this.add(box);
 		this.show_all();
@@ -208,8 +209,7 @@ public class LOSSlider : Gtk.Window {
 		mt = new MissionPreviewer();
 		plist =  mt.check_mission(ms, hp, true);
 		maxd =  plist[plist.length-1].dist;
-		lp.show_los(true);
-		//		lp.set_lospt(mt.get_mi(wpno).lat, mt.get_mi(wpno).lon, 0);
+		LOSPoint.show_los(true);
 		var j = 0;
 		for (j = 0; j < plist.length; j++) {
 			if(plist[j].p2 + 1 == wpno) {
@@ -226,7 +226,7 @@ public class LOSSlider : Gtk.Window {
 		double alt;
         string[] spawn_args = {"mwp-plot-elevations"};
         spawn_args += "-home=%.8f,%.8f".printf(_hp.hlat, _hp.hlon);
-		lp.get_lospt(out lat, out lon, out alt);
+		LOSPoint.get_lospt(out lat, out lon, out alt);
 		spawn_args += "-single=%.8f,%.8f,%.0f".printf(lat, lon, alt);
         MWPLog.message("LOS %s\n", string.joinv(" ",spawn_args));
 		var msg = "";
@@ -239,7 +239,7 @@ public class LOSSlider : Gtk.Window {
 						ok =  los.wait_check_async.end(res);
 						msg = msg.chomp();
 						var havelos  = (msg[0] == '0');
-						lp.add_path(_hp.hlat,  _hp.hlon, lat, lon, havelos);
+						LOSPoint.add_path(_hp.hlat,  _hp.hlon, lat, lon, havelos);
 					}  catch (Error e) {
 						MWPLog.message("LOS Spawn %s\n", e.message);
 					}

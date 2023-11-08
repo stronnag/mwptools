@@ -947,6 +947,7 @@ public class ListBox : GLib.Object {
 
     public void create_view(MWP _mp) {
         mp = _mp;
+		stderr.printf(":DBG: List view %p\n", mp.view);
         fhome = new FakeHome(mp.view);
         MWP.SERSTATE ss = MWP.SERSTATE.NONE;
         make_menu();

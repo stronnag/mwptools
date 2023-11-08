@@ -134,15 +134,18 @@ func main() {
 			Rework(mpts, telev)
 			m.Save(mpts)
 		}
-		gpid := Gnuplot_mission(mpts, telev, (spt != ""))
-		if spt == "" {
-			Dump_climb_dive(mpts, true)
-		} else {
-			ok := 0
+
+		ok := 0
+		if spt != "" {
 			los := CheckLOS(mpts, telev)
 			if !los {
 				ok = 1
 			}
+		}
+		gpid := Gnuplot_mission(mpts, telev, (spt != ""), ok)
+		if spt == "" {
+			Dump_climb_dive(mpts, true)
+		} else {
 			fmt.Printf("%d %d\n", ok, gpid)
 		}
 	}
