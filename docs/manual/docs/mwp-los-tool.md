@@ -15,7 +15,7 @@ There are a number of issues to take into consideration.
 * Bing Elevations (BE) limits a single query to 1024 points, the data is 30m grid (best case). BE is actually more generous than most online sources.
 * The mwp uses the lesser of (mission length / 30) (metres) or 1024 points.
 
-Please be aware of these accuracy / fidelity issues when evaluating the results on any elevation analysis.
+Please be aware of these accuracy / fidelity issues when evaluating the results of any elevation analysis.
 
 ## Invocation
 
