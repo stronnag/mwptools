@@ -1199,10 +1199,11 @@
 <h2 id="caveats">Caveats<a class="headerlink" href="#caveats" title="Permanent link">#</a></h2>
 <p>There are a number of issues to take into consideration.</p>
 <ul>
-<li>Online DEM varies <a href="Mission-Elevation-Plot-and-Terrain-Analysis/#datum">significantly</a></li>
+<li>Online DEMs (Digital Elevation Model) vary <a href="Mission-Elevation-Plot-and-Terrain-Analysis/#datum">significantly</a>, with implications for accuracy.</li>
 <li>Bing Elevations (BE) limits a single query to 1024 points, the data is 30m grid (best case). BE is actually more generous than most online sources.</li>
 <li>The mwp uses the lesser of (mission length / 30) (metres) or 1024 points.</li>
 </ul>
+<p>Please be aware of the these accuracy / fidelity issues when evaluating the results on any elevation analysis.</p>
 <h2 id="invocation">Invocation<a class="headerlink" href="#invocation" title="Permanent link">#</a></h2>
 <p>LOS is invoked from any waypoint using the right mouse button. There are two specific options:</p>
 <p><img alt="Menu Options" src="../images/los-menu.png" width="30%" /></p>
@@ -1220,11 +1221,11 @@
 <p>This restriction means that the mission cannot be changed while a LOS Analysis is being performed.</p>
 <h3 id="manual-los-analysis">Manual LOS Analysis<a class="headerlink" href="#manual-los-analysis" title="Permanent link">#</a></h3>
 <p>In the image below, the user has selected "LOS Analysis" from the right mouse menu at WP9. The slider is positioned appropriate to WP9. Note that if the mission contains JUMP WPs, these are executed once only (regardless of the mission setting). This is why the slider might appear less advanced compared to the mission length if the JUMP is ignored. The user can reposition the WP using the slider.</p>
-<p>When "Perform LOS" is clicked, the LOS is calculated between planned home (brown icon, lower left) and the red "⨁" "Point of Interest" (POI) icon. This is displayed as a terrain slide with the LOS line superimposed over the terrain elevation. The line is red as there is no LOS (it would be green where there is LOS). A red "dot-dash" is also displayed on the map.</p>
+<p>When "Perform LOS" is clicked, the LOS is calculated between planned home (brown icon, lower left) and the red "⨁" "Point of Interest" (POI) icon. This is displayed as a terrain plot with the LOS line superimposed over the terrain elevation. The line is red as there is no LOS (it would be green where there is LOS). A red "dot-dash" is also displayed on the map.</p>
 <p>The user may repeat the "move slider" / "Perform LOS" action as required. The prior terrain plot is removed each time "Perform LOS" is selected; the lines on the map are removed when the slider dialog is closed.</p>
 <p><img alt="Manual LOS" src="../images/los_manual.png" /></p>
 <h3 id="auto-los">Auto LOS<a class="headerlink" href="#auto-los" title="Permanent link">#</a></h3>
-<p>If the user has specified a <a href="#user-bing-api-key">user supplied Bing API key</a>, then an "Auto LOS" analysis can be run.</p>
+<p>If the user has specified a <a href="#user-bing-api-key">user supplied Bing API key</a>, then an Auto LOS analysis can be run. The analysis is iterated along the mission path automatically.</p>
 <p><img alt="Auto LOS" src="../images/auto-los.png" /></p>
 <p>The image shows the state at the end of the analysis. While the analysis is running, the slider and "Perform LOS" are not sensitive; once the run has completed, these controls are available if the user wishes to investigate further.</p>
 <p>Here we can see that there is an area of the mission (SE quadrant) where there is no LOS.</p>
