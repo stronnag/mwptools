@@ -13,10 +13,10 @@
       
       
       
-        <link rel="prev" href="../mwp-Configuration/">
+        <link rel="prev" href="../Mission-Elevation-Plot-and-Terrain-Analysis/">
       
       
-        <link rel="next" href="../mwp-Radar-View/">
+        <link rel="next" href="../mwp-multi-procotol/">
       
       
       <link rel="icon" href="../images/mwp_icon.ico">
@@ -24,7 +24,7 @@
     
     
       
-        <title>mwp and INAV safehome - mwptools</title>
+        <title>mwp Line of Sight (LOS) Tool - mwptools</title>
       
     
     
@@ -79,7 +79,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#mwp-and-inav-safehome" class="md-skip">
+        <a href="#mwp-line-of-sight-los-tool" class="md-skip">
           Skip to content
         </a>
       
@@ -115,7 +115,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              mwp and INAV safehome
+              mwp Line of Sight (LOS) Tool
             
           </span>
         </div>
@@ -466,9 +466,29 @@
                 
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="../mwp-los-tool/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    mwp Line of Sight (LOS) Tool
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -477,6 +497,81 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#caveats" class="md-nav__link">
+    Caveats
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#invocation" class="md-nav__link">
+    Invocation
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    Examples
+  </a>
+  
+    <nav class="md-nav" aria-label="Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#manual-los-analysis" class="md-nav__link">
+    Manual LOS Analysis
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#auto-los" class="md-nav__link">
+    Auto LOS
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#user-bing-api-key" class="md-nav__link">
+    User Bing API Key
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -526,29 +621,9 @@
                 
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    mwp and INAV safehome
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../mwp-safehomes-editor/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -557,67 +632,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#inav-setting" class="md-nav__link">
-    INAV setting
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#mwp-solution" class="md-nav__link">
-    mwp solution
-  </a>
-  
-    <nav class="md-nav" aria-label="mwp solution">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#graphical-user-interface" class="md-nav__link">
-    Graphical User Interface
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#display-safehomes-at-startup" class="md-nav__link">
-    Display safehomes at startup
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example" class="md-nav__link">
-    Example
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1103,43 +1117,57 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#inav-setting" class="md-nav__link">
-    INAV setting
+  <a href="#overview" class="md-nav__link">
+    Overview
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#mwp-solution" class="md-nav__link">
-    mwp solution
+  <a href="#caveats" class="md-nav__link">
+    Caveats
   </a>
   
-    <nav class="md-nav" aria-label="mwp solution">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#invocation" class="md-nav__link">
+    Invocation
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    Examples
+  </a>
+  
+    <nav class="md-nav" aria-label="Examples">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#graphical-user-interface" class="md-nav__link">
-    Graphical User Interface
+  <a href="#manual-los-analysis" class="md-nav__link">
+    Manual LOS Analysis
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#display-safehomes-at-startup" class="md-nav__link">
-    Display safehomes at startup
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example" class="md-nav__link">
-    Example
+  <a href="#auto-los" class="md-nav__link">
+    Auto LOS
   </a>
   
 </li>
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#user-bing-api-key" class="md-nav__link">
+    User Bing API Key
+  </a>
   
 </li>
       
@@ -1161,58 +1189,63 @@
   
 
 
-<h1 id="mwp-and-inav-safehome">mwp and INAV safehome<a class="headerlink" href="#mwp-and-inav-safehome" title="Permanent link">#</a></h1>
-<p>One of the great features of <a href="https://github.com/iNavFlight/inav">INAV</a> 2.6 was the <code>safehome</code> capability. The user can define of set of up to eight locations, and if any of these is within 200m (configurable up to 650m in <a href="https://github.com/iNavFlight/inav">INAV</a> 2.7), then that is used as the home location for RTH (and RTH failsafe).</p>
-<h2 id="inav-setting">INAV setting<a class="headerlink" href="#inav-setting" title="Permanent link">#</a></h2>
-<p><code>safehome</code> is set in <a href="https://github.com/iNavFlight/inav">INAV</a> using the CLI, here's an example:</p>
-<pre><code># safehome
-safehome 0 1 508047750 -14948970
-safehome 1 1 509102384 -15344850
-safehome 2 1 509390336 -14613540
-safehome 3 1 509149619 -15337365
-safehome 4 0 508054891 -14961431
-safehome 5 0 543545392 -45219430
-safehome 6 0 540954148 -47328458
-safehome 7 0 0 0
-</code></pre>
-<p>As you see, it's not too user friendly; the parameters are</p>
+<h1 id="mwp-line-of-sight-los-tool">mwp Line of Sight (LOS) Tool<a class="headerlink" href="#mwp-line-of-sight-los-tool" title="Permanent link">#</a></h1>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">#</a></h2>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> provides a LOS tool that establishes whether there is LOS between the observer location (the mwp home icon) and arbitrary points on an <a href="https://github.com/iNavFlight/inav">INAV</a> mission. This is may be useful to establish:</p>
 <ul>
-<li>Index (0 - 7)</li>
-<li>Status (0 = don't use, 1 = can use)</li>
-<li>Latitude as degrees * 10,000,000 (i.e. 7 decimal places)</li>
-<li>Longitude as degrees * 10,000,000 (i.e. 7 decimal places)</li>
+<li>Can the pilot or observer see the aircraft?</li>
+<li>Is there LOS for RC control or video?</li>
 </ul>
-<p>It can be error prone to get locations into the correct format, particularly when a common source (Google Maps) only provides 6 decimal places of precision.</p>
-<h2 id="mwp-solution">mwp solution<a class="headerlink" href="#mwp-solution" title="Permanent link">#</a></h2>
-<h3 id="graphical-user-interface">Graphical User Interface<a class="headerlink" href="#graphical-user-interface" title="Permanent link">#</a></h3>
-<p><a href="https://github.com/stronnag/mwptools">mwp</a> now offers a <code>Safe Homes</code> menu option:</p>
-<p><img alt="mwp safehome" src="../images/mwp-safehome-menu.png" width="25%" /></p>
-<p>This will launch the <code>Safe Home</code> window:</p>
-<p><img alt="mwp safehome" src="../images/mwp-safehome-usage.png" width="50%" /></p>
-<p>From here it is possible to:</p>
+<h2 id="caveats">Caveats<a class="headerlink" href="#caveats" title="Permanent link">#</a></h2>
+<p>There are a number of issues to take into consideration.</p>
 <ul>
-<li>Load safehomes from a file in CLI format. A CLI diff or dump can be  used.</li>
-<li>Save safehomes to a file in CLI format. If a CLI diff or dump is selected, then only the safehomes stanza is changed; other information in the diff / dump is preserved.</li>
-<li>Display safehomes on the map. Active safehomes are displayed with greater opacity than inactive locations.</li>
-<li>Change the status (active, inactive). If a previously unused item is enabled, an icon is placed on the centre of the map for positioning.</li>
-<li>Clear (unset) one or all safehomes.</li>
+<li>Online DEM varies <a href="Mission-Elevation-Plot-and-Terrain-Analysis/#datum">significantly</a></li>
+<li>Bing Elevations (BE) limits a single query to 1024 points, the data is 30m grid (best case). BE is actually more generous than most online sources.</li>
+<li>The mwp uses the lesser of (mission length / 30) (metres) or 1024 points.</li>
 </ul>
-<p>Note that editing functions are only available when the <code>Safe Homes</code> window is active; if the windows is dismissed with icons displayed, then the icons remain on the map, but are not editable.</p>
-<h3 id="display-safehomes-at-startup">Display safehomes at startup<a class="headerlink" href="#display-safehomes-at-startup" title="Permanent link">#</a></h3>
-<p>It also is possible to set a <code>gsettings</code> key to define a file of safehomes to load at startup, and optionally display (readonly) icons.</p>
-<pre><code>gsettings set org.mwptools.planner load-safehome ~/.config/mwp/safehome.txt,Y
+<h2 id="invocation">Invocation<a class="headerlink" href="#invocation" title="Permanent link">#</a></h2>
+<p>LOS is invoked from any waypoint using the right mouse button. There are two specific options:</p>
+<p><img alt="Menu Options" src="../images/los-menu.png" width="30%" /></p>
+<ul>
+<li><strong>LOS Analysis</strong> : The user can select locations on the mission via a slider and run an analysis. A LOS calculation is performed, a graphical view is shown and a red (no LOS) or green (LOS) line is displayed on the map from the observer (home location) to the chosen location. This may be repeated as required.</li>
+<li><strong>Auto LOS</strong> : The calculation is performed automatically with 1% increments of the mission length. A set of resulting red or green LOS lines is displayed om the map. This requires that the user has <a href="#user-bing-key">applied their own Bing API key</a>.</li>
+</ul>
+<h2 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">#</a></h2>
+<p>Note that when the LOS slider is displayed, the only UI actions available are:</p>
+<ul>
+<li>Scroll the map</li>
+<li>Zoom the map</li>
+<li>Change the map product</li>
+</ul>
+<p>This restriction means that the mission cannot be changed while a LOS Analysis is being performed.</p>
+<h3 id="manual-los-analysis">Manual LOS Analysis<a class="headerlink" href="#manual-los-analysis" title="Permanent link">#</a></h3>
+<p>In the image below, the user has selected "LOS Analysis" from the right mouse menu at WP9. The slider is positioned appropriate to WP9. Note that if the mission contains JUMP WPs, these are executed once only (regardless of the mission setting). This is why the slider might appear less advanced compared to the mission length if the JUMP is ignored. The user can reposition the WP using the slider.</p>
+<p>When "Perform LOS" is clicked, the LOS is calculated between planned home (brown icon, lower left) and the red "⨁" "Point of Interest" (POI) icon. This is displayed as a terrain slide with the LOS line superimposed over the terrain elevation. The line is red as there is no LOS (it would be green where there is LOS). A red "dot-dash" is also displayed on the map.</p>
+<p>The user may repeat the "move slider" / "Perform LOS" action as required. The prior terrain plot is removed each time "Perform LOS" is selected; the lines on the map are removed when the slider dialog is closed.</p>
+<p><img alt="Manual LOS" src="../images/los_manual.png" /></p>
+<h3 id="auto-los">Auto LOS<a class="headerlink" href="#auto-los" title="Permanent link">#</a></h3>
+<p>If the user has specified a <a href="#user-bing-api-key">user supplied Bing API key</a>, then an "Auto LOS" analysis can be run.</p>
+<p><img alt="Auto LOS" src="../images/auto-los.png" /></p>
+<p>The image shows the state at the end of the analysis. While the analysis is running, the slider and "Perform LOS" are not sensitive; once the run has completed, these controls are available if the user wishes to investigate further.</p>
+<p>Here we can see that there is an area of the mission (SE quadrant) where there is no LOS.</p>
+<h2 id="user-bing-api-key">User Bing API Key<a class="headerlink" href="#user-bing-api-key" title="Permanent link">#</a></h2>
+<p>In the same way that the INAV Configurator requires the user to have their own Bing API key, this is also required for the <a href="#auto-los">Auto LOS</a> option. Details on now to obtain a key can be found in the <a href="https://github.com/iNavFlight/inav-configurator#how-to-get-the-bing-maps-api-key">INAV Configurator README</a>.</p>
+<p>The user's Bing API key should be added to the user's <code>$HOME/.config/mwp/cmdopts</code> <a href="../mwp-Configuration/#cmdopts">file</a>, for example:</p>
+<pre><code>#--debug-flags 20
+--dont-maximise
+
+MWP_BLACK_TILE=/home/jrh/.config/mwp/mars.png
+MWP_TIME_FMT=%T.%f
+MWP_BING_KEY=Axxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 </code></pre>
-<p>This sets the default safehomes file to <code>~/.config/mwp/safehome.txt</code> and the appended <code>,Y</code> means display the icons on the map.</p>
-<h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">#</a></h3>
-<p>The image below shows a blackbox replay. Note that the flight home location (brown icon) is coincident with the pale orange safehome icon.</p>
-<p><img alt="mwp safehomes replay" src="../images/mwp-safehomes-replay.png" width="50%" /></p>
+<p>This requirement is to help prevent the generic application API key running into usage limits,</p>
 
   <hr>
 <div class="md-source-file">
   <small>
     
       Last update:
-      2022-04-26
+      2023-11-08
     
   </small>
 </div>
