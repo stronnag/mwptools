@@ -11,7 +11,7 @@
 
 There are a number of issues to take into consideration.
 
-* Online DEMs (Digital Elevation Model) vary [significantly](Mission-Elevation-Plot-and-Terrain-Analysis/#datum), with implications for accuracy.
+* Online DEMs (Digital Elevation Model) vary [significantly](Mission-Elevation-Plot-and-Terrain-Analysis.md/#datum), with implications for accuracy.
 * Bing Elevations (BE) limits a single query to 1024 points, the data is 30m grid (best case). BE is actually more generous than most online sources.
 * The mwp uses the lesser of (mission length / 30) (metres) or 1024 points.
 
