@@ -63,7 +63,8 @@ plugins:
           text: Watch on Vimeo
         - src: https://player.vimeo.com/video/256052320?h=83d47b048d
           text: Watch on Vimeo
-
+        - src: https://www.youtube.com/embed/UnejePWHMuM
+          text: Watch on Youtube
 extra_css:
   - assets/extra.css
   - assets/pdf.css

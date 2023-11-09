@@ -1185,7 +1185,11 @@ public class MWP : Gtk.Application {
 			var bbl = new Subprocess(SubprocessFlags.STDERR_MERGE|SubprocessFlags.STDOUT_PIPE,
 									 app, "--help");
 			bbl.communicate_utf8(null, null, out bblhelp, null);
-			bbl.wait_check_async.begin();
+			bbl.wait_check_async.begin(null, (obj,res) => {
+					try {
+						ok = bbl.wait_check_async.end(res);
+					} catch { /* exit status != 0 */ }
+				});
         } catch (Error e) {
 			bblhelp = e.message;
 			ok = false;

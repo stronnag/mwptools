@@ -57,6 +57,9 @@ The image shows the state at the end of the analysis. While the analysis is runn
 
 Here we can see that there is an area of the mission (SE quadrant) where there is no LOS.
 
+
+<iframe width="1032" height="607" src="https://www.youtube.com/embed/UnejePWHMuM" title="mwp LOS (Line of Sight) Tool" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
 ## User Bing API Key
 
 In the same way that the INAV Configurator requires the user to have their own Bing API key, this is also required for the [Auto LOS](#auto-los) option. Details on now to obtain a key can be found in the [INAV Configurator README](https://github.com/iNavFlight/inav-configurator#how-to-get-the-bing-maps-api-key).
