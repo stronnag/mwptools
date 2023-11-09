@@ -379,7 +379,7 @@ public class ListBox : GLib.Object {
 		losa.destroy.connect (() => {
 				mp.mwin_freeze(true);
 				freeze_points(true);
-				if ((FakeHome.usedby && FakeHome.USERS.Terrain) != 0) {
+				if ((FakeHome.usedby & FakeHome.USERS.Terrain) != 0) {
 					FakeHome.usedby &= FakeHome.USERS.Terrain;
 				}
 			});
