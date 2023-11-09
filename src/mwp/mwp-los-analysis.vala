@@ -235,6 +235,7 @@ public class LOSSlider : Gtk.Window {
 					los_auto_async.end(res);
 					slider.sensitive = true;
 					button.sensitive = true;
+					_auto = false;
 				});
 		}
 	}
