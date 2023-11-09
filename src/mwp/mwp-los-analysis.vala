@@ -106,6 +106,8 @@ public class LOSPoint : Object {
 		pmlayer.add_node(ip0);
 		players += pmlayer;
 		_view.add_layer (pmlayer);
+		var pp = fmlayer.get_parent();
+		pp.set_child_below_sibling(pmlayer, null);
 	}
 
 }

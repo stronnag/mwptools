@@ -778,19 +778,14 @@ public class MWPMarkers : GLib.Object {
 	public void freeze_mission(bool act) {
 		if (act == true) {
 			markers.set_all_markers_draggable ();
-			markers.set_selection_mode (Champlain.SelectionMode.SINGLE);
 		} else {
 			markers.set_all_markers_undraggable ();
-			markers.set_selection_mode (Champlain.SelectionMode.NONE);
 		}
-			/**
 		var mlist = markers.get_markers();
 		for (unowned GLib.List<weak Champlain.Marker> lp = mlist.first(); lp != null; lp = lp.next) {
 			var m = (MWPLabel)lp.data;
-			m.set_draggable(act);
-			m.set_selectable(act);
+			m.set_reactive(act);
 		}
-			*/
 	}
 
     public void remove_all() {

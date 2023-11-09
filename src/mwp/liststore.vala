@@ -379,13 +379,22 @@ public class ListBox : GLib.Object {
 		losa.destroy.connect (() => {
 				mp.mwin_freeze(true);
 				freeze_points(true);
+				FakeHome.usedby |= FakeHome.USERS.Terrain;
 			});
 
         HomePos hp={0,0,false};
         if(fhome != null && FakeHome.is_visible) {
-            hp.valid = true;
             fhome.get_fake_home(out hp.hlat, out hp.hlon);
-        }
+			stderr.printf(":DBG: LOS found %f %f\n", hp.hlat, hp.hlon);
+        } else {
+			hp.hlat = mp.view.get_center_latitude();
+			hp.hlon = mp.view.get_center_longitude();
+			fhome.set_fake_home(hp.hlat, hp.hlon);
+			FakeHome.usedby |= FakeHome.USERS.Terrain;
+			fhome.show_fake_home(true);
+			stderr.printf(":DBG: LOS set %f %f\n", hp.hlat, hp.hlon);
+		}
+		hp.valid = true;
 		var ms = to_mission();
 		mp.mwin_freeze(false);
 		freeze_points(false);
