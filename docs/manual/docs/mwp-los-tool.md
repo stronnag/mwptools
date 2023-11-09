@@ -1,4 +1,4 @@
-# mwp Line of Sight (LOS) Tool
+# Line of Sight (LOS) Tool
 
 ## Overview
 
@@ -70,4 +70,4 @@ The user's Bing API key should be added to the user's `$HOME/.config/mwp/cmdopts
     MWP_TIME_FMT=%T.%f
     MWP_BING_KEY=Axxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-This requirement is to help prevent the generic application API key running into usage limits,
+This requirement is to help prevent the generic application API key running into usage limits. Using your own key will help ensure the availability of Bing map products for all users.
