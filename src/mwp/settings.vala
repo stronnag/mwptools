@@ -115,6 +115,7 @@ public class MWPSettings : GLib.Object {
     public string gpsdhost {get; set; default="localhost";}
     public int misciconsize {get; set; default=32;}
     public int show_sticks {get; set; default=0;}
+	public int los_margin {get; set; default=0;}
 
     public signal void settings_update (string s);
 
@@ -410,6 +411,8 @@ public class MWPSettings : GLib.Object {
 
 		if(s == null || s == "show-sticks")
             show_sticks = settings.get_enum("show-sticks");
+		if(s == null || s == "los-margin")
+            los_margin = settings.get_int("los-margin");
 	}
 
     public void save_pane() {
@@ -421,6 +424,10 @@ public class MWPSettings : GLib.Object {
         if (settings != null)
             settings.set_boolean("tote-float-p", val);
     }
+
+	public void save_los_margin() {
+		settings.set_int("los-margin", los_margin);
+	}
 
     public void save_settings() {
         if (settings != null) {

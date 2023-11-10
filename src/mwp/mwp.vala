@@ -340,6 +340,7 @@ public class MWP : Gtk.Application {
 		SERIAL = (1 << 6),
 		VIDEO = (1 << 7),
 		GCSLOC = (1 << 8),
+		LOSANA = (1 << 9),
     }
 
     private enum SAT_FLAGS {
@@ -642,7 +643,7 @@ public class MWP : Gtk.Application {
     private string forward_device = null;
     private string[]? radar_device = null;
     private int dmrtype=0;
-    private DEBUG_FLAGS debug_flags = 0;
+    public DEBUG_FLAGS debug_flags = 0;
     private bool set_fs;
     private int stack_size = 0;
     private int mod_points = 0;

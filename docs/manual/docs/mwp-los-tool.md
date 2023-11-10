@@ -23,13 +23,14 @@ LOS is invoked from any waypoint using the right mouse button. There are two spe
 
 ![Menu Options](images/los-menu.png){: width="30%" }
 
-* **LOS Analysis** : The user can select locations on the mission via a slider and run an analysis. A LOS calculation is performed, a graphical view is shown and a red (no LOS) or green (LOS) line is displayed on the map from the observer (home location) to the chosen location. This may be repeated as required.
+* **LOS Analysis** : The user can select locations on the mission via a slider and run an analysis. A LOS calculation is performed, a graphical view is shown and a red (no LOS), orange (LOS below a user defined margin) or green (unconditional LOS) line is displayed on the map from the observer (home location) to the chosen location. This may be repeated as required.
 * **Auto LOS** : The calculation is performed automatically with 1% increments of the mission length. A set of resulting red or green LOS lines is displayed om the map. This requires that the user has [applied their own Bing API key](#user-bing-key).
 
+Note that both options are also available from the LOS analysis window; the "Auto LOS" menu option is merely a convenience.
 
 ## Examples
 
-Note that when the LOS slider is displayed, the only UI actions available are:
+When the LOS slider is displayed, the only UI actions available are:
 
 * Scroll the map
 * Zoom the map
@@ -41,9 +42,11 @@ This restriction means that the mission cannot be changed while a LOS Analysis i
 
 In the image below, the user has selected "LOS Analysis" from the right mouse menu at WP9. The slider is positioned appropriate to WP9. Note that if the mission contains JUMP WPs, these are executed once only (regardless of the mission setting). This is why the slider might appear less advanced compared to the mission length if the JUMP is ignored. The user can reposition the WP using the slider.
 
-When "Perform LOS" is clicked, the LOS is calculated between planned home (brown icon, lower left) and the red "⨁" "Point of Interest" (POI) icon. This is displayed as a terrain plot with the LOS line superimposed over the terrain elevation. The line is red as there is no LOS (it would be green where there is LOS). A red "dot-dash" is also displayed on the map.
+When "Point LOS" is clicked, the LOS is calculated between planned home (brown icon, lower left) and the red "⨁" "Point of Interest" (POI) icon. This is displayed as a terrain plot with the LOS line superimposed over the terrain elevation. The line is red as there is no LOS (and it would be green where there is LOS). A red "dot-dash" is also displayed on the map. If a margin is specified, then LOS lines with clearance between the terrain and the margin value are shown in orange.
 
-The user may repeat the "move slider" / "Perform LOS" action as required. The prior terrain plot is removed each time "Perform LOS" is selected; the lines on the map are removed when the slider dialog is closed.
+The user may repeat the "move slider" / "Point LOS" action as required. The prior terrain plot is removed each time "Point LOS" is selected; the lines on the map are removed when the slider dialog is closed. "Auto LOS" may be used to run a continuous analysis from the currently selected location.
+
+When an analysis results in an orange or red LOS line, the first point where the LOS break is detected is shown on the line as a coloured blob. This is apparent in the Auto image below.
 
 ![Manual LOS](images/los_manual.png)
 
@@ -53,12 +56,11 @@ If the user has specified a [user supplied Bing API key](#user-bing-api-key), th
 
 ![Auto LOS](images/auto-los.png)
 
-The image shows the state at the end of the analysis. While the analysis is running, the slider and "Perform LOS" are not sensitive; once the run has completed, these controls are available if the user wishes to investigate further.
+The image shows the state after a complete "Auto" analysis. While the analysis is running, the slider and "Point LOS" are not sensitive; once the run has completed, these controls are available if the user wishes to investigate further. The user can stop (and restart) Auto  using the "Auto LOS" / "Stop" button.
 
-Here we can see that there is an area of the mission (SE quadrant) where there is no LOS.
+Here, the user has subsequently used "Point LOS" to examine a point in the orange region. As expected, there is very little clearance between the LOS line and the terrain. This is confirmed on the map plot where the "blobs" indicate the point where LOS is compromised.
 
-
-<iframe width="1032" height="607" src="https://www.youtube.com/embed/UnejePWHMuM" title="mwp LOS (Line of Sight) Tool" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<iframe width="768" height="634" src="https://www.youtube.com/embed/EIm8vksK1Pg" title="mwp LOS (Line of Sight) Tool" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
 ## User Bing API Key
 

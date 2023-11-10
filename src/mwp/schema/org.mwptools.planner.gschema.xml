@@ -646,5 +646,11 @@
       <description>If "yes", stick position is shown during log replay, if "no" , never shown. If "decorated", then shown in a decorated window (for window managers that can't cope with un-decorated windows), e.g. WSL, Cygwin</description>
     </key>
 
+    <key name="los-margin" type="i">
+      <default>0</default>
+      <summary>Margin(m) for LOS Analysis</summary>
+      <description>Margin(m) for LOS Analysis</description>
+    </key>
+
   </schema>
 </schemalist>

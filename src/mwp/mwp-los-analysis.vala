@@ -49,13 +49,18 @@ public class LOSPoint : Object {
 		players = {};
 	}
 
-	public static void clear() {
+	public static void clear_los_lines() {
+		clear_all();
+		fmlayer.add_marker(fmpt);
+	}
+
+	public static void clear_all() {
 		foreach(var p in players) {
 			p.remove_all();
 			_view.remove_layer(p);
 		}
 		players = {};
-		fmlayer.hide_all_markers();
+		fmlayer.remove_all();
 	}
 
 	public static void show_los(bool state) {
@@ -79,21 +84,32 @@ public class LOSPoint : Object {
 		relalt = xalt;
     }
 
-	public static void add_path(double lat0, double lon0, double lat1, double lon1, bool ok) {
-        Clutter.Color red1 = {0xf0, 0x0, 0x0, 0x60};
-        Clutter.Color green1 = {0x0, 0xf0, 0x0, 0x60};
+	public static void add_path(double lat0, double lon0, double lat1, double lon1, uint8 col,
+								double ldist) {
+        Clutter.Color green = {0x0, 0xff, 0x0, 0xa0};
+        Clutter.Color warning = {0xff, 0xa5, 0x0, 0xa0}; // {0xad, 0xff, 0x2f, 0xa0};
+        Clutter.Color red = {0xff, 0x0, 0x0, 0xa0};
+
         var pmlayer = new Champlain.PathLayer();
 		var llist = new List<uint>();
         llist.append(5);
         llist.append(5);
         llist.append(15);
         llist.append(5);
-
-		if (ok) {
-			pmlayer.set_stroke_color(green1);
-		} else {
-			pmlayer.set_stroke_color(red1);
+		Clutter.Color wcol;
+		switch(col) {
+		case 0:
+			wcol = green;
+			break;
+		case 1:
+			wcol = warning;
+			pmlayer.set_stroke_color(warning);
+			break;
+		default:
+			wcol = red;
+			break;
 		}
+		pmlayer.set_stroke_color(wcol);
         pmlayer.set_dash(llist);
         pmlayer.set_stroke_width (6);
 		var ip0 =  new  Champlain.Point();
@@ -108,8 +124,17 @@ public class LOSPoint : Object {
 		_view.add_layer (pmlayer);
 		var pp = fmlayer.get_parent();
 		pp.set_child_below_sibling(pmlayer, null);
+		if(col != 0) {
+			double c,d;
+			double dlat, dlon;
+			Geo.csedist(lat0, lon0, lat1, lon1, out d, out c);
+			d *= ldist;
+			Geo.posit(lat0, lon0, c, d, out dlat, out dlon);
+			var dlos = new Champlain.Point.full(15.0, wcol);
+			dlos.set_location (dlat, dlon);
+			fmlayer.add_marker(dlos);
+		}
 	}
-
 }
 
 public class LOSSlider : Gtk.Window {
@@ -119,8 +144,20 @@ public class LOSSlider : Gtk.Window {
 	private HomePos _hp;
 	private Gtk.Scale slider;
 	private Gtk.Button button;
-	private bool is_running;
-	private bool _auto;
+	private Gtk.Button abutton;
+	private Gtk.Button cbutton;
+	private Gtk.SpinButton mentry;
+	private static bool is_running;
+	private bool  _auto;
+	private bool  _can_auto;
+	private int _margin;
+	private bool mlog;
+
+	public signal void new_margin(int m);
+
+	public void set_log(bool _mlog) {
+		mlog = _mlog;
+	}
 
 	private void update_from_pos(double ppos) {
 		var pdist = maxd*ppos / 1000.0;
@@ -163,7 +200,11 @@ public class LOSSlider : Gtk.Window {
 		var deltad = 0.0;
 		if (j != 0) {
 			deltad = pdist - plist[j-1].dist;
+		} else {
+			deltad = pdist;
 		}
+
+
 		var csed = plist[j].cse;
 		double nlat, nlon;
 		Geo.posit(slat, slon, csed, deltad/1852.0, out nlat, out nlon);
@@ -174,28 +215,77 @@ public class LOSSlider : Gtk.Window {
 		LOSPoint.set_lospt(nlat, nlon, fdalt);
 	}
 
-	public LOSSlider (Gtk.Window? _w, Champlain.View view) {
+	public LOSSlider (Gtk.Window? _w, Champlain.View view, int lmargin) {
+		_can_auto = (Environment.get_variable("MWP_BING_KEY") != null);
+		_margin = lmargin;
 		this.title = "LOS Analysis";
 		this.window_position = Gtk.WindowPosition.CENTER;
 		var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 2);
 		slider = new Gtk.Scale.with_range (Gtk.Orientation.HORIZONTAL, 0, 1000, 1);
-		slider.draw_value = false;
+		slider.format_value.connect ((v) => {
+				return "%.1f%%".printf(v/10.0);
+			});
+		slider.draw_value = true;
 		slider.value_changed.connect (() => {
+				var ppos = slider.get_value ();
+				if(ppos < 1) {
+					button.sensitive = false;
+					abutton.sensitive = _can_auto;
+				} else if  (ppos > 999) {
+					button.sensitive = false;
+					abutton.sensitive = false;
+				} else if (!_auto) {
+					button.sensitive = true;
+					abutton.sensitive = _can_auto;
+				}
 				if (!_auto) {
-					var ppos = slider.get_value ();
 					update_from_pos(ppos);
 				}
 			});
+		var hbox =  new Gtk.Box (Gtk.Orientation.HORIZONTAL, 2);
+		var mlab = new Gtk.Label("Margin (m):");
+
+		mentry = new Gtk.SpinButton.with_range (0, 120, 1);
+		mentry.value = _margin;
+
 		box.pack_start (slider, true, false, 1);
 		var bbox = new Gtk.ButtonBox (Gtk.Orientation.HORIZONTAL);
-		button = new Gtk.Button.with_label ("Perform LOS");
+		abutton = new Gtk.Button.with_label ("Auto LOS");
+		abutton.clicked.connect(() => {
+				if (abutton.label == "Auto LOS") {
+					_margin = mentry.get_value_as_int ();
+					var ppos = slider.get_value ();
+					abutton.label = "Stop";
+					auto_run((int)ppos);
+				} else {
+					abutton.label = "Auto LOS";
+					is_running = false;
+				}
+			});
+
+		abutton.sensitive=_can_auto;
+		button = new Gtk.Button.with_label ("Point LOS");
 		button.clicked.connect(() => {
 				Utils.terminate_plots();
+				_margin = mentry.get_value_as_int ();
 				run_elevation_tool();
+				cbutton.sensitive = true;
 			});
+
+		cbutton = new Gtk.Button.with_label ("Clear");
+		cbutton.clicked.connect(() => {
+				LOSPoint.clear_los_lines();
+				cbutton.sensitive = false;
+			});
+		cbutton.sensitive = false;
 		bbox.set_layout (Gtk.ButtonBoxStyle.END);
 		bbox.add (button);
-		box.pack_start (bbox, false, false, 1);
+		bbox.add (abutton);
+		bbox.add (cbutton);
+		box.pack_start(hbox);
+		hbox.pack_start (mlab, false, false, 1);
+		hbox.pack_start (mentry, false, false, 1);
+		hbox.pack_end (bbox, false, false, 1);
 		this.default_width = 600;
 		set_transient_for (_w);
 		if (LOSPoint.is_init == false) {
@@ -203,8 +293,10 @@ public class LOSSlider : Gtk.Window {
 		}
 
 		this.destroy.connect(() => {
+				_margin = mentry.get_value_as_int ();
+				new_margin(_margin);
 				is_running = false;
-				LOSPoint.clear();
+				LOSPoint.clear_all();
 				Utils.terminate_plots();
 			});
 		this.add(box);
@@ -214,14 +306,13 @@ public class LOSSlider : Gtk.Window {
 	public void run(Mission ms, HomePos hp, int wpno, bool auto) {
 		_auto = auto;
 		_hp = hp;
-		is_running = true;
 		mt = new MissionPreviewer();
 		plist =  mt.check_mission(ms, hp, true);
 		maxd =  plist[plist.length-1].dist;
 		LOSPoint.show_los(true);
-		if (!auto) {
+		if (_auto == false) {
 			var j = 0;
-			for (j = 0; j < plist.length; j++) {
+			for (; j < plist.length; j++) {
 				if(plist[j].p2 + 1 == wpno) {
 					break;
 				}
@@ -230,21 +321,32 @@ public class LOSSlider : Gtk.Window {
 			var pct = (int)(1000.0*adist/maxd);
 			slider.set_value(pct);
 		} else {
-			Utils.terminate_plots();
-			slider.sensitive = false;
-			button.sensitive = false;
-			los_auto_async.begin((obj,res) => {
-					los_auto_async.end(res);
-					slider.sensitive = true;
-					button.sensitive = true;
-					_auto = false;
-				});
+			auto_run(0);
 		}
 	}
 
-	private async bool los_auto_async() {
+	private void auto_run(int dp) {
+		Utils.terminate_plots();
+		slider.sensitive = false;
+		button.sensitive = false;
+		mentry.sensitive = false;
+		cbutton.sensitive = false;
+
+		is_running = true;
+		_auto = true;
+		abutton.label = "Stop";
+		los_auto_async.begin(dp, (obj,res) => {
+				los_auto_async.end(res);
+				slider.sensitive = true;
+				mentry.sensitive = true;
+				abutton.label = "Auto LOS";
+				cbutton.sensitive = true;
+				_auto = false;
+			});
+	}
+
+	private async bool los_auto_async(int dp) {
 		var thr = new Thread<bool> ("mwp-losauto", () => {
-				int dp = 0;
 				while (is_running) {
 					update_from_pos((double)dp);
 					Idle.add(() => {
@@ -253,10 +355,18 @@ public class LOSSlider : Gtk.Window {
 						});
 					run_elevation_tool();
 					dp += 10;
-					if (dp > 1000)
+					if (dp > 1000) {
 						break;
+					}
 				}
+				is_running = false;
 				Idle.add (los_auto_async.callback);
+				if(dp > 999.9) {
+					Idle.add (()=> {
+							slider.set_value(1000.0);
+							return false;
+						});
+				}
 				return true;
 			});
 		yield;
@@ -274,9 +384,12 @@ public class LOSSlider : Gtk.Window {
 		if (_auto) {
 			spawn_args += "-no-graph";
 		}
+		spawn_args += "-margin=%d".printf(_margin);
         spawn_args += "-home=%.8f,%.8f".printf(_hp.hlat, _hp.hlon);
 		spawn_args += "-single=%.8f,%.8f,%.0f".printf(lat, lon, alt);
-        MWPLog.message("LOS %s\n", string.joinv(" ",spawn_args));
+		if (mlog) {
+			MWPLog.message("LOS %s\n", string.joinv(" ",spawn_args));
+		}
 		var msg = "";
 		bool ok = false;
 		try {
@@ -286,10 +399,12 @@ public class LOSSlider : Gtk.Window {
 					try {
 						ok =  los.wait_check_async.end(res);
 						msg = msg.chomp();
-						var havelos  = (msg[0] == '0');
-						if (is_running) {
+						var parts = msg.split(" ");
+						uint8 losc  = (uint8)int.parse(parts[0]);
+						double ldist = double.parse(parts[1]);
+						if (!_auto || is_running) {
 							Idle.add(() => {
-									LOSPoint.add_path(_hp.hlat,  _hp.hlon, lat, lon, havelos);
+									LOSPoint.add_path(_hp.hlat,  _hp.hlon, lat, lon, losc, ldist);
 									return false;
 								});
 						}

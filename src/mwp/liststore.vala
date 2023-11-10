@@ -375,7 +375,16 @@ public class ListBox : GLib.Object {
 	}
 
 	private void LOS_analysis(bool auto=false) {
-		var losa = new LOSSlider(mp.window, mp.view);
+		var losa = new LOSSlider(mp.window, mp.view, MWP.conf.los_margin);
+
+		if((mp.debug_flags & MWP.DEBUG_FLAGS.LOSANA) != MWP.DEBUG_FLAGS.NONE) {
+			losa.set_log(true);
+		}
+		losa.new_margin.connect((m) => {
+				MWP.conf.los_margin = m;
+				MWP.conf.save_los_margin();
+			});
+
 		losa.destroy.connect (() => {
 				mp.mwin_freeze(true);
 				freeze_points(true);
