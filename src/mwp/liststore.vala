@@ -375,7 +375,7 @@ public class ListBox : GLib.Object {
 	}
 
 	private void LOS_analysis(bool auto=false) {
-		var losa = new LOSSlider(mp.window, mp.view);
+		var losa = new LOSSlider(mp.window, mp.view, mp.x_plot_elevations_rb);
 		losa.destroy.connect (() => {
 				mp.mwin_freeze(true);
 				freeze_points(true);

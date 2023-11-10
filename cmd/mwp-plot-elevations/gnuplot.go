@@ -30,7 +30,7 @@ func getGnuplotCaps() int {
 	return ttypes
 }
 
-func Gnuplot_mission(mpts []Point, gnd []int, spt bool, lok int) int {
+func Gnuplot_mission(mpts []Point, gnd []int, spt bool, los int) int {
 	req := 0
 	if Conf.Noplot == false {
 		req |= 1
@@ -143,16 +143,30 @@ set yrange [ `)
 	if spt {
 		mstr = "LOS"
 	}
-	lcol := "red"
-	if spt && lok == 0 {
+
+	var lcol string
+	switch los {
+	case 0:
 		lcol = "#2E8B57"
+		break
+	case 1:
+		lcol = "yellowgreen"
+		break
+	case 2:
+		lcol = "orange"
+		break
+	default:
+		lcol = "red"
+		break
 	}
 	fmt.Fprintf(w, "plot '%s' using 1:2 t \"Terrain\" w filledcurve y1=%d lt -1 lw 2  lc rgb \"#40a4cbb8\", '%s' using 1:2 t \"%s\" w lines lt -1 lw 2  lc rgb \"%s\"", tfname, minz, mfname, mstr, lcol)
-	if Conf.Margin != 0 {
-		fmt.Fprintf(w, ", '%s' using 1:3 t \"Margin %dm\" w lines lt -1 lw 2  lc rgb \"web-blue\"", tfname, Conf.Margin)
-	}
-	if Conf.Output != "" {
-		fmt.Fprintf(w, ", '%s' using 1:3 t \"Adjust\" w lines lt -1 lw 2  lc rgb \"orange\"", mfname)
+	if !spt {
+		if Conf.Margin != 0 {
+			fmt.Fprintf(w, ", '%s' using 1:3 t \"Margin %dm\" w lines lt -1 lw 2  lc rgb \"web-blue\"", tfname, Conf.Margin)
+		}
+		if Conf.Output != "" {
+			fmt.Fprintf(w, ", '%s' using 1:3 t \"Adjust\" w lines lt -1 lw 2  lc rgb \"orange\"", mfname)
+		}
 	}
 	w.WriteString("\n")
 

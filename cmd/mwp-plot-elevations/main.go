@@ -99,7 +99,6 @@ func main() {
 		m.MissionItems = mis
 		mpts = m.Get_points()
 		mpts[1].Wpname = "Query"
-		Conf.Margin = 0
 	}
 	elev, err := Get_elevations(mpts, 0)
 	if err == nil {
@@ -135,18 +134,16 @@ func main() {
 			m.Save(mpts)
 		}
 
-		ok := 0
+		los := 0
 		if spt != "" {
-			los := CheckLOS(mpts, telev)
-			if !los {
-				ok = 1
-			}
+			fmt.Fprintf(os.Stderr, "LOS Margin: %d\n", Conf.Margin)
+			los, _ = CheckLOS(mpts, telev, Conf.Margin)
 		}
-		gpid := Gnuplot_mission(mpts, telev, (spt != ""), ok)
+		Gnuplot_mission(mpts, telev, (spt != ""), los)
 		if spt == "" {
 			Dump_climb_dive(mpts, true)
 		} else {
-			fmt.Printf("%d %d\n", ok, gpid)
+			fmt.Printf("%d\n", los)
 		}
 	}
 	Dump_data(mpts, "/tmp/.mwpmission.json")
