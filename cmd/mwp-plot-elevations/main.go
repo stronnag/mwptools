@@ -123,8 +123,6 @@ func main() {
 			npts = 1024
 		}
 
-		//		fmt.Fprintf(os.Stderr, "Dist, npts %.3f %d\n", mpts[len(mpts)-1].D, npts)
-
 		telev, err := Get_elevations(mpts, npts)
 		if err != nil {
 			log.Fatal(err)
@@ -135,15 +133,15 @@ func main() {
 		}
 
 		los := 0
+		nat := 0
 		if spt != "" {
-			fmt.Fprintf(os.Stderr, "LOS Margin: %d\n", Conf.Margin)
-			los, _ = CheckLOS(mpts, telev, Conf.Margin)
+			los, nat = CheckLOS(mpts, telev, Conf.Margin)
 		}
 		Gnuplot_mission(mpts, telev, (spt != ""), los)
 		if spt == "" {
 			Dump_climb_dive(mpts, true)
 		} else {
-			fmt.Printf("%d\n", los)
+			fmt.Printf("%d %d\n", los, nat)
 		}
 	}
 	Dump_data(mpts, "/tmp/.mwpmission.json")

@@ -147,13 +147,10 @@ set yrange [ `)
 	var lcol string
 	switch los {
 	case 0:
-		lcol = "#2E8B57"
+		lcol = "#2e8b57"
 		break
 	case 1:
-		lcol = "yellowgreen"
-		break
-	case 2:
-		lcol = "orange"
+		lcol = "#ffa500" // "#adff2f"
 		break
 	default:
 		lcol = "red"

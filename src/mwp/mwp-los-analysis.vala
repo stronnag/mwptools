@@ -85,8 +85,7 @@ public class LOSPoint : Object {
 
 	public static void add_path(double lat0, double lon0, double lat1, double lon1, uint8 col) {
         Clutter.Color green = {0x0, 0xff, 0x0, 0xa0};
-        Clutter.Color yellow = {0xad, 0xff, 0x2f, 0xa0};
-        Clutter.Color orange = {0xff, 0xa5, 0x0, 0xa0};
+        Clutter.Color warning = {0xff, 0xa5, 0x0, 0xa0}; // {0xad, 0xff, 0x2f, 0xa0};
         Clutter.Color red = {0xff, 0x0, 0x0, 0xa0};
 
         var pmlayer = new Champlain.PathLayer();
@@ -101,10 +100,7 @@ public class LOSPoint : Object {
 			pmlayer.set_stroke_color(green);
 			break;
 		case 1:
-			pmlayer.set_stroke_color(yellow);
-			break;
-		case 2:
-			pmlayer.set_stroke_color(orange);
+			pmlayer.set_stroke_color(warning);
 			break;
 		default:
 			pmlayer.set_stroke_color(red);
@@ -140,7 +136,7 @@ public class LOSSlider : Gtk.Window {
 	private static bool is_running;
 	private bool  _auto;
 	private bool  _can_auto;
-	private int _margin;
+	private static int _margin;
 
 	private void update_from_pos(double ppos) {
 		var pdist = maxd*ppos / 1000.0;
@@ -211,7 +207,7 @@ public class LOSSlider : Gtk.Window {
 		var mlab = new Gtk.Label("Margin (m):");
 
 		mentry = new Gtk.SpinButton.with_range (0, 120, 1);
-
+		mentry.value = _margin;
 		box.pack_start (slider, true, false, 1);
 		var bbox = new Gtk.ButtonBox (Gtk.Orientation.HORIZONTAL);
 		abutton = new Gtk.Button.with_label ("Auto LOS");
@@ -256,6 +252,7 @@ public class LOSSlider : Gtk.Window {
 		}
 
 		this.destroy.connect(() => {
+				_margin = mentry.get_value_as_int ();
 				is_running = false;
 				LOSPoint.clear();
 				Utils.terminate_plots();
@@ -351,7 +348,9 @@ public class LOSSlider : Gtk.Window {
 					try {
 						ok =  los.wait_check_async.end(res);
 						msg = msg.chomp();
-						uint8 losc  = (uint8)int.parse(msg);
+						var parts = msg.split(" ");
+						uint8 losc  = (uint8)int.parse(parts[0]);
+						// int dist = int.parse(parts[1]); /* unused for now */
 						if (!_auto || is_running) {
 							Idle.add(() => {
 									LOSPoint.add_path(_hp.hlat,  _hp.hlon, lat, lon, losc);
