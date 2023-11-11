@@ -206,7 +206,6 @@ public class ListBox : GLib.Object {
     private Gtk.MenuItem terrain_item;
     private Gtk.MenuItem terrain_popitem;
     private Gtk.MenuItem los_popitem;
-    private Gtk.MenuItem losauto_popitem;
     private Gtk.MenuItem replicate_item;
     private Gtk.MenuItem speedz_item;
     private Gtk.MenuItem speedv_item;
@@ -309,7 +308,7 @@ public class ListBox : GLib.Object {
 
         marker_menu.add (new Gtk.SeparatorMenuItem ());
 
-        item = new Gtk.MenuItem.with_label ("Edit WP");
+        item = new Gtk.MenuItem.with_label ("Edit WP ...");
         item.activate.connect (() => {
                 pop_menu_edit(mpop_no);
             });
@@ -331,7 +330,7 @@ public class ListBox : GLib.Object {
         marker_menu.add (pop_preview_item);
 
 
-		terrain_popitem = new Gtk.MenuItem.with_label ("Terrain Analysis");
+		terrain_popitem = new Gtk.MenuItem.with_label ("Terrain Analysis ...");
 		terrain_popitem.activate.connect (() => {
 				terrain_mission();
 			});
@@ -339,22 +338,24 @@ public class ListBox : GLib.Object {
 		terrain_popitem.sensitive = false;
 		marker_menu.add (terrain_popitem);
 
-		los_popitem = new Gtk.MenuItem.with_label ("LOS Analysis");
+		los_popitem = new Gtk.MenuItem.with_label ("Line of sight ...");
+
 		los_popitem.activate.connect (() => {
-				LOS_analysis();
+				int es;
+				bool wants_auto = false;
+				if ( Gtk.get_current_event_state(out es)) {
+					if ((es & (Gdk.ModifierType.SHIFT_MASK|Gdk.ModifierType.CONTROL_MASK|Gdk.ModifierType.MOD1_MASK)) != 0) {
+						wants_auto = (Environment.get_variable("MWP_BING_KEY") != null);
+					}
+					stderr.printf(":DBG: MASK %d %d\n", es, (es&0xff));
+				}
+				LOS_analysis(wants_auto);
 			});
 		los_popitem.sensitive = false;
 		marker_menu.add (los_popitem);
 
-		losauto_popitem = new Gtk.MenuItem.with_label ("Auto LOS");
-		losauto_popitem.activate.connect (() => {
-				LOS_analysis(true);
-			});
-		losauto_popitem.sensitive = false;
-		marker_menu.add (losauto_popitem);
-
         marker_menu.add (new Gtk.SeparatorMenuItem ());
-        pop_editor_item = new Gtk.MenuItem.with_label ("Mission Editor");
+        pop_editor_item = new Gtk.MenuItem.with_label ("Mission Editor ...");
         pop_editor_item.activate.connect (() => {
                 toggle_editor_state();
             });
@@ -2234,9 +2235,6 @@ public class ListBox : GLib.Object {
             state = false;
         terrain_item.sensitive = state;
         los_popitem.sensitive = state;
-		if (Environment.get_variable("MWP_BING_KEY") != null) {
-			losauto_popitem.sensitive = state;
-		}
     }
 
     private void set_replicate_item(bool state) {

@@ -146,6 +146,8 @@ public class LOSSlider : Gtk.Window {
 	private Gtk.Button button;
 	private Gtk.Button abutton;
 	private Gtk.Button cbutton;
+	private Gtk.Button sbutton;
+	private Gtk.Button ebutton;
 	private Gtk.SpinButton mentry;
 	private static bool is_running;
 	private bool  _auto;
@@ -215,6 +217,23 @@ public class LOSSlider : Gtk.Window {
 		LOSPoint.set_lospt(nlat, nlon, fdalt);
 	}
 
+	private void reset_slider_buttons() {
+		var ppos = slider.get_value ();
+		if(ppos < 1) {
+			button.sensitive = false;
+			abutton.sensitive = _can_auto;
+		} else if  (ppos > 999) {
+			button.sensitive = false;
+			abutton.sensitive = false;
+		} else if (!_auto) {
+			button.sensitive = true;
+			abutton.sensitive = _can_auto;
+		}
+		if (!_auto) {
+			update_from_pos(ppos);
+		}
+	}
+
 	public LOSSlider (Gtk.Window? _w, Champlain.View view, int lmargin) {
 		_can_auto = (Environment.get_variable("MWP_BING_KEY") != null);
 		_margin = lmargin;
@@ -227,20 +246,7 @@ public class LOSSlider : Gtk.Window {
 			});
 		slider.draw_value = true;
 		slider.value_changed.connect (() => {
-				var ppos = slider.get_value ();
-				if(ppos < 1) {
-					button.sensitive = false;
-					abutton.sensitive = _can_auto;
-				} else if  (ppos > 999) {
-					button.sensitive = false;
-					abutton.sensitive = false;
-				} else if (!_auto) {
-					button.sensitive = true;
-					abutton.sensitive = _can_auto;
-				}
-				if (!_auto) {
-					update_from_pos(ppos);
-				}
+				reset_slider_buttons();
 			});
 		var hbox =  new Gtk.Box (Gtk.Orientation.HORIZONTAL, 2);
 		var mlab = new Gtk.Label("Margin (m):");
@@ -248,7 +254,20 @@ public class LOSSlider : Gtk.Window {
 		mentry = new Gtk.SpinButton.with_range (0, 120, 1);
 		mentry.value = _margin;
 
-		box.pack_start (slider, true, false, 1);
+		var sbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL,1);
+		sbutton = new  Gtk.Button.from_icon_name("media-skip-backward", Gtk.IconSize.BUTTON);
+		ebutton = new  Gtk.Button.from_icon_name("media-skip-forward", Gtk.IconSize.BUTTON);
+		sbutton.clicked.connect(() => {
+				slider.set_value(0);
+			});
+		ebutton.clicked.connect(() => {
+				slider.set_value(1000);
+			});
+		sbox.pack_start(sbutton, false, false, 1);
+		sbox.pack_start (slider, true, true, 1); // ex t,f
+		sbox.pack_end(ebutton, false, false, 1);
+		box.pack_start (sbox, true, false, 1);
+
 		var bbox = new Gtk.ButtonBox (Gtk.Orientation.HORIZONTAL);
 		abutton = new Gtk.Button.with_label ("Auto LOS");
 		abutton.clicked.connect(() => {
@@ -256,7 +275,14 @@ public class LOSSlider : Gtk.Window {
 					_margin = mentry.get_value_as_int ();
 					var ppos = slider.get_value ();
 					abutton.label = "Stop";
-					auto_run((int)ppos);
+					int incr = 10;
+					int es = 0;
+					if ( Gtk.get_current_event_state(out es)) {
+						if ((es & (Gdk.ModifierType.SHIFT_MASK|Gdk.ModifierType.CONTROL_MASK|Gdk.ModifierType.MOD1_MASK)) != 0) {
+							incr = 1;
+						}
+					}
+					auto_run((int)ppos, incr);
 				} else {
 					abutton.label = "Auto LOS";
 					is_running = false;
@@ -321,31 +347,36 @@ public class LOSSlider : Gtk.Window {
 			var pct = (int)(1000.0*adist/maxd);
 			slider.set_value(pct);
 		} else {
-			auto_run(0);
+			auto_run(0,10);
 		}
 	}
 
-	private void auto_run(int dp) {
+	private void auto_run(int dp, int incr) {
 		Utils.terminate_plots();
 		slider.sensitive = false;
 		button.sensitive = false;
 		mentry.sensitive = false;
 		cbutton.sensitive = false;
+		sbutton.sensitive = false;
+		ebutton.sensitive = false;
 
 		is_running = true;
 		_auto = true;
 		abutton.label = "Stop";
-		los_auto_async.begin(dp, (obj,res) => {
+		los_auto_async.begin(dp, incr, (obj,res) => {
 				los_auto_async.end(res);
 				slider.sensitive = true;
 				mentry.sensitive = true;
 				abutton.label = "Auto LOS";
 				cbutton.sensitive = true;
+				sbutton.sensitive = true;
+				ebutton.sensitive = true;
 				_auto = false;
+				reset_slider_buttons();
 			});
 	}
 
-	private async bool los_auto_async(int dp) {
+	private async bool los_auto_async(int dp, int incr) {
 		var thr = new Thread<bool> ("mwp-losauto", () => {
 				while (is_running) {
 					update_from_pos((double)dp);
@@ -354,14 +385,14 @@ public class LOSSlider : Gtk.Window {
 							return false;
 						});
 					run_elevation_tool();
-					dp += 10;
+					dp += incr;
 					if (dp > 1000) {
 						break;
 					}
 				}
 				is_running = false;
 				Idle.add (los_auto_async.callback);
-				if(dp > 999.9) {
+				if(dp > 1000) {
 					Idle.add (()=> {
 							slider.set_value(1000.0);
 							return false;
