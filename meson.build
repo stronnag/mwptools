@@ -1,4 +1,4 @@
-project('mwptools', 'c', 'vala', version : '6.315.454', meson_version : '>= 0.60')
+project('mwptools', 'c', 'vala', version : '6.315.538', meson_version : '>= 0.60')
 
 # vala / clang16 workaround
 if meson.get_compiler('c').get_id() == 'clang'
@@ -65,7 +65,7 @@ executable('ublox-geo',
 	   include_directories : common_inc_dir,
 	   vala_args : [dopts, ublx_v_args],
 	   install:false,
-           build_by_default: false )
+           build_by_default: false)
 
 executable('ublox-cli', sources: [ublxcsrcs, ublxccommon], dependencies: [ ublxcdeps ],
 	   include_directories : common_inc_dir, vala_args : [dopts, ublx_v_args],
@@ -73,23 +73,27 @@ executable('ublox-cli', sources: [ublxcsrcs, ublxccommon], dependencies: [ ublxc
 
 executable('mwp-area-planner', sources: [apsrcs, apuisrcs, apcommon], dependencies: [ apdeps ],
 	   include_directories : common_inc_dir, vala_args : [dopts, ap_v_args],
-	   install:true )
+	   install:true
+	   )
 
 executable('flashdl',
            sources: [fdlsrcs, fccommon,  gatt_src],
            dependencies: [ fdldeps, gatt_deps],
 	   include_directories : common_inc_dir,
            vala_args : [dopts, fdl_v_args, gatt_v_args ],
+           build_by_default: false,
+           install : false,
 	   install_tag : 'flashdl',
-           install: true,
           )
 
 executable('gmproxy',
            sources: proxsrc,
            dependencies: [ proxdeps ],
 	   vala_args : dopts,
+           build_by_default: false,
+           install : false,
            install_tag: 'gmproxy',
-           install: true)
+	   )
 
 executable('mwp-gatt-bridge',
            sources: [gatt_app_src, gatt_src],
@@ -97,9 +101,10 @@ executable('mwp-gatt-bridge',
            include_directories : common_inc_dir,
            vala_args : [ dopts, gatt_v_args, gatt_app_v_args ],
            c_args: gatt_c_args,
+           build_by_default: false,
+           install : false,
            install_tag: 'gatt',
-           install: true
-          )
+	   )
 
 subdir('src/bbox-replay')
 

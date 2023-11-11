@@ -11,9 +11,9 @@ fi
 ln -f ${INSTDIR}/bin/fc-get  ${INSTDIR}/bin/fc-set
 
 # Additional programs, without whinging
-for FN in ublox-geo ublox-cli flashdl ; do
-  if [ -e  $MESON_BUILD_ROOT/$FN ] ; then
-    rm -f $INSTDIR/bin/$FN
-    install -C $MESON_BUILD_ROOT/$FN $INSTDIR/bin
-  fi
-done
+#for FN in ublox-geo ublox-cli flashdl ; do
+#  if [ -e  $MESON_BUILD_ROOT/$FN ] ; then
+#    rm -f $INSTDIR/bin/$FN
+#    install -C $MESON_BUILD_ROOT/$FN $INSTDIR/bin
+#  fi
+#done

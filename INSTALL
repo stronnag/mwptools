@@ -64,7 +64,7 @@ Non-default targets
 
 As part of the post installed, `fc-set` is a hard link to `fc-get`.
 
-The applications `flashdl` (replaced by `flashgo`), `ublox-geo` and `ublox-cli` are not built by default, they may be built via specifying a specific target (e.g. ninja -C _build `ublox-cli`).
+A number of applications, e.g. `flashdl` (replaced by `flashgo`), `ublox-geo` etc. are not built by default, they may be built via specifying a specific target (e.g. `ninja -C _build ublox-geo`), and installed by `install s _build/ublox-geo ~/.local/bin/`.
 
 Uninstall
 ~~~~~~~~~
