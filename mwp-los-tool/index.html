@@ -535,6 +535,20 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#line-of-sight" class="md-nav__link">
+    Line of sight ...
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#auto-los" class="md-nav__link">
+    Auto LOS
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#examples" class="md-nav__link">
     Examples
   </a>
@@ -550,7 +564,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#auto-los" class="md-nav__link">
+  <a href="#auto-los_1" class="md-nav__link">
     Auto LOS
   </a>
   
@@ -1138,6 +1152,20 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#line-of-sight" class="md-nav__link">
+    Line of sight ...
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#auto-los" class="md-nav__link">
+    Auto LOS
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#examples" class="md-nav__link">
     Examples
   </a>
@@ -1153,7 +1181,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#auto-los" class="md-nav__link">
+  <a href="#auto-los_1" class="md-nav__link">
     Auto LOS
   </a>
   
@@ -1205,13 +1233,13 @@
 </ul>
 <p>Please be aware of these accuracy / fidelity issues when evaluating the results of any elevation analysis.</p>
 <h2 id="invocation">Invocation<a class="headerlink" href="#invocation" title="Permanent link">#</a></h2>
-<p>LOS is invoked from any waypoint using the right mouse button. There are two specific options:</p>
+<p>LOS is invoked from any waypoint using the right mouse button.</p>
 <p><img alt="Menu Options" src="../images/los-menu.png" width="30%" /></p>
-<ul>
-<li><strong>LOS Analysis</strong> : The user can select locations on the mission via a slider and run an analysis. A LOS calculation is performed, a graphical view is shown and a red (no LOS), orange (LOS below a user defined margin) or green (unconditional LOS) line is displayed on the map from the observer (home location) to the chosen location. This may be repeated as required.</li>
-<li><strong>Auto LOS</strong> : The calculation is performed automatically with 1% increments of the mission length. A set of resulting red or green LOS lines is displayed om the map. This requires that the user has <a href="#user-bing-key">applied their own Bing API key</a>.</li>
-</ul>
-<p>Note that both options are also available from the LOS analysis window; the "Auto LOS" menu option is merely a convenience.</p>
+<h2 id="line-of-sight">Line of sight ...<a class="headerlink" href="#line-of-sight" title="Permanent link">#</a></h2>
+<p>The user can select locations on the mission via a slider and run an analysis. A LOS calculation is performed, a graphical view is shown and a red (no LOS), orange (LOS below a user defined margin) or green (unconditional LOS) line is displayed on the map from the observer (home location) to the chosen location. This may be repeated as required.</p>
+<h2 id="auto-los">Auto LOS<a class="headerlink" href="#auto-los" title="Permanent link">#</a></h2>
+<p>If the user has <a href="#user-bing-key">applied their own Bing API key</a>, then pressing a modifier key (Shift or Control) while selecting "Line of Sight ..."  will invoke <strong>Auto LOS</strong> ;  the calculation is performed automatically with 1% increments of the mission length. A set of resulting green/orange/red LOS lines is displayed on the map.</p>
+<p>Note that both options are available from the LOS analysis window; the modifier option is merely a convenience.</p>
 <h2 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">#</a></h2>
 <p>When the LOS slider is displayed, the only UI actions available are:</p>
 <ul>
@@ -1221,16 +1249,22 @@
 </ul>
 <p>This restriction means that the mission cannot be changed while a LOS Analysis is being performed.</p>
 <h3 id="manual-los-analysis">Manual LOS Analysis<a class="headerlink" href="#manual-los-analysis" title="Permanent link">#</a></h3>
-<p>In the image below, the user has selected "LOS Analysis" from the right mouse menu at WP9. The slider is positioned appropriate to WP9. Note that if the mission contains JUMP WPs, these are executed once only (regardless of the mission setting). This is why the slider might appear less advanced compared to the mission length if the JUMP is ignored. The user can reposition the WP using the slider.</p>
+<p>In the image below, the user has selected "Line of Sight ..." from the right mouse menu at WP9. The slider is positioned appropriate to WP9. Note that if the mission contains JUMP WPs, these are executed once only (regardless of the mission setting). This is why the slider might appear less advanced compared to the mission length if the JUMP is ignored. The user can reposition the WP using the slider (or the start / end buttons).</p>
 <p>When "Point LOS" is clicked, the LOS is calculated between planned home (brown icon, lower left) and the red "⨁" "Point of Interest" (POI) icon. This is displayed as a terrain plot with the LOS line superimposed over the terrain elevation. The line is red as there is no LOS (and it would be green where there is LOS). A red "dot-dash" is also displayed on the map. If a margin is specified, then LOS lines with clearance between the terrain and the margin value are shown in orange.</p>
-<p>The user may repeat the "move slider" / "Point LOS" action as required. The prior terrain plot is removed each time "Point LOS" is selected; the lines on the map are removed when the slider dialog is closed. "Auto LOS" may be used to run a continuous analysis from the currently selected location.</p>
+<p>The user may repeat the "move slider" / "Point LOS" action as required. The prior terrain plot is removed each time "Point LOS" is selected; the lines on the map are removed when the slider dialog is closed. "Auto LOS" may be used to run a continuous analysis from the currently selected location. "Auto LOS" may be started / stopped at any point (and Point Analysis invoked at any time when stopped).</p>
 <p>When an analysis results in an orange or red LOS line, the first point where the LOS break is detected is shown on the line as a coloured blob. This is apparent in the Auto image below.</p>
 <p><img alt="Manual LOS" src="../images/los_manual.png" /></p>
-<h3 id="auto-los">Auto LOS<a class="headerlink" href="#auto-los" title="Permanent link">#</a></h3>
+<h3 id="auto-los_1">Auto LOS<a class="headerlink" href="#auto-los_1" title="Permanent link">#</a></h3>
 <p>If the user has specified a <a href="#user-bing-api-key">user supplied Bing API key</a>, then an Auto LOS analysis can be run. The analysis is iterated along the mission path automatically.</p>
 <p><img alt="Auto LOS" src="../images/auto-los.png" /></p>
 <p>The image shows the state after a complete "Auto" analysis. While the analysis is running, the slider and "Point LOS" are not sensitive; once the run has completed, these controls are available if the user wishes to investigate further. The user can stop (and restart) Auto  using the "Auto LOS" / "Stop" button.</p>
-<p>Here, the user has subsequently used "Point LOS" to examine a point in the orange region. As expected, there is very little clearance between the LOS line and the terrain. This is confirmed on the map plot where the "blobs" indicate the point where LOS is compromised.</p>
+<p>Here, the user has subsequently used "Point LOS" to examine a point in the orange region. As expected, there is very little clearance between the LOS line and the terrain. This is confirmed on the map plot where the "blobs" (immediately to the right of the plot window close button) indicate the point where LOS is compromised.</p>
+<p>It is important to note that Auto LOS is performed at 1% increments of the mission distance, it is not continuous. In the above case, there is a point at 34.1% where there is no LOS.</p>
+<p><img alt="Bad LOS" src="../images/fail-los.png" /></p>
+<p>If you press a modifier (Shift or Control) while invoking "Auto LOS", you get 0.1% increments, which may be used to investigate small segments (it will be slow ... and resource intensive). Here a detailed analysis has been run from 33.6% to 34.6% which captures the instance of complete loss of LOS.</p>
+<p><img alt="Auto_no LOS" src="../images/auto-bad-los.png" /></p>
+<p>Caveat user!</p>
+<p>There is also a You Tube video (uses a slightly earlier UI iteration).</p>
 <iframe width="768" height="634" src="https://www.youtube.com/embed/EIm8vksK1Pg" title="mwp LOS (Line of Sight) Tool" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
 <h2 id="user-bing-api-key">User Bing API Key<a class="headerlink" href="#user-bing-api-key" title="Permanent link">#</a></h2>
@@ -1243,14 +1277,14 @@ MWP_BLACK_TILE=/home/jrh/.config/mwp/mars.png
 MWP_TIME_FMT=%T.%f
 MWP_BING_KEY=Axxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 </code></pre>
-<p>This requirement is to help prevent the generic application API key running into usage limits. Using your own key will help ensure the availability of Bing map products for all users.</p>
+<p>This requirement is to help prevent the generic application API key exceeding usage limits. Using your own key will help ensure the availability of Bing map products for all users.</p>
 
   <hr>
 <div class="md-source-file">
   <small>
     
       Last update:
-      2023-11-10
+      2023-11-11
     
   </small>
 </div>
