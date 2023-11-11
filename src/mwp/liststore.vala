@@ -347,7 +347,6 @@ public class ListBox : GLib.Object {
 					if ((es & (Gdk.ModifierType.SHIFT_MASK|Gdk.ModifierType.CONTROL_MASK|Gdk.ModifierType.MOD1_MASK)) != 0) {
 						wants_auto = (Environment.get_variable("MWP_BING_KEY") != null);
 					}
-					stderr.printf(":DBG: MASK %d %d\n", es, (es&0xff));
 				}
 				LOS_analysis(wants_auto);
 			});
