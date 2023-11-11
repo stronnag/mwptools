@@ -333,6 +333,7 @@ public class LOSSlider : Gtk.Window {
 		_auto = auto;
 		_hp = hp;
 		mt = new MissionPreviewer();
+		mt.is_mr = true;
 		plist =  mt.check_mission(ms, hp, true);
 		maxd =  plist[plist.length-1].dist;
 		LOSPoint.show_los(true);
