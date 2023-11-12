@@ -582,6 +582,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#miscellaneous-notes" class="md-nav__link">
+    Miscellaneous notes
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1199,6 +1206,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#miscellaneous-notes" class="md-nav__link">
+    Miscellaneous notes
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1238,7 +1252,7 @@
 <h2 id="line-of-sight">Line of sight ...<a class="headerlink" href="#line-of-sight" title="Permanent link">#</a></h2>
 <p>The user can select locations on the mission via a slider and run an analysis. A LOS calculation is performed, a graphical view is shown and a red (no LOS), orange (LOS below a user defined margin) or green (unconditional LOS) line is displayed on the map from the observer (home location) to the chosen location. This may be repeated as required.</p>
 <h2 id="auto-los">Auto LOS<a class="headerlink" href="#auto-los" title="Permanent link">#</a></h2>
-<p>If the user has <a href="#user-bing-key">applied their own Bing API key</a>, then pressing a modifier key (Shift or Control) while selecting "Line of Sight ..."  will invoke <strong>Auto LOS</strong> ;  the calculation is performed automatically with 1% increments of the mission length. A set of resulting green/orange/red LOS lines is displayed on the map.</p>
+<p>If the user has <a href="#user-bing-key">applied their own Bing API key</a>, then pressing a modifier key (Shift or Control) while selecting "Line of Sight ..."  will invoke <strong>Auto LOS</strong> ;  the calculation is performed automatically with 1% increments of the <a href="#miscellaneous-notes">naive mission length</a>. A set of resulting green/orange/red LOS lines is displayed on the map.</p>
 <p>Note that both options are available from the LOS analysis window; the modifier option is merely a convenience.</p>
 <h2 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">#</a></h2>
 <p>When the LOS slider is displayed, the only UI actions available are:</p>
@@ -1259,7 +1273,7 @@
 <p><img alt="Auto LOS" src="../images/auto-los.png" /></p>
 <p>The image shows the state after a complete "Auto" analysis. While the analysis is running, the slider and "Point LOS" are not sensitive; once the run has completed, these controls are available if the user wishes to investigate further. The user can stop (and restart) Auto  using the "Auto LOS" / "Stop" button.</p>
 <p>Here, the user has subsequently used "Point LOS" to examine a point in the orange region. As expected, there is very little clearance between the LOS line and the terrain. This is confirmed on the map plot where the "blobs" (immediately to the right of the plot window close button) indicate the point where LOS is compromised.</p>
-<p>It is important to note that Auto LOS is performed at 1% increments of the mission distance, it is not continuous. In the above case, there is a point at 34.1% where there is no LOS.</p>
+<p>It is important to note that Auto LOS is performed at 1% increments of the <a href="#miscellaneous-notes">naive mission length</a>, it is not contiguous. In the above case, there is a point at 34.1% where there is no LOS.</p>
 <p><img alt="Bad LOS" src="../images/fail-los.png" /></p>
 <p>If you press a modifier (Shift or Control) while invoking "Auto LOS", you get 0.1% increments, which may be used to investigate small segments (it will be slow ... and resource intensive). Here a detailed analysis has been run from 33.6% to 34.6% which captures the instance of complete loss of LOS.</p>
 <p><img alt="Auto_no LOS" src="../images/auto-bad-los.png" /></p>
@@ -1278,13 +1292,27 @@ MWP_TIME_FMT=%T.%f
 MWP_BING_KEY=Axxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 </code></pre>
 <p>This requirement is to help prevent the generic application API key exceeding usage limits. Using your own key will help ensure the availability of Bing map products for all users.</p>
+<h2 id="miscellaneous-notes">Miscellaneous notes<a class="headerlink" href="#miscellaneous-notes" title="Permanent link">#</a></h2>
+<ul>
+<li>The auto play output may pause due to network delay / throttling of Bing elevation data.</li>
+<li>These may more visible drawing latency on Xlib (vice Wayland).</li>
+<li>The auto play data is interval sampled. An obstruction could always be in the gap.</li>
+<li>The elevation data does not include obstructions above the terrain (trees, buildings, power lines etc.).</li>
+<li>The mission interpretation is naive.<ul>
+<li>There is no loiter radius</li>
+<li>The vehicle can turn sharply at way points</li>
+<li>There is linear ascent / descent between way points, including from home to WP1 and from RTH to home.</li>
+<li>JUMPs are executed once.</li>
+</ul>
+</li>
+</ul>
 
   <hr>
 <div class="md-source-file">
   <small>
     
       Last update:
-      2023-11-11
+      2023-11-12
     
   </small>
 </div>
