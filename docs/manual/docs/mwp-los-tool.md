@@ -29,7 +29,7 @@ The user can select locations on the mission via a slider and run an analysis. A
 
 ## Auto LOS
 
-If the user has [applied their own Bing API key](#user-bing-key), then pressing a modifier key (Shift or Control) while selecting "Line of Sight ..."  will invoke **Auto LOS** ;  the calculation is performed automatically with 1% increments of the mission length. A set of resulting green/orange/red LOS lines is displayed on the map.
+If the user has [applied their own Bing API key](#user-bing-key), then pressing a modifier key (Shift or Control) while selecting "Line of Sight ..."  will invoke **Auto LOS** ;  the calculation is performed automatically with 1% increments of the [naive mission length](#miscellaneous-notes). A set of resulting green/orange/red LOS lines is displayed on the map.
 
 Note that both options are available from the LOS analysis window; the modifier option is merely a convenience.
 
@@ -65,7 +65,7 @@ The image shows the state after a complete "Auto" analysis. While the analysis i
 
 Here, the user has subsequently used "Point LOS" to examine a point in the orange region. As expected, there is very little clearance between the LOS line and the terrain. This is confirmed on the map plot where the "blobs" (immediately to the right of the plot window close button) indicate the point where LOS is compromised.
 
-It is important to note that Auto LOS is performed at 1% increments of the mission distance, it is not continuous. In the above case, there is a point at 34.1% where there is no LOS.
+It is important to note that Auto LOS is performed at 1% increments of the [naive mission length](#miscellaneous-notes), it is not contiguous. In the above case, there is a point at 34.1% where there is no LOS.
 
 ![Bad LOS](images/fail-los.png)
 
@@ -94,3 +94,15 @@ The user's Bing API key should be added to the user's `$HOME/.config/mwp/cmdopts
     MWP_BING_KEY=Axxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 This requirement is to help prevent the generic application API key exceeding usage limits. Using your own key will help ensure the availability of Bing map products for all users.
+
+## Miscellaneous notes
+
+* The auto play output may pause due to network delay / throttling of Bing elevation data.
+* These may more visible drawing latency on Xlib (vice Wayland).
+* The auto play data is interval sampled. An obstruction could always be in the gap.
+* The elevation data does not include obstructions above the terrain (trees, buildings, power lines etc.).
+* The mission interpretation is naive.
+    - There is no loiter radius
+    - The vehicle can turn sharply at way points
+    -  There is linear ascent / descent between way points, including from home to WP1 and from RTH to home.
+    - JUMPs are executed once.
