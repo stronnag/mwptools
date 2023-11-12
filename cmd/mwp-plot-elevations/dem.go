@@ -6,10 +6,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	//	"log"
 	"math"
 	"net/http"
 	"os"
 	"strings"
+	// "time"
+)
+
+import (
+	"geo"
 )
 
 type BingRes struct {
@@ -23,8 +29,20 @@ type BingRes struct {
 	Statusdescription string
 }
 
+type DEMMgr struct {
+	dem *hgtDb
+}
+
 const ENCSTR string = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-"
 const KENC string = "QXFzVEFpcGFCQnBLTFhoY2FHZ1A4a2NlWXVrYXRtdERMUzF4MENYRWhSWm5wbDFSRUxGOWhsSThqNG1OSWtyRQ=="
+
+func InitDem(demdir string) (d *DEMMgr) {
+	d = &DEMMgr{}
+	if demdir != "" {
+		d.dem = NewHgtDb(demdir)
+	}
+	return d
+}
 
 func pca(pts []Point) string {
 	lat := int64(0)
@@ -57,12 +75,67 @@ func pca(pts []Point) string {
 
 func parse_response(js []byte) []int {
 	var ev BingRes
-	//	fmt.Fprintf(os.Stderr, "%s\n", string(js))
 	json.Unmarshal(js, &ev)
 	return ev.ResourceSets[0].Resources[0].Elevations
 }
 
-func Get_elevations(p []Point, nsamp int) ([]int, error) {
+func (d *DEMMgr) Get_elevations(p []Point, nsamp int) ([]int, error) {
+	var elevs []int
+	var err error
+	//	s := ""
+	//start := time.Now()
+	if d.dem != nil {
+		//s = "Local"
+		elevs, err = d.get_dem_elevations(p, nsamp)
+	} else {
+		//s = "Bing"
+		elevs, err = get_bing_elevations(p, nsamp)
+	}
+	//elapsed := time.Since(start)
+	//log.Printf("%s elev %d took %s", s, nsamp, elapsed)
+	return elevs, err
+}
+
+func (d *DEMMgr) get_dem_elevations(pts []Point, nsamp int) ([]int, error) {
+	np := nsamp
+	if np == 0 {
+		np = len(pts)
+	}
+
+	elevs := make([]int, np)
+	if nsamp == 0 {
+		for i, p := range pts {
+			e := d.dem.lookup(p.Y, p.X)
+			elevs[i] = int(e)
+		}
+	} else {
+		nmp := len(pts)
+		maxr := pts[nmp-1].D
+		elevs[0] = int(d.dem.lookup(pts[0].Y, pts[0].X))
+		lastp := 0
+		ep := 1
+		for j := 1; j < nsamp-1; j++ {
+			adist := maxr * float64(j) / float64(nsamp-1)
+			for k := lastp; k < nmp; k++ {
+				if adist < pts[k].D {
+					lastp = k
+					break
+				}
+			}
+			ddist := pts[lastp-1].D
+			xdist := adist - ddist
+			cse := pts[lastp].C
+			nlat, nlon := geo.Posit(pts[lastp-1].Y, pts[lastp-1].X, cse, xdist/1852.0)
+			ev := int(d.dem.lookup(nlat, nlon))
+			elevs[ep] = int(ev)
+			ep += 1
+		}
+		elevs[ep] = int(d.dem.lookup(pts[nmp-1].Y, pts[nmp-1].X))
+	}
+	return elevs, nil
+}
+
+func get_bing_elevations(p []Point, nsamp int) ([]int, error) {
 	var elev []int
 
 	astr := os.Getenv("MWP_BING_KEY")

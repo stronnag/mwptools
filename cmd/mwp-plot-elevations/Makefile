@@ -1,6 +1,3 @@
--include ../local.mk
--include local.mk
-include ../common.mk
 
 APP = mwp-plot-elevations
 

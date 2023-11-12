@@ -21,7 +21,8 @@ const (
 type Point struct {
 	X      float64 // longitude
 	Y      float64 // latitude
-	D      float64 // distance
+	D      float64 // distance to here
+	C      float64 // bearing to previous
 	Gz     int     // ground amsl
 	Mz     int     // above home
 	Az     int     // WP AMSL

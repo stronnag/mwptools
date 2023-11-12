@@ -52,7 +52,9 @@ func main() {
 	Read_config()
 
 	spt := ""
+	demdir := ""
 	flag.StringVar(&spt, "single", spt, "point as DD.dddd,DDD.dddd,Alt")
+	flag.StringVar(&demdir, "localdem", demdir, "local DEM dir")
 	flag.StringVar(&Conf.Homepos, "home", Conf.Homepos, "home as DD.dddd,DDD.dddd")
 	flag.StringVar(&Conf.Svgfile, "svg", "", "SVG graph file")
 	flag.StringVar(&Conf.Output, "output", "", "Revised mission file")
@@ -73,6 +75,7 @@ func main() {
 		log.Fatal("need mission")
 	}
 
+	dm := InitDem(demdir)
 	var err error
 	var m *Mission
 	var mpts []Point
@@ -100,10 +103,10 @@ func main() {
 		mpts = m.Get_points()
 		mpts[1].Wpname = "Query"
 	}
-	elev, err := Get_elevations(mpts, 0)
+	elev, err := dm.Get_elevations(mpts, 0)
 	if err == nil {
 		if len(mpts) != len(elev) {
-			fmt.Fprintf(os.Stderr, "mission=%d, bing=%d\n", len(mpts), len(elev))
+			fmt.Fprintf(os.Stderr, "mission=%d, elev=%d\n", len(mpts), len(elev))
 			panic("Bing return size error")
 		}
 
@@ -114,16 +117,20 @@ func main() {
 		}
 
 		npts := int(mpts[len(mpts)-1].D) / 30
-
-		if npts > len(mpts)*20 {
-			npts = len(mpts) * 20
+		if demdir == "" {
+			if npts > len(mpts)*20 {
+				npts = len(mpts) * 20
+			}
+			if npts > 1024 {
+				npts = 1024
+			}
 		}
 
-		if npts > 1024 {
-			npts = 1024
+		if npts < 4 {
+			npts = 4
 		}
+		telev, err := dm.Get_elevations(mpts, npts)
 
-		telev, err := Get_elevations(mpts, npts)
 		if err != nil {
 			log.Fatal(err)
 		}

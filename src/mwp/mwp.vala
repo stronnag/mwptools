@@ -661,6 +661,10 @@ public class MWP : Gtk.Application {
     private MeasureLayer? mlayer = null;
 
 	public static string? user_args;
+	public static string? demdir;
+    public static bool has_bing_key;
+	public static DEMMgr? demmgr = null;
+    public static AsyncDL? asyncdl = null;
 
 	public enum HomeType {
 		NONE,
@@ -1334,6 +1338,17 @@ public class MWP : Gtk.Application {
 		}
 
         pos_is_centre = conf.pos_is_centre;
+
+        has_bing_key = (Environment.get_variable("MWP_BING_KEY") != null);
+		demdir = Environment.get_variable("MWP_LOCAL_DEM");
+		if (demdir != null) {
+			demmgr = new DEMMgr();
+            asyncdl = new AsyncDL(demdir);
+			asyncdl.run_async.begin((obj,res) => {
+					asyncdl.run_async.end(res);
+				});
+		}
+
 
         mmap = new ModelMap();
         mmap.init();

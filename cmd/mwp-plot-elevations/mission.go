@@ -331,9 +331,9 @@ func (m *Mission) Get_points() []Point {
 			mi := m.MissionItems[n]
 			cy = mi.Lat
 			cx = mi.Lon
-			_, dm := geo.Csedist(ly, lx, cy, cx)
+			cse, dm := geo.Csedist(ly, lx, cy, cx)
 			dist += dm * 1852.0
-			mpts = append(mpts, Point{Y: cy, X: cx, Wpno: int8(mi.No), D: dist,
+			mpts = append(mpts, Point{Y: cy, X: cx, Wpno: int8(mi.No), D: dist, C: cse,
 				Wpname: fmt.Sprintf("WP%d", mi.No), Flag: int8(mi.P3 & 1), Set: WP_INIT,
 				Mz: int(mi.Alt)})
 			n += 1
@@ -348,33 +348,11 @@ func (m *Mission) Get_points() []Point {
 	}
 
 	if ret {
-		_, dm := geo.Csedist(ly, lx, Homep.Y, Homep.X)
+		cse, dm := geo.Csedist(ly, lx, Homep.Y, Homep.X)
 		dist += dm * 1852.0
 		mpts = append(mpts, Point{Y: Homep.Y, X: Homep.X, Wpno: -1, Wpname: "RTH", D: dist,
-			Flag: 0, Set: WP_RTH})
+			C: cse, Flag: 0, Set: WP_RTH})
 	}
-	/*** Not used here
-		var vpts map[int8][]int8
-		vpts = make(map[int8][]int8)
-		for i := 0; i < len(mpts)-1; i++ {
-			m := mpts[i]
-			nwp := mpts[i+1].Wpno
-
-			need := true
-			for j, _ := range vpts[m.Wpno] {
-				if vpts[m.Wpno][j] == nwp {
-					need = false
-					break
-				}
-			}
-			if need {
-				vpts[m.Wpno] = append(vpts[m.Wpno], nwp)
-			}
-		}
-		for k, v := range vpts {
-			fmt.Fprintf(os.Stderr, "%d => %v\n", k, v)
-		}
-	  ***/
 	return mpts
 }
 

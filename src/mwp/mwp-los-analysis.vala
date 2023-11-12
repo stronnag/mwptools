@@ -85,7 +85,7 @@ public class LOSPoint : Object {
     }
 
 	public static void add_path(double lat0, double lon0, double lat1, double lon1, uint8 col,
-								double ldist) {
+								double ldist, int incr) {
         Clutter.Color green = {0x0, 0xff, 0x0, 0xa0};
         Clutter.Color warning = {0xff, 0xa5, 0x0, 0xa0}; // {0xad, 0xff, 0x2f, 0xa0};
         Clutter.Color red = {0xff, 0x0, 0x0, 0xa0};
@@ -108,6 +108,9 @@ public class LOSPoint : Object {
 		default:
 			wcol = red;
 			break;
+		}
+		if(incr > 10) {
+			wcol.alpha = 0x14;
 		}
 		pmlayer.set_stroke_color(wcol);
         pmlayer.set_dash(llist);
@@ -154,6 +157,7 @@ public class LOSSlider : Gtk.Window {
 	private bool  _can_auto;
 	private int _margin;
 	private bool mlog;
+	private int incr;
 
 	public signal void new_margin(int m);
 
@@ -235,7 +239,7 @@ public class LOSSlider : Gtk.Window {
 	}
 
 	public LOSSlider (Gtk.Window? _w, Champlain.View view, int lmargin) {
-		_can_auto = (Environment.get_variable("MWP_BING_KEY") != null);
+		_can_auto = (MWP.has_bing_key || EvCache.is_local());
 		_margin = lmargin;
 		this.title = "LOS Analysis";
 		this.window_position = Gtk.WindowPosition.CENTER;
@@ -275,11 +279,11 @@ public class LOSSlider : Gtk.Window {
 					_margin = mentry.get_value_as_int ();
 					var ppos = slider.get_value ();
 					abutton.label = "Stop";
-					int incr = 10;
+					incr = 10;
 					int es = 0;
 					if ( Gtk.get_current_event_state(out es)) {
 						if ((es & (Gdk.ModifierType.SHIFT_MASK|Gdk.ModifierType.CONTROL_MASK|Gdk.ModifierType.MOD1_MASK)) != 0) {
-							incr = 1;
+							incr = 2;
 						}
 					}
 					auto_run((int)ppos, incr);
@@ -416,6 +420,10 @@ public class LOSSlider : Gtk.Window {
 		if (_auto) {
 			spawn_args += "-no-graph";
 		}
+
+		if (MWP.demdir != null) {
+			spawn_args += "-localdem=%s".printf(MWP.demdir);
+		}
 		spawn_args += "-margin=%d".printf(_margin);
         spawn_args += "-home=%.8f,%.8f".printf(_hp.hlat, _hp.hlon);
 		spawn_args += "-single=%.8f,%.8f,%.0f".printf(lat, lon, alt);
@@ -436,7 +444,7 @@ public class LOSSlider : Gtk.Window {
 						double ldist = double.parse(parts[1]);
 						if (!_auto || is_running) {
 							Idle.add(() => {
-									LOSPoint.add_path(_hp.hlat,  _hp.hlon, lat, lon, losc, ldist);
+									LOSPoint.add_path(_hp.hlat,  _hp.hlon, lat, lon, losc, ldist, incr);
 									return false;
 								});
 						}

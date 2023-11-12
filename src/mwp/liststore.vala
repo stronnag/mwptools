@@ -80,6 +80,15 @@ public class EvCache : Object {
 
     private static ElevData[] elevs={};
 
+	public static bool is_local() {
+		return (MWP.demmgr != null);
+	}
+
+	public static void init() {
+		stderr.printf(":DBG: Local DEM is %s\n", MWP.demdir);
+	}
+
+
     public static bool get_elev(int no, out int elev) {
         elev = EvConst.UNAVAILABLE;
         foreach(var e in elevs) {
@@ -119,53 +128,79 @@ public class EvCache : Object {
     }
 
     public static void update_all_wp_elevations (BingElevations.Point[] pts) {
+		if(EvCache.is_local()) {
+			int j = 0;
+			foreach (var p in pts) {
+				var e = MWP.demmgr.lookup(p.y, p.x);
+				if (e != HGT.NODATA) {
+					EvCache.set_elev_index_value(j, (int)e);
+					j++;
+				} else {
+					var fn = HgtHandle.getbase(p.y, p.x, null, null);
+					MWP.asyncdl.add_queue(fn);
+					stderr.printf(":DBG: Local DEM fail for %f %f\n", p.y, p.x);
+				}
+			}
+		} else {
 #if COLDSOUP
-        BingElevations.get_elevations.begin(pts, (obj, res) => {
-                var bingelevs = BingElevations.get_elevations.end(res);
-                if(bingelevs.length == pts.length) {
-                    int j = 0;
-                    foreach(var e in bingelevs) {
-                        EvCache.set_elev_index_value(j, e);
-                        j++;
-                    }
-                }
-            });
+			BingElevations.get_elevations.begin(pts, (obj, res) => {
+					var bingelevs = BingElevations.get_elevations.end(res);
+					if(bingelevs.length == pts.length) {
+						int j = 0;
+						foreach(var e in bingelevs) {
+							EvCache.set_elev_index_value(j, e);
+							j++;
+						}
+					}
+				});
 #else
-        var be = new BingElevations();
-        be.elevations.connect((elevs) => {
-                if(elevs.length == pts.length) {
-                    int j = 0;
-                    foreach(var e in elevs) {
-                        EvCache.set_elev_index_value(j, e);
+			var be = new BingElevations();
+			be.elevations.connect((elevs) => {
+					if(elevs.length == pts.length) {
+						int j = 0;
+						foreach(var e in elevs) {
+							EvCache.set_elev_index_value(j, e);
                         j++;
-                    }
-                }
-            });
-        be.get_elevations(pts);
+						}
+					}
+				});
+			be.get_elevations(pts);
 #endif
-    }
+		}
+	}
 
     public static void update_single_elevation (int idx, double lat, double lon) {
-        BingElevations.Point pts[1];
-        pts[0].y = lat;
-        pts[0].x = lon;
+		if(EvCache.is_local()) {
+			var e = MWP.demmgr.lookup(lat, lon);
+			if (e != HGT.NODATA) {
+				EvCache.set_elev(idx,(int)e);
+			} else {
+				var fn = HgtHandle.getbase(lat, lon, null, null);
+				MWP.asyncdl.add_queue(fn);
+				stderr.printf(":DBG: Local DEM fail for %f %f\n", lat, lon);
+			}
+		} else {
+			BingElevations.Point pts[1];
+			pts[0].y = lat;
+			pts[0].x = lon;
 #if COLDSOUP
-        BingElevations.get_elevations.begin(pts, (obj, res) => {
-                var bingelevs = BingElevations.get_elevations.end(res);
-                if(bingelevs.length == 1) {
-                    EvCache.set_elev(idx, bingelevs[0]);
-                }
-            });
+			BingElevations.get_elevations.begin(pts, (obj, res) => {
+					var bingelevs = BingElevations.get_elevations.end(res);
+					if(bingelevs.length == 1) {
+						EvCache.set_elev(idx, bingelevs[0]);
+					}
+				});
 #else
-        var be = new BingElevations();
-        be.elevations.connect((elevs) => {
-                if(elevs.length == 1) {
-                    EvCache.set_elev(idx, elevs[0]);
-                }
-            });
-        be.get_elevations(pts);
+			var be = new BingElevations();
+			be.elevations.connect((elevs) => {
+					if(elevs.length == 1) {
+						EvCache.set_elev(idx, elevs[0]);
+					}
+				});
+			be.get_elevations(pts);
 #endif
-    }
+		}
+	}
 }
 
 public class ListBox : GLib.Object {
@@ -345,7 +380,7 @@ public class ListBox : GLib.Object {
 				bool wants_auto = false;
 				if ( Gtk.get_current_event_state(out es)) {
 					if ((es & (Gdk.ModifierType.SHIFT_MASK|Gdk.ModifierType.CONTROL_MASK|Gdk.ModifierType.MOD1_MASK)) != 0) {
-						wants_auto = (Environment.get_variable("MWP_BING_KEY") != null);
+						wants_auto = (MWP.has_bing_key||EvCache.is_local());
 					}
 				}
 				LOS_analysis(wants_auto);
@@ -561,6 +596,7 @@ public class ListBox : GLib.Object {
     }
 
     public ListBox() {
+		EvCache.init();
         purge=false;
         ms_speed = MWP.conf.nav_speed;
         MWP.conf.settings_update.connect((s) => {
@@ -569,7 +605,11 @@ public class ListBox : GLib.Object {
                     calc_mission();
             });
         init_marker_menu();
-    }
+		MWP.asyncdl.loaded.connect((s) => {
+				import_mission(to_mission());
+			});
+
+	}
 
     public void set_mission_speed(double _speed) {
         ms_speed = _speed;
@@ -2339,6 +2379,10 @@ public class ListBox : GLib.Object {
         var outfn = mstempname();
         string replname = null;
         string[] spawn_args = {"mwp-plot-elevations"};
+
+		if (EvCache.is_local()) {
+			spawn_args += "-localdem=%s".printf(MWP.demdir);
+		}
         spawn_args += "--no-mission-alts";
         fhome.get_fake_home(out lat, out lon);
         var margin = fhome.fhd.get_margin();
