@@ -598,7 +598,9 @@ public class ListBox : GLib.Object {
             });
         init_marker_menu();
 		MWP.asyncdl.loaded.connect((s) => {
-				import_mission(to_mission());
+				var ms = to_mission();
+				reload_elevations(ms);
+				MWPLog.message("Refreshed elevations from %s\n", s);
 			});
 
 	}
@@ -610,6 +612,34 @@ public class ListBox : GLib.Object {
     public double get_mission_speed() {
         return ms_speed;
     }
+
+
+	private void reload_elevations (Mission ms) {
+        BingElevations.Point[] pts={};
+        EvCache.clear();
+		int lastid = 0;
+        foreach (MissionItem m in ms.get_ways()) {
+			lastid++;
+            if((m.action == MSP.Action.WAYPOINT ||
+                m.action == MSP.Action.POSHOLD_UNLIM ||
+                m.action == MSP.Action.POSHOLD_TIME ||
+                m.action == MSP.Action.SET_POI ||
+                m.action == MSP.Action.LAND)) {
+                pts += BingElevations.Point(){y=m.lat,x=m.lon};
+                EvCache.append(lastid, EvCache.EvConst.UNAVAILABLE);
+            }
+        }
+        if(ms.homex != 0 && ms.homey != 0) {
+            FakeHome.usedby |= FakeHome.USERS.Mission;
+            fhome.set_fake_home(ms.homey, ms.homex);
+            fhome.show_fake_home(true);
+            pts += BingElevations.Point(){y=ms.homey,x=ms.homex};
+            EvCache.append(EvCache.EvConst.HOME, EvCache.EvConst.UNAVAILABLE);
+        }
+        if(pts.length > 0) {
+            EvCache.update_all_wp_elevations(pts);
+        }
+	}
 
     public void import_mission(Mission ms, bool  autoland = false) {
         Gtk.TreeIter iter;

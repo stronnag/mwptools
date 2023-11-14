@@ -110,7 +110,7 @@ public class LOSPoint : Object {
 			break;
 		}
 		if(incr < 8) {
-			wcol.alpha = 0x40;
+			wcol.alpha = 0x60;
 		}
 		pmlayer.set_stroke_color(wcol);
         pmlayer.set_dash(llist);
