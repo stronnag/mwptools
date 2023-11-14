@@ -227,7 +227,7 @@ public class LOSSlider : Gtk.Window {
 			button.sensitive = false;
 			abutton.sensitive = _can_auto;
 		} else if  (ppos > 999) {
-			button.sensitive = true;
+			button.sensitive = (plist[plist.length-1].p2 != -1); // last is home
 			abutton.sensitive = false;
 		} else if (!_auto) {
 			button.sensitive = true;
