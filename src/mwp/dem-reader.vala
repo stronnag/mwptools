@@ -121,7 +121,6 @@ public class DEMMgr {
 				hgts +=  hh;
 			} else {
 				hh = null;
-				stderr.printf("Failed to open DEM\n");
 				return HGT.NODATA;
 			}
 		}

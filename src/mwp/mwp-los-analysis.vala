@@ -109,8 +109,8 @@ public class LOSPoint : Object {
 			wcol = red;
 			break;
 		}
-		if(incr > 10) {
-			wcol.alpha = 0x14;
+		if(incr < 8) {
+			wcol.alpha = 0x40;
 		}
 		pmlayer.set_stroke_color(wcol);
         pmlayer.set_dash(llist);
@@ -227,7 +227,7 @@ public class LOSSlider : Gtk.Window {
 			button.sensitive = false;
 			abutton.sensitive = _can_auto;
 		} else if  (ppos > 999) {
-			button.sensitive = false;
+			button.sensitive = true;
 			abutton.sensitive = false;
 		} else if (!_auto) {
 			button.sensitive = true;
@@ -377,6 +377,7 @@ public class LOSSlider : Gtk.Window {
 				sbutton.sensitive = true;
 				ebutton.sensitive = true;
 				_auto = false;
+				is_running = false;
 				reset_slider_buttons();
 			});
 	}
@@ -395,7 +396,6 @@ public class LOSSlider : Gtk.Window {
 						break;
 					}
 				}
-				is_running = false;
 				Idle.add (los_auto_async.callback);
 				if(dp > 1000) {
 					Idle.add (()=> {

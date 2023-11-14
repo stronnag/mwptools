@@ -84,11 +84,6 @@ public class EvCache : Object {
 		return (MWP.demmgr != null);
 	}
 
-	public static void init() {
-		stderr.printf(":DBG: Local DEM is %s\n", MWP.demdir);
-	}
-
-
     public static bool get_elev(int no, out int elev) {
         elev = EvConst.UNAVAILABLE;
         foreach(var e in elevs) {
@@ -138,7 +133,6 @@ public class EvCache : Object {
 				} else {
 					var fn = HgtHandle.getbase(p.y, p.x, null, null);
 					MWP.asyncdl.add_queue(fn);
-					stderr.printf(":DBG: Local DEM fail for %f %f\n", p.y, p.x);
 				}
 			}
 		} else {
@@ -177,7 +171,6 @@ public class EvCache : Object {
 			} else {
 				var fn = HgtHandle.getbase(lat, lon, null, null);
 				MWP.asyncdl.add_queue(fn);
-				stderr.printf(":DBG: Local DEM fail for %f %f\n", lat, lon);
 			}
 		} else {
 			BingElevations.Point pts[1];
@@ -596,7 +589,6 @@ public class ListBox : GLib.Object {
     }
 
     public ListBox() {
-		EvCache.init();
         purge=false;
         ms_speed = MWP.conf.nav_speed;
         MWP.conf.settings_update.connect((s) => {
