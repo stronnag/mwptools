@@ -271,6 +271,7 @@ public class LOSSlider : Gtk.Window {
 		sbox.pack_start (slider, true, true, 1); // ex t,f
 		sbox.pack_end(ebutton, false, false, 1);
 		box.pack_start (sbox, true, false, 1);
+		incr = 10;
 
 		var bbox = new Gtk.ButtonBox (Gtk.Orientation.HORIZONTAL);
 		abutton = new Gtk.Button.with_label ("Auto LOS");
@@ -286,7 +287,7 @@ public class LOSSlider : Gtk.Window {
 							incr = 2;
 						}
 					}
-					auto_run((int)ppos, incr);
+					auto_run((int)ppos);
 				} else {
 					abutton.label = "Auto LOS";
 					is_running = false;
@@ -352,11 +353,12 @@ public class LOSSlider : Gtk.Window {
 			var pct = (int)(1000.0*adist/maxd);
 			slider.set_value(pct);
 		} else {
-			auto_run(0,10);
+			incr = 10;
+			auto_run(0);
 		}
 	}
 
-	private void auto_run(int dp, int incr) {
+	private void auto_run(int dp) {
 		Utils.terminate_plots();
 		slider.sensitive = false;
 		button.sensitive = false;
@@ -368,7 +370,7 @@ public class LOSSlider : Gtk.Window {
 		is_running = true;
 		_auto = true;
 		abutton.label = "Stop";
-		los_auto_async.begin(dp, incr, (obj,res) => {
+		los_auto_async.begin(dp, (obj,res) => {
 				los_auto_async.end(res);
 				slider.sensitive = true;
 				mentry.sensitive = true;
@@ -382,7 +384,7 @@ public class LOSSlider : Gtk.Window {
 			});
 	}
 
-	private async bool los_auto_async(int dp, int incr) {
+	private async bool los_auto_async(int dp) {
 		var thr = new Thread<bool> ("mwp-losauto", () => {
 				while (is_running) {
 					update_from_pos((double)dp);
