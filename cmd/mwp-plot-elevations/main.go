@@ -75,6 +75,11 @@ func main() {
 		log.Fatal("need mission")
 	}
 
+	astr := os.Getenv("MWP_BING_KEY")
+	if demdir == "" && astr == "" {
+		os.Exit(17)
+	}
+
 	dm := InitDem(demdir)
 	var err error
 	var m *Mission
