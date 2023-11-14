@@ -1340,7 +1340,17 @@ public class MWP : Gtk.Application {
         pos_is_centre = conf.pos_is_centre;
 
         has_bing_key = (Environment.get_variable("MWP_BING_KEY") != null);
-		demdir = Environment.get_variable("MWP_LOCAL_DEM");
+		demdir = GLib.Path.build_filename(Environment.get_user_cache_dir(), "mwp", "DEMs");
+		var file = File.new_for_path(demdir);
+		if(file.query_exists() == false) {
+			try {
+				file.make_directory_with_parents();
+			} catch (Error e) {
+				MWPLog.message("Failed to create %s : %s\n", demdir, e.message);
+				demdir = null;
+			};
+		}
+
 		if (demdir != null) {
 			demmgr = new DEMMgr();
             asyncdl = new AsyncDL(demdir);
@@ -1348,7 +1358,6 @@ public class MWP : Gtk.Application {
 					asyncdl.run_async.end(res);
 				});
 		}
-
 
         mmap = new ModelMap();
         mmap.init();
