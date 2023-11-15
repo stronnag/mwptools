@@ -542,8 +542,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#auto-los" class="md-nav__link">
-    Auto LOS
+  <a href="#area-los" class="md-nav__link">
+    Area LOS
   </a>
   
 </li>
@@ -564,8 +564,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#auto-los_1" class="md-nav__link">
-    Auto LOS
+  <a href="#area-los_1" class="md-nav__link">
+    Area LOS
   </a>
   
 </li>
@@ -576,9 +576,22 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#local-dems" class="md-nav__link">
+    Local DEMs
+  </a>
+  
+    <nav class="md-nav" aria-label="Local DEMs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#user-bing-api-key" class="md-nav__link">
     User Bing API Key
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1166,8 +1179,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#auto-los" class="md-nav__link">
-    Auto LOS
+  <a href="#area-los" class="md-nav__link">
+    Area LOS
   </a>
   
 </li>
@@ -1188,8 +1201,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#auto-los_1" class="md-nav__link">
-    Auto LOS
+  <a href="#area-los_1" class="md-nav__link">
+    Area LOS
   </a>
   
 </li>
@@ -1200,9 +1213,22 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#local-dems" class="md-nav__link">
+    Local DEMs
+  </a>
+  
+    <nav class="md-nav" aria-label="Local DEMs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#user-bing-api-key" class="md-nav__link">
     User Bing API Key
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1242,17 +1268,18 @@
 <p>There are a number of issues to take into consideration.</p>
 <ul>
 <li>Online DEMs (Digital Elevation Model) vary <a href="../Mission-Elevation-Plot-and-Terrain-Analysis/#datum">significantly</a>, with implications for accuracy.</li>
-<li>Bing Elevations (BE) limits a single query to 1024 points, the data is 30m grid (best case). BE is actually more generous than most online sources.</li>
-<li>The mwp uses the lesser of (mission length / 30) (metres) or 1024 points.</li>
+<li>Bing Elevations (BE) limits a single query to 1024 points, the data is 30m grid (best case), more likely 90m for most users.</li>
+<li>For Bing Elevations, mwp uses the lesser of (mission length / 30) (metres) or 1024 points.</li>
 </ul>
+<p>From <a href="https://github.com/stronnag/mwptools">mwp</a> 6.319.703, mwp uses  <a href="https://registry.opendata.aws/terrain-tiles/">Mapzen DEM</a> data, which improves accuracy (more users  get 30m data) with better accuracy, as well as a significant performance boost and offline usage after the initial data download.</p>
 <p>Please be aware of these accuracy / fidelity issues when evaluating the results of any elevation analysis.</p>
 <h2 id="invocation">Invocation<a class="headerlink" href="#invocation" title="Permanent link">#</a></h2>
 <p>LOS is invoked from any waypoint using the right mouse button.</p>
 <p><img alt="Menu Options" src="../images/los-menu.png" width="30%" /></p>
 <h2 id="line-of-sight">Line of sight ...<a class="headerlink" href="#line-of-sight" title="Permanent link">#</a></h2>
 <p>The user can select locations on the mission via a slider and run an analysis. A LOS calculation is performed, a graphical view is shown and a red (no LOS), orange (LOS below a user defined margin) or green (unconditional LOS) line is displayed on the map from the observer (home location) to the chosen location. This may be repeated as required.</p>
-<h2 id="auto-los">Auto LOS<a class="headerlink" href="#auto-los" title="Permanent link">#</a></h2>
-<p>If the user has <a href="#user-bing-key">applied their own Bing API key</a>, then pressing a modifier key (Shift or Control) while selecting "Line of Sight ..."  will invoke <strong>Auto LOS</strong> ;  the calculation is performed automatically with 1% increments of the <a href="#miscellaneous-notes">naive mission length</a>. A set of resulting green/orange/red LOS lines is displayed on the map.</p>
+<h2 id="area-los">Area LOS<a class="headerlink" href="#area-los" title="Permanent link">#</a></h2>
+<p>Pressing a modifier key (Shift or Control) while selecting "Line of Sight ..."  will invoke <strong>Area LOS</strong> ;  the calculation is performed automatically with 1% increments of the <a href="#miscellaneous-notes">naive mission length</a>. A set of resulting green/orange/red LOS lines is displayed on the map.</p>
 <p>Note that both options are available from the LOS analysis window; the modifier option is merely a convenience.</p>
 <h2 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">#</a></h2>
 <p>When the LOS slider is displayed, the only UI actions available are:</p>
@@ -1265,24 +1292,27 @@
 <h3 id="manual-los-analysis">Manual LOS Analysis<a class="headerlink" href="#manual-los-analysis" title="Permanent link">#</a></h3>
 <p>In the image below, the user has selected "Line of Sight ..." from the right mouse menu at WP9. The slider is positioned appropriate to WP9. Note that if the mission contains JUMP WPs, these are executed once only (regardless of the mission setting). This is why the slider might appear less advanced compared to the mission length if the JUMP is ignored. The user can reposition the WP using the slider (or the start / end buttons).</p>
 <p>When "Point LOS" is clicked, the LOS is calculated between planned home (brown icon, lower left) and the red "⨁" "Point of Interest" (POI) icon. This is displayed as a terrain plot with the LOS line superimposed over the terrain elevation. The line is red as there is no LOS (and it would be green where there is LOS). A red "dot-dash" is also displayed on the map. If a margin is specified, then LOS lines with clearance between the terrain and the margin value are shown in orange.</p>
-<p>The user may repeat the "move slider" / "Point LOS" action as required. The prior terrain plot is removed each time "Point LOS" is selected; the lines on the map are removed when the slider dialog is closed. "Auto LOS" may be used to run a continuous analysis from the currently selected location. "Auto LOS" may be started / stopped at any point (and Point Analysis invoked at any time when stopped).</p>
-<p>When an analysis results in an orange or red LOS line, the first point where the LOS break is detected is shown on the line as a coloured blob. This is apparent in the Auto image below.</p>
+<p>The user may repeat the "move slider" / "Point LOS" action as required. The prior terrain plot is removed each time "Point LOS" is selected; the lines on the map are removed when the slider dialog is closed. "Area LOS" may be used to run a continuous analysis from the currently selected location. "Area LOS" may be started / stopped at any point (and Point Analysis invoked at any time when stopped).</p>
+<p>When an analysis results in an orange or red LOS line, the first point where the LOS break is detected is shown on the line as a coloured blob. This is apparent in the Area image below.</p>
 <p><img alt="Manual LOS" src="../images/los_manual.png" /></p>
-<h3 id="auto-los_1">Auto LOS<a class="headerlink" href="#auto-los_1" title="Permanent link">#</a></h3>
-<p>If the user has specified a <a href="#user-bing-api-key">user supplied Bing API key</a>, then an Auto LOS analysis can be run. The analysis is iterated along the mission path automatically.</p>
+<h3 id="area-los_1">Area LOS<a class="headerlink" href="#area-los_1" title="Permanent link">#</a></h3>
+<p>This analysis is iterated along the mission path automatically, providing Area coverage for the mission.</p>
 <p><img alt="Auto LOS" src="../images/auto-los.png" /></p>
-<p>The image shows the state after a complete "Auto" analysis. While the analysis is running, the slider and "Point LOS" are not sensitive; once the run has completed, these controls are available if the user wishes to investigate further. The user can stop (and restart) Auto  using the "Auto LOS" / "Stop" button.</p>
+<p>The image shows the state after a complete "Area" analysis. While the analysis is running, the slider and "Point LOS" are not sensitive; once the run has completed, these controls are available if the user wishes to investigate further. The user can stop (and restart) Area  using the "Area LOS" / "Stop" button. (Note: in earlier versions, "Area LOS" was called "Auto LOS").</p>
 <p>Here, the user has subsequently used "Point LOS" to examine a point in the orange region. As expected, there is very little clearance between the LOS line and the terrain. This is confirmed on the map plot where the "blobs" (immediately to the right of the plot window close button) indicate the point where LOS is compromised.</p>
-<p>It is important to note that Auto LOS is performed at 1% increments of the <a href="#miscellaneous-notes">naive mission length</a>, it is not contiguous. In the above case, there is a point at 34.1% where there is no LOS.</p>
+<p>It is important to note that Area LOS is performed at 1% increments of the <a href="#miscellaneous-notes">naive mission length</a>, it is not contiguous. In the above case, there is a point at 34.1% where there is no LOS.</p>
 <p><img alt="Bad LOS" src="../images/fail-los.png" /></p>
-<p>If you press a modifier (Shift or Control) while invoking "Auto LOS", you get 0.1% increments, which may be used to investigate small segments (it will be slow ... and resource intensive). Here a detailed analysis has been run from 33.6% to 34.6% which captures the instance of complete loss of LOS.</p>
+<p>If you press a modifier (Shift or Control) while invoking "Area LOS", you get 0.1% increments, which may be used to investigate small segments (it will be slow ... and resource intensive). Here a detailed analysis has been run from 33.6% to 34.6% which captures the instance of complete loss of LOS.</p>
 <p><img alt="Auto_no LOS" src="../images/auto-bad-los.png" /></p>
 <p>Caveat user!</p>
 <p>There is also a You Tube video (uses a slightly earlier UI iteration).</p>
 <iframe width="768" height="634" src="https://www.youtube.com/embed/EIm8vksK1Pg" title="mwp LOS (Line of Sight) Tool" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
-<h2 id="user-bing-api-key">User Bing API Key<a class="headerlink" href="#user-bing-api-key" title="Permanent link">#</a></h2>
-<p>In the same way that the INAV Configurator requires the user to have their own Bing API key, this is also required for the <a href="#auto-los">Auto LOS</a> option. Details on now to obtain a key can be found in the <a href="https://github.com/iNavFlight/inav-configurator#how-to-get-the-bing-maps-api-key">INAV Configurator README</a>.</p>
+<h2 id="local-dems">Local DEMs<a class="headerlink" href="#local-dems" title="Permanent link">#</a></h2>
+<p>Prior to mwp 6.319.703, mwp required a personal Bing API key in order to perform Area LOS calculations.</p>
+<p>mwp now uses <a href="https://registry.opendata.aws/terrain-tiles/">Mapzen DEM</a> SRTM (Shuttle Radar Telemetry Mission) HGT files for all mwp elevation requirements. These are downloaded on demand.</p>
+<h3 id="user-bing-api-key">User Bing API Key<a class="headerlink" href="#user-bing-api-key" title="Permanent link">#</a></h3>
+<p>In the same way that the INAV Configurator requires the user to have their own Bing API key, mwp also encourages use of personal Bing API key. Details on now to obtain a key can be found in the <a href="https://github.com/iNavFlight/inav-configurator#how-to-get-the-bing-maps-api-key">INAV Configurator README</a>.</p>
 <p>The user's Bing API key should be added to the user's <code>$HOME/.config/mwp/cmdopts</code> <a href="../mwp-Configuration/#cmdopts">file</a>, for example:</p>
 <pre><code>#--debug-flags 20
 --dont-maximise
@@ -1294,9 +1324,8 @@ MWP_BING_KEY=Axxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 <p>This requirement is to help prevent the generic application API key exceeding usage limits. Using your own key will help ensure the availability of Bing map products for all users.</p>
 <h2 id="miscellaneous-notes">Miscellaneous notes<a class="headerlink" href="#miscellaneous-notes" title="Permanent link">#</a></h2>
 <ul>
-<li>The auto play output may pause due to network delay / throttling of Bing elevation data.</li>
-<li>These may more visible drawing latency on Xlib (vice Wayland).</li>
-<li>The auto play data is interval sampled. An obstruction could always be in the gap.</li>
+<li>The Area LOS output may pause (noticeable on Xlib (vice Wayland)).</li>
+<li>The Area LOS data is interval sampled. An obstruction could always be in the gap.</li>
 <li>The elevation data does not include obstructions above the terrain (trees, buildings, power lines etc.).</li>
 <li>The mission interpretation is naive.<ul>
 <li>There is no loiter radius</li>
@@ -1312,7 +1341,7 @@ MWP_BING_KEY=Axxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   <small>
     
       Last update:
-      2023-11-12
+      2023-11-15
     
   </small>
 </div>
