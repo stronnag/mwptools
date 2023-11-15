@@ -6,12 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	//	"log"
 	"math"
 	"net/http"
 	"os"
 	"strings"
-	// "time"
 )
 
 import (
@@ -38,9 +36,7 @@ const KENC string = "QXFzVEFpcGFCQnBLTFhoY2FHZ1A4a2NlWXVrYXRtdERMUzF4MENYRWhSWm5
 
 func InitDem(demdir string) (d *DEMMgr) {
 	d = &DEMMgr{}
-	if demdir != "" {
-		d.dem = NewHgtDb(demdir)
-	}
+	d.dem = NewHgtDb(demdir)
 	return d
 }
 
