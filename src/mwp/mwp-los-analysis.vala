@@ -141,6 +141,7 @@ public class LOSPoint : Object {
 }
 
 public class LOSSlider : Gtk.Window {
+	private const string AUTO_LOS = "Area LOS";
 	private double maxd;
 	private MissionPreviewer mt;
 	private LegPreview []plist;
@@ -158,7 +159,6 @@ public class LOSSlider : Gtk.Window {
 	private int _margin;
 	private bool mlog;
 	private int incr;
-
 	public signal void new_margin(int m);
 
 	public void set_log(bool _mlog) {
@@ -274,9 +274,9 @@ public class LOSSlider : Gtk.Window {
 		incr = 10;
 
 		var bbox = new Gtk.ButtonBox (Gtk.Orientation.HORIZONTAL);
-		abutton = new Gtk.Button.with_label ("Auto LOS");
+		abutton = new Gtk.Button.with_label (AUTO_LOS);
 		abutton.clicked.connect(() => {
-				if (abutton.label == "Auto LOS") {
+				if (abutton.label == AUTO_LOS) {
 					_margin = mentry.get_value_as_int ();
 					var ppos = slider.get_value ();
 					abutton.label = "Stop";
@@ -289,7 +289,7 @@ public class LOSSlider : Gtk.Window {
 					}
 					auto_run((int)ppos);
 				} else {
-					abutton.label = "Auto LOS";
+					abutton.label = AUTO_LOS;
 					is_running = false;
 				}
 			});
@@ -342,15 +342,18 @@ public class LOSSlider : Gtk.Window {
 		plist =  mt.check_mission(ms, hp, true);
 		maxd =  plist[plist.length-1].dist;
 		LOSPoint.show_los(true);
+		var pct = 0;
 		if (_auto == false) {
 			var j = 0;
-			for (; j < plist.length; j++) {
-				if(plist[j].p2 + 1 == wpno) {
-					break;
+			if (wpno != -1) {
+				for (; j < plist.length; j++) {
+					if(plist[j].p2 + 1 == wpno) {
+						break;
+					}
 				}
+				var adist = plist[j].dist;
+				pct = (int)(1000.0*adist/maxd);
 			}
-			var adist = plist[j].dist;
-			var pct = (int)(1000.0*adist/maxd);
 			slider.set_value(pct);
 		} else {
 			incr = 10;
@@ -374,7 +377,7 @@ public class LOSSlider : Gtk.Window {
 				los_auto_async.end(res);
 				slider.sensitive = true;
 				mentry.sensitive = true;
-				abutton.label = "Auto LOS";
+				abutton.label = AUTO_LOS;
 				cbutton.sensitive = true;
 				sbutton.sensitive = true;
 				ebutton.sensitive = true;
@@ -424,7 +427,8 @@ public class LOSSlider : Gtk.Window {
 		}
 
 		if (MWP.demdir != null) {
-			spawn_args += "-localdem=%s".printf(MWP.demdir);
+			var ldem = (!MwpMisc.is_cygwin()) ? MWP.demdir : MwpMisc.get_native_path(MWP.demdir);
+			spawn_args += "-localdem=%s".printf(ldem);
 		}
 		spawn_args += "-margin=%d".printf(_margin);
         spawn_args += "-home=%.8f,%.8f".printf(_hp.hlat, _hp.hlon);

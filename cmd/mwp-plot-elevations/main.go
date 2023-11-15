@@ -76,11 +76,11 @@ func main() {
 	}
 
 	astr := os.Getenv("MWP_BING_KEY")
-	if demdir == "" && astr == "" {
-		os.Exit(17)
+	dm := InitDem(demdir)
+	if dm.dem.dir == "" && astr == "" {
+		os.Exit(1)
 	}
 
-	dm := InitDem(demdir)
 	var err error
 	var m *Mission
 	var mpts []Point
@@ -111,8 +111,8 @@ func main() {
 	elev, err := dm.Get_elevations(mpts, 0)
 	if err == nil {
 		if len(mpts) != len(elev) {
-			fmt.Fprintf(os.Stderr, "mission=%d, elev=%d\n", len(mpts), len(elev))
-			panic("Bing return size error")
+			fmt.Fprintf(os.Stderr, "mission=%d, DEM=%d\n", len(mpts), len(elev))
+			os.Exit(2)
 		}
 
 		m.Update_details(mpts, elev)

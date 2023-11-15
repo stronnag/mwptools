@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"math"
 	"os"
 	"path/filepath"
 )
+
+const DEM_NODATA = -32678.0
 
 type hgtHandle struct {
 	fp    *os.File
@@ -34,11 +35,10 @@ func iabs(x int) int {
 	return x
 }
 
-func (h *hgtDb) newHgt(lat, lon float64) (hh *hgtHandle, err error) {
-	hh = &hgtHandle{}
-	hh.blat, hh.blon = getbase(lat, lon)
-	blat := iabs(hh.blat)
-	blon := iabs(hh.blon)
+func get_file_name(lat, lon float64) (string, int, int) {
+	blat, blon := getbase(lat, lon)
+	ablat := iabs(blat)
+	ablon := iabs(blon)
 
 	var latc byte
 	var lonc byte
@@ -52,7 +52,12 @@ func (h *hgtDb) newHgt(lat, lon float64) (hh *hgtHandle, err error) {
 	} else {
 		lonc = 'W'
 	}
-	hh.fname = fmt.Sprintf("%c%02d%c%03d.hgt", latc, blat, lonc, blon)
+	return fmt.Sprintf("%c%02d%c%03d.hgt", latc, ablat, lonc, ablon), blat, blon
+}
+
+func (h *hgtDb) newHgt(lat, lon float64) (hh *hgtHandle, err error) {
+	hh = &hgtHandle{}
+	hh.fname, hh.blat, hh.blon = get_file_name(lat, lon)
 	fname := filepath.Join(h.dir, hh.fname)
 	hh.fp, err = os.Open(fname)
 	if err == nil {
@@ -87,29 +92,35 @@ func (hh *hgtHandle) readpt(y, x int) (hgt int16) {
 }
 
 func (hh *hgtHandle) get_elevation(lat, lon float64) float64 {
-	dslat := 3600.0 * (lat - float64(hh.blat))
-	dslon := 3600.0 * (lon - float64(hh.blon))
+	if hh.fp != nil {
+		dslat := 3600.0 * (lat - float64(hh.blat))
+		dslon := 3600.0 * (lon - float64(hh.blon))
+		y := int(dslat) / hh.arc
+		x := int(dslon) / hh.arc
+		var elevs [4]int16
+		elevs[0] = hh.readpt(y+1, x)
+		elevs[1] = hh.readpt(y+1, x+1)
+		elevs[2] = hh.readpt(y, x)
+		elevs[3] = hh.readpt(y, x+1)
 
-	y := int(dslat) / hh.arc
-	x := int(dslon) / hh.arc
+		dy := math.Mod(dslat, float64(hh.arc)) / float64(hh.arc)
+		dx := math.Mod(dslon, float64(hh.arc)) / float64(hh.arc)
 
-	var elevs [4]int16
-	elevs[0] = hh.readpt(y+1, x)
-	elevs[1] = hh.readpt(y+1, x+1)
-	elevs[2] = hh.readpt(y, x)
-	elevs[3] = hh.readpt(y, x+1)
-
-	dy := math.Mod(dslat, float64(hh.arc)) / float64(hh.arc)
-	dx := math.Mod(dslon, float64(hh.arc)) / float64(hh.arc)
-
-	var e = float64(elevs[0])*dy*(1-dx) +
-		float64(elevs[1])*dy*(dx) +
-		float64(elevs[2])*(1-dy)*(1-dx) +
-		float64(elevs[3])*(1-dy)*dx
-	return e
+		var e = float64(elevs[0])*dy*(1-dx) +
+			float64(elevs[1])*dy*(dx) +
+			float64(elevs[2])*(1-dy)*(1-dx) +
+			float64(elevs[3])*(1-dy)*dx
+		return e
+	} else {
+		return DEM_NODATA
+	}
 }
 
 func NewHgtDb(dir string) *hgtDb {
+	if dir == "" {
+		def := os.Getenv("HOME")
+		dir = filepath.Join(def, ".cache", "mwp", "DEMs")
+	}
 	return &hgtDb{dir: dir}
 }
 
@@ -137,7 +148,7 @@ func (h *hgtDb) lookup(lat, lon float64) float64 {
 		if err == nil {
 			h.hgts = append(h.hgts, hh)
 		} else {
-			log.Fatalf("DEM %+v", err)
+			return DEM_NODATA
 		}
 	}
 	return hh.get_elevation(lat, lon)

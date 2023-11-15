@@ -82,18 +82,31 @@ func parse_response(js []byte) []int {
 func (d *DEMMgr) Get_elevations(p []Point, nsamp int) ([]int, error) {
 	var elevs []int
 	var err error
-	//	s := ""
-	//start := time.Now()
 	if d.dem != nil {
-		//s = "Local"
 		elevs, err = d.get_dem_elevations(p, nsamp)
 	} else {
-		//s = "Bing"
 		elevs, err = get_bing_elevations(p, nsamp)
 	}
-	//elapsed := time.Since(start)
-	//log.Printf("%s elev %d took %s", s, nsamp, elapsed)
 	return elevs, err
+}
+
+func (d *DEMMgr) lookup_and_check(lat, lon float64) (float64, error) {
+	var e float64
+	for j := 0; ; j++ {
+		e = d.dem.lookup(lat, lon)
+		if e == DEM_NODATA {
+			if j == 0 {
+				fname, _, _ := get_file_name(lat, lon)
+				download(fname, d.dem.dir)
+			} else {
+				return e, fmt.Errorf("DEM: No data for %f %f", lat, lon)
+				break
+			}
+		} else {
+			break
+		}
+	}
+	return e, nil
 }
 
 func (d *DEMMgr) get_dem_elevations(pts []Point, nsamp int) ([]int, error) {
@@ -105,13 +118,22 @@ func (d *DEMMgr) get_dem_elevations(pts []Point, nsamp int) ([]int, error) {
 	elevs := make([]int, np)
 	if nsamp == 0 {
 		for i, p := range pts {
-			e := d.dem.lookup(p.Y, p.X)
-			elevs[i] = int(e)
+			e, err := d.lookup_and_check(p.Y, p.X)
+			if err == nil {
+				elevs[i] = int(e)
+			} else {
+				return nil, err
+			}
 		}
 	} else {
 		nmp := len(pts)
 		maxr := pts[nmp-1].D
-		elevs[0] = int(d.dem.lookup(pts[0].Y, pts[0].X))
+		e, err := d.lookup_and_check(pts[0].Y, pts[0].X)
+		if err == nil {
+			elevs[0] = int(e)
+		} else {
+			return nil, err
+		}
 		lastp := 0
 		ep := 1
 		for j := 1; j < nsamp-1; j++ {

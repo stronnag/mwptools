@@ -89,8 +89,7 @@ public class AsyncDL : Object  {
 
 	public void add_queue(string s) {
 		var found = false;
-		//		MWPLog.message("Check queue %s\n", s);
-		for( unowned var lp = list; lp != null; ) {
+		for( unowned SList<string> lp = list; lp != null; ) {
 			var sl = lp.data;
 			if (sl == s) {
 				found = true;
@@ -103,9 +102,6 @@ public class AsyncDL : Object  {
 			list.append(s);
 			cond.signal();
 			mutex.unlock();
-			//			MWPLog.message("Added queue %s\n", s);
-		} else {
-			//			MWPLog.message("Found In queue %s\n", s);
 		}
 	}
 

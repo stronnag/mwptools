@@ -233,6 +233,7 @@ public class ListBox : GLib.Object {
     private Gtk.MenuItem delta_item;
     private Gtk.MenuItem terrain_item;
     private Gtk.MenuItem terrain_popitem;
+	//    private Gtk.MenuItem los_item;
     private Gtk.MenuItem los_popitem;
     private Gtk.MenuItem replicate_item;
     private Gtk.MenuItem speedz_item;
@@ -376,7 +377,7 @@ public class ListBox : GLib.Object {
 						wants_auto = (MWP.has_bing_key||EvCache.is_local());
 					}
 				}
-				LOS_analysis(wants_auto);
+				LOS_analysis(mpop_no, wants_auto);
 			});
 		los_popitem.sensitive = false;
 		marker_menu.add (los_popitem);
@@ -402,7 +403,7 @@ public class ListBox : GLib.Object {
 		mp.markers.freeze_mission(act);
 	}
 
-	private void LOS_analysis(bool auto=false) {
+	private void LOS_analysis(int no, bool auto=false) {
 		var losa = new LOSSlider(mp.window, mp.view, MWP.conf.los_margin);
 
 		if((mp.debug_flags & MWP.DEBUG_FLAGS.LOSANA) != MWP.DEBUG_FLAGS.NONE) {
@@ -435,7 +436,7 @@ public class ListBox : GLib.Object {
 		var ms = to_mission();
 		mp.mwin_freeze(false);
 		freeze_points(false);
-		losa.run(ms, hp, mpop_no, auto);
+		losa.run(ms, hp, no, auto);
 	}
 
     private void  toggle_editor_state() {
@@ -1847,7 +1848,6 @@ public class ListBox : GLib.Object {
             var i = int.parse((string)val);
             if(i == 0) {
                 i = int.parse((string)path.to_string()) + 1;
-                print("*** RTH Del %s %d ***\n", path.to_string(), i);
             }
 
             if(is_wp_valid_for_delete(i)) {
@@ -2173,13 +2173,20 @@ public class ListBox : GLib.Object {
             });
         menu.add (clrh_item);
 
-        terrain_item = new Gtk.MenuItem.with_label ("Terrain Analysis");
+        terrain_item = new Gtk.MenuItem.with_label ("Terrain Analysis ...");
         terrain_item.activate.connect (() => {
                 terrain_mission();
             });
         menu.add (terrain_item);
         terrain_item.sensitive=false;
-
+		/*
+        los_item = new Gtk.MenuItem.with_label ("Line of Sight ...");
+        los_item.activate.connect (() => {
+				LOS_analysis(-1, false);
+            });
+        menu.add (los_item);
+        los_item.sensitive=false;
+		*/
         replicate_item = new Gtk.MenuItem.with_label ("Replicate Waypoints");
         replicate_item.activate.connect (() => {
                 replicate_mission();
@@ -2296,6 +2303,7 @@ public class ListBox : GLib.Object {
             state = false;
         terrain_item.sensitive = state;
         los_popitem.sensitive = state;
+		//        los_item.sensitive = state;
     }
 
     private void set_replicate_item(bool state) {
@@ -2403,7 +2411,8 @@ public class ListBox : GLib.Object {
         string[] spawn_args = {"mwp-plot-elevations"};
 
 		if (EvCache.is_local()) {
-			spawn_args += "-localdem=%s".printf(MWP.demdir);
+			var ldem = (!MwpMisc.is_cygwin()) ? MWP.demdir : MwpMisc.get_native_path(MWP.demdir);
+			spawn_args += "-localdem=%s".printf(ldem);
 		}
         spawn_args += "--no-mission-alts";
         fhome.get_fake_home(out lat, out lon);

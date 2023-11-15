@@ -127,39 +127,3 @@ public class DEMMgr {
 		return hh.get_elevation(lat, lon);
 	}
 }
-
-#if TEST
-public struct Point {
-	double lat;
-	double lon;
-}
-
-public static int main(string[] args) {
-	Point[] pts = {};
-
-	if (args.length < 3 || (args.length&1) == 0) {
-		pts = {
-			{54.1250310, -4.7300753},
-			{54.149461, -4.669315},
-			{37.3382131, -122.108032},
-			{37.3322088, -122.0847559},
-			{50.9153213, -1.53035998},
-		};
-	} else {
-		for(var j = 0; j < args.length; j += 2) {
-
-			var pt = Point();
-			pt.lat = double.parse(args[j]);
-			pt.lon = double.parse(args[j+1]);
-			pts += pt;
-		}
-	}
-
-	var hdb = new DEMMgr("DEMs");
-	foreach (var p in pts) {
-		var e0 = hdb.lookup(p.lat, p.lon);
-		stdout.printf("Lookup %f %f -> %.1f\n", p.lat, p.lon, e0);
-	}
-	return 0;
-}
-#endif
