@@ -4759,16 +4759,34 @@ public class MWP : Gtk.Application {
                 if (!pos_is_centre) {
                     var lon = view.x_to_longitude (evt.x);
                     var lat = view.y_to_latitude (evt.y);
-                    poslabel.label = PosFormat.pos(lat,lon,conf.dms);
-                }
+					update_pointer_pos(lat, lon);
+				}
                 return false;
             });
-
     }
+
+	public void update_at_pointer() {
+		int mx;
+		int my;
+		Gdk.Display display = Gdk.Display.get_default ();
+		var seat = display.get_default_seat();
+		var ptr = seat.get_pointer();
+		embed.get_window().get_device_position(ptr, out mx, out my, null);
+		double lat = view.y_to_latitude((double)my);
+		double lon = view.x_to_longitude((double)mx);
+		update_pointer_pos(lat, lon);
+	}
 
     public void update_pointer_pos(double lat, double lon) {
         if (!pos_is_centre) {
-            poslabel.label = PosFormat.pos(lat,lon,conf.dms);
+			var e = demmgr.lookup(lat, lon);
+			var sb = new StringBuilder(PosFormat.pos(lat,lon,conf.dms));
+			if (e != HGT.NODATA)  {
+				if(view.zoom_level > 11) {
+					sb.append_printf(" %dm", (int)e);
+				}
+			}
+			poslabel.label = sb.str;
         }
     }
 
@@ -5910,6 +5928,7 @@ public class MWP : Gtk.Application {
             map_moved();
 			valid_flash();
 		}
+		update_at_pointer();
     }
 
     private void map_centre_on(double y, double x) {

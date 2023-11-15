@@ -644,7 +644,6 @@ public class ListBox : GLib.Object {
 
     public void import_mission(Mission ms, bool  autoland = false) {
         Gtk.TreeIter iter;
-
         clear_mission();
         have_rth = false;
         BingElevations.Point[] pts={};
@@ -717,7 +716,7 @@ public class ListBox : GLib.Object {
 				calc_mission();
 				return false;
 			});
-    }
+	}
 
     public bool validate_mission(MissionItem []wp, uint8 wp_flag) {
         int n_rows = list_model.iter_n_children(null);
