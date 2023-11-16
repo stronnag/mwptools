@@ -51,10 +51,14 @@ Update:
 
 $ git pull -t  --recurse-submodules=yes --force
 
-Add `-D  with-gatt=true` to meson setup, for example"
+On some Linux distros, the embedded gattlib build files
 
-$ meson setup --reconfigure _build --buildtype=minsize -D debug=false -D b_lto=true -D b_pie=true --prefix=~/.local --strip -D with-gatt=true
+$ ninja -C _build
+## fails here
 
+to continue
+$ ninja -C _build/subprojects/gattlib/__CMake_build
+$ ninja -C _build
 
 No GO(lang)
 ~~~~~~~~~~~

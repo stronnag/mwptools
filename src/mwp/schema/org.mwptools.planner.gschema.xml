@@ -518,7 +518,7 @@
     </key>
 
     <key name="pos-is-centre" type="b">
-      <default>true</default>
+      <default>false</default>
       <summary>Determines position label content</summary>
       <description>Whether the position label is the centre or pointer location</description>
     </key>
