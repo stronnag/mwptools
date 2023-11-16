@@ -240,6 +240,7 @@ This *may* not be installed by default, but should be available via the OS packa
 | log-on-arm | start logging on arm | start logging on arm (and stop on disarm) | false |
 | log-path | Directory for replay log files | Directory for log files (for replay), default = current directory | "" |
 | log-save-path | Directory for storing log files | Directory for log files (for save), default = current directory | "" |
+| los-margin | Margin(m) for LOS Analysis | Margin(m) for LOS Analysis | 0 |
 | mag-sanity | Enable mag sanity checking | mwp offers a primitive mag sanity checker that compares compass heading with GPS course over the ground using LTM (only). There are various hard-coded constraints (speed > 3m/s, certain flight modes) and two configurable parameters that should be set here in order to enable this check. The parameters are angular difference (⁰) and duration (s). The author finds a settings of 45,3 (i.e. 45⁰ over 3 seconds) works OK, detecting real instances (a momentarily breaking cable) and not reporting false positives. | "" |
 | manage-power | manage power and screen | whether to manage idle and screen saver | false |
 | map-sources | Additional Map sources | JSON file defining additional map sources | "" |
@@ -257,7 +258,7 @@ This *may* not be installed by default, but should be available via the OS packa
 | mission-path | Directory for mission files | Directory for mission files, default = current directory | "" |
 | osd-mode | Data items overlaid on the map | 0 = none, 1 = current WP/Max WP, 2 = next WP distance and course. This is a mask, so 3 means both OSD items. | 3 |
 | poll-timeout | Poll messages timeout (ms) | Timeout in milliseconds for telemetry poll messages. Note that timer loop has a resolution of 100ms. | 900 |
-| pos-is-centre | Determines position label content | Whether the position label is the centre or pointer location | true |
+| pos-is-centre | Determines position label content | Whether the position label is the centre or pointer location | false |
 | pwdw-p | internal parameter | (private setting) | 72 |
 | radar-alert-altitude | Altitude below which ADS-B alerts may be generated | Target altitude (metres) below which ADS-B proximity alerts may be generated. Requires that 'radar-alert-range' is also set (non-zero). Setting to 0 disables. Note that ADS-B altitudes are AMSL (or geoid). | 0 |
 | radar-alert-range | Range below which ADS-B alerts may be generated | Target range (metres) below which ADS-B proximity alerts may be generated. Requires that 'radar-alert-altitude' is also set (non-zero). Setting to 0 disables. | 0 |
@@ -267,7 +268,7 @@ This *may* not be installed by default, but should be available via the OS packa
 | rth-autoland | Set land on RTH waypoints | Automatically assert land on RTH waypoints | false |
 | say-bearing | Whether audio report includes bearing | Whether audio report includes bearing | true |
 | set-head-is-b0rken | set head bearing as reciprocal | Whether the set head bearing is the reciprocal (i.e. ancient bug in mw nav) | false |
-| show-sticks | Whether to show sticks in log replay | If "yes", stick position is shown during log replay, if "no" , never shown. If "decorated", then shown in a decorated window (for window managers can't cope with un-decorated windows), e.g. WSL, Cygwin | "yes" |
+| show-sticks | Whether to show sticks in log replay | If "yes", stick position is shown during log replay, if "no" , never shown. If "decorated", then shown in a decorated window (for window managers that can't cope with un-decorated windows), e.g. WSL, Cygwin | "yes" |
 | smartport-fuel-unit | User selected fuel type | Units label for smartport fuel (none, %, mAh, mWh) | "none" |
 | speak-amps | When to speak amps/hr used | none, live-n, all-n n=1,2,4 : n = how often spoken (modulus basically) | "none" |
 | speak-interval | Interval between voice prompts | Interval between voice prompts, 0 disables | 15 |

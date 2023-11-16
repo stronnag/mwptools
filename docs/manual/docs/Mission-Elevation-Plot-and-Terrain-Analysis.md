@@ -4,19 +4,7 @@
 
 Prior to {{ inav }} 3.0, mission altitudes are relative to the HOME (arming) location, which is not part of a mission definition. As a result, the pilot has to be ensure by some other means that the mission will clear any raised elevations on the mission path. For INAV 3.0, missions may be either [relative to home or absolute](Support-for-inav-3.0-WP-features.md) (above a [datum, see below](#datum)).
 
-**mwp** includes a `mwp-plot-elevations` tool that performs mission and terrain analysis.
-Prior to 2021-05-03, this was provided by a ruby script in `mwptools/samples`; since 2021-05-03 there is a Go program (in `mwptools/mwp-plot-elevations`) which is an enhanced version, and supports [INAV 3.0 absolute altitude](Support-for-inav-3.0-WP-features.md) missions. If you're running an older version of **mwp**, or you haven't installed the Go compiler, you can use the older, less functional ruby version, but the Go version is recommended as:
-
-* It supports INAV 3.0 absolute altitude waypoints
-* It can update LAND waypoints to offset the difference between the home ground elevation and the LAND WP ground elevation.
-* It's much faster
-* Its usage is compatible with the deprecated ruby version.
-* Bug fixes and improvements
-
-Both the ruby application and the Go application are platform independent and can be used without {{ mwp }} for mission terrain analysis.
-
-!!! note "Obsolescence Note"
-    Prior to 2021-05, the ruby version was installed as `mwp-plot-elevations.rb`; now it's installed as plain `mwp-plot-elevations` in order that the superior Go version is a drop in replacement.
+**mwp** includes a `mwp-plot-elevations` tool that performs mission and terrain analysis. This tool is platform independent and can be used without {{ mwp }} for mission terrain analysis.
 
 `mwp-plot-elevations` can rewrite the mission file with new elevations to provide a specified ground clearance.
 
@@ -80,24 +68,11 @@ The **`mwp-plot-elevations`** has **NO** dependency on {{ mwp }} or Linux / Free
 
 ### Go version
 
-* Go compiler (1.13 or later)
+* Go compiler (1.18 or later)
 
-### Ruby version
-
-* ruby (2.0 or later)
-* ruby 'gems' (libraries)
-    * nokogiri
 * gnuplot
 
-`gnuplot` is easily provided (by your distro or from a binary download), and the `nokogiri` dependency is also easily satisfied by either the distro or Ruby's `gem` command:
-
-    	$ apt install ruby-nokogiri
-    	### or ###
-    	> gem install nokogiri
-    	## mwp Windows / Cygwin
-    	$ cyg-apt install ruby-nokogiri
-
-Using the package manager is recommended for non-proprietary operating systems.
+`gnuplot` is easily provided (by your distro or from a binary download).
 
 On all operating systems, the terrain graph is also plotted interactively, regardless of whether the `-p` (save SVG plot) option has been specified. The following shows the UI on Windows (it's pretty much the same on other OS).
 
@@ -112,27 +87,27 @@ On all operating systems, the terrain graph is also plotted interactively, regar
 
 ## Datum
 
-Digital elevation services can use the WGS84 Ellipsoid or "sea level"; survey maps typically use AMSL (Above Mean Sea Level); GPS can report either or both of WGS Ellipsoid and above MSL (mean sea level). The "sea level" used by Bing Elevations is computed from a magnetic anomaly / gravity database and may not be the same as the AMSL "sea level" used by the survey.  **Caveat User**.
+Digital elevation services can use the WGS84 Ellipsoid or "sea level"; survey maps typically use AMSL (Above Mean Sea Level); GPS can report either or both of WGS Ellipsoid and above MSL (mean sea level).
 
-* mwp currently uses Bing "Sea level" to obtain elevations. The user should apply a suitable margin.
+* mwp currently uses locally (and transparently) hosted [Mapzen DEM](https://registry.opendata.aws/terrain-tiles/) DEMs to obtain elevations. The user should apply a suitable margin.
 * {{ inav }} firmware uses the GPS' AMSL value, so {{ inav }} and {{ mwp }} are consistent on this.
-* The INAV configurator uses Bing's Ellipsoid values (by default, it can be changed).
 
-Due to the granularity of the AMSL grid used by GPS and the gravity based Bing Sea Level, there may be a significant difference between ASML, "sea level", WGS84 Ellipsoid and Survey heights, for example, for a test point of  54.149461 -4.669315 (summit of South Barrule, Isle of Man):
+There may be a between ASML, "sea level", WGS84 Ellipsoid and Survey heights, for example, for a test point of  54.149461 -4.669315 (summit of South Barrule, Isle of Man):
 
-* Google Earth : 470m
 * Ordnance Survey (OS) Map (official survey): 483m
+* Mapzen DEM (mwp) 476m
+* OpenTopoData: 476m (via Mapzen)
+* Google Earth : 470m
 * Bing Ellipsoid (prior Configurator): 526m
-* Open Topo (current Configurator): 485m
-* Bing "Sea Level" (mwp): 470m
+* Bing "Sea Level" (Configurator): 470m
 
-Note that while OpenTopo appears to be the most accurate, it has significant issues that mean it is unacceptable as a reliable data source:
+Note that while OpenTopo appears to be the most accurate web service, it has significant issues that mean it is unacceptable as a reliable data source:
 
 * Rate limited to one query per second.
 * Limited to 100 points per query (INAV supports 120 point missions...).
 * Limited to 1000 queries per 24 hour period.
 
-For these reasons, {{ mwp }} used Bing sea level elevations as the best compromise between accuracy and reliability.
+For these reasons, {{ mwp }} used locally hosted Mapzen DEMs.
 
 ## So who's right?
 
