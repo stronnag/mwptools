@@ -1,0 +1,3 @@
+[submodule "subprojects/gattlib"]
+	path = subprojects/gattlib
+	url = https://github.com/labapart/gattlib.git

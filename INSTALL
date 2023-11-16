@@ -37,6 +37,25 @@ $ ninja -C _build install
 More Information:
  https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja
 
+
+With GATT (Bluetooth BLE) support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+It is necessary to install the gattlib subproject.
+
+First time clone:
+
+$ git clone --recurse-submodules https://github.com/stronnag/mwptools
+
+Update:
+
+$ git pull -t  --recurse-submodules=yes --force
+
+Add `-D  with-gatt=true` to meson setup, for example"
+
+$ meson setup --reconfigure _build --buildtype=minsize -D debug=false -D b_lto=true -D b_pie=true --prefix=~/.local --strip -D with-gatt=true
+
+
 No GO(lang)
 ~~~~~~~~~~~
 

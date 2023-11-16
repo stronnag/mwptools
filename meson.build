@@ -16,7 +16,18 @@ configure_file(
   configuration : conf_data
 )
 
+configuration_inc = []
+
 subdir('meson')
+if with_gatt
+  cmake   = import('cmake')
+  opt_var = cmake.subproject_options()
+  opt_var.add_cmake_defines({'GATTLIB_PYTHON_INTERFACE': false})
+  sub_proj = cmake.subproject('gattlib')
+  gattlib_lib_deps = sub_proj.dependency('gattlib')
+else
+  gattlib_lib_deps=[]
+endif
 subdir('src/common')
 subdir('src/mwp')
 subdir('src/fc-cli')
@@ -25,8 +36,6 @@ subdir('src/samples/')
 subdir('src/mwp-gatt-bridge')
 subdir('docs')
 
-configuration_inc = include_directories('.')
-
 executable('mwp',
 	   sources: [mwpsrcs, mwpcommon, gatt_src, mwpvers_h],
 	   dependencies: [mwpdeps, gatt_deps],
@@ -34,7 +43,8 @@ executable('mwp',
 	   include_directories : [common_inc_dir, configuration_inc],
 	   vala_args : [dopts, mwp_v_args, gatt_v_args],
 	   c_args: [mwp_c_args, gatt_c_args],
-	   install : true
+	   install : true,
+           install_rpath: get_option('prefix')+'/lib'
           )
 
 executable('cliterm',
@@ -43,7 +53,9 @@ executable('cliterm',
            include_directories : common_inc_dir,
            vala_args : [dopts, cli_v_args, gatt_v_args ],
            c_args: gatt_c_args,
-           install : true)
+           install : true,
+           install_rpath: get_option('prefix')+'/lib'
+          )
 
 executable('bproxy',
            sources: bproxsrc,
@@ -57,7 +69,9 @@ executable('fc-get',
            include_directories : common_inc_dir,
            vala_args : [dopts, fc_v_args, gatt_v_args ],
            c_args: gatt_c_args,
-           install : true)
+           install : true,
+           install_rpath: get_option('prefix')+'/lib'
+          )
 
 executable('ublox-geo',
            sources: [ ublxgsrcs, ublxguisrc, ublxgcommon],
@@ -83,6 +97,7 @@ executable('flashdl',
            vala_args : [dopts, fdl_v_args, gatt_v_args ],
            build_by_default: false,
            install : false,
+           install_rpath: get_option('prefix')+'/lib',
 	   install_tag : 'flashdl',
           )
 
@@ -95,16 +110,18 @@ executable('gmproxy',
            install_tag: 'gmproxy',
 	   )
 
-executable('mwp-gatt-bridge',
+if with_gatt
+  executable('mwp-gatt-bridge',
            sources: [gatt_app_src, gatt_src],
            dependencies: [gatt_deps],
            include_directories : common_inc_dir,
            vala_args : [ dopts, gatt_v_args, gatt_app_v_args ],
            c_args: gatt_c_args,
-           build_by_default: false,
-           install : false,
-           install_tag: 'gatt',
+           build_by_default: true,
+           install : true,
+           install_rpath: get_option('prefix')+'/lib',
 	   )
+endif
 
 subdir('src/bbox-replay')
 

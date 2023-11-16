@@ -68,13 +68,12 @@ gatt_v_args = []
 gatt_deps = []
 
 if with_gatt
-  ldirs = ['/usr/lib', '/usr/local/lib']
-  gattlib = meson.get_compiler('c').find_library('gattlib', dirs: ldirs, required: false)
-  if gattlib.found()
+#  ldirs = ['/usr/lib', '/usr/local/lib']
+#  gattlib = meson.get_compiler('c').find_library('gattlib', dirs: ldirs, required: false)
+#  if gattlib.found()
     gatt_c_args += '-D HAVE_GATTLIB'
-    gatt_deps += gattlib
+    gatt_deps += gattlib_lib_deps
     gatt_v_args += '--define=GATTLIB'
-  endif
 else
   message('Not checking gattlib')
 endif
