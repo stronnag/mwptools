@@ -1,2 +1,2 @@
 option('nogo', type : 'boolean', value : false)
-option('with-gatt', type : 'boolean', value : false)
+option('with-gatt', type : 'boolean', value : true)
