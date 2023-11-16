@@ -33,11 +33,7 @@ if with_gatt
   opt_var.add_cmake_defines({'CMAKE_INSTALL_PREFIX': gattpath})
   opt_var.set_override_option('prefix', gattpath)
   sub_proj = cmake.subproject('gattlib', options: opt_var)
-  if sub_proj.found() == true
-    gattlib_lib_deps = sub_proj.dependency('gattlib')
-  else
-    with_gatt=false
-  endif
+  gattlib_lib_deps = sub_proj.dependency('gattlib')
 endif
 
 subdir('src/common')
