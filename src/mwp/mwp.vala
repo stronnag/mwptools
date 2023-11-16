@@ -1781,6 +1781,7 @@ public class MWP : Gtk.Application {
 						if(zoom > 0)
 							view.zoom_level = zoom;
 						map_moved();
+						update_at_pointer();
 						valid_flash();
 						return false;
 					});
@@ -5927,8 +5928,8 @@ public class MWP : Gtk.Application {
             }
             map_moved();
 			valid_flash();
+			update_at_pointer();
 		}
-		update_at_pointer();
     }
 
     private void map_centre_on(double y, double x) {

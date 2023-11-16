@@ -36,6 +36,9 @@ public class HgtHandle {
 				} else if (ssz/3601 == 3601) {
 					width = 3601;
 					arc = 1;
+				} else {
+					Posix.close(fd);
+					fd = -1;
 				}
 			}
 		}
@@ -79,18 +82,28 @@ public class HgtHandle {
 }
 
 public class DEMMgr {
+	private const size_t HGT_SIZE_30M = 25934402; // 3601*3601
+	private const size_t HGT_SIZE_90M =  2884802; // 1201*1201
 	private HgtHandle [] hgts;
 	public DEMMgr() {
 		hgts = {};
-		/**
-		Dir dir = Dir.open (MWP.demdir, 0);
 		string? name = null;
-		while ((name = dir.read_name ()) != null) {
-			string path = Path.build_filename (MWP.demdir, name);
-			if (FileUtils.test (path, FileTest.IS_REGULAR)) {
+		try {
+			Dir dir = Dir.open (MWP.demdir, 0);
+			while ((name = dir.read_name ()) != null) {
+				string path = Path.build_filename (MWP.demdir, name);
+				if (FileUtils.test (path, FileTest.IS_REGULAR)) {
+					Posix.Stat st;
+					if (Posix.stat(path, out st) == 0) {
+						if(st.st_size != HGT_SIZE_30M && st.st_size != HGT_SIZE_90M) {
+							Posix.unlink(path);
+						}
+					}
+				}
 			}
+		} catch (Error e) {
+			MWPLog.message("Failed to read %s %s\n", MWP.demdir, e.message);
 		}
-		**/
 	}
 
 	~DEMMgr() {
@@ -121,6 +134,8 @@ public class DEMMgr {
 				hgts +=  hh;
 			} else {
 				hh = null;
+				var fn = HgtHandle.getbase(lat, lon, null, null);
+				MWP.asyncdl.add_queue(fn);
 				return HGT.NODATA;
 			}
 		}

@@ -23,15 +23,13 @@ public class AsyncDL : Object  {
 			var dst = dstf.replace (null, false, 0);
 			var conv_stream = new ConverterOutputStream (dst, conv);
 			conv_stream.splice (src, 0);
-			//			MWPLog.message("gunzipped %s %s\n", gzname, dstf.get_path());
 		} catch (Error e) {
-			//			MWPLog.message("gunzip fails %s\n", e.message);
+			MWPLog.message("gunzip fails %s %s\n", gzname, e.message);
 		}
 		FileUtils.unlink(gzname);
 	}
 
 	public async bool run_async () {
-
 		var thr = new Thread<bool>("hqueue", () => {
 				while (true) {
                     mutex.lock ();
@@ -59,6 +57,7 @@ public class AsyncDL : Object  {
 						fn = tmp + "/" + fn;
 						File file = File.new_for_path(fn);
 						MWPLog.message("start DEM D/L %s => %s\n", uri, fn);
+						FileUtils.unlink(fn);
 						try {
 							FileOutputStream os = file.create (FileCreateFlags.REPLACE_DESTINATION);
 							var session = new Soup.Session();
