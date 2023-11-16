@@ -29,8 +29,8 @@ subdir('meson')
 if with_gatt
   cmake   = import('cmake')
   opt_var = cmake.subproject_options()
-  opt_var.add_cmake_defines({'GATTLIB_PYTHON_INTERFACE': false},
-                           'GATTLIB_BUILD_EXAMPLES': false)
+  opt_var.add_cmake_defines({'GATTLIB_PYTHON_INTERFACE': false,
+                           'GATTLIB_BUILD_EXAMPLES': false})
   opt_var.add_cmake_defines({'CMAKE_INSTALL_PREFIX': gattpath})
   opt_var.set_override_option('prefix', gattpath)
   sub_proj = cmake.subproject('gattlib', options: opt_var)
