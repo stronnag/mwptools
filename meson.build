@@ -8,6 +8,10 @@ endif
 nogo = get_option('nogo')
 with_gatt = get_option('with-gatt')
 
+if build_machine.system() != 'linux'
+  with_gatt = false
+endif
+
 conf_data = configuration_data()
 conf_data.set('version', meson.project_version())
 configure_file(
@@ -17,17 +21,25 @@ configure_file(
 )
 
 configuration_inc = []
+gattlib_lib_deps=[]
+gattpath = get_option('prefix')+'/lib/mwp'
 
 subdir('meson')
+
 if with_gatt
   cmake   = import('cmake')
   opt_var = cmake.subproject_options()
   opt_var.add_cmake_defines({'GATTLIB_PYTHON_INTERFACE': false})
-  sub_proj = cmake.subproject('gattlib')
-  gattlib_lib_deps = sub_proj.dependency('gattlib')
-else
-  gattlib_lib_deps=[]
+  opt_var.add_cmake_defines({'CMAKE_INSTALL_PREFIX': gattpath})
+  opt_var.set_override_option('prefix', gattpath)
+  sub_proj = cmake.subproject('gattlib', options: opt_var)
+  if sub_proj.found() == true
+    gattlib_lib_deps = sub_proj.dependency('gattlib')
+  else
+    with_gatt=false
+  endif
 endif
+
 subdir('src/common')
 subdir('src/mwp')
 subdir('src/fc-cli')
@@ -44,7 +56,7 @@ executable('mwp',
 	   vala_args : [dopts, mwp_v_args, gatt_v_args],
 	   c_args: [mwp_c_args, gatt_c_args],
 	   install : true,
-           install_rpath: get_option('prefix')+'/lib'
+           install_rpath: gattpath + '/lib'
           )
 
 executable('cliterm',
@@ -54,7 +66,7 @@ executable('cliterm',
            vala_args : [dopts, cli_v_args, gatt_v_args ],
            c_args: gatt_c_args,
            install : true,
-           install_rpath: get_option('prefix')+'/lib'
+           install_rpath: gattpath +'/lib'
           )
 
 executable('bproxy',
@@ -70,7 +82,7 @@ executable('fc-get',
            vala_args : [dopts, fc_v_args, gatt_v_args ],
            c_args: gatt_c_args,
            install : true,
-           install_rpath: get_option('prefix')+'/lib'
+           install_rpath: gattpath +'/lib'
           )
 
 executable('ublox-geo',
@@ -97,7 +109,7 @@ executable('flashdl',
            vala_args : [dopts, fdl_v_args, gatt_v_args ],
            build_by_default: false,
            install : false,
-           install_rpath: get_option('prefix')+'/lib',
+           install_rpath: gattpath+'/lib',
 	   install_tag : 'flashdl',
           )
 
@@ -119,7 +131,7 @@ if with_gatt
            c_args: gatt_c_args,
            build_by_default: true,
            install : true,
-           install_rpath: get_option('prefix')+'/lib',
+           install_rpath: gattpath + '/lib',
 	   )
 endif
 
