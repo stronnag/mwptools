@@ -37,49 +37,59 @@ public class AsyncDL : Object  {
 						cond.wait(mutex);
 					}
 					pop = false;
-					var s = list.nth_data(0);
 					mutex.unlock();
-
-					if (s == "!") {
-                        Idle.add (run_async.callback);
-						return false;
-					} else {
-						var xfn = Path.build_filename(_demdir, s);
-						var fd = Posix.open(xfn, Posix.O_RDONLY);
-						if (fd != -1) {
-							MWPLog.message("Skipping %s\n", xfn);
-							Posix.close(fd);
-							continue;
+					while (true) {
+						uint n;
+						mutex.lock();
+						n = list.length();
+						mutex.unlock();
+						if ( n == 0) {
+							break;
 						}
-						var tmp = Environment.get_tmp_dir();
-						var fn = s + ".gz";
-						var uri = "https://s3.amazonaws.com/elevation-tiles-prod/skadi/" + fn[0:3]+"/"+ fn;
-						fn = tmp + "/" + fn;
-						File file = File.new_for_path(fn);
-						MWPLog.message("start DEM D/L %s => %s\n", uri, fn);
-						FileUtils.unlink(fn);
-						try {
-							FileOutputStream os = file.create (FileCreateFlags.REPLACE_DESTINATION);
-							var session = new Soup.Session();
+						mutex.lock();
+						var s = list.nth_data(0);
+						mutex.unlock();
+						if (s == "!") {
+							Idle.add (run_async.callback);
+							return false;
+						} else {
+							var xfn = Path.build_filename(_demdir, s);
+							var fd = Posix.open(xfn, Posix.O_RDONLY);
+							if (fd != -1) {
+								MWPLog.message("Skipping %s\n", xfn);
+								Posix.close(fd);
+							} else {
+								var tmp = Environment.get_tmp_dir();
+								var fn = s + ".gz";
+								var uri = "https://s3.amazonaws.com/elevation-tiles-prod/skadi/" + fn[0:3]+"/"+ fn;
+								fn = tmp + "/" + fn;
+								File file = File.new_for_path(fn);
+								MWPLog.message("start DEM D/L %s => %s\n", uri, fn);
+								FileUtils.unlink(fn);
+								try {
+									FileOutputStream os = file.create (FileCreateFlags.REPLACE_DESTINATION);
+									var session = new Soup.Session();
 
 #if COLDSOUP
-							Soup.Request request = session.request (uri);
-							InputStream stream = request.send ();
-							os.splice (stream, OutputStreamSpliceFlags.CLOSE_TARGET);
+									Soup.Request request = session.request (uri);
+									InputStream stream = request.send ();
+									os.splice (stream, OutputStreamSpliceFlags.CLOSE_TARGET);
 #else
-							var message = new Soup.Message ("GET", uri);
-							session.send_and_splice(message, os,  OutputStreamSpliceFlags.CLOSE_TARGET);
+									var message = new Soup.Message ("GET", uri);
+									session.send_and_splice(message, os,  OutputStreamSpliceFlags.CLOSE_TARGET);
 #endif
-							MWPLog.message("Finished DEM D/L %s\n", fn);
-							decompress(fn, s);
-                            loaded(s);
-						} catch (Error e){
-							MWPLog.message("failed D/L %s\n", e.message);
+									MWPLog.message("Finished DEM D/L %s\n", fn);
+									decompress(fn, s);
+									loaded(s);
+								} catch (Error e){
+									MWPLog.message("failed D/L %s\n", e.message);
+								}
+							}
+							mutex.lock();
+							list.remove_link(list);
+							mutex.unlock();
 						}
 					}
-                    mutex.lock();
-					list.remove_link(list);
-					mutex.unlock();
 				}
 			});
 		yield;
@@ -88,6 +98,7 @@ public class AsyncDL : Object  {
 
 	public void add_queue(string s) {
 		var found = false;
+		mutex.lock();
 		for( unowned SList<string> lp = list; lp != null; ) {
 			var sl = lp.data;
 			if (sl == s) {
@@ -96,12 +107,10 @@ public class AsyncDL : Object  {
 			lp = lp.next;
         }
 		if (!found) {
-			mutex.lock();
 			pop = true;
 			list.append(s);
 			cond.signal();
-			mutex.unlock();
 		}
+		mutex.unlock();
 	}
-
 }
