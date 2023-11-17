@@ -1100,7 +1100,7 @@ public class MWSerial : Object {
 
         if((cond & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0) {
             show_cond(cond);
-            available = false;
+			//            available = false;
             if(fd != -1)
                 serial_lost();
             tag = 0; // REMOVE will remove the iochannel watch
