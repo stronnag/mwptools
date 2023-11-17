@@ -6,7 +6,6 @@ public class CLITerm : Gtk.Window {
     public signal void reboot();
 	public signal void enter_cli();
     public CLITerm (Gtk.Window? w = null) {
-        this.modal = true;
         if(w != null) {
             this.set_transient_for (w);
         }
