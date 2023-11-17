@@ -1871,19 +1871,38 @@ public class MWP : Gtk.Application {
 
         saq = new GLib.SimpleAction("terminal",null);
         saq.activate.connect(() => {
+				var txpoll = nopoll;
+				var in_cli = false;
+				var devname = msp.get_devname();
                 if(msp.available && armed == 0) {
                     mq.clear();
                     serstate = SERSTATE.NONE;
+					nopoll = true;
                     CLITerm t = new CLITerm(window);
-                    t.configure_serial(msp);
-                    t.show_all ();
                     t.on_exit.connect(() => {
-                            serial_doom(conbutton);
-                            Timeout.add_seconds(2, () => {
-                                    connect_serial();
-                                    return !msp.available;
-                                });
+							MWPLog.message("Dead  terminal\n");
+							//							if (in_cli) {
+								serial_doom(conbutton);
+								try_reopen(devname);
+								//}
+							nopoll = txpoll;
+							serstate = SERSTATE.NORMAL;
+							t=null;
                         });
+					t.reboot.connect(() => {
+							MWPLog.message("Terminal reboot signalled\n");
+							in_cli = false;
+							try_reopen(devname);
+						});
+
+					t.enter_cli.connect(() => {
+							in_cli = true;
+							nopoll = true;
+							mq.clear();
+							serstate = SERSTATE.NONE;
+						});
+					t.configure_serial(msp, true);
+                    t.show_all ();
                 }
             });
         window.add_action(saq);
@@ -2771,7 +2790,9 @@ public class MWP : Gtk.Application {
             view.zoom_level = zm;
 
         msp.force4 = force4;
-        msp.serial_lost.connect(() => { serial_doom(conbutton); });
+        msp.serial_lost.connect(() => {
+				serial_doom(conbutton);
+			});
 
         msp.serial_event.connect((s,cmd,raw,len,xflags,errs) => {
                 handle_serial(cmd,raw,len,xflags,errs);
@@ -3078,6 +3099,21 @@ public class MWP : Gtk.Application {
 		gstdm.setup_device_monitor();
 		map_moved();
     }
+
+	private void try_reopen(string devname) {
+        if(!autocon) {
+			Timeout.add(2000, () => {
+					var serdev = dev_entry.get_active_text().split(" ")[0];
+					if (serdev != devname) {
+						return true;
+					}
+					if (!msp.available) {
+						connect_serial();
+					}
+					return false;
+				});
+		}
+	}
 
 	private void set_pmask_poller(MWSerial.PMask pmask) {
 		if (pmask == MWSerial.PMask.AUTO || pmask == MWSerial.PMask.INAV) {
@@ -8767,12 +8803,14 @@ public class MWP : Gtk.Application {
             if (msp.available) {
                 msp.close();
                 ttrk.enable(msp.get_devname());
-            }
 #if MQTT
-            else if (mqtt_available) {
+			} else if (mqtt_available) {
                 mqtt_available = mqtt.mdisconnect();
-            }
 #endif
+            } else {
+				MWPLog.message(":DBG: Aleady Closed %s\n", msp.get_devname());
+			}
+
             c.set_label("Connect");
             set_mission_menus(false);
             set_menu_state("navconfig", false);
