@@ -3112,6 +3112,8 @@ public class MWP : Gtk.Application {
 					if (!msp.available) {
 						MWPLog.message(":DBG: term conn %s\n", serdev);
 						connect_serial();
+					} else {
+						MWPLog.message(":DBG: alreay up %s\n", serdev);
 					}
 					return false;
 				});
