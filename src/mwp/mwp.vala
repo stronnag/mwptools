@@ -2860,11 +2860,12 @@ public class MWP : Gtk.Application {
 		MWPLog.message("Show main window\n");
 		splash.update("Preparing main window");
 
-        if((wp_edit = conf.auto_wp_edit) == true)
+        if((wp_edit = conf.auto_wp_edit) == true) {
             wp_edit_button.hide();
-        else
+            wp_edit_button.sensitive = false;
+		} else  {
             wp_edit_button.show();
-
+		}
         if(wdw_state == false)
             fsmenu_button.hide();
 
