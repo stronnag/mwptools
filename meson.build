@@ -30,9 +30,9 @@ if with_gatt
   cmake   = import('cmake')
   opt_var = cmake.subproject_options()
   opt_var.add_cmake_defines({'GATTLIB_PYTHON_INTERFACE': false,
-                           'GATTLIB_BUILD_EXAMPLES': false})
-  opt_var.add_cmake_defines({'CMAKE_INSTALL_PREFIX':  get_option('prefix')})
-  opt_var.add_cmake_defines({'CMAKE_INSTALL_LIBDIR': 'lib/mwp'})
+                             'GATTLIB_BUILD_EXAMPLES': false,
+                             'CMAKE_INSTALL_LIBDIR': 'lib/mwp',
+                             'CMAKE_INSTALL_INCLUDEDIR': 'include/mwp'})
   sub_proj = cmake.subproject('gattlib', options: opt_var)
   gattlib_lib_deps = sub_proj.dependency('gattlib')
 endif
