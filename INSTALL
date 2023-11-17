@@ -41,22 +41,19 @@ More Information:
 With GATT (Bluetooth BLE) support
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-It is necessary to install the gattlib subproject.
+meson and ninja handle the embedded sub-project, mainly. On some disrtos, you can just build everything as usual:
 
-First time clone:
-
-$ git clone --recurse-submodules https://github.com/stronnag/mwptools
-
-Update:
-
-$ git pull -t  --recurse-submodules=yes --force
-
-On some Linux distros, the embedded gattlib build files
+On some Linux distros, the embedded gattlib build fails ...
 
 $ ninja -C _build
 ## fails here
 
 to continue
+$ ninja -C _build/subprojects/gattlib/__CMake_build
+$ ninja -C _build
+
+Or just do the two steps up-front:
+
 $ ninja -C _build/subprojects/gattlib/__CMake_build
 $ ninja -C _build
 
