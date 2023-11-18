@@ -398,6 +398,7 @@ public class ListBox : GLib.Object {
 	}
 
 	private void LOS_analysis(int no, bool auto=false) {
+		validate_elevations();
 		var losa = new LOSSlider(mp.window, mp.view, MWP.conf.los_margin);
 
 		if((mp.debug_flags & MWP.DEBUG_FLAGS.LOSANA) != MWP.DEBUG_FLAGS.NONE) {
@@ -2398,12 +2399,43 @@ public class ListBox : GLib.Object {
         }
     }
 
+	private bool validate_elevations() {
+		bool res = true; // forever the optimist ...
+		var ms = to_mission();
+		int melev;
+		if(ms.homex != 0 && ms.homey != 0) {
+			if (EvCache.get_elev(EvCache.EvConst.HOME, out melev) == false) {
+				res = false;
+			}
+		} else {
+			res = false;
+		}
+		if (res) {
+			foreach (MissionItem m in ms.get_ways()) {
+				if((m.action == MSP.Action.WAYPOINT ||
+					m.action == MSP.Action.POSHOLD_UNLIM ||
+					m.action == MSP.Action.POSHOLD_TIME ||
+					m.action == MSP.Action.LAND)) {
+					if (EvCache.get_elev(m.no, out melev) == false) {
+						res = false;
+						break;
+					}
+				}
+			}
+		}
+		if (!res) {
+			MWPLog.message("Don't seem to have all elevations; this may end badly ..\n");
+		}
+		return res;
+	}
+
     private void run_elevation_tool() {
         double lat,lon;
         var outfn = mstempname();
         string replname = null;
         string[] spawn_args = {"mwp-plot-elevations"};
 
+		validate_elevations();
 		if (EvCache.is_local()) {
 			var ldem = (!MwpMisc.is_cygwin()) ? MWP.demdir : MwpMisc.get_native_path(MWP.demdir);
 			spawn_args += "-localdem=%s".printf(ldem);
@@ -2434,7 +2466,8 @@ public class ListBox : GLib.Object {
         }
 
         var m = to_mission();
-        XmlIO.to_xml_file(outfn, {m});
+
+		XmlIO.to_xml_file(outfn, {m});
         spawn_args += outfn;
         MWPLog.message("%s\n", string.joinv(" ",spawn_args));
         string []cdlines = {};
