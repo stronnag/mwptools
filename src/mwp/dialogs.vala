@@ -158,7 +158,9 @@ public class OdoView : GLib.Object {
     private Gtk.Label odospeed_tm;
     private Gtk.Label odorange_tm;
 
-    private uint to = 15;
+	private Gtk.TextView odotview;
+
+    private uint to = 30;
     private uint tid = 0;
     private bool visible = false;
 
@@ -181,6 +183,12 @@ public class OdoView : GLib.Object {
         odoalt_tm = builder.get_object ("odo_alt_time") as Gtk.Label;
         odorange_tm = builder.get_object ("odo_rng_time") as Gtk.Label;
         odospeed_tm = builder.get_object ("odo_spd_time") as Gtk.Label;
+		odotview = builder.get_object ("odo_tview") as Gtk.TextView;
+		odotview.buffer.changed.connect(() => {
+				if(tid != 0)
+					Source.remove(tid);
+				tid = 0;
+			});
 
         dialog.set_transient_for(w);
         to = _to;
@@ -260,7 +268,12 @@ public class OdoView : GLib.Object {
         if(tid != 0)
             Source.remove(tid);
         tid = 0;
-        visible=false;
+		var t = odotview.buffer.text.chomp();
+		if (t.length > 0) {
+			MWPLog.message("User comment: %s\n", t);
+			odotview.buffer.text="";
+		}
+		visible=false;
         dialog.hide();
     }
 }
