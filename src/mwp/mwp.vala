@@ -273,8 +273,10 @@ public class MWP : Gtk.Application {
 		uint tid;
 	}
 	private RadarDev[] radardevs;
-
+	private Overlay? gzone;
     private TelemTracker ttrk;
+
+	private uint32 feature_mask;
 
 	//    private uint radartid = -1;
 	private Sticks.StickWindow sticks;
@@ -3099,7 +3101,7 @@ public class MWP : Gtk.Application {
 			});
 		gstdm.setup_device_monitor();
 		map_moved();
-    }
+	}
 
 	private void try_reopen(string devname) {
         if(!autocon) {
@@ -6306,7 +6308,12 @@ public class MWP : Gtk.Application {
 		reset_poller();
 	}
 
-    public void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len, uint8 xflags, bool errs) {
+	private void queue_gzone(int cnt) {
+		uint8 zb=(uint8)cnt;
+		queue_cmd(MSP.Cmds.GEOZONE, &zb, 1);
+	}
+
+	public void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len, uint8 xflags, bool errs) {
         if(cmd >= MSP.Cmds.LTM_BASE) {
             telem = true;
             if (seenMSP == false)
@@ -6452,54 +6459,54 @@ public class MWP : Gtk.Application {
             }
         }
         switch(cmd) {
-            case MSP.Cmds.API_VERSION:
-                have_api = true;
-                if(len > 32) {
-                    naze32 = true;
-                    mwvar = vi.fctype = MWChooser.MWVAR.CF;
-                    var vers="CF mwc %03d".printf(vi.mvers);
-                    verlab.label = verlab.tooltip_text = vers;
-                    queue_cmd(MSP.Cmds.BOXNAMES,null,0);
-                } else {
-                    vi.fc_api = raw[1] << 8 | raw[2];
-                    xarm_flags = 0xffff;
-                    if (vi.fc_api >= APIVERS.mspV2) {
-                        msp.use_v2 = true;
-                        queue_cmd(MSP.Cmds.NAME,null,0);
-                    } else {
-                        queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
-					}
-                    MWPLog.message("Using MSP v%c %04x\n", (msp.use_v2) ? '2' : '1', vi.fc_api);
-                }
-                break;
+		case MSP.Cmds.API_VERSION:
+			have_api = true;
+			if(len > 32) {
+				naze32 = true;
+				mwvar = vi.fctype = MWChooser.MWVAR.CF;
+				var vers="CF mwc %03d".printf(vi.mvers);
+				verlab.label = verlab.tooltip_text = vers;
+				queue_cmd(MSP.Cmds.BOXNAMES,null,0);
+			} else {
+				vi.fc_api = raw[1] << 8 | raw[2];
+				xarm_flags = 0xffff;
+				if (vi.fc_api >= APIVERS.mspV2) {
+					msp.use_v2 = true;
+					queue_cmd(MSP.Cmds.NAME,null,0);
+				} else {
+					queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
+				}
+				MWPLog.message("Using MSP v%c %04x\n", (msp.use_v2) ? '2' : '1', vi.fc_api);
+			}
+			break;
 
-            case MSP.Cmds.NAME:
-                if (xflags == '<') {
-                    handle_radar(msp, cmd, raw, len, xflags, errs);
-                    return;
-                } else {
-                    raw[len] = 0;
-                    vname = (string)raw;
-                    MWPLog.message("Model name: \"%s\"\n", vname);
-                    int mx = mmap.get_model_type(vname);
-                    if (mx != 0) {
-                        vi.mrtype = (uint8)mx;
-                        queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
-                    } else if (vi.fc_api >= APIVERS.mixer)
-						queue_cmd(MSP.Cmds.INAV_MIXER,null,0);
-					else
-						queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
+		case MSP.Cmds.NAME:
+			if (xflags == '<') {
+				handle_radar(msp, cmd, raw, len, xflags, errs);
+				return;
+			} else {
+				raw[len] = 0;
+				vname = (string)raw;
+				MWPLog.message("Model name: \"%s\"\n", vname);
+				int mx = mmap.get_model_type(vname);
+				if (mx != 0) {
+					vi.mrtype = (uint8)mx;
+					queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
+				} else if (vi.fc_api >= APIVERS.mixer)
+					queue_cmd(MSP.Cmds.INAV_MIXER,null,0);
+				else
+					queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
 
-                    set_typlab();
-                }
-                break;
+				set_typlab();
+			}
+			break;
 
-            case MSP.Cmds.BOXIDS:
-                if (xflags == '<') {
-                    handle_radar(msp, cmd, raw, len, xflags, errs);
-                    return;
-                }
-                break;
+		case MSP.Cmds.BOXIDS:
+			if (xflags == '<') {
+				handle_radar(msp, cmd, raw, len, xflags, errs);
+				return;
+			}
+			break;
 
             case MSP.Cmds.INAV_MIXER:
                 uint16 hx;
@@ -6509,348 +6516,368 @@ public class MWP : Gtk.Application {
                     vi.mrtype = raw[5]; // legacy types only
                 else {
                     switch(raw[3]) {
-                        case 0:
-                            vi.mrtype = 3;
-                            break;
+					case 0:
+						vi.mrtype = 3;
+						break;
                         case 1:
                             vi.mrtype = 8;
                             break;
-                        case 3:
-                            vi.mrtype = 1;
-                            break;
-                        default:
+					case 3:
+						vi.mrtype = 1;
+						break;
+					default:
                             break;
                     }
-                 }
-                 queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
-                 break;
+				}
+				queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
+				break;
 
-            case MSP.Cmds.COMMON_SET_TZ:
-                rtcsecs = 0;
-                queue_cmd(MSP.Cmds.BUILD_INFO, null, 0);
-                break;
+		case MSP.Cmds.COMMON_SET_TZ:
+			rtcsecs = 0;
+			queue_cmd(MSP.Cmds.BUILD_INFO, null, 0);
+			break;
 
-            case MSP.Cmds.RTC:
-                uint16 millis;
-                uint8* rp = raw;
-                rp = SEDE.deserialise_i32(rp, out rtcsecs);
-                SEDE.deserialise_u16(rp, out millis);
-                var now = new DateTime.now_local();
-                uint16 locmillis = (uint16)(now.get_microsecond()/1000);
-                var rem = new DateTime.from_unix_local((int64)rtcsecs);
-                string loc = "RTC local %s.%03u, fc %s.%03u\n".printf(
-                    now.format("%FT%T"),
-                    locmillis,
-                    rem.format("%FT%T"), millis);
+		case MSP.Cmds.RTC:
+			uint16 millis;
+			uint8* rp = raw;
+			rp = SEDE.deserialise_i32(rp, out rtcsecs);
+			SEDE.deserialise_u16(rp, out millis);
+			var now = new DateTime.now_local();
+			uint16 locmillis = (uint16)(now.get_microsecond()/1000);
+			var rem = new DateTime.from_unix_local((int64)rtcsecs);
+			string loc = "RTC local %s.%03u, fc %s.%03u\n".printf(
+				now.format("%FT%T"),
+				locmillis,
+				rem.format("%FT%T"), millis);
 
-                if(rtcsecs == 0) {
-                    uint8 tbuf[6];
-                    rtcsecs = (uint32)now.to_unix();
-                    SEDE.serialise_u32(tbuf, rtcsecs);
-                    SEDE.serialise_u16(&tbuf[4], locmillis);
-                    queue_cmd(MSP.Cmds.SET_RTC,tbuf, 6);
-                    run_queue();
-                }
+			if(rtcsecs == 0) {
+				uint8 tbuf[6];
+				rtcsecs = (uint32)now.to_unix();
+				SEDE.serialise_u32(tbuf, rtcsecs);
+				SEDE.serialise_u16(&tbuf[4], locmillis);
+				queue_cmd(MSP.Cmds.SET_RTC,tbuf, 6);
+				run_queue();
+			}
 
-                MWPLog.message(loc);
+			MWPLog.message(loc);
 
-                if(need_mission) {
-                    need_mission = false;
-                    if(conf.auto_restore_mission) {
-                        MWPLog.message("Auto-download FC mission\n");
-                        download_mission();
-                    }
-                }
-                break;
+			if(need_mission) {
+				need_mission = false;
+				if(conf.auto_restore_mission) {
+					MWPLog.message("Auto-download FC mission\n");
+					download_mission();
+				}
+			}
+			break;
 
-            case MSP.Cmds.BOARD_INFO:
-                raw[4]=0;
-                vi.board = (string)raw[0:3];
-                if(len > 8) {
-                    raw[len] = 0;
+		case MSP.Cmds.BOARD_INFO:
+			raw[4]=0;
+			vi.board = (string)raw[0:3];
+			if(len > 8) {
+				raw[len] = 0;
                     vi.name = (string)raw[9:len];
-                } else
-                    vi.name = null;
-                queue_cmd(MSP.Cmds.FC_VARIANT,null,0);
-                break;
+			} else
+				vi.name = null;
+			queue_cmd(MSP.Cmds.FC_VARIANT,null,0);
+			break;
 
-            case MSP.Cmds.FC_VARIANT:
-                if (xflags == '<') {
-                    handle_radar(msp, cmd, raw, len, xflags, errs);
-                    return;
-                } else {
-                    naze32 = true;
-                    raw[len] = 0;
-                    inav = false;
-                    vi.fc_var = (string)raw[0:len];
-                    if (have_fcv == false) {
-                        have_fcv = true;
-                        switch(vi.fc_var) {
-                            case "CLFL":
-                            case "BTFL":
-                                vi.fctype = mwvar = MWChooser.MWVAR.CF;
-                                queue_cmd(MSP.Cmds.FC_VERSION,null,0);
-                                break;
-                            case "INAV":
-                                navcap = NAVCAPS.WAYPOINTS|NAVCAPS.NAVSTATUS;
-                                if (Craft.is_mr(vi.mrtype))
-                                    navcap |= NAVCAPS.INAV_MR;
-                                else
-                                    navcap |= NAVCAPS.INAV_FW;
+		case MSP.Cmds.FC_VARIANT:
+			if (xflags == '<') {
+				handle_radar(msp, cmd, raw, len, xflags, errs);
+				return;
+			} else {
+				naze32 = true;
+				raw[len] = 0;
+				inav = false;
+				vi.fc_var = (string)raw[0:len];
+				if (have_fcv == false) {
+					have_fcv = true;
+					switch(vi.fc_var) {
+					case "CLFL":
+					case "BTFL":
+						vi.fctype = mwvar = MWChooser.MWVAR.CF;
+						queue_cmd(MSP.Cmds.FC_VERSION,null,0);
+						break;
+					case "INAV":
+						navcap = NAVCAPS.WAYPOINTS|NAVCAPS.NAVSTATUS;
+						if (Craft.is_mr(vi.mrtype))
+							navcap |= NAVCAPS.INAV_MR;
+						else
+							navcap |= NAVCAPS.INAV_FW;
 
-                                vi.fctype = mwvar = MWChooser.MWVAR.CF;
-                                inav = true;
-                                queue_cmd(MSP.Cmds.FEATURE,null,0);
-                                break;
-                            default:
-                                queue_cmd(MSP.Cmds.BOXNAMES,null,0);
-                                break;
-                        }
-                    }
-                }
-                break;
+						vi.fctype = mwvar = MWChooser.MWVAR.CF;
+						inav = true;
+						queue_cmd(MSP.Cmds.FEATURE,null,0);
+						break;
+					default:
+						queue_cmd(MSP.Cmds.BOXNAMES,null,0);
+						break;
+					}
+				}
+			}
+			break;
 
-            case MSP.Cmds.FEATURE:
-                uint32 fmask;
-                SEDE.deserialise_u32(raw, out fmask);
-                bool curf = (fmask & MSP.Feature.CURRENT) != 0;
-                MWPLog.message("Feature Mask [%08x] : telemetry %s, gps %s, current %s\n",
-                               fmask,
-                               (0 != (fmask & MSP.Feature.TELEMETRY)).to_string(),
-                               (0 != (fmask & MSP.Feature.GPS)).to_string(),
-                               curf.to_string());
+		case MSP.Cmds.FEATURE:
+			SEDE.deserialise_u32(raw, out feature_mask);
+			bool curf = (feature_mask & MSP.Feature.CURRENT) != 0;
+			MWPLog.message("Feature Mask [%08x] : telemetry %s, gps %s, current %s\n",
+						   feature_mask,
+						   (0 != (feature_mask & MSP.Feature.TELEMETRY)).to_string(),
+						   (0 != (feature_mask & MSP.Feature.GPS)).to_string(),
+						   curf.to_string());
 
-                if (curf == false)
-                    navstatus.amp_hide(true);
+			if (curf == false)
+				navstatus.amp_hide(true);
 
-                if(conf.need_telemetry && (0 == (fmask & MSP.Feature.TELEMETRY)))
-                    Utils.warning_box("TELEMETRY requested but not enabled in iNav", Gtk.MessageType.ERROR);
-                queue_cmd(MSP.Cmds.BLACKBOX_CONFIG,null,0);
-                break;
+			if(conf.need_telemetry && (0 == (feature_mask & MSP.Feature.TELEMETRY)))
+				Utils.warning_box("TELEMETRY requested but not enabled in iNav", Gtk.MessageType.ERROR);
 
-            case MSP.Cmds.BLACKBOX_CONFIG:
-                MSP.Cmds next = MSP.Cmds.FC_VERSION;
-                if (raw[0] == 1 && raw[1] == 1)  // enabled and sd flash
-                    next = MSP.Cmds.DATAFLASH_SUMMARY;
-                queue_cmd(next,null,0);
-                break;
+			if ((feature_mask & MSP.Feature.GEOZONE) == MSP.Feature.GEOZONE) {
+				GeoZoneReader.reset();
+				queue_gzone(0);
+			} else {
+				queue_cmd(MSP.Cmds.BLACKBOX_CONFIG,null,0);
+			 }
+			 break;
 
-            case MSP.Cmds.DATAFLASH_SUMMARY:
-                uint32 fsize;
-                uint32 used;
-                SEDE.deserialise_u32(raw+5, out fsize);
-                SEDE.deserialise_u32(raw+9, out used);
-                if(fsize > 0) {
-                    var pct = 100 * used  / fsize;
-                    MWPLog.message ("Data Flash %u /  %u (%u%%)\n", used, fsize, pct);
-                    if(conf.flash_warn > 0 && pct > conf.flash_warn)
-                        Utils.warning_box("Data flash is %u%% full".printf(pct),
-                                        Gtk.MessageType.WARNING);
-                } else
-                    MWPLog.message("Flash claims to be 0 bytes!!\n");
+		case MSP.Cmds.GEOZONE:
+			var cnt = GeoZoneReader.append(raw, len);
+			if (cnt >= GeoZoneReader.MAXGZ) {
+				gzone = GeoZoneReader.generate_overlay(view);
+				Idle.add(() => {
+						gzone.display();
+						return false;
+					});
+				GeoZoneReader.reset();
+				queue_cmd(MSP.Cmds.BLACKBOX_CONFIG,null,0);
+			} else {
+				queue_gzone(cnt);
+			}
+			break;
 
-                queue_cmd(MSP.Cmds.FC_VERSION,null,0);
-                break;
+		case MSP.Cmds.BLACKBOX_CONFIG:
+			MSP.Cmds next = MSP.Cmds.FC_VERSION;
+			if (raw[0] == 1 && raw[1] == 1)  // enabled and sd flash
+				next = MSP.Cmds.DATAFLASH_SUMMARY;
+			queue_cmd(next,null,0);
+			break;
 
-            case MSP.Cmds.FC_VERSION:
-                if (xflags == '<') {
-                    handle_radar(msp, cmd, raw, len, xflags, errs);
-                    return;
-                } else {
-                    if(have_fcvv == false) {
-                        have_fcvv = true;
-                        set_menu_state("reboot", true);
-                        set_menu_state("terminal", true);
-                        vi.fc_vers = raw[0] << 16 | raw[1] << 8 | raw[2];
-                        safehomed.online_change(vi.fc_vers);
+		case MSP.Cmds.DATAFLASH_SUMMARY:
+			uint32 fsize;
+			uint32 used;
+			SEDE.deserialise_u32(raw+5, out fsize);
+			SEDE.deserialise_u32(raw+9, out used);
+			if(fsize > 0) {
+				var pct = 100 * used  / fsize;
+				MWPLog.message ("Data Flash %u /  %u (%u%%)\n", used, fsize, pct);
+				if(conf.flash_warn > 0 && pct > conf.flash_warn)
+					Utils.warning_box("Data flash is %u%% full".printf(pct),
+									  Gtk.MessageType.WARNING);
+			} else
+				MWPLog.message("Flash claims to be 0 bytes!!\n");
 
-                        var fcv = "%s v%d.%d.%d".printf(vi.fc_var,raw[0],raw[1],raw[2]);
-                        verlab.label = verlab.tooltip_text = fcv;
-                        if(inav) {
-                            if(vi.fc_vers < FCVERS.hasMoreWP)
-                                wp_max = 15;
-                            else if (vi.board != "AFNA" && vi.board != "CC3D")
-                                wp_max =  (vi.fc_vers >= FCVERS.hasWP_V4) ? (uint8)conf.max_wps :  60;
-                            else
-                                wp_max = 30;
+			queue_cmd(MSP.Cmds.FC_VERSION,null,0);
+			break;
 
-                            mission_eeprom = (vi.board != "AFNA" &&
-                                              vi.board != "CC3D" &&
-                                              vi.fc_vers >= FCVERS.hasEEPROM);
+		case MSP.Cmds.FC_VERSION:
+			if (xflags == '<') {
+				handle_radar(msp, cmd, raw, len, xflags, errs);
+				return;
+			} else {
+				if(have_fcvv == false) {
+					have_fcvv = true;
+					set_menu_state("reboot", true);
+					set_menu_state("terminal", true);
+					vi.fc_vers = raw[0] << 16 | raw[1] << 8 | raw[2];
+					safehomed.online_change(vi.fc_vers);
 
-                            msp_get_status = (vi.fc_api < 0x200) ? MSP.Cmds.STATUS :
-                                (vi.fc_vers >= FCVERS.hasV2STATUS) ? MSP.Cmds.INAV_STATUS : MSP.Cmds.STATUS_EX;
+					var fcv = "%s v%d.%d.%d".printf(vi.fc_var,raw[0],raw[1],raw[2]);
+					verlab.label = verlab.tooltip_text = fcv;
+					if(inav) {
+						if(vi.fc_vers < FCVERS.hasMoreWP)
+							wp_max = 15;
+						else if (vi.board != "AFNA" && vi.board != "CC3D")
+							wp_max =  (vi.fc_vers >= FCVERS.hasWP_V4) ? (uint8)conf.max_wps :  60;
+						else
+							wp_max = 30;
+
+						mission_eeprom = (vi.board != "AFNA" &&
+										  vi.board != "CC3D" &&
+										  vi.fc_vers >= FCVERS.hasEEPROM);
+
+						msp_get_status = (vi.fc_api < 0x200) ? MSP.Cmds.STATUS :
+							(vi.fc_vers >= FCVERS.hasV2STATUS) ? MSP.Cmds.INAV_STATUS : MSP.Cmds.STATUS_EX;
                             // ugly hack for jh flip32 franken builds post 1.73
-                            if((vi.board == "AFNA" || vi.board == "CC3D") &&
-                               msp_get_status == MSP.Cmds.INAV_STATUS)
-                                msp_get_status = MSP.Cmds.STATUS_EX;
+						if((vi.board == "AFNA" || vi.board == "CC3D") &&
+						   msp_get_status == MSP.Cmds.INAV_STATUS)
+							msp_get_status = MSP.Cmds.STATUS_EX;
 
-                            if (vi.fc_api >= APIVERS.mspV2 && vi.fc_vers >= FCVERS.hasTZ && conf.adjust_tz) {
-                                var dt = new DateTime.now_local();
-                                int16 tzoffm = (short)((int64)dt.get_utc_offset()/(1000*1000*60));
-                                if(tzoffm != 0) {
-                                    MWPLog.message("set TZ offset %d\n", tzoffm);
-                                    queue_cmd(MSP.Cmds.COMMON_SET_TZ, &tzoffm, sizeof(int16));
-                                }  else
-                                    queue_cmd(MSP.Cmds.BUILD_INFO, null, 0);
-                            } else
-                                queue_cmd(MSP.Cmds.BUILD_INFO, null, 0); //?BOXNAMES?
+						if (vi.fc_api >= APIVERS.mspV2 && vi.fc_vers >= FCVERS.hasTZ && conf.adjust_tz) {
+							var dt = new DateTime.now_local();
+							int16 tzoffm = (short)((int64)dt.get_utc_offset()/(1000*1000*60));
+							if(tzoffm != 0) {
+								MWPLog.message("set TZ offset %d\n", tzoffm);
+								queue_cmd(MSP.Cmds.COMMON_SET_TZ, &tzoffm, sizeof(int16));
+							}  else
+								queue_cmd(MSP.Cmds.BUILD_INFO, null, 0);
+						} else
+							queue_cmd(MSP.Cmds.BUILD_INFO, null, 0); //?BOXNAMES?
 
-                            sticks.set_rc_style((vi.fc_vers < FCVERS.hasRCDATA));
-                        } else {
-                            queue_cmd(MSP.Cmds.BOXNAMES,null,0);
-                        }
-                    }
-                }
-                break;
+						sticks.set_rc_style((vi.fc_vers < FCVERS.hasRCDATA));
+					} else {
+						queue_cmd(MSP.Cmds.BOXNAMES,null,0);
+					}
+				}
+			}
+			break;
 
-            case MSP.Cmds.BUILD_INFO:
-                if(len > 18) {
-                    uint8 gi[16] = raw[19:len];
-                    gi[len-19] = 0;
-                    vi.fc_git = (string)gi;
-                }
-                uchar vs[4];
-                SEDE.serialise_u32(vs, vi.fc_vers);
-                if(vi.name == null)
-                    vi.name = board_by_id();
-                var vers = "%s v%d.%d.%d  %s (%s)".printf(vi.fc_var,
-                                                          vs[2],vs[1],vs[0],
-                                                          vi.name, vi.fc_git);
-                verlab.label = verlab.tooltip_text = vers;
-                MWPLog.message("%s\n", vers);
-                queue_cmd(MSP.Cmds.BOXNAMES,null,0);
-                break;
+		case MSP.Cmds.BUILD_INFO:
+			if(len > 18) {
+				uint8 gi[16] = raw[19:len];
+				gi[len-19] = 0;
+				vi.fc_git = (string)gi;
+			}
+			uchar vs[4];
+			SEDE.serialise_u32(vs, vi.fc_vers);
+			if(vi.name == null)
+				vi.name = board_by_id();
+			var vers = "%s v%d.%d.%d  %s (%s)".printf(vi.fc_var,
+													  vs[2],vs[1],vs[0],
+													  vi.name, vi.fc_git);
+			verlab.label = verlab.tooltip_text = vers;
+			MWPLog.message("%s\n", vers);
+			queue_cmd(MSP.Cmds.BOXNAMES,null,0);
+			break;
 
-            case MSP.Cmds.IDENT:
-                last_gps = 0;
-                have_vers = true;
-                bat_annul();
-                hwstatus[0]=1;
+		case MSP.Cmds.IDENT:
+			last_gps = 0;
+			have_vers = true;
+			bat_annul();
+			hwstatus[0]=1;
 
-                for(var j = 1; j < 9; j++)
-                    hwstatus[j] = 0;
-                if (icount == 0) {
-                    vi = {0};
-                    vi.mvers = raw[0];
-                    vi.mrtype = raw[1];
-//                    if(dmrtype != 0)
-//                        vi.mrtype = (uint8)dmrtype;
-                    craft = null;
-                    prlabel = false;
-                    SEDE.deserialise_u32(raw+3, out capability);
-                    MWPLog.message("set mrtype=%u cap =%x\n", vi.mrtype, raw[3]);
-                    MWChooser.MWVAR _mwvar = mwvar;
+			for(var j = 1; j < 9; j++)
+				hwstatus[j] = 0;
+			if (icount == 0) {
+				vi = {0};
+				vi.mvers = raw[0];
+				vi.mrtype = raw[1];
+				//                    if(dmrtype != 0)
+				//                        vi.mrtype = (uint8)dmrtype;
+				craft = null;
+				prlabel = false;
+				SEDE.deserialise_u32(raw+3, out capability);
+				MWPLog.message("set mrtype=%u cap =%x\n", vi.mrtype, raw[3]);
+				MWChooser.MWVAR _mwvar = mwvar;
 
-                    if(mwvar == MWChooser.MWVAR.AUTO) {
-                        naze32 = ((capability & MSPCaps.CAP_PLATFORM_32BIT) != 0);
-                    } else {
-                        naze32 = mwvar == MWChooser.MWVAR.CF;
-                    }
+				if(mwvar == MWChooser.MWVAR.AUTO) {
+					naze32 = ((capability & MSPCaps.CAP_PLATFORM_32BIT) != 0);
+				} else {
+					naze32 = mwvar == MWChooser.MWVAR.CF;
+				}
 
-                    if(naze32 == true) {
-                        if(force_nc == false)
-                            navcap = NAVCAPS.NONE;
-                    } else {
-                        if ((raw[3] & 0x10) == 0x10) {
-                            navcap = NAVCAPS.WAYPOINTS|NAVCAPS.NAVSTATUS|NAVCAPS.NAVCONFIG;
-                        } else {
-                            navcap = NAVCAPS.NONE;
-                        }
-                        set_menu_state("reboot", false);
-                        set_menu_state("terminal", false);
-                    }
-                    if(mwvar == MWChooser.MWVAR.AUTO) {
-                        if(naze32) {
-                            _mwvar = MWChooser.MWVAR.CF;
-                        } else {
-                            _mwvar = (navcap != NAVCAPS.NONE) ? MWChooser.MWVAR.MWNEW : MWChooser.MWVAR.MWOLD;
-                            wp_max = 30; // safety net
-                        }
-                    }
-                    vi.fctype = mwvar;
-                    var vers="MWvers v%03d".printf(vi.mvers);
-                    verlab.label = verlab.tooltip_text = vers;
-                    queue_cmd(MSP.Cmds.API_VERSION,null,0);
-                }
-                icount++;
-                break;
+				if(naze32 == true) {
+					if(force_nc == false)
+						navcap = NAVCAPS.NONE;
+				} else {
+					if ((raw[3] & 0x10) == 0x10) {
+						navcap = NAVCAPS.WAYPOINTS|NAVCAPS.NAVSTATUS|NAVCAPS.NAVCONFIG;
+					} else {
+						navcap = NAVCAPS.NONE;
+					}
+					set_menu_state("reboot", false);
+					set_menu_state("terminal", false);
+				}
+				if(mwvar == MWChooser.MWVAR.AUTO) {
+					if(naze32) {
+						_mwvar = MWChooser.MWVAR.CF;
+					} else {
+						_mwvar = (navcap != NAVCAPS.NONE) ? MWChooser.MWVAR.MWNEW : MWChooser.MWVAR.MWOLD;
+						wp_max = 30; // safety net
+					}
+				}
+				vi.fctype = mwvar;
+				var vers="MWvers v%03d".printf(vi.mvers);
+				verlab.label = verlab.tooltip_text = vers;
+				queue_cmd(MSP.Cmds.API_VERSION,null,0);
+			}
+			icount++;
+			break;
 
-            case MSP.Cmds.BOXNAMES:
-                if(replayer == Player.NONE) {
-                    var ncbits = (navcap & (NAVCAPS.NAVCONFIG|NAVCAPS.INAV_MR|NAVCAPS.INAV_FW));
-                    if(navcap != NAVCAPS.NONE) {
-						set_menu_state("upload-mission", true);
-						if(vi.fc_vers >= FCVERS.hasWP_V4)
-							set_menu_state("upload-missions", true);
-						set_menu_state("download-mission", true);
-                    }
+		case MSP.Cmds.BOXNAMES:
+			if(replayer == Player.NONE) {
+				var ncbits = (navcap & (NAVCAPS.NAVCONFIG|NAVCAPS.INAV_MR|NAVCAPS.INAV_FW));
+				if(navcap != NAVCAPS.NONE) {
+					set_menu_state("upload-mission", true);
+					if(vi.fc_vers >= FCVERS.hasWP_V4)
+						set_menu_state("upload-missions", true);
+					set_menu_state("download-mission", true);
+				}
 
-                    if (ncbits != 0) {
-                        set_menu_state("navconfig", true);
-                        if(mission_eeprom) {
-                            set_menu_state("restore-mission", true);
-                            set_menu_state("store-mission", true);
-                            if(inav)
-                                set_menu_state("mission-info", true);
-                        }
+				if (ncbits != 0) {
+					set_menu_state("navconfig", true);
+					if(mission_eeprom) {
+						set_menu_state("restore-mission", true);
+						set_menu_state("store-mission", true);
+						if(inav)
+							set_menu_state("mission-info", true);
+					}
 
-                        MWPLog.message("Generate navconf %x %s\n", navcap, mission_eeprom.to_string());
-                        navconf.setup(ncbits);
-                        if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
-                            navconf.mw_navconf_event.connect((mw,nc) => {
-                                    mw_update_config(nc);
-                                });
-                        if((navcap & NAVCAPS.INAV_MR) == NAVCAPS.INAV_MR)
-                            navconf.mr_nav_poshold_event.connect((mw,pcfg) => {
-                                    mr_update_config(pcfg);
-                                });
-                        if((navcap & NAVCAPS.INAV_FW) == NAVCAPS.INAV_FW)
-                            navconf.fw_config_event.connect((mw,fw) => {
-                                    fw_update_config(fw);
-                                });
-                    }
-                }
-                raw[len] = 0;
-                boxnames = (string)raw;
-				MWPLog.message("BOXNAMES: %s\n", boxnames);
-                string []bsx = boxnames.split(";");
-                int i = 0;
-                foreach(var bs in bsx) {
-                    switch(bs) {
-                    case "ARM":
-                        arm_mask = (1 << i);
-                        break;
-                    case "ANGLE":
-                        angle_mask = (1 << i);
-                        break;
-                    case "HORIZON":
-                        horz_mask = (1 << i);
-                        break;
-                    case "GPS HOME":
-                    case "NAV RTH":
-                        rth_mask = (1 << i);
-                        break;
-                    case "GPS HOLD":
-                    case "NAV POSHOLD":
-                        ph_mask = (1 << i);
-                        break;
-                    case "NAV WP":
-                    case "MISSION":
-                        wp_mask = (1 << i);
-                        break;
-                    case "NAV CRUISE":
-                        cr_mask = (1 << i);
-                        break;
-                    case "FAILSAFE":
-                        fs_mask = (1 << i);
-                        break;
-                    }
-                    i++;
-                }
-                MWPLog.message("Masks arm=%jx angle=%jx horz=%jx ph=%jx rth=%jx wp=%jx cr=%jx fs=%jx\n",
-                               arm_mask, angle_mask, horz_mask, ph_mask,
-                               rth_mask, wp_mask, cr_mask, fs_mask);
+					MWPLog.message("Generate navconf %x %s\n", navcap, mission_eeprom.to_string());
+					navconf.setup(ncbits);
+					if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
+						navconf.mw_navconf_event.connect((mw,nc) => {
+								mw_update_config(nc);
+							});
+					if((navcap & NAVCAPS.INAV_MR) == NAVCAPS.INAV_MR)
+						navconf.mr_nav_poshold_event.connect((mw,pcfg) => {
+								mr_update_config(pcfg);
+							});
+					if((navcap & NAVCAPS.INAV_FW) == NAVCAPS.INAV_FW)
+						navconf.fw_config_event.connect((mw,fw) => {
+								fw_update_config(fw);
+							});
+				}
+			}
+			raw[len] = 0;
+			boxnames = (string)raw;
+			MWPLog.message("BOXNAMES: %s\n", boxnames);
+			string []bsx = boxnames.split(";");
+			int i = 0;
+			foreach(var bs in bsx) {
+				switch(bs) {
+				case "ARM":
+					arm_mask = (1 << i);
+					break;
+				case "ANGLE":
+					angle_mask = (1 << i);
+					break;
+				case "HORIZON":
+					horz_mask = (1 << i);
+					break;
+				case "GPS HOME":
+				case "NAV RTH":
+					rth_mask = (1 << i);
+					break;
+				case "GPS HOLD":
+				case "NAV POSHOLD":
+					ph_mask = (1 << i);
+					break;
+				case "NAV WP":
+				case "MISSION":
+					wp_mask = (1 << i);
+					break;
+				case "NAV CRUISE":
+					cr_mask = (1 << i);
+					break;
+				case "FAILSAFE":
+					fs_mask = (1 << i);
+					break;
+				}
+				i++;
+			}
+			MWPLog.message("Masks arm=%jx angle=%jx horz=%jx ph=%jx rth=%jx wp=%jx cr=%jx fs=%jx\n",
+						   arm_mask, angle_mask, horz_mask, ph_mask,
+						   rth_mask, wp_mask, cr_mask, fs_mask);
 
                 if(craft != null)
                     craft.set_icon(vi.mrtype);
@@ -6867,294 +6894,294 @@ public class MWP : Gtk.Application {
                 queue_cmd(MSP.Cmds.MISC,null,0);
                 break;
 
-            case MSP.Cmds.GPSSTATISTICS:
-                LTM_XFRAME xf = LTM_XFRAME();
-                SEDE.deserialise_u16(raw, out gpsstats.last_message_dt);
-                SEDE.deserialise_u16(raw+2, out gpsstats.errors);
-                SEDE.deserialise_u16(raw+6, out gpsstats.timeouts);
-                SEDE.deserialise_u16(raw+10, out gpsstats.packet_count);
-                SEDE.deserialise_u16(raw+14, out gpsstats.hdop);
-                SEDE.deserialise_u16(raw+16, out gpsstats.eph);
-                SEDE.deserialise_u16(raw+18, out gpsstats.epv);
-                rhdop = xf.hdop = gpsstats.hdop;
-                gpsinfo.set_hdop(xf.hdop/100.0);
-                if(Logger.is_logging)
-                    Logger.ltm_xframe(xf);
+		case MSP.Cmds.GPSSTATISTICS:
+			LTM_XFRAME xf = LTM_XFRAME();
+			SEDE.deserialise_u16(raw, out gpsstats.last_message_dt);
+			SEDE.deserialise_u16(raw+2, out gpsstats.errors);
+			SEDE.deserialise_u16(raw+6, out gpsstats.timeouts);
+			SEDE.deserialise_u16(raw+10, out gpsstats.packet_count);
+			SEDE.deserialise_u16(raw+14, out gpsstats.hdop);
+			SEDE.deserialise_u16(raw+16, out gpsstats.eph);
+			SEDE.deserialise_u16(raw+18, out gpsstats.epv);
+			rhdop = xf.hdop = gpsstats.hdop;
+			gpsinfo.set_hdop(xf.hdop/100.0);
+			if(Logger.is_logging)
+				Logger.ltm_xframe(xf);
 
-                if(gps_status.visible)
-                    gps_status.update(gpsstats);
-					break;
+			 if(gps_status.visible)
+				 gps_status.update(gpsstats);
+			 break;
 
-            case MSP.Cmds.MISC:
-                have_misc = true;
-                vwarn1 = raw[19];
-                need_mission = false;
-                if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
-                    queue_cmd(MSP.Cmds.STATUS,null,0);
-                else {
-                    if(inav) {
-                        wpmgr.wp_flag = WPDL.GETINFO;
-                        queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
-                    }
-                    queue_cmd(MSP.Cmds.ACTIVEBOXES,null,0);
-                }
-                break;
+		 case MSP.Cmds.MISC:
+			 have_misc = true;
+			 vwarn1 = raw[19];
+			 need_mission = false;
+			 if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
+				 queue_cmd(MSP.Cmds.STATUS,null,0);
+			 else {
+				 if(inav) {
+					 wpmgr.wp_flag = WPDL.GETINFO;
+					 queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
+				 }
+				 queue_cmd(MSP.Cmds.ACTIVEBOXES,null,0);
+			 }
+			 break;
 
-            case MSP.Cmds.ACTIVEBOXES:
-                uint32 ab;
-                SEDE.deserialise_u32(raw, out ab);
-                StringBuilder sb = new StringBuilder();
-                sb.append_printf("Activeboxes %u %08x", len, ab);
-                if(len > 4) {
-                    SEDE.deserialise_u32(raw+4, out ab);
-                    sb.append_printf(" %08x", ab);
-                }
-                sb.append_c('\n');
-                MWPLog.message(sb.str);
-                if(vi.fc_vers >= FCVERS.hasTZ) {
-                    string maxdstr = (vi.fc_vers >= FCVERS.hasWP1m) ? "nav_wp_max_safe_distance" : "nav_wp_safe_distance";
-                    MWPLog.message("Requesting common settings\n");
-                    request_common_setting(maxdstr);
-                    request_common_setting("inav_max_eph_epv");
-					request_common_setting("gps_min_sats");
-                    if(vi.fc_vers > FCVERS.hasJUMP && vi.fc_vers <= FCVERS.hasPOI) { // also 2.6 feature
-						request_common_setting("nav_rth_home_offset_distance");
-                    }
-                }
-                queue_cmd(msp_get_status,null,0);
-                break;
+		 case MSP.Cmds.ACTIVEBOXES:
+			 uint32 ab;
+			 SEDE.deserialise_u32(raw, out ab);
+			 StringBuilder sb = new StringBuilder();
+			 sb.append_printf("Activeboxes %u %08x", len, ab);
+			 if(len > 4) {
+				 SEDE.deserialise_u32(raw+4, out ab);
+				 sb.append_printf(" %08x", ab);
+			 }
+			 sb.append_c('\n');
+			 MWPLog.message(sb.str);
+			 if(vi.fc_vers >= FCVERS.hasTZ) {
+				 string maxdstr = (vi.fc_vers >= FCVERS.hasWP1m) ? "nav_wp_max_safe_distance" : "nav_wp_safe_distance";
+				 MWPLog.message("Requesting common settings\n");
+				 request_common_setting(maxdstr);
+				 request_common_setting("inav_max_eph_epv");
+				 request_common_setting("gps_min_sats");
+				 if(vi.fc_vers > FCVERS.hasJUMP && vi.fc_vers <= FCVERS.hasPOI) { // also 2.6 feature
+					 request_common_setting("nav_rth_home_offset_distance");
+				 }
+			 }
+			 queue_cmd(msp_get_status,null,0);
+			 break;
 
-		    case MSP.Cmds.COMMON_SET_SETTING:
-				MWPLog.message("Received set_setting\n");
-				if ((wpmgr.wp_flag & WPDL.SAVE_ACTIVE) != 0) {
-					wpmgr.wp_flag &= ~WPDL.SAVE_ACTIVE;
-					queue_cmd(MSP.Cmds.EEPROM_WRITE,null, 0);
-				} else if ((wpmgr.wp_flag & WPDL.RESET_POLLER) != 0) {
-					wp_reset_poller();
-				}
-				break;
+		case MSP.Cmds.COMMON_SET_SETTING:
+			MWPLog.message("Received set_setting\n");
+			 if ((wpmgr.wp_flag & WPDL.SAVE_ACTIVE) != 0) {
+				 wpmgr.wp_flag &= ~WPDL.SAVE_ACTIVE;
+					 queue_cmd(MSP.Cmds.EEPROM_WRITE,null, 0);
+			 } else if ((wpmgr.wp_flag & WPDL.RESET_POLLER) != 0) {
+				 wp_reset_poller();
+			 }
+			 break;
 
-            case MSP.Cmds.COMMON_SETTING:
-                switch ((string)lastmsg.data) {
-				    case "nav_wp_multi_mission_index":
-                        MWPLog.message("Received mm index %u\n", raw[0]);
-						if (raw[0] > 0) {
-							imdx = raw[0]-1;
-						} else {
-							imdx = 0;
+		case MSP.Cmds.COMMON_SETTING:
+			switch ((string)lastmsg.data) {
+			case "nav_wp_multi_mission_index":
+				MWPLog.message("Received mm index %u\n", raw[0]);
+						 if (raw[0] > 0) {
+							 imdx = raw[0]-1;
+						 } else {
+							 imdx = 0;
+						 }
+						 if ((wpmgr.wp_flag & WPDL.KICK_DL) != 0) {
+							 wpmgr.wp_flag &= ~WPDL.KICK_DL;
+							 start_download();
+						 }
+						 break;
+			 case "gps_min_sats":
+				 msats = raw[0];
+				 MWPLog.message("Received gps_min_sats %u\n", msats);
+				 break;
+			 case "nav_wp_safe_distance":
+				 SEDE.deserialise_u16(raw, out nav_wp_safe_distance);
+				 wpdist = nav_wp_safe_distance / 100;
+				 MWPLog.message("Received nav_wp_safe_distance %um\n", wpdist);
+				 break;
+			 case "nav_wp_max_safe_distance":
+				 SEDE.deserialise_u16(raw, out nav_wp_safe_distance);
+				 wpdist = nav_wp_safe_distance;
+				 MWPLog.message("Received nav_wp_max_safe_distance %um\n", wpdist);
+				 break;
+			 case "inav_max_eph_epv":
+				 uint32 ift;
+				 SEDE.deserialise_u32(raw, out ift);
+				 // This stupidity is for Mint ...
+				 uint32 *ipt = &ift;
+				 float f = *((float *)ipt);
+				 inav_max_eph_epv = (uint16)f;
+						 MWPLog.message("Received (raw) inav_max_eph_epv %u\n",
+										inav_max_eph_epv);
+						 break;
+			 case "nav_rth_home_offset_distance":
+				 SEDE.deserialise_u16(raw, out nav_rth_home_offset_distance);
+				 if(nav_rth_home_offset_distance != 0) {
+					 request_common_setting("nav_rth_home_offset_direction");
+				 }
+				 break;
+			 case "nav_rth_home_offset_direction":
+				 uint16 odir;
+				 SEDE.deserialise_u16(raw, out odir);
+				 MWPLog.message("Received home offsets %um / %u°\n",
+								nav_rth_home_offset_distance/100, odir);
+				 break;
+			 default:
+				 MWPLog.message("Unknown common setting %s\n",
+								(string)lastmsg.data);
+				 break;
+			 }
+			 break;
+
+			 case MSP.Cmds.STATUS:
+				 if (xflags == '<') {
+					 handle_radar(msp, cmd, raw, len, xflags, errs);
+					 return;
+				 } else {
+					 handle_msp_status(raw, len);
+				 }
+				 break;
+			 case MSP.Cmds.STATUS_EX:
+			 case MSP.Cmds.INAV_STATUS:
+				 handle_msp_status(raw, len);
+				 break;
+
+		 case MSP.Cmds.SENSOR_STATUS:
+			 for(var i = 0; i < 9; i++)
+					 hwstatus[i] = raw[i];
+			 MWPLog.message("Sensor status %d\n", hwstatus[0]);
+			 if(hwstatus[0] == 0)
+				 arm_warn.show();
+				 break;
+
+		 case MSP.Cmds.WP_GETINFO:
+			 var wpi = MSP_WP_GETINFO();
+			 uint8* rp = raw;
+			 rp++;
+			 wp_max = wpi.max_wp = *rp++;
+			 wpi.wps_valid = *rp++;
+			 wpi.wp_count = *rp;
+			 NavStatus.nm_pts = last_wp_pts = wpi.wp_count;
+			 MWPLog.message("WP_GETINFO: %u/%u/%u\n",
+							wpi.max_wp, wpi.wp_count, wpi.wps_valid);
+			 if((wpmgr.wp_flag & WPDL.GETINFO) != 0) {
+				 string s = "Waypoints in FC\nMax: %u / Mission points: %u Valid: %s".printf(wpi.max_wp, wpi.wp_count, (wpi.wps_valid==1) ? "Yes" : "No");
+				 Utils.warning_box(s, Gtk.MessageType.INFO, 5);
+				 wpmgr.wp_flag &= ~WPDL.GETINFO;
+			 }
+			 if ((wpmgr.wp_flag & WPDL.DOWNLOAD) != 0) {
+				 wpmgr.wp_flag &= ~WPDL.DOWNLOAD;
+				 download_mission();
+			 } else if ((wpmgr.wp_flag & WPDL.SET_ACTIVE) != 0) {
+				 wpmgr.wp_flag &= ~WPDL.SET_ACTIVE;
+				 if(vi.fc_vers >= FCVERS.hasWP_V4) {
+					 uint8 msg[128];
+					 var s = "nav_wp_multi_mission_index";
+					 var k = 0;
+					 for(k =0; k < s.length; k++) {
+						 msg[k] = s.data[k];
+					 }
+					 msg[k] = 0;
+					 msg[k+1] = (uint8)mdx+1;
+					 MWPLog.message("Set active %d\n", msg[k+1]);
+					 queue_cmd(MSP.Cmds.COMMON_SET_SETTING, msg, k+2);
+				 }
+			 } else if ((wpmgr.wp_flag & WPDL.RESET_POLLER) != 0) {
+				 wp_reset_poller();
+			 }
+			 if(wpi.wp_count > 0 && wpi.wps_valid == 1 && ls.get_list_size() == 0) {
+				 need_mission = true;
+			 }
+			 break;
+
+		 case MSP.Cmds.NAV_STATUS:
+		 case MSP.Cmds.TN_FRAME:
+			 MSP_NAV_STATUS ns = MSP_NAV_STATUS();
+			 uint8 flg = 0;
+			 uint8* rp = raw;
+			 ns.gps_mode = *rp++;
+
+			 if(ns.gps_mode == 15) {
+				 if (nticks - last_crit > CRITINTVL) {
+					 play_alarm_sound(MWPAlert.GENERAL);
+					 MWPLog.message("GPS Critial Failure!!!\n");
+					 navstatus.gps_crit();
+					 last_crit = nticks;
+				 }
+			 } else
+				 last_crit = 0;
+
+			 ns.nav_mode = *rp++;
+			 ns.action = *rp++;
+			 ns.wp_number = *rp++;
+			ns.nav_error = *rp++;
+
+			if(cmd == MSP.Cmds.NAV_STATUS)
+				SEDE.deserialise_u16(rp, out ns.target_bearing);
+			else {
+				flg = 1;
+				ns.target_bearing = *rp++;
+			}
+			navstatus.update(ns,item_visible(DOCKLETS.NAVSTATUS),flg);
+			if((replayer & Player.BBOX) == 0 && (NavStatus.nm_pts > 0 && NavStatus.nm_pts != 255)) {
+				if(ns.gps_mode == 3) {
+					if ((conf.osd_mode & OSD.show_mission) != 0) {
+						if (last_nmode != 3 || ns.wp_number != last_nwp) {
+							ls.raise_wp(ns.wp_number);
+							string spt;
+							if(NavStatus.have_rth && ns.wp_number == NavStatus.nm_pts) {
+								spt = "<span size=\"x-small\">RTH</span>";
+							} else {
+								StringBuilder sb = new StringBuilder(ns.wp_number.to_string());
+								if(NavStatus.nm_pts > 0 && NavStatus.nm_pts != 255) {
+									sb.append_printf("<span size=\"xx-small\">/%u</span>", NavStatus.nm_pts);
+								}
+								spt = sb.str;
+							}
+							map_show_wp(spt);
+							mss.m_wp = ns.wp_number;
+							mss.waypoint_changed(mss.m_wp);
 						}
-						if ((wpmgr.wp_flag & WPDL.KICK_DL) != 0) {
-							wpmgr.wp_flag &= ~WPDL.KICK_DL;
-							start_download();
-						}
-						break;
-                    case "gps_min_sats":
-                        msats = raw[0];
-                        MWPLog.message("Received gps_min_sats %u\n", msats);
-                        break;
-                    case "nav_wp_safe_distance":
-                        SEDE.deserialise_u16(raw, out nav_wp_safe_distance);
-                        wpdist = nav_wp_safe_distance / 100;
-                        MWPLog.message("Received nav_wp_safe_distance %um\n", wpdist);
-                        break;
-                    case "nav_wp_max_safe_distance":
-                        SEDE.deserialise_u16(raw, out nav_wp_safe_distance);
-                        wpdist = nav_wp_safe_distance;
-                        MWPLog.message("Received nav_wp_max_safe_distance %um\n", wpdist);
-                        break;
-                case "inav_max_eph_epv":
-                        uint32 ift;
-                        SEDE.deserialise_u32(raw, out ift);
-                            // This stupidity is for Mint ...
-                        uint32 *ipt = &ift;
-                        float f = *((float *)ipt);
-                        inav_max_eph_epv = (uint16)f;
-                        MWPLog.message("Received (raw) inav_max_eph_epv %u\n",
-                                       inav_max_eph_epv);
-                        break;
-                    case "nav_rth_home_offset_distance":
-                        SEDE.deserialise_u16(raw, out nav_rth_home_offset_distance);
-                        if(nav_rth_home_offset_distance != 0) {
-                            request_common_setting("nav_rth_home_offset_direction");
-                        }
-                        break;
-                    case "nav_rth_home_offset_direction":
-                        uint16 odir;
-                        SEDE.deserialise_u16(raw, out odir);
-                        MWPLog.message("Received home offsets %um / %u°\n",
-                                       nav_rth_home_offset_distance/100, odir);
-                        break;
-                    default:
-                        MWPLog.message("Unknown common setting %s\n",
-                                       (string)lastmsg.data);
-                        break;
-                }
-                break;
-
-            case MSP.Cmds.STATUS:
-                if (xflags == '<') {
-                    handle_radar(msp, cmd, raw, len, xflags, errs);
-                    return;
-                } else {
-                    handle_msp_status(raw, len);
-                }
-                break;
-            case MSP.Cmds.STATUS_EX:
-            case MSP.Cmds.INAV_STATUS:
-                handle_msp_status(raw, len);
-                break;
-
-            case MSP.Cmds.SENSOR_STATUS:
-                for(var i = 0; i < 9; i++)
-                    hwstatus[i] = raw[i];
-                MWPLog.message("Sensor status %d\n", hwstatus[0]);
-                if(hwstatus[0] == 0)
-                    arm_warn.show();
-                break;
-
-            case MSP.Cmds.WP_GETINFO:
-                var wpi = MSP_WP_GETINFO();
-                uint8* rp = raw;
-                rp++;
-                wp_max = wpi.max_wp = *rp++;
-                wpi.wps_valid = *rp++;
-                wpi.wp_count = *rp;
-                NavStatus.nm_pts = last_wp_pts = wpi.wp_count;
-                MWPLog.message("WP_GETINFO: %u/%u/%u\n",
-                               wpi.max_wp, wpi.wp_count, wpi.wps_valid);
-				if((wpmgr.wp_flag & WPDL.GETINFO) != 0) {
-					string s = "Waypoints in FC\nMax: %u / Mission points: %u Valid: %s".printf(wpi.max_wp, wpi.wp_count, (wpi.wps_valid==1) ? "Yes" : "No");
-                    Utils.warning_box(s, Gtk.MessageType.INFO, 5);
-					wpmgr.wp_flag &= ~WPDL.GETINFO;
-				}
-				if ((wpmgr.wp_flag & WPDL.DOWNLOAD) != 0) {
-					wpmgr.wp_flag &= ~WPDL.DOWNLOAD;
-					download_mission();
-				} else if ((wpmgr.wp_flag & WPDL.SET_ACTIVE) != 0) {
-					wpmgr.wp_flag &= ~WPDL.SET_ACTIVE;
-					if(vi.fc_vers >= FCVERS.hasWP_V4) {
-						uint8 msg[128];
-						var s = "nav_wp_multi_mission_index";
-						var k = 0;
-						for(k =0; k < s.length; k++) {
-							msg[k] = s.data[k];
-						}
-						msg[k] = 0;
-						msg[k+1] = (uint8)mdx+1;
-						MWPLog.message("Set active %d\n", msg[k+1]);
-						queue_cmd(MSP.Cmds.COMMON_SET_SETTING, msg, k+2);
 					}
-				} else if ((wpmgr.wp_flag & WPDL.RESET_POLLER) != 0) {
-					wp_reset_poller();
+					if ((conf.osd_mode & OSD.show_dist) != 0) {
+						show_wp_distance(ns.wp_number);
+					}
+				} else if (last_nmode == 3) {
+					map_hide_wp();
+					mss.m_wp = -1;
+					mss.waypoint_changed(mss.m_wp);
 				}
-				if(wpi.wp_count > 0 && wpi.wps_valid == 1 && ls.get_list_size() == 0) {
-					need_mission = true;
-				}
-				break;
-
-            case MSP.Cmds.NAV_STATUS:
-            case MSP.Cmds.TN_FRAME:
-                MSP_NAV_STATUS ns = MSP_NAV_STATUS();
-                uint8 flg = 0;
-                uint8* rp = raw;
-                ns.gps_mode = *rp++;
-
-                if(ns.gps_mode == 15) {
-                    if (nticks - last_crit > CRITINTVL) {
-                        play_alarm_sound(MWPAlert.GENERAL);
-                        MWPLog.message("GPS Critial Failure!!!\n");
-                        navstatus.gps_crit();
-                        last_crit = nticks;
-                    }
-                } else
-                    last_crit = 0;
-
-                ns.nav_mode = *rp++;
-                ns.action = *rp++;
-                ns.wp_number = *rp++;
-                ns.nav_error = *rp++;
-
-                if(cmd == MSP.Cmds.NAV_STATUS)
-                    SEDE.deserialise_u16(rp, out ns.target_bearing);
-                else {
-                    flg = 1;
-                    ns.target_bearing = *rp++;
-                }
-                navstatus.update(ns,item_visible(DOCKLETS.NAVSTATUS),flg);
-                if((replayer & Player.BBOX) == 0 && (NavStatus.nm_pts > 0 && NavStatus.nm_pts != 255)) {
-                    if(ns.gps_mode == 3) {
-                        if ((conf.osd_mode & OSD.show_mission) != 0) {
-                            if (last_nmode != 3 || ns.wp_number != last_nwp) {
-                                ls.raise_wp(ns.wp_number);
-                                string spt;
-                                if(NavStatus.have_rth && ns.wp_number == NavStatus.nm_pts) {
-                                    spt = "<span size=\"x-small\">RTH</span>";
-                                } else {
-                                    StringBuilder sb = new StringBuilder(ns.wp_number.to_string());
-                                    if(NavStatus.nm_pts > 0 && NavStatus.nm_pts != 255) {
-                                        sb.append_printf("<span size=\"xx-small\">/%u</span>", NavStatus.nm_pts);
-                                    }
-                                    spt = sb.str;
-                                }
-                                map_show_wp(spt);
-                                mss.m_wp = ns.wp_number;
-                                mss.waypoint_changed(mss.m_wp);
-                            }
-                        }
-                        if ((conf.osd_mode & OSD.show_dist) != 0) {
-                            show_wp_distance(ns.wp_number);
-                        }
-                    } else if (last_nmode == 3) {
-                        map_hide_wp();
-                        mss.m_wp = -1;
-                        mss.waypoint_changed(mss.m_wp);
-                    }
-                }
-                last_nmode = ns.gps_mode;
-                last_nwp= ns.wp_number;
+			}
+			last_nmode = ns.gps_mode;
+			last_nwp= ns.wp_number;
             break;
 
-            case MSP.Cmds.NAV_POSHOLD:
-                have_nc = true;
-                MSP_NAV_POSHOLD poscfg = MSP_NAV_POSHOLD();
-                uint8* rp = raw;
-                poscfg.nav_user_control_mode = *rp++;
-                rp = SEDE.deserialise_u16(rp, out poscfg.nav_max_speed);
-                rp = SEDE.deserialise_u16(rp, out poscfg.nav_max_climb_rate);
-                rp = SEDE.deserialise_u16(rp, out poscfg.nav_manual_speed);
-                rp = SEDE.deserialise_u16(rp, out poscfg.nav_manual_climb_rate);
-                poscfg.nav_mc_bank_angle = *rp++;
-                poscfg.nav_use_midthr_for_althold = *rp++;
-                rp = SEDE.deserialise_u16(rp, out poscfg.nav_mc_hover_thr);
-                ls.set_mission_speed(poscfg.nav_max_speed / 100.0);
-                navconf.mr_update(poscfg);
-                if (ls.get_list_size() > 0)
-                    ls.calc_mission();
-                break;
+		case MSP.Cmds.NAV_POSHOLD:
+			have_nc = true;
+			MSP_NAV_POSHOLD poscfg = MSP_NAV_POSHOLD();
+			uint8* rp = raw;
+			poscfg.nav_user_control_mode = *rp++;
+			rp = SEDE.deserialise_u16(rp, out poscfg.nav_max_speed);
+			rp = SEDE.deserialise_u16(rp, out poscfg.nav_max_climb_rate);
+			rp = SEDE.deserialise_u16(rp, out poscfg.nav_manual_speed);
+			rp = SEDE.deserialise_u16(rp, out poscfg.nav_manual_climb_rate);
+			poscfg.nav_mc_bank_angle = *rp++;
+			poscfg.nav_use_midthr_for_althold = *rp++;
+			rp = SEDE.deserialise_u16(rp, out poscfg.nav_mc_hover_thr);
+			ls.set_mission_speed(poscfg.nav_max_speed / 100.0);
+			navconf.mr_update(poscfg);
+			if (ls.get_list_size() > 0)
+				ls.calc_mission();
+			break;
 
-            case MSP.Cmds.FW_CONFIG:
-                have_nc = true;
-                MSP_FW_CONFIG fw = MSP_FW_CONFIG();
-                uint8* rp = raw;
-                rp = SEDE.deserialise_u16(rp, out fw.cruise_throttle);
-                rp = SEDE.deserialise_u16(rp, out fw.min_throttle);
-                rp = SEDE.deserialise_u16(rp, out fw.max_throttle);
-                fw.max_bank_angle = *rp++;
-                fw.max_climb_angle = *rp++;
-                fw.max_dive_angle = *rp++;
-                fw.pitch_to_throttle = *rp++;
-                rp = SEDE.deserialise_u16(rp, out fw.loiter_radius);
-                navconf.fw_update(fw);
-                break;
+		case MSP.Cmds.FW_CONFIG:
+			have_nc = true;
+			MSP_FW_CONFIG fw = MSP_FW_CONFIG();
+			uint8* rp = raw;
+			rp = SEDE.deserialise_u16(rp, out fw.cruise_throttle);
+			rp = SEDE.deserialise_u16(rp, out fw.min_throttle);
+			rp = SEDE.deserialise_u16(rp, out fw.max_throttle);
+			fw.max_bank_angle = *rp++;
+			fw.max_climb_angle = *rp++;
+			fw.max_dive_angle = *rp++;
+			fw.pitch_to_throttle = *rp++;
+			rp = SEDE.deserialise_u16(rp, out fw.loiter_radius);
+			navconf.fw_update(fw);
+			break;
 
-            case MSP.Cmds.NAV_CONFIG:
-                have_nc = true;
-                MSP_NAV_CONFIG nc = MSP_NAV_CONFIG();
-                uint8* rp = raw;
-                nc.flag1 = *rp++;
-                nc.flag2 = *rp++;
-                rp = SEDE.deserialise_u16(rp, out nc.wp_radius);
-                rp = SEDE.deserialise_u16(rp, out nc.safe_wp_distance);
+		case MSP.Cmds.NAV_CONFIG:
+			have_nc = true;
+			MSP_NAV_CONFIG nc = MSP_NAV_CONFIG();
+			uint8* rp = raw;
+			nc.flag1 = *rp++;
+			nc.flag2 = *rp++;
+			rp = SEDE.deserialise_u16(rp, out nc.wp_radius);
+			rp = SEDE.deserialise_u16(rp, out nc.safe_wp_distance);
                 rp = SEDE.deserialise_u16(rp, out nc.nav_max_altitude);
                 rp = SEDE.deserialise_u16(rp, out nc.nav_speed_max);
                 rp = SEDE.deserialise_u16(rp, out nc.nav_speed_min);
@@ -8837,7 +8864,12 @@ public class MWP : Gtk.Application {
 
         set_replay_menus(true);
         reboot_status();
-    }
+		if(gzone != null) {
+			gzone.remove();
+			gzone = null;
+		}
+
+	}
 
     private void clear_mission() {
         ls.clear_mission();
@@ -9004,6 +9036,12 @@ public class MWP : Gtk.Application {
 				msp.open_async.begin(serdev, conf.baudrate, (obj,res) => {
 						ostat = msp.open_async.end(res);
 						serial_complete_setup(serdev,ostat);
+#if LOCGZTEST
+						gzone = GeoZoneReader.test_gz_load(view);
+						if (gzone != null) {
+							gzone.display();
+						}
+#endif
 					});
             }
         }

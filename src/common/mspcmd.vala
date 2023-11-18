@@ -18,6 +18,7 @@
 
 public class MSP : Object {
     public enum Feature {
+		GEOZONE = (1 << 5),
         GPS = (1 << 7),
         TELEMETRY = (1 << 10),
         CURRENT = (1 << 11)
@@ -134,6 +135,9 @@ public class MSP : Object {
         BLACKBOX_CONFIGv2 = 0x201A,
         SAFEHOME = 0x2038,
         SET_SAFEHOME = 0x2039,
+
+		GEOZONE = 0x2050,
+
 
         LTM_BASE  = 0x10000,
         TS_FRAME = (LTM_BASE + 'S'),
