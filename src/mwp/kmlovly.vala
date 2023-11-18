@@ -3,21 +3,22 @@ using Clutter;
 using Champlain;
 using GtkChamplain;
 
-public class KmlOverlay : Object {
-    private struct StyleItem {
+public class Overlay : Object {
+    public struct StyleItem {
         bool styled;
+		bool line_dotted;
         string line_colour;
         string fill_colour;
         string point_colour;
 		int line_width;
     }
 
-    private struct Point {
+    public struct Point {
         double latitude;
         double longitude;
     }
 
-    private struct OverlayItem {
+    public struct OverlayItem {
         string type;
         string name;
         StyleItem styleinfo;
@@ -25,19 +26,99 @@ public class KmlOverlay : Object {
     }
 
     private Champlain.View view;
-    private OverlayItem[] ovly;
     private Champlain.PathLayer[] players;
     private Champlain.MarkerLayer mlayer;
-    private string filename;
-    private string name;
+	private OverlayItem[] elements;
 
-    public KmlOverlay(Champlain.View _view) {
-        ovly = {};
+
+    private void at_bottom(Champlain.Layer layer) {
+        var pp = layer.get_parent();
+        pp.set_child_at_index(layer,0);
+    }
+
+	public Overlay(Champlain.View _view) {
+		elements={};
         view = _view;
         mlayer = new Champlain.MarkerLayer();
         view.add_layer (mlayer);
         at_bottom(mlayer);
         players = {};
+	}
+
+    public void remove() {
+        mlayer.remove_all();
+        foreach (var p in players) {
+            p.remove_all();
+            view.remove_layer(p);
+        }
+        players = {};
+    }
+
+	public void add_element(Overlay.OverlayItem o) {
+		elements += o;
+	}
+
+	public void display() {
+		foreach(var o in elements) {
+			switch(o.type) {
+			case "Point":
+				Clutter.Color black = { 0,0,0, 0xff };
+				var marker = new Champlain.Label.with_text (o.name,"Sans 10",null,null);
+				marker.set_alignment (Pango.Alignment.RIGHT);
+				marker.set_color(Clutter.Color.from_string(o.styleinfo.point_colour));
+				marker.set_text_color(black);
+				marker.set_location (o.pts[0].latitude,o.pts[0].longitude);
+				marker.set_draggable(false);
+				marker.set_selectable(false);
+				mlayer.add_marker (marker);
+				break;
+			case "LineString":
+				var path = new Champlain.PathLayer();
+				path.closed=false;
+				path.set_stroke_color(Clutter.Color.from_string(o.styleinfo.line_colour));
+				path.set_stroke_width (o.styleinfo.line_width);
+				foreach (var p in o.pts) {
+					var l =  new  Champlain.Point();
+					l.set_location(p.latitude, p.longitude);
+					path.add_node(l);
+				}
+				players += path;
+				view.add_layer (path);
+				at_bottom(path);
+				break;
+			case "Polygon":
+				var path = new Champlain.PathLayer();
+				path.closed=true;
+				path.set_stroke_color(Clutter.Color.from_string(o.styleinfo.line_colour));
+				path.fill = (o.styleinfo.fill_colour != null);
+				path.set_stroke_width (o.styleinfo.line_width);
+				path.set_fill_color(Clutter.Color.from_string(o.styleinfo.fill_colour));
+				if (o.styleinfo.line_dotted) {
+					var llist = new List<uint>();
+					llist.append(5);
+					llist.append(5);
+					path.set_dash(llist);
+				}
+				foreach (var p in o.pts) {
+					var l =  new  Champlain.Point();
+					l.set_location(p.latitude, p.longitude);
+					path.add_node(l);
+				}
+				players += path;
+				view.add_layer (path);
+				at_bottom(path);
+				break;
+			}
+        }
+	}
+}
+
+public class KmlOverlay : Object {
+    private string filename;
+    private string name;
+	private Overlay ovly;
+    public KmlOverlay(Champlain.View _view) {
+		ovly = new Overlay(_view);
     }
 
     public string get_filename() {
@@ -98,12 +179,7 @@ public class KmlOverlay : Object {
     }
 
 
-    private void at_bottom(Champlain.Layer layer) {
-        var pp = layer.get_parent();
-        pp.set_child_at_index(layer,0);
-    }
-
-    private bool parse(string fname) {
+	private bool parse(string fname) {
         Xml.Doc* doc = Xml.Parser.parse_file (fname);
         if (doc == null) {
             return false;
@@ -117,7 +193,6 @@ public class KmlOverlay : Object {
 	}
 
     filename = fname;
-    ovly = {};
 
     var xpath = "//*[local-name()='Placemark']/*[local-name()='Polygon' or local-name()='LineString'or local-name()='Point']";
 
@@ -133,12 +208,12 @@ public class KmlOverlay : Object {
                 var pname = look_for(node->parent, "name");
                 var style = look_for(node->parent, "styleUrl");
 
-                var o = OverlayItem();
+                var o = Overlay.OverlayItem();
                 if(style != null)
                     o.styleinfo = populate_style(o, cntx, style);
                 else {
                     Xml.Node *n = look_for_node(node->parent, "Style");
-                    o.styleinfo = {false, null};
+                    o.styleinfo = {};
                     if(n != null)
                         extract_style(n, ref o.styleinfo);
                 }
@@ -156,16 +231,16 @@ public class KmlOverlay : Object {
                 o.type = iname;
 
                 var cs = Regex.split_simple("\\s+", coords);
-                Point[] pts = {};
+                Overlay.Point[] pts = {};
                 foreach(var s in cs) {
-                    Point p = Point();
+                    Overlay.Point p = Overlay.Point();
                     var ss = s.split(",");
                     p.latitude = double.parse(ss[1].strip());
                     p.longitude = double.parse(ss[0].strip());
                     pts += p;
                 }
                 o.pts = pts;
-                ovly +=  o;
+				ovly.add_element(o);
             }
         }
         delete res;
@@ -174,8 +249,8 @@ public class KmlOverlay : Object {
         return true;
     }
 
-    private StyleItem populate_style(OverlayItem o,  Xml.XPath.Context cntx, string style) {
-        StyleItem si = {false,null};
+    private Overlay.StyleItem populate_style(Overlay.OverlayItem o,  Xml.XPath.Context cntx, string style) {
+        Overlay.StyleItem si = {};
 
         string st0;
         st0 = style.substring(1);
@@ -201,12 +276,13 @@ public class KmlOverlay : Object {
         return si;
     }
 
-    private void extract_style(Xml.Node *n, ref StyleItem si) {
+    private void extract_style(Xml.Node *n, ref Overlay.StyleItem si) {
         for (Xml.Node* iter = n->children; iter != null; iter = iter->next) {
             switch(iter->name) {
                 case "IconStyle":
                     if ((si.point_colour = look_for(iter, "color")) != null)
-                        si.styled = true;
+						si.point_colour = getrgba(si.point_colour);
+					si.styled = true;
                     break;
                 case "LineStyle":
 					string? sw;
@@ -216,10 +292,12 @@ public class KmlOverlay : Object {
 						si.line_width = 2;
 					}
 					if((si.line_colour = look_for(iter, "color")) != null)
+						si.line_colour = getrgba(si.line_colour);
                         si.styled = true;
                     break;
                 case "PolyStyle":
                     if((si.fill_colour = look_for(iter, "color")) != null)
+						si.fill_colour = getrgba(si.fill_colour);
                         si.styled = true;
                     break;
                 default:
@@ -228,8 +306,23 @@ public class KmlOverlay : Object {
         }
     }
 
-    private StyleItem parse_style_nodes(Xml.XPath.NodeSet* nl) {
-        StyleItem si = {false, null};
+	private string getrgba(string? aabbggrr) {
+        string str;
+        if(aabbggrr == null || aabbggrr == "")
+            str = "#faf976ff";
+        else {
+            StringBuilder sb = new StringBuilder("#");
+            sb.append(aabbggrr[6:8]);
+            sb.append(aabbggrr[4:6]);
+            sb.append(aabbggrr[2:4]);
+            sb.append(aabbggrr[0:2]);
+            str = sb.str;
+        }
+        return str;
+    }
+
+    private Overlay.StyleItem parse_style_nodes(Xml.XPath.NodeSet* nl) {
+        Overlay.StyleItem si = {};
         for (int i = 0; i < nl->length(); i++) {
             extract_style(nl->item (i), ref si);
         }
@@ -264,90 +357,20 @@ public class KmlOverlay : Object {
         return null;
     }
 
-    private OverlayItem[] get_overlay() {
-        return ovly;
-    }
-
-    private Clutter.Color getrgba(string? aabbggrr) {
-        string str;
-        if(aabbggrr == null || aabbggrr == "")
-            str = "#faf976ff";
-        else {
-            StringBuilder sb = new StringBuilder("#");
-            sb.append(aabbggrr[6:8]);
-            sb.append(aabbggrr[4:6]);
-            sb.append(aabbggrr[2:4]);
-            sb.append(aabbggrr[0:2]);
-            str = sb.str;
-        }
-        return Clutter.Color.from_string(str);
-    }
-
-    public void remove_overlay() {
-        mlayer.remove_all();
-        foreach (var p in players) {
-            p.remove_all();
-            view.remove_layer(p);
-        }
-        players = {};
-    }
-
     public bool load_overlay(string _fname) {
         bool ok;
-        remove_overlay();
-
         if(_fname.has_suffix(".kmz"))
             ok = read_kmz(_fname);
         else
             ok = parse(_fname);
 
         if (ok) {
-            var ovly = get_overlay();
-            foreach(var o in ovly) {
-                switch(o.type) {
-                    case "Point":
-                        Clutter.Color black = { 0,0,0, 0xff };
-                        var marker = new Champlain.Label.with_text (o.name,"Sans 10",null,null);
-                        marker.set_alignment (Pango.Alignment.RIGHT);
-                        marker.set_color(getrgba(o.styleinfo.point_colour));
-                        marker.set_text_color(black);
-                        marker.set_location (o.pts[0].latitude,o.pts[0].longitude);
-                        marker.set_draggable(false);
-                        marker.set_selectable(false);
-                        mlayer.add_marker (marker);
-                        break;
-                    case "LineString":
-                        var path = new Champlain.PathLayer();
-                        path.closed=false;
-                        path.set_stroke_color(getrgba(o.styleinfo.line_colour));
-						path.set_stroke_width (o.styleinfo.line_width);
-                        foreach (var p in o.pts) {
-                            var l =  new  Champlain.Point();
-                            l.set_location(p.latitude, p.longitude);
-                            path.add_node(l);
-                        }
-                        players += path;
-                        view.add_layer (path);
-                        at_bottom(path);
-                        break;
-                    case "Polygon":
-                        var path = new Champlain.PathLayer();
-                        path.closed=true;
-                        path.set_stroke_color(getrgba(o.styleinfo.line_colour));
-                        path.fill = (o.styleinfo.fill_colour != null);
-                        path.set_fill_color(getrgba(o.styleinfo.fill_colour));
-                        foreach (var p in o.pts) {
-                            var l =  new  Champlain.Point();
-                            l.set_location(p.latitude, p.longitude);
-                            path.add_node(l);
-                        }
-                        players += path;
-                        view.add_layer (path);
-                        at_bottom(path);
-                        break;
-                }
-            }
-        }
-        return ok;
-    }
+			ovly.display();
+		}
+		return ok;
+	}
+
+	public void remove_overlay() {
+		ovly.remove();
+	}
 }

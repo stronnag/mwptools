@@ -24,7 +24,8 @@ type UConn struct {
 }
 
 var (
-	verbose int
+	verbose  int
+	baudrate int
 )
 
 func enumerate_ports() string {
@@ -76,6 +77,7 @@ func main() {
 	var udpnam, devnam string
 	serok := false
 
+	baudrate = 115200
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s [options] device [:port]\n", os.Args[0])
 		flag.PrintDefaults()
@@ -83,6 +85,7 @@ func main() {
 	}
 
 	flag.IntVar(&verbose, "verbose", 0, "verbosity (0:none, 1:open/close, >1:I/O)")
+	flag.IntVar(&baudrate, "baudrate", baudrate, "set baud rate")
 
 	flag.Parse()
 	rest := flag.Args()
@@ -104,7 +107,7 @@ func main() {
 	}
 
 	mode := &serial.Mode{
-		BaudRate: 115200,
+		BaudRate: baudrate,
 	}
 
 	Get_interface("vEthernet (WSL)")
