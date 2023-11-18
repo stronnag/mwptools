@@ -2561,9 +2561,9 @@ public class ListBox : GLib.Object {
             double hlat, hlon;
             fhome.get_fake_home(out hlat, out hlon);
             if (bbox.covers(hlat, hlon) == false) {
-                hlat = mp.view.get_center_latitude();
-                hlon = mp.view.get_center_longitude();
-                fhome.set_fake_home(hlat, hlon);
+				hlat = mp.view.get_center_latitude();
+				hlon = mp.view.get_center_longitude();
+				fhome.set_fake_home(hlat, hlon);
             }
         } else {
             fhome.set_fake_home(hy, hx);

@@ -1522,7 +1522,8 @@ public class MWP : Gtk.Application {
             wp_edit_button.tooltip_text = ("Enable / disable the addition of WPs by clicking on the map (%sabled)".printf((wp_edit) ? "en" : "dis"));
             if(wp_edit) {
                 FakeHome.usedby |= FakeHome.USERS.Editor;
-                ls.set_fake_home();
+				var ms = ls.to_mission();
+				ls.set_fake_home(ms.homey, ms.homex);
                 map_moved();
             } else {
                 FakeHome.usedby &= ~FakeHome.USERS.Editor;
