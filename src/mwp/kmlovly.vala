@@ -18,8 +18,16 @@ public class Overlay : Object {
         double longitude;
     }
 
-    public struct OverlayItem {
-        string type;
+
+	public enum OLType {
+		UNKNOWN=0,
+		POINT=1,
+		LINESTRING=2,
+		POLYGON=3,
+	}
+
+	public struct OverlayItem {
+        OLType type;
         string name;
         StyleItem styleinfo;
         Point[] pts;
@@ -61,7 +69,7 @@ public class Overlay : Object {
 	public void display() {
 		foreach(var o in elements) {
 			switch(o.type) {
-			case "Point":
+			case OLType.POINT:
 				Clutter.Color black = { 0,0,0, 0xff };
 				var marker = new Champlain.Label.with_text (o.name,"Sans 10",null,null);
 				marker.set_alignment (Pango.Alignment.RIGHT);
@@ -72,7 +80,7 @@ public class Overlay : Object {
 				marker.set_selectable(false);
 				mlayer.add_marker (marker);
 				break;
-			case "LineString":
+			case OLType.LINESTRING:
 				var path = new Champlain.PathLayer();
 				path.closed=false;
 				path.set_stroke_color(Clutter.Color.from_string(o.styleinfo.line_colour));
@@ -86,7 +94,7 @@ public class Overlay : Object {
 				view.add_layer (path);
 				at_bottom(path);
 				break;
-			case "Polygon":
+			case OLType.POLYGON:
 				var path = new Champlain.PathLayer();
 				path.closed=true;
 				path.set_stroke_color(Clutter.Color.from_string(o.styleinfo.line_colour));
@@ -107,6 +115,8 @@ public class Overlay : Object {
 				players += path;
 				view.add_layer (path);
 				at_bottom(path);
+				break;
+			case OLType.UNKNOWN:
 				break;
 			}
         }
@@ -228,8 +238,20 @@ public class KmlOverlay : Object {
                     }
                 }
                 o.name = pname;
-                o.type = iname;
-
+				switch (iname) {
+				case "Point":
+					o.type = Overlay.OLType.POINT;
+					break;
+				case "LineString":
+					o.type = Overlay.OLType.LINESTRING;
+					break;
+				case "Polygon":
+					o.type = Overlay.OLType.POLYGON;
+					break;
+				default:
+					o.type = Overlay.OLType.UNKNOWN;
+					break;
+				}
                 var cs = Regex.split_simple("\\s+", coords);
                 Overlay.Point[] pts = {};
                 foreach(var s in cs) {

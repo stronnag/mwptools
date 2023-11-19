@@ -171,7 +171,7 @@ namespace GeoZoneReader {
 		var o = new Overlay(view);
 		for(var j = 0; j < zs.length; j++) {
 			var oi = Overlay.OverlayItem();
-			oi.type = "Polygon";
+			oi.type = Overlay.OLType.POLYGON;
 			oi.name = "V%2d".printf(j);
 			oi.styleinfo =  get_style(zs[j]);
 			Overlay.Point[] pts = {};
