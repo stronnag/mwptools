@@ -28,7 +28,7 @@ public class HgtHandle {
 		fd = Posix.open(_fname, Posix.O_RDONLY);
 		if (fd != -1) {
 			Posix.Stat st;
-			if(Posix.stat(_fname, out st) == 0) {
+			if(Posix.fstat(fd, out st) == 0) {
 				var ssz = st.st_size /2;
 				if (ssz/1201 == 1201) {
 					width = 1201;
