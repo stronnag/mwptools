@@ -199,7 +199,7 @@ namespace GeoZoneReader {
 
 	private int append(uint8[] raw, size_t len) {
 		if (len > ZSIZEMIN) {
-			var z = GeoZoneReader.parse(raw[:len]);
+			var z = GeoZoneReader.parse(raw[0:len]);
 			zs += z;
 		}
 		cnt += 1;
