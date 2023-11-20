@@ -110,5 +110,5 @@ For convenience, there is a `meson/uninstall.sh` script to do this. It requires:
 
 e.g.
 
-$ meson/uninstall ~/.local
-$ sudo meson/uninstall /usr/local
+$ meson/uninstall.sh ~/.local
+$ sudo meson/uninstall.sh /usr/local
