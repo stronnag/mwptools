@@ -135,6 +135,9 @@ public class MSP : Object {
         SAFEHOME = 0x2038,
         SET_SAFEHOME = 0x2039,
 
+		GEOZONE =  0x2050,
+		TEXT_EOM = 0x2ffe,
+
         LTM_BASE  = 0x10000,
         TS_FRAME = (LTM_BASE + 'S'),
         TA_FRAME = (LTM_BASE + 'A'),
@@ -146,6 +149,7 @@ public class MSP : Object {
         Tq_FRAME = (LTM_BASE + 'q'), // private, quit message
         Tr_FRAME = (LTM_BASE + 'r'), // private, rcdata message
         Tx_FRAME = (LTM_BASE + 'x'), // private, quit message
+
 
         MAV_BASE  = 0x20000,
         MAVLINK_MSG_ID_HEARTBEAT = (MAV_BASE+0),

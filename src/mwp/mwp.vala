@@ -6509,21 +6509,24 @@ public class MWP : Gtk.Application {
                     vi.mrtype = raw[5]; // legacy types only
                 else {
                     switch(raw[3]) {
-                        case 0:
-                            vi.mrtype = 3;
-                            break;
-                        case 1:
-                            vi.mrtype = 8;
-                            break;
-                        case 3:
-                            vi.mrtype = 1;
-                            break;
-                        default:
-                            break;
+					case 0:
+						vi.mrtype = 3;
+						break;
+					case 1:
+						vi.mrtype = 8;
+						break;
+					case 3:
+						vi.mrtype = 1;
+						break;
+					default:
+						break;
                     }
-                 }
-                 queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
-                 break;
+				}
+				if (Logger.is_logging) {
+					Logger.rawdata(MSP.Cmds.INAV_MIXER, raw, len);
+				}
+				queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
+				break;
 
             case MSP.Cmds.COMMON_SET_TZ:
                 rtcsecs = 0;
@@ -6625,6 +6628,9 @@ public class MWP : Gtk.Application {
 
                 if(conf.need_telemetry && (0 == (fmask & MSP.Feature.TELEMETRY)))
                     Utils.warning_box("TELEMETRY requested but not enabled in iNav", Gtk.MessageType.ERROR);
+				if(Logger.is_logging) {
+					Logger.rawdata(MSP.Cmds.FEATURE, raw, len);
+				}
                 queue_cmd(MSP.Cmds.BLACKBOX_CONFIG,null,0);
                 break;
 
@@ -7392,6 +7398,11 @@ public class MWP : Gtk.Application {
                     handle_radio(raw);
                 }
                 break;
+
+            case MSP.Cmds.TEXT_EOM:
+				var txt = (string)raw[0:len];
+				odoview.set_text(txt);
+				break;
 
             case MSP.Cmds.MAVLINK_MSG_ID_RADIO:
                 handle_radio(raw);

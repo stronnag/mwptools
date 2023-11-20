@@ -21,7 +21,23 @@ public class ReplayThread : GLib.Object {
     private Cancellable cancellable;
     private bool paused = false;
 
-    private size_t serialise_sf(LTM_SFRAME b, uint8 []tx) {
+	private uint8 parsehex(string t) {
+		return (to_hexbin(t.data[0]) << 4) | (to_hexbin(t.data[1]) &0xf);
+	}
+
+	private uint8 to_hexbin(uint8 c) {
+		if (c >= '0' && c <= '9')
+			c = c - '0';
+		else if (c >= 'A' && c <= 'F') {
+			c = c - 'A' + 10;
+		}
+		else if (c >= 'a' && c <= 'f') {
+			c = c - 'a' + 10;
+		}
+		return c;
+	}
+
+	private size_t serialise_sf(LTM_SFRAME b, uint8 []tx) {
         uint8 *p;
         p = SEDE.serialise_u16(tx, b.vbat);
         p = SEDE.serialise_u16(p, b.vcurr);
@@ -625,6 +641,22 @@ public class ReplayThread : GLib.Object {
                                     m.throttle =  (uint16)obj.get_int_member("throttle");
                                     send_rec(msp, MSP.Cmds.MAVLINK_MSG_VFR_HUD, sizeof(Mav.MAVLINK_VFR_HUD), (uint8*)(&m));
                                     break;
+							case "logmsg":
+								var txt = obj.get_string_member("text");
+								send_rec(msp, MSP.Cmds.TEXT_EOM, txt.length, txt.data);
+								break;
+							case "rawdata":
+								var cmd =  (uint16)obj.get_int_member("mid");
+								var txt = obj.get_string_member("msg");
+								var rbuf = new uint8[txt.length/2];
+								var j = 0;
+								for(var i = 0; i < txt.length; i += 2) {
+									uint8 c = parsehex(txt[i:i+2]);
+									rbuf[j] = c;
+									j++;
+								}
+								send_rec(msp, cmd, j, rbuf);
+								break;
                                 default:
                                     break;
                             }
