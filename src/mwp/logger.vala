@@ -69,7 +69,33 @@ public class Logger : GLib.Object {
         write_stream();
     }
 
-    public static void fcinfo(string? title, VersInfo vi,uint32 capability,
+	public static void rawdata(uint16 cmd, uint8[]raw, uint len) {
+		var builder = init("rawdata");
+		builder.set_member_name ("mid");
+		builder.add_int_value(cmd);
+		builder.set_member_name ("msg");
+		var sb = new StringBuilder();
+		for (var j = 0; j < len; j++) {
+			sb.append_printf("%02x", raw[j]);
+        }
+		builder.add_string_value(sb.str);
+        builder.end_object ();
+        Json.Node root = builder.get_root ();
+        gen.set_root (root);
+        write_stream();
+	}
+
+	public static void eofmessage(string msg) {
+		var builder = init("logmsg");
+		builder.set_member_name ("text");
+		builder.add_string_value(msg);
+        builder.end_object ();
+        Json.Node root = builder.get_root ();
+        gen.set_root (root);
+        write_stream();
+	}
+
+	public static void fcinfo(string? title, VersInfo vi,uint32 capability,
                               uint8 profile, string? boxnames = null,
                               string? vname = null, string? device = null)  {
         gen = new Json.Generator ();

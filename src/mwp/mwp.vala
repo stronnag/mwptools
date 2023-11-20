@@ -6519,15 +6519,18 @@ public class MWP : Gtk.Application {
 					case 0:
 						vi.mrtype = 3;
 						break;
-                        case 1:
-                            vi.mrtype = 8;
-                            break;
+					case 1:
+						vi.mrtype = 8;
+						break;
 					case 3:
 						vi.mrtype = 1;
 						break;
 					default:
-                            break;
+						break;
                     }
+				}
+				if (Logger.is_logging) {
+					Logger.rawdata(MSP.Cmds.INAV_MIXER, raw, len);
 				}
 				queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
 				break;
@@ -6629,8 +6632,13 @@ public class MWP : Gtk.Application {
 			if (curf == false)
 				navstatus.amp_hide(true);
 
-			if(conf.need_telemetry && (0 == (feature_mask & MSP.Feature.TELEMETRY)))
-				Utils.warning_box("TELEMETRY requested but not enabled in iNav", Gtk.MessageType.ERROR);
+                if(conf.need_telemetry && (0 == (fmask & MSP.Feature.TELEMETRY)))
+                    Utils.warning_box("TELEMETRY requested but not enabled in iNav", Gtk.MessageType.ERROR);
+				if(Logger.is_logging) {
+					Logger.rawdata(MSP.Cmds.FEATURE, raw, len);
+				}
+                queue_cmd(MSP.Cmds.BLACKBOX_CONFIG,null,0);
+                break;
 
 			if ((feature_mask & MSP.Feature.GEOZONE) == MSP.Feature.GEOZONE) {
 				GeoZoneReader.reset();
@@ -6642,6 +6650,9 @@ public class MWP : Gtk.Application {
 
 		case MSP.Cmds.GEOZONE:
 			var cnt = GeoZoneReader.append(raw, len);
+			if(Logger.is_logging) {
+				Logger.rawdata(MSP.Cmds.FEATURE, raw, len);
+			}
 			if (cnt >= GeoZoneReader.MAXGZ) {
 				gzone = GeoZoneReader.generate_overlay(view);
 				Idle.add(() => {
@@ -7419,6 +7430,11 @@ public class MWP : Gtk.Application {
                     handle_radio(raw);
                 }
                 break;
+
+            case MSP.Cmds.TEXT_EOM:
+				var txt = (string)raw[0:len];
+				odoview.set_text(txt);
+				break;
 
             case MSP.Cmds.MAVLINK_MSG_ID_RADIO:
                 handle_radio(raw);

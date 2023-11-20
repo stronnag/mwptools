@@ -184,6 +184,7 @@ public class OdoView : GLib.Object {
         odorange_tm = builder.get_object ("odo_rng_time") as Gtk.Label;
         odospeed_tm = builder.get_object ("odo_spd_time") as Gtk.Label;
 		odotview = builder.get_object ("odo_tview") as Gtk.TextView;
+
 		odotview.buffer.changed.connect(() => {
 				if(tid != 0)
 					Source.remove(tid);
@@ -246,7 +247,6 @@ public class OdoView : GLib.Object {
             odosens(false);
         }
 
-
         unhide();
         if(autohide) {
             if(to > 0) {
@@ -259,23 +259,51 @@ public class OdoView : GLib.Object {
         }
     }
 
-    public void unhide() {
+	public void unhide() {
         visible = true;
         dialog.show_all();
     }
+
+	public void set_text(string txt) {
+		odotview.buffer.text = txt;
+	}
 
     public void dismiss() {
         if(tid != 0)
             Source.remove(tid);
         tid = 0;
-		var t = odotview.buffer.text.chomp();
+		var t = odotview.buffer.text.strip();
 		if (t.length > 0) {
+			if (Logger.is_logging) {
+				Logger.eofmessage(t);
+			}
+			add_eof_log(t);
+			t  = t.replace("\n", "\n ");
 			MWPLog.message("User comment: %s\n", t);
-			odotview.buffer.text="";
 		}
+		odotview.buffer.text="";
 		visible=false;
         dialog.hide();
     }
+
+	private void add_eof_log(string t) {
+		time_t currtime;
+		string spath = MWP.conf.logsavepath;
+        var f = File.new_for_path(spath);
+        if(f.query_exists() == false) {
+            try {
+                f.make_directory_with_parents();
+            } catch {
+				spath = Environment.get_home_dir();
+			}
+        }
+		var fn = GLib.Path.build_filename(spath, "mwp_summary_notes.txt");
+		time_t(out currtime);
+		var ts = Time.local(currtime).format("%F %T");
+		var os = FileStream.open(fn, "a");
+		os.printf("## Summary for %s\n\n", ts);
+		os.printf("%s\n\n", t);
+	}
 }
 
 public class ArtWin : GLib.Object {
