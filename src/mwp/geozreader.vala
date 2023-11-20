@@ -21,15 +21,15 @@ namespace GeoZoneReader {
 
 	public struct Vertex {
 		uint8 index;
-		double latitude;
-		double longitude;
+		int latitude;
+		int longitude;
 	}
 
 	public struct GeoZone {
 		GZType type;
 		GZShape shape;
-		double minalt;
-		double maxalt;
+		int minalt;
+		int maxalt;
 		GZAction action;
 		uint8 nvertices;
 		uint8 index;
@@ -54,15 +54,12 @@ namespace GeoZoneReader {
 
 	public GeoZone parse(uint8[] buf) {
 		uint8* ptr = &buf[0];
-		int32 val;
-
 		var z = GeoZone();
 		z.type = (GZType)*ptr++;
 		z.shape = (GZShape)*ptr++;
-		ptr = SEDE.deserialise_i32(ptr, out val);
-		z.minalt = (double)val/100;
-		ptr = SEDE.deserialise_i32(ptr, out val);
-		z.maxalt = (double)val/100;
+		ptr = SEDE.deserialise_i32(ptr, out z.minalt);
+		ptr = SEDE.deserialise_i32(ptr, out z.maxalt);
+
 		z.action = (GZAction)*ptr++;
 		z.nvertices = *ptr++;
 		z.index = *ptr++;
@@ -73,14 +70,8 @@ namespace GeoZoneReader {
 			for (var j = 0; j < z.nvertices; j++) {
 				var v = Vertex();
 				v.index = *ptr++;
-				ptr = SEDE.deserialise_i32(ptr, out val);
-				if (z.shape == GZShape.Circular && j == 1) {
-					v.latitude = (double)val/100.0;
-				} else {
-					v.latitude = (double)val/1e7;
-				}
-				ptr = SEDE.deserialise_i32(ptr, out val);
-				v.longitude = (double)val/1e7;
+				ptr = SEDE.deserialise_i32(ptr, out v.latitude);
+				ptr = SEDE.deserialise_i32(ptr, out v.longitude);
 				z.vertices[j] = v;
 			}
 		} else {
@@ -90,19 +81,19 @@ namespace GeoZoneReader {
 	}
 
 	/*
-   ACTION  │   TYPE    │ FILL COLOUR │ OUTLINE COLOUR
-  ──────────┼───────────┼─────────────┼─────────────────
-    None    │ Inclusive │    none     │   Green(dots)
-    None    │ Exclusive │    none     │    Red(dots)
-    ------  │ ----      │ ----------- │ --------------
-    Avoid   │ Inclusive │    none     │   Green(thin)
-    Avoid   │ Exclusive │     Red     │    Red(thin)
-    ------  │ ----      │ ----------- │ --------------
-    PosHold │ Inclusive │    None     │   Green(thick)
-    PosHold │ Exclusive │     Red     │    Red(thick)
-    ------  │ ----      │ ----------- │ --------------
-    RTH     │ Inclusive │    Green    │   Green(thick)
-    RTH     │ Exclusive │     Red     │    Red(thick)
+	  ACTION  │   TYPE    │ FILL COLOUR │ OUTLINE COLOUR
+	  ──────────┼───────────┼─────────────┼─────────────────
+	  None    │ Inclusive │    none     │   Green(dots)
+	  None    │ Exclusive │    none     │    Red(dots)
+	  ------  │ ----      │ ----------- │ --------------
+	  Avoid   │ Inclusive │    none     │   Green(thin)
+	  Avoid   │ Exclusive │     Red     │    Red(thin)
+	  ------  │ ----      │ ----------- │ --------------
+	  PosHold │ Inclusive │    None     │   Green(thick)
+	  PosHold │ Exclusive │     Red     │    Red(thick)
+	  ------  │ ----      │ ----------- │ --------------
+	  RTH     │ Inclusive │    Green    │   Green(thick)
+	  RTH     │ Exclusive │     Red     │    Red(thick)
 
 	*/
 
@@ -176,18 +167,20 @@ namespace GeoZoneReader {
 			oi.styleinfo =  get_style(zs[j]);
 			Overlay.Point[] pts = {};
 			if (zs[j].shape == GZShape.Circular) {
+				var clat = (double)zs[j].vertices[0].latitude/1e7;
+				var clon = (double)zs[j].vertices[0].longitude/1e7;
 				for (var i = 0; i < 360; i += 5) {
 					var p = Overlay.Point();
-					Geo.posit(zs[j].vertices[0].latitude, zs[j].vertices[0].longitude,
-							  i, zs[j].vertices[1].latitude/1852.0,
+					var range = (double)zs[j].vertices[1].latitude/(100.0*1852.0);
+					Geo.posit(clat, clon, i, range,
 							  out p.latitude, out p.longitude);
 					pts += p;
 				}
 			} else {
 				for(var k = 0; k < zs[j].vertices.length; k++) {
 					var p = Overlay.Point();
-					p.latitude = zs[j].vertices[k].latitude;
-					p.longitude = zs[j].vertices[k].longitude;
+					p.latitude = (double)zs[j].vertices[k].latitude / 1e7;
+					p.longitude = (double)zs[j].vertices[k].longitude / 1e7;
 					pts += p;
 				}
 			}
@@ -204,6 +197,59 @@ namespace GeoZoneReader {
 		}
 		cnt += 1;
 		return cnt;
+	}
+
+	public void dump() {
+		if (zs.length > 0) {
+			string afn = null;;
+			try {
+				int fd = FileUtils.open_tmp ("gzones_XXXXXX", out afn);
+				string s;
+				foreach (var z in zs) {
+					s = "geozone %d %d %d %d %d %d\n".printf(z.index, z.shape, z.type,
+															 z.minalt, z.maxalt, z.action);
+					Posix.write(fd, s, s.length);
+					var k = 0;
+					foreach(var v in z.vertices) {
+						s = "geozone vertex %d %d %d %d\n".printf(z.index, k, v.latitude, v.longitude);
+						Posix.write(fd, s, s.length);
+						k++;
+					}
+				}
+				Posix.close(fd);
+				try {
+					time_t currtime;
+					string spath = MWP.conf.logsavepath;
+					var f = File.new_for_path(spath);
+					if(f.query_exists() == false) {
+						try {
+							f.make_directory_with_parents();
+						} catch {
+							spath = Environment.get_home_dir();
+						}
+					}
+					time_t(out currtime);
+					var ts = Time.local(currtime).format("GeoZones-%F_%H%M%S.kml");
+					var outfn = GLib.Path.build_filename(spath, ts);
+					MWPLog.message("Save KML %s\n", outfn);
+					string []args = {"geozones", "-no-points", "-output", outfn, afn};
+					//					MWPLog.message(":DBG: spawn %s\n", string.joinv(" ", args));
+					var gkml = new Subprocess.newv(args, SubprocessFlags.NONE);
+					gkml.wait_check_async.begin(null, (obj,res) => {
+							try {
+								gkml.wait_check_async.end(res);
+							}  catch (Error e) {
+								MWPLog.message("gkml spawn %s\n", e.message);
+							}
+							Posix.unlink(afn);
+						});
+                } catch (Error e) {
+					MWPLog.message("gkml spawn %s\n", e.message);
+					Posix.unlink(afn);
+                }
+			} catch {}
+			zs ={};
+		}
 	}
 
 #if LOCGZTEST
