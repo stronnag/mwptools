@@ -498,11 +498,15 @@ public class  SafeHomeDialog : Object {
     public void load_homes(string fn, bool disp) {
         filename = fn;
         read_file();
+		set_status(disp);
+    }
+
+	public void set_status(bool disp) {
         if (disp) {
             display_homes(true);
             switcher.set_active(true);
         }
-    }
+	}
 
     private void write_out(FileStream fs) {
         var idx = 0;

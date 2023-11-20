@@ -253,6 +253,8 @@ public class MWP : Gtk.Application {
     private SafeHomeDialog safehomed;
     private uint8 last_safehome = 0;
     private uint8 safeindex = 0;
+	private string sh_load = null;
+	private bool sh_disp;
     private bool is_shutdown = false;
     private MwpNotify? dtnotify = null;
 	private Gtk.ComboBoxText dev_protoc;
@@ -2274,9 +2276,12 @@ public class MWP : Gtk.Application {
         safehomed.set_view(view);
         if(conf.load_safehomes != "") {
             var parts = conf.load_safehomes.split(",");
-            bool disp = (parts.length == 2 && (parts[1] == "Y" || parts[1] == "y"));
-            safehomed.load_homes(parts[0],disp);
-        }
+			sh_load = parts[0];
+            sh_disp = (parts.length == 2 && (parts[1] == "Y" || parts[1] == "y"));
+			if (sh_load != "-FC-") {
+				safehomed.load_homes(sh_load, sh_disp);
+			}
+		}
 
         if(conf.arming_speak)
             say_state=NavStatus.SAY_WHAT.Arm;
@@ -6922,6 +6927,12 @@ public class MWP : Gtk.Application {
                     }
                 }
                 queue_cmd(msp_get_status,null,0);
+				if(sh_load == "-FC-") {
+					MWPLog.message("Load FC safehomes\n");
+					last_safehome = 7;
+					uint8 shid = 0;
+					queue_cmd(MSP.Cmds.SAFEHOME,&shid,1);
+				}
                 break;
 
 		    case MSP.Cmds.COMMON_SET_SETTING:
@@ -7360,8 +7371,11 @@ public class MWP : Gtk.Application {
                 shm.lon = ll / 10000000.0;
                 safehomed.receive_safehome(id, shm);
                 id += 1;
-                if (id < 8 && id <= last_safehome)
+                if (id < 8 && id <= last_safehome) {
                     queue_cmd(MSP.Cmds.SAFEHOME,&id,1);
+				} else {
+					safehomed.set_status(sh_disp);
+				}
                 break;
 
 		    case MSP.Cmds.SET_SAFEHOME:
