@@ -106,7 +106,7 @@ func add_poly(g GeoZone, nop, pline bool) kml.Element {
 		)
 	}
 	name := fmt.Sprintf("Poly %d", g.zid)
-	desc := fmt.Sprintf("Poly Zone %d", g.zid)
+	desc := fmt.Sprintf(g.to_string())
 	kml := kml.Folder(kml.Name(name)).Add(kml.Description(desc)).Add(kml.Visibility(true)).Add(track)
 	if !nop {
 		kml.Add(wps...)
@@ -132,7 +132,7 @@ func add_circle(g GeoZone, nop, pline bool) kml.Element {
 
 	for j := 0; j < 360; j += 5 {
 		lat, lon := project_point(g.points[0].lat, g.points[0].lon, float64(j), g.points[1].lat)
-		points = append(points, kml.Coordinate{Lon: lon, Lat: lat, Alt: float64(g.maxalt)})
+		points = append(points, kml.Coordinate{Lon: lon, Lat: lat, Alt: float64(g.maxalt / 100.0)})
 	}
 	points = append(points, points[0])
 	track := kml.Placemark(
@@ -164,7 +164,7 @@ func add_circle(g GeoZone, nop, pline bool) kml.Element {
 		)
 	}
 	name := fmt.Sprintf("Circle %d", g.zid)
-	desc := fmt.Sprintf("Circle Zone %d", g.zid)
+	desc := fmt.Sprintf(g.to_string())
 	kml := kml.Folder(kml.Name(name)).Add(kml.Description(desc)).Add(kml.Visibility(true)).Add(track)
 	if !nop {
 		kml.Add(wps...)

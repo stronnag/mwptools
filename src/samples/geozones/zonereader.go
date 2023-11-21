@@ -33,6 +33,17 @@ const (
 	TYPE_INC = 1
 )
 
+func (g *GeoZone) to_string() string {
+	var s1 string
+	s := fmt.Sprintf("geozone %d %d %d %d %d %d\n", g.zid, g.gtype, g.shape, g.minalt, g.maxalt, g.action)
+	if g.shape == SHAPE_CIRCLE {
+		s1 = fmt.Sprintf("%f,%f radius %.2fm", g.points[0].lat, g.points[0].lon, g.points[1].lat)
+	} else {
+		s1 = fmt.Sprintf("%d points ", len(g.points))
+	}
+	return s + s1
+}
+
 func NewGeoZones(fn string) ([]GeoZone, error) {
 	var gzone = make([]GeoZone, 0)
 	r, err := os.Open(fn)
@@ -92,8 +103,6 @@ func NewGeoZones(fn string) ([]GeoZone, error) {
 										gz.maxalt, err = strconv.Atoi(parts[5])
 										if err == nil {
 											gz.action, err = strconv.Atoi(parts[6])
-											gz.minalt /= 100
-											gz.maxalt /= 100
 											gzone = append(gzone, gz)
 										}
 									}
