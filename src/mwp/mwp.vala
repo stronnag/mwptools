@@ -6504,6 +6504,8 @@ public class MWP : Gtk.Application {
 				raw[len] = 0;
 				vname = (string)raw;
 				MWPLog.message("Model name: \"%s\"\n", vname);
+                odoview.set_name(vname);
+
 				int mx = mmap.get_model_type(vname);
 				if (mx != 0) {
 					vi.mrtype = (uint8)mx;

@@ -93,15 +93,7 @@ There is a standard uninstall target (needs `sudo` for system uninstall).
 
 $ ninja -C _build uninstall
 
-Note that this will not undo actions from the non-default targets. You may wish reverse the actions of the meson/post_install.sh and meson/legacy_post_install.sh  scripts:
-
-* rm -f $MESON_INSTALL_PREFIX/bin/{fc-set,flashdl,ublox-geo,ublox-cli}
-* glib-compile-schemas $MESON_INSTALL_PREFIX/share/glib-2.0/schemas
-* gtk-update-icon-cache -qtf $MESON_INSTALL_PREFIX/share/icons/hicolor
-* update-mime-database $MESON_INSTALL_PREFIX/share/mime
-* update-desktop-database  $MESON_INSTALL_PREFIX/share/applications
-
-Where MESON_INSTALL_PREFIX represents your build --prefix value ($HOME/.local or /usr or /usr/local).
+This will only work if you haven't reconfigured the build for a different install directory.
 
 For convenience, there is a `meson/uninstall.sh` script to do this. It requires:
 
@@ -112,3 +104,5 @@ e.g.
 
 $ meson/uninstall.sh ~/.local
 $ sudo meson/uninstall.sh /usr/local
+
+This will remove everything installed mwp.

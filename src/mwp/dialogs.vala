@@ -274,6 +274,10 @@ public class OdoView : GLib.Object {
 		odotview.buffer.text = txt;
 	}
 
+	public void set_name(string v) {
+		cname = v;
+	}
+
 	public void reset(Odostats o) {
 		cname = o.cname;
 		atime = o.atime;
