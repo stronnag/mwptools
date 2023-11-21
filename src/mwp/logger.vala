@@ -24,6 +24,7 @@ public class Logger : GLib.Object {
     private static FileStream os;
     private static double dtime;
     public static int duration { get; private set; }
+	private static time_t currtime;
 
     private static bool verify_save_path(string path) {
         bool res;
@@ -36,10 +37,16 @@ public class Logger : GLib.Object {
         return res;
     }
 
-    public static void start(string? save_path = null) {
-        time_t currtime;
+    public static void start(string? save_path, string? _vname) {
         time_t(out currtime);
-        var fn  = "mwp_%s.log".printf(Time.local(currtime).format("%F_%H%M%S"));
+		string vname = _vname;
+		if (vname == null || vname.length == 0) {
+			vname="unknown";
+		} else {
+			vname = vname.replace(" ", "_");
+		}
+		var ts = Time.local(currtime).format("%F_%H%M%S");
+		var fn  = "mwp-%s-%s.log".printf(vname, ts);
         if(save_path != null && verify_save_path(save_path)) {
             fn = GLib.Path.build_filename(save_path, fn);
         }
@@ -68,7 +75,7 @@ public class Logger : GLib.Object {
         gen.set_root (root);
         write_stream();
     }
-
+	/*
 	public static void rawdata(uint16 cmd, uint8[]raw, uint len) {
 		var builder = init("rawdata");
 		builder.set_member_name ("mid");
@@ -84,10 +91,12 @@ public class Logger : GLib.Object {
         gen.set_root (root);
         write_stream();
 	}
-
-	public static void eofmessage(string msg) {
-		var builder = init("logmsg");
-		builder.set_member_name ("text");
+	*/
+	public static void logstring(string id, string msg) {
+		var builder = init("text");
+		builder.set_member_name ("id");
+		builder.add_string_value(id);
+		builder.set_member_name ("content");
 		builder.add_string_value(msg);
         builder.end_object ();
         Json.Node root = builder.get_root ();

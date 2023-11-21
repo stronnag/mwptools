@@ -159,10 +159,13 @@ public class OdoView : GLib.Object {
     private Gtk.Label odorange_tm;
 
 	private Gtk.TextView odotview;
+	private Gtk.Frame odoframe;
 
     private uint to = 30;
     private uint tid = 0;
     private bool visible = false;
+	private string cname;
+	private time_t atime;
 
     public OdoView(Gtk.Builder builder, Gtk.Window? w, uint _to) {
         dialog = builder.get_object ("odoview") as Gtk.Dialog;
@@ -184,6 +187,8 @@ public class OdoView : GLib.Object {
         odorange_tm = builder.get_object ("odo_rng_time") as Gtk.Label;
         odospeed_tm = builder.get_object ("odo_spd_time") as Gtk.Label;
 		odotview = builder.get_object ("odo_tview") as Gtk.TextView;
+		odoframe = builder.get_object ("odo_frame") as Gtk.Frame;
+
 
 		odotview.buffer.changed.connect(() => {
 				if(tid != 0)
@@ -202,6 +207,7 @@ public class OdoView : GLib.Object {
         odoclose.clicked.connect (() => {
                 dismiss();
             });
+		cname = "Unknown";
     }
 
     private void odosens(bool state) {
@@ -221,8 +227,8 @@ public class OdoView : GLib.Object {
         return lbl;
     }
 
-    public void display(Odostats o, bool autohide=false) {
-        odotime.label = " %u:%02u ".printf(o.time / 60, o.time % 60);
+	public void display(Odostats o, bool autohide=false) {
+		odotime.label = " %u:%02u ".printf(o.time / 60, o.time % 60);
         odospeed.label = "  %.1f ".printf(Units.speed(o.speed));
         odospeed_u.label = Units.speed_units();
         odospeed_tm.label = format_when(o.spd_secs);
@@ -268,15 +274,21 @@ public class OdoView : GLib.Object {
 		odotview.buffer.text = txt;
 	}
 
-    public void dismiss() {
+	public void reset(Odostats o) {
+		cname = o.cname;
+		atime = o.atime;
+		odoframe.sensitive  = odotview.sensitive = o.live;
+		odotview.buffer.text="";
+		visible=false;
+        dialog.hide();
+	}
+
+	public void dismiss() {
         if(tid != 0)
             Source.remove(tid);
         tid = 0;
 		var t = odotview.buffer.text.strip();
 		if (t.length > 0) {
-			if (Logger.is_logging) {
-				Logger.eofmessage(t);
-			}
 			add_eof_log(t);
 			t  = t.replace("\n", "\n ");
 			MWPLog.message("User comment: %s\n", t);
@@ -287,7 +299,11 @@ public class OdoView : GLib.Object {
     }
 
 	private void add_eof_log(string t) {
-		time_t currtime;
+		time_t ntime;
+		ntime = atime;
+		if (ntime == 0) {
+			time_t(out ntime);
+		}
 		string spath = MWP.conf.logsavepath;
         var f = File.new_for_path(spath);
         if(f.query_exists() == false) {
@@ -298,10 +314,9 @@ public class OdoView : GLib.Object {
 			}
         }
 		var fn = GLib.Path.build_filename(spath, "mwp_summary_notes.txt");
-		time_t(out currtime);
-		var ts = Time.local(currtime).format("%F %T");
+		var ts = Time.local(ntime).format("%F %T");
 		var os = FileStream.open(fn, "a");
-		os.printf("## Summary for %s\n\n", ts);
+		os.printf("## Note for \"%s\" %s\n\n", cname, ts);
 		os.printf("%s\n\n", t);
 	}
 }

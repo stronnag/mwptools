@@ -74,6 +74,7 @@ public struct CurrData {
 }
 
 public struct Odostats {
+	time_t atime;
     double speed;
     double distance;
     double alt;
@@ -83,6 +84,8 @@ public struct Odostats {
     uint alt_secs;
     uint spd_secs;
     uint rng_secs;
+	string cname;
+	bool live;
 }
 
 public struct VersInfo {

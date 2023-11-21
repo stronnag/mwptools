@@ -1,6 +1,6 @@
 module geozones
 
-go 1.21.3
+go 1.18
 
 require github.com/twpayne/go-kml v1.5.2
 
