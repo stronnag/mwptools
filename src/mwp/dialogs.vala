@@ -288,7 +288,7 @@ public class OdoView : GLib.Object {
         tid = 0;
 		var t = odotview.buffer.text.strip();
 		if (t.length > 0) {
-			add_eof_log(t);
+			add_summary_log("Note", t);
 			t  = t.replace("\n", "\n ");
 			MWPLog.message("User comment: %s\n", t);
 		}
@@ -297,12 +297,16 @@ public class OdoView : GLib.Object {
         dialog.hide();
     }
 
-	private void add_eof_log(string t) {
+	public void add_summary_event(string ev) {
+		add_summary_log(ev, null);
+	}
+
+	private void add_summary_log(string reason, string? t) {
 		time_t ntime;
-		ntime = atime;
-		if (ntime == 0) {
-			time_t(out ntime);
-		}
+		//		ntime = atime;
+		//if (ntime == 0) {
+		time_t(out ntime);
+			//}
 		string spath = MWP.conf.logsavepath;
         var f = File.new_for_path(spath);
         if(f.query_exists() == false) {
@@ -314,9 +318,15 @@ public class OdoView : GLib.Object {
         }
 		var fn = GLib.Path.build_filename(spath, "mwp_summary_notes.txt");
 		var ts = Time.local(ntime).format("%F %T");
+		var etm = "";
+		if (reason != "Armed" && atime != 0) {
+			etm= Time.local(atime).format(" (%T)");
+		}
 		var os = FileStream.open(fn, "a");
-		os.printf("## Note for \"%s\" %s\n\n", cname, ts);
-		os.printf("%s\n\n", t);
+			os.printf("## %s for \"%s\" %s%s\n\n", reason, cname, ts, etm);
+		if (t != null && t.length > 0) {
+			os.printf("%s\n\n", t);
+		}
 	}
 }
 

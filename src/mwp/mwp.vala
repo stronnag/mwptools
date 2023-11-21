@@ -5365,7 +5365,9 @@ public class MWP : Gtk.Application {
 				odo.cname = vname;
 				odo.live = (replayer == Player.NONE);
                 odoview.reset(odo);
-
+				if (odo.live) {
+					odoview.add_summary_event("Armed");
+				}
                 reboot_status();
                 init_craft_icon();
                 if(!no_trail) {
@@ -5413,6 +5415,9 @@ public class MWP : Gtk.Application {
                     odoview.display(odo, true);
                     map_hide_wp();
                 }
+				if (odo.live) {
+					odoview.add_summary_event("Disarmed");
+				}
                 MWPLog.message("Disarmed %s\n", reason);
                 armed_spinner.stop();
                 armed_spinner.hide();
