@@ -186,8 +186,8 @@ func kmlBuild(name string, gzones []GeoZone, nop, pline bool) kml.Element {
 	return d
 }
 
-func KMLFile(fn string, kname string, gzones []GeoZone, nop, pline bool) {
-	kname = fmt.Sprintf("Zones (%s)", kname)
+func KMLFile(fn string, kname string, gzones []GeoZone, nop, pline bool, cname string) {
+	kname = fmt.Sprintf("Zones for craft \"%s\"", cname)
 	d := kmlBuild(kname, gzones, nop, pline)
 	k := kml.KML(d)
 	var f io.WriteCloser

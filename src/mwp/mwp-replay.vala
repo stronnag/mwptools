@@ -21,6 +21,7 @@ public class ReplayThread : GLib.Object {
     private Cancellable cancellable;
     private bool paused = false;
 
+	/*
 	private uint8 parsehex(string t) {
 		return (to_hexbin(t.data[0]) << 4) | (to_hexbin(t.data[1]) &0xf);
 	}
@@ -36,7 +37,7 @@ public class ReplayThread : GLib.Object {
 		}
 		return c;
 	}
-
+	*/
 	private size_t serialise_sf(LTM_SFRAME b, uint8 []tx) {
         uint8 *p;
         p = SEDE.serialise_u16(tx, b.vbat);
@@ -641,10 +642,21 @@ public class ReplayThread : GLib.Object {
                                     m.throttle =  (uint16)obj.get_int_member("throttle");
                                     send_rec(msp, MSP.Cmds.MAVLINK_MSG_VFR_HUD, sizeof(Mav.MAVLINK_VFR_HUD), (uint8*)(&m));
                                     break;
-							case "logmsg":
-								var txt = obj.get_string_member("text");
-								send_rec(msp, MSP.Cmds.TEXT_EOM, txt.length, txt.data);
+							case "text":
+								var id = obj.get_string_member("id");
+								var txt = obj.get_string_member("content");
+								switch(id) {
+								case "summary":
+									send_rec(msp, MSP.Cmds.PRIV_TEXT_EOM, txt.length, txt.data);
+									break;
+								case "geozone":
+									send_rec(msp, MSP.Cmds.PRIV_TEXT_GEOZ, txt.length, txt.data);
+									break;
+								default:
+									break;
+								}
 								break;
+								/*
 							case "rawdata":
 								var cmd =  (uint16)obj.get_int_member("mid");
 								var txt = obj.get_string_member("msg");
@@ -657,6 +669,7 @@ public class ReplayThread : GLib.Object {
 								}
 								send_rec(msp, cmd, j, rbuf);
 								break;
+								*/
                                 default:
                                     break;
                             }

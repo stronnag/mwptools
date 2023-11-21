@@ -26,13 +26,13 @@ namespace GeoZoneReader {
 	}
 
 	public struct GeoZone {
-		GZType type;
+		uint8 index;
 		GZShape shape;
+		GZType type;
 		int minalt;
 		int maxalt;
 		GZAction action;
 		uint8 nvertices;
-		uint8 index;
 		Vertex []vertices;
 	}
 
@@ -199,23 +199,28 @@ namespace GeoZoneReader {
 		return cnt;
 	}
 
-	public void dump() {
+	public string to_string() {
+		StringBuilder sb = new StringBuilder();
+		foreach (var z in zs) {
+			sb.append_printf("geozone %d %d %d %d %d %d\n", z.index, z.shape, z.type,
+							 z.minalt, z.maxalt, z.action);
+			var k = 0;
+			foreach(var v in z.vertices) {
+				sb.append_printf("geozone vertex %d %d %d %d\n", z.index, k, v.latitude, v.longitude);
+				k++;
+			}
+		}
+		return sb.str;
+	}
+
+	public void dump(string _vname) {
+		var vname  = _vname;
 		if (zs.length > 0) {
 			string afn = null;;
 			try {
 				int fd = FileUtils.open_tmp ("gzones_XXXXXX", out afn);
-				string s;
-				foreach (var z in zs) {
-					s = "geozone %d %d %d %d %d %d\n".printf(z.index, z.shape, z.type,
-															 z.minalt, z.maxalt, z.action);
-					Posix.write(fd, s, s.length);
-					var k = 0;
-					foreach(var v in z.vertices) {
-						s = "geozone vertex %d %d %d %d\n".printf(z.index, k, v.latitude, v.longitude);
-						Posix.write(fd, s, s.length);
-						k++;
-					}
-				}
+				var s = to_string();
+				Posix.write(fd, s.data, s.length);
 				Posix.close(fd);
 				try {
 					time_t currtime;
@@ -229,11 +234,17 @@ namespace GeoZoneReader {
 						}
 					}
 					time_t(out currtime);
-					var ts = Time.local(currtime).format("GeoZones-%F_%H%M%S.kml");
-					var outfn = GLib.Path.build_filename(spath, ts);
+					if (vname == null || vname.length == 0) {
+						vname="unknown";
+					} else {
+						vname = vname.replace(" ", "_");
+					}
+					var ts = Time.local(currtime).format("%F_%H%M%S");
+					var basen = "GeoZones-%s-%s.kml".printf(vname, ts);
+					var outfn = GLib.Path.build_filename(spath, basen);
 					MWPLog.message("Save KML %s\n", outfn);
-					string []args = {"geozones", "-no-points", "-output", outfn, afn};
-					//					MWPLog.message(":DBG: spawn %s\n", string.joinv(" ", args));
+					string []args = {"geozones", "-name", vname, "-no-points", "-output", outfn, afn};
+
 					var gkml = new Subprocess.newv(args, SubprocessFlags.NONE);
 					gkml.wait_check_async.begin(null, (obj,res) => {
 							try {
@@ -252,45 +263,53 @@ namespace GeoZoneReader {
 		}
 	}
 
-#if LOCGZTEST
-	private void read_from_directory(string dirname) {
-		string? name = null;
-		cnt = 0;
+	bool from_string(string s) {
+		MemoryInputStream ms = new MemoryInputStream.from_data (s.data);
+		DataInputStream ds = new DataInputStream (ms);
+		string line;
+		var res = true;
+		var maxvtx = 126;
 		try {
-			Dir dir = Dir.open (dirname, 0);
-			while ((name = dir.read_name ()) != null) {
-				string path = Path.build_filename (dirname, name);
-				if (FileUtils.test (path, FileTest.IS_REGULAR)) {
-					if(name.has_prefix("msp_0x2050_") && name.has_suffix(".dat")) {
-						int fd = Posix.open(path, Posix.O_RDONLY);
-						if (fd != -1) {
-							Posix.Stat st;
-							Posix.fstat(fd, out st);
-							if (st.st_size > GeoZoneReader.ZSIZEMIN) {
-								var buf = new uint8[st.st_size];
-                                Posix.read(fd, buf, st.st_size);
-                                GeoZoneReader.append(buf, st.st_size);
-								Posix.close(fd);
-							}
+			reset();
+			while ((line = ds.read_line (null)) != null) {
+				if(line.length == 0 || line.has_prefix(";") || line.has_prefix("#"))
+					continue;
+				var parts = line.split(" ");
+				if (parts.length > 5) {
+					switch (parts[1]) {
+					case "vertex":
+						int zid = int.parse(parts[2]);
+						var v = Vertex();
+						v.index = (uint8)int.parse(parts[3]);
+						v.latitude = int.parse(parts[4]);
+						v.longitude = int.parse(parts[5]);
+						if (zid < zs.length) {
+							zs[zid].vertices[v.index] = v;
+							zs[zid].nvertices += 1;
+							maxvtx -= 1;
 						}
+						break;
+					default:
+						var z = GeoZone();
+						z.index = (uint8)int.parse(parts[1]);
+						z.shape = (GZShape)int.parse(parts[2]);
+						z.type =(GZType)int.parse(parts[3]);
+						z.minalt = int.parse(parts[4]);
+						z.maxalt = int.parse(parts[5]);
+						z.action = (GZAction)int.parse(parts[6]);
+						z.vertices = new Vertex[maxvtx];
+						zs += z;
+						break;
 					}
 				}
 			}
-		} catch (Error e) {
-			MWPLog.message("Failed to read %s %s\n", MWP.demdir, e.message);
-		}
-	}
-
-	public Overlay ? test_gz_load(Champlain.View view) {
-		Overlay? o = null;
-		var gzdir = Environment.get_variable("MWP_ZONE_DIR");
-		if (gzdir != null) {
-			GeoZoneReader.read_from_directory(gzdir);
-			if (zs.length > 0) {
-				o  = GeoZoneReader.generate_overlay(view);
+			for(var j = 0; j < zs.length; j++) {
+				zs[j].vertices.resize(zs[j].nvertices);
 			}
+		} catch {
+			reset();
+			res = false;
 		}
-		return o;
+		return res;
 	}
-#endif
 }

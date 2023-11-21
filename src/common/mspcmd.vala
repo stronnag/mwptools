@@ -137,7 +137,10 @@ public class MSP : Object {
         SET_SAFEHOME = 0x2039,
 
 		GEOZONE =  0x2050,
-		TEXT_EOM = 0x2ffe,
+
+		PRIV_TEXT_GEOZ = 0x2ffe,
+		PRIV_TEXT_EOM = 0x2ffd,
+		PRIV_TEXT_SAFEH = 0x2ffc,
 
         LTM_BASE  = 0x10000,
         TS_FRAME = (LTM_BASE + 'S'),

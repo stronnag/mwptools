@@ -2547,14 +2547,17 @@ public class MWP : Gtk.Application {
         logb = builder.get_object ("logger_cb") as Gtk.CheckButton;
         logb.toggled.connect (() => {
                 if (logb.active) {
-                    Logger.start(conf.logsavepath);
+                    Logger.start(conf.logsavepath, vname);
                     if(armed != 0) {
                         string devnam = null;
                         if(msp.available)
                             devnam = dev_entry.get_active_text();
                         Logger.fcinfo(last_file,vi,capability,profile, boxnames,
                                       vname, devnam);
-                    }
+						if(gzone != null) {
+							Logger.logstring("geozone", GeoZoneReader.to_string());
+						}
+					}
                 }
                 else
                     Logger.stop();
@@ -5357,8 +5360,12 @@ public class MWP : Gtk.Application {
             if (armed == 1) {
                 magdt = -1;
                 odo = {0};
-
+				odo.atime = armtime;
                 odo.alt = -9999;
+				odo.cname = vname;
+				odo.live = (replayer == Player.NONE);
+                odoview.reset(odo);
+
                 reboot_status();
                 init_craft_icon();
                 if(!no_trail) {
@@ -5399,7 +5406,6 @@ public class MWP : Gtk.Application {
                         Logger.ltm_xframe(xf);
                     }
                 }
-                odoview.dismiss();
             } else {
                 if(odo.time > 5) {
                     MWPLog.message("Distance = %.1f, max speed = %.1f time = %u\n",
@@ -6534,9 +6540,6 @@ public class MWP : Gtk.Application {
 						break;
                     }
 				}
-				if (Logger.is_logging) {
-					Logger.rawdata(MSP.Cmds.INAV_MIXER, raw, len);
-				}
 				queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
 				break;
 
@@ -6639,9 +6642,6 @@ public class MWP : Gtk.Application {
 
 			if(conf.need_telemetry && (0 == (feature_mask & MSP.Feature.TELEMETRY)))
                     Utils.warning_box("TELEMETRY requested but not enabled in iNav", Gtk.MessageType.ERROR);
-			if(Logger.is_logging) {
-				Logger.rawdata(MSP.Cmds.FEATURE, raw, len);
-			}
 			if ((feature_mask & MSP.Feature.GEOZONE) == MSP.Feature.GEOZONE) {
 				GeoZoneReader.reset();
 				queue_gzone(0);
@@ -6652,13 +6652,13 @@ public class MWP : Gtk.Application {
 
 		case MSP.Cmds.GEOZONE:
 			var cnt = GeoZoneReader.append(raw, len);
-			if(Logger.is_logging) {
-				Logger.rawdata(MSP.Cmds.GEOZONE, raw, len);
-			}
 			if (cnt >= GeoZoneReader.MAXGZ) {
 				gzone = GeoZoneReader.generate_overlay(view);
 				Idle.add(() => {
 						gzone.display();
+						if (Logger.is_logging) {
+							Logger.logstring("geozone", GeoZoneReader.to_string());
+						}
 						return false;
 					});
 				queue_cmd(MSP.Cmds.BLACKBOX_CONFIG,null,0);
@@ -7441,9 +7441,21 @@ public class MWP : Gtk.Application {
                 }
                 break;
 
-            case MSP.Cmds.TEXT_EOM:
+            case MSP.Cmds.PRIV_TEXT_EOM:
 				var txt = (string)raw[0:len];
 				odoview.set_text(txt);
+				break;
+
+            case MSP.Cmds.PRIV_TEXT_GEOZ:
+				if (gzone == null) {
+					var txt = (string)raw[0:len];
+					GeoZoneReader.from_string(txt);
+					gzone = GeoZoneReader.generate_overlay(view);
+					Idle.add(() => {
+							gzone.display();
+							return false;
+						});
+				}
 				break;
 
             case MSP.Cmds.MAVLINK_MSG_ID_RADIO:
@@ -8891,7 +8903,7 @@ public class MWP : Gtk.Application {
         set_replay_menus(true);
         reboot_status();
 		if(gzone != null) {
-			GeoZoneReader.dump();
+			GeoZoneReader.dump(vname);
 			gzone.remove();
 			gzone = null;
 		}
