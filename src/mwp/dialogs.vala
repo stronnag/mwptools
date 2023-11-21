@@ -278,9 +278,8 @@ public class OdoView : GLib.Object {
 		cname = o.cname;
 		atime = o.atime;
 		odoframe.sensitive  = odotview.sensitive = o.live;
-		odotview.buffer.text="";
-		visible=false;
-        dialog.hide();
+		to = (o.live) ? 120 : 30;
+		dismiss();
 	}
 
 	public void dismiss() {
