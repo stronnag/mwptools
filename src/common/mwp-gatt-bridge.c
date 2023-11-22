@@ -220,7 +220,7 @@ char * mwp_gatt_devnode(gattclient_t *gc) {
 }
 #endif
 
-#ifdef TEST
+#ifdef GATTTEST
 int done = 0;
 void cc_handler(int dummy) {
   done = 1;

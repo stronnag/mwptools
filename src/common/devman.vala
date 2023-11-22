@@ -30,6 +30,7 @@ public struct DevDef {
         string name;
         string alias;
         DevMask type;
+		string uuid;
 }
 
 #if LINUX
@@ -46,7 +47,6 @@ public class DevManager {
     public DevManager(DevMask _dm=(DevMask.BT|DevMask.BTLE|DevMask.USB)) {
         mask = _dm;
 		serials = new SList<DevDef?>();
-		//usb_serials = new SList<DevDef?>();
         uc = new GUdev.Client({"tty"});
         uc.uevent.connect((action,dev) => {
                 if(dev.get_property("ID_BUS") == "usb") {
@@ -103,16 +103,19 @@ public class DevManager {
     }
 
     private void find_adapter() {
-		List <unowned ObjectPath> lk = objects.get_keys();
-		for (unowned var lp = lk.first(); lp != null; lp = lp.next) {
-			var path = lp.data;
-			var ifaces = objects.get(path);
-            HashTable<string, Variant>? props;
-            props = ifaces.get("org.bluez.Adapter1");
-            if (props == null)
-                break;
-            adapter = new BluezAdapterProperties(path, props);
-        }
+		objects.foreach((path, ifaces) => {
+				HashTable<string, Variant>? props;
+				props = ifaces.get("org.bluez.Adapter1");
+				if (props == null)
+					return;
+				adapter = new BluezAdapterProperties(path, props);
+				adapter.powered = true;
+				adapter.start_discovery();
+				Timeout.add_seconds(15, () => {
+						adapter.stop_discovery();
+						return false;
+					});
+			});
     }
 
 	private bool extant (string name) {
@@ -130,40 +133,42 @@ public class DevManager {
 		var name = props.get("Address").get_string();
 		if (!extant(name)) {
 			var uuids = props.get("UUIDs");
-			var u0 = uuids.get_strv();
-			foreach(var u in u0) {
+			var uus = uuids.get_strv();
+			string idu = null;
+			foreach(var u in uus) {
 				if(u.has_prefix("00001101-0000-1000-8000") ||
 				   u == "0000abf0-0000-1000-8000-00805f9b34fb" ||
 				   u == "0000ffe0-0000-1000-8000-00805f9b34fb" ||
 				   u == "6e400001-b5a3-f393-e0a9-e50e24dcca9e" ||
 				   u == "00001000-0000-1000-8000-00805f9b34fb") {
-					var alias = props.get("Alias").get_string();
-					if (!alias.contains("Keyboard")) { // yes, I have one (not SB t1)
-						DevDef dd = {};
-						dd.name = name;
-						dd.alias = alias;
-						dd.type = u.contains("00001101") ? DevMask.BT : DevMask.BTLE;
-						serials.append(dd);
-						device_added(dd);
-					}
+					idu = u;
+					break;
+				}
+			}
+			if(idu != null) {
+				var alias = props.get("Alias").get_string();
+				if (!alias.contains("Keyboard")) { // yes, I have one (not SB t1)
+					DevDef dd = {};
+					dd.name = name;
+					dd.alias = alias;
+					dd.uuid = idu;
+					dd.type = idu.contains("00001101") ? DevMask.BT : DevMask.BTLE;
+					serials.append(dd);
+					device_added(dd);
 				}
 			}
 		}
     }
 
     private void find_devices() {
-		//        objects.foreach((path, ifaces) => {
-		List <unowned ObjectPath> lk = objects.get_keys();
-		for(unowned var lp = lk.first(); lp != null; lp = lp.next) {
-			var path = lp.data;
-			var ifaces = objects.get(path);
-			HashTable<string, Variant>? props;
-			props = ifaces.get("org.bluez.Device1");
-			if (props != null) {
-				add_device(path, props);
-			}
-		}
-    }
+		objects.foreach((path, ifaces) => {
+				HashTable<string, Variant>? props;
+				props = ifaces.get("org.bluez.Device1");
+				if (props != null) {
+					add_device(path, props);
+				}
+			});
+	}
 
     [CCode (instance_pos = -1)]
     public void on_interfaces_added(ObjectPath path,
@@ -202,6 +207,16 @@ public class DevManager {
 			}
 		}
 		return 0;
+	}
+
+	public static DevDef? get_dd_for_name(string name) {
+		for( unowned SList<DevDef?> lp = serials; lp != null; lp = lp.next) {
+			var dd = (DevDef)lp.data;
+			if(dd.name == name) {
+				return dd;
+			}
+		}
+		return null;
 	}
 }
 
@@ -318,16 +333,12 @@ public abstract class BluezInterface : GLib.Object {
     public void on_properties_changed(string iface,
                                       HashTable <string, Variant> changed,
                                       string[] invalidated) {
-		//        changed.foreach((key, val) => {
-		List <unowned string> lk = changed.get_keys();
-		for(unowned var lp = lk.first(); lp != null; lp = lp.next) {
-			var key = lp.data;
-			var val = changed.get(key);
-            if (val.equal(property_cache.get(key)))
-				break;
-            set_cache(key, val);
-            property_changed(key, val);
-        }
+		changed.foreach((key, val) => {
+				if (val.equal(property_cache.get(key)))
+					return;
+				set_cache(key, val);
+				property_changed(key, val);
+			});
     }
 }
 

@@ -8881,7 +8881,7 @@ public class MWP : Gtk.Application {
                 mqtt_available = mqtt.mdisconnect();
 #endif
             } else {
-				MWPLog.message(":DBG: Aleady Closed %s\n", msp.get_devname());
+				MWPLog.message(" Already closed %s\n", msp.get_devname());
 			}
 
             c.set_label("Connect");

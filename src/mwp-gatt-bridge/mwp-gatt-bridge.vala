@@ -106,8 +106,7 @@ public class GattTest : Application {
 		return thr.join();
 	}
 
-	private void on_startup() {
-	}
+	private void on_startup() {}
 
 	private void on_shutdown() {
 		gc = null;

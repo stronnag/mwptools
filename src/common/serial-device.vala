@@ -873,46 +873,33 @@ public class MWSerial : Object {
 		commode = 0;
 
 		if (valid_bt_name(device)) {
-			int dmask = 0;
-			int ncnt = 0;
-			while (( dmask = DevManager.get_type_for_name(device)) == 0) {
-				Thread.usleep(1000);
-				ncnt += 1;
-				if(ncnt > 5000)
-					break;
-			}
-			if (dmask == 0) {
+			var dd = DevManager.get_dd_for_name(device);
+			if (dd != null) {
+				if ((dd.type & DevMask.BTLE) == DevMask.BTLE) {
+					Gatt_Status status;
+					var gc = new GattClient (device, out status);
+					if (status == Gatt_Status.OK) {
+						unowned string gatdev = gc.get_devnode();
+						MWPLog.message("Mapping GATT channel %s\n", gatdev);
+						commode = ComMode.STREAM|ComMode.TTY;
+						fd = MwpSerial.open(gatdev, (int)rate);
+						gatt_async.begin(gc, (obj,res) => {
+								gatt_async.end(res);
+								gc = null;
+							});
+					}
+				} else {
+					fd = BTSocket.connect(device, &lasterr);
+					if (fd != -1) {
+						commode = ComMode.FD|ComMode.STREAM|ComMode.BT;
+						set_noblock();
+						lasterr = 0;
+					}
+				}
+			} else {
 				fd = -1;
 				available = false;
 				lasterr = Posix.ETIMEDOUT;
-				return false;
-			}
-
-			if(dmask == DevMask.BT) {
-				fd = BTSocket.connect(device, &lasterr);
-				if (fd != -1) {
-					commode = ComMode.FD|ComMode.STREAM|ComMode.BT;
-					set_noblock();
-				}
-			} else {
-				int status = 0;
-				var gc = new GattClient (device, out status);
-				if (status == 0) {
-					unowned string gatdev = gc.get_devnode();
-					MWPLog.message("Mapping GATT channels to %s\n", gatdev);
-					commode = ComMode.STREAM|ComMode.TTY;
-					fd = MwpSerial.open(gatdev, (int)rate);
-					gatt_async.begin(gc, (obj,res) => {
-							gatt_async.end(res);
-							gc = null;
-						});
-				} else {
-					//					stderr.printf("BLE Fails, %d\n", status);
-					fd = -1;
-					available = false;
-					lasterr = Posix.ETIMEDOUT;
-					return false;
-				}
 			}
 		} else {
 			var u = UriParser.parse(device);
