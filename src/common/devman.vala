@@ -530,10 +530,6 @@ public class BluezDevice : BluezInterface {
         } catch {}
     }
 
-///    public void connect() {
-///        try { device_bus.connect(); } catch {}
-///    }
-
     public signal void alias_changed();
     public signal void paired_changed();
     public signal void connected_changed();
@@ -578,9 +574,13 @@ public class DevManager {
 	public static DevMask get_type_for_name(string name) {
 		return 0;
 	}
+
+	public static DevDef? get_dd_for_name(string name) {
+		var dd = DevDef();
+		dd.name = name;
+		return dd;
+	}
 }
-
-
 #endif
 
 #if TEST
