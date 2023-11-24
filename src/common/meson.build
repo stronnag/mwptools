@@ -17,9 +17,6 @@ mwpcommon = files('btdev.c',
 		  'json_io.vala',
 		  'devman.vala')
 
-
-
-
 clicommon = files('btdev.c',
 	    	  'cserial.c',
 		  'serial-device.vala',
@@ -58,26 +55,17 @@ apcommon = files('utils.vala',
 		 'geocalc.vala',
 		 'mspcmd.vala')
 
+devman = files('devman.vala')
 
-common_inc_dir = []
 common_inc_dir += include_directories('.')
 vapi_dir = meson.current_source_dir()
 
-gatt_c_args = []
-gatt_v_args = []
-gatt_deps = []
+dev_src = []
 
-if with_gatt
-    gatt_c_args += '-D HAVE_GATTLIB'
-    gatt_deps += gattlib_lib_deps
-    gatt_v_args += '--define=GATTLIB'
-  message('Building with gattlib')
-else
-  message('Not checking gattlib')
+if host_machine.system() == 'linux'
+  usb_src = files('usbmgr.vala')
+  bt_src = files('bluezinterface.vala', 'bluetooth_mgr.vala', 'gatt-bridge.vala')
+  dev_src = [usb_src, bt_src]
 endif
-
-gatt_deps += dependency('gio-2.0')
-gatt_src = files('mwp-gatt-bridge.c')
-gatt_v_args += [ '--pkg', 'mwp-gatt-bridge']
 
 install_data('mwp_icon.svg', install_dir: get_option('datadir') / 'icons/hicolor/scalable/apps')
