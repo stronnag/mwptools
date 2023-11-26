@@ -94,9 +94,17 @@ public class DevManager {
     private async void evince_bt_devices() {
         try {
             manager = yield Bus.get_proxy (BusType.SYSTEM, "org.bluez", "/");
-            objects = manager.get_managed_objects();
+			manager.interfaces_added.connect((path, interfaces) => {
+					objects.insert(path, interfaces);
+					HashTable<string, Variant>? props;
+					props = interfaces.get("org.bluez.Device1");
+					if (props != null) {
+						add_device(path, props);
+					}
+				});
+			objects = manager.get_managed_objects();
             find_adapter();
-            find_devices();
+			find_devices();
         } catch (Error e) {
             stderr.printf ("%s\n", e.message);
         }
