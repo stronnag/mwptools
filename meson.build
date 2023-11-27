@@ -6,8 +6,8 @@ if meson.get_compiler('c').get_id() == 'clang'
 endif
 
 nogo = get_option('nogo')
-with_gatt = get_option('with-gatt')
 
+with_gatt = true
 if build_machine.system() != 'linux'
   with_gatt = false
 endif
@@ -30,7 +30,7 @@ subdir('src/mwp')
 subdir('src/fc-cli')
 subdir('src/qproxy')
 subdir('src/samples/')
-subdir('src/mwp-gatt-bridge')
+subdir('src/mwp-ble-bridge')
 subdir('docs')
 
 executable('mwp',
@@ -102,7 +102,7 @@ executable('gmproxy',
 	   )
 
 if with_gatt
-  executable('mwp-gatt-bridge',
+  executable('mwp-ble-bridge',
            sources: [gatt_app_src, bt_src],
            dependencies: [gatt_deps],
            vala_args : [ dopts ],

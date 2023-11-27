@@ -30,18 +30,6 @@ public class GattTest : Application {
             on_sigint,
             Priority.DEFAULT
         );
-        Unix.signal_add (
-            Posix.Signal.USR1,
-            on_usr1,
-            Priority.DEFAULT
-        );
-
-        Unix.signal_add (
-            Posix.Signal.USR2,
-            on_usr2,
-            Priority.DEFAULT
-        );
-
 		startup.connect (on_startup);
         shutdown.connect (on_shutdown);
 	}
@@ -60,7 +48,7 @@ public class GattTest : Application {
 			addr = args[1];
 		}
 		if(addr == null) {
-			stderr.printf("usage: mwp-gatt-bridge ADDR (or set $MWP_BLE)\n");
+			stderr.printf("usage: mwp-ble-bridge ADDR (or set $MWP_BLE)\n");
 			return 127;
 		} else {
 			activate();
@@ -76,9 +64,9 @@ public class GattTest : Application {
 					int count = 0;
 					//					message("Connected %s",gs.bdev.connected.to_string());
 					while (!gs.bdev.connected) {
-						Thread.usleep(1000);
+						Thread.usleep(10000);
 						count++;
-						if (count > 20*1000) {
+						if (count > 2*1000) {
 							return false;
 						}
 					}
@@ -93,21 +81,17 @@ public class GattTest : Application {
 
 	public override void activate () {
 		hold ();
-		message("Starting");
+		rdfd = wrfd = pfd = -1;
 		gs = new BleSerial();
 		gs.bdev = DevManager.btmgr.get_device(addr);
-		gs.bdev.connected_changed.connect((v) => {
-				//message("Changed connection %s", v.to_string());
-			});
-		rdfd = wrfd = -1;
-		Idle.add(() => {
-				on_usr1();
-				return false;
-			});
+		if(!gs.bdev.connected) {
+			gs.bdev.connect();
+		}
+		start_session();
 		return;
 	}
 
-	private bool on_usr2 () {
+	private void close_session () {
 		Posix.close(rdfd);
 		Posix.close(wrfd);
 		Posix.close(pfd);
@@ -115,32 +99,27 @@ public class GattTest : Application {
 		if (gs != null) {
 			gs.bdev.disconnect();
 		}
-		return Source.CONTINUE;
 	}
 
-	private bool on_usr1 () {
-		gs.bdev.connect();
+	private void start_session () {
 		open_async.begin((obj, res) => {
 				open_async.end(res);
 				if (rdfd != -1 && wrfd != -1) {
-					//					message("rdfd %d wrfd %d", rdfd, wrfd);
 					pfd = Posix.posix_openpt(Posix.O_RDWR|Posix.O_NONBLOCK);
 					if (pfd != -1) {
 						Posix.grantpt(pfd);
 						Posix.unlockpt(pfd);
 						unowned string s = ptsname(pfd);
-						print("ptsname %s %d\n",s, pfd);
+						print("%s <=> %s\n",addr, s);
 						io_thread.begin((obj,res) => {
-								/*var eot = */ io_thread.end(res);
-								//								message("EOT %d", eot);
+								io_thread.end(res);
 								on_sigint();
 							});
 					} else {
-						on_usr2();
+						close_session();
 					}
 				}
 			});
-		return Source.CONTINUE;
 	}
 
 	private async int io_thread() {
@@ -182,14 +161,11 @@ public class GattTest : Application {
 
 	private bool on_sigint () {
 		if (gs != null) {
-			//			message(" close bridge on INT");
-		}
-		if(addr != null) {
-			if(gs.bdev.connected) {
-				message("shutdown disconnect");
-				gs.bdev.disconnect();
-			} else {
-				message("already disconnected");
+			if(addr != null) {
+				if(gs.bdev.connected) {
+					print("Disconnecting\n");
+					gs.bdev.disconnect();
+				}
 			}
 		}
 		please_release_me();

@@ -887,7 +887,7 @@ public class MWSerial : Object {
 					MWPLog.message("BLE chipset %s\r\n", gs.get_chipset(gid));
 					if (gid != -1) {
 						while (!gs.bdev.connected) {
-							Thread.usleep(1000);
+							Thread.usleep(10000);
 						}
 						gs.get_bridge_fds(gid, out fd, out wrfd);
 					}

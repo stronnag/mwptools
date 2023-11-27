@@ -1,16 +1,16 @@
-# mwp_gatt_bridge
+# mwp_ble_bridge
 
 ## Overview
 
-Standalone GATT bridge for BLE serial, allowing the BLE device to be used with applications that are not BLE enabled.
+Standalone bridge for BLE serial, allowing the BLE device to be used with applications that are not BLE enabled.
 
-The application connects to a specified BLE device and established the GATT connection. It then advertises a pseudo-terminal name that can be used with applications expecting a serial device node.
+The application connects to a specified BLE device and establishes a GATT connection. It then advertises a pseudo-terminal name that can be used with applications expecting a serial device node.
 
 For example:
 
 ```
 # Make the GATT connection
-$ mwp-gatt-bridge --address 60:55:F9:A5:7B:16
+$ mwp-ble-bridge 60:55:F9:A5:7B:16
 60:55:F9:A5:7B:16 <=> pseudo-terminal:  /dev/pts/7
 ```
 
@@ -25,16 +25,7 @@ upload 76, save false
 Waypoints: 76 of 120, valid 1
 ```
 
-Note that when the application using the pseudo-terminal terminates, the  pseudo-terminal will be closed, which will cause `mwp-gatt-bridge` to terminate as well.
-
-## Installation
-
-`mwp-gatt-bridge` is not installed  by default, in order to install it , from the mwptools top level:
-
-``` shell
-meson compile -C _build
-meson install -C _build --no-rebuild --only-changed --tags gatt
-```
+Note that when the application using the pseudo-terminal terminates, the  pseudo-terminal will be closed, which will cause `mwp-ble-bridge` to terminate as well.
 
 ## Environment
 
@@ -44,7 +35,7 @@ If the environment variable `MWP_BLE` is set, it will be used if BT device addre
 # can be a well known environment source (/etc/environment, ~/.config/environment.d/)
 $ export MWP_BLE=60:55:F9:A5:7B:16
 # ...
-$ mwp-gatt-bridge
+$ mwp-ble-bridge
 60:55:F9:A5:7B:16 <=> pseudo-terminal:  /dev/pts/7
 ```
 A device address given on the command line overrides `$MWP_BLE`.
