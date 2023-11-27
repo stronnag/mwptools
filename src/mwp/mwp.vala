@@ -841,11 +841,22 @@ public class MWP : Gtk.Application {
 
     public MWP (string? s)  {
         Object(application_id: MWPID, flags: ApplicationFlags.HANDLES_COMMAND_LINE);
-        var v = check_env_args(s);
+		Unix.signal_add (
+            Posix.Signal.INT,
+            on_sigint,
+            Priority.DEFAULT
+        );
+
+		var v = check_env_args(s);
         set_opts_from_dict(v);
         add_main_option_entries(options);
         handle_local_options.connect(do_handle_local_options);
         activate.connect(handle_activate);
+	}
+
+	private bool on_sigint () {
+		cleanup(false);
+		return Source.REMOVE;
     }
 
     private int _command_line (ApplicationCommandLine command_line) {
@@ -980,7 +991,7 @@ public class MWP : Gtk.Application {
         on_file_open(false);
     }
 
-    private void cleanup(bool is_clean) {
+    private void cleanup(bool is_clean = false) {
 		is_shutdown = true;
         if(is_clean) {
             conf.save_floating (mwpdh.floating);
@@ -1235,8 +1246,6 @@ public class MWP : Gtk.Application {
 #endif
         vbsamples = new float[MAXVSAMPLE];
 
-        devman = new DevManager();
-		devman.get_serial_devices();
         hwstatus[0] = 1; // Assume OK
 
         conf = new MWPSettings();
@@ -1510,6 +1519,25 @@ public class MWP : Gtk.Application {
 
         dev_entry = builder.get_object ("comboboxtext1") as Gtk.ComboBoxText;
         window.set_icon_name("mwp_icon");
+
+		MWPLog.message(":DBG: Start dev man\n");
+
+		msp = new MWSerial();
+
+		ttrk = new TelemTracker(this);
+        devman = new DevManager();
+        devman.device_added.connect((dd) => {
+				string s = devname_for_dd(dd);
+                if(dev_is_bt(dd) || msp.available)
+                    append_combo(dev_entry, s);
+                else
+                    prepend_combo(dev_entry, s);
+            });
+        devman.device_removed.connect((s) => {
+                remove_combo(dev_entry, s);
+            });
+
+		MWPLog.message(":DBG: Start dev man\n");
 
         arm_warn = builder.get_object ("arm_warn") as Gtk.Button;
         wp_edit_button = builder.get_object ("wp_edit_button") as Gtk.ToggleButton;
@@ -2624,7 +2652,6 @@ public class MWP : Gtk.Application {
         about.copyright = "© 2014-%d Jonathan Hudson".printf(
             new DateTime.now_local().get_year());
 
-        msp = new MWSerial();
         msp.use_v2 = false;
         if (relaxed) {
             MWPLog.message("using \"relaxed\" MSP for main port\n");
@@ -2675,7 +2702,6 @@ public class MWP : Gtk.Application {
 			}
 		}
 
-        ttrk = new TelemTracker(this);
         mq = new Queue<MQI?>();
 
         build_serial_combo();
@@ -2708,17 +2734,6 @@ public class MWP : Gtk.Application {
             });
 
 #endif
-        devman.device_added.connect((dd) => {
-				string s = devname_for_dd(dd);
-                if(dev_is_bt(dd) || msp.available)
-                    append_combo(dev_entry, s);
-                else
-                    prepend_combo(dev_entry, s);
-            });
-        devman.device_removed.connect((s) => {
-                remove_combo(dev_entry, s);
-            });
-
         conbutton = builder.get_object ("button1") as Gtk.Button;
 
         var te = dev_entry.get_child() as Gtk.Entry;

@@ -399,6 +399,7 @@ public class MWSerial : Object {
 	}
 	private string devname;
     private int fd=-1;
+	private int wrfd=-1;
     private IOChannel io_read;
     private Socket skt;
     private SocketAddress sockaddr;
@@ -448,7 +449,9 @@ public class MWSerial : Object {
 	private int lasterr = 0;
 	private DevMask dtype;
 	public static bool debug;
-
+#if LINUX
+	private BleSerial gs;
+#endif
 	public enum MemAlloc {
         RX=1024,
         TX=256,
@@ -459,7 +462,8 @@ public class MWSerial : Object {
         TTY=1,
         STREAM=2,
         FD=4,
-        BT=8
+        BT=8,
+		BLE=16
     }
 
     public enum Mode {
@@ -850,18 +854,9 @@ public class MWSerial : Object {
         return (nok == 6);
     }
 
-	public async bool gatt_async (GattClient gc) {
-        var thr = new Thread<bool> ("mwp-ble", () => {
-                        gc.bridge();
-                        Idle.add (gatt_async.callback);
-                        return true;
-                });
-        yield;
-        return thr.join();
-	}
-
 	public bool open_w (string _device, uint rate) {
 		string device;
+		wrfd = -1;
         int n;
 		if((n = _device.index_of_char(' ')) == -1) {
 			device = _device;
@@ -871,24 +866,34 @@ public class MWSerial : Object {
 		devname = device;
 		print_raw = (Environment.get_variable("MWP_PRINT_RAW") != null);
 		commode = 0;
-
+		var dd = DevManager.get_dd_for_name(devname);
 		if (valid_bt_name(device)) {
-			var dd = DevManager.get_dd_for_name(device);
 			if (dd != null) {
+#if LINUX
 				if ((dd.type & DevMask.BTLE) == DevMask.BTLE) {
-					Gatt_Status status;
-					var gc = new GattClient (device, out status);
-					if (status == Gatt_Status.OK) {
-						unowned string gatdev = gc.get_devnode();
-						MWPLog.message("Mapping GATT channel %s\n", gatdev);
-						commode = ComMode.STREAM|ComMode.TTY;
-						fd = MwpSerial.open(gatdev, (int)rate);
-						gatt_async.begin(gc, (obj,res) => {
-								gatt_async.end(res);
-								gc = null;
-							});
+					gs = new BleSerial();
+					gs.bdev = DevManager.btmgr.get_device(devname);
+					commode = ComMode.FD|ComMode.STREAM|ComMode.BLE;
+					gs.bdev.connected_changed.connect((v) => {
+							if(v) {
+								MWPLog.message("BLE Connected: starting BLE serial\r\n");
+							} else {
+								MWPLog.message("BLE Disconnected\r\n");
+								gs.bdev.disconnect();
+							}
+						});
+					gs.bdev.connect();
+					int gid = gs.find_service();
+					MWPLog.message("BLE chipset %s\r\n", gs.get_chipset(gid));
+					if (gid != -1) {
+						while (!gs.bdev.connected) {
+							Thread.usleep(1000);
+						}
+						gs.get_bridge_fds(gid, out fd, out wrfd);
 					}
-				} else {
+				} else
+#endif
+				{
 					fd = BTSocket.connect(device, &lasterr);
 					if (fd != -1) {
 						commode = ComMode.FD|ComMode.STREAM|ComMode.BT;
@@ -960,7 +965,13 @@ public class MWSerial : Object {
 			fd = -1;
 			available = false;
 		} else {
+			if (wrfd == -1) {
+				wrfd = fd;
+			}
 			available = true;
+		}
+		if (dd != null) {
+			dd.used = available;
 		}
 		return available;
     }
@@ -984,6 +995,10 @@ public class MWSerial : Object {
 
     public void close() {
         available=false;
+		var dd = DevManager.get_dd_for_name(devname);
+		if (dd != null) {
+			dd.used = false;
+		}
         if(fd != -1) {
             if(tag > 0) {
                 Source.remove(tag);
@@ -991,12 +1006,17 @@ public class MWSerial : Object {
             }
             if((commode & ComMode.TTY) == ComMode.TTY) {
 				MwpSerial.close(fd);
-                fd = -1;
-            }
-            else if ((commode & ComMode.FD) == ComMode.FD)
+			} else if ((commode & ComMode.FD) == ComMode.FD) {
                 Posix.close(fd);
-            else {
-                if (!skt.is_closed()) {
+#if LINUX
+				if((commode & ComMode.BLE) == ComMode.BLE) {
+					Posix.close(wrfd);
+					wrfd = -1;
+					gs.bdev.disconnect();
+				}
+#endif
+			} else {
+				if (!skt.is_closed()) {
                     try {
                         skt.close();
                     } catch (Error e) {
@@ -1004,7 +1024,7 @@ public class MWSerial : Object {
                     }
                 }
                 sockaddr=null;
-            }
+			}
             fd = -1;
         }
     }
@@ -1665,7 +1685,7 @@ public class MWSerial : Object {
 		if((commode & ComMode.BT) == ComMode.BT)
 			size = Posix.send(fd, buf, count, 0);
 		else if((commode & ComMode.STREAM) == ComMode.STREAM)
-			size = Posix.write(fd, buf, count);
+			size = Posix.write(wrfd, buf, count);
 		else {
 			unowned uint8[] sbuf = (uint8[]) buf;
 			sbuf.length = (int)count;

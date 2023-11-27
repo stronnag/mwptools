@@ -1,4 +1,4 @@
-project('mwptools', 'c', 'vala', version : '6.325.470', meson_version : '>= 0.60')
+project('mwptools', 'c', 'vala', version : '6.331.756', meson_version : '>= 0.60')
 
 # vala / clang16 workaround
 if meson.get_compiler('c').get_id() == 'clang'
@@ -21,20 +21,9 @@ configure_file(
 )
 
 configuration_inc = []
-gattlib_lib_deps=[]
-gattpath = get_option('prefix')+'/lib/mwp'
+common_inc_dir = []
 
 subdir('meson')
-
-if with_gatt
-  cmake   = import('cmake')
-  opt_var = cmake.subproject_options()
-  opt_var.add_cmake_defines({'GATTLIB_PYTHON_INTERFACE': false,
-                             'GATTLIB_BUILD_EXAMPLES': false,
-                             'CMAKE_INSTALL_LIBDIR': 'lib/mwp',})
-  sub_proj = cmake.subproject('gattlib', options: opt_var)
-  gattlib_lib_deps = sub_proj.dependency('gattlib')
-endif
 
 subdir('src/common')
 subdir('src/mwp')
@@ -45,24 +34,21 @@ subdir('src/mwp-gatt-bridge')
 subdir('docs')
 
 executable('mwp',
-	   sources: [mwpsrcs, mwpcommon, gatt_src, mwpvers_h],
-	   dependencies: [mwpdeps, gatt_deps],
+	   sources: [mwpsrcs, mwpcommon, dev_src, mwpvers_h],
+	   dependencies: [mwpdeps ],
 	   link_with: libmwpvers,
 	   include_directories : [common_inc_dir, configuration_inc],
-	   vala_args : [dopts, mwp_v_args, gatt_v_args],
-	   c_args: [mwp_c_args, gatt_c_args],
+	   vala_args : [dopts, mwp_v_args ],
+	   c_args: [mwp_c_args ],
 	   install : true,
-           install_rpath: gattpath
           )
 
 executable('cliterm',
-           sources: [clisrcs, clicommon, gatt_src],
-           dependencies: [ clideps, gatt_deps ],
+           sources: [clisrcs, clicommon, dev_src ],
+           dependencies: [ clideps ],
            include_directories : common_inc_dir,
-           vala_args : [dopts, cli_v_args, gatt_v_args ],
-           c_args: gatt_c_args,
+           vala_args : [dopts, cli_v_args ],
            install : true,
-           install_rpath: gattpath
           )
 
 executable('bproxy',
@@ -72,13 +58,11 @@ executable('bproxy',
            install : true)
 
 executable('fc-get',
-           sources: [fcsrcs, fccommon, gatt_src],
-           dependencies: [ fcdeps, gatt_deps ],
+           sources: [fcsrcs, fccommon, dev_src],
+           dependencies: [ fcdeps ],
            include_directories : common_inc_dir,
-           vala_args : [dopts, fc_v_args, gatt_v_args ],
-           c_args: gatt_c_args,
+           vala_args : [dopts, fc_v_args ],
            install : true,
-           install_rpath: gattpath
           )
 
 executable('ublox-geo',
@@ -99,13 +83,12 @@ executable('mwp-area-planner', sources: [apsrcs, apuisrcs, apcommon], dependenci
 	   )
 
 executable('flashdl',
-           sources: [fdlsrcs, fccommon,  gatt_src],
-           dependencies: [ fdldeps, gatt_deps],
+           sources: [fdlsrcs, fccommon,  dev_src],
+           dependencies: [ fdldeps ],
 	   include_directories : common_inc_dir,
-           vala_args : [dopts, fdl_v_args, gatt_v_args ],
+           vala_args : [dopts, fdl_v_args ],
            build_by_default: false,
            install : false,
-           install_rpath: gattpath+'/lib',
 	   install_tag : 'flashdl',
           )
 
@@ -120,14 +103,11 @@ executable('gmproxy',
 
 if with_gatt
   executable('mwp-gatt-bridge',
-           sources: [gatt_app_src, gatt_src],
+           sources: [gatt_app_src, bt_src],
            dependencies: [gatt_deps],
-           include_directories : common_inc_dir,
-           vala_args : [ dopts, gatt_v_args, gatt_app_v_args ],
-           c_args: gatt_c_args,
+           vala_args : [ dopts ],
            build_by_default: true,
            install : true,
-           install_rpath: gattpath
 	   )
 endif
 
