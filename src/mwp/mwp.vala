@@ -841,23 +841,25 @@ public class MWP : Gtk.Application {
 
     public MWP (string? s)  {
         Object(application_id: MWPID, flags: ApplicationFlags.HANDLES_COMMAND_LINE);
+#if UNIX
 		Unix.signal_add (
             Posix.Signal.INT,
             on_sigint,
             Priority.DEFAULT
         );
-
+#endif
 		var v = check_env_args(s);
         set_opts_from_dict(v);
         add_main_option_entries(options);
         handle_local_options.connect(do_handle_local_options);
         activate.connect(handle_activate);
 	}
-
+#if UNIX
 	private bool on_sigint () {
 		cleanup(false);
 		return Source.REMOVE;
     }
+#endif
 
     private int _command_line (ApplicationCommandLine command_line) {
 		string[] args = command_line.get_arguments ();

@@ -6,7 +6,12 @@ xopts = []
 
 if host_machine.system() == 'linux'
   dopts += '--define=LINUX'
+  dopts += '--define=UNIX'
   deps += dependency('gudev-1.0')
+endif
+
+if host_machine.system() == 'freebsd'
+  dopts += '--define=UNIX'
 endif
 
 r = run_command('valac', '--api-version', check: true)
