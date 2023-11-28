@@ -871,8 +871,9 @@ public class MWSerial : Object {
 			if (dd != null) {
 #if LINUX
 				if ((dd.type & DevMask.BTLE) == DevMask.BTLE) {
+					string objpath = null;
 					gs = new BleSerial();
-					gs.bdev = DevManager.btmgr.get_device(devname);
+					gs.bdev = DevManager.btmgr.get_device(devname, out objpath);
 					commode = ComMode.FD|ComMode.STREAM|ComMode.BLE;
 					gs.bdev.connected_changed.connect((v) => {
 							if(v) {
@@ -883,7 +884,7 @@ public class MWSerial : Object {
 							}
 						});
 					gs.bdev.connect();
-					int gid = gs.find_service();
+					int gid = gs.find_service(objpath);
 					MWPLog.message("BLE chipset %s\r\n", gs.get_chipset(gid));
 					if (gid != -1) {
 						while (!gs.bdev.connected) {

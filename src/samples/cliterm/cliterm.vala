@@ -42,6 +42,9 @@ class CliTerm : Object {
             eol="\r\r\n";
 
         MWPLog.set_time_format("%T");
+		if(eolm > 1)
+			MWPLog.set_cr();
+		MWPLog.set_time_format("%T");
         ml = new MainLoop();
         msp= new MWSerial();
 		dmgr = new DevManager();

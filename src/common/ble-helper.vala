@@ -47,10 +47,12 @@ public class BleSerial : Object {
 		}
 	}
 
-	public int find_service() {
+	public int find_service(string dpath) {
 		gid = -1;
+		string spath = null;
 		for (var j = 0; j < gatts.length; j++) {
-			if (DevManager.btmgr.find_gatt_service(gatts[j].svcuuid)) {
+			spath = DevManager.btmgr.find_gatt_service(gatts[j].svcuuid, dpath);
+			if (spath != null) {
 				gid= j;
 				break;
 			}

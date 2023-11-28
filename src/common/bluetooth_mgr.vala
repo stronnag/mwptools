@@ -34,7 +34,7 @@ public class BluetoothMgr : Object {
             HashTable<string, Variant>? props;
             props = ifaces.get("org.bluez.Adapter1");
             if (props == null)
-                return; /* continue */
+                return;
             adapter = new BluezAdapterProperties(path, props);
 			adapter.powered = true;
 			adapter.start_discovery();
@@ -65,61 +65,67 @@ public class BluetoothMgr : Object {
     }
 
     private void find_devices() {
-        objects.foreach((path, ifaces) => {
-                HashTable<string, Variant>? props;
-                props = ifaces.get("org.bluez.Device1");
-                if (props != null) {
-                    add_device(path, props);
-                }
-            });
+		List <unowned ObjectPath> lk = objects.get_keys();
+		for (unowned var lp = lk.first(); lp != null; lp = lp.next) {
+			var path = lp.data;
+			var ifaces = objects.get(path);
+			HashTable<string, Variant>? props = ifaces.get("org.bluez.Device1");
+			if (props != null) {
+				add_device(path, props);
+			}
+		}
     }
 
-	public BluezDevice? get_device(string address) {
-		BluezDevice d = null;
-        objects.foreach((path, ifaces) => {
-                HashTable<string, Variant>? props;
-                props = ifaces.get("org.bluez.Device1");
-                if (props != null) {
-					if (props.get("Address").get_string() == address) {
-						d = new  BluezDevice(path, props);
-					}
+	public BluezDevice? get_device(string address, out string? dpath) {
+		dpath = null;
+		List <unowned ObjectPath> lk = objects.get_keys();
+		for (unowned var lp = lk.first(); lp != null; lp = lp.next) {
+			var path = lp.data;
+			var ifaces = objects.get(path);
+			HashTable<string, Variant>? props = ifaces.get("org.bluez.Device1");
+			if (props != null) {
+				if (props.get("Address").get_string() == address) {
+					dpath = (string)path;
+					return new  BluezDevice(path, props);
 				}
-			});
-		return d;
+			}
+		}
+		return null;
 	}
 
+	public string? find_gatt_service(string srvuuid, string dpath) {
+		List <unowned ObjectPath> lk = objects.get_keys();
+		for (unowned var lp = lk.first(); lp != null; lp = lp.next) {
+			var path = lp.data;
+			var ifaces = objects.get(path);
+			HashTable<string, Variant>? props = ifaces.get("org.bluez.GattService1");
+			if (props != null) {
+				var uuid = props.get("UUID");
+				var devp = props.get("Device").get_string();
+				if (uuid.get_string() == srvuuid && devp == dpath) {
+					return (string)path;
+				}
+			}
+		}
+		return null;
+	}
 
-  public bool find_gatt_service(string srvuuid) {
-	  List <unowned ObjectPath> lk = objects.get_keys();
-	  for (unowned var lp = lk.first(); lp != null; lp = lp.next) {
-		  var path = lp.data;
-		  var ifaces = objects.get(path);
-		  HashTable<string, Variant>? props = ifaces.get("org.bluez.GattService1");
-		  if (props != null) {
-			  var uuid = props.get("UUID");
-			  if (uuid.get_string() == srvuuid) {
-				  return true;
-			  }
-		  }
-	  }
-	  return false;
-  }
-
-  public string? get_gatt_characteristic_path(string chuuid) {
-    List <unowned ObjectPath> lk = objects.get_keys();
-    for (unowned var lp = lk.first(); lp != null; lp = lp.next) {
-      var path = lp.data;
-      var ifaces = objects.get(path);
-      HashTable<string, Variant>? props = ifaces.get("org.bluez.GattCharacteristic1");
-      if (props != null) {
-        var uuid = props.get("UUID");
-        if (uuid.get_string() == chuuid) {
-          return path;
-        }
-      }
-    }
-    return null;
-  }
-
+	public string? get_gatt_characteristic_path(string chuuid) {
+		List <unowned ObjectPath> lk = objects.get_keys();
+		for (unowned var lp = lk.first(); lp != null; lp = lp.next) {
+			var path = lp.data;
+			var ifaces = objects.get(path);
+			HashTable<string, Variant>? props = ifaces.get("org.bluez.GattCharacteristic1");
+			if (props != null) {
+				var uuid = props.get("UUID");
+				if (uuid.get_string() == chuuid) {
+					// var devp = props.get("Service");
+					// message("Service %s for %s\n", chuuid, devp.get_string());
+					return path;
+				}
+			}
+		}
+		return null;
+	}
 }
 #endif

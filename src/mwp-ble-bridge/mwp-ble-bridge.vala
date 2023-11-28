@@ -6,25 +6,28 @@ namespace DevManager {
 
 namespace MWPLog {
 	public void  message(string format, ...) {
-		return;
-		/*
 		var args = va_list();
-		var fmt = format.replace("\n", "");
-		GLib.message(fmt, args);
-		*/
+		stdout.vprintf(format, args);
 	}
 }
 
 public class GattTest : Application {
 	private string? addr;
-	private int rcount;
 	private BleSerial gs;
 	private int rdfd;
 	private int wrfd;
 	private int pfd;
+	private MainLoop loop;
+	private IOChannel rchan;
+	private IOChannel pchan;
+	private string dpath;
+	private int mtu;
+	private uint rdtag;
+	private uint pftag;
 
 	public GattTest () {
-        Object (flags: ApplicationFlags.HANDLES_COMMAND_LINE);
+        Object (application_id: "org.mwptools.mwp-ble-bridge",
+				flags: ApplicationFlags.HANDLES_COMMAND_LINE);
         Unix.signal_add (
             Posix.Signal.INT,
             on_sigint,
@@ -32,20 +35,26 @@ public class GattTest : Application {
         );
 		startup.connect (on_startup);
         shutdown.connect (on_shutdown);
-	}
-
-	private void please_release_me() {
-		if(rcount == 0) {
-			rcount++;
-			release();
-		}
+		var options = new OptionEntry[] {
+			{ "address", 'a', 0, OptionArg.STRING, addr, "BT address", null},
+            { "version", 'v', 0, OptionArg.NONE, null, "show version", null},
+			{null}
+		};
+		set_option_context_parameter_string(" - BLE serial bridge");
+		set_option_context_description(" requires a BT address or $MWP_BLE to be set");
+		add_main_option_entries(options);
+		handle_local_options.connect(do_handle_local_options);
 	}
 
 	public override int command_line (ApplicationCommandLine command_line) {
 		string[] args = command_line.get_arguments ();
-		addr =  Environment.get_variable("MWP_BLE");
-		if (addr == null && args.length > 1) {
+		var o = command_line.get_options_dict();
+		if (o.contains("address")) {
+			addr = (string)o.lookup_value("address", VariantType.STRING);
+		} else if (args.length > 1) {
 			addr = args[1];
+		} else {
+			addr =  Environment.get_variable("MWP_BLE");
 		}
 		if(addr == null) {
 			stderr.printf("usage: mwp-ble-bridge ADDR (or set $MWP_BLE)\n");
@@ -56,119 +65,121 @@ public class GattTest : Application {
 		}
 	}
 
-	public async bool open_async () {
-		var thr = new Thread<bool> ("mwp-ble", () => {
-				int gid = gs.find_service();
-				//				message("BLE chipset %s", gs.get_chipset(gid));
-				if (gid != -1) {
-					int count = 0;
-					//					message("Connected %s",gs.bdev.connected.to_string());
-					while (!gs.bdev.connected) {
-						Thread.usleep(10000);
-						count++;
-						if (count > 2*1000) {
-							return false;
-						}
-					}
-					gs.get_bridge_fds(gid, out rdfd, out wrfd);
+	private int do_handle_local_options(VariantDict o) {
+        if (o.contains("version")) {
+            stdout.printf("0.0.1\n");
+            return 0;
+        }
+		return -1;
+    }
+
+	private void init () {
+		DevManager.btmgr = new BluetoothMgr();
+		DevManager.btmgr.init();
+		gs = new BleSerial();
+		gs.bdev = DevManager.btmgr.get_device(addr, out dpath);
+		MWPLog.message("Open BLE device %s\n", addr);
+		gs.bdev.connected_changed.connect((v) => {
+				if(v) {
+					MWPLog.message("Connected\n");
+				} else {
+					MWPLog.message("BLE Disconnected\n");
 				}
-				Idle.add (open_async.callback);
-				return true;
 			});
-		yield;
-		return thr.join();
+		if (gs.bdev.connect()) {
+			int gid = gs.find_service(dpath);
+			if (gid != -1) {
+				mtu = gs.get_bridge_fds(gid, out rdfd, out wrfd);
+				MWPLog.message("BLE chipset %s, mtu %d\n", gs.get_chipset(gid), mtu);
+			} else {
+				MWPLog.message("Failed to find service\n");
+				loop.quit();
+			}
+			start_session();
+		} else {
+			this.quit();
+		}
 	}
 
 	public override void activate () {
 		hold ();
-		rdfd = wrfd = pfd = -1;
-		gs = new BleSerial();
-		gs.bdev = DevManager.btmgr.get_device(addr);
-		if(!gs.bdev.connected) {
-			gs.bdev.connect();
-		}
-		start_session();
+		Idle.add(() => {
+				init();
+				return false;
+			});
 		return;
 	}
 
 	private void close_session () {
-		Posix.close(rdfd);
-		Posix.close(wrfd);
-		Posix.close(pfd);
+		if (rdtag > 0)
+			Source.remove(rdtag);
+		if (pftag > 0)
+			Source.remove(pftag);
+		if(rdfd != -1)
+			Posix.close(rdfd);
+		if(wrfd != -1)
+			Posix.close(wrfd);
+		if(pfd != -1)
+			Posix.close(pfd);
 		pfd = rdfd = wrfd = -1;
 		if (gs != null) {
+			MWPLog.message("Disconnect\n");
 			gs.bdev.disconnect();
 		}
+		this.quit();
 	}
 
 	private void start_session () {
-		open_async.begin((obj, res) => {
-				open_async.end(res);
-				if (rdfd != -1 && wrfd != -1) {
-					pfd = Posix.posix_openpt(Posix.O_RDWR|Posix.O_NONBLOCK);
-					if (pfd != -1) {
-						Posix.grantpt(pfd);
-						Posix.unlockpt(pfd);
-						unowned string s = ptsname(pfd);
-						print("%s <=> %s\n",addr, s);
-						io_thread.begin((obj,res) => {
-								io_thread.end(res);
-								on_sigint();
-							});
-					} else {
-						close_session();
-					}
-				}
-			});
+		if (rdfd != -1 && wrfd != -1) {
+			pfd = Posix.posix_openpt(Posix.O_RDWR|Posix.O_NONBLOCK);
+			if (pfd != -1) {
+				Posix.grantpt(pfd);
+				Posix.unlockpt(pfd);
+				unowned string s = ptsname(pfd);
+				print("%s <=> %s\n",addr, s);
+				io_readers();
+			} else {
+				close_session();
+			}
+		}
 	}
 
-	private async int io_thread() {
-		var thr = new Thread<int> ("mwp-ble", () => {
-				uint8 buf[512];
-				int done = 0;
-				while (done == 0) {
-					var n = Posix.read(pfd, buf, 20);
-					if (n > 0) {
-						Posix.write(wrfd, buf, n);
-					} else if (n < 0) {
-						if(Posix.errno == Posix.EAGAIN) {
-							Thread.usleep(2000);
-						} else {
-							done = Posix.errno;
-						}
-					} else {
-						done =  -3;
-					}
-					var nr = Posix.read(rdfd, buf, 512);
-					if (nr > 0) {
-						Posix.write(pfd, buf, nr);
-					} else if (nr < 0) {
-						if(Posix.errno == Posix.EAGAIN) {
-							Thread.usleep(2000);
-						} else {
-							done = Posix.errno;
-						}
-					} else {
-						done =  -3;
+	private void io_readers() {
+		rchan = new IOChannel.unix_new (rdfd);
+		rdtag = rchan.add_watch (IOCondition.IN | IOCondition.HUP|IOCondition.NVAL|IOCondition.ERR, (ch, cond) => {
+				bool res = false;
+				uint8[] buf = new uint8[mtu];
+				if(cond == IOCondition.IN) {
+					var n = Posix.read(rdfd, buf, mtu);
+					if (n > 0 && Posix.write(pfd, buf, n) > 0) {
+						res = true;
 					}
 				}
-				Idle.add (io_thread.callback);
-				return done;
+				if (res == false) {
+					close_session();
+				}
+				return res;
 			});
-		yield;
-		return thr.join();
+
+		pchan = new IOChannel.unix_new (pfd);
+		pftag = pchan.add_watch (IOCondition.IN|IOCondition.HUP|IOCondition.NVAL|IOCondition.ERR, (ch, cond) => {
+				bool res = false;
+				uint8 buf [20];
+				if(cond == IOCondition.IN) {
+					var n = Posix.read(pfd, buf, 20);
+					if (n > 0 && Posix.write(wrfd, buf, n) > 0) {
+						res = true;
+					}
+				}
+				if (res == false) {
+					close_session();
+				}
+				return res;
+			});
 	}
 
 	private bool on_sigint () {
-		if (gs != null) {
-			if(addr != null) {
-				if(gs.bdev.connected) {
-					print("Disconnecting\n");
-					gs.bdev.disconnect();
-				}
-			}
-		}
-		please_release_me();
+		close_session();
 		return Source.REMOVE;
     }
 
@@ -179,8 +190,6 @@ public class GattTest : Application {
 }
 
 public static int main (string[] args) {
-	DevManager.btmgr = new BluetoothMgr();
-	DevManager.btmgr.init();
 	var ga = new GattTest();
 	ga.run(args);
 	return 0;

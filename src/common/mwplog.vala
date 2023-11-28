@@ -22,12 +22,17 @@ public class MWPLog : GLib.Object {
     private static bool init = false;
     private static string tfstr;
     private static bool echo = false;
+	private static bool addcr;
 
     public static void set_time_format(string _t) {
         tfstr = _t;
     }
 
-    public static void fputs(string s) {
+	public static void set_cr() {
+		addcr = true;
+	}
+
+	public static void fputs(string s) {
         fs.puts(s);
 		fs.flush();
     }
@@ -76,8 +81,14 @@ public class MWPLog : GLib.Object {
         sb.append_c(' ');
         sb.append_vprintf(format, args);
         fs.puts(sb.str);
-        fs.flush();
-        if(echo)
-            stderr.puts(sb.str);
-    }
+		fs.flush();
+        if(echo) {
+			if(addcr) {
+				var sout = sb.str.replace("\n", "\r\n");
+				stderr.puts(sout);
+			} else {
+				stderr.puts(sb.str);
+			}
+		}
+	}
 }
