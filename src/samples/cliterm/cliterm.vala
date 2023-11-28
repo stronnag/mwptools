@@ -7,6 +7,7 @@ private static bool gpspass=false;
 private static string rcfile=null;
 private static int eolm;
 private static string cli_delay=null;
+private static MainLoop ml;
 
 const OptionEntry[] options = {
     { "baud", 'b', 0, OptionArg.INT, out baud, "baud rate", "115200"},
@@ -24,12 +25,15 @@ class CliTerm : Object {
     private MWSerial msp;
     private MWSerial.ProtoMode oldmode;
     public DevManager dmgr;
-    private MainLoop ml;
+
     private string eol;
     private bool sendpass = false;
 	private uint8 inavvers;
+	private Posix.termios oldtio = {0};
 
 	public CliTerm() {
+		dmgr = new DevManager();
+		dmgr.get_serial_devices();
 	}
 
 	public void init() {
@@ -45,11 +49,7 @@ class CliTerm : Object {
 		if(eolm > 1)
 			MWPLog.set_cr();
 		MWPLog.set_time_format("%T");
-        ml = new MainLoop();
         msp= new MWSerial();
-		dmgr = new DevManager();
-		dmgr.get_serial_devices();
-
 		if (dev == null) {
 			if(DevManager.serials.length() == 1) {
 				var dx = DevManager.serials.nth_data(0);
@@ -179,7 +179,7 @@ class CliTerm : Object {
 	}
 
     public void run() {
-        Posix.termios newtio = {0}, oldtio = {0};
+        Posix.termios newtio = {0};
         Posix.tcgetattr (0, out newtio);
         oldtio = newtio;
         Posix.cfmakeraw(ref newtio);
@@ -194,8 +194,7 @@ class CliTerm : Object {
 				ssize_t rc = -1;
 				var err = ((c & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0);
 				if (!err)
-					rc = Posix.read(0,buf,1);
-
+					rc = Posix.read(0, buf, 1);
 				if (err || buf[0] == 3 || rc <0) {
 					ml.quit();
 					return false;
@@ -212,7 +211,9 @@ class CliTerm : Object {
 		} catch(IOChannelError e) {
 			error("IOChannel: %s", e.message);
 		}
-		ml.run ();
+
+	}
+	public void shutdown() {
 		msp.close();
 		Posix.tcsetattr(0, Posix.TCSANOW, oldtio);
 	}
@@ -248,6 +249,7 @@ class CliTerm : Object {
 	}
 
 	public static int main (string[] args) {
+		ml = new MainLoop();
 		try {
 			var opt = new OptionContext(" - cli tool");
 			opt.set_help_enabled(true);
@@ -285,8 +287,13 @@ class CliTerm : Object {
             break;
 		}
 		var cli = new CliTerm();
-		cli.init();
-		cli.run();
+		Timeout.add(700, () => {
+				cli.init();
+				cli.run();
+				return false;
+			});
+		ml.run();
+		cli.shutdown();
 		return 0;
 	}
 }

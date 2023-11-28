@@ -24,7 +24,7 @@ public class GattTest : Application {
 	private int mtu;
 	private uint rdtag;
 	private uint pftag;
-
+	private int delay;
 	public GattTest () {
         Object (application_id: "org.mwptools.mwp-ble-bridge",
 				flags: ApplicationFlags.HANDLES_COMMAND_LINE);
@@ -35,8 +35,10 @@ public class GattTest : Application {
         );
 		startup.connect (on_startup);
         shutdown.connect (on_shutdown);
+		delay = 500;
 		var options = new OptionEntry[] {
 			{ "address", 'a', 0, OptionArg.STRING, addr, "BT address", null},
+			{ "settle", 's', 0, OptionArg.INT, ref delay, "BT settle time (ms)", null},
             { "version", 'v', 0, OptionArg.NONE, null, "show version", null},
 			{null}
 		};
@@ -49,15 +51,17 @@ public class GattTest : Application {
 	public override int command_line (ApplicationCommandLine command_line) {
 		string[] args = command_line.get_arguments ();
 		var o = command_line.get_options_dict();
-		if (o.contains("address")) {
-			addr = (string)o.lookup_value("address", VariantType.STRING);
-		} else if (args.length > 1) {
-			addr = args[1];
-		} else {
-			addr =  Environment.get_variable("MWP_BLE");
+		o.lookup("address", "s", ref addr);
+		o.lookup("btinit", "i", ref delay);
+		if (addr == null) {
+			if (args.length > 1) {
+				addr = args[1];
+			} else {
+				addr =  Environment.get_variable("MWP_BLE");
+			}
 		}
 		if(addr == null) {
-			stderr.printf("usage: mwp-ble-bridge ADDR (or set $MWP_BLE)\n");
+			stderr.printf("usage: mwp-ble-bridge --address ADDR (or set $MWP_BLE)\n");
 			return 127;
 		} else {
 			activate();
@@ -76,29 +80,33 @@ public class GattTest : Application {
 	private void init () {
 		DevManager.btmgr = new BluetoothMgr();
 		DevManager.btmgr.init();
-		gs = new BleSerial();
-		gs.bdev = DevManager.btmgr.get_device(addr, out dpath);
-		MWPLog.message("Open BLE device %s\n", addr);
-		gs.bdev.connected_changed.connect((v) => {
-				if(v) {
-					MWPLog.message("Connected\n");
+		//		message("delay %d", delay);
+		Timeout.add(delay, () => {
+				gs = new BleSerial();
+				gs.bdev = DevManager.btmgr.get_device(addr, out dpath);
+				MWPLog.message("Open BLE device %s\n", addr);
+				gs.bdev.connected_changed.connect((v) => {
+						if(v) {
+							MWPLog.message("Connected\n");
+						} else {
+							MWPLog.message("BLE Disconnected\n");
+						}
+					});
+				if (gs.bdev.connect()) {
+					int gid = gs.find_service(dpath);
+					if (gid != -1) {
+						mtu = gs.get_bridge_fds(gid, out rdfd, out wrfd);
+						MWPLog.message("BLE chipset %s, mtu %d\n", gs.get_chipset(gid), mtu);
+					} else {
+						MWPLog.message("Failed to find service\n");
+						loop.quit();
+					}
+					start_session();
 				} else {
-					MWPLog.message("BLE Disconnected\n");
+					this.quit();
 				}
+				return false;
 			});
-		if (gs.bdev.connect()) {
-			int gid = gs.find_service(dpath);
-			if (gid != -1) {
-				mtu = gs.get_bridge_fds(gid, out rdfd, out wrfd);
-				MWPLog.message("BLE chipset %s, mtu %d\n", gs.get_chipset(gid), mtu);
-			} else {
-				MWPLog.message("Failed to find service\n");
-				loop.quit();
-			}
-			start_session();
-		} else {
-			this.quit();
-		}
 	}
 
 	public override void activate () {

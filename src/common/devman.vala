@@ -46,6 +46,20 @@ public class DevManager : Object {
 		if (!_init) {
 			_init = true;
 			serials = new SList<DevDef?>();
+			btmgr = new BluetoothMgr();
+			btmgr.add_device_bt.connect((n,a,t) => {
+					if(!extant(n)) {
+						var _type = DevMask.BT;
+						if (t == 2) {
+							_type |= DevMask.BTLE;
+						}
+						DevDef dd = DevDef(){ name = n, alias = a, type = _type };
+						serials.append(dd);
+						device_added(dd);
+					}
+				});
+			btmgr.init();
+
 			usbmgr = new USBMgr();
 			usbmgr.add_device_usb.connect((n,a) => {
 					if (!extant(n)) {
@@ -59,22 +73,7 @@ public class DevManager : Object {
 					remove_name(n);
 					device_removed(n);
 				});
-
-			btmgr = new BluetoothMgr();
-			btmgr.add_device_bt.connect((n,a,t) => {
-					if(!extant(n)) {
-						var _type = DevMask.BT;
-						if (t == 2) {
-							_type |= DevMask.BTLE;
-						}
-						DevDef dd = DevDef(){ name = n, alias = a, type = _type };
-						serials.append(dd);
-						device_added(dd);
-					}
-				});
-
 			usbmgr.init();
-			btmgr.init();
 		}
 	}
 
