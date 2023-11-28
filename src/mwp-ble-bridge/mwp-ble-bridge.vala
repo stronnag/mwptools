@@ -17,7 +17,6 @@ public class GattTest : Application {
 	private int rdfd;
 	private int wrfd;
 	private int pfd;
-	private MainLoop loop;
 	private IOChannel rchan;
 	private IOChannel pchan;
 	private string dpath;
@@ -99,7 +98,7 @@ public class GattTest : Application {
 						MWPLog.message("BLE chipset %s, mtu %d\n", gs.get_chipset(gid), mtu);
 					} else {
 						MWPLog.message("Failed to find service\n");
-						loop.quit();
+						close_session();
 					}
 					start_session();
 				} else {
