@@ -340,10 +340,7 @@ public class Bluez: Bluetooth, Object {
                                          is_connected));
     devices_changed ();
     update_connected ();
-	if(isnew)
-		added_device(id);
-	else
-		changed_device(id);
+	added_device(id);
   }
 
   private void device_removed (ObjectPath path) {
