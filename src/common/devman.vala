@@ -68,7 +68,9 @@ public class DevManager : Object {
 			dd.type=DevMask.BT;
 			Thread.usleep(10000);
 			var uuids =  btmgr.get_device_property(id, "UUIDs").dup_strv();
+			message("get uuids %u %u", id, uuids.length);
 			sid = BLEKnownUUids.verify_serial(uuids, out dd.gid);
+			message("get sid, gid %u %d", sid, dd.gid);
 			if(dd.gid == 2) {
 				dd.type |= DevMask.BTLE;
 			}
