@@ -83,6 +83,7 @@ public class DevManager : Object {
 			serials = new SList<DevDef?>();
 			btmgr = new Bluez();
 			btmgr.added_device.connect((id) => {
+					message("add BT %u", id);
 					add_bt_device_async.begin(id, (obj, res) => {
 							DevDef dd;
 							var dres = add_bt_device_async.end(res, out dd);
@@ -107,6 +108,12 @@ public class DevManager : Object {
 					device_removed(n);
 				});
 			usbmgr.init();
+		}
+	}
+
+	public static void checkbts() {
+		foreach(var dv in btmgr.get_devices()) {
+			message(dv.print());
 		}
 	}
 
