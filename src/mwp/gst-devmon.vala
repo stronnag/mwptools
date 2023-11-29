@@ -15,7 +15,7 @@ public class GstMonitor : Gst.Object {
             "v4l2.device.card", "device.serial"
         };
 
-        private VideoDev? get_node_info(Device device) {
+        private VideoDev? get_node_info(Gst.Device device) {
             var s = device.get_properties();
             if(verbose) {
                 var p = s.to_string();
@@ -47,10 +47,10 @@ public class GstMonitor : Gst.Object {
         }
 
         private bool bus_callback (Gst.Bus bus, Gst.Message message) {
-		Device device;
+		Gst.Device device;
 		switch (message.type) {
 		case Gst.MessageType.DEVICE_ADDED:
-                    message.parse_device_added (out device);
+			message.parse_device_added (out device);
                     var ds = get_node_info(device);
                     if (ds != null) {
                         source_changed("add", ds);

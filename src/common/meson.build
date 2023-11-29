@@ -64,7 +64,7 @@ dev_src = []
 
 if host_machine.system() == 'linux'
   usb_src = files('usbmgr.vala')
-  bt_src = files('bluezinterface.vala', 'bluetooth_mgr.vala', 'ble-helper.vala')
+  bt_src = files('bluez.vala', 'bluetooth.vala', 'ble-helper.vala', 'btdevice.vala', 'ble_uuids.vala' )
   dev_src = [usb_src, bt_src]
 endif
 

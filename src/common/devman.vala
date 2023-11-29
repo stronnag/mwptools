@@ -31,35 +31,68 @@ public struct DevDef {
         string alias;
 		string uuid;
 		DevMask type;
+		uint id;
+		int gid;
 		bool used;
 }
 
 #if LINUX
 public class DevManager : Object {
-	public static BluetoothMgr btmgr;
+	public static Bluez  btmgr;
 	public static USBMgr usbmgr;
 	public static SList<DevDef?> serials;
     public signal void device_added (DevDef dd);
     public signal void device_removed (string s);
 	private static bool _init;
+
+	private async bool add_bt_device_async (uint id, out DevDef dd) {
+		DevDef _dd = DevDef();
+		var thr = new Thread<bool> ("btnew", () => {
+				var res = add_bt_device(id, out _dd);
+				Idle.add (add_bt_device_async.callback);
+				return res;
+			});
+		yield;
+		dd = _dd;
+		return thr.join();
+	}
+
+	private bool add_bt_device(uint id, out DevDef dd) {
+		dd = DevDef();
+		uint sid = 0;
+		var d = btmgr.get_device(id);
+		if(!extant(d.address)) {
+			dd.id = id;
+			dd.name = d.address;
+			dd.alias = d.name;
+			dd.type=DevMask.BT;
+			Thread.usleep(10000);
+			var uuids =  btmgr.get_device_property(id, "UUIDs").dup_strv();
+			sid = BLEKnownUUids.verify_serial(uuids, out dd.gid);
+			if(dd.gid == 2) {
+				dd.type |= DevMask.BTLE;
+			}
+		}
+		return (sid != 0);
+	}
+
     public DevManager() {
 		if (!_init) {
+			new BLEKnownUUids();
 			_init = true;
 			serials = new SList<DevDef?>();
-			btmgr = new BluetoothMgr();
-			btmgr.add_device_bt.connect((n,a,t) => {
-					if(!extant(n)) {
-						var _type = DevMask.BT;
-						if (t == 2) {
-							_type |= DevMask.BTLE;
-						}
-						DevDef dd = DevDef(){ name = n, alias = a, type = _type };
-						serials.append(dd);
-						device_added(dd);
-					}
+			btmgr = new Bluez();
+			btmgr.added_device.connect((id) => {
+					add_bt_device_async.begin(id, (obj, res) => {
+							DevDef dd;
+							var dres = add_bt_device_async.end(res, out dd);
+							if (dres) {
+								serials.append(dd);
+								device_added(dd);
+							}
+						});
 				});
 			btmgr.init();
-
 			usbmgr = new USBMgr();
 			usbmgr.add_device_usb.connect((n,a) => {
 					if (!extant(n)) {

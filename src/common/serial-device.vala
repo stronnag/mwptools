@@ -871,40 +871,22 @@ public class MWSerial : Object {
 			if (dd != null) {
 #if LINUX
 				if ((dd.type & DevMask.BTLE) == DevMask.BTLE) {
-					string objpath = null;
-					gs = new BleSerial();
-					gs.bdev = DevManager.btmgr.get_device(devname, out objpath);
+					gs = new BleSerial(dd.gid);
 					commode = ComMode.FD|ComMode.STREAM|ComMode.BLE;
-					gs.bdev.connected_changed.connect((v) => {
-							if(v) {
-								MWPLog.message("BLE Connected: starting BLE serial\n");
-							} else {
-								MWPLog.message("BLE Disconnected\n");
-								gs.bdev.disconnect();
-							}
-						});
-					gs.bdev.connect();
-					int gid = gs.find_service(objpath);
-					MWPLog.message("BLE chipset %s\n", gs.get_chipset(gid));
-					if (gid != -1) {
-						int cnt = 0;
-						bool conok = true;
-						while (!gs.bdev.connected) {
-							Thread.usleep(10000); // 10ms
-							cnt++;
-							if (cnt > (100*5)) { // 5 seconds
-								conok = false;
-								break;
-							}
+					if(DevManager.btmgr.set_device_connected(dd.id, true)) {
+						while (!DevManager.btmgr.get_device(dd.id).is_connected) {
+							Thread.usleep(5000);
 						}
-						if(conok) {
-							Thread.usleep(10000); // 10ms
-							gs.get_bridge_fds(gid, out fd, out wrfd);
-						} else {
-							fd = -1;
-							available = false;
-							lasterr = Posix.ETIMEDOUT;
+						while(!gs.find_service(DevManager.btmgr, dd.id)) {
+							Thread.usleep(5000);
 						}
+						MWPLog.message("BLE chipset %s\n", gs.get_chipset());
+						Thread.usleep(10000); // 10ms
+						gs.get_bridge_fds(DevManager.btmgr, out fd, out wrfd);
+					} else {
+						fd = -1;
+						available = false;
+						lasterr = Posix.ETIMEDOUT;
 					}
 				} else
 #endif
@@ -1027,7 +1009,7 @@ public class MWSerial : Object {
 				if((commode & ComMode.BLE) == ComMode.BLE) {
 					Posix.close(wrfd);
 					wrfd = -1;
-					gs.bdev.disconnect();
+					DevManager.btmgr.set_device_connected(dd.id, false);
 				}
 #endif
 			} else {

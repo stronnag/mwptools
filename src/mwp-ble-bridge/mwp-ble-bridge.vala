@@ -1,9 +1,5 @@
 extern unowned string ptsname(int fd);
 
-namespace DevManager {
-  public static BluetoothMgr btmgr;
-}
-
 namespace MWPLog {
 	public void  message(string format, ...) {
 		var args = va_list();
@@ -17,10 +13,11 @@ public class GattTest : Application {
 	private int rdfd;
 	private int wrfd;
 	private int pfd;
-	private string dpath;
 	private int mtu;
 	private int delay;
 	private bool verbose;
+	private Bluez bt;
+	private uint id;
 
 	public GattTest () {
         Object (application_id: "org.mwptools.mwp-ble-bridge",
@@ -77,45 +74,87 @@ public class GattTest : Application {
 		return -1;
     }
 
-	private void init () {
-		DevManager.btmgr = new BluetoothMgr();
-		DevManager.btmgr.init();
-		//		message("delay %d", delay);
-		Timeout.add(delay, () => {
-				gs = new BleSerial();
-				gs.bdev = DevManager.btmgr.get_device(addr, out dpath);
-				MWPLog.message("Open BLE device %s\n", addr);
-				gs.bdev.connected_changed.connect((v) => {
-						if(v) {
-							MWPLog.message("Connected\n");
-						} else {
-							MWPLog.message("BLE Disconnected\n");
-						}
-					});
-				if (gs.bdev.connect()) {
-					int gid = gs.find_service(dpath);
-					if (gid != -1) {
-						mtu = gs.get_bridge_fds(gid, out rdfd, out wrfd);
-						MWPLog.message("BLE chipset %s, mtu %d\n", gs.get_chipset(gid), mtu);
-					} else {
-						MWPLog.message("Failed to find service\n");
-						close_session();
-					}
-					start_session();
-				} else {
-					this.quit();
-				}
-				return false;
-			});
-	}
-
 	public override void activate () {
 		hold ();
+		new BLEKnownUUids();
+		bt = new Bluez();
 		Idle.add(() => {
+				bt.init();
 				init();
 				return false;
 			});
 		return;
+	}
+
+	private void init () {
+		gs = new BleSerial();
+		open_async.begin((obj, res) =>  {
+				var ok = open_async.end(res);
+				if (ok == 0) {
+					mtu = gs.get_bridge_fds(bt, out rdfd, out wrfd);
+					MWPLog.message("BLE chipset %s, mtu %d\n", gs.get_chipset(), mtu);
+					start_session();
+				} else {
+					MWPLog.message("Failed to find service (%d)\n", ok);
+					close_session();
+				}
+			});
+	}
+
+	private async int open_async() {
+		var thr = new Thread<int> (addr, () => {
+				var res = open_w();
+				Idle.add (open_async.callback);
+				return res;
+			});
+		yield;
+		return thr.join();
+	}
+
+	private int open_w() {
+		uint tc = 0;
+		while ((id = bt.get_id_for(addr)) == 0) {
+			Thread.usleep(5000);
+			tc++;
+			if(tc > 200*15) {
+				return -1;
+			}
+		}
+		tc = 0;
+		if (!bt.set_device_connected(id, true)) {
+			return -2;
+		}
+		while (!bt.get_device(id).is_connected) {
+			Thread.usleep(5000);
+			tc++;
+			if(tc > 200*5) {
+				return -2;
+			}
+		}
+		tc = 0;
+		while(true) {
+			int gid = -1;
+			var uuids =  bt.get_device_property(id, "UUIDs").dup_strv();
+			var sid = BLEKnownUUids.verify_serial(uuids, out gid);
+			gs.set_gid(gid);
+			if(sid == 2) {
+				break;
+			}
+			Thread.usleep(5000);
+			tc++;
+			if (tc > 200*15) {
+				return -3;
+			}
+		}
+		tc = 0;
+		while (!gs.find_service(bt, id)) {
+			Thread.usleep(5000);
+			tc++;
+			if (tc > 200*2) {
+				return -4;
+			}
+		}
+		return 0;
 	}
 
 	private void close_session () {
@@ -128,7 +167,7 @@ public class GattTest : Application {
 		pfd = rdfd = wrfd = -1;
 		if (gs != null) {
 			MWPLog.message("Disconnect\n");
-			gs.bdev.disconnect();
+			bt.set_device_connected(id, false);
 		}
 		this.quit();
 	}
