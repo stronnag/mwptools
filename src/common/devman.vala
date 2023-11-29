@@ -61,18 +61,20 @@ public class DevManager : Object {
 		dd = DevDef();
 		uint sid = 0;
 		var d = btmgr.get_device(id);
-		if(!extant(d.address)) {
-			dd.id = id;
-			dd.name = d.address;
-			dd.alias = d.name;
-			dd.type=DevMask.BT;
-			Thread.usleep(10000);
-			var uuids =  btmgr.get_device_property(id, "UUIDs").dup_strv();
-			message("get uuids %u %u", id, uuids.length);
-			sid = BLEKnownUUids.verify_serial(uuids, out dd.gid);
-			message("get sid, gid %u %d", sid, dd.gid);
-			if(dd.gid == 2) {
-				dd.type |= DevMask.BTLE;
+		if(d.device_type == 0) {
+			if(!extant(d.address)) {
+				dd.id = id;
+				dd.name = d.address;
+				dd.alias = d.name;
+				dd.type=DevMask.BT;
+				Thread.usleep(10000);
+				var uuids =  btmgr.get_device_property(id, "UUIDs").dup_strv();
+				message("get uuids %u %u", id, uuids.length);
+				sid = BLEKnownUUids.verify_serial(uuids, out dd.gid);
+				message("get sid, gid %u %d", sid, dd.gid);
+				if(dd.gid == 2) {
+					dd.type |= DevMask.BTLE;
+				}
 			}
 		}
 		return (sid != 0);
@@ -84,6 +86,10 @@ public class DevManager : Object {
 			_init = true;
 			serials = new SList<DevDef?>();
 			btmgr = new Bluez();
+			btmgr.changed_device.connect((id) => {
+					message("Changed BT %u", id);
+				});
+
 			btmgr.added_device.connect((id) => {
 					message("add BT %u", id);
 					add_bt_device_async.begin(id, (obj, res) => {
@@ -115,12 +121,14 @@ public class DevManager : Object {
 
 	public void checkbts() {
 		foreach(var dv in btmgr.get_devices()) {
-			DevDef dd;
-			if(add_bt_device(dv.id, out dd)) {
-				serials.append(dd);
-				device_added(dd);
-			}
-			message(dv.print());
+			add_bt_device_async.begin(dv.id, (obj, res) => {
+					DevDef dd;
+					var dres = add_bt_device_async.end(res, out dd);
+					if (dres) {
+						serials.append(dd);
+						device_added(dd);
+					}
+				});
 		}
 	}
 

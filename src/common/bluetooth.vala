@@ -54,6 +54,7 @@
    public signal void devices_changed ();
    public signal void added_device(uint id);
    public signal void removed_device(uint id);
+   public signal void changed_device(uint id);
 
    /* Try to connect/disconnect a particular device.
 	  The device_key argument comes from the Device struct */
