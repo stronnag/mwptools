@@ -66,7 +66,6 @@ public class Bluez: Bluetooth, Object {
                                    BusNameWatcherFlags.AUTO_START,
                                    on_bluez_appeared,
                                    on_bluez_vanished);
-	powered = true;
   }
 
   ~Bluez() {
@@ -161,9 +160,11 @@ public class Bluez: Bluetooth, Object {
         }
         path_to_adapter_proxy.insert (object_path, adapter_proxy);
         adapter_proxy.g_properties_changed.connect(() => update_adapter (object_path));
+		/*
 		try {
 			adapter_proxy.start_discovery();
 		} catch {}
+		*/
 	}
     update_combined_adapter_state ();
   }
@@ -354,6 +355,7 @@ public class Bluez: Bluetooth, Object {
 
   void update_enabled () {
 	  //	  debug (@"in upate_enabled, powered is $powered");
+	  message (@"in upate_enabled, powered is $powered");
 	  enabled = powered;
   }
 
