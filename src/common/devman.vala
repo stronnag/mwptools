@@ -111,8 +111,13 @@ public class DevManager : Object {
 		}
 	}
 
-	public static void checkbts() {
+	public void checkbts() {
 		foreach(var dv in btmgr.get_devices()) {
+			DevDef dd;
+			if(add_bt_device(dv.id, out dd)) {
+				serials.append(dd);
+				device_added(dd);
+			}
 			message(dv.print());
 		}
 	}

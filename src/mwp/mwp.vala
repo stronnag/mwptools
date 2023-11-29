@@ -2908,7 +2908,7 @@ public class MWP : Gtk.Application {
             });
 		MWPLog.message("Show main window\n");
 		splash.update("Preparing main window");
-		DevManager.checkbts();
+
         if((wp_edit = conf.auto_wp_edit) == true) {
             wp_edit_button.hide();
             wp_edit_button.sensitive = false;
@@ -3124,6 +3124,7 @@ public class MWP : Gtk.Application {
 					}
 				}
 			});
+		devman.checkbts();
 		gstdm.setup_device_monitor();
 		map_moved();
 	}
