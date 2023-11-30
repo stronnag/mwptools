@@ -1670,7 +1670,7 @@ public class MWSerial : Object {
 	}
 
 	public ssize_t write(void *buf, size_t count) {
-		ssize_t size;
+		ssize_t size = 0;
 		if(ro)
 			return 0;
 
@@ -1679,9 +1679,18 @@ public class MWSerial : Object {
 
 		stats.txbytes += count;
 
-		if((commode & ComMode.BT) == ComMode.BT)
-			size = Posix.send(fd, buf, count, 0);
-		else if((commode & ComMode.STREAM) == ComMode.STREAM)
+		if((commode & ComMode.BT) == ComMode.BT) {
+			if((commode & ComMode.BLE) == ComMode.BLE) { // allegedly, 20 byte write buffer
+				for(int n = (int)count; n > 0; ) {
+					var nc = (n > 20) ? 20 : n;
+					size += Posix.send(fd, buf, nc, 0);
+					n -= nc;
+					buf = (void*)((uint8*)buf + nc);
+				}
+			} else {
+				size = Posix.send(fd, buf, count, 0);
+			}
+		} else if((commode & ComMode.STREAM) == ComMode.STREAM)
 			size = Posix.write(wrfd, buf, count);
 		else {
 			unowned uint8[] sbuf = (uint8[]) buf;
