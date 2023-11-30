@@ -355,7 +355,6 @@ public class Bluez: Bluetooth, Object {
 
   void update_enabled () {
 	  //	  debug (@"in upate_enabled, powered is $powered");
-	  message (@"in upate_enabled, powered is $powered");
 	  enabled = powered;
   }
 

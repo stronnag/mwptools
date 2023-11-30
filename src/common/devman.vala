@@ -69,10 +69,8 @@ public class DevManager : Object {
 				dd.type=DevMask.BT;
 				Thread.usleep(50000);
 				var uuids =  btmgr.get_device_property(id, "UUIDs").dup_strv();
-				message("get uuids \"%s\" id %u ulen %u", dd.name, id, uuids.length);
 				if (uuids.length > 0) {
 					sid = BLEKnownUUids.verify_serial(uuids, out dd.gid);
-					message("get sid, gid %u %d", sid, dd.gid);
 					if(dd.gid == 2) {
 						dd.type |= DevMask.BTLE;
 					}
@@ -90,7 +88,6 @@ public class DevManager : Object {
 			btmgr = new Bluez();
 
 			btmgr.added_device.connect((id) => {
-					message("add BT %u", id);
 					add_bt_device_async.begin(id, (obj, res) => {
 							DevDef dd;
 							var dres = add_bt_device_async.end(res, out dd);

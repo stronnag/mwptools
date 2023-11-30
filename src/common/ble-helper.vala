@@ -43,8 +43,13 @@ public class BleSerial : Object {
 		uint16 txmtu = 0;
 		var	txpath = bt.find_gatt_characteristic_path(BLEKnownUUids.get(gid).txuuid);
 		var rxpath = bt.find_gatt_characteristic_path(BLEKnownUUids.get(gid).rxuuid);
-		txfd = get_fd_for_characteristic(txpath, "AcquireWrite",  out txmtu);
 		rxfd = get_fd_for_characteristic(rxpath, "AcquireNotify", out rxmtu);
+		if (txpath != rxpath) {
+			txfd = get_fd_for_characteristic(txpath, "AcquireWrite",  out txmtu);
+		} else {
+			txfd = rxfd;
+			txmtu = rxmtu;
+		}
 		return (int) ((txmtu < rxmtu) ? txmtu : rxmtu);
 	}
 
