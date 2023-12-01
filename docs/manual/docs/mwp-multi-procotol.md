@@ -35,6 +35,45 @@ Bluetooth may be specified by either an `rfcomm` device node (`/dev/rfcommX` on 
     # BT device address (note here baud rate is immaterial)
     35:53:17:04:07:27
 
+* On Linux, both legacy Bluetooth (RFCOMM/SPP) and Bluetooth Low Energy (BLE) are supported. BLE devices do not implement RFCOMM and must be accessed by address.
+* On FreeBSD, only legacy (RFCOMM/SPP) Bluetooth is supported.
+
+### Further Bluetooth considerations
+
+* For legacy devices, it is recommended that these are paired before use; this will greatly speed up the device recognition process.
+
+* For BLE, in general it is not possible to pair devices; it is recommended that you use operating system tools (e.g. `bluetoothctl` to discover the device and find all the BLE/Gatt characteristics (e.g. by `connect` in `bluetoothctl`). Otherwise you may end up in a "Morton's fork" situation where in order recognise the device as BLE, mwp needs to connect to it and in order to use the BLE connect functions, mwp needs to know it's a BLE device.
+
+A sequence of `bluetoothctl` commands (where `aa:bb:cc:dd:ee:ff` represents a new device address); such as the following will help :
+
+    $ bluetoothctl
+	power on
+    default-agent
+    scan on
+	## ... devices are discovered
+    info aa:bb:cc:dd:ee:ff
+	## note this will probably only show up a little data and 0 or 1 UUIDs (we need more)
+	connect aa:bb:cc:dd:ee:ff
+    ## for a BLE device, this will spew out a load of "characteristics" and multiple UUIDS
+	trust aa:bb:cc:dd:ee:ff
+	disconnect aa:bb:cc:dd:ee:ff
+	quit
+
+Now the device should be discovered in mwp and should connect.
+
+The following BLE chip-sets are supported:
+
+* CC2541
+* Nordic Semi NRF
+* SpeedyBee Type 1
+* SpeedyBee Type 2
+
+The first and last items having been tested by the author.
+
+### mwp-ble-bridge
+
+In order to use BLE serial devices with other tools that do not implement the BLE protocol, mwp provides a `mwp-ble-bridge` tool that uses a pseudo-terminal to facilitate BLE connectivity for other tools that expect a device node. See the `README.md` in `src/mwp-ble-bridge`.
+
 ### Serial permissions
 
 It is necessary for the user to have read / write permission on serial devices. The installation guide provides [instructions](Building-with-meson-and-ninja.md#accessing-the-serial-port).

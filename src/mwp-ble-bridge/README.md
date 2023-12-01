@@ -38,4 +38,5 @@ $ export MWP_BLE=60:55:F9:A5:7B:16
 $ mwp-ble-bridge
 60:55:F9:A5:7B:16 <=> pseudo-terminal:  /dev/pts/7
 ```
+
 A device address given on the command line overrides `$MWP_BLE`.
