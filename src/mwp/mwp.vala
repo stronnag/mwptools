@@ -1522,8 +1522,6 @@ public class MWP : Gtk.Application {
         dev_entry = builder.get_object ("comboboxtext1") as Gtk.ComboBoxText;
         window.set_icon_name("mwp_icon");
 
-		MWPLog.message(":DBG: Start dev man\n");
-
 		msp = new MWSerial();
 
 		ttrk = new TelemTracker(this);
@@ -1538,8 +1536,6 @@ public class MWP : Gtk.Application {
         devman.device_removed.connect((s) => {
                 remove_combo(dev_entry, s);
             });
-
-		MWPLog.message(":DBG: Start dev man\n");
 
         arm_warn = builder.get_object ("arm_warn") as Gtk.Button;
         wp_edit_button = builder.get_object ("wp_edit_button") as Gtk.ToggleButton;

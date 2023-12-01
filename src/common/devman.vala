@@ -45,39 +45,25 @@ public class DevManager : Object {
     public signal void device_removed (string s);
 	private static bool _init;
 
-	private async bool add_bt_device_async (uint id, out DevDef dd) {
-		DevDef _dd = DevDef();
-		var thr = new Thread<bool> ("btnew", () => {
-				var res = add_bt_device(id, out _dd);
-				Idle.add (add_bt_device_async.callback);
-				return res;
-			});
-		yield;
-		dd = _dd;
-		return thr.join();
-	}
-
-	private bool add_bt_device(uint id, out DevDef dd) {
-		dd = DevDef();
-		uint sid = 0;
-		var d = btmgr.get_device(id);
-		if(d.device_type == 0) {
-			if(!extant(d.address)) {
-				dd.id = id;
-				dd.name = d.address;
-				dd.alias = d.name;
-				dd.type=DevMask.BT;
-				Thread.usleep(50000);
-				var uuids =  btmgr.get_device_property(id, "UUIDs").dup_strv();
-				if (uuids.length > 0) {
-					sid = BLEKnownUUids.verify_serial(uuids, out dd.gid);
-					if(dd.gid == 2) {
-						dd.type |= DevMask.BTLE;
-					}
+	private bool add_bt_device(BTDevice d, out DevDef dd) {
+		dd={};
+		if(!extant(d.address)) {
+			dd = DevDef();
+			dd.type = DevMask.BT;
+			uint sid = 0;
+			var uuids =  btmgr.get_device_property(d.id, "UUIDs").dup_strv();
+			if (uuids.length > 0) {
+				sid = BLEKnownUUids.verify_serial(uuids, out dd.gid);
+				if(sid == 2) {
+					dd.type |= DevMask.BTLE;
 				}
 			}
+			dd.id = d.id;
+			dd.name = d.address;
+			dd.alias = d.name;
+			return true;
 		}
-		return (sid != 0);
+		return (false);
 	}
 
     public DevManager() {
@@ -86,18 +72,19 @@ public class DevManager : Object {
 			_init = true;
 			serials = new SList<DevDef?>();
 			btmgr = new Bluez();
-
 			btmgr.added_device.connect((id) => {
-					add_bt_device_async.begin(id, (obj, res) => {
-							DevDef dd;
-							var dres = add_bt_device_async.end(res, out dd);
-							if (dres) {
-								serials.append(dd);
-								device_added(dd);
-							}
-						});
+					var d = btmgr.get_device(id);
+					if(d.device_type == 0) {
+						DevDef dd;
+						var dres = add_bt_device(d, out dd);
+						if (dres) {
+							serials.append(dd);
+							device_added(dd);
+						}
+					}
 				});
 			btmgr.init();
+
 			usbmgr = new USBMgr();
 			usbmgr.add_device_usb.connect((n,a) => {
 					if (!extant(n)) {
@@ -116,15 +103,30 @@ public class DevManager : Object {
 	}
 
 	public void checkbts() {
-		foreach(var dv in btmgr.get_devices()) {
-			add_bt_device_async.begin(dv.id, (obj, res) => {
-					DevDef dd;
-					var dres = add_bt_device_async.end(res, out dd);
-					if (dres) {
-						serials.append(dd);
-						device_added(dd);
+		var btdevs = btmgr.get_devices();
+		int mbts = 0;
+		foreach(var dv in btdevs) {
+			if(dv.device_type == 0) {
+				mbts++;
+				var dd = get_dd_for_name(dv.address);
+				if (dd != null) {
+					var uuids =  btmgr.get_device_property(dv.id, "UUIDs").dup_strv();
+					if(uuids.length > 3 && dd.type != (DevMask.BTLE|DevMask.BT)) {
+						MWPLog.message("BT: unexpected type for %s\n", dd.name);
 					}
-				});
+				} else {
+						MWPLog.message("BT: missing %s\n", dv.address);
+				}
+			}
+		}
+		int nbts = 0;
+		serials.@foreach((b) => {
+				if((b.type & DevMask.BT) != 0) {
+					nbts++;
+				}
+			});
+		if(mbts != nbts) {
+			MWPLog.message("BT: bluez %d, serials %d (should not happen)\n", mbts, nbts);
 		}
 	}
 

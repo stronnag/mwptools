@@ -47,8 +47,8 @@
    public abstract bool discoverable { get; protected set; }
    public abstract void try_set_discoverable (bool discoverable);
 
-   /* Get a list of the Device structs that we know about */
-   public abstract List<unowned Device> get_devices ();
+   /* Get a list of the BTDevice structs that we know about */
+   public abstract List<unowned BTDevice> get_devices ();
 
    /* Emitted when one or more of the devices is added, removed, or changed */
    public signal void devices_changed ();
@@ -56,6 +56,6 @@
    public signal void removed_device(uint id);
 
    /* Try to connect/disconnect a particular device.
-	  The device_key argument comes from the Device struct */
+	  The device_key argument comes from the BTDevice struct */
    public abstract bool set_device_connected (uint device_key, bool connected);
  }

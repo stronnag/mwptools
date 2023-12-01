@@ -22,7 +22,7 @@
  *   Charles Kerr <charles.kerr@canonical.com>
  */
 
-public class Device: Object {
+public class BTDevice: Object {
   public enum Type {
       OTHER,
       COMPUTER,
@@ -52,7 +52,7 @@ public class Device: Object {
     return @"{id:$id, name:$name, address:$address, device_type:$device_type, is_connectable:$is_connectable, is_connected:$is_connected}";
   }
 
-  public Device (uint id,
+  public BTDevice (uint id,
                  Type device_type,
                  string name,
                  string address,
