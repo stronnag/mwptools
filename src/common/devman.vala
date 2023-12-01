@@ -195,6 +195,8 @@ public class DevManager {
 		return 0;
 	}
 
+	public void checkbts() {}
+
 	public static DevDef? get_dd_for_name(string name) {
 		var dd = DevDef();
 		dd.name = name;
