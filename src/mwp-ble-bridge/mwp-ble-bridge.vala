@@ -31,9 +31,9 @@ public class GattTest : Application {
         shutdown.connect (on_shutdown);
 		delay = 500;
 		var options = new OptionEntry[] {
-			{ "address", 'a', 0, OptionArg.STRING, addr, "BT address", null},
-			{ "settle", 's', 0, OptionArg.INT, ref delay, "BT settle time (ms)", null},
-			{ "verrbose", 's', 0, OptionArg.NONE, null, "BT settle time (ms)", null},
+			{ "address", 'a', 0, OptionArg.STRING, null, "BT address", null},
+			{ "settle", 's', 0, OptionArg.INT, null, "BT settle time (ms)", null},
+			{ "verbose", 's', 0, OptionArg.NONE, null, "be verbose", null},
             { "version", 'v', 0, OptionArg.NONE, null, "show version", null},
 			{null}
 		};
