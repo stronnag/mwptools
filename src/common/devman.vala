@@ -226,7 +226,7 @@ public class DevManager {
 		return dd;
 	}
 
-	public async bool wait_device_async(string addr) {
+	public static async bool wait_device_async(string addr) {
 		return true;
 	}
 }
