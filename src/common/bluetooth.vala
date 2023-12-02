@@ -48,7 +48,7 @@
    public abstract void try_set_discoverable (bool discoverable);
 
    /* Get a list of the BTDevice structs that we know about */
-   public abstract List<unowned BTDevice> get_devices ();
+   public abstract List<unowned BluezDev.Device> get_devices ();
 
    /* Emitted when one or more of the devices is added, removed, or changed */
    public signal void devices_changed ();

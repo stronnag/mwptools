@@ -896,6 +896,8 @@ public class MWSerial : Object {
 						commode = ComMode.FD|ComMode.STREAM|ComMode.BT;
 						set_noblock();
 						lasterr = 0;
+					} else {
+						lasterr=Posix.errno;
 					}
 				}
 			} else {
@@ -956,8 +958,8 @@ public class MWSerial : Object {
 				}
 				fd = MwpSerial.open(device, (int)rate);
 			}
+			lasterr=Posix.errno;
 		}
-		lasterr=Posix.errno;
 		if(fd < 0) {
 			fd = -1;
 			available = false;
@@ -966,9 +968,6 @@ public class MWSerial : Object {
 				wrfd = fd;
 			}
 			available = true;
-		}
-		if (dd != null) {
-			dd.used = available;
 		}
 		return available;
     }
@@ -992,10 +991,6 @@ public class MWSerial : Object {
 
     public void close() {
         available=false;
-		var dd = DevManager.get_dd_for_name(devname);
-		if (dd != null) {
-			dd.used = false;
-		}
         if(fd != -1) {
             if(tag > 0) {
                 Source.remove(tag);
@@ -1009,7 +1004,10 @@ public class MWSerial : Object {
 				if((commode & ComMode.BLE) == ComMode.BLE) {
 					Posix.close(wrfd);
 					wrfd = -1;
-					DevManager.btmgr.set_device_connected(dd.id, false);
+					var dd = DevManager.get_dd_for_name(devname);
+					if (dd != null) {
+						DevManager.btmgr.set_device_connected(dd.id, false);
+					}
 				}
 #endif
 			} else {

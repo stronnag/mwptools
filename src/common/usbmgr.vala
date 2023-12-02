@@ -14,7 +14,7 @@ public class USBMgr : Object {
 					var ds = dev.get_device_file().dup();
 					switch (action) {
 					case "add":
-						print_device(dev);
+						//						print_device(dev);
 						var alias =  dev.get_property("ID_MODEL").dup();
 						add_device_usb(ds, alias);
 						break;

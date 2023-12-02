@@ -33,7 +33,6 @@ public struct DevDef {
 		DevMask type;
 		uint id;
 		int gid;
-		bool used;
 }
 
 #if LINUX
@@ -45,7 +44,7 @@ public class DevManager : Object {
     public signal void device_removed (string s);
 	private static bool _init;
 
-	private bool add_bt_device(BTDevice d, out DevDef dd) {
+	private bool add_bt_device(BluezDev.Device d, out DevDef dd) {
 		dd={};
 		if(!extant(d.address)) {
 			dd = DevDef();
@@ -161,6 +160,30 @@ public class DevManager : Object {
 		return 0;
 	}
 
+	public static  async bool wait_device_async(string addr) {
+		var thr = new Thread<bool> (addr, () => {
+				bool res = false;
+				int cnt = 0;
+				while(true) {
+					var dd = get_dd_for_name(addr);
+					if(dd != null) {
+						res = true;
+						break;
+					} else {
+						cnt += 1;
+						if (cnt == 50) {
+							break;
+						}
+						Thread.usleep(100*1000);
+					}
+				}
+				Idle.add (wait_device_async.callback);
+				return res;
+			});
+		yield;
+		return thr.join();
+	}
+
 	public static DevDef? get_dd_for_name(string name) {
 		for( unowned SList<DevDef?> lp = serials; lp != null; lp = lp.next) {
 			var dd = (DevDef)lp.data;
@@ -201,6 +224,10 @@ public class DevManager {
 		var dd = DevDef();
 		dd.name = name;
 		return dd;
+	}
+
+	public async bool wait_device_async(string addr) {
+		return true;
 	}
 }
 #endif

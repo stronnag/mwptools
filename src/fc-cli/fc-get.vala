@@ -332,40 +332,31 @@ class FCMgr :Object {
         oldmode  =  msp.pmode;
         mode = (issetting) ? Mode.SET : Mode.GET;
         dmgr = new DevManager();
-        dmgr.get_serial_devices();
-
-		if(dev == null) {
-			if(DevManager.serials.length() == 1) {
-				var dx = DevManager.serials.nth_data(0);
-				if (dx.type == DevMask.USB) {
-					dev = dx.name;
-				}
-			}
-		}
 
         dmgr.device_added.connect((sdev) => {
-				//                MWPLog.message("Discovered %s\n", sdev.name);
-                if(!msp.available) {
-                    if(sdev.name == dev || dev == null) {
-						msp.open_async.begin(sdev.name, baud,  (obj,res) => {
-								var ok = msp.open_async.end(res);
-								if (ok) {
-									if(tid != 0) {
-										Source.remove(tid);
-										tid = 0;
-									}
-									msp.setup_reader();
-									msp.pmode = MWSerial.ProtoMode.NORMAL;
-									tid = Timeout.add_seconds(1, () => {
-											try_connect();
-											return true;
+				if (sdev.type == DevMask.USB) {
+					if(!msp.available) {
+						if(sdev.name == dev || dev == null) {
+							msp.open_async.begin(sdev.name, baud,  (obj,res) => {
+									var ok = msp.open_async.end(res);
+									if (ok) {
+										if(tid != 0) {
+											Source.remove(tid);
+											tid = 0;
+										}
+										msp.setup_reader();
+										msp.pmode = MWSerial.ProtoMode.NORMAL;
+										tid = Timeout.add_seconds(1, () => {
+												try_connect();
+												return true;
 										});
-								} else {
-									string estr;
-									msp.get_error_message(out estr);
-									MWPLog.message("Failed to open %s\n", estr);
-								}
-							});
+									} else {
+										string estr;
+										msp.get_error_message(out estr);
+										MWPLog.message("Failed to open %s\n", estr);
+									}
+								});
+						}
 					}
 				}
             });
@@ -489,8 +480,30 @@ class FCMgr :Object {
                     ml.quit();
             });
 
-        if(dev != null)
-			msp.open_async.begin(dev, baud, (obj,res) => {
+
+		if(dev == null) {
+			if(DevManager.serials.length() == 1) {
+				var dx = DevManager.serials.nth_data(0);
+				if (dx.type == DevMask.USB) {
+					dev = dx.name;
+				}
+			}
+		}
+
+        if(dev != null && !msp.available) {
+			DevManager.wait_device_async.begin(dev, (obj,res) => {
+					var ok = DevManager.wait_device_async.end(res);
+					if (!ok) {
+						MWPLog.message("Failed to validate %s\n", dev);
+						ml.quit();
+					}
+					open_device();
+				});
+		}
+    }
+
+	void open_device() {
+		msp.open_async.begin(dev, baud, (obj,res) => {
 					var ok = msp.open_async.end(res);
 					if (ok) {
 						MWPLog.message("Opening %s\n", dev);
@@ -502,7 +515,7 @@ class FCMgr :Object {
 						MWPLog.message("open failed %s\n", estr);
 					}
 				});
-    }
+	}
 
     public void run() {
         ml = new MainLoop();

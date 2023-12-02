@@ -32,33 +32,11 @@ class CliTerm : Object {
 	private Posix.termios oldtio = {0};
 
 	public CliTerm() {
-		dmgr = new DevManager();
-		dmgr.get_serial_devices();
 	}
 
 	public void init() {
-        eol="\r";
-        if(eolm == 1)
-            eol="\n";
-        else if(eolm == 2)
-            eol="\r\n";
-        else if(eolm == 3)
-            eol="\r\r\n";
-
-        MWPLog.set_time_format("%T");
-		if(eolm > 1)
-			MWPLog.set_cr();
-		MWPLog.set_time_format("%T");
         msp= new MWSerial();
-		if (dev == null) {
-			if(DevManager.serials.length() == 1) {
-				var dx = DevManager.serials.nth_data(0);
-				if (dx.type == DevMask.USB) {
-					dev = dx.name;
-				}
-			}
-		}
-
+		dmgr = new DevManager();
         dmgr.device_added.connect((sdev) => {
 				if (dev == null) {
 					if(!msp.available && sdev.type == DevMask.USB) {
@@ -72,10 +50,26 @@ class CliTerm : Object {
 					msp.close();
             });
 
-        if(dev != null)
-            open_device(dev);
+		eol="\r";
+        if(eolm == 1)
+            eol="\n";
+        else if(eolm == 2)
+            eol="\r\n";
+        else if(eolm == 3)
+            eol="\r\r\n";
 
-
+        MWPLog.set_time_format("%T");
+		if(eolm > 1)
+			MWPLog.set_cr();
+		MWPLog.set_time_format("%T");
+		if (dev == null) {
+			if(DevManager.serials.length() == 1) {
+				var dx = DevManager.serials.nth_data(0);
+				if (dx.type == DevMask.USB) {
+					dev = dx.name;
+				}
+			}
+		}
         msp.cli_event.connect((buf,len) => {
                 if(sendpass)
                     ml.quit();
@@ -101,6 +95,17 @@ class CliTerm : Object {
 		msp.serial_lost.connect(() => {
 				ml.quit();
 			});
+
+		if(!msp.available && dev != null) {
+			DevManager.wait_device_async.begin(dev, (obj,res) => {
+					var ok = DevManager.wait_device_async.end(res);
+					if (!ok) {
+						MWPLog.message("Failed to validate %s\n", dev);
+						ml.quit();
+					}
+					open_device(dev);
+				});
+		}
     }
 
     private void replay_file() {
@@ -173,7 +178,7 @@ class CliTerm : Object {
 				} else {
 					string estr;
 					msp.get_error_message(out estr);
-					print("open failed %s\r\n", estr);
+					MWPLog.message("open failed %s\n", estr);
 				}
 			});
 	}

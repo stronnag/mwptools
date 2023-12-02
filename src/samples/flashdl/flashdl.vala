@@ -230,21 +230,10 @@ public class Flashdl : Object {
         msp = new MWSerial();
         dmgr = new DevManager(DevMask.USB);
 
-        dmgr.get_serial_devices();
-		if(dev == null) {
-			if(DevManager.serials.length() == 1) {
-				var dx = DevManager.serials.nth_data(0);
-				if (dx.type == DevMask.USB) {
-					dev = dx.name;
-				}
-			}
-		}
-
-        if(dev != null)
-            open_device(dev);
-
         dmgr.device_added.connect((sdev) => {
-				open_device(sdev.name);
+				if(!msp.available && sdev.type == DevMask.USB) {
+					open_device(sdev.name);
+				}
             });
 
         dmgr.device_removed.connect((sdev) => {
@@ -268,7 +257,27 @@ public class Flashdl : Object {
                     });
                 return Source.REMOVE;
             });
-    }
+
+		if(dev == null) {
+			if(DevManager.serials.length() == 1) {
+				var dx = DevManager.serials.nth_data(0);
+				if (dx.type == DevMask.USB) {
+					dev = dx.name;
+				}
+			}
+		}
+
+		if(!msp.available && dev != null) {
+			DevManager.wait_device_async.begin(dev, (obj,res) => {
+					var ok = DevManager.wait_device_async.end(res);
+					if (!ok) {
+						MWPLog.message("Failed to validate %s\n", dev);
+						ml.quit();
+					}
+					open_device(dev);
+				});
+		}
+	}
 
     private void open_device(string d) {
         if(!msp.available) {

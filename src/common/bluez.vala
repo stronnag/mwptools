@@ -54,7 +54,7 @@ public class Bluez: Bluetooth, Object {
   private HashTable<uint,ObjectPath> id_to_path;
 
   /* maps our arbitrary unique id to a Bluetooth.Device struct for public consumption */
-  private HashTable<uint,BTDevice> id_to_device;
+  private HashTable<uint,BluezDev.Device> id_to_device;
 
   public Bluez () {
     init_bluez_state_vars ();
@@ -86,7 +86,7 @@ public class Bluez: Bluetooth, Object {
 
   private void init_bluez_state_vars () {
     id_to_path = new HashTable<uint,ObjectPath> (direct_hash, direct_equal);
-    id_to_device = new HashTable<uint,BTDevice> (direct_hash, direct_equal);
+    id_to_device = new HashTable<uint,BluezDev.Device> (direct_hash, direct_equal);
     path_to_id = new HashTable<ObjectPath,uint> (str_hash, str_equal);
     path_to_adapter_proxy = new HashTable<ObjectPath,BluezAdapter> (str_hash, str_equal);
     path_to_device_proxy = new HashTable<ObjectPath,BluezDevice> (str_hash, str_equal);
@@ -303,12 +303,12 @@ public class Bluez: Bluetooth, Object {
       }
 
     // look up the device's type
-    BTDevice.Type type;
+    BluezDev.Device.Type type;
     var v = device_proxy.get_cached_property ("Class");
     if (v == null)
-      type = BTDevice.Type.OTHER;
+      type = BluezDev.Device.Type.OTHER;
     else
-      type = BTDevice.class_to_device_type (v.get_uint32());
+      type = BluezDev.Device.class_to_device_type (v.get_uint32());
 
     // look up the device's human-readable name
     v = device_proxy.get_cached_property ("Alias");
@@ -333,7 +333,7 @@ public class Bluez: Bluetooth, Object {
         foreach (var s in uuid_strings)
             uuids += get_uuid16_from_uuid_string (s);
     }
-    id_to_device.insert (id, new BTDevice (id,
+    id_to_device.insert (id, new BluezDev.Device (id,
                                          type,
                                          name,
                                          address,
@@ -376,7 +376,7 @@ public class Bluez: Bluetooth, Object {
   ////  Public API
   ////
 
-  public BTDevice? get_device(uint id) {
+  public BluezDev.Device? get_device(uint id) {
 	  return id_to_device.lookup (id);
   }
 
@@ -436,7 +436,7 @@ public class Bluez: Bluetooth, Object {
       }
   }
 
-  public List<unowned BTDevice> get_devices () {
+  public List<unowned BluezDev.Device> get_devices () {
     return id_to_device.get_values();
   }
 
