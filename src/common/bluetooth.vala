@@ -52,8 +52,9 @@
 
    /* Emitted when one or more of the devices is added, removed, or changed */
    public signal void devices_changed ();
-   public signal void added_device(uint id);
+   public signal void changed_device(uint id);
    public signal void removed_device(uint id);
+   public signal void changed_adapter(ObjectPath op);
 
    /* Try to connect/disconnect a particular device.
 	  The device_key argument comes from the BTDevice struct */

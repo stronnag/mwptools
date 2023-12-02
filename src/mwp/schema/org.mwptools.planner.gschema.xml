@@ -652,5 +652,11 @@
       <description>Margin(m) for LOS Analysis</description>
     </key>
 
+    <key type="b" name="bluez-disco">
+      <default>false</default>
+      <summary>Start Bluetooth discovery</summary>
+      <description>Only serial devices with detected RSSI will be offered</description>
+    </key>
+
   </schema>
 </schemalist>

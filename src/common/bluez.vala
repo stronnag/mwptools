@@ -160,11 +160,7 @@ public class Bluez: Bluetooth, Object {
         }
         path_to_adapter_proxy.insert (object_path, adapter_proxy);
         adapter_proxy.g_properties_changed.connect(() => update_adapter (object_path));
-		/*
-		try {
-			adapter_proxy.start_discovery();
-		} catch {}
-		*/
+		changed_adapter(object_path);
 	}
     update_combined_adapter_state ();
   }
@@ -194,6 +190,22 @@ public class Bluez: Bluetooth, Object {
     discoverable = is_discoverable;
     powered = is_powered;
     supported = is_supported;
+  }
+
+
+  public bool discovery(bool state) {
+ 	  var cmd = (state) ? "StartDiscovery" : "StopDiscovery";
+ 	  var iter = HashTableIter<ObjectPath,BluezAdapter> (path_to_adapter_proxy);
+ 	  BluezAdapter adapter_proxy;
+ 	  ObjectPath object_path;
+ 	  bool resp = false;
+ 	  while (iter.next (out object_path, out adapter_proxy)) {
+ 		  try {
+ 			  adapter_proxy.call_sync(cmd, null, DBusCallFlags.NONE, -1, null);
+ 		  } catch {}
+ 		  resp = true;
+ 	  }
+ 	  return resp;
   }
 
   public ObjectPath? find_gatt_characteristic_path(string uuid) {
@@ -248,6 +260,8 @@ public class Bluez: Bluetooth, Object {
 	  return false;
   }
 
+
+  /**
   ////
   ////  bluetooth device UUIDs
   ////
@@ -263,7 +277,7 @@ public class Bluez: Bluetooth, Object {
 
     return uuid16;
   }
-
+  **/
 
   ////
   ////  Device Upkeep
@@ -276,74 +290,76 @@ public class Bluez: Bluetooth, Object {
    * and when a device's properties changes, we need to rebuild the proxy.
    */
   private void update_device (ObjectPath object_path) {
-	  bool isnew = false;
 	  //	  debug(@"bluez5 calling update_device for $object_path");
 
     // Create a proxy if we don't have one
-    var device_proxy = path_to_device_proxy.lookup (object_path);
-    if (device_proxy == null) {
-        try {
-			device_proxy = bus.get_proxy_sync (BLUEZ_BUSNAME, object_path);
-			isnew = true;
-        } catch (Error e) {
-			critical (@"$(e.message)");
-			return;
-        }
-        path_to_device_proxy.insert (object_path, device_proxy);
-        device_proxy.g_properties_changed.connect(() => update_device (object_path));
+	  var device_proxy = path_to_device_proxy.lookup (object_path);
+	  if (device_proxy == null) {
+		  try {
+			  device_proxy = bus.get_proxy_sync (BLUEZ_BUSNAME, object_path);
+		  } catch (Error e) {
+			  critical (@"$(e.message)");
+			  return;
+		  }
+		  path_to_device_proxy.insert (object_path, device_proxy);
+		  device_proxy.g_properties_changed.connect(() => update_device (object_path));
       }
 
     // look up our id for this device.
     // if we don't have one yet, create one.
-    var id = path_to_id.lookup (object_path);
-    if (id == 0) {
-        id = next_device_id ++;
-        id_to_path.insert (id, object_path);
-        path_to_id.insert (object_path, id);
+	  var id = path_to_id.lookup (object_path);
+	  if (id == 0) {
+		  id = next_device_id ++;
+		  id_to_path.insert (id, object_path);
+		  path_to_id.insert (object_path, id);
       }
 
     // look up the device's type
-    BluezDev.Device.Type type;
-    var v = device_proxy.get_cached_property ("Class");
-    if (v == null)
-      type = BluezDev.Device.Type.OTHER;
-    else
-      type = BluezDev.Device.class_to_device_type (v.get_uint32());
+	  BluezDev.Device.Type type;
+	  var v = device_proxy.get_cached_property ("Class");
+	  if (v == null)
+		  type = BluezDev.Device.Type.OTHER;
+	  else
+		  type = BluezDev.Device.class_to_device_type (v.get_uint32());
 
     // look up the device's human-readable name
-    v = device_proxy.get_cached_property ("Alias");
-    if (v == null)
-      v = device_proxy.get_cached_property ("Name");
-    var name = v == null ? "Unknown" : v.get_string ();
+	  v = device_proxy.get_cached_property ("Alias");
+	  if (v == null)
+		  v = device_proxy.get_cached_property ("Name");
+	  var name = v == null ? "Unknown" : v.get_string ();
 
     // look up the device's bus address
-    v = device_proxy.get_cached_property ("Address");
-    var address = v == null ? null : v.get_string ();
+	  v = device_proxy.get_cached_property ("Address");
+	  var address = v == null ? null : v.get_string ();
 
     // look up the device's Connected flag
-    v = device_proxy.get_cached_property ("Connected");
-    var is_connected = (v != null) && v.get_boolean ();
+	  v = device_proxy.get_cached_property ("Connected");
+	  var is_connected = (v != null) && v.get_boolean ();
 
+	  v = device_proxy.get_cached_property ("RSSI");
+	  int16 rssi = 0;
+	  if  (v != null)
+		  rssi = v.get_int16 ();
+
+	/**
     // derive the uuid-related attributes we care about
     v = device_proxy.get_cached_property ("UUIDs");
     uint16[] uuids = {};
-    if (v != null)
-    {
-        string[] uuid_strings = v.dup_strv ();
-        foreach (var s in uuid_strings)
-            uuids += get_uuid16_from_uuid_string (s);
+    if (v != null) {
+	string[] uuid_strings = v.dup_strv ();
+	foreach (var s in uuid_strings)
+	uuids += get_uuid16_from_uuid_string (s);
     }
-    id_to_device.insert (id, new BluezDev.Device (id,
-                                         type,
-                                         name,
-                                         address,
-                                         true,
-                                         is_connected));
-    devices_changed ();
-    update_connected ();
-	if(isnew) {
-		added_device(id);
-	}
+	**/
+	  id_to_device.insert (id, new BluezDev.Device (id,
+													type,
+													name,
+													address,
+													rssi,
+													is_connected));
+	  devices_changed ();
+	  update_connected ();
+	  changed_device(id);
   }
 
   private void device_removed (ObjectPath path) {
@@ -470,10 +486,6 @@ private interface ObjectManager : Object {
 
 [DBus (name = "org.bluez.Adapter1")]
 private interface BluezAdapter : DBusProxy {
-	[DBus (name = "StartDiscovery")]
-    public abstract void start_discovery() throws DBusError, IOError;
-    [DBus (name = "StopDiscovery")]
-    public abstract void stop_discovery() throws DBusError, IOError;
 }
 
 [DBus (name = "org.bluez.Device1")]

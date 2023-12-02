@@ -116,6 +116,7 @@ public class MWPSettings : GLib.Object {
     public int misciconsize {get; set; default=32;}
     public int show_sticks {get; set; default=0;}
 	public int los_margin {get; set; default=0;}
+	public bool bluez_disco {get; set; default=false;}
 
     public signal void settings_update (string s);
 
@@ -413,6 +414,8 @@ public class MWPSettings : GLib.Object {
             show_sticks = settings.get_enum("show-sticks");
 		if(s == null || s == "los-margin")
             los_margin = settings.get_int("los-margin");
+        if(s == null || s == "bluez-disco")
+            bluez_disco = settings.get_boolean ("bluez-disco");
 	}
 
     public void save_pane() {

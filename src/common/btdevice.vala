@@ -47,26 +47,25 @@ namespace BluezDev {
 		public uint id { get; construct; }
 		public string name { get; construct; }
 		public string address { get; construct; }
-		public bool is_connectable { get; construct; }
+		public int16 rssi { get; construct; }
 		public bool is_connected { get; construct; }
 		public string print() {
-			return @"{id:$id, name:$name, address:$address, device_type:$device_type, is_connectable:$is_connectable, is_connected:$is_connected}";
+			return @"{id:$id, addr:$address, name:$name, type:$device_type, rssi:$rssi, connected:$is_connected}";
 		}
 
 		public Device (uint id,
-						 Type device_type,
-						 string name,
-						 string address,
-						 bool is_connectable,
-						 bool is_connected)
-			{
-				Object (id: id,
-						device_type: device_type,
-						name: name,
-						address: address,
-						is_connectable: is_connectable,
-						is_connected: is_connected);
-			}
+					   Type device_type,
+					   string name,
+					   string address,
+					   int16 rssi,
+					   bool is_connected) {
+			Object (id: id,
+					device_type: device_type,
+					name: name,
+					address: address,
+					rssi: rssi,
+					is_connected: is_connected);
+		}
 
 		public static Type class_to_device_type (uint32 c) {
 			switch ((c & 0x1f00) >> 8) {

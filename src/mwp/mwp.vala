@@ -1000,7 +1000,9 @@ public class MWP : Gtk.Application {
             lman.save_config();
         }
 
-        if(msp.available) {
+		DevManager.stop_disco();
+
+		if(msp.available) {
             msp.close();
 		}
 #if MQTT
@@ -1525,7 +1527,7 @@ public class MWP : Gtk.Application {
 		msp = new MWSerial();
 
 		ttrk = new TelemTracker(this);
-        devman = new DevManager();
+        devman = new DevManager(conf.bluez_disco);
         devman.device_added.connect((dd) => {
 				string s = devname_for_dd(dd);
                 if(dev_is_bt(dd) || msp.available)
