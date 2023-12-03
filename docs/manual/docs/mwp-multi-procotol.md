@@ -70,6 +70,31 @@ The following BLE chip-sets are supported:
 
 The first and last items having been tested by the author.
 
+### Discovery and filtering
+
+By default, mwp relies on the bonded information about bluetooth devices known to the operating system. This has (at least) two consequences:
+
+* Unknown devices are not detected
+* All known (serial) devices are listed, including offline / un-powered devices.
+
+#### Experimental Discover and Filter action
+
+There is a somewhat experimental option that includes scanning and RSSI filtering such that:
+
+* A Bluetooth discovery scan is initiated (and terminated on quit).
+* Only on-line devices with non-zero RSSI are listed.
+
+The downside being that is RSSI if never discovered / advertised by the OS, then the device is not listed.
+
+This mode is enabled by a setting:
+
+    $ gsettings set org.mwptools.planner  bluez-disco true
+
+This is persistent, in order to revert to the default, non-scanning no RSSI filter:
+
+    $ gsettings set org.mwptools.planner  bluez-disco false
+
+
 ### mwp-ble-bridge
 
 In order to use BLE serial devices with other tools that do not implement the BLE protocol, mwp provides a `mwp-ble-bridge` tool that uses a pseudo-terminal to facilitate BLE connectivity for other tools that expect a device node. See the `README.md` in `src/mwp-ble-bridge`.
