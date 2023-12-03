@@ -88,6 +88,10 @@ public class GattTest : Application {
 
 	private void init () {
 		gs = new BleSerial();
+		if(addr.has_prefix("bt://")) {
+			addr = addr[5:addr.length];
+		}
+
 		open_async.begin((obj, res) =>  {
 				var ok = open_async.end(res);
 				if (ok == 0) {

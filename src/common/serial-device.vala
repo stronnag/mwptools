@@ -569,6 +569,23 @@ public class MWSerial : Object {
         }
     }
 
+    public static bool valid_bt_name(string addr) {
+        var nok = 0;
+        if (addr != null) {
+            var parts = addr.split(":");
+            if (parts.length == 6) {
+                foreach(var p in parts) {
+                    if(p.length == 2) {
+                        if (p[0].isxdigit() && p[1].isxdigit()) {
+                            nok += 1;
+                        }
+                    }
+                }
+            }
+        }
+        return (nok == 6);
+    }
+
 	public void set_dmask(DevMask dm) {
 		dtype = dm;
 	}
@@ -837,23 +854,6 @@ public class MWSerial : Object {
         return host;
     }
 
-    private bool valid_bt_name(string addr) {
-        var nok = 0;
-        if (addr != null) {
-            var parts = addr.split(":");
-            if (parts.length == 6) {
-                foreach(var p in parts) {
-                    if(p.length == 2) {
-                        if (p[0].isxdigit() && p[1].isxdigit()) {
-                            nok += 1;
-                        }
-                    }
-                }
-            }
-        }
-        return (nok == 6);
-    }
-
 	public bool open_w (string _device, uint rate) {
 		string device;
 		wrfd = -1;
@@ -867,7 +867,7 @@ public class MWSerial : Object {
 		print_raw = (Environment.get_variable("MWP_PRINT_RAW") != null);
 		commode = 0;
 		var dd = DevManager.get_dd_for_name(devname);
-		if (valid_bt_name(device)) {
+		if (MWSerial.valid_bt_name(device)) {
 			if (dd != null) {
 #if LINUX
 				if ((dd.type & DevMask.BTLE) == DevMask.BTLE) {

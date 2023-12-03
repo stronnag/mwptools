@@ -97,14 +97,29 @@ class CliTerm : Object {
 			});
 
 		if(!msp.available && dev != null) {
-			DevManager.wait_device_async.begin(dev, (obj,res) => {
-					var ok = DevManager.wait_device_async.end(res);
-					if (!ok) {
-						MWPLog.message("Failed to validate %s\n", dev);
-						ml.quit();
-					}
-					open_device(dev);
-				});
+			bool is_bt = false;
+			if(dev.has_prefix("bt://")) {
+				dev = dev[5:dev.length];
+				is_bt = true;
+			} else {
+				is_bt = MWSerial.valid_bt_name(dev);
+			}
+			if (is_bt) {
+				DevManager.wait_device_async.begin(dev, (obj,res) => {
+						var ok = DevManager.wait_device_async.end(res);
+						if (!ok) {
+							MWPLog.message("Failed to validate %s\n", dev);
+							ml.quit();
+						}
+						var dd = DevManager.get_dd_for_name(dev);
+						if (dd != null) {
+							dev = dd.name;
+						}
+						open_device(dev);
+					});
+			} else {
+				open_device(dev);
+			}
 		}
     }
 

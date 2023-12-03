@@ -89,7 +89,7 @@ public class DevManager : Object {
 
 			usbmgr = new USBMgr();
 			usbmgr.add_device_usb.connect((n,a) => {
-					if (!extant(n)) {
+					if (get_dd_for_name(n) == null) {
 						DevDef dd = DevDef(){ name = n, alias = a, type = DevMask.USB };
 						serials.append(dd);
 						device_added(dd);
@@ -142,21 +142,13 @@ public class DevManager : Object {
 		}
 	}
 
-	private bool extant (string name) {
-		bool found = false;
-		for(unowned var lp = serials; lp != null; lp = lp.next) {
-			if (((DevDef)lp.data).name == name) {
-				found = true;
-				break;
-			}
-		}
-		return found;
-	}
-
 	public static DevMask get_type_for_name(string name) {
 		for( unowned SList<DevDef?> lp = serials; lp != null; lp = lp.next) {
 			var dd = (DevDef)lp.data;
 			if(dd.name == name) {
+				return dd.type;
+			}
+			if(dd.alias == name) {
 				return dd.type;
 			}
 		}
@@ -191,6 +183,9 @@ public class DevManager : Object {
 		for( unowned SList<DevDef?> lp = serials; lp != null; lp = lp.next) {
 			var dd = (DevDef)lp.data;
 			if(dd.name == name) {
+				return dd;
+			}
+			if(dd.alias == name) {
 				return dd;
 			}
 		}
