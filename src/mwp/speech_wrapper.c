@@ -15,6 +15,8 @@
  * (c) Jonathan Hudson <jh+mwptools@daria.co.uk>
  */
 
+#define _DEFAULT_SOURCE
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

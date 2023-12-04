@@ -61,11 +61,13 @@ common_inc_dir += include_directories('.')
 vapi_dir = meson.current_source_dir()
 
 dev_src = []
+dev_args = []
 
 if host_machine.system() == 'linux'
   usb_src = files('usbmgr.vala')
   bt_src = files('bluez.vala', 'bluetooth.vala', 'ble-helper.vala', 'btdevice.vala', 'ble_uuids.vala' )
   dev_src = [usb_src, bt_src]
+  dev_args += '-D_XOPEN_SOURCE=999'
 endif
 
 install_data('mwp_icon.svg', install_dir: get_option('datadir') / 'icons/hicolor/scalable/apps')

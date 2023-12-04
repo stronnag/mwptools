@@ -39,7 +39,7 @@ executable('mwp',
 	   link_with: libmwpvers,
 	   include_directories : [common_inc_dir, configuration_inc],
 	   vala_args : [dopts, mwp_v_args ],
-	   c_args: [mwp_c_args ],
+	   c_args: [mwp_c_args, dev_args ],
 	   install : true,
           )
 
@@ -48,6 +48,7 @@ executable('cliterm',
            dependencies: [ clideps ],
            include_directories : common_inc_dir,
            vala_args : [dopts, cli_v_args ],
+           c_args: [dev_args],
            install : true,
           )
 
@@ -62,6 +63,7 @@ executable('fc-get',
            dependencies: [ fcdeps ],
            include_directories : common_inc_dir,
            vala_args : [dopts, fc_v_args ],
+           c_args: [dev_args],
            install : true,
           )
 
@@ -87,6 +89,7 @@ executable('flashdl',
            dependencies: [ fdldeps ],
 	   include_directories : common_inc_dir,
            vala_args : [dopts, fdl_v_args ],
+           c_args: [dev_args],
            build_by_default: false,
            install : false,
 	   install_tag : 'flashdl',
