@@ -1,5 +1,3 @@
-extern unowned string ptsname(int fd);
-
 namespace MWPLog {
 	public void  message(string format, ...) {
 		var args = va_list();
@@ -182,7 +180,7 @@ public class GattTest : Application {
 			if (pfd != -1) {
 				Posix.grantpt(pfd);
 				Posix.unlockpt(pfd);
-				unowned string s = ptsname(pfd);
+				unowned string s = Posix.ptsname(pfd);
 				print("%s <=> %s\n",addr, s);
 				ioreader();
 			} else {
