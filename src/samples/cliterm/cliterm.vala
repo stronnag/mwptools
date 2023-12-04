@@ -29,7 +29,7 @@ class CliTerm : Object {
     private string eol;
     private bool sendpass = false;
 	private uint8 inavvers;
-	private Posix.termios oldtio = {0};
+	private Posix.termios oldtio = Posix.termios();
 
 	public CliTerm() {
 	}
@@ -81,10 +81,10 @@ class CliTerm : Object {
 				//				stderr.printf("msp %u %u %s\r\n", cmd, len, err.to_string());
 				if (!err && cmd == MSP.Cmds.FC_VERSION) {
 					inavvers = buf[0];
-					if(inavvers > 4 && cli_delay != null) {
-						Timeout.add(500, () => {
-								msp.write(cli_delay, cli_delay.length);
-								msp.write(eol.data, eol.length);
+					if(inavvers > 4) /* && cli_delay != null) */ {
+						Timeout.add(100, () => {
+								cli_delay = "cli_delay 1\r\n";
+								msp.write(cli_delay.data, cli_delay.length);
 								return false;
 							});
 					}
