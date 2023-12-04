@@ -109,6 +109,7 @@ if with_gatt
            sources: [gatt_app_src, bt_src],
            dependencies: [gatt_deps],
            vala_args : [ dopts ],
+           c_args: [dev_args],
            build_by_default: true,
            install : true,
 	   )
