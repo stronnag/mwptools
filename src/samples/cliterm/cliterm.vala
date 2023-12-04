@@ -97,28 +97,30 @@ class CliTerm : Object {
 			});
 
 		if(!msp.available && dev != null) {
-			bool is_bt = false;
-			if(dev.has_prefix("bt://")) {
-				dev = dev[5:dev.length];
-				is_bt = true;
-			} else {
-				is_bt = MWSerial.valid_bt_name(dev);
-			}
-			if (is_bt) {
-				DevManager.wait_device_async.begin(dev, (obj,res) => {
+			string rdev;
+			var st = DevUtils.evince_device_type(dev, out rdev);
+			if(st == DevUtils.SerialType.BT || st == DevUtils.SerialType.UNKNOWN) {
+				dev = rdev;
+				DevManager.wait_device_async.begin(rdev, (obj,res) => {
 						var ok = DevManager.wait_device_async.end(res);
-						if (!ok) {
-							MWPLog.message("Failed to validate %s\n", dev);
+						if (ok) {
+							var dd = DevManager.get_dd_for_name(dev);
+							if (dd != null) {
+								dev = dd.name;
+								if (DevUtils.valid_bt_name(dev)) {
+									open_device(dev);
+								}
+							}
+						} else {
+							MWPLog.message("Unrecognised %s\n", dev);
 							ml.quit();
 						}
-						var dd = DevManager.get_dd_for_name(dev);
-						if (dd != null) {
-							dev = dd.name;
-						}
-						open_device(dev);
 					});
-			} else {
+			} else if (st != DevUtils.SerialType.UNKNOWN) {
 				open_device(dev);
+			} else {
+				MWPLog.message("Unrecognised %s\n", dev);
+				ml.quit();
 			}
 		}
     }

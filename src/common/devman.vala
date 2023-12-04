@@ -27,12 +27,57 @@ public enum DevMask {
 }
 
 public struct DevDef {
-        string name;
-        string alias;
-		DevMask type;
-		uint id;
-		int gid;
-		int16 rssi;
+	string name;
+	string alias;
+	DevMask type;
+	uint id;
+	int gid;
+	int16 rssi;
+}
+
+namespace DevUtils {
+	public enum SerialType {
+		UNKNOWN=0,
+		URI=1,
+		FS=2,
+		BT=3
+	}
+
+	public static SerialType evince_device_type(string name, out string? rname) {
+		SerialType styp = SerialType.UNKNOWN;
+		rname = name;
+		if(name.has_prefix("bt://")) {
+			rname = name[5:name.length];
+			styp = SerialType.BT;
+		} else if (DevUtils.valid_bt_name(name)) {
+			styp = SerialType.BT;
+		} else if (name.has_prefix("tcp://") || name.has_prefix("udp://")) {
+			styp = SerialType.URI;
+		} else {
+			Posix.Stat st;
+			if(Posix.stat(name, out st) == 0) {
+				styp = SerialType.FS;
+			}
+		}
+		return styp;
+	}
+
+    public static bool valid_bt_name(string addr) {
+        var nok = 0;
+        if (addr != null) {
+            var parts = addr.split(":");
+            if (parts.length == 6) {
+                foreach(var p in parts) {
+                    if(p.length == 2) {
+                        if (p[0].isxdigit() && p[1].isxdigit()) {
+                            nok += 1;
+                        }
+                    }
+                }
+            }
+        }
+        return (nok == 6);
+    }
 }
 
 #if LINUX

@@ -490,15 +490,32 @@ class FCMgr :Object {
 			}
 		}
 
-        if(dev != null && !msp.available) {
-			DevManager.wait_device_async.begin(dev, (obj,res) => {
-					var ok = DevManager.wait_device_async.end(res);
-					if (!ok) {
-						MWPLog.message("Failed to validate %s\n", dev);
-						ml.quit();
-					}
-					open_device();
-				});
+		if(!msp.available && dev != null) {
+			string rdev;
+			var st = DevUtils.evince_device_type(dev, out rdev);
+			if(st == DevUtils.SerialType.BT || st == DevUtils.SerialType.UNKNOWN) {
+				dev = rdev;
+				DevManager.wait_device_async.begin(rdev, (obj,res) => {
+						var ok = DevManager.wait_device_async.end(res);
+						if (ok) {
+							var dd = DevManager.get_dd_for_name(dev);
+							if (dd != null) {
+								dev = dd.name;
+								if (DevUtils.valid_bt_name(dev)) {
+									open_device();
+								}
+							}
+						} else {
+							MWPLog.message("Unrecognised %s\n", dev);
+							ml.quit();
+						}
+					});
+			} else if (st != DevUtils.SerialType.UNKNOWN) {
+				open_device();
+			} else {
+				MWPLog.message("Unrecognised %s\n", dev);
+				ml.quit();
+			}
 		}
     }
 
