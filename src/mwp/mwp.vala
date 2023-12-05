@@ -4671,7 +4671,9 @@ public class MWP : Gtk.Application {
 
 		DevManager.serials.foreach((dd) => {
 				if (dev_is_bt(dd)) {
-					append_combo(dev_entry, devname_for_dd(dd));
+					if(!conf.bluez_disco || dd.rssi != 0) {
+						append_combo(dev_entry, devname_for_dd(dd));
+					}
 				}
 			});
     }
