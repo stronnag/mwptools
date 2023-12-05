@@ -654,8 +654,8 @@
 
     <key type="b" name="bluez-disco">
       <default>false</default>
-      <summary>Start Bluetooth discovery</summary>
-      <description>Only serial devices with detected RSSI will be offered</description>
+      <summary>Use Bluetooth discovery</summary>
+      <description>Only discovered Bluetooth serial devices with non-zero RSSI will be offered</description>
     </key>
 
   </schema>

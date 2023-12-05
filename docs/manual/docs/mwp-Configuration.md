@@ -206,6 +206,7 @@ This *may* not be installed by default, but should be available via the OS packa
 | auto-wp-edit | Whether direct WP editing is available | If true, the user can edit / create waypoints directly by clicking on the map, if false, it is necessary to toggle the WP Edit button to enable editing. | false |
 | baudrate | Baud rate | Serial baud rate | 115200 |
 | blackbox-decode | Name of the blackbox_decode application | Name of the blackbox_decode application (in case there are separate for iNav and betaflight) | "blackbox_decode" |
+| bluez-disco | Use Bluetooth discovery | Only discovered Bluetooth serial devices with non-zero RSSI will be offered | false |
 | centre-on | centre map on GPS | centre map on GPS as needed | true |
 | checkswitches | check switches | check switches (an ancient JH sanity check) | false |
 | compat-version | mw-nav compat version | Default mw-nav compat version in XML files. mwp doesn't care, older (MW) applications might. | "42.0" |
@@ -330,7 +331,7 @@ Note also that the resize step is no longer required, as {{ mwp }} scales the ic
 | ------------- | ----- |
 | `CFG_UGLY_XML` | Generate ugly multi-mission XML, so as not to confuse the inav configurator |
 | `MWP_ARGS` | Extra command line arguments |
-| `MWP_BING_KEY` | A user provided BING API key (e.g. for [Auto LOS](mwp-los-tool.md#auto-los)) |
+| `MWP_BING_KEY` | A user provided BING API key |
 | `MWP_BLACK_TILE` | Specify a black tile to be used by the Black Tiles map proxy |
 | `MWP_IGNORE_SATS` | Consider LTM positions valid even with low satellite count |
 | `MWP_LOG_DIR` | Location of console logs ($HOME if undefined) |
