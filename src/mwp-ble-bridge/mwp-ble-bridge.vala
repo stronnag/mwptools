@@ -114,6 +114,9 @@ public class GattTest : Application {
 	}
 
 	private int open_w() {
+		if(verbose) {
+			message("start %s", addr);
+		}
 		uint tc = 0;
 		while ((id = bt.get_id_for(addr)) == 0) {
 			Thread.usleep(5000);
@@ -122,16 +125,26 @@ public class GattTest : Application {
 				return -1;
 			}
 		}
-		tc = 0;
+		if(verbose) {
+			message("id %u", id);
+		}
+
 		if (!bt.set_device_connected(id, true)) {
 			return -2;
 		}
+		if(verbose) {
+			message("connecting");
+		}
+		tc = 0;
 		while (!bt.get_device(id).is_connected) {
 			Thread.usleep(5000);
 			tc++;
 			if(tc > 200*5) {
 				return -2;
 			}
+		}
+		if(verbose) {
+			message("get properties");
 		}
 		tc = 0;
 		while(true) {
@@ -148,6 +161,9 @@ public class GattTest : Application {
 				return -3;
 			}
 		}
+		if(verbose) {
+			message("servicing");
+		}
 		tc = 0;
 		while (!gs.find_service(bt, id)) {
 			Thread.usleep(5000);
@@ -155,6 +171,9 @@ public class GattTest : Application {
 			if (tc > 200*2) {
 				return -4;
 			}
+		}
+		if(verbose) {
+			message("serviced OK");
 		}
 		return 0;
 	}

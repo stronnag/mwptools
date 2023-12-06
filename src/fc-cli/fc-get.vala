@@ -3,15 +3,17 @@ private static int baud = 115200;
 private static string dev = null;
 private static string filename = null;
 private static bool noback = false;
-private static bool dump = false;
+private static bool sdump = false;
+private static bool ddump = false;
 private static int delay = 0;
 
 const OptionEntry[] options = {
     { "baud", 'b', 0, OptionArg.INT, out baud, "baud rate", null},
     { "device", 'd', 0, OptionArg.STRING, out dev, "device", null},
     { "no-back", 'n', 0, OptionArg.NONE, out noback, "no back", null},
-    { "dump", 0, 0, OptionArg.NONE, out dump, "dump input to stdout", null},
+    { "stdout", 0, 0, OptionArg.NONE, out sdump, "echo input to stdout", null},
     { "delay", 'w', 0, OptionArg.INT, out delay, "inter-line in ms", null},
+    { "dump", 'D', 0, OptionArg.NONE, out ddump, "dump not diff", null},
     {null}
 };
 
@@ -155,8 +157,10 @@ class FCMgr :Object {
     }
 
     private void start_diff() {
-        MWPLog.message("Starting \"diff all\"\n");
-        string cmd="diff all\n";
+		var act = (ddump) ? "dump" : "diff";
+
+		MWPLog.message("Starting \"%s all\"\n", act);
+        string cmd="%s all\n".printf(act);
         state = State.DIFF;
         inbuf[0] = '#';
         inbuf[1] = ' ';
@@ -371,7 +375,7 @@ class FCMgr :Object {
                     Source.remove(tid);
                     tid = 0;
                 }
-                if(dump)
+                if(sdump)
                     Posix.write(1, buf, len);
 
                 for(var j = 0; j <len; j++) {
