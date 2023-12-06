@@ -6,13 +6,14 @@ private static bool msc=false;
 private static bool gpspass=false;
 private static string rcfile=null;
 private static int eolm;
-private static string cli_delay=null;
+private static int cli_delay=0;
 private static MainLoop ml;
 
 const OptionEntry[] options = {
     { "baud", 'b', 0, OptionArg.INT, out baud, "baud rate", "115200"},
     { "device", 'd', 0, OptionArg.STRING, out dev, "device", null},
     { "noinit", 'n', 0,  OptionArg.NONE, out noinit, "noinit", "false"},
+    { "cli-delay", 'W', 0,  OptionArg.INT, out cli_delay, "delay", "0"},
     { "msc", 'm', 0,  OptionArg.NONE, out msc, "msc mode", "false"},
     { "gpspass", 'g', 0,  OptionArg.NONE, out gpspass, "gpspassthrough", "false"},
     { "gpspass", 'p', 0,  OptionArg.NONE, out gpspass, "gpspassthrough", "false"},
@@ -78,16 +79,8 @@ class CliTerm : Object {
             });
 
 		msp.serial_event.connect((cmd, buf, len, flags, err) => {
-				//				stderr.printf("msp %u %u %s\r\n", cmd, len, err.to_string());
 				if (!err && cmd == MSP.Cmds.FC_VERSION) {
 					inavvers = buf[0];
-					if(inavvers > 4) /* && cli_delay != null) */ {
-						Timeout.add(100, () => {
-								cli_delay = "cli_delay 1\r\n";
-								msp.write(cli_delay.data, cli_delay.length);
-								return false;
-							});
-					}
 					msp_init();
 				}
 			});
@@ -150,27 +143,34 @@ class CliTerm : Object {
 					msp.write("#".data, 1);
 					return false;
 				});
-		}
-
-		if(msc) {
-			Timeout.add(500, () => {
-					msp.write("msc".data, 3);
-					msp.write(eol.data, eol.length);
-					return false;
-				});
-		} else if(gpspass) {
-			Timeout.add(500, () => {
-					var g = "gpspassthrough";
-					msp.write(g.data, g.length);
-					msp.write(eol.data, eol.length);
-					sendpass = true;
-					return false;
-				});
-		} else if(rcfile != null) {
-			Timeout.add(1000, () => {
-					replay_file();
-					return false;
-				});
+			if(msc) {
+				Timeout.add(500, () => {
+						msp.write("msc".data, 3);
+						msp.write(eol.data, eol.length);
+						return false;
+					});
+			} else if(gpspass) {
+				Timeout.add(500, () => {
+						var g = "gpspassthrough";
+						msp.write(g.data, g.length);
+						msp.write(eol.data, eol.length);
+						sendpass = true;
+						return false;
+					});
+			} else if(rcfile != null) {
+				Timeout.add(1000, () => {
+						replay_file();
+						return false;
+					});
+			} else {
+				if(inavvers > 4 && cli_delay != 0)  {
+					Timeout.add(500, () => {
+							var clidelay = "cli_delay %d\r\n".printf(cli_delay);
+							msp.write(clidelay.data, clidelay.length);
+							return false;
+						});
+				}
+			}
 		}
 	}
 
@@ -254,8 +254,6 @@ class CliTerm : Object {
 						if (line.has_prefix("-")) {
 							sb.append_c(' ');
 							sb.append(line);
-						} else if (line.has_prefix("cli_delay")) {
-							cli_delay = line;
 						}
 					}
 				}
