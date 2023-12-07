@@ -6879,7 +6879,7 @@ public class MWP : Gtk.Application {
 			boxnames = (string)raw;
 			MWPLog.message("BOXNAMES: %s\n", boxnames);
 			string []bsx = boxnames.split(";");
-			int i = 0;
+			uint i = 0;
 			foreach(var bs in bsx) {
 				switch(bs) {
 				case "ARM":
@@ -6912,7 +6912,7 @@ public class MWP : Gtk.Application {
 				}
 				i++;
 			}
-			MWPLog.message("Masks arm=%jx angle=%jx horz=%jx ph=%jx rth=%jx wp=%jx cr=%jx fs=%jx\n",
+			MWPLog.message("Masks arm=%x angle=%x horz=%x ph=%x rth=%x wp=%x crz=%x fs=%x\n",
 						   arm_mask, angle_mask, horz_mask, ph_mask,
 						   rth_mask, wp_mask, cr_mask, fs_mask);
 

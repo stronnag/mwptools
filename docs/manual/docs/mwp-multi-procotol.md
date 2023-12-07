@@ -99,6 +99,21 @@ This is persistent, in order to revert to the default, non-scanning no RSSI filt
 
 In order to use BLE serial devices with other tools that do not implement the BLE protocol, mwp provides a `mwp-ble-bridge` tool that uses a pseudo-terminal to facilitate BLE connectivity for other tools that expect a device node. See the `README.md` in `src/mwp-ble-bridge`.
 
+### BLE Caveats
+
+BLE not particularly useful for anything other than low power. The transfer rates are extremely slow and whether the device can be used at all depends on its MTU (maximum transmission unit). For some devices this is unacceptable low for use with mwp / INAV.
+
+* The SpeedyBee version 2 BLE device has an MTU of 517 bytes; it works perfectly.
+* CC2541 based devices have an MTU of 23 bytes; this is useless for our requirement.
+
+mwp will never send more than 20 bytes in a single write to a BLE device; chunking up messages as required. The FC cannot do this, so large messages will result in massive data overrun (for example MSP_BOX_NAMES will typically return more than 400 bytes).
+
+mwp will log the detected MTU when it connects a BLE device.
+
+    13:05:07.547489 BLE chipset CC2541, mtu 23 (unlikely to end well)
+	...
+	13:07:36.946329 BLE chipset SpeedyBee Type 2, mtu 517
+
 ### Serial permissions
 
 It is necessary for the user to have read / write permission on serial devices. The installation guide provides [instructions](Building-with-meson-and-ninja.md#accessing-the-serial-port).

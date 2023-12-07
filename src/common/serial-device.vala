@@ -854,20 +854,38 @@ public class MWSerial : Object {
 		if (DevUtils.valid_bt_name(device)) {
 			if (dd != null) {
 #if LINUX
+				bool bleok = false;
 				if ((dd.type & DevMask.BTLE) == DevMask.BTLE) {
 					gs = new BleSerial(dd.gid);
 					commode = ComMode.FD|ComMode.STREAM|ComMode.BLE;
 					if(DevManager.btmgr.set_device_connected(dd.id, true)) {
+						var tc = 0;
 						while (!DevManager.btmgr.get_device(dd.id).is_connected) {
 							Thread.usleep(5000);
+							tc++;
+							if(tc > 200) {
+								break;
+							}
 						}
+						tc = 0;
 						while(!gs.find_service(DevManager.btmgr, dd.id)) {
 							Thread.usleep(5000);
+							tc++;
+							if(tc > 100) {
+								break;
+							}
 						}
-						MWPLog.message("BLE chipset %s\n", gs.get_chipset());
+						var cset = gs.get_chipset();
 						Thread.usleep(10000); // 10ms
-						gs.get_bridge_fds(DevManager.btmgr, out fd, out wrfd);
-					} else {
+						var mtu = gs.get_bridge_fds(DevManager.btmgr, out fd, out wrfd);
+						var xstr = "";
+						if (mtu < 200) {
+							xstr = " (unlikely to end well)";
+						}
+						MWPLog.message("BLE chipset %s, mtu %d%s\n", cset, mtu, xstr);
+						bleok = (mtu > 0);
+					}
+					if(!bleok){
 						fd = -1;
 						available = false;
 						lasterr = Posix.ETIMEDOUT;
