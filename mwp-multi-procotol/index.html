@@ -608,6 +608,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#ble-caveats" class="md-nav__link">
+    <span class="md-ellipsis">
+      BLE Caveats
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#serial-permissions" class="md-nav__link">
     <span class="md-ellipsis">
       Serial permissions
@@ -1341,6 +1350,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#ble-caveats" class="md-nav__link">
+    <span class="md-ellipsis">
+      BLE Caveats
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#serial-permissions" class="md-nav__link">
     <span class="md-ellipsis">
       Serial permissions
@@ -1568,6 +1586,18 @@ quit
 </code></pre>
 <h3 id="mwp-ble-bridge">mwp-ble-bridge<a class="headerlink" href="#mwp-ble-bridge" title="Permanent link">#</a></h3>
 <p>In order to use BLE serial devices with other tools that do not implement the BLE protocol, mwp provides a <code>mwp-ble-bridge</code> tool that uses a pseudo-terminal to facilitate BLE connectivity for other tools that expect a device node. See the <code>README.md</code> in <code>src/mwp-ble-bridge</code>.</p>
+<h3 id="ble-caveats">BLE Caveats<a class="headerlink" href="#ble-caveats" title="Permanent link">#</a></h3>
+<p>BLE not particularly useful for anything other than low power. The transfer rates are extremely slow and whether the device can be used at all depends on its MTU (maximum transmission unit). For some devices this is unacceptable low for use with mwp / INAV.</p>
+<ul>
+<li>The SpeedyBee version 2 BLE device has an MTU of 517 bytes; it works perfectly.</li>
+<li>CC2541 based devices have an MTU of 23 bytes; this is useless for our requirement.</li>
+</ul>
+<p>mwp will never send more than 20 bytes in a single write to a BLE device; chunking up messages as required. The FC cannot do this, so large messages will result in massive data overrun (for example MSP_BOX_NAMES will typically return more than 400 bytes).</p>
+<p>mwp will log the detected MTU when it connects a BLE device.</p>
+<pre><code>13:05:07.547489 BLE chipset CC2541, mtu 23 (unlikely to end well)
+...
+13:07:36.946329 BLE chipset SpeedyBee Type 2, mtu 517
+</code></pre>
 <h3 id="serial-permissions">Serial permissions<a class="headerlink" href="#serial-permissions" title="Permanent link">#</a></h3>
 <p>It is necessary for the user to have read / write permission on serial devices. The installation guide provides <a href="../Building-with-meson-and-ninja/#accessing-the-serial-port">instructions</a>.</p>
 <h2 id="ip-protocols-udp-and-tcp">IP protocols (UDP and TCP)<a class="headerlink" href="#ip-protocols-udp-and-tcp" title="Permanent link">#</a></h2>
@@ -1652,7 +1682,7 @@ udp://esp-air:14014/?bind=14014
   <small>
     
       Last update:
-      2023-12-03
+      2023-12-07
     
   </small>
 </div>
