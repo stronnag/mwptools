@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"strconv"
 	"strings"
@@ -45,8 +46,15 @@ func (g *GeoZone) to_string() string {
 }
 
 func NewGeoZones(fn string) ([]GeoZone, error) {
+	var r io.ReadCloser
+	var err error
 	var gzone = make([]GeoZone, 0)
-	r, err := os.Open(fn)
+	if fn == "-" {
+		r = os.Stdin
+		err = nil
+	} else {
+		r, err = os.Open(fn)
+	}
 	if err == nil {
 		defer r.Close()
 		zid := -1

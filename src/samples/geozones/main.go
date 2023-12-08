@@ -16,13 +16,13 @@ func main() {
 		fmt.Fprintf(os.Stderr, "\n")
 	}
 
-	nop := false
+	showp := false
 	verbose := false
 	pline := false
 	outfile := "-"
 	cname := "Unknown"
 
-	flag.BoolVar(&nop, "no-points", false, "don't show points in output")
+	flag.BoolVar(&showp, "show-points", false, "show points in output")
 	flag.BoolVar(&pline, "use-polyline", false, "show polylines (vice polygons)")
 	flag.BoolVar(&verbose, "verbose", false, "dump out geozone structures")
 	flag.StringVar(&outfile, "output", "-", "output file name ('-' => stdout)")
@@ -45,7 +45,7 @@ func main() {
 			if ndot != -1 {
 				kname = kname[:ndot]
 			}
-			KMLFile(outfile, kname, gzones, nop, pline, cname)
+			KMLFile(outfile, kname, gzones, showp, pline, cname)
 		} else {
 			fmt.Fprintln(os.Stderr, "No zones found")
 			flag.Usage()

@@ -59,23 +59,23 @@ func get_style(t int) string {
 	return st
 }
 
-func add_poly(g GeoZone, nop, pline bool) kml.Element {
+func add_poly(g GeoZone, showp, pline bool) kml.Element {
 	var points []kml.Coordinate
 	var wps []kml.Element
 	st := get_style(g.gtype)
 	for i, pt := range g.points {
-		if !nop {
+		if showp {
 			p := kml.Placemark(
 				kml.Name(fmt.Sprintf("%d", i+1)),
 				kml.StyleURL(st),
 				kml.Point(
 					kml.AltitudeMode(kml.AltitudeModeRelativeToGround),
-					kml.Coordinates(kml.Coordinate{Lon: pt.lon, Lat: pt.lat, Alt: float64(g.maxalt)}),
+					kml.Coordinates(kml.Coordinate{Lon: pt.lon, Lat: pt.lat, Alt: float64(g.maxalt / 100.0)}),
 				),
 			).Add(kml.Visibility(true))
 			wps = append(wps, p)
 		}
-		points = append(points, kml.Coordinate{Lon: pt.lon, Lat: pt.lat, Alt: float64(g.maxalt)})
+		points = append(points, kml.Coordinate{Lon: pt.lon, Lat: pt.lat, Alt: float64(g.maxalt / 100.0)})
 	}
 	points = append(points, points[0])
 	track := kml.Placemark(
@@ -108,17 +108,17 @@ func add_poly(g GeoZone, nop, pline bool) kml.Element {
 	name := fmt.Sprintf("Poly %d", g.zid)
 	desc := fmt.Sprintf(g.to_string())
 	kml := kml.Folder(kml.Name(name)).Add(kml.Description(desc)).Add(kml.Visibility(true)).Add(track)
-	if !nop {
+	if showp {
 		kml.Add(wps...)
 	}
 	return kml
 }
 
-func add_circle(g GeoZone, nop, pline bool) kml.Element {
+func add_circle(g GeoZone, showp, pline bool) kml.Element {
 	var points []kml.Coordinate
 	var wps []kml.Element
 	st := get_style(g.gtype)
-	if !nop {
+	if showp {
 		p := kml.Placemark(
 			kml.Name(""),
 			kml.StyleURL(st),
@@ -166,29 +166,29 @@ func add_circle(g GeoZone, nop, pline bool) kml.Element {
 	name := fmt.Sprintf("Circle %d", g.zid)
 	desc := fmt.Sprintf(g.to_string())
 	kml := kml.Folder(kml.Name(name)).Add(kml.Description(desc)).Add(kml.Visibility(true)).Add(track)
-	if !nop {
+	if showp {
 		kml.Add(wps...)
 	}
 	return kml
 }
 
-func kmlBuild(name string, gzones []GeoZone, nop, pline bool) kml.Element {
+func kmlBuild(name string, gzones []GeoZone, showp, pline bool) kml.Element {
 	d := kml.Folder(kml.Name(name)).Add(kml.Open(true))
 	d.Add(zone_styles()...)
 	for _, g := range gzones {
 		switch g.shape {
 		case SHAPE_CIRCLE:
-			d.Add(add_circle(g, nop, pline))
+			d.Add(add_circle(g, showp, pline))
 		case SHAPE_POLY:
-			d.Add(add_poly(g, nop, pline))
+			d.Add(add_poly(g, showp, pline))
 		}
 	}
 	return d
 }
 
-func KMLFile(fn string, kname string, gzones []GeoZone, nop, pline bool, cname string) {
+func KMLFile(fn string, kname string, gzones []GeoZone, showp, pline bool, cname string) {
 	kname = fmt.Sprintf("Zones for craft \"%s\"", cname)
-	d := kmlBuild(kname, gzones, nop, pline)
+	d := kmlBuild(kname, gzones, showp, pline)
 	k := kml.KML(d)
 	var f io.WriteCloser
 	if len(fn) == 0 || fn == "-" {

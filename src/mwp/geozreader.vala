@@ -216,49 +216,42 @@ namespace GeoZoneReader {
 	public void dump(string _vname) {
 		var vname  = _vname;
 		if (zs.length > 0) {
-			string afn = null;;
 			try {
-				int fd = FileUtils.open_tmp ("gzones_XXXXXX", out afn);
+				time_t currtime;
+				string spath = MWP.conf.logsavepath;
+				var f = File.new_for_path(spath);
+				if(f.query_exists() == false) {
+					try {
+						f.make_directory_with_parents();
+					} catch {
+						spath = Environment.get_home_dir();
+					}
+				}
+				time_t(out currtime);
+				if (vname == null || vname.length == 0) {
+					vname="unknown";
+				} else {
+					vname = vname.replace(" ", "_");
+				}
+				var ts = Time.local(currtime).format("%F_%H%M%S");
+				var basen = "GeoZones-%s-%s.kml".printf(vname, ts);
+				var outfn = GLib.Path.build_filename(spath, basen);
+				MWPLog.message("Save KML %s\n", outfn);
+				string []args = {"geozones", "-name", vname, "-output", outfn, "-"};
 				var s = to_string();
-				Posix.write(fd, s.data, s.length);
-				Posix.close(fd);
-				try {
-					time_t currtime;
-					string spath = MWP.conf.logsavepath;
-					var f = File.new_for_path(spath);
-					if(f.query_exists() == false) {
+				var gkml = new Subprocess.newv(args, SubprocessFlags.STDIN_PIPE);
+				gkml.wait_check_async.begin(null, (obj,res) => {
 						try {
-							f.make_directory_with_parents();
-						} catch {
-							spath = Environment.get_home_dir();
+							gkml.wait_check_async.end(res);
+						}  catch (Error e) {
+							MWPLog.message("gkml spawn %s\n", e.message);
 						}
-					}
-					time_t(out currtime);
-					if (vname == null || vname.length == 0) {
-						vname="unknown";
-					} else {
-						vname = vname.replace(" ", "_");
-					}
-					var ts = Time.local(currtime).format("%F_%H%M%S");
-					var basen = "GeoZones-%s-%s.kml".printf(vname, ts);
-					var outfn = GLib.Path.build_filename(spath, basen);
-					MWPLog.message("Save KML %s\n", outfn);
-					string []args = {"geozones", "-name", vname, "-no-points", "-output", outfn, afn};
-
-					var gkml = new Subprocess.newv(args, SubprocessFlags.NONE);
-					gkml.wait_check_async.begin(null, (obj,res) => {
-							try {
-								gkml.wait_check_async.end(res);
-							}  catch (Error e) {
-								MWPLog.message("gkml spawn %s\n", e.message);
-							}
-							Posix.unlink(afn);
-						});
-                } catch (Error e) {
-					MWPLog.message("gkml spawn %s\n", e.message);
-					Posix.unlink(afn);
-                }
-			} catch {}
+					});
+				var fis = gkml.get_stdin_pipe();
+				fis.write(s.data);
+			} catch (Error e) {
+				MWPLog.message("gkml spawn %s\n", e.message);
+			}
 			zs ={};
 		}
 	}
