@@ -272,7 +272,8 @@ namespace GeoZoneReader {
 		try {
 			reset();
 			while ((line = ds.read_line (null)) != null) {
-				if(line.length == 0 || line.has_prefix(";") || line.has_prefix("#"))
+				if(line.length == 0 || line.has_prefix(";") || line.has_prefix("#")
+				   || !line.has_prefix("geozone"))
 					continue;
 				var parts = line.split(" ");
 				if (parts.length > 5) {
@@ -311,5 +312,14 @@ namespace GeoZoneReader {
 			res = false;
 		}
 		return res;
+	}
+
+	void from_file(string fn) {
+		string str;
+		try {
+			if(FileUtils.get_contents(fn, out str)) {
+				from_string(str);
+			}
+		} catch {}
 	}
 }

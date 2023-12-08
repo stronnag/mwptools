@@ -254,6 +254,7 @@ public class MWP : Gtk.Application {
     private uint8 last_safehome = 0;
     private uint8 safeindex = 0;
 	private string sh_load = null;
+	private string gz_load = null;
 	private bool sh_disp;
     private bool is_shutdown = false;
     private MwpNotify? dtnotify = null;
@@ -315,7 +316,7 @@ public class MWP : Gtk.Application {
         hasWP1m = 0x060000,
     }
 
-    public enum WPS {
+	public enum WPS {
         isINAV = (1<<0),
         isFW = (1<<1),
         hasJUMP = (1<<2),
@@ -861,10 +862,41 @@ public class MWP : Gtk.Application {
     }
 #endif
 
+	private void handle_file_by_type(FType ftyp, string? fn) {
+		switch(ftyp) {
+		case FType.MISSION:
+			mission = fn;
+			break;
+		case FType.BBL:
+			bfile = fn;
+			break;
+		case FType.OTXLOG:
+			otxfile = fn;
+			break;
+		case FType.MWPLOG:
+			rfile = fn;
+			break;
+		case FType.KMLZ:
+			add_kml(fn);
+			break;
+		case FType.INAV_CLI:
+			sh_load = fn;
+			gz_load = fn;
+			sh_disp = true;
+			break;
+		default:
+			break;
+		}
+	}
+
     private int _command_line (ApplicationCommandLine command_line) {
 		string[] args = command_line.get_arguments ();
 		foreach (var a in args[1:args.length]) {
-			guess_content_type(a);
+			string fn;
+			var ftyp = MWPFileType.guess_content_type(a, out fn);
+			if(ftyp != FType.UNKNOWN)  {
+				handle_file_by_type(ftyp, fn);
+			}
 		}
 		var o = command_line.get_options_dict();
         set_opts_from_dict(o);
@@ -1181,6 +1213,23 @@ public class MWP : Gtk.Application {
 					if(vfn != null) {
                         bbl_delay = true;
 						replay_otx(vfn);
+					}
+				}
+
+				if(sh_load != null && sh_load != "-FC-") {
+					var vfn = validate_cli_file(sh_load);
+					sh_load = null;
+					if (vfn != null) {
+						safehomed.load_homes(vfn, sh_disp);
+					}
+				}
+				if(gz_load != null) {
+					var vfn = validate_cli_file(gz_load);
+					gz_load = null;
+					if (vfn != null) {
+						GeoZoneReader.from_file(vfn);
+						gzone = GeoZoneReader.generate_overlay(view);
+						gzone.display();
 					}
 				}
 
@@ -2304,16 +2353,17 @@ public class MWP : Gtk.Application {
             });
 
         safehomed.set_view(view);
-        if(conf.load_safehomes != "") {
-            var parts = conf.load_safehomes.split(",");
-			sh_load = parts[0];
-            sh_disp = (parts.length == 2 && (parts[1] == "Y" || parts[1] == "y"));
-			if (sh_load != "-FC-") {
-				safehomed.load_homes(sh_load, sh_disp);
+		if(sh_load == null) {
+			if(conf.load_safehomes != "") {
+				var parts = conf.load_safehomes.split(",");
+				sh_load = parts[0];
+				sh_disp = (parts.length == 2 && (parts[1] == "Y" || parts[1] == "y"));
+				if (sh_load != "-FC-") {
+					safehomed.load_homes(sh_load, sh_disp);
+				}
 			}
 		}
-
-        if(conf.arming_speak)
+		if(conf.arming_speak)
             say_state=NavStatus.SAY_WHAT.Arm;
 
         navstatus.set_audio_status(say_state);
@@ -3031,7 +3081,9 @@ public class MWP : Gtk.Application {
 
 		window.drag_data_received.connect((ctx, x, y, data, info, time) => {
                 foreach(var uri in data.get_uris ()) {
-					guess_content_type(uri);
+					string fn;
+					var ftyp = MWPFileType.guess_content_type(uri, out fn);
+					handle_file_by_type(ftyp, fn);
                 }
                 Gtk.drag_finish (ctx, true, false, time);
 				parse_cli_options();
@@ -3153,51 +3205,6 @@ public class MWP : Gtk.Application {
 		msp.set_auto_mpm(pmask == MWSerial.PMask.AUTO);
 	}
 
-	private void guess_content_type(string uri) {
-		string? fn = null;
-		try {
-			if (uri.has_prefix("file://")) {
-				fn = Filename.from_uri(uri);
-			} else {
-				fn = uri;
-			}
-
-			uint8 buf[1024]={0};
-			uint8 []? pbuf = null;
-			var fs = FileStream.open (fn, "r");
-			if (fs != null) {
-				if(fs.read (buf) > 0) {
-					pbuf=buf;
-				}
-			}
-			var mt = GLib.ContentType.guess(fn, pbuf, null);
-
-			switch (mt) {
-			case "application/vnd.mw.mission":
-			case "application/vnd.mwp.json.mission":
-				mission = fn;
-				break;
-			case "application/vnd.blackbox.log":
-				bfile = fn;
-				break;
-			case "application/vnd.otx.telemetry.log":
-				otxfile = fn;
-				break;
-			case "application/vnd.mwp.log":
-				rfile = fn;
-				break;
-			case "application/vnd.google-earth.kmz":
-				if(x_kmz)
-					add_kml(fn);
-				break;
-			case "application/vnd.google-earth.kml+xml":
-				add_kml(fn);
-				break;
-			default:
-				break;
-			}
-		} catch {}
-	}
 
     private void followme_set_wp(int alt) {
         uint8 buf[32];
