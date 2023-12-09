@@ -8935,7 +8935,7 @@ public class MWP : Gtk.Application {
         set_replay_menus(true);
         reboot_status();
 		if(gzone != null) {
-			GeoZoneReader.dump(vname);
+			GeoZoneReader.dump(gzone, vname);
 			gzone.remove();
 			gzone = null;
 		}

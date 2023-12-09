@@ -16,6 +16,7 @@ public class Overlay : Object {
     public struct Point {
         double latitude;
         double longitude;
+		int altitude;
     }
 
 
@@ -28,8 +29,9 @@ public class Overlay : Object {
 
 	public struct OverlayItem {
         OLType type;
-        string name;
-        StyleItem styleinfo;
+        string? name;
+		string? desc;
+        StyleItem? styleinfo;
         Point[] pts;
     }
 
@@ -38,6 +40,9 @@ public class Overlay : Object {
     private Champlain.MarkerLayer mlayer;
 	private OverlayItem[] elements;
 
+	public OverlayItem[] get_elements() {
+		return elements;
+	}
 
     private void at_bottom(Champlain.Layer layer) {
         var pp = layer.get_parent();

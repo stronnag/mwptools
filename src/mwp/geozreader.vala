@@ -1,3 +1,80 @@
+namespace KMLWriter {
+
+	private string fixcol(string col) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(col[7:9]);
+		sb.append(col[5:7]);
+		sb.append(col[3:5]);
+		sb.append(col[1:3]);
+		return sb.str;
+	}
+
+	public string ovly_to_string(Overlay o) {
+		string s;
+        Xml.Doc* doc = new Xml.Doc ("1.0");
+		Xml.Node* root = new Xml.Node (null, "kml");
+        doc->set_root_element (root);
+		var ns = new Xml.Ns (root, "http://www.opengis.net/kml/2.2", "gx");
+		Xml.Node* comment = new Xml.Node.comment ("created from mwp");
+        root->add_child (comment);
+		Xml.Node* folder;
+		folder = root->new_text_child (ns, "Folder", "");
+		folder->new_text_child (ns, "name", "Zones");
+		folder->new_text_child (ns, "open", "1");
+		int j = 0;
+		foreach (var el in o.get_elements()) {
+			var sname = "StyleItem_%d".printf(j);
+			var style = folder->new_text_child (ns, "Style", "");
+			style->new_prop ("id", sname);
+			Xml.Node* style_item;
+			if(el.styleinfo.point_colour != null && el.styleinfo.point_colour != "")  {
+				style_item = style->new_text_child (ns, "IconStyle", "");
+				style_item->new_text_child (ns, "scale", "1");
+				style_item->new_text_child (ns, "color", fixcol(el.styleinfo.point_colour));
+			}
+			style_item = style->new_text_child (ns, "PolyStyle", "");
+			if(el.styleinfo.fill_colour != null && el.styleinfo.fill_colour != "")  {
+				style_item->new_text_child (ns, "color", fixcol(el.styleinfo.fill_colour));
+			} else {
+				style_item->new_text_child (ns, "color", "00000000");
+
+			}
+			if(el.styleinfo.line_colour != null && el.styleinfo.line_colour != "")  {
+				style_item = style->new_text_child (ns, "LineStyle", "");
+				style_item->new_text_child (ns, "color", fixcol(el.styleinfo.line_colour));
+				style_item->new_text_child (ns, "width", el.styleinfo.line_width.to_string());
+			}
+			j++;
+		}
+		j = 0;
+		foreach (var el in o.get_elements()) {
+			var sname = "StyleItem_%d".printf(j);
+			var vfolder = folder->new_text_child (ns, "Folder", "");
+			vfolder->new_text_child (ns, "name", el.name);
+			vfolder->new_text_child (ns, "description", el.desc);
+			vfolder->new_text_child (ns, "visibility", "1");
+			var pmark = vfolder->new_text_child (ns, "Placemark", "");
+			pmark->new_text_child (ns, "name", el.name);
+			pmark->new_text_child (ns, "styleUrl", "#%s".printf(sname));
+			var polyg = pmark->new_text_child (ns, "Polygon", "");
+			polyg->new_text_child (ns, "altitudeMode", "relativeToGround");
+			polyg->new_text_child (ns, "extrude", "1");
+			polyg->new_text_child (ns, "tessellate", "0");
+			var obis = polyg->new_text_child (ns, "outerBoundaryIs", "");
+			var lring = obis->new_text_child (ns, "LinearRing", "");
+			var sb = new StringBuilder();
+			foreach (var p in  el.pts) {
+				sb.append_printf("%.7f,%.7f,%d ", p.longitude, p.latitude, p.altitude);
+			}
+			sb.append_printf("%.7f,%.7f,%d", el.pts[0].longitude, el.pts[0].latitude, el.pts[0].altitude);
+			lring->new_text_child (ns, "coordinates", sb.str);
+			j++;
+		}
+		doc->dump_memory_enc_format (out s, null, "utf-8", false);
+		return s;
+	}
+}
+
 namespace GeoZoneReader {
 	public enum GZType {
 		Exclusive = 0,
@@ -163,27 +240,35 @@ namespace GeoZoneReader {
 		for(var j = 0; j < zs.length; j++) {
 			var oi = Overlay.OverlayItem();
 			oi.type = Overlay.OLType.POLYGON;
-			oi.name = "V%2d".printf(j);
+			var sb = new StringBuilder();
+			sb.append_printf("geozone %d %d %d %d %d %d", zs[j].index, zs[j].shape, zs[j].type,
+               zs[j].minalt, zs[j].maxalt, zs[j].action);
 			oi.styleinfo =  get_style(zs[j]);
 			Overlay.Point[] pts = {};
 			if (zs[j].shape == GZShape.Circular) {
+				oi.name = "Circle %2d".printf(j);
+				sb.append_printf(" circle %d %d %d", zs[j].vertices[0].latitude, zs[j].vertices[0].longitude, zs[j].vertices[1].latitude);
 				var clat = (double)zs[j].vertices[0].latitude/1e7;
 				var clon = (double)zs[j].vertices[0].longitude/1e7;
 				for (var i = 0; i < 360; i += 5) {
 					var p = Overlay.Point();
+					p.altitude = zs[j].maxalt/100;
 					var range = (double)zs[j].vertices[1].latitude/(100.0*1852.0);
 					Geo.posit(clat, clon, i, range,
 							  out p.latitude, out p.longitude);
 					pts += p;
 				}
 			} else {
+				oi.name = "Polygon %2d".printf(j);
 				for(var k = 0; k < zs[j].vertices.length; k++) {
 					var p = Overlay.Point();
+					p.altitude = zs[j].maxalt/100;
 					p.latitude = (double)zs[j].vertices[k].latitude / 1e7;
 					p.longitude = (double)zs[j].vertices[k].longitude / 1e7;
 					pts += p;
 				}
 			}
+			oi.desc = sb.str;
 			oi.pts = pts;
 			o.add_element(oi);
 		}
@@ -213,44 +298,34 @@ namespace GeoZoneReader {
 		return sb.str;
 	}
 
-	public void dump(string _vname) {
+	public void dump(Overlay ov, string _vname) {
 		var vname  = _vname;
 		if (zs.length > 0) {
+			time_t currtime;
+			string spath = MWP.conf.logsavepath;
+			var f = File.new_for_path(spath);
+			if(f.query_exists() == false) {
+				try {
+					f.make_directory_with_parents();
+				} catch {
+					spath = Environment.get_home_dir();
+				}
+			}
+			time_t(out currtime);
+			if (vname == null || vname.length == 0) {
+				vname="unknown";
+			} else {
+				vname = vname.replace(" ", "_");
+			}
+			var ts = Time.local(currtime).format("%F_%H%M%S");
+			var basen = "GeoZones-%s-%s.kml".printf(vname, ts);
+			var outfn = GLib.Path.build_filename(spath, basen);
+			MWPLog.message("Save KML %s\n", outfn);
+			var s = KMLWriter.ovly_to_string(ov);
 			try {
-				time_t currtime;
-				string spath = MWP.conf.logsavepath;
-				var f = File.new_for_path(spath);
-				if(f.query_exists() == false) {
-					try {
-						f.make_directory_with_parents();
-					} catch {
-						spath = Environment.get_home_dir();
-					}
-				}
-				time_t(out currtime);
-				if (vname == null || vname.length == 0) {
-					vname="unknown";
-				} else {
-					vname = vname.replace(" ", "_");
-				}
-				var ts = Time.local(currtime).format("%F_%H%M%S");
-				var basen = "GeoZones-%s-%s.kml".printf(vname, ts);
-				var outfn = GLib.Path.build_filename(spath, basen);
-				MWPLog.message("Save KML %s\n", outfn);
-				string []args = {"geozones", "-name", vname, "-output", outfn, "-"};
-				var s = to_string();
-				var gkml = new Subprocess.newv(args, SubprocessFlags.STDIN_PIPE);
-				gkml.wait_check_async.begin(null, (obj,res) => {
-						try {
-							gkml.wait_check_async.end(res);
-						}  catch (Error e) {
-							MWPLog.message("gkml spawn %s\n", e.message);
-						}
-					});
-				var fis = gkml.get_stdin_pipe();
-				fis.write(s.data);
+				FileUtils.set_contents(outfn, s);
 			} catch (Error e) {
-				MWPLog.message("gkml spawn %s\n", e.message);
+				MWPLog.message("kmlwriter: %s\n", e.message);
 			}
 			zs ={};
 		}
