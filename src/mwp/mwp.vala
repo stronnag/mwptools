@@ -1228,6 +1228,8 @@ public class MWP : Gtk.Application {
 					gz_load = null;
 					if (vfn != null) {
 						GeoZoneReader.from_file(vfn);
+						if(gzone != null)
+							gzone.remove();
 						gzone = GeoZoneReader.generate_overlay(view);
 						gzone.display();
 					}
@@ -6685,6 +6687,8 @@ public class MWP : Gtk.Application {
 		case MSP.Cmds.GEOZONE:
 			var cnt = GeoZoneReader.append(raw, len);
 			if (cnt >= GeoZoneReader.MAXGZ) {
+				if(gzone != null)
+					gzone.remove();
 				gzone = GeoZoneReader.generate_overlay(view);
 				Idle.add(() => {
 						gzone.display();
@@ -7482,6 +7486,8 @@ public class MWP : Gtk.Application {
 				if (gzone == null) {
 					var txt = (string)raw[0:len];
 					GeoZoneReader.from_string(txt);
+					if(gzone != null)
+						gzone.remove();
 					gzone = GeoZoneReader.generate_overlay(view);
 					Idle.add(() => {
 							gzone.display();
