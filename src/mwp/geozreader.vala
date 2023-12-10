@@ -37,18 +37,12 @@ namespace KMLWriter {
 				style_item->new_text_child (ns, "color", fixcol(el.styleinfo.fill_colour));
 			} else {
 				style_item->new_text_child (ns, "color", "00000000");
-
 			}
 			if(el.styleinfo.line_colour != null && el.styleinfo.line_colour != "")  {
 				style_item = style->new_text_child (ns, "LineStyle", "");
 				style_item->new_text_child (ns, "color", fixcol(el.styleinfo.line_colour));
 				style_item->new_text_child (ns, "width", el.styleinfo.line_width.to_string());
 			}
-			j++;
-		}
-		j = 0;
-		foreach (var el in o.get_elements()) {
-			var sname = "StyleItem_%d".printf(j);
 			var vfolder = folder->new_text_child (ns, "Folder", "");
 			vfolder->new_text_child (ns, "name", el.name);
 			vfolder->new_text_child (ns, "description", el.desc);
