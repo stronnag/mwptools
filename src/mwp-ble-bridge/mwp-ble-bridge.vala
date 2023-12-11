@@ -16,6 +16,9 @@ public class GattTest : Application {
 	private bool verbose;
 	private Bluez bt;
 	private uint id;
+	private uint8 bmode;
+	private Socket skt;
+	private SocketAddress raddr;
 
 	public GattTest () {
         Object (application_id: "org.mwptools.mwp-ble-bridge",
@@ -28,10 +31,13 @@ public class GattTest : Application {
 		startup.connect (on_startup);
         shutdown.connect (on_shutdown);
 		delay = 500;
+		bmode = 'p';
 		var options = new OptionEntry[] {
 			{ "address", 'a', 0, OptionArg.STRING, null, "BT address", null},
 			{ "settle", 's', 0, OptionArg.INT, null, "BT settle time (ms)", null},
-			{ "verbose", 's', 0, OptionArg.NONE, null, "be verbose", null},
+			{ "tcp", 't', 0, OptionArg.NONE, null, "TCP server (vice pseudo-terminal)", null},
+			{ "udp", 'u', 0, OptionArg.NONE, null, "UDP server (vice pseudo-terminal)", null},
+			{ "verbose", 'V', 0, OptionArg.NONE, null, "be verbose", null},
             { "version", 'v', 0, OptionArg.NONE, null, "show version", null},
 			{null}
 		};
@@ -47,6 +53,11 @@ public class GattTest : Application {
 		o.lookup("address", "s", ref addr);
 		o.lookup("settle", "i", ref delay);
 		o.lookup("verbose", "b", ref verbose);
+		if(o.contains("tcp")) {
+			bmode = 't';
+		} else if(o.contains("udp")) {
+			bmode = 'u';
+		}
 
 		if (addr == null) {
 			if (args.length > 1) {
@@ -66,7 +77,7 @@ public class GattTest : Application {
 
 	private int do_handle_local_options(VariantDict o) {
         if (o.contains("version")) {
-            stdout.printf("0.0.1\n");
+            stdout.printf("0.0.2\n");
             return 0;
         }
 		return -1;
@@ -195,64 +206,118 @@ public class GattTest : Application {
 
 	private void start_session () {
 		if (rdfd != -1 && wrfd != -1) {
-			pfd = Posix.posix_openpt(Posix.O_RDWR|Posix.O_NONBLOCK);
-			if (pfd != -1) {
-				Posix.grantpt(pfd);
-				Posix.unlockpt(pfd);
-				unowned string s = Posix.ptsname(pfd);
-				print("%s <=> %s\n",addr, s);
+			if(bmode == 'p') {
+				pfd = Posix.posix_openpt(Posix.O_RDWR|Posix.O_NONBLOCK);
+				if (pfd != -1) {
+					Posix.grantpt(pfd);
+					Posix.unlockpt(pfd);
+					unowned string s = Posix.ptsname(pfd);
+					print("%s <=> %s\n",addr, s);
+					ioreader();
+				}
+			} else if (bmode == 'u') {
+				skt = getUDPSocket();
+				pfd = skt.get_fd();
+				var port = get_random_port(skt);
+				print("listening on udp://localhost:%u\n", port);
 				ioreader();
-			} else {
-				close_session();
+			} else if (bmode == 't') {
+				var lskt = getTCPSocket();
+				var port = get_random_port(lskt);
+				print("listening on tcp://localhost:%u\n", port);
+				var lsource = lskt.create_source(IOCondition.IN);
+				lsource.set_callback((s,c) => {
+						try {
+							skt = s.accept();
+							pfd = skt.get_fd();
+							ioreader();
+						} catch {}
+						return false;
+					});
+				lsource.attach(MainContext.default ());
+				try {
+					lskt.listen();
+				} catch {}
 			}
+		} else {
+			close_session();
 		}
 	}
 
-	private void ioreader() {
-		ioreader_async.begin((obj,res) => {
-				int bres = ioreader_async.end(res);
-				if(verbose) {
-					MWPLog.message("End of reader (%d)", bres);
+	private bool preader(IOChannel s, IOCondition c) {
+		var done = 0;
+		uint8 tbuf[512];
+		if((c &IOCondition.IN) != 0) {
+			size_t nw = 0;
+			if (bmode == 'p') {
+				nw = Posix.read(pfd, tbuf, 512);
+			} else {
+				try {
+					nw = skt.receive_from(out raddr, tbuf);
+				} catch {
 				}
+			}
+			if (nw > 0) {
+				uint8 *p = (uint8*)tbuf;
+				for(int n = (int)nw; n > 0; ) {
+					var nc = (n > 20) ? 20 : n;
+					Posix.write(wrfd, p, nc);
+					p += nc;
+					n -= nc;
+				}
+			} else {
+				done = -3;
+			}
+			if(done == 0) {
+				return true;
+			}
+		}
+		Idle.add(() => {
 				close_session();
+				return false;
 			});
+		return false;
 	}
 
-	private async int ioreader_async () {
-		var thr = new Thread<int> ("mwp-ble", () => {
-				uint8 buf[512];
-				int done = 0;
-				while (done == 0) {
-					var nw = Posix.read(pfd, buf, 20);
-					if (nw > 0) {
-						Posix.write(wrfd, buf, nw);
-					} else if (nw < 0) {
-						if(Posix.errno == Posix.EAGAIN) {
-							Thread.usleep(1000);
-						} else {
-							done = Posix.errno;
-						}
-					} else {
-						done =  -3;
-					}
-					var nr = Posix.read(rdfd, buf, 512);
-					if (nr > 0) {
-						Posix.write(pfd, buf, nr);
-					} else if (nr < 0) {
-						if(Posix.errno == Posix.EAGAIN) {
-							Thread.usleep(1000);
-						} else {
-							done = Posix.errno;
-						}
-					} else {
-						done =  -3;
-					}
+
+	private bool freader(IOChannel s, IOCondition c) {
+		var done = 0;
+		uint8 fbuf[512];
+		if((c &IOCondition.IN) != 0) {
+			var nw = Posix.read(rdfd, fbuf, 512);
+			if (nw > 0) {
+				if(bmode == 'p') {
+					Posix.write(pfd, fbuf, nw);
+				} else {
+					try {
+						skt.send_to (raddr, fbuf[:nw]);
+					} catch {}
 				}
-				Idle.add (ioreader_async.callback);
-				return done;
+			} else if (nw < 0) {
+				done =  -1;
+			}
+			if(done == 0) {
+				return true;
+			}
+		}
+		Idle.add(() => {
+				close_session();
+				return false;
 			});
-		yield;
-		return thr.join();
+		return false;
+	}
+
+	private void ioreader() {
+		try {
+			var bles = new IOChannel.unix_new(pfd);
+			bles.set_encoding(null);
+			bles.add_watch(IOCondition.IN|IOCondition.HUP|IOCondition.ERR, preader);
+		} catch {}
+		try {
+			var fds = new IOChannel.unix_new(rdfd);
+			fds.set_encoding(null);
+			fds.add_watch(IOCondition.IN|IOCondition.HUP|IOCondition.NVAL|IOCondition.ERR, freader);
+		} catch {}
 	}
 
 	private bool on_sigint () {
