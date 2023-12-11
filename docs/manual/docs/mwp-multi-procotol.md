@@ -97,7 +97,7 @@ This is persistent, in order to revert to the default, non-scanning no RSSI filt
 
 ### mwp-ble-bridge
 
-In order to use BLE serial devices with other tools that do not implement the BLE protocol, mwp provides a `mwp-ble-bridge` tool that uses a pseudo-terminal to facilitate BLE connectivity for other tools that expect a device node. See the `README.md` in `src/mwp-ble-bridge`.
+In order to use BLE serial devices with other tools that do not implement the BLE protocol, mwp provides a `mwp-ble-bridge` tool that uses a pseudo-terminal, TCP server or UDP server to facilitate BLE connectivity for other tools that expect a device node. See the `README.md` in `src/mwp-ble-bridge`. Using TCP allows connectivity with the INAV Configurator that appears not to understand BLE on Linux.
 
 ### BLE Caveats
 

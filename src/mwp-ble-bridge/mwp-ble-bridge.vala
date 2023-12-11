@@ -105,7 +105,12 @@ public class GattTest : Application {
 				var ok = open_async.end(res);
 				if (ok == 0) {
 					mtu = gs.get_bridge_fds(bt, out rdfd, out wrfd);
-					MWPLog.message("BLE chipset %s, mtu %d\n", gs.get_chipset(), mtu);
+					var sb = new StringBuilder();
+					sb.append_printf("BLE chipset %s, mtu %d", gs.get_chipset(), mtu);
+					if(mtu < 256) {
+						sb.append(" (may not end well)");
+					}
+					MWPLog.message("%s\n", sb.str);
 					start_session();
 				} else {
 					MWPLog.message("Failed to find service (%d)\n", ok);
