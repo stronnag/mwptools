@@ -3177,7 +3177,9 @@ public class MWP : Gtk.Application {
 				}
 			});
 		devman.checkbts();
-		gstdm.setup_device_monitor();
+		if (Environment.get_variable("MWP_NODEVMON") == null) {
+			gstdm.setup_device_monitor();
+		}
 		map_moved();
 	}
 
