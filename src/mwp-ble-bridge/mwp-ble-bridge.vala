@@ -19,6 +19,11 @@ public class GattTest : Application {
 	private uint8 bmode;
 	private Socket skt;
 	private SocketAddress raddr;
+	private bool persist;
+	private uint16 port;
+	private uint ftag;
+	private uint ptag;
+
 
 	public GattTest () {
         Object (application_id: "org.mwptools.mwp-ble-bridge",
@@ -32,9 +37,13 @@ public class GattTest : Application {
         shutdown.connect (on_shutdown);
 		delay = 500;
 		bmode = 'p';
+		persist = false;
+		port = 0;
+
 		var options = new OptionEntry[] {
 			{ "address", 'a', 0, OptionArg.STRING, null, "BT address", null},
 			{ "settle", 's', 0, OptionArg.INT, null, "BT settle time (ms)", null},
+			{ "port", 'p', 0, OptionArg.INT, null, "IP port", null},
 			{ "tcp", 't', 0, OptionArg.NONE, null, "TCP server (vice pseudo-terminal)", null},
 			{ "udp", 'u', 0, OptionArg.NONE, null, "UDP server (vice pseudo-terminal)", null},
 			{ "verbose", 'V', 0, OptionArg.NONE, null, "be verbose", null},
@@ -50,9 +59,14 @@ public class GattTest : Application {
 	public override int command_line (ApplicationCommandLine command_line) {
 		string[] args = command_line.get_arguments ();
 		var o = command_line.get_options_dict();
+
+		int itmp = 0;
+		o.lookup("port", "i", ref itmp);
+		port = (uint16)itmp;
 		o.lookup("address", "s", ref addr);
 		o.lookup("settle", "i", ref delay);
 		o.lookup("verbose", "b", ref verbose);
+
 		if(o.contains("tcp")) {
 			bmode = 't';
 		} else if(o.contains("udp")) {
@@ -195,18 +209,42 @@ public class GattTest : Application {
 	}
 
 	private void close_session () {
-		if(rdfd != -1)
-			Posix.close(rdfd);
-		if(wrfd != -1)
-			Posix.close(wrfd);
-		if(pfd != -1)
-			Posix.close(pfd);
-		pfd = rdfd = wrfd = -1;
-		if (gs != null) {
-			MWPLog.message("Disconnect\n");
-			bt.set_device_connected(id, false);
+		if(ftag != 0) {
+			Source.remove(ftag);
+			ftag = 0;
 		}
-		this.quit();
+		if(ptag != 0) {
+			Source.remove(ptag);
+			ptag = 0;
+		}
+		if(pfd != -1) {
+			if(bmode == 'p') {
+				Posix.close(pfd);
+			} else {
+				try {
+					if (bmode == 't') {
+						skt.shutdown(true, true);
+					}
+					skt.close();
+				} catch (Error e) {
+					message("DBG: shutdown %s", e.message);
+				}
+				Posix.close(pfd);
+			}
+			pfd  = -1;
+		}
+		if(!persist) {
+			if(rdfd != -1)
+				Posix.close(rdfd);
+			if(wrfd != -1)
+				Posix.close(wrfd);
+			rdfd = wrfd = -1;
+			if (gs != null) {
+				MWPLog.message("Disconnect\n");
+				bt.set_device_connected(id, false);
+			}
+			this.quit();
+		}
 	}
 
 	private void start_session () {
@@ -221,23 +259,30 @@ public class GattTest : Application {
 					ioreader();
 				}
 			} else if (bmode == 'u') {
-				skt = getUDPSocket();
+				skt = getUDPSocket(port);
 				pfd = skt.get_fd();
-				var port = get_random_port(skt);
+				if (port == 0) {
+					port = get_random_port(skt);
+				}
 				print("listening on udp://localhost:%u\n", port);
 				ioreader();
 			} else if (bmode == 't') {
-				var lskt = getTCPSocket();
-				var port = get_random_port(lskt);
+				var lskt = getTCPSocket(port);
+				if (port == 0) {
+					port = get_random_port(lskt);
+				}
 				print("listening on tcp://localhost:%u\n", port);
 				var lsource = lskt.create_source(IOCondition.IN);
 				lsource.set_callback((s,c) => {
 						try {
 							skt = s.accept();
 							pfd = skt.get_fd();
+							persist = true;
 							ioreader();
-						} catch {}
-						return false;
+						} catch (Error e) {
+							MWPLog.message("accept: %s\n", e.message);
+						}
+						return persist;
 					});
 				lsource.attach(MainContext.default ());
 				try {
@@ -278,6 +323,7 @@ public class GattTest : Application {
 			}
 		}
 		Idle.add(() => {
+				ptag = 0;
 				close_session();
 				return false;
 			});
@@ -306,6 +352,7 @@ public class GattTest : Application {
 			}
 		}
 		Idle.add(() => {
+				ftag = 0;
 				close_session();
 				return false;
 			});
@@ -316,16 +363,17 @@ public class GattTest : Application {
 		try {
 			var bles = new IOChannel.unix_new(pfd);
 			bles.set_encoding(null);
-			bles.add_watch(IOCondition.IN|IOCondition.HUP|IOCondition.ERR, preader);
+			ptag = bles.add_watch(IOCondition.IN|IOCondition.HUP|IOCondition.ERR, preader);
 		} catch {}
 		try {
 			var fds = new IOChannel.unix_new(rdfd);
 			fds.set_encoding(null);
-			fds.add_watch(IOCondition.IN|IOCondition.HUP|IOCondition.NVAL|IOCondition.ERR, freader);
+			ftag = fds.add_watch(IOCondition.IN|IOCondition.HUP|IOCondition.NVAL|IOCondition.ERR, freader);
 		} catch {}
 	}
 
 	private bool on_sigint () {
+		persist = false;
 		close_session();
 		return Source.REMOVE;
     }
