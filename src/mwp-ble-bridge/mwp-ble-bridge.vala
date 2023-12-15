@@ -222,10 +222,12 @@ public class GattTest : Application {
 				Posix.close(pfd);
 			} else {
 				try {
-					if (bmode == 't') {
-						skt.shutdown(true, true);
+					if (skt != null) {
+						if (bmode == 't') {
+							skt.shutdown(true, true);
+						}
+						skt.close();
 					}
-					skt.close();
 				} catch (Error e) {
 					message("DBG: shutdown %s", e.message);
 				}
@@ -247,8 +249,16 @@ public class GattTest : Application {
 		}
 	}
 
+	private uint16 get_host_port(Socket s, out string hostname) {
+		char hostn[255];
+		var n = Posix.gethostname(hostn);
+		hostname = (string)hostn[:n];
+		return get_random_port(s);
+	}
+
 	private void start_session () {
 		if (rdfd != -1 && wrfd != -1) {
+			string hostname;
 			if(bmode == 'p') {
 				pfd = Posix.posix_openpt(Posix.O_RDWR|Posix.O_NONBLOCK);
 				if (pfd != -1) {
@@ -261,17 +271,13 @@ public class GattTest : Application {
 			} else if (bmode == 'u') {
 				skt = getUDPSocket(port);
 				pfd = skt.get_fd();
-				if (port == 0) {
-					port = get_random_port(skt);
-				}
-				print("listening on udp://localhost:%u\n", port);
+				port = get_host_port(skt, out hostname);
+				print("listening on udp://localhost:%u ; udp://%s:%u\n", port, hostname, port);
 				ioreader();
 			} else if (bmode == 't') {
 				var lskt = getTCPSocket(port);
-				if (port == 0) {
-					port = get_random_port(lskt);
-				}
-				print("listening on tcp://localhost:%u\n", port);
+				port = get_host_port(lskt, out hostname);
+				print("listening on tcp://localhost:%u ; tcp://%s:%u\n", port, hostname, port);
 				var lsource = lskt.create_source(IOCondition.IN);
 				lsource.set_callback((s,c) => {
 						try {
