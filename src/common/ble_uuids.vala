@@ -53,6 +53,7 @@ public class BLEKnownUUids : Object {
 		return 0;
 	}
 }
+/**
 #if TEST
 int main(string?[] args) {
 	new BLEKnownUUids();
@@ -69,3 +70,4 @@ int main(string?[] args) {
 	return 0;
 }
 #endif
+**/
