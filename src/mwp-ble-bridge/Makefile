@@ -1,3 +1,5 @@
+prefix ?= $$HOME/.local
+
 VALAC = valac
 
 COPTS = -X -D_XOPEN_SOURCE=701
@@ -10,10 +12,16 @@ PKGS = --pkg gio-2.0 --pkg posix
 C = ../common
 COMSRC = $(C)/bluetooth.vala  $(C)/bluez.vala $(C)/btdevice.vala $(C)/ble-helper.vala $(C)/ble_uuids.vala
 
-all : mwp-ble-bridge
+APP=mwp-ble-bridge
 
-mwp-ble-bridge: mwp-ble-bridge.vala socket-utils.vala $(COMSRC)
+all : $(APP)
+
+$(APP): mwp-ble-bridge.vala socket-utils.vala $(COMSRC)
 	$(VALAC) --define=TEST --define=LINUX $(COPTS) $(OPTS) $(PKGS) -o $@  $^
 
+install: $(APP)
+	install -d $(prefix)/bin
+	install -s $(APP) $(prefix)/bin/
+
 clean:
-	rm -f  mwp-ble-bridge *~
+	rm -f  $(APP) *~

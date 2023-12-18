@@ -272,12 +272,12 @@ public class GattTest : Application {
 				skt = getUDPSocket(port);
 				pfd = skt.get_fd();
 				port = get_host_port(skt, out hostname);
-				print("listening on udp://localhost:%u ; udp://%s:%u\n", port, hostname, port);
+				print("listening on udp port %u\n", port);
 				ioreader();
 			} else if (bmode == 't') {
 				var lskt = getTCPSocket(port);
 				port = get_host_port(lskt, out hostname);
-				print("listening on tcp://localhost:%u ; tcp://%s:%u\n", port, hostname, port);
+				print("listening on tcp port %u\n", port);
 				var lsource = lskt.create_source(IOCondition.IN);
 				lsource.set_callback((s,c) => {
 						try {

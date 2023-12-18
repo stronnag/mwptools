@@ -82,4 +82,25 @@ Application Options:
  requires a BT address or $MWP_BLE to be set
 ```
 
-Note that is a port is not specified, a random port will be assigned.
+Note that if an IP port is not specified, a random port will be assigned and shown.
+
+## Installation
+
+`mwp-ble-bridge` is installed by default when the mwptools project is installed. If desired, it is also possible just to build / install `mwp-ble-bridge`.
+
+``` shell
+cd src/mwp-ble-bridge
+make
+# This will install for the user in $HOME/.local/bin/
+make install
+# If instead you want it installed system wide
+sudo make install prefix=/usr # install in /usr/bin
+# or
+sudo make install prefix=/usr/local # install in /usr/local/bin
+```
+
+# Dependencies
+
+* Gcc or clang
+* Vala
+* Make
