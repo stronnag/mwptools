@@ -44,6 +44,7 @@ public class GattTest : Application {
 			{ "address", 'a', 0, OptionArg.STRING, null, "BT address", null},
 			{ "settle", 's', 0, OptionArg.INT, null, "BT settle time (ms)", null},
 			{ "port", 'p', 0, OptionArg.INT, null, "IP port", null},
+			{ "keep-alive", 'k', 0, OptionArg.NONE, null, "keep alive", null},
 			{ "tcp", 't', 0, OptionArg.NONE, null, "TCP server (vice pseudo-terminal)", null},
 			{ "udp", 'u', 0, OptionArg.NONE, null, "UDP server (vice pseudo-terminal)", null},
 			{ "verbose", 'V', 0, OptionArg.NONE, null, "be verbose", null},
@@ -66,6 +67,7 @@ public class GattTest : Application {
 		o.lookup("address", "s", ref addr);
 		o.lookup("settle", "i", ref delay);
 		o.lookup("verbose", "b", ref verbose);
+		o.lookup("keep-alive", "b", ref persist);
 
 		if(o.contains("tcp")) {
 			bmode = 't';
@@ -246,6 +248,11 @@ public class GattTest : Application {
 				bt.set_device_connected(id, false);
 			}
 			this.quit();
+		} else if (bmode == 'p') {
+			Idle.add(() => {
+					start_session();
+					return false;
+				});
 		}
 	}
 

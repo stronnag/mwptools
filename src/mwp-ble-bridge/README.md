@@ -27,7 +27,7 @@ upload 76, save false
 Waypoints: 76 of 120, valid 1
 ```
 
-Note that when the application using the pseudo-terminal terminates, the  pseudo-terminal will be closed, which will cause `mwp-ble-bridge` to terminate as well. TCP/IP based bridges are persistent.
+Note that when the application using the pseudo-terminal terminates, the  pseudo-terminal will be closed, which will cause `mwp-ble-bridge` to terminate as well, unless `--keep-alive` was given. TCP/IP based bridges are persistent.
 
 ## Environment
 
@@ -74,6 +74,7 @@ Application Options:
   -a, --address              BT address
   -s, --settle               BT settle time (ms)
   -p, --port                 IP port
+  -k, --keep-alive           keep alive
   -t, --tcp                  TCP server (vice pseudo-terminal)
   -u, --udp                  UDP server (vice pseudo-terminal)
   -V, --verbose              be verbose
