@@ -5,7 +5,7 @@ mwptools
 
 ## Overview
 
-mwptools provides a mission planner, [terrain analysis](https://github.com/stronnag/mwptools/wiki/Mission-Elevation-Plot-and-Terrain-Analysis), ground control station, real time flight logger and log replay / blackbox replay functions for the [INAV](https://github.com/iNavFlight/inav) FC firmware.
+mwptools provides a mission planner, [terrain analysis](https://github.com/stronnag/mwptools/wiki/Mission-Elevation-Plot-and-Terrain-Analysis), line of sight analysis, ground control station, real time flight logger and log replay / blackbox replay functions for the [INAV](https://github.com/iNavFlight/inav) FC firmware.
 
 mwptools supports the full set of INAV and Multiwii WP types.
 
@@ -26,6 +26,7 @@ mwp also supports the real-time display of adjacent aircraft using:
 * [INAV-radar](https://github.com/OlivierC-FR/ESP32-INAV-Radar/) (INAV UAS)
 * MAVlink Traffic Report (e.g. full-size aviation, typically ADS-B via a device such as uAvionix PingRX)
 * ADS-B using Dump1090 /  SBS-1 Basestation streaming TCP protocol.
+* Any other mwp supported telemetry protocol
 
 mwp also provides logging and the replay of:
 
@@ -43,7 +44,7 @@ In addition, mwp proivdes legacy suport for multiwii navigation functions.
 
 ## User Guide
 
-PDF in `docs`, searchable [online user guide](https://stronnag.github.io/mwptools/).
+Searchable [online user guide](https://stronnag.github.io/mwptools/).
 
 ## Tools
 
@@ -130,7 +131,7 @@ In addition to [mwp](https://github.com/stronnag/mwptools), the following INAV m
 
 * [INAV Configurator (for INAV 2.x)](https://github.com/iNavFlight/inav-configurator/tree/2.6.1), limited planning support
 * [INAV Configurator (for current INAV)]( https://github.com/iNavFlight/inav-configurator), supports most current WP types (other than Fly-by-home waypoints). [Development branch preview builds](http://seyrsnys.myzen.co.uk/inav-configurator-next/), may be augmented with [impload](https://github.com/stronnag/impload/) to upload missions to 2.x firmware.
-* [Bullet GCSS](https://github.com/danarrib/BulletGCSS/wiki) GPRS based telemetry using MQTT and a web client (most browsers, Desktop / Tablet / Mobile). Very cool project (and you can use the its MQTT protocol with mwp).
+* [Bullet GCSS](https://github.com/danarrib/BulletGCSS/wiki) GPRS based telemetry using MQTT and a web client (most browsers, Desktop / Tablet / Mobile). Very cool project (you can also use its MQTT protocol with mwp for long range tracking).
 * [Drone Helper](https://www.microsoft.com/en-us/p/drone-helper/9ncs8zwxn58x?activetab=pivot:overviewtab) (Windows 10+)
 * [Android Telemetry Viewer](https://github.com/RomanLut/android-taranis-smartport-telemetry) Android GCS for INAV (CRSF, LTM, Smartport telemetry).
 * [Ezgui](https://play.google.com/store/apps/details?id=com.ezio.multiwii&hl=en_GB), [MissionPlanner for Inav](https://play.google.com/store/apps/details?id=com.eziosoft.ezgui.inav&hl=en) (Android) Unsupported, obsolete. May not work with either contemporary Android or INAV firmware.
