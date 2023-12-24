@@ -219,7 +219,8 @@ public class FakeHomeDialog : GLib.Object {
         pe_altmode.sensitive = false;
         pe_climb.sensitive = pe_dive.sensitive = false;
 
-        pe_dialog.set_transient_for(w);
+		pe_dialog.set_modal(false);
+		//        pe_dialog.set_transient_for(w);
 
         pe_dialog.delete_event.connect (() => {
                 dismiss();
@@ -239,7 +240,7 @@ public class FakeHomeDialog : GLib.Object {
             });
 
         set_climb_opts();
-    }
+	}
 
     private void get_climb_opts() {
         MWP.conf.maxclimb = double.parse(pe_climb.text);
