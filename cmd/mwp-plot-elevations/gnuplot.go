@@ -100,7 +100,7 @@ set key box width +2
 set grid
 set termopt enhanced
 set termopt font "sans,8"`)
-	fmt.Fprintf(w, "\nset terminal %s size 960,400\n", termstr)
+	fmt.Fprintf(w, "\nset terminal %s size 960,400 title \"MWP Terrain Plot\"\n", termstr)
 	w.WriteString(`set xtics font ", 7"
 set xtics (`)
 	for i, p := range mpts {
