@@ -106,7 +106,7 @@ public class  OTXDialog : Object {
             });
 
         dialog.title = "mwp Misc Log replay";
-        dialog.set_transient_for(w);
+		//        dialog.set_transient_for(w);
         dialog.response.connect((resp) => {
                 ready(resp);
             });

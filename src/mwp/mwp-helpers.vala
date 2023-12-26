@@ -243,7 +243,7 @@ public class MwpDockHelper : Object {
 
     public void transient(Gtk.Window w, bool above=false) {
         wdw.set_keep_above(above);
-        wdw.set_transient_for (w);
+		//        wdw.set_transient_for (w);
     }
 
     private void myreparent(Gdl.DockItem di, Gtk.Window w) {

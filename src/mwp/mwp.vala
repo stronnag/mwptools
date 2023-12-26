@@ -1756,7 +1756,7 @@ public class MWP : Gtk.Application {
 								bbvlist = null;
 							});
 						vp.set_slider_max(rt);
-						vp.set_transient_for(window);
+						//						vp.set_transient_for(window);
 						vp.set_keep_above(true);
 						vp.show_all ();
 						vp.add_stream(uri, false);
@@ -2694,7 +2694,7 @@ public class MWP : Gtk.Application {
 
         swd = new SwitchDialog(builder, window);
         about = builder.get_object ("aboutdialog1") as Gtk.AboutDialog;
-        about.set_transient_for(window);
+		//        about.set_transient_for(window);
         StringBuilder sb = new StringBuilder(MwpVers.get_build());
         sb.append_c('\n');
         sb.append(MwpVers.get_id());
@@ -3350,7 +3350,7 @@ public class MWP : Gtk.Application {
                 if (res != -1) {
                     var vp = new VideoPlayer();
                     vp.set_slider_max(rt);
-                    vp.set_transient_for(window);
+					//                    vp.set_transient_for(window);
                     vp.set_keep_above(true);
                     vp.show_all ();
                     vp.add_stream(uri);
@@ -3369,7 +3369,7 @@ public class MWP : Gtk.Application {
             Gtk.ResponseType.ACCEPT);
         chooser.select_multiple = true;
 
-        chooser.set_transient_for(window);
+		//        chooser.set_transient_for(window);
         Gtk.FileFilter filter = new Gtk.FileFilter ();
         StringBuilder sb = new StringBuilder("KML");
         filter.add_pattern ("*.kml");
@@ -9485,7 +9485,7 @@ Error: <i>%s</i>
             Gtk.ResponseType.CANCEL,
             "_Save",
             Gtk.ResponseType.ACCEPT);
-        chooser.set_transient_for(window);
+		//        chooser.set_transient_for(window);
         chooser.select_multiple = false;
         Gtk.FileFilter filter = new Gtk.FileFilter ();
         if(conf.missionpath != null)
@@ -9510,7 +9510,7 @@ Error: <i>%s</i>
 					dialog.remitems.connect((mitem) => {
 							smask = mitem;
 					});
-					dialog.set_transient_for(chooser);
+					//					dialog.set_transient_for(chooser);
                     dialog.show_all();
 				});
 			chooser.set_extra_widget(btn);
@@ -9618,7 +9618,7 @@ Error: <i>%s</i>
         if(conf.missionpath != null)
             chooser.set_current_folder (conf.missionpath);
 
-        chooser.set_transient_for(window);
+		//        chooser.set_transient_for(window);
         Gtk.FileFilter filter = new Gtk.FileFilter ();
         filter.set_filter_name ("Mission");
         filter.add_pattern ("*.mission");
@@ -9731,7 +9731,7 @@ Error: <i>%s</i>
             "_Open",
             Gtk.ResponseType.ACCEPT);
             chooser.select_multiple = false;
-            chooser.set_transient_for(window);
+			//            chooser.set_transient_for(window);
             Gtk.FileFilter filter = new Gtk.FileFilter ();
             filter.set_filter_name ("Log");
             filter.add_pattern ("*.log");

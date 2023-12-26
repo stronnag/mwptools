@@ -63,7 +63,7 @@ public class  RAWDialog : Object {
             });
 
         dialog.title = "mwp Raw Log replay";
-        dialog.set_transient_for(w);
+		//        dialog.set_transient_for(w);
         dialog.response.connect((resp) => {
                 ready(resp);
             });

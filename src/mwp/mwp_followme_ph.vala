@@ -110,7 +110,7 @@ public class FollowMeDialog : GLib.Object {
         label = builder.get_object ("fm-label") as Gtk.Label;
         altspin = builder.get_object ("fm-spin-alt") as Gtk.SpinButton;
 
-        dialog.set_transient_for(w);
+		//        dialog.set_transient_for(w);
 
         dialog.delete_event.connect (() => {
                 dismiss();

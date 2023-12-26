@@ -160,7 +160,7 @@ public class  SafeHomeDialog : Object {
         dialog = new Gtk.Dialog.with_buttons("Safehomes", _w,
                                              DialogFlags.DESTROY_WITH_PARENT|
                                              DialogFlags.USE_HEADER_BAR);
-        dialog.set_transient_for(_w);
+		//        dialog.set_transient_for(_w);
 
         var fsmenu_button = new Gtk.MenuButton();
         Gtk.Image img = new Gtk.Image.from_icon_name("open-menu-symbolic",

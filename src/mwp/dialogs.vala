@@ -196,7 +196,7 @@ public class OdoView : GLib.Object {
 				tid = 0;
 			});
 
-        dialog.set_transient_for(w);
+		//        dialog.set_transient_for(w);
         to = _to;
 
         dialog.delete_event.connect (() => {
@@ -765,7 +765,7 @@ public class MapSeeder : GLib.Object {
 
     public MapSeeder(Gtk.Builder builder, Gtk.Window? w) {
         dialog = builder.get_object ("seeder_dialog") as Gtk.Dialog;
-        dialog.set_transient_for(w);
+		//        dialog.set_transient_for(w);
         tile_minzoom = builder.get_object ("tile_minzoom") as Gtk.SpinButton;
         tile_maxzoom = builder.get_object ("tile_maxzoom") as Gtk.SpinButton;
         tile_age = builder.get_object ("tile_age") as Gtk.SpinButton;
@@ -888,7 +888,7 @@ public class MapSourceDialog : GLib.Object {
 
     public MapSourceDialog(Gtk.Builder builder, Gtk.Window? w=null) {
         dialog = builder.get_object ("map_source_dialog") as Gtk.Dialog;
-        dialog.set_transient_for(w);
+		//        dialog.set_transient_for(w);
         map_name = builder.get_object ("map_name") as Gtk.Label;
         map_id = builder.get_object ("map_id") as Gtk.Label;
         map_uri = builder.get_object ("map_uri") as Gtk.Label;
@@ -1088,7 +1088,7 @@ public class AltModeDialog : GLib.Object {
                 return true;
             });
 
-        cdialog.set_transient_for (w);
+		//        cdialog.set_transient_for (w);
         cdialog.set_keep_above(true);
     }
 
@@ -1131,7 +1131,7 @@ public class SetPosDialog : GLib.Object {
 
     public SetPosDialog(Gtk.Builder builder,Gtk.Window? w=null) {
         dialog = builder.get_object ("gotodialog") as Gtk.Dialog;
-        dialog.set_transient_for(w);
+		//        dialog.set_transient_for(w);
         lat_entry = builder.get_object ("golat") as Gtk.Entry;
         lon_entry = builder.get_object ("golon") as Gtk.Entry;
         pcombo = builder.get_object("place_combo") as Gtk.ComboBoxText;
@@ -1204,7 +1204,7 @@ public class SwitchDialog : GLib.Object {
     private Gtk.Dialog dialog;
     public SwitchDialog(Gtk.Builder builder, Gtk.Window? w=null) {
         dialog = builder.get_object ("switch-dialogue") as Gtk.Dialog;
-        dialog.set_transient_for(w);
+		//        dialog.set_transient_for(w);
         dialog.response.connect((id) => {
                 dialog.hide();
                 if(id == 1002)
@@ -1305,7 +1305,7 @@ public class PrefsDialog : GLib.Object {
         }
 
         dialog.set_default_size (640, 320);
-        dialog.set_transient_for(w);
+		//        dialog.set_transient_for(w);
         var content = dialog.get_content_area () as Gtk.Box;
         Gtk.Notebook notebook = new Gtk.Notebook ();
         content.pack_start (notebook, false, true, 0);
@@ -1466,7 +1466,7 @@ public class ShapeDialog : GLib.Object {
 
     public ShapeDialog (Gtk.Builder builder, Gtk.Window? w=null) {
         dialog = builder.get_object ("shape-dialog") as Gtk.Dialog;
-        dialog.set_transient_for(w);
+		//        dialog.set_transient_for(w);
         spin1  = builder.get_object ("shp_spinbutton1") as Gtk.SpinButton;
         spin2  = builder.get_object ("shp_spinbutton2") as Gtk.SpinButton;
         spin3  = builder.get_object ("shp_spinbutton3") as Gtk.SpinButton;
@@ -2812,7 +2812,7 @@ public class NavConfig : GLib.Object {
                 window = mw_open(builder);
         }
         if(window != null) {
-            window.set_transient_for(parent);
+			//            window.set_transient_for(parent);
             window.delete_event.connect (() => {
                     window.hide();
                     visible = false;
@@ -3137,7 +3137,7 @@ public class GPSStatus : GLib.Object {
         gps_stats_eph = builder.get_object ("gps_stats_eph") as Gtk.Label;
         gps_stats_epv = builder.get_object ("gps_stats_epv") as Gtk.Label;
         gps_stats_close = builder.get_object ("gps_stats_close") as Gtk.Button;
-        dialog.set_transient_for(w);
+		//        dialog.set_transient_for(w);
         visible = false;
 
         dialog.delete_event.connect (() => {
