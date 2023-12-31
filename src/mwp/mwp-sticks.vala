@@ -22,9 +22,9 @@ namespace Sticks {
 			set_type_hint(Gdk.WindowTypeHint.DIALOG);
 			set_position(WindowPosition.MOUSE);
 			set_decorated((decor==2));
-			//			if (pw != null) {
-			//	set_transient_for (pw);
-			//}
+			if (pw != null) {
+				set_transient_for (pw);
+			}
 			set_transparent();
 		}
 

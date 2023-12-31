@@ -141,7 +141,7 @@ class PlaceEdit : Object {
         grid.attach (scrolled, 0, 0, 1, 1);
         grid.attach (box, 0, 1, 1, 1);
         w.add (grid);
-		//        w.set_transient_for(_w);
+        w.set_transient_for(_w);
 
         w.delete_event.connect (() => {
                 w.hide();

@@ -153,7 +153,7 @@ public class  BBoxDialog : Object {
             });
 
         dialog.title = "mwp BBL replay";
-		//        dialog.set_transient_for(w);
+        dialog.set_transient_for(w);
 
         azoom =(Environment.get_variable("MWP_BB_NOZOOM") == null) ;
         MWPLog.message("BB load async map zoom : %s\n", azoom.to_string());

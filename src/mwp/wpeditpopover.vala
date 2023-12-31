@@ -69,7 +69,7 @@ public class WPPopEdit : Gtk.Dialog {
         title = "WP Edit";
         add_button("Apply", Gtk.ResponseType.OK);
         set_position(Gtk.WindowPosition.MOUSE);
-		//        set_transient_for(window);
+        set_transient_for(window);
         set_keep_above(true);
         build_box();
         var content = get_content_area ();
