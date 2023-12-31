@@ -2403,6 +2403,8 @@ public class ListBox : GLib.Object {
 		bool res = true; // forever the optimist ...
 		var ms = to_mission();
 		int melev;
+		string? reason = null;
+
 		if(ms.homex != 0 && ms.homey != 0) {
 			if (EvCache.get_elev(EvCache.EvConst.HOME, out melev) == false) {
 				res = false;
@@ -2417,14 +2419,17 @@ public class ListBox : GLib.Object {
 					m.action == MSP.Action.POSHOLD_TIME ||
 					m.action == MSP.Action.LAND)) {
 					if (EvCache.get_elev(m.no, out melev) == false) {
+						reason = "WP%d".printf(m.no);
 						res = false;
 						break;
 					}
 				}
 			}
+		} else {
+			reason = "mission home";
 		}
 		if (!res) {
-			MWPLog.message("Don't seem to have all elevations; this may end badly ..\n");
+			MWPLog.message("Don't seem to have all elevations (%s); this may end badly ..\n", reason);
 		}
 		return res;
 	}
