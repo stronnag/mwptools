@@ -319,6 +319,8 @@ public class LOSSlider : Gtk.Window {
 		hbox.pack_end (bbox, false, false, 1);
 		this.default_width = 600;
 		set_transient_for (_w);
+		set_keep_above(true);
+
 		if (LOSPoint.is_init == false) {
 			LOSPoint.init(view);
 		}

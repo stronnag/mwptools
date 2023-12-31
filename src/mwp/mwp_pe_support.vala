@@ -203,7 +203,7 @@ public class FakeHomeDialog : GLib.Object {
     public signal void ready(bool state);
 
     public FakeHomeDialog (Gtk.Builder builder, Gtk.Window? w) {
-        pe_dialog = builder.get_object ("pe-dialog") as Gtk.Dialog;
+		pe_dialog = builder.get_object ("pe-dialog") as Gtk.Dialog;
         pe_home_text = builder.get_object ("pe-home-text") as Gtk.Entry;
         pe_margin = builder.get_object ("pe-clearance") as Gtk.Entry;
         pe_rthalt = builder.get_object ("pe-rthalt") as Gtk.Entry;
@@ -219,9 +219,8 @@ public class FakeHomeDialog : GLib.Object {
         pe_altmode.sensitive = false;
         pe_climb.sensitive = pe_dive.sensitive = false;
 
-		pe_dialog.set_modal(false);
-		//        pe_dialog.set_transient_for(w);
-
+		pe_dialog.set_transient_for(w);
+		pe_dialog.set_keep_above(true);
         pe_dialog.delete_event.connect (() => {
                 dismiss();
                 ready(false);
