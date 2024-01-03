@@ -140,13 +140,15 @@ func (d *DEMMgr) get_dem_elevations(pts []Point, nsamp int) ([]int, error) {
 					break
 				}
 			}
-			ddist := pts[lastp-1].D
-			xdist := adist - ddist
-			cse := pts[lastp].C
-			nlat, nlon := geo.Posit(pts[lastp-1].Y, pts[lastp-1].X, cse, xdist/1852.0)
-			ev := int(d.dem.lookup(nlat, nlon))
-			elevs[ep] = int(ev)
-			ep += 1
+			if lastp != 0 {
+				ddist := pts[lastp-1].D
+				xdist := adist - ddist
+				cse := pts[lastp].C
+				nlat, nlon := geo.Posit(pts[lastp-1].Y, pts[lastp-1].X, cse, xdist/1852.0)
+				ev := int(d.dem.lookup(nlat, nlon))
+				elevs[ep] = int(ev)
+				ep += 1
+			}
 		}
 		elevs[ep] = int(d.dem.lookup(pts[nmp-1].Y, pts[nmp-1].X))
 	}

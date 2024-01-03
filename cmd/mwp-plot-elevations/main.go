@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"log"
@@ -51,9 +52,9 @@ func main() {
 
 	Read_config()
 
-	spt := ""
+	spt := false
 	demdir := ""
-	flag.StringVar(&spt, "single", spt, "point as DD.dddd,DDD.dddd,Alt")
+	flag.BoolVar(&spt, "stdin", spt, "stdin point as DD.dddd,DDD.dddd,Alt")
 	flag.StringVar(&demdir, "localdem", demdir, "local DEM dir")
 	flag.StringVar(&Conf.Homepos, "home", Conf.Homepos, "home as DD.dddd,DDD.dddd")
 	flag.StringVar(&Conf.Svgfile, "svg", "", "SVG graph file")
@@ -71,7 +72,7 @@ func main() {
 	Homep = parse_point(Conf.Homepos)
 	Homep.Set = WP_HOME
 	files := flag.Args()
-	if len(files) < 1 && spt == "" {
+	if len(files) < 1 && !spt {
 		log.Fatal("need mission")
 	}
 
@@ -84,30 +85,42 @@ func main() {
 	var err error
 	var m *Mission
 	var mpts []Point
-	if spt == "" {
+	if spt == false {
 		m, err = NewMission(files[0], 1)
 		if err == nil {
 			mpts = m.Get_points()
+			process_elevations(dm, mpts, m, false)
 		} else {
 			log.Fatal(err)
 		}
 	} else {
-		sp := parse_point(spt)
-		m = &Mission{}
-		mis := []MissionItem{}
-		var mi MissionItem
-		mi.No = 1
-		mi.Action = "WAYPOINT"
-		mi.Lat = sp.Y
-		mi.Lon = sp.X
-		//		mi.D = 0
-		mi.Alt = int32(sp.Mz)
-		mi.Flag = 0xa5
-		mis = append(mis, mi)
-		m.MissionItems = mis
-		mpts = m.Get_points()
-		mpts[1].Wpname = "Query"
+		scanner := bufio.NewScanner(os.Stdin)
+		for scanner.Scan() {
+			p := scanner.Text()
+			p = strings.TrimSpace(p)
+			sp := parse_point(p)
+			m = &Mission{}
+			mis := []MissionItem{}
+			var mi MissionItem
+			mi.No = 1
+			mi.Action = "WAYPOINT"
+			mi.Lat = sp.Y
+			mi.Lon = sp.X
+			//		mi.D = 0
+			mi.Alt = int32(sp.Mz)
+			mi.Flag = 0xa5
+			mis = append(mis, mi)
+			m.MissionItems = mis
+			mpts = m.Get_points()
+			mpts[1].Wpname = "Query"
+			//			fmt.Fprintf(os.Stderr, "DBG Process with data %s\n", p)
+			process_elevations(dm, mpts, m, true)
+		}
 	}
+	Dump_data(mpts, "/tmp/.mwpmission.json")
+}
+
+func process_elevations(dm *DEMMgr, mpts []Point, m *Mission, spt bool) {
 	elev, err := dm.Get_elevations(mpts, 0)
 	if err == nil {
 		if len(mpts) != len(elev) {
@@ -122,7 +135,7 @@ func main() {
 		}
 
 		npts := int(mpts[len(mpts)-1].D) / 30
-		if demdir == "" {
+		if dm.dem == nil {
 			if npts > len(mpts)*20 {
 				npts = len(mpts) * 20
 			}
@@ -134,6 +147,8 @@ func main() {
 		if npts < 4 {
 			npts = 4
 		}
+
+		//		fmt.Fprintf(os.Stderr, "DBG ge %d %d\n", len(mpts), npts)
 		telev, err := dm.Get_elevations(mpts, npts)
 
 		if err != nil {
@@ -146,15 +161,14 @@ func main() {
 
 		los := 0
 		nat := 0.0
-		if spt != "" {
+		if spt {
 			los, nat = CheckLOS(mpts, telev, Conf.Margin)
 		}
-		Gnuplot_mission(mpts, telev, (spt != ""), los)
-		if spt == "" {
+		Gnuplot_mission(mpts, telev, spt, los)
+		if !spt {
 			Dump_climb_dive(mpts, true)
 		} else {
-			fmt.Printf("%d %f\n", los, nat)
+			fmt.Printf("%1d\t%7.5f\n", los, nat)
 		}
 	}
-	Dump_data(mpts, "/tmp/.mwpmission.json")
 }

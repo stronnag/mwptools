@@ -159,6 +159,7 @@ public class LOSSlider : Gtk.Window {
 	private int _margin;
 	private bool mlog;
 	private int incr;
+	private GLib.Subprocess? los;
 	public signal void new_margin(int m);
 
 	public void set_log(bool _mlog) {
@@ -291,6 +292,11 @@ public class LOSSlider : Gtk.Window {
 				} else {
 					abutton.label = AUTO_LOS;
 					is_running = false;
+					if (los != null) {
+						try {
+							los.get_stdin_pipe().close();
+						} catch {}
+					}
 				}
 			});
 
@@ -300,6 +306,7 @@ public class LOSSlider : Gtk.Window {
 				Utils.terminate_plots();
 				_margin = mentry.get_value_as_int ();
 				run_elevation_tool();
+				send_los_location();
 				cbutton.sensitive = true;
 			});
 
@@ -329,6 +336,13 @@ public class LOSSlider : Gtk.Window {
 				_margin = mentry.get_value_as_int ();
 				new_margin(_margin);
 				is_running = false;
+				if (los != null) {
+					if (los != null) {
+						try {
+							los.get_stdin_pipe().close();
+						} catch {}
+					}
+				}
 				LOSPoint.clear_all();
 				Utils.terminate_plots();
 			});
@@ -375,54 +389,42 @@ public class LOSSlider : Gtk.Window {
 		is_running = true;
 		_auto = true;
 		abutton.label = "Stop";
-		los_auto_async.begin(dp, (obj,res) => {
-				los_auto_async.end(res);
-				slider.sensitive = true;
-				mentry.sensitive = true;
-				abutton.label = AUTO_LOS;
-				cbutton.sensitive = true;
-				sbutton.sensitive = true;
-				ebutton.sensitive = true;
-				_auto = false;
-				is_running = false;
-				reset_slider_buttons();
-			});
+		update_from_pos((double)dp);
+		slider.set_value((double)dp);
+		run_elevation_tool();
+		send_los_location();
 	}
 
-	private async bool los_auto_async(int dp) {
-		var thr = new Thread<bool> ("mwp-losauto", () => {
-				while (is_running) {
-					update_from_pos((double)dp);
-					Idle.add(() => {
-							slider.set_value((double)dp);
-							return false;
-						});
-					run_elevation_tool();
-					dp += incr;
-					if (dp > 1000) {
-						break;
-					}
-				}
-				Idle.add (los_auto_async.callback);
-				if(dp > 1000) {
-					Idle.add (()=> {
-							slider.set_value(1000.0);
-							return false;
-						});
-				}
-				return true;
-			});
-		yield;
-		return thr.join();
+	void send_los_location() {
+        double lat,lon;
+		double alt;
+		var ppos = slider.get_value ();
+		if(ppos < incr) {
+			slider.set_value(incr);
+			update_from_pos(incr);
+		}
+		LOSPoint.get_lospt(out lat, out lon, out alt);
+		var losstr = "%.8f,%.8f,%.0f\n".printf(lat, lon, alt);
+		try {
+			los.get_stdin_pipe().write(losstr.data);
+		} catch (Error e) {
+			MWPLog.message("LOS write %s\n", e.message);
+		}
+	}
+
+	private void auto_reset() {
+		slider.sensitive = true;
+		mentry.sensitive = true;
+		abutton.label = AUTO_LOS;
+		cbutton.sensitive = true;
+		sbutton.sensitive = true;
+		ebutton.sensitive = true;
+		_auto = false;
+		is_running = false;
+		reset_slider_buttons();
 	}
 
 	private void run_elevation_tool() {
-        double lat,lon;
-		double alt;
-		LOSPoint.get_lospt(out lat, out lon, out alt);
-		if ((lat == 0 && lon == 0) || ((lat - _hp.hlat).abs() < 1e-5 && (lon - _hp.hlon).abs() < 1e-5)) {
-			return;
-		}
 		string[] spawn_args = {"mwp-plot-elevations"};
 		if (_auto) {
 			spawn_args += "-no-graph";
@@ -434,27 +436,20 @@ public class LOSSlider : Gtk.Window {
 		}
 		spawn_args += "-margin=%d".printf(_margin);
         spawn_args += "-home=%.8f,%.8f".printf(_hp.hlat, _hp.hlon);
-		spawn_args += "-single=%.8f,%.8f,%.0f".printf(lat, lon, alt);
+		spawn_args += "-stdin";
 		if (mlog) {
-			MWPLog.message("LOS %s\n", string.joinv(" ",spawn_args));
+			MWPLog.message("LOS DBG %s\n", string.joinv(" ",spawn_args));
 		}
-		var msg = "";
+
 		bool ok = false;
 		try {
-			var los = new Subprocess.newv(spawn_args, SubprocessFlags.STDOUT_PIPE);
-			los.communicate_utf8(null, null, out msg, null);
+			los = new Subprocess.newv(spawn_args, SubprocessFlags.STDOUT_PIPE|SubprocessFlags.STDIN_PIPE);
+			read_spipe(los.get_stdout_pipe());
 			los.wait_check_async.begin(null, (obj,res) => {
 					try {
 						ok =  los.wait_check_async.end(res);
-						msg = msg.chomp();
-						var parts = msg.split(" ");
-						uint8 losc  = (uint8)int.parse(parts[0]);
-						double ldist = double.parse(parts[1]);
-						if (!_auto || is_running) {
-							Idle.add(() => {
-									LOSPoint.add_path(_hp.hlat,  _hp.hlon, lat, lon, losc, ldist, incr);
-									return false;
-								});
+						if (mlog) {
+							MWPLog.message("LOS DBG Spawn End %s\n", ok.to_string());
 						}
 					}  catch (Error e) {
 						MWPLog.message("LOS Spawn %s\n", e.message);
@@ -464,4 +459,60 @@ public class LOSSlider : Gtk.Window {
 			MWPLog.message("LOS Spawn %s\n", e.message);
 		}
     }
+
+	void read_spipe(InputStream s) {
+		uint8  mbuf[10];
+		s.read_async.begin(mbuf, GLib.Priority.DEFAULT, null, (obj,res) => {
+				try {
+					var slen = s.read_async.end(res);
+					if (slen == 10) {
+						uint8 losc  = (uint8)int.parse(((string)mbuf)[0:1]);
+						double ldist = double.parse(((string)mbuf)[2:mbuf.length]);
+						if (!_auto || is_running) {
+							double lat,lon;
+							double alt;
+							LOSPoint.get_lospt(out lat, out lon, out alt);
+							Idle.add(() => {
+									LOSPoint.add_path(_hp.hlat,  _hp.hlon, lat, lon, losc, ldist, incr);
+									return false;
+								});
+							if(_auto) {
+								var ppos = slider.get_value ();
+								ppos += incr;
+								if (ppos > 1000) {
+									slider.set_value(1000.0);
+									try {
+										los.get_stdin_pipe().close();
+									} catch (Error e) {
+										MWPLog.message("LOS e close %s\n", e.message);
+									}
+									auto_reset();
+								} else {
+									slider.set_value(ppos);
+									update_from_pos(ppos);
+									send_los_location();
+								}
+								read_spipe(s);
+							} else {
+								try {
+									los.get_stdin_pipe().close();
+								} catch (Error e) {
+									MWPLog.message("LOS p close %s\n", e.message);
+								}
+							}
+						}
+					} else {
+						try {
+							los.get_stdin_pipe().close();
+						} catch (Error e) {
+							MWPLog.message("LOS 0 close %s\n", e.message);
+						}
+						auto_reset();
+					}
+				} catch (Error e) {
+					MWPLog.message("LOS ra end %s\n", e.message);
+				}
+			});
+	}
+
 }
