@@ -62,6 +62,11 @@ vapi_dir = meson.current_source_dir()
 
 dev_src = []
 dev_args = []
+cli_args = []
+
+if meson.get_compiler('c').get_id() == 'clang'
+  cli_args += ['-D_DEFAULT_SOURCE=1']
+endif
 
 if host_machine.system() == 'linux'
   usb_src = files('usbmgr.vala')

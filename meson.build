@@ -1,4 +1,4 @@
-project('mwptools', 'c', 'vala', version : '7.004.585', meson_version : '>= 0.60')
+project('mwptools', 'c', 'vala', version : '7.004.749', meson_version : '>= 0.60')
 
 # vala / clang16 workaround
 if meson.get_compiler('c').get_id() == 'clang'
@@ -48,7 +48,7 @@ executable('cliterm',
            dependencies: [ clideps ],
            include_directories : common_inc_dir,
            vala_args : [dopts, cli_v_args ],
-           c_args: [dev_args],
+           c_args: [dev_args, cli_args],
            install : true,
           )
 
