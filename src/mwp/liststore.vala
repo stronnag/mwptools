@@ -1040,11 +1040,11 @@ public class ListBox : GLib.Object {
         MWP.SERSTATE ss = MWP.SERSTATE.NONE;
         make_menu();
         setup_elev_plot();
-        shapedialog = new ShapeDialog(mp.builder);
-        deltadialog = new DeltaDialog(mp.builder);
-        speeddialog = new SpeedDialog(mp.builder);
-        altdialog = new AltDialog(mp.builder);
-        wprepdialog = new WPRepDialog(mp.builder);
+        shapedialog = new ShapeDialog(mp.builder, mp.window);
+        deltadialog = new DeltaDialog(mp.builder, mp.window);
+        speeddialog = new SpeedDialog(mp.builder, mp.window);
+        altdialog = new AltDialog(mp.builder, mp.window);
+        wprepdialog = new WPRepDialog(mp.builder, mp.window);
         altmodedialog = new AltModeDialog(mp.builder, mp.window);
         altmodedialog.complete.connect(bing_complete);
         fhome.fake_move.connect((lat,lon) => {

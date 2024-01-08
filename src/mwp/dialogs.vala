@@ -765,7 +765,6 @@ public class MapSeeder : GLib.Object {
 
     public MapSeeder(Gtk.Builder builder, Gtk.Window? w) {
         dialog = builder.get_object ("seeder_dialog") as Gtk.Dialog;
-        dialog.set_transient_for(w);
         tile_minzoom = builder.get_object ("tile_minzoom") as Gtk.SpinButton;
         tile_maxzoom = builder.get_object ("tile_maxzoom") as Gtk.SpinButton;
         tile_age = builder.get_object ("tile_age") as Gtk.SpinButton;
@@ -813,7 +812,14 @@ public class MapSeeder : GLib.Object {
         stop.clicked.connect(() => {
                 reset();
             });
-    }
+
+		tile_minzoom.show();
+		tile_maxzoom.show();
+		tile_age.show();
+		apply.show();
+		stop.show();
+        dialog.set_transient_for(w);
+	}
 
     private void reset() {
         dialog.hide();
@@ -888,7 +894,6 @@ public class MapSourceDialog : GLib.Object {
 
     public MapSourceDialog(Gtk.Builder builder, Gtk.Window? w=null) {
         dialog = builder.get_object ("map_source_dialog") as Gtk.Dialog;
-        dialog.set_transient_for(w);
         map_name = builder.get_object ("map_name") as Gtk.Label;
         map_id = builder.get_object ("map_id") as Gtk.Label;
         map_uri = builder.get_object ("map_uri") as Gtk.Label;
@@ -897,6 +902,7 @@ public class MapSourceDialog : GLib.Object {
         dialog.response.connect((id) => {
                 dialog.hide();
             });
+        dialog.set_transient_for(w);
     }
 
     public void show_source(string name, string id, string uri, uint minzoom, uint maxzoom) {
@@ -914,7 +920,7 @@ public class SpeedDialog : GLib.Object {
     private Gtk.Entry spd_entry;
     private bool flag;
     public signal void get_value(double value, bool flag);
-    public SpeedDialog(Gtk.Builder builder) {
+    public SpeedDialog(Gtk.Builder builder, Gtk.Window? _w) {
 
         dialog = builder.get_object ("speeddialog") as Gtk.Dialog;
         spd_entry = builder.get_object ("defspeedset") as Gtk.Entry;
@@ -926,6 +932,9 @@ public class SpeedDialog : GLib.Object {
                 dialog.hide();
             });
 
+        dialog.set_transient_for (_w);
+        dialog.set_keep_above(true);
+		spd_entry.show();
     }
 
     public void get_speed(bool _flag) {
@@ -939,7 +948,7 @@ public class AltDialog : GLib.Object {
     private Gtk.Entry alt_entry;
     private bool flag;
 
-    public AltDialog(Gtk.Builder builder) {
+    public AltDialog(Gtk.Builder builder, Gtk.Window? _w) {
         adialog = builder.get_object ("altdialog") as Gtk.Dialog;
         alt_entry = builder.get_object ("defaltset") as Gtk.Entry;
         adialog.response.connect((id) => {
@@ -949,6 +958,9 @@ public class AltDialog : GLib.Object {
                 }
                 adialog.hide();
             });
+        adialog.set_transient_for (_w);
+        adialog.set_keep_above(true);
+		alt_entry.show();
     }
 
     public signal void get_value(double value, bool flag);
@@ -965,7 +977,7 @@ public class WPRepDialog : GLib.Object {
     private Gtk.Entry rep_num;
 
     public signal void get_values(uint start, uint end, uint repl);
-    public WPRepDialog(Gtk.Builder builder) {
+    public WPRepDialog(Gtk.Builder builder, Gtk.Window? _w) {
         dialog = builder.get_object ("wprep-dialog") as Gtk.Dialog;
         rep_start = builder.get_object ("rep_start") as Gtk.Entry;
         rep_end = builder.get_object ("rep_end") as Gtk.Entry;
@@ -980,6 +992,12 @@ public class WPRepDialog : GLib.Object {
                 dialog.hide();
             });
 
+        dialog.set_transient_for (_w);
+        dialog.set_keep_above(true);
+
+		rep_start.show();
+		rep_end.show();
+		rep_num.show();
     }
 
     public void get_rep(uint start, uint end, uint number) {
@@ -999,7 +1017,7 @@ public class DeltaDialog : GLib.Object {
 
     public signal void get_values(double dlat, double dlon, int ialt, bool move_home);
 
-    public DeltaDialog(Gtk.Builder builder) {
+    public DeltaDialog(Gtk.Builder builder, Gtk.Window? _w) {
         dialog = builder.get_object ("delta-dialog") as Gtk.Dialog;
         dlt_entry1 = builder.get_object ("dlt_entry1") as Gtk.Entry;
         dlt_entry2 = builder.get_object ("dlt_entry2") as Gtk.Entry;
@@ -1022,7 +1040,15 @@ public class DeltaDialog : GLib.Object {
                 }
                 dialog.hide();
             });
-    }
+
+		dialog.set_transient_for (_w);
+        dialog.set_keep_above(true);
+
+		dlt_entry1.show();
+		dlt_entry2.show();
+		dlt_entry3.show();
+		dlt_switch.show();
+	}
 
     public void get_deltas(bool m) {
 		dlt_switch.active = m;
@@ -1466,7 +1492,6 @@ public class ShapeDialog : GLib.Object {
 
     public ShapeDialog (Gtk.Builder builder, Gtk.Window? w=null) {
         dialog = builder.get_object ("shape-dialog") as Gtk.Dialog;
-        dialog.set_transient_for(w);
         spin1  = builder.get_object ("shp_spinbutton1") as Gtk.SpinButton;
         spin2  = builder.get_object ("shp_spinbutton2") as Gtk.SpinButton;
         spin3  = builder.get_object ("shp_spinbutton3") as Gtk.SpinButton;
@@ -1490,7 +1515,13 @@ public class ShapeDialog : GLib.Object {
                 }
                 dialog.hide();
             });
-    }
+        dialog.set_transient_for(w);
+		dialog.set_keep_above(true);
+		spin1.show();
+		spin2.show();
+		spin3.show();
+		combo.show();
+	}
 
     public void get_points(double _clat, double _clon) {
         clat = _clat;

@@ -234,36 +234,33 @@ public class MWPCursor : GLib.Object {
     }
 }
 
-public class MwpDockHelper : Object {
-    private Gtk.Window wdw = null;
+public class MwpDockHelper : Gtk.Window {
     public bool floating {get; private set; default=false;}
-    public bool visible = false;
+    public new bool visible = false;
     public signal void menu_key();
     private Gdl.DockItem di;
 
-    public void transient(Gtk.Window w, bool above=false) {
-        wdw.set_keep_above(above);
-        wdw.set_transient_for (w);
-    }
+	//    public void transient(Gtk.Window w, bool above=false) {
+    //}
 
-    private void myreparent(Gdl.DockItem di, Gtk.Window w) {
+    private void myreparent(Gdl.DockItem di) {
         var p = di.get_parent();
         p.get_parent().remove(p);
-        w.add(p);
+        this.add(p);
     }
 
-    public MwpDockHelper (Gdl.DockItem _di, Gdl.Dock dock, string title, bool _floater = false) {
+    public MwpDockHelper (Gdl.DockItem _di, Gdl.Dock dock, string title, Gtk.Window _w, bool _floater = false) {
         di = _di;
         floating = _floater;
-        wdw = new Gtk.Window();
-        wdw.title = title;
-        wdw.resize(480,320);
-        wdw.window_position = Gtk.WindowPosition.MOUSE;
-        wdw.type_hint =  Gdk.WindowTypeHint.DIALOG;
+        this.title = title;
 
-        pop_out();
+        set_transient_for (_w);
+		set_keep_above(true);
 
-        wdw.delete_event.connect(() => {
+		window_position = Gtk.WindowPosition.MOUSE;
+        //type_hint =  Gdk.WindowTypeHint.DIALOG;
+
+        this.delete_event.connect(() => {
                 di.iconify_item();
                 return true;
             });
@@ -289,23 +286,26 @@ public class MwpDockHelper : Object {
                 menu_key();
                 return true;
             });
-        wdw.add_accel_group(ag);
+        add_accel_group(ag);
+		resize(480,320);
+        pop_out();
     }
+
     public void pop_out() {
         if(!di.iconified && floating) {
             di.dock_to (null, Gdl.DockPlacement.FLOATING, 0);
-            myreparent(di,wdw);
-            show();
+            myreparent(di);
+            this.show();
         }
     }
-    public void show() {
+    public new void show() {
         di.show_item();
-        wdw.show_all();
+        show_all();
         visible = true;
     }
-    public void hide() {
+    public new void hide() {
         di.iconify_item();
-        wdw.hide();
+        base.hide();
         visible = false;
     }
 }

@@ -3058,8 +3058,7 @@ public class MWP : Gtk.Application {
         }
 
         mwpdh = new MwpDockHelper(dockitem[DOCKLETS.MISSION], dock,
-                          "Mission Editor", conf.tote_floating);
-        mwpdh.transient(window);
+								  "Mission Editor", window, conf.tote_floating);
 
         mwpdh.menu_key.connect(() => {
                 ls.show_tote_popup(null);
@@ -4891,7 +4890,7 @@ public class MWP : Gtk.Application {
         } else {
             window.fullscreen();
         }
-        mwpdh.transient(window, !wdw_state);
+		//        mwpdh.transient(!wdw_state);
     }
 
     private bool try_connect() {
