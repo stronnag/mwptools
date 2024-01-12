@@ -79,9 +79,11 @@ public class Bluez: Bluetooth, Object {
     reset_manager();
   }
 
-  private void on_bluez_vanished (DBusConnection connection, string name)   {
+  private void on_bluez_vanished (DBusConnection? connection, string name)   {
 	  //    debug(@"$name vanished from the bus");
-    reset_bluez();
+	  if(connection != null) {
+		  reset_bluez();
+	  }
   }
 
   private void init_bluez_state_vars () {
