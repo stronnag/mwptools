@@ -37,26 +37,6 @@ $ ninja -C _build install
 More Information:
  https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja
 
-
-With GATT (Bluetooth BLE) support
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-meson and ninja handle the embedded sub-project, mainly. On some disrtos, you can just build everything as usual:
-
-On some Linux distros, the embedded gattlib build fails ...
-
-$ ninja -C _build
-## fails here
-
-to continue
-$ ninja -C _build/subprojects/gattlib/__CMake_build
-$ ninja -C _build
-
-Or just do the two steps up-front:
-
-$ ninja -C _build/subprojects/gattlib/__CMake_build
-$ ninja -C _build
-
 No GO(lang)
 ~~~~~~~~~~~
 
