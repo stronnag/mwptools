@@ -8,6 +8,7 @@ if host_machine.system() == 'linux'
   dopts += '--define=LINUX'
   dopts += '--define=UNIX'
   deps += dependency('gudev-1.0')
+  deps += dependency('gio-unix-2.0')
 endif
 
 if host_machine.system() == 'freebsd'
