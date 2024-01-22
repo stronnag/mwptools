@@ -6,6 +6,7 @@ private static bool noback = false;
 private static bool sdump = false;
 private static bool ddump = false;
 private static int delay = 0;
+private static bool itest = false;
 
 const OptionEntry[] options = {
     { "baud", 'b', 0, OptionArg.INT, out baud, "baud rate", null},
@@ -14,6 +15,7 @@ const OptionEntry[] options = {
     { "stdout", 0, 0, OptionArg.NONE, out sdump, "echo input to stdout", null},
     { "delay", 'w', 0, OptionArg.INT, out delay, "inter-line in ms", null},
     { "dump", 'D', 0, OptionArg.NONE, out ddump, "dump not diff", null},
+    { "instrument", 'I', 0, OptionArg.NONE, out itest, "instrument", null},
     {null}
 };
 
@@ -63,8 +65,18 @@ class FCMgr :Object {
     private bool have_acal = false;
     private bool skip_bbl = false;
 
-    public FCMgr() {
-        inp = linp = 0;
+	private static int lastid;
+	private static Timer timer;
+	private static FileStream tstream;
+
+	public FCMgr() {
+		if(itest) {
+			timer = new Timer();
+			tstream = FileStream.open("/tmp/fcset-timer.txt", "w");
+			lastid =-1;
+		}
+
+		inp = linp = 0;
         state = State.IDLE;
         inbuf = new uint8[1024*1024];
         MwpTermCap.init();
@@ -213,6 +225,11 @@ class FCMgr :Object {
             }
             if (delay > 0)
                 Thread.usleep(1000*delay);
+
+			if(itest) {
+				lastid = (int)lp;
+				timer.start();
+			}
 
             msp.write(lines[lp], lines[lp].length);
             msp.write("\n".data, 1);
@@ -404,7 +421,14 @@ class FCMgr :Object {
                                 try_connect(); return false;
                             });
                     }
-                } else if( inp > 3 && Memory.cmp(&inbuf[inp-3],"\n# ".data, 3) ==0)
+                } else if( inp > 3 && Memory.cmp(&inbuf[inp-3],"\n# ".data, 3) ==0) {
+					if(itest) {
+						var els = timer.elapsed();
+						if(lastid != -1) {
+							tstream.printf("%04d\t%6.3f\t%s\n", lastid, els, lines[lastid]);
+							lastid = -1;
+						}
+					}
                     if(state == State.SETLINES)
                         next_state();
                     else {
@@ -415,6 +439,7 @@ class FCMgr :Object {
                                 return false;
                             });
                     }
+				}
             });
 
         msp.serial_event.connect((cmd, raw, len, flags, err) => {
@@ -570,7 +595,6 @@ static int main (string[] args) {
         else
             filename = a;
     }
-
     if(issetting && filename == null)
         MWPLog.message("Need a filename to restore FC\n");
     else {
