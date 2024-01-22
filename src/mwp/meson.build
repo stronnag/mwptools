@@ -138,9 +138,7 @@ if bcd.found()
   if not bcd_dir.startswith(get_option('prefix'))
     bcd_dir = join_paths(get_option('prefix'), 'share', 'bash-completion', 'completions')
   endif
-  install_data(['mwp_complete.sh', 'blackbox_decode_complete.sh'],
-	       rename: ['mwp','blackbox_decode'],
-	       install_dir: bcd_dir )
+  install_data(['mwp_complete.sh'], rename: ['mwp'], install_dir: bcd_dir )
 endif
 
 subdir('ui')
