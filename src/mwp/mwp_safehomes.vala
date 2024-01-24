@@ -28,6 +28,7 @@ public enum SAFEHOMES {
 public class SafeHomeMarkers : GLib.Object {
     private Champlain.MarkerLayer safelayer;
     private Champlain.Label []safept;
+	//	private Champlain.PathLayer lpaths[16];
     private bool []onscreen;
     public signal void safe_move(int idx, double lat, double lon);
     private Clutter.Color c_enabled;
@@ -69,7 +70,7 @@ public class SafeHomeMarkers : GLib.Object {
 
             onscreen[idx] = true;
         }
-        set_safe_colour(idx, h.enabled);
+		set_safe_colour(idx, h.enabled);
         safept[idx].set_location (h.lat, h.lon);
     }
 
@@ -103,7 +104,7 @@ public struct SafeHome {
 	int dirn1;
 	int dirn2;
 	bool aref;
-	bool dirnR;
+	bool dref;
 }
 
 public class  SafeHomeDialog : Object {
@@ -308,7 +309,20 @@ public class  SafeHomeDialog : Object {
                 _cell.set_property("text",s);
             });
 
-        var locell = new Gtk.CellRendererText ();
+		lacell.set_property ("editable", true);
+		((Gtk.CellRendererText)lacell).edited.connect((path,new_text) => {
+                Gtk.TreeIter iter;
+				sh_liststore.get_iter (out iter, new Gtk.TreePath.from_string (path));
+                int idx = 0;
+                sh_liststore.get (iter, Column.ID, &idx);
+				homes[idx].lat = InputParser.get_latitude(new_text);
+				sh_liststore.set_value (iter, Column.LAT, homes[idx].lat);
+				if (homes[idx].lat != 0 && homes[idx].lon != 0) {
+					shmarkers.show_safe_home(idx, homes[idx]);
+				}
+			});
+
+		var locell = new Gtk.CellRendererText ();
         tview.insert_column_with_attributes (-1, "Longitude", locell, "text", Column.LON);
         col =  tview.get_column(Column.LON);
         col.set_cell_data_func(locell, (col,_cell,model,iter) => {
@@ -318,6 +332,19 @@ public class  SafeHomeDialog : Object {
                 string s = PosFormat.lon(val,MWP.conf.dms);
                 _cell.set_property("text",s);
             });
+
+		locell.set_property ("editable", true);
+		((Gtk.CellRendererText)locell).edited.connect((path,new_text) => {
+                Gtk.TreeIter iter;
+				sh_liststore.get_iter (out iter, new Gtk.TreePath.from_string (path));
+                int idx = 0;
+                sh_liststore.get (iter, Column.ID, &idx);
+				homes[idx].lon = InputParser.get_longitude(new_text);
+				sh_liststore.set_value (iter, Column.LON, homes[idx].lon);
+				if (homes[idx].lat != 0 && homes[idx].lon != 0) {
+					shmarkers.show_safe_home(idx, homes[idx]);
+				}
+			});
 
         var aacell = new Gtk.CellRendererText ();
         tview.insert_column_with_attributes (-1, "Approach Alt", aacell, "text", Column.APPALT);
@@ -329,6 +356,14 @@ public class  SafeHomeDialog : Object {
                 string s = "%8.2f".printf(val);
                 _cell.set_property("text",s);
             });
+		aacell.set_property ("editable", true);
+		((Gtk.CellRendererText)aacell).edited.connect((path,new_text) => {
+				double d;
+                Gtk.TreeIter iter;
+				sh_liststore.get_iter (out iter, new Gtk.TreePath.from_string (path));
+				d = double.parse(new_text);
+				sh_liststore.set_value (iter, Column.APPALT, d);
+			});
 
         var alcell = new Gtk.CellRendererText ();
         tview.insert_column_with_attributes (-1, "Land Alt", alcell, "text", Column.LANDALT);
@@ -340,11 +375,25 @@ public class  SafeHomeDialog : Object {
                 string s = "%8.2f".printf(val);
                 _cell.set_property("text",s);
             });
-
+		alcell.set_property ("editable", true);
+		((Gtk.CellRendererText)alcell).edited.connect((path,new_text) => {
+				double d;
+                Gtk.TreeIter iter;
+				sh_liststore.get_iter (out iter, new Gtk.TreePath.from_string (path));
+				d = double.parse(new_text);
+				sh_liststore.set_value (iter, Column.LANDALT, d);
+			});
 
         var d1cell = new Gtk.CellRendererText ();
         tview.insert_column_with_attributes (-1, "Direction 1", d1cell, "text", Column.DIRN1);
         col =  tview.get_column(Column.DIRN1);
+		d1cell.set_property ("editable", true);
+		((Gtk.CellRendererText)d1cell).edited.connect((path,new_text) => {
+                Gtk.TreeIter iter;
+				sh_liststore.get_iter (out iter, new Gtk.TreePath.from_string (path));
+                sh_liststore.set_value (iter, Column.DIRN1, int.parse(new_text));
+            });
+
         col.set_cell_data_func(d1cell, (col,_cell,model,iter) => {
                 GLib.Value v;
                 model.get_value(iter, Column.DIRN1, out v);
@@ -356,8 +405,14 @@ public class  SafeHomeDialog : Object {
             });
 
         var d2cell = new Gtk.CellRendererText ();
-        tview.insert_column_with_attributes (-1, "Direction 2", d2cell, "text", Column.DIRN1);
+        tview.insert_column_with_attributes (-1, "Direction 2", d2cell, "text", Column.DIRN2);
         col =  tview.get_column(Column.DIRN2);
+		d2cell.set_property ("editable", true);
+		((Gtk.CellRendererText)d2cell).edited.connect((path,new_text) => {
+                Gtk.TreeIter iter;
+				sh_liststore.get_iter (out iter, new Gtk.TreePath.from_string (path));
+                sh_liststore.set_value (iter, Column.DIRN2, int.parse(new_text));
+            });
         col.set_cell_data_func(d2cell, (col,_cell,model,iter) => {
                 GLib.Value v;
                 model.get_value(iter, Column.DIRN2, out v);
@@ -371,10 +426,26 @@ public class  SafeHomeDialog : Object {
         var arcell = new Gtk.CellRendererToggle();
         tview.insert_column_with_attributes (-1, "Alt AMSL",
                                              arcell, "active", Column.AREF);
+        arcell.toggled.connect((p) => {
+				Gtk.TreeIter iter;
+                int idx = 0;
+                sh_liststore.get_iter(out iter, new TreePath.from_string(p));
+                sh_liststore.get (iter, Column.ID, &idx);
+                homes[idx].aref = !homes[idx].aref;
+                sh_liststore.set (iter, Column.AREF, homes[idx].aref);
+			});
 
-        var drcell = new Gtk.CellRendererToggle();
+		var drcell = new Gtk.CellRendererToggle();
         tview.insert_column_with_attributes (-1, "Approach Right",
                                              drcell, "active", Column.DREF);
+        drcell.toggled.connect((p) => {
+				Gtk.TreeIter iter;
+                int idx = 0;
+                sh_liststore.get_iter(out iter, new TreePath.from_string(p));
+                sh_liststore.get (iter, Column.ID, &idx);
+                homes[idx].dref = !homes[idx].dref;
+                sh_liststore.set (iter, Column.DREF, homes[idx].dref);
+			});
 
 		/*
 		DIRN1,
