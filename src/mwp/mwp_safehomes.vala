@@ -95,9 +95,15 @@ public class SafeHomeMarkers : GLib.Object {
 }
 
 public struct SafeHome {
-    bool enabled;
+	bool enabled;
     double lat;
     double lon;
+	double appalt;
+	double landalt;
+	int dirn1;
+	int dirn2;
+	bool aref;
+	bool dirnR;
 }
 
 public class  SafeHomeDialog : Object {
@@ -119,6 +125,12 @@ public class  SafeHomeDialog : Object {
         STATUS,
         LAT,
         LON,
+		APPALT,
+		LANDALT,
+		DIRN1,
+		DIRN2,
+		AREF,
+		DREF,
         NO_COLS
     }
 
@@ -248,7 +260,14 @@ public class  SafeHomeDialog : Object {
                                           typeof (int),
                                           typeof (bool),
                                           typeof (double),
-                                          typeof (double) );
+                                          typeof (double),
+                                          typeof (double),
+                                          typeof (double),
+										  typeof (int),
+										  typeof (int),
+										  typeof (bool),
+										  typeof (bool)
+										  );
 
         tview.set_model (sh_liststore);
         tview.insert_column_with_attributes (-1, "Id",
@@ -279,9 +298,7 @@ public class  SafeHomeDialog : Object {
             });
 
         var lacell = new Gtk.CellRendererText ();
-
         tview.insert_column_with_attributes (-1, "Latitude", lacell, "text", Column.LAT);
-
         var col =  tview.get_column(Column.LAT);
         col.set_cell_data_func(lacell, (col,_cell,model,iter) => {
                 GLib.Value v;
@@ -292,7 +309,6 @@ public class  SafeHomeDialog : Object {
             });
 
         var locell = new Gtk.CellRendererText ();
-
         tview.insert_column_with_attributes (-1, "Longitude", locell, "text", Column.LON);
         col =  tview.get_column(Column.LON);
         col.set_cell_data_func(locell, (col,_cell,model,iter) => {
@@ -302,6 +318,71 @@ public class  SafeHomeDialog : Object {
                 string s = PosFormat.lon(val,MWP.conf.dms);
                 _cell.set_property("text",s);
             });
+
+        var aacell = new Gtk.CellRendererText ();
+        tview.insert_column_with_attributes (-1, "Approach Alt", aacell, "text", Column.APPALT);
+        col =  tview.get_column(Column.APPALT);
+        col.set_cell_data_func(aacell, (col,_cell,model,iter) => {
+                GLib.Value v;
+                model.get_value(iter, Column.APPALT, out v);
+                double val = (double)v;
+                string s = "%8.2f".printf(val);
+                _cell.set_property("text",s);
+            });
+
+        var alcell = new Gtk.CellRendererText ();
+        tview.insert_column_with_attributes (-1, "Land Alt", alcell, "text", Column.LANDALT);
+        col =  tview.get_column(Column.LANDALT);
+        col.set_cell_data_func(alcell, (col,_cell,model,iter) => {
+                GLib.Value v;
+                model.get_value(iter, Column.LANDALT, out v);
+                double val = (double)v;
+                string s = "%8.2f".printf(val);
+                _cell.set_property("text",s);
+            });
+
+
+        var d1cell = new Gtk.CellRendererText ();
+        tview.insert_column_with_attributes (-1, "Direction 1", d1cell, "text", Column.DIRN1);
+        col =  tview.get_column(Column.DIRN1);
+        col.set_cell_data_func(d1cell, (col,_cell,model,iter) => {
+                GLib.Value v;
+                model.get_value(iter, Column.DIRN1, out v);
+                int val = (int)v;
+				if (val < -2 || val > 360)
+					val = 0;
+                string s = "%4d".printf(val);
+                _cell.set_property("text",s);
+            });
+
+        var d2cell = new Gtk.CellRendererText ();
+        tview.insert_column_with_attributes (-1, "Direction 2", d2cell, "text", Column.DIRN1);
+        col =  tview.get_column(Column.DIRN2);
+        col.set_cell_data_func(d2cell, (col,_cell,model,iter) => {
+                GLib.Value v;
+                model.get_value(iter, Column.DIRN2, out v);
+                int val = (int)v;
+				if (val < -2 || val > 360)
+					val = 0;
+                string s = "%4d".printf(val);
+                _cell.set_property("text",s);
+            });
+
+        var arcell = new Gtk.CellRendererToggle();
+        tview.insert_column_with_attributes (-1, "Alt AMSL",
+                                             arcell, "active", Column.AREF);
+
+        var drcell = new Gtk.CellRendererToggle();
+        tview.insert_column_with_attributes (-1, "Approach Right",
+                                             drcell, "active", Column.DREF);
+
+		/*
+		DIRN1,
+		DIRN2,
+		AREF,
+		DREF,
+		*/
+
 
         var box = dialog.get_content_area();
         box.pack_start (tview, false, false, 0);
@@ -316,7 +397,14 @@ public class  SafeHomeDialog : Object {
                               Column.ID, i,
                               Column.STATUS, false,
                               Column.LAT, 0.0,
-                              Column.LON, 0.0);
+                              Column.LON, 0.0,
+                              Column.APPALT, 0.0,
+                              Column.LANDALT, 0.0,
+							  Column.DIRN1, 0,
+							  Column.DIRN2, 0,
+							  Column.AREF, false,
+							  Column.DREF, false
+							  );
         }
     }
 
