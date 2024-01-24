@@ -44,9 +44,28 @@ namespace KMLWriter {
 				style_item->new_text_child (ns, "width", el.styleinfo.line_width.to_string());
 			}
 			var vfolder = folder->new_text_child (ns, "Folder", "");
+			vfolder->new_text_child (ns, "visibility", "1");
 			vfolder->new_text_child (ns, "name", el.name);
 			vfolder->new_text_child (ns, "description", el.desc);
-			vfolder->new_text_child (ns, "visibility", "1");
+			if(el.desc.has_prefix("geozone")) {
+				var gels = el.desc.split(" ");
+				if (gels.length >= 7) {
+					Xml.Node* xdata = new Xml.Node (ns, "ExtendedData");
+					var gns = xdata->new_ns("http://geo.daria.co.uk/zones/1.0", "gzone");
+					xdata->new_text_child (gns, "id", gels[1]);
+					xdata->new_text_child (gns, "shape", gels[2]);
+					xdata->new_text_child (gns, "type", gels[3]);
+					xdata->new_text_child (gns, "minalt", gels[4]);
+					xdata->new_text_child (gns, "maxalt", gels[5]);
+					xdata->new_text_child (gns, "action", gels[6]);
+					if(gels.length == 11 && gels[7] == "circle") {
+						xdata->new_text_child (gns, "centre-lat", gels[8]);
+						xdata->new_text_child (gns, "centre-lon", gels[9]);
+						xdata->new_text_child (gns, "radius", gels[10]);
+					}
+					vfolder->add_child(xdata);
+				}
+			}
 			var pmark = vfolder->new_text_child (ns, "Placemark", "");
 			pmark->new_text_child (ns, "name", el.name);
 			pmark->new_text_child (ns, "styleUrl", "#%s".printf(sname));
