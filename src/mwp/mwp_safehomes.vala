@@ -39,14 +39,14 @@ public class SafeHomeMarkers : GLib.Object {
     private Clutter.Color c_enabled;
     private Clutter.Color c_disabled;
     private Clutter.Color white;
-	private Clutter.Color isleft;
-	private Clutter.Color isright;
+	private Clutter.Color landcol;
+	private Clutter.Color appcol;
 	public signal void safept_move(int idx, double lat, double lon);
     public signal void safept_need_menu(int idx);
 
     public SafeHomeMarkers(Champlain.View view) {
-		isleft.init(0xfc, 0xac, 0x64, 0xa0);
-        isright.init(0x63, 0xa0, 0xfc, 0xff);
+		landcol.init(0xfc, 0xac, 0x64, 0xa0);
+        appcol.init(0x63, 0xa0, 0xfc, 0xff);
 		lpaths = {};
 		apaths = {};
         c_enabled.init(0xfb, 0xea, 0x04, 0xc8);
@@ -71,25 +71,25 @@ public class SafeHomeMarkers : GLib.Object {
             safept[idx].set_text_color(white);
 
 			var sd = new Champlain.PathLayer();
-			sd.set_stroke_width (3);
+			sd.set_stroke_width (2);
 			sd.set_dash(llist);
 			sd.closed = true;
 			view.add_layer(sd);
 			safed += sd;
 			var l0 = new Champlain.PathLayer();
-			l0.set_stroke_width (2);
+			l0.set_stroke_width (3);
 			var l1 = new Champlain.PathLayer();
-			l1.set_stroke_width (2);
+			l1.set_stroke_width (3);
 			view.add_layer(l0);
 			view.add_layer(l1);
 			lpaths += l0;
 			lpaths += l1;
 
 			var a0 = new Champlain.PathLayer();
-			a0.set_stroke_width (2);
+			a0.set_stroke_width (3);
 			a0.set_dash(llist);
 			var a1 = new Champlain.PathLayer();
-			a1.set_stroke_width (2);
+			a1.set_stroke_width (3);
 			a1.set_dash(llist);
 			view.add_layer(a0);
 			view.add_layer(a1);
@@ -121,7 +121,7 @@ public class SafeHomeMarkers : GLib.Object {
 		Champlain.Location ip1;
 
 		if(h.dirn1 != 0) {
-			lpaths[pi].set_stroke_color(h.dref ? isright : isleft);
+			lpaths[pi].set_stroke_color(landcol);
 			if(h.ex1) {
 				ip0 = safept[idx];
 			} else {
@@ -139,7 +139,7 @@ public class SafeHomeMarkers : GLib.Object {
 		apaths[pi].remove_all();
 
 		if(h.dirn2 != 0) {
-			lpaths[pi].set_stroke_color(h.dref ? isright : isleft);
+			lpaths[pi].set_stroke_color(landcol);
 			if(h.ex2) {
 				ip0 = safept[idx];
 			} else {
@@ -172,7 +172,7 @@ public class SafeHomeMarkers : GLib.Object {
 				apaths[pi].add_node(ipx);
 				apaths[pi].add_node(ip0);
 			}
-			apaths[pi].set_stroke_color(dref ? isright : isleft);
+			apaths[pi].set_stroke_color(appcol);
 	}
 
     public void show_safe_home(int idx, SafeHome h) {
