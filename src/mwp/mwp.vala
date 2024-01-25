@@ -6313,6 +6313,7 @@ public class MWP : Gtk.Application {
     private void msp_publish_home(uint8 id) {
         if(id < SAFEHOMES.maxhomes) {
             var h = safehomed.get_home(id);
+			// safehome FIXME
             uint8 tbuf[10];
             tbuf[0] = id;
             tbuf[1] = (h.enabled) ? 1 : 0;
@@ -7432,6 +7433,7 @@ public class MWP : Gtk.Application {
             case MSP.Cmds.SAFEHOME:
                 uint8* rp = raw;
                 uint8 id = *rp++;
+				// safehome FIXME
                 SafeHome shm = SafeHome();
                 shm.enabled = (*rp == 1) ? true : false;
                 rp++;
@@ -7450,6 +7452,7 @@ public class MWP : Gtk.Application {
                 break;
 
 		    case MSP.Cmds.SET_SAFEHOME:
+				// safehome FIXME
                 safeindex += 1;
                 msp_publish_home(safeindex);
                 break;
