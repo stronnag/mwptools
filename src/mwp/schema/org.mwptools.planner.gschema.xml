@@ -344,7 +344,7 @@
       <description>Directory for log files (for replay), default = current directory</description>
     </key>
     <key name="log-save-path" type="s">
-      <default>""</default>
+      <default>"/tmp"</default>
       <summary>Directory for storing log files</summary>
       <description>Directory for log files (for save), default = current directory</description>
     </key>
