@@ -22,13 +22,15 @@ using Champlain;
 using GtkChamplain;
 
 public enum SAFEHOMES {
-    maxhomes = 8
+    maxhomes = 8,
 }
+
+private const double LAYLEN = (200.0/1852.0);
 
 public class SafeHomeMarkers : GLib.Object {
     private Champlain.MarkerLayer safelayer;
     private Champlain.Label []safept;
-	//	private Champlain.PathLayer lpaths[16];
+	private Champlain.PathLayer []lpaths;
     private bool []onscreen;
     public signal void safe_move(int idx, double lat, double lon);
     private Clutter.Color c_enabled;
@@ -38,6 +40,9 @@ public class SafeHomeMarkers : GLib.Object {
     public signal void safept_need_menu(int idx);
 
     public SafeHomeMarkers(Champlain.View view) {
+		Clutter.Color c0 = {0xfc, 0xac, 0x64, 0xa0};
+        Clutter.Color c1 = {0x63, 0xa0, 0xfc, 0xff};
+		lpaths = {};
         c_enabled.init(0xfb, 0xea, 0x04, 0xc8);
         c_disabled.init(0xfb, 0xea, 0x04, 0x68);
         white.init(0xff,0xff,0xff, 0xff);
@@ -47,11 +52,51 @@ public class SafeHomeMarkers : GLib.Object {
         view.add_layer (safelayer);
         for(var idx = 0; idx < SAFEHOMES.maxhomes; idx++) {
             safept[idx] = new Champlain.Label.with_text ("⏏#%d".printf(idx), "Sans 10",null,null);
-            safept[idx].set_alignment (Pango.Alignment.RIGHT);
+			safept[idx].set_alignment (Pango.Alignment.RIGHT);
             safept[idx].set_color (c_disabled);
             safept[idx].set_text_color(white);
+			var l0 = new Champlain.PathLayer();
+			l0.set_stroke_width (2);
+			l0.set_stroke_color(c0);
+			var l1 = new Champlain.PathLayer();
+			l1.set_stroke_width (2);
+			l1.set_stroke_color(c1);
+			view.add_layer(l0);
+			view.add_layer(l1);
+			lpaths += l0;
+			lpaths += l1;
         }
     }
+
+	public void update_laylines(int idx, SafeHome h) {
+		double dlat, dlon;
+		int pi = idx*2;
+		lpaths[pi].remove_all();
+		lpaths[pi+1].remove_all();
+		if(h.dirn1 > 0) {
+			lpaths[pi].add_node(safept[idx]);
+			var ip1 =  new  Champlain.Point();
+			Geo.posit(h.lat, h.lon, h.dirn1, LAYLEN, out dlat, out dlon);
+			ip1.latitude = dlat;
+			ip1.longitude = dlon;
+			lpaths[pi].add_node(ip1);
+			/*
+			var pn = lpaths[pi].get_nodes();
+			var l0 = pn.nth_data(0);
+			var l1 = pn.nth_data(1);
+			*/
+		}
+		if(h.dirn2 > 0) {
+			pi += 1;
+			lpaths[pi].add_node(safept[idx]);
+			var ip1 =  new  Champlain.Point();
+			Geo.posit(h.lat, h.lon, h.dirn2, LAYLEN, out dlat, out dlon);
+			ip1.latitude = dlat;
+			ip1.longitude = dlon;
+			lpaths[pi].add_node(ip1);
+		}
+	}
+
 
     public void show_safe_home(int idx, SafeHome h) {
         if(onscreen[idx] == false) {
@@ -72,6 +117,7 @@ public class SafeHomeMarkers : GLib.Object {
         }
 		set_safe_colour(idx, h.enabled);
         safept[idx].set_location (h.lat, h.lon);
+		update_laylines(idx, h);
     }
 
     public void set_interactive(bool state) {
@@ -89,9 +135,12 @@ public class SafeHomeMarkers : GLib.Object {
     }
 
     public void hide_safe_home(int idx) {
-        if (onscreen[idx])
+        if (onscreen[idx]) {
             safelayer.remove_marker(safept[idx]);
-        onscreen[idx] = false;
+			lpaths[2*idx].remove_all();
+			lpaths[2*idx+1].remove_all();
+		}
+		onscreen[idx] = false;
     }
 }
 
@@ -391,7 +440,10 @@ public class  SafeHomeDialog : Object {
 		((Gtk.CellRendererText)d1cell).edited.connect((path,new_text) => {
                 Gtk.TreeIter iter;
 				sh_liststore.get_iter (out iter, new Gtk.TreePath.from_string (path));
-                sh_liststore.set_value (iter, Column.DIRN1, int.parse(new_text));
+                int idx = 0;
+                sh_liststore.get (iter, Column.ID, &idx);
+				homes[idx].dirn1 = int.parse(new_text);
+				sh_liststore.set_value (iter, Column.DIRN1, homes[idx].dirn1);
             });
 
         col.set_cell_data_func(d1cell, (col,_cell,model,iter) => {
@@ -411,7 +463,10 @@ public class  SafeHomeDialog : Object {
 		((Gtk.CellRendererText)d2cell).edited.connect((path,new_text) => {
                 Gtk.TreeIter iter;
 				sh_liststore.get_iter (out iter, new Gtk.TreePath.from_string (path));
-                sh_liststore.set_value (iter, Column.DIRN2, int.parse(new_text));
+				int idx = 0;
+                sh_liststore.get (iter, Column.ID, &idx);
+				homes[idx].dirn2 = int.parse(new_text);
+                sh_liststore.set_value (iter, Column.DIRN2, homes[idx].dirn2);
             });
         col.set_cell_data_func(d2cell, (col,_cell,model,iter) => {
                 GLib.Value v;
@@ -557,6 +612,7 @@ public class  SafeHomeDialog : Object {
         shmarkers.safept_move.connect((idx,la,lo) => {
             homes[idx].lat = la;
             homes[idx].lon = lo;
+			shmarkers.update_laylines(idx,homes[idx]);
             Gtk.TreeIter iter;
             if(sh_liststore.iter_nth_child (out iter, null, idx))
                 sh_liststore.set (iter,
