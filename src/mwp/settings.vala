@@ -69,7 +69,7 @@ public class MWPSettings : GLib.Object {
     public bool rth_autoland {get; set; default=false;}
     public string missionpath {get; private set; default=null;}
     public string logpath {get; private set; default=null;}
-    public string logsavepath {get; private set; default=null;}
+    public string logsavepath {get; private set; default="/tmp";}
     public double max_home_delta {get; set; default=2.5;}
     public bool ignore_nm {get; set; default=false;}
     public bool ah_inv_roll {get; set; default=false;}
@@ -262,24 +262,24 @@ public class MWPSettings : GLib.Object {
         if(s == null || s == "mission-path") {
             missionpath = settings.get_string ("mission-path");
             if(missionpath == "")
-                missionpath = null;
+                missionpath = "/tmp";
         }
         if(s == null || s == "kml-path") {
             kmlpath = settings.get_string ("kml-path");
             if(kmlpath == "")
-                kmlpath = null;
+                kmlpath = "/tmp";
         }
 
         if(s == null || s == "log-path") {
             logpath = settings.get_string ("log-path");
             if(logpath == "")
-                logpath = null;
+                logpath = "/tmp";
         }
 
         if(s == null || s == "log-save_path") {
             logsavepath = settings.get_string ("log-save-path");
             if(logsavepath == "")
-                logsavepath = null;
+                logsavepath = "/tmp";
         }
 
         if(s == null || s == "max-home-delta")
