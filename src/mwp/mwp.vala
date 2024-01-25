@@ -205,6 +205,7 @@ public class MWP : Gtk.Application {
     private uint8 wp_max = 0;
 
     private uint16 nav_wp_safe_distance = 10000;
+    private uint16 safehome_max_distance = 20000;
     private uint16 inav_max_eph_epv = 1000;
     private uint16 nav_rth_home_offset_distance = 0;
 
@@ -6997,6 +6998,7 @@ public class MWP : Gtk.Application {
                     if(vi.fc_vers > FCVERS.hasJUMP && vi.fc_vers <= FCVERS.hasPOI) { // also 2.6 feature
 						request_common_setting("nav_rth_home_offset_distance");
                     }
+					request_common_setting("safehome_max_distance");
                 }
                 queue_cmd(msp_get_status,null,0);
 				if(sh_load == "-FC-") {
@@ -7040,10 +7042,16 @@ public class MWP : Gtk.Application {
 				 wpdist = nav_wp_safe_distance / 100;
 				 MWPLog.message("Received nav_wp_safe_distance %um\n", wpdist);
 				 break;
+			 case "safehome_max_distance":
+				 SEDE.deserialise_u16(raw, out safehome_max_distance);
+				 safehome_max_distance /= 100;
+				 safehomed.set_distance(safehome_max_distance);
+				 MWPLog.message("Received safehome_max_distance %um\n", wpdist);
+				 break;
 			 case "nav_wp_max_safe_distance":
 				 SEDE.deserialise_u16(raw, out nav_wp_safe_distance);
 				 wpdist = nav_wp_safe_distance;
-				 MWPLog.message("Received nav_wp_max_safe_distance %um\n", wpdist);
+				 MWPLog.message("Received nav_wp_max_safe_distance %um\n", safehome_max_distance);
 				 break;
 			 case "inav_max_eph_epv":
 				 uint32 ift;

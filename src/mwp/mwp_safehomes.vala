@@ -30,9 +30,11 @@ private const double LAYLEN = (200.0/1852.0);
 public class SafeHomeMarkers : GLib.Object {
     private Champlain.MarkerLayer safelayer;
     private Champlain.Label []safept;
+    private Champlain.PathLayer []safed;
 	private Champlain.PathLayer []lpaths;
 	private Champlain.PathLayer []apaths;
     private bool []onscreen;
+	private uint16 maxd = 200;
     public signal void safe_move(int idx, double lat, double lon);
     private Clutter.Color c_enabled;
     private Clutter.Color c_disabled;
@@ -52,6 +54,7 @@ public class SafeHomeMarkers : GLib.Object {
         white.init(0xff,0xff,0xff, 0xff);
         onscreen = new bool[SAFEHOMES.maxhomes];
         safept = new  Champlain.Label[SAFEHOMES.maxhomes];
+        safed = {};
         safelayer = new Champlain.MarkerLayer();
         view.add_layer (safelayer);
 
@@ -66,6 +69,13 @@ public class SafeHomeMarkers : GLib.Object {
 			safept[idx].set_alignment (Pango.Alignment.RIGHT);
             safept[idx].set_color (c_disabled);
             safept[idx].set_text_color(white);
+
+			var sd = new Champlain.PathLayer();
+			sd.set_stroke_width (3);
+			sd.set_dash(llist);
+			sd.closed = true;
+			view.add_layer(sd);
+			safed += sd;
 			var l0 = new Champlain.PathLayer();
 			l0.set_stroke_width (2);
 			var l1 = new Champlain.PathLayer();
@@ -87,6 +97,10 @@ public class SafeHomeMarkers : GLib.Object {
 			apaths += a1;
         }
     }
+
+	public void set_distance(uint16 d) {
+		maxd = d;
+	}
 
 	private Champlain.Point set_laypoint(int dirn, double lat, double lon, double dlen=LAYLEN) {
 		double dlat, dlon;
@@ -147,14 +161,14 @@ public class SafeHomeMarkers : GLib.Object {
 			else
 				xdir -= 90;
 			xdir %= 360;
-			var ipx =  set_laypoint(xdir, ip1.latitude, ip1.longitude, LAYLEN/4);
+			var ipx =  set_laypoint(xdir, ip1.latitude, ip1.longitude, LAYLEN/3);
 			apaths[pi].add_node(ip1);
 			apaths[pi].add_node(ipx);
 			if(ex) {
 				apaths[pi].add_node(ip0);
 			} else {
 				apaths[pi].add_node(safept[idx]);
-				ipx =  set_laypoint(xdir, ip0.latitude, ip0.longitude, LAYLEN/4);
+				ipx =  set_laypoint(xdir, ip0.latitude, ip0.longitude, LAYLEN/3);
 				apaths[pi].add_node(ipx);
 				apaths[pi].add_node(ip0);
 			}
@@ -180,8 +194,22 @@ public class SafeHomeMarkers : GLib.Object {
         }
 		set_safe_colour(idx, h.enabled);
         safept[idx].set_location (h.lat, h.lon);
+		update_distance(idx, h);
 		update_laylines(idx, h);
     }
+
+	public void update_distance(int idx, SafeHome h) {
+		safed[idx].remove_all();
+		double plat, plon;
+		for (var i = 0; i < 360; i += 5) {
+			Geo.posit(h.lat, h.lon, i, maxd/1852.0, out plat, out plon);
+			var pt = new Champlain.Point();
+			pt.latitude = plat;
+			pt.longitude = plon;
+			safed[idx].add_node(pt);
+		}
+	}
+
 
     public void set_interactive(bool state) {
         for(var i = 0; i < SAFEHOMES.maxhomes; i++) {
@@ -190,15 +218,15 @@ public class SafeHomeMarkers : GLib.Object {
     }
 
     public void set_safe_colour(int idx, bool state) {
-        if (state)
-            safept[idx].set_color (c_enabled);
-        else
-            safept[idx].set_color (c_disabled);
-    }
+		Clutter.Color c = (state) ? c_enabled : c_disabled;
+		safept[idx].set_color (c);
+		safed[idx].set_stroke_color(c);
+	}
 
     public void hide_safe_home(int idx) {
         if (onscreen[idx]) {
             safelayer.remove_marker(safept[idx]);
+			safed[idx].remove_all();
 			int pi = 2*idx;
 			lpaths[pi].remove_all();
 			apaths[pi].remove_all();
@@ -301,7 +329,7 @@ public class  SafeHomeDialog : Object {
         fsmenu_button.remove(childs.nth_data(0));
         fsmenu_button.add(img);
 
-	var /* Gtk.HeaderBar */ tbox = (Gtk.HeaderBar)dialog.get_header_bar();
+		var tbox = (Gtk.HeaderBar)dialog.get_header_bar();
         tbox.pack_start (fsmenu_button);
 
         switcher =  new Gtk.Switch();
@@ -760,6 +788,8 @@ public class  SafeHomeDialog : Object {
             homes[idx].lat = la;
             homes[idx].lon = lo;
 			shmarkers.update_laylines(idx,homes[idx]);
+			shmarkers.update_distance(idx, homes[idx]);
+
             Gtk.TreeIter iter;
             if(sh_liststore.iter_nth_child (out iter, null, idx))
                 sh_liststore.set (iter,
@@ -771,7 +801,11 @@ public class  SafeHomeDialog : Object {
             });
     }
 
-    public void pop_menu(Gdk.EventButton e) {
+	public void set_distance(uint16 d) {
+		shmarkers.set_distance(d);
+	}
+
+	public void pop_menu(Gdk.EventButton e) {
         if(pop_idx != -1) {
             var idx = pop_idx;
             var marker_menu = new Gtk.Menu ();
