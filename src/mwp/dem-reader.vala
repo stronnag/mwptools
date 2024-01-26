@@ -1,3 +1,8 @@
+/*
+ * Ported from:     https://github.com/zbycz/srtm-hgt-reader.git
+ * Original Author: (c) 2013 Pavel Zbytovský MIT Licence
+ */
+
 namespace HGT {
 	public const double NODATA=-32768.0;
 }
@@ -73,7 +78,16 @@ public class HgtHandle {
         var dy = Math.fmod(dslat, arc) / arc;
 		var dx = Math.fmod(dslon, arc) / arc;
 
-        var e = elevs[0]*dy*(1-dx) +
+    // Bilinear interpolation
+    // h0------------h1
+    // |
+    // |--dx-- .
+    // |       |
+    // |      dy
+    // |       |
+    // h2------------h3
+
+		var e = elevs[0]*dy*(1-dx) +
 			elevs[1]*dy*(dx) +
 			elevs[2]*(1-dy)*(1-dx) +
 			elevs[3]*(1-dy)*dx;
