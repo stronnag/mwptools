@@ -22,7 +22,7 @@ namespace KMLWriter {
 		folder->new_text_child (ns, "name", "Zones");
 		folder->new_text_child (ns, "open", "1");
 		int j = 0;
-		foreach (var el in o.get_elements()) {
+		o.get_elements().foreach((el) => {
 			var sname = "StyleItem_%d".printf(j);
 			var style = folder->new_text_child (ns, "Style", "");
 			style->new_prop ("id", sname);
@@ -82,7 +82,7 @@ namespace KMLWriter {
 			sb.append_printf("%.7f,%.7f,%d", el.pts[0].longitude, el.pts[0].latitude, el.pts[0].altitude);
 			lring->new_text_child (ns, "coordinates", sb.str);
 			j++;
-		}
+			});
 		doc->dump_memory_enc_format (out s, null, "utf-8", false);
 		return s;
 	}

@@ -42,11 +42,12 @@ public class Overlay : Object {
     }
 
     private Champlain.View view;
-    private Champlain.PathLayer[] players;
     private Champlain.MarkerLayer mlayer;
-	private OverlayItem[] elements;
 
-	public OverlayItem[] get_elements() {
+	private List<Champlain.PathLayer?> players;
+	private List<OverlayItem?> elements;
+
+	public unowned List<OverlayItem?> get_elements() {
 		return elements;
 	}
 
@@ -56,25 +57,26 @@ public class Overlay : Object {
     }
 
 	public Overlay(Champlain.View _view) {
-		elements={};
+		elements= new List<OverlayItem?>();
         view = _view;
         mlayer = new Champlain.MarkerLayer();
         view.add_layer (mlayer);
         at_bottom(mlayer);
-        players = {};
+        players = new List<Champlain.PathLayer>();
 	}
 
     public void remove() {
-        mlayer.remove_all();
-        foreach (var p in players) {
-            p.remove_all();
-            view.remove_layer(p);
-        }
-        players = {};
+		mlayer.remove_all();
+		while(!players.is_empty()) {
+			var p = players.data;
+			p.remove_all();
+			view.remove_layer(p);
+			players.remove_link(players);
+		}
     }
 
 	public void add_element(Overlay.OverlayItem o) {
-		elements += o;
+		elements.append(o);
 	}
 
 	public void display() {
@@ -101,7 +103,7 @@ public class Overlay : Object {
 					l.set_location(p.latitude, p.longitude);
 					path.add_node(l);
 				}
-				players += path;
+				players.append(path);
 				view.add_layer (path);
 				at_bottom(path);
 				break;
@@ -123,7 +125,7 @@ public class Overlay : Object {
 					l.set_location(p.latitude, p.longitude);
 					path.add_node(l);
 				}
-				players += path;
+				players.append(path);
 				view.add_layer (path);
 				at_bottom(path);
 				break;
@@ -131,6 +133,6 @@ public class Overlay : Object {
 				break;
 			}
         }
-		stderr.printf("DBG paths %u, zones %u\n", players.length, elements.length);
+		stderr.printf("DBG paths %u, zones %u\n", players.length(), elements.length());
 	}
 }
