@@ -51,6 +51,10 @@ public class Overlay : Object {
 		return elements;
 	}
 
+	public unowned List<Champlain.PathLayer?> get_layers() {
+		return players;
+	}
+
     private void at_bottom(Champlain.Layer layer) {
         var pp = layer.get_parent();
         pp.set_child_at_index(layer,0);
@@ -65,7 +69,26 @@ public class Overlay : Object {
         players = new List<Champlain.PathLayer>();
 	}
 
-    public void remove() {
+	public void remove_layer(uint j) {
+		unowned var li = players.nth(j);
+		var p = players.nth_data(j);
+		p.remove_all();
+		view.remove_layer(p);
+		players.remove_link(li);
+	}
+
+	public void remove() {
+		mlayer.remove_all();
+		uint n = players.length();
+		for(var j = n-1; ; j--) {
+			remove_layer(j);
+			if(j == 0)
+				break;
+		}
+    }
+
+	/*
+	public void remove() {
 		mlayer.remove_all();
 		while(!players.is_empty()) {
 			var p = players.data;
@@ -74,15 +97,17 @@ public class Overlay : Object {
 			players.remove_link(players);
 		}
     }
+	*/
 
 	public void add_element(Overlay.OverlayItem o) {
 		elements.append(o);
 	}
 
 	public void display() {
-		foreach(var o in elements) {
-			switch(o.type) {
-			case OLType.POINT:
+		elements.foreach((o) => {
+				stderr.printf("DBG: Add element %s\n", o.name);
+				switch(o.type) {
+				case OLType.POINT:
 				Clutter.Color black = { 0,0,0, 0xff };
 				var marker = new Champlain.Label.with_text (o.name,"Sans 10",null,null);
 				marker.set_alignment (Pango.Alignment.RIGHT);
@@ -93,7 +118,7 @@ public class Overlay : Object {
 				marker.set_selectable(false);
 				mlayer.add_marker (marker);
 				break;
-			case OLType.LINESTRING:
+				case OLType.LINESTRING:
 				var path = new Champlain.PathLayer();
 				path.closed=false;
 				path.set_stroke_color(Clutter.Color.from_string(o.styleinfo.line_colour));
@@ -107,13 +132,14 @@ public class Overlay : Object {
 				view.add_layer (path);
 				at_bottom(path);
 				break;
-			case OLType.POLYGON:
+				case OLType.POLYGON:
 				var path = new Champlain.PathLayer();
 				path.closed=true;
 				path.set_stroke_color(Clutter.Color.from_string(o.styleinfo.line_colour));
-				path.fill = (o.styleinfo.fill_colour != null);
 				path.set_stroke_width (o.styleinfo.line_width);
-				path.set_fill_color(Clutter.Color.from_string(o.styleinfo.fill_colour));
+				path.fill = (o.styleinfo.fill_colour != null);
+				if (path.fill)
+					path.set_fill_color(Clutter.Color.from_string(o.styleinfo.fill_colour));
 				if (o.styleinfo.line_dotted) {
 					var llist = new List<uint>();
 					llist.append(5);
@@ -129,10 +155,9 @@ public class Overlay : Object {
 				view.add_layer (path);
 				at_bottom(path);
 				break;
-			case OLType.UNKNOWN:
+				case OLType.UNKNOWN:
 				break;
-			}
-        }
-		stderr.printf("DBG paths %u, zones %u\n", players.length(), elements.length());
+				}
+			});
 	}
 }

@@ -171,19 +171,19 @@ namespace GeoZoneReader {
 	}
 
 	/*
-	  ACTION  │   TYPE    │ FILL COLOUR │ OUTLINE COLOUR
-	  ──────────┼───────────┼─────────────┼─────────────────
-	  None    │ Inclusive │    none     │   Green(dots)
-	  None    │ Exclusive │    none     │    Red(dots)
-	  ------  │ ----      │ ----------- │ --------------
-	  Avoid   │ Inclusive │    none     │   Green(thin)
-	  Avoid   │ Exclusive │     Red     │    Red(thin)
-	  ------  │ ----      │ ----------- │ --------------
-	  PosHold │ Inclusive │    None     │   Green(thick)
-	  PosHold │ Exclusive │     Red     │    Red(thick)
-	  ------  │ ----      │ ----------- │ --------------
-	  RTH     │ Inclusive │    Green    │   Green(thick)
-	  RTH     │ Exclusive │     Red     │    Red(thick)
+	  ACTION    |   TYPE      | FILL COLOUR | OUTLINE COLOUR
+	  -------------------------------------------------------
+	  None 0    │ Inclusive 1 |    none     │   Green(dots)
+	  None 0    │ Exclusive 0 │    none     │    Red(dots)
+	  ------------------------------------------------------
+	  Avoid 1   │ Inclusive 1 │    none     │   Green(thin)
+	  Avoid 1   │ Exclusive 0 │     Red     │    Red(thin)
+	  ------------------------------------------------------
+	  PosHold 2 │ Inclusive 1 │    None     │   Green(thick)
+	  PosHold 2 │ Exclusive 0 │     Red     │    Red(thick)
+	  ------------------------------------------------------
+	  RTH 3     │ Inclusive 1 │    Green    │   Green(thick)
+	  RTH 3     │ Exclusive 0 │     Red     │    Red(thick)
 
 	*/
 
@@ -219,7 +219,7 @@ namespace GeoZoneReader {
 		case GZType.Inclusive:
 			s.line_colour = LCOL_GREEN;
 			s.line_width = W_Thick;
-			s.fill_colour = "";
+			s.fill_colour = null /*""*/;
 			switch (z.action) {
 			case GZAction.None:
 				s.line_width = W_Thin;
