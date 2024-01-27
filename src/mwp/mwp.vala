@@ -2167,6 +2167,12 @@ public class MWP : Gtk.Application {
 
         set_menu_state("kml-remove", false);
 
+        saq = new GLib.SimpleAction("gz-load",null);
+        saq.activate.connect(() => {
+                gz_load_dialog();
+            });
+        window.add_action(saq);
+
         saq = new GLib.SimpleAction("safe-homes",null);
         saq.activate.connect(() => {
                 safehomed.show(window);
@@ -3395,6 +3401,42 @@ public class MWP : Gtk.Application {
                             try_load_overlay(fn);
                     }
                 } else
+                    chooser.close ();
+            });
+        chooser.show_all();
+    }
+
+    private void gz_load_dialog() {
+        Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
+            "Select Overlay(s)", null, Gtk.FileChooserAction.OPEN,
+            "_Cancel",
+            Gtk.ResponseType.CANCEL,
+            "_Open",
+            Gtk.ResponseType.ACCEPT);
+        chooser.select_multiple = false;
+
+        chooser.set_transient_for(window);
+        Gtk.FileFilter filter = new Gtk.FileFilter ();
+        filter.add_pattern ("*.txt");
+        filter.set_filter_name ("txt files");
+        chooser.add_filter (filter);
+        filter = new Gtk.FileFilter ();
+        filter.set_filter_name ("All files");
+        filter.add_pattern ("*");
+        chooser.add_filter (filter);
+		//        if(conf.kmlpath != null)
+        //    chooser.set_current_folder (conf.kmlpath);
+
+        chooser.response.connect((id) => {
+                if (id == Gtk.ResponseType.ACCEPT) {
+					var fns = chooser.get_filename ();
+                    chooser.close ();
+					GeoZoneReader.from_file(fns);
+						if(gzone != null)
+							gzone.remove();
+						gzone = GeoZoneReader.generate_overlay(view);
+						gzone.display();
+				} else
                     chooser.close ();
             });
         chooser.show_all();

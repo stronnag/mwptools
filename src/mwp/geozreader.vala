@@ -263,12 +263,14 @@ namespace GeoZoneReader {
 				sb.append_printf(" circle %d %d %d", zs[j].vertices[0].latitude, zs[j].vertices[0].longitude, zs[j].vertices[1].latitude);
 				var clat = (double)zs[j].vertices[0].latitude/1e7;
 				var clon = (double)zs[j].vertices[0].longitude/1e7;
+				var range = (double)zs[j].vertices[1].latitude/(100.0*1852.0);
+				oi.circ.lat = clat;
+				oi.circ.lon = clon;
+				oi.circ.radius_nm = range;
 				for (var i = 0; i < 360; i += 5) {
 					var p = Overlay.Point();
 					p.altitude = zs[j].maxalt/100;
-					var range = (double)zs[j].vertices[1].latitude/(100.0*1852.0);
-					Geo.posit(clat, clon, i, range,
-							  out p.latitude, out p.longitude);
+					Geo.posit(clat, clon, i, range, out p.latitude, out p.longitude);
 					pts += p;
 				}
 			} else {
