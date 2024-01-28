@@ -69,7 +69,7 @@ public class MWPSettings : GLib.Object {
     public bool rth_autoland {get; set; default=false;}
     public string missionpath {get; private set; default=null;}
     public string logpath {get; private set; default=null;}
-    public string logsavepath {get; private set; default="/tmp";}
+    public string logsavepath {get; private set; default=null;}
     public double max_home_delta {get; set; default=2.5;}
     public bool ignore_nm {get; set; default=false;}
     public bool ah_inv_roll {get; set; default=false;}
@@ -261,25 +261,25 @@ public class MWPSettings : GLib.Object {
 
         if(s == null || s == "mission-path") {
             missionpath = settings.get_string ("mission-path");
-            if(missionpath == "")
-                missionpath = "/tmp";
+            if(missionpath == null || missionpath == "")
+                missionpath = Environment.get_home_dir();
         }
         if(s == null || s == "kml-path") {
             kmlpath = settings.get_string ("kml-path");
-            if(kmlpath == "")
-                kmlpath = "/tmp";
+            if(kmlpath == null || kmlpath == "")
+                kmlpath = Environment.get_home_dir();
         }
 
         if(s == null || s == "log-path") {
             logpath = settings.get_string ("log-path");
-            if(logpath == "")
-                logpath = "/tmp";
+            if(logpath == null || logpath == "")
+                logpath = Environment.get_home_dir();
         }
 
         if(s == null || s == "log-save_path") {
             logsavepath = settings.get_string ("log-save-path");
-            if(logsavepath == "")
-                logsavepath = "/tmp";
+            if(logsavepath == null || logsavepath == "")
+                logsavepath = Environment.get_home_dir();
         }
 
         if(s == null || s == "max-home-delta")
