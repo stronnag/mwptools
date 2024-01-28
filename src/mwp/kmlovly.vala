@@ -99,9 +99,9 @@ public class KmlOverlay : Object {
                 var pname = look_for(node->parent, "name");
                 var style = look_for(node->parent, "styleUrl");
 
-                var o = Overlay.OverlayItem();
+                var o = new OverlayItem();
                 if(style != null)
-                    o.styleinfo = populate_style(o, cntx, style);
+                    populate_style(ref o, cntx, style);
                 else {
                     Xml.Node *n = look_for_node(node->parent, "Style");
                     o.styleinfo = {};
@@ -121,22 +121,22 @@ public class KmlOverlay : Object {
                 o.name = pname;
 				switch (iname) {
 				case "Point":
-					o.type = Overlay.OLType.POINT;
+					o.type = OverlayItem.OLType.POINT;
 					break;
 				case "LineString":
-					o.type = Overlay.OLType.LINESTRING;
+					o.type = OverlayItem.OLType.LINESTRING;
 					break;
 				case "Polygon":
-					o.type = Overlay.OLType.POLYGON;
+					o.type = OverlayItem.OLType.POLYGON;
 					break;
 				default:
-					o.type = Overlay.OLType.UNKNOWN;
+					o.type = OverlayItem.OLType.UNKNOWN;
 					break;
 				}
                 var cs = Regex.split_simple("\\s+", coords);
-                Overlay.Point[] pts = {};
+                OverlayItem.Point[] pts = {};
                 foreach(var s in cs) {
-                    Overlay.Point p = Overlay.Point();
+                    OverlayItem.Point p = OverlayItem.Point();
                     var ss = s.split(",");
                     p.latitude = double.parse(ss[1].strip());
                     p.longitude = double.parse(ss[0].strip());
@@ -152,8 +152,8 @@ public class KmlOverlay : Object {
         return true;
     }
 
-    private Overlay.StyleItem populate_style(Overlay.OverlayItem o,  Xml.XPath.Context cntx, string style) {
-        Overlay.StyleItem si = {};
+    private void populate_style(ref OverlayItem o,  Xml.XPath.Context cntx, string style) {
+        OverlayItem.StyleItem si = {};
 
         string st0;
         st0 = style.substring(1);
@@ -176,10 +176,10 @@ public class KmlOverlay : Object {
                     si = parse_style_nodes(res->nodesetval);
             }
         }
-        return si;
+        o.styleinfo = si;
     }
 
-    private void extract_style(Xml.Node *n, ref Overlay.StyleItem si) {
+    private void extract_style(Xml.Node *n, ref OverlayItem.StyleItem si) {
         for (Xml.Node* iter = n->children; iter != null; iter = iter->next) {
             switch(iter->name) {
                 case "IconStyle":
@@ -224,8 +224,8 @@ public class KmlOverlay : Object {
         return str;
     }
 
-    private Overlay.StyleItem parse_style_nodes(Xml.XPath.NodeSet* nl) {
-        Overlay.StyleItem si = {};
+    private OverlayItem.StyleItem parse_style_nodes(Xml.XPath.NodeSet* nl) {
+        OverlayItem.StyleItem si = {};
         for (int i = 0; i < nl->length(); i++) {
             extract_style(nl->item (i), ref si);
         }

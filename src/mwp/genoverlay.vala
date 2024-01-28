@@ -2,7 +2,8 @@ using Gtk;
 using Clutter;
 using Champlain;
 using GtkChamplain;
-public class Overlay : Object {
+
+public class OverlayItem : Object {
     public struct StyleItem {
         bool styled;
 		bool line_dotted;
@@ -18,7 +19,6 @@ public class Overlay : Object {
 		int altitude;
     }
 
-
 	public enum OLType {
 		UNKNOWN=0,
 		POINT=1,
@@ -32,27 +32,97 @@ public class Overlay : Object {
 		double radius_nm;
 	}
 
-	public struct OverlayItem {
-        OLType type;
-        string? name;
-		string? desc;
-        StyleItem? styleinfo;
-        Point[] pts;
-		CircData circ;
-    }
+	public uint8 idx;
+	public OLType type;
+    public string? name;
+	public string? desc;
+	public StyleItem? styleinfo;
+	public Point[] pts;
+	public CircData circ;
+	public Champlain.PathLayer? pl;
+	public Champlain.Label? mk;
 
+
+	public OverlayItem() {
+		pl = new Champlain.PathLayer();
+		pts = {};
+	}
+
+	public void remove_path() {
+		pl.remove_all();
+	}
+
+	public void show_point() {
+		Clutter.Color black = { 0,0,0, 0xff };
+		if(mk == null) {
+			mk = new Champlain.Label(); //.with_text (o.name,"Sans 10",null,null);
+		}
+		mk.set_text(name);
+		mk.set_font_name("Sans 10");
+		mk.set_alignment (Pango.Alignment.RIGHT);
+		mk.set_color(Clutter.Color.from_string(styleinfo.point_colour));
+		mk.set_text_color(black);
+		mk.set_location (pts[0].latitude, pts[0].longitude);
+		mk.set_draggable(false);
+		mk.set_selectable(false);
+	}
+
+	public void show_linestring() {
+		pl.closed=false;
+		pl.set_stroke_color(Clutter.Color.from_string(styleinfo.line_colour));
+		pl.set_stroke_width (styleinfo.line_width);
+		foreach (var p in pts) {
+			var l =  new  Champlain.Point();
+			l.set_location(p.latitude, p.longitude);
+			pl.add_node(l);
+		}
+	}
+
+	public void show_polygon() {
+			pl.closed=true;
+			pl.set_stroke_color(Clutter.Color.from_string(styleinfo.line_colour));
+			pl.set_stroke_width (styleinfo.line_width);
+			pl.fill = (styleinfo.fill_colour != null);
+			if (pl.fill)
+				pl.set_fill_color(Clutter.Color.from_string(styleinfo.fill_colour));
+			if (styleinfo.line_dotted) {
+				var llist = new List<uint>();
+				llist.append(5);
+				llist.append(5);
+				pl.set_dash(llist);
+			}
+			foreach (var p in pts) {
+				var l =  new  Champlain.Point();
+				l.set_location(p.latitude, p.longitude);
+				pl.add_node(l);
+			}
+	}
+
+	public void display() {
+		switch(this.type) {
+		case OLType.POINT:
+			show_point();
+			break;
+		case OLType.LINESTRING:
+			show_linestring();
+			break;
+		case OLType.POLYGON:
+			show_polygon();
+			break;
+		case OLType.UNKNOWN:
+			break;
+		}
+	}
+}
+
+
+public class Overlay : Object {
     private Champlain.View view;
     private Champlain.MarkerLayer mlayer;
-
-	private List<Champlain.PathLayer?> players;
 	private List<OverlayItem?> elements;
 
 	public unowned List<OverlayItem?> get_elements() {
 		return elements;
-	}
-
-	public unowned List<Champlain.PathLayer?> get_layers() {
-		return players;
 	}
 
     private void at_bottom(Champlain.Layer layer) {
@@ -60,31 +130,21 @@ public class Overlay : Object {
         pp.set_child_at_index(layer,0);
     }
 
-	public Overlay(Champlain.View _view) {
-		elements= new List<OverlayItem?>();
+	public Overlay(Champlain.View _view, bool _edit = false) {
         view = _view;
+		editable = _edit;
+		elements= new List<OverlayItem?>();
         mlayer = new Champlain.MarkerLayer();
         view.add_layer (mlayer);
         at_bottom(mlayer);
-        players = new List<Champlain.PathLayer>();
-	}
-
-	public void remove_layer(uint j) {
-		unowned var li = players.nth(j);
-		var p = players.nth_data(j);
-		p.remove_all();
-		view.remove_layer(p);
-		players.remove_link(li);
 	}
 
 	public void remove() {
 		mlayer.remove_all();
-		uint n = players.length();
-		for(var j = n-1; ; j--) {
-			remove_layer(j);
-			if(j == 0)
-				break;
-		}
+		elements.foreach((el) => {
+				el.remove_path();
+				view.remove_layer(el.pl);
+			});
     }
 
 	/*
@@ -99,64 +159,25 @@ public class Overlay : Object {
     }
 	*/
 
-	public void add_element(Overlay.OverlayItem o) {
+	public void add_element(OverlayItem o) {
 		elements.append(o);
 	}
 
 	public void display() {
 		elements.foreach((o) => {
 				stderr.printf("DBG: Add element %s\n", o.name);
+				o.display();
 				switch(o.type) {
-				case OLType.POINT:
-				Clutter.Color black = { 0,0,0, 0xff };
-				var marker = new Champlain.Label.with_text (o.name,"Sans 10",null,null);
-				marker.set_alignment (Pango.Alignment.RIGHT);
-				marker.set_color(Clutter.Color.from_string(o.styleinfo.point_colour));
-				marker.set_text_color(black);
-				marker.set_location (o.pts[0].latitude,o.pts[0].longitude);
-				marker.set_draggable(false);
-				marker.set_selectable(false);
-				mlayer.add_marker (marker);
-				break;
-				case OLType.LINESTRING:
-				var path = new Champlain.PathLayer();
-				path.closed=false;
-				path.set_stroke_color(Clutter.Color.from_string(o.styleinfo.line_colour));
-				path.set_stroke_width (o.styleinfo.line_width);
-				foreach (var p in o.pts) {
-					var l =  new  Champlain.Point();
-					l.set_location(p.latitude, p.longitude);
-					path.add_node(l);
-				}
-				players.append(path);
-				view.add_layer (path);
-				at_bottom(path);
-				break;
-				case OLType.POLYGON:
-				var path = new Champlain.PathLayer();
-				path.closed=true;
-				path.set_stroke_color(Clutter.Color.from_string(o.styleinfo.line_colour));
-				path.set_stroke_width (o.styleinfo.line_width);
-				path.fill = (o.styleinfo.fill_colour != null);
-				if (path.fill)
-					path.set_fill_color(Clutter.Color.from_string(o.styleinfo.fill_colour));
-				if (o.styleinfo.line_dotted) {
-					var llist = new List<uint>();
-					llist.append(5);
-					llist.append(5);
-					path.set_dash(llist);
-				}
-				foreach (var p in o.pts) {
-					var l =  new  Champlain.Point();
-					l.set_location(p.latitude, p.longitude);
-					path.add_node(l);
-				}
-				players.append(path);
-				view.add_layer (path);
-				at_bottom(path);
-				break;
-				case OLType.UNKNOWN:
-				break;
+				case OverlayItem.OLType.POINT:
+					mlayer.add_marker (o.mk);
+					break;
+				case OverlayItem.OLType.LINESTRING:
+				case OverlayItem.OLType.POLYGON:
+					view.add_layer (o.pl);
+					at_bottom(o.pl);
+					break;
+				case OverlayItem.OLType.UNKNOWN:
+					break;
 				}
 			});
 	}

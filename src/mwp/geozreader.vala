@@ -128,7 +128,7 @@ namespace GeoZoneReader {
 
 	private const int W_Thin = 4;
 	private const int MAXGZ = 63;
-	private const int W_Thick = 12;//012345678
+	private const int W_Thick = 10;//012345678
 	private const string LCOL_RED = "#ff0000a0";
 	private const string LCOL_GREEN = "#00ff00a0";
 	private const string FCOL_RED = "#ff00001a";
@@ -136,6 +136,10 @@ namespace GeoZoneReader {
 
 	private static int cnt;
 	private static GeoZone[] zs;
+
+	public GeoZone[] get_gz() {
+		return zs;
+	}
 
 	public void reset() {
 		cnt = 0;
@@ -187,8 +191,8 @@ namespace GeoZoneReader {
 
 	*/
 
-	private Overlay.StyleItem get_style(GeoZone z) {
-		Overlay.StyleItem s = Overlay.StyleItem();
+	private OverlayItem.StyleItem get_style(GeoZone z) {
+		OverlayItem.StyleItem s = OverlayItem.StyleItem();
 		s.styled = true;
 		switch (z.type) {
 		case GZType.Exclusive:
@@ -251,13 +255,14 @@ namespace GeoZoneReader {
 	public Overlay generate_overlay(Champlain.View view) {
 		var o = new Overlay(view);
 		for(var j = 0; j < zs.length; j++) {
-			var oi = Overlay.OverlayItem();
-			oi.type = Overlay.OLType.POLYGON;
+			var oi = new OverlayItem();
+			oi.type = OverlayItem.OLType.POLYGON;
+			oi.idx = zs[j].index;
 			var sb = new StringBuilder();
 			sb.append_printf("geozone %d %d %d %d %d %d", zs[j].index, zs[j].shape, zs[j].type,
                zs[j].minalt, zs[j].maxalt, zs[j].action);
 			oi.styleinfo =  get_style(zs[j]);
-			Overlay.Point[] pts = {};
+			OverlayItem.Point[] pts = {};
 			if (zs[j].shape == GZShape.Circular) {
 				oi.name = "Circle %2d".printf(j);
 				sb.append_printf(" circle %d %d %d", zs[j].vertices[0].latitude, zs[j].vertices[0].longitude, zs[j].vertices[1].latitude);
@@ -268,7 +273,7 @@ namespace GeoZoneReader {
 				oi.circ.lon = clon;
 				oi.circ.radius_nm = range;
 				for (var i = 0; i < 360; i += 5) {
-					var p = Overlay.Point();
+					var p = OverlayItem.Point();
 					p.altitude = zs[j].maxalt/100;
 					Geo.posit(clat, clon, i, range, out p.latitude, out p.longitude);
 					pts += p;
@@ -276,7 +281,7 @@ namespace GeoZoneReader {
 			} else {
 				oi.name = "Polygon %2d".printf(j);
 				for(var k = 0; k < zs[j].vertices.length; k++) {
-					var p = Overlay.Point();
+					var p = OverlayItem.Point();
 					p.altitude = zs[j].maxalt/100;
 					p.latitude = (double)zs[j].vertices[k].latitude / 1e7;
 					p.longitude = (double)zs[j].vertices[k].longitude / 1e7;
