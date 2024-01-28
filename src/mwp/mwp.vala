@@ -269,6 +269,7 @@ public class MWP : Gtk.Application {
 	}
 	private BBVideoList? bbvlist;
 	private  bool bbl_delay = true;
+	private GZEdit gzedit;
 
 	private struct RadarDev {
 		MWSerial dev;
@@ -276,6 +277,7 @@ public class MWP : Gtk.Application {
 		uint tid;
 	}
 	private RadarDev[] radardevs;
+	private GeoZoneReader gzr;
 	private Overlay? gzone;
     private TelemTracker ttrk;
 
@@ -1227,10 +1229,10 @@ public class MWP : Gtk.Application {
 					var vfn = validate_cli_file(gz_load);
 					gz_load = null;
 					if (vfn != null) {
-						GeoZoneReader.from_file(vfn);
+						gzr.from_file(vfn);
 						if(gzone != null)
 							gzone.remove();
-						gzone = GeoZoneReader.generate_overlay(view);
+						gzone = gzr.generate_overlay(view);
 						gzone.display();
 					}
 				}
@@ -1857,7 +1859,10 @@ public class MWP : Gtk.Application {
                 msp_publish_home(safeindex);
             });
 
-        Places.get_places();
+		gzr = new GeoZoneReader();
+		gzedit = new GZEdit(window, gzr);
+
+		Places.get_places();
         setpos.load_places();
         setpos.new_pos.connect((la, lo, zoom) => {
 				Idle.add(() => {
@@ -2173,9 +2178,15 @@ public class MWP : Gtk.Application {
             });
         window.add_action(saq);
 
+        saq = new GLib.SimpleAction("gz-save",null);
+        saq.activate.connect(() => {
+                gz_save_dialog();
+            });
+        window.add_action(saq);
+
         saq = new GLib.SimpleAction("gz-edit",null);
         saq.activate.connect(() => {
-                GZEdit.edit(gzone);
+                gzedit.edit(gzone);
             });
         window.add_action(saq);
 
@@ -2647,7 +2658,7 @@ public class MWP : Gtk.Application {
                         Logger.fcinfo(last_file,vi,capability,profile, boxnames,
                                       vname, devnam);
 						if(gzone != null) {
-							Logger.logstring("geozone", GeoZoneReader.to_string());
+							Logger.logstring("geozone", gzr.to_string());
 						}
 					}
                 }
@@ -3437,10 +3448,10 @@ public class MWP : Gtk.Application {
                 if (id == Gtk.ResponseType.ACCEPT) {
 					var fns = chooser.get_filename ();
                     chooser.close ();
-					GeoZoneReader.from_file(fns);
+					gzr.from_file(fns);
 						if(gzone != null)
 							gzone.remove();
-						gzone = GeoZoneReader.generate_overlay(view);
+						gzone = gzr.generate_overlay(view);
 						gzone.display();
 				} else
                     chooser.close ();
@@ -6726,7 +6737,7 @@ public class MWP : Gtk.Application {
 			if(conf.need_telemetry && (0 == (feature_mask & MSP.Feature.TELEMETRY)))
                     Utils.warning_box("TELEMETRY requested but not enabled in iNav", Gtk.MessageType.ERROR);
 			if ((feature_mask & MSP.Feature.GEOZONE) == MSP.Feature.GEOZONE) {
-				GeoZoneReader.reset();
+				gzr.reset();
 				queue_gzone(0);
 			} else {
 				queue_cmd(MSP.Cmds.BLACKBOX_CONFIG,null,0);
@@ -6734,15 +6745,16 @@ public class MWP : Gtk.Application {
 			 break;
 
 		case MSP.Cmds.GEOZONE:
-			var cnt = GeoZoneReader.append(raw, len);
+			var cnt = gzr.append(raw, len);
 			if (cnt >= GeoZoneReader.MAXGZ) {
-				if(gzone != null)
+				if(gzone != null) {
 					gzone.remove();
-				gzone = GeoZoneReader.generate_overlay(view);
+				}
+				gzone = gzr.generate_overlay(view);
 				Idle.add(() => {
 						gzone.display();
 						if (Logger.is_logging) {
-							Logger.logstring("geozone", GeoZoneReader.to_string());
+							Logger.logstring("geozone", gzr.to_string());
 						}
 						return false;
 					});
@@ -7534,10 +7546,10 @@ public class MWP : Gtk.Application {
             case MSP.Cmds.PRIV_TEXT_GEOZ:
 				if (gzone == null) {
 					var txt = (string)raw[0:len];
-					GeoZoneReader.from_string(txt);
+					gzr.from_string(txt);
 					if(gzone != null)
 						gzone.remove();
-					gzone = GeoZoneReader.generate_overlay(view);
+					gzone = gzr.generate_overlay(view);
 					Idle.add(() => {
 							gzone.display();
 							return false;
@@ -8990,7 +9002,7 @@ public class MWP : Gtk.Application {
         set_replay_menus(true);
         reboot_status();
 		if(gzone != null) {
-			GeoZoneReader.dump(gzone, vname);
+			gzr.dump(gzone, vname);
 			gzone.remove();
 			gzone = null;
 		}
@@ -9575,6 +9587,43 @@ Error: <i>%s</i>
                 }
                 if(func != null) {
                     func();
+                }
+            });
+		chooser.show();
+    }
+
+    private void gz_save_dialog () {
+        Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
+            "Save GZone", null, Gtk.FileChooserAction.SAVE,
+            "_Cancel",
+            Gtk.ResponseType.CANCEL,
+            "_Save",
+            Gtk.ResponseType.ACCEPT);
+        chooser.set_transient_for(window);
+        chooser.select_multiple = false;
+        Gtk.FileFilter filter = new Gtk.FileFilter ();
+
+        filter.set_filter_name ("Text");
+        filter.add_pattern ("*.txt");
+        chooser.add_filter (filter);
+
+        filter = new Gtk.FileFilter ();
+        filter.set_filter_name ("All Files");
+        filter.add_pattern ("*");
+        chooser.add_filter (filter);
+
+        chooser.response.connect((id) => {
+                if (id == Gtk.ResponseType.ACCEPT) {
+                    var fn = chooser.get_filename ();
+                    chooser.destroy ();
+					var s = gzr.to_string();
+					try {
+						FileUtils.set_contents(fn,s );
+					} catch (Error e) {
+						MWPLog.message("GZ Save %s %s\n", fn,e.message);
+					}
+                } else {
+                    chooser.destroy ();
                 }
             });
 		chooser.show();

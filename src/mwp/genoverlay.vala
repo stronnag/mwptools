@@ -45,12 +45,13 @@ public class OverlayItem : Object {
 		pl.remove_all();
 	}
 
-	private void set_label(Champlain.Label mk, string text) {
+	public void set_label(Champlain.Label mk, string text) {
 		Clutter.Color black = { 0,0,0, 0xff };
 		mk.set_text(text);
 		mk.set_font_name("Sans 10");
 		mk.set_alignment (Pango.Alignment.RIGHT);
-		mk.set_color(Clutter.Color.from_string(styleinfo.point_colour));
+		string? c = (styleinfo.point_colour != null) ? styleinfo.point_colour : styleinfo.line_colour;
+		mk.set_color(Clutter.Color.from_string(c));
 		mk.set_text_color(black);
 		mk.set_draggable(false);
 		mk.set_selectable(false);
@@ -145,6 +146,13 @@ public class Overlay : Object {
 			});
     }
 
+	public void remove_element(uint n) {
+		var el = elements.nth_data(n);
+		el.remove_path();
+		view.remove_layer(el.pl);
+		elements.remove(el);
+	}
+
 	/*
 	public void remove() {
 		mlayer.remove_all();
@@ -159,6 +167,14 @@ public class Overlay : Object {
 
 	public void add_element(OverlayItem o) {
 		elements.append(o);
+	}
+
+	public void add_marker(Champlain.Marker m) {
+		mlayer.add_marker (m);
+	}
+
+	public void remove_all_markers() {
+		mlayer.remove_all();
 	}
 
 	public void display() {
