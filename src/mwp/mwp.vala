@@ -2173,6 +2173,12 @@ public class MWP : Gtk.Application {
             });
         window.add_action(saq);
 
+        saq = new GLib.SimpleAction("gz-edit",null);
+        saq.activate.connect(() => {
+                GZEdit.edit(gzone);
+            });
+        window.add_action(saq);
+
         saq = new GLib.SimpleAction("safe-homes",null);
         saq.activate.connect(() => {
                 safehomed.show(window);

@@ -13,12 +13,6 @@ public class OverlayItem : Object {
 		int line_width;
     }
 
-    public struct Point {
-        double latitude;
-        double longitude;
-		int altitude;
-    }
-
 	public enum OLType {
 		UNKNOWN=0,
 		POINT=1,
@@ -37,65 +31,70 @@ public class OverlayItem : Object {
     public string? name;
 	public string? desc;
 	public StyleItem? styleinfo;
-	public Point[] pts;
 	public CircData circ;
 	public Champlain.PathLayer? pl;
-	public Champlain.Label? mk;
+	public List<Champlain.Label?> mks;
 
 
 	public OverlayItem() {
 		pl = new Champlain.PathLayer();
-		pts = {};
+		mks = new List<Champlain.Label?>();
 	}
 
 	public void remove_path() {
 		pl.remove_all();
 	}
 
-	public void show_point() {
+	private void set_label(Champlain.Label mk, string text) {
 		Clutter.Color black = { 0,0,0, 0xff };
-		if(mk == null) {
-			mk = new Champlain.Label(); //.with_text (o.name,"Sans 10",null,null);
-		}
-		mk.set_text(name);
+		mk.set_text(text);
 		mk.set_font_name("Sans 10");
 		mk.set_alignment (Pango.Alignment.RIGHT);
 		mk.set_color(Clutter.Color.from_string(styleinfo.point_colour));
 		mk.set_text_color(black);
-		mk.set_location (pts[0].latitude, pts[0].longitude);
 		mk.set_draggable(false);
 		mk.set_selectable(false);
+	}
+
+
+	public void add_point(double lat, double lon) {
+		var mk = new Champlain.Label();
+		mk.latitude = lat;
+		mk.longitude = lon;
+		mks.append(mk);
+	}
+
+	public void show_point() {
+		set_label(mks.nth_data(0), name);
 	}
 
 	public void show_linestring() {
 		pl.closed=false;
 		pl.set_stroke_color(Clutter.Color.from_string(styleinfo.line_colour));
 		pl.set_stroke_width (styleinfo.line_width);
-		foreach (var p in pts) {
-			var l =  new  Champlain.Point();
-			l.set_location(p.latitude, p.longitude);
-			pl.add_node(l);
+		foreach (var mk in mks) {
+			pl.add_node(mk);
+			mk.visible = false;
 		}
 	}
 
 	public void show_polygon() {
-			pl.closed=true;
-			pl.set_stroke_color(Clutter.Color.from_string(styleinfo.line_colour));
-			pl.set_stroke_width (styleinfo.line_width);
-			pl.fill = (styleinfo.fill_colour != null);
-			if (pl.fill)
-				pl.set_fill_color(Clutter.Color.from_string(styleinfo.fill_colour));
-			if (styleinfo.line_dotted) {
-				var llist = new List<uint>();
-				llist.append(5);
-				llist.append(5);
-				pl.set_dash(llist);
-			}
-			foreach (var p in pts) {
-				var l =  new  Champlain.Point();
-				l.set_location(p.latitude, p.longitude);
-				pl.add_node(l);
-			}
+		pl.closed=true;
+		pl.set_stroke_color(Clutter.Color.from_string(styleinfo.line_colour));
+		pl.set_stroke_width (styleinfo.line_width);
+		pl.fill = (styleinfo.fill_colour != null);
+		if (pl.fill)
+			pl.set_fill_color(Clutter.Color.from_string(styleinfo.fill_colour));
+		if (styleinfo.line_dotted) {
+			var llist = new List<uint>();
+			llist.append(5);
+			llist.append(5);
+			pl.set_dash(llist);
+		}
+		foreach (var mk in mks) {
+			pl.add_node(mk);
+			mk.visible = false;
+		}
 	}
 
 	public void display() {
@@ -130,9 +129,8 @@ public class Overlay : Object {
         pp.set_child_at_index(layer,0);
     }
 
-	public Overlay(Champlain.View _view, bool _edit = false) {
+	public Overlay(Champlain.View _view) {
         view = _view;
-		editable = _edit;
 		elements= new List<OverlayItem?>();
         mlayer = new Champlain.MarkerLayer();
         view.add_layer (mlayer);
@@ -169,7 +167,7 @@ public class Overlay : Object {
 				o.display();
 				switch(o.type) {
 				case OverlayItem.OLType.POINT:
-					mlayer.add_marker (o.mk);
+					mlayer.add_marker (o.mks.nth_data(0));
 					break;
 				case OverlayItem.OLType.LINESTRING:
 				case OverlayItem.OLType.POLYGON:

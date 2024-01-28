@@ -1,8 +1,3 @@
-using Gtk;
-using Clutter;
-using Champlain;
-using GtkChamplain;
-
 
 public class KmlOverlay : Object {
     private string filename;
@@ -134,15 +129,11 @@ public class KmlOverlay : Object {
 					break;
 				}
                 var cs = Regex.split_simple("\\s+", coords);
-                OverlayItem.Point[] pts = {};
                 foreach(var s in cs) {
-                    OverlayItem.Point p = OverlayItem.Point();
                     var ss = s.split(",");
-                    p.latitude = double.parse(ss[1].strip());
-                    p.longitude = double.parse(ss[0].strip());
-                    pts += p;
+					o.add_point(double.parse(ss[1].strip()),
+								double.parse(ss[0].strip()));
                 }
-                o.pts = pts;
 				ovly.add_element(o);
             }
         }

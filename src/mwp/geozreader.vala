@@ -1,5 +1,4 @@
 namespace KMLWriter {
-
 	private string fixcol(string col) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(col[7:9]);
@@ -47,6 +46,7 @@ namespace KMLWriter {
 			vfolder->new_text_child (ns, "visibility", "1");
 			vfolder->new_text_child (ns, "name", el.name);
 			vfolder->new_text_child (ns, "description", el.desc);
+			int alt = 0;
 			if(el.desc.has_prefix("geozone")) {
 				var gels = el.desc.split(" ");
 				if (gels.length >= 7) {
@@ -57,6 +57,7 @@ namespace KMLWriter {
 					xdata->new_text_child (gns, "type", gels[3]);
 					xdata->new_text_child (gns, "minalt", gels[4]);
 					xdata->new_text_child (gns, "maxalt", gels[5]);
+					alt = int.parse(gels[5])/100;
 					xdata->new_text_child (gns, "action", gels[6]);
 					if(gels.length == 11 && gels[7] == "circle") {
 						xdata->new_text_child (gns, "centre-lat", gels[8]);
@@ -76,10 +77,11 @@ namespace KMLWriter {
 			var obis = polyg->new_text_child (ns, "outerBoundaryIs", "");
 			var lring = obis->new_text_child (ns, "LinearRing", "");
 			var sb = new StringBuilder();
-			foreach (var p in  el.pts) {
-				sb.append_printf("%.7f,%.7f,%d ", p.longitude, p.latitude, p.altitude);
+
+			foreach (var p in  el.mks) {
+				sb.append_printf("%.7f,%.7f,%d ", p.longitude, p.latitude, alt);
 			}
-			sb.append_printf("%.7f,%.7f,%d", el.pts[0].longitude, el.pts[0].latitude, el.pts[0].altitude);
+			sb.append_printf("%.7f,%.7f,%d", el.mks.nth_data(0).longitude, el.mks.nth_data(0).latitude, alt);
 			lring->new_text_child (ns, "coordinates", sb.str);
 			j++;
 			});
@@ -262,7 +264,6 @@ namespace GeoZoneReader {
 			sb.append_printf("geozone %d %d %d %d %d %d", zs[j].index, zs[j].shape, zs[j].type,
                zs[j].minalt, zs[j].maxalt, zs[j].action);
 			oi.styleinfo =  get_style(zs[j]);
-			OverlayItem.Point[] pts = {};
 			if (zs[j].shape == GZShape.Circular) {
 				oi.name = "Circle %2d".printf(j);
 				sb.append_printf(" circle %d %d %d", zs[j].vertices[0].latitude, zs[j].vertices[0].longitude, zs[j].vertices[1].latitude);
@@ -273,23 +274,19 @@ namespace GeoZoneReader {
 				oi.circ.lon = clon;
 				oi.circ.radius_nm = range;
 				for (var i = 0; i < 360; i += 5) {
-					var p = OverlayItem.Point();
-					p.altitude = zs[j].maxalt/100;
-					Geo.posit(clat, clon, i, range, out p.latitude, out p.longitude);
-					pts += p;
+					double plat, plon;
+					Geo.posit(clat, clon, i, range, out plat, out plon);
+					oi.add_point(plat, plon);
 				}
 			} else {
 				oi.name = "Polygon %2d".printf(j);
 				for(var k = 0; k < zs[j].vertices.length; k++) {
-					var p = OverlayItem.Point();
-					p.altitude = zs[j].maxalt/100;
-					p.latitude = (double)zs[j].vertices[k].latitude / 1e7;
-					p.longitude = (double)zs[j].vertices[k].longitude / 1e7;
-					pts += p;
+					double plat = (double)zs[j].vertices[k].latitude / 1e7;
+					double plon = (double)zs[j].vertices[k].longitude / 1e7;
+					oi.add_point(plat, plon);
 				}
 			}
 			oi.desc = sb.str;
-			oi.pts = pts;
 			o.add_element(oi);
 		}
 		return o;
