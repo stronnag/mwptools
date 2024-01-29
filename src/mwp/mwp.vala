@@ -2213,7 +2213,8 @@ public class MWP : Gtk.Application {
 
         saq = new GLib.SimpleAction("gz-dl",null);
         saq.activate.connect(() => {
-
+				gzr.reset();
+				queue_gzone(0);
             });
         window.add_action(saq);
         saq = new GLib.SimpleAction("gz-ul",null);
@@ -6779,10 +6780,14 @@ public class MWP : Gtk.Application {
 
 			if(conf.need_telemetry && (0 == (feature_mask & MSP.Feature.TELEMETRY)))
                     Utils.warning_box("TELEMETRY requested but not enabled in INAV", Gtk.MessageType.ERROR);
-			if ((feature_mask & MSP.Feature.GEOZONE) == MSP.Feature.GEOZONE && conf.autoload_geozones) {
-				gzr.reset();
-				queue_gzone(0);
-				gz_from_msp = true;
+			if ((feature_mask & MSP.Feature.GEOZONE) == MSP.Feature.GEOZONE) {
+				set_menu_state("gz-dl", true);
+				set_menu_state("gz-ul", true);
+				if(conf.autoload_geozones) {
+					gzr.reset();
+					queue_gzone(0);
+					gz_from_msp = true;
+				}
 			} else {
 				queue_cmd(MSP.Cmds.BLACKBOX_CONFIG,null,0);
 			 }
@@ -6793,10 +6798,10 @@ public class MWP : Gtk.Application {
 			if (cnt >= GeoZoneReader.MAXGZ) {
 				if(gzone != null) {
 					gzone.remove();
-					set_menu_state("gz-save", false);
+					set_gzsave_state(false);
 				}
 				gzone = gzr.generate_overlay(view);
-				set_menu_state("gz-save", true);
+				set_gzsave_state(true);
 				Idle.add(() => {
 						gzone.display();
 						if (Logger.is_logging) {
@@ -7594,7 +7599,7 @@ public class MWP : Gtk.Application {
 					var txt = (string)raw[0:len];
 					gzr.from_string(txt);
 					if(gzone != null) {
-						set_menu_state("gz-save", false);
+						set_gzsave_state(false);
 						gzone.remove();
 					}
 					gzone = gzr.generate_overlay(view);
@@ -9103,8 +9108,12 @@ public class MWP : Gtk.Application {
 		if(vi.fc_vers >= FCVERS.hasWP_V4)
 			set_menu_state("upload-missions", state);
 
-		if(vi.fc_vers >= FCVERS.hasGeoZones) {
-			set_menu_state("upload-missions", state);
+		if((feature_mask & MSP.Feature.GEOZONE) != 0) {
+			stderr.printf("DBG: Setting gz msp\n");
+			set_menu_state("gz-dl", state);
+			set_menu_state("gz-ul", state);
+		} else {
+			stderr.printf("DBG: NOT Setting gz msp\n");
 		}
 	}
 
