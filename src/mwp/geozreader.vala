@@ -244,11 +244,9 @@ public class GeoZoneReader {
 		zs.foreach((z) => {
 				sb.append_printf("geozone %d %d %d %d %d %d\n", z.index, z.shape, z.type,
 								 z.minalt, z.maxalt, z.action);
-				var k = 0;
 				z.vertices.foreach((v) => {
-						sb.append_printf("geozone vertex %d %d %d %d\n", z.index, k, v.latitude, v.longitude);
+						sb.append_printf("geozone vertex %d %d %d %d\n", z.index, v.index, v.latitude, v.longitude);
 					});
-				k++;
 			});
 		return sb.str;
 	}
@@ -333,6 +331,22 @@ public class GeoZoneReader {
 		if (zid < zs.length()) {
 			zs.nth_data(zid).vertices.append(v);
 			zs.nth_data(zid).nvertices += 1;
+		}
+	}
+
+	public void insert_vertex_position(int zid, int idx, int lat, int lon) {
+		var v = Vertex();
+		v.index = (uint8)idx;
+		v.latitude = lat;
+		v.longitude = lon;
+		if (zid < zs.length()) {
+			zs.nth_data(zid).vertices.insert(v, idx);
+			zs.nth_data(zid).nvertices += 1;
+			uint8 j = 0;
+			zs.nth_data(zid).vertices.foreach((v) => {
+					v.index = j;
+					j++;
+				});
 		}
 	}
 

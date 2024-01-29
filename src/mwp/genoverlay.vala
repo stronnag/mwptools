@@ -74,7 +74,21 @@ public class OverlayItem : Object {
 		mk.set_draggable(true);
 		mks.append(mk);
 		pl.add_node(mk);
+		return mk;
+	}
 
+	public Champlain.Label insert_line_position(double lat, double lon, int ipos) {
+		var mk = new Champlain.Label();
+		mk.latitude = lat;
+		mk.longitude = lon;
+		set_label(mk, "?");
+		mk.visible = true;
+		mk.set_draggable(true);
+		// Amazingly broken
+		var n = pl.get_nodes().length();
+		pl.insert_node(mk, n - ipos);
+		//		pl.get_nodes().insert(mk, ipos);
+		mks.append(mk);
 		return mk;
 	}
 
