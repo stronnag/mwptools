@@ -661,7 +661,6 @@
       <default>true</default>
       <summary>Autoload geozones from FC</summary>
       <description>Autoload geozones from FC on connect, remove from display on disconnect</description>
-    </key
-
+    </key>
   </schema>
 </schemalist>

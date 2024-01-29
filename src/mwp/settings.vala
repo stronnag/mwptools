@@ -418,7 +418,7 @@ public class MWPSettings : GLib.Object {
         if(s == null || s == "bluez-disco")
             bluez_disco = settings.get_boolean ("bluez-disco");
         if(s == null || s == "autoload-geozones")
-            autoload_geozones = settings.get_boolean ("autoload_geozones");
+            autoload_geozones = settings.get_boolean ("autoload-geozones");
 	}
 
     public void save_pane() {

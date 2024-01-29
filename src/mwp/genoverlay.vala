@@ -65,6 +65,19 @@ public class OverlayItem : Object {
 		mks.append(mk);
 	}
 
+	public Champlain.Label add_line_point(double lat, double lon, string label) {
+		var mk = new Champlain.Label();
+		mk.latitude = lat;
+		mk.longitude = lon;
+		set_label(mk, label);
+		mk.visible = true;
+		mk.set_draggable(true);
+		mks.append(mk);
+		pl.add_node(mk);
+
+		return mk;
+	}
+
 	public void show_point() {
 		set_label(mks.nth_data(0), name);
 	}
@@ -140,6 +153,10 @@ public class Overlay : Object {
 
 	public Champlain.View get_view() {
 		return view;
+	}
+
+	public Champlain.MarkerLayer get_mlayer() {
+		return mlayer;
 	}
 
 	public void remove() {

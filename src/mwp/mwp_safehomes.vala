@@ -409,7 +409,7 @@ public class  SafeHomeDialog : Object {
             });
     }
 
-    public void pop_menu(Gdk.EventButton e) {
+    public bool pop_menu(Gdk.EventButton e) {
         if(pop_idx != -1) {
             var idx = pop_idx;
             var marker_menu = new Gtk.Menu ();
@@ -439,8 +439,10 @@ public class  SafeHomeDialog : Object {
             marker_menu.add (item);
             marker_menu.show_all();
             marker_menu.popup_at_pointer(e);
+			pop_idx = -1;
+			return true;
         }
-        pop_idx = -1;
+		return false;
     }
 
     private void set_default_loc(int idx) {

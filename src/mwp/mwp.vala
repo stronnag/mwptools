@@ -1868,7 +1868,7 @@ public class MWP : Gtk.Application {
             });
 
 		gzr = new GeoZoneReader();
-
+		gzedit = new GZEdit(window, gzr);
 		Places.get_places();
         setpos.load_places();
         setpos.new_pos.connect((la, lo, zoom) => {
@@ -2193,7 +2193,6 @@ public class MWP : Gtk.Application {
 
         saq = new GLib.SimpleAction("gz-edit",null);
         saq.activate.connect(() => {
-				gzedit = new GZEdit(window, gzr);
 				if(gzone == null) {
 					gzone = new Overlay(view);
 				}
@@ -4910,9 +4909,15 @@ public class MWP : Gtk.Application {
 
     private void setup_buttons() {
         embed.button_release_event.connect((evt) => {
-                if(evt.button == 3)
-                    if(!ls.pop_marker_menu(evt))
-                        safehomed.pop_menu(evt);
+                if(evt.button == 3) {
+                    if(!ls.pop_marker_menu(evt)) {
+						if (!safehomed.pop_menu(evt)) {
+							if(!gzedit.popup(evt)) {
+								stderr.printf("DBG: Unhandled embed event\n");
+							}
+						}
+					}
+				}
                 return false;
             });
 
