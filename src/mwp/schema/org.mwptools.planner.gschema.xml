@@ -657,6 +657,11 @@
       <summary>Use Bluetooth discovery</summary>
       <description>Only discovered Bluetooth serial devices with non-zero RSSI will be offered</description>
     </key>
+    <key type="b" name="autoload-geozones">
+      <default>true</default>
+      <summary>Autoload geozones from FC</summary>
+      <description>Autoload geozones from FC on connect, remove from display on disconnect</description>
+    </key
 
   </schema>
 </schemalist>

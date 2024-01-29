@@ -65,7 +65,7 @@ public class GeoZoneReader {
 	}
 
 	public void reset() {
-		cnt = 0;
+		cnt= 0;
 		zs.foreach((ze) => {
 				unowned var vv = ze.vertices;
 				while(!vv.is_empty()) {
@@ -81,30 +81,26 @@ public class GeoZoneReader {
 
 	public void parse(uint8[] buf) {
 		uint8* ptr = &buf[0];
-		var z = GeoZone();
-		z.type = (GZType)*ptr++;
-		z.shape = (GZShape)*ptr++;
-		ptr = SEDE.deserialise_i32(ptr, out z.minalt);
-		ptr = SEDE.deserialise_i32(ptr, out z.maxalt);
+		var ztype = (GZType)*ptr++;
+		var zshape = (GZShape)*ptr++;
+		int minalt, maxalt;
+		ptr = SEDE.deserialise_i32(ptr, out minalt);
+		ptr = SEDE.deserialise_i32(ptr, out maxalt);
 
-		z.action = (GZAction)*ptr++;
-		z.nvertices = *ptr++;
-		z.index = *ptr++;
-		var uv = new List<Vertex?>();
-		z.vertices = uv;
-		zs.append(z);
+		var action = (GZAction)*ptr++;
+		var nvertices = *ptr++;
+		var index = *ptr++;
+		append_zone(index, zshape, ztype, minalt, maxalt, action);
 
-		var zvsize = ZSIZEMIN + z.nvertices*VSIZE;
+		var zvsize = ZSIZEMIN + nvertices*VSIZE;
 		if(zvsize ==  buf.length) {
-			for (var j = 0; j < z.nvertices; j++) {
-				var v = Vertex();
-				v.index = *ptr++;
-				ptr = SEDE.deserialise_i32(ptr, out v.latitude);
-				ptr = SEDE.deserialise_i32(ptr, out v.longitude);
-				zs.nth_data(z.index).vertices.append(v);
+			for (var j = 0; j < nvertices; j++) {
+				var vindex = *ptr++;
+				int vlat, vlon;
+				ptr = SEDE.deserialise_i32(ptr, out vlat);
+				ptr = SEDE.deserialise_i32(ptr, out vlon);
+				append_vertex(index, vindex, vlat, vlon);
 			}
-		} else {
-			z.nvertices = 0;
 		}
 	}
 
@@ -186,45 +182,50 @@ public class GeoZoneReader {
 		return s;
 	}
 
+	public OverlayItem generate_overlay_item(Overlay o, GeoZone ze, int j) {
+		var oi = new OverlayItem();
+		oi.type = OverlayItem.OLType.POLYGON;
+		oi.idx = ze.index;
+		var sb = new StringBuilder();
+		sb.append_printf("geozone %d %d %d %d %d %d", ze.index, ze.shape, ze.type,
+						 ze.minalt, ze.maxalt, ze.action);
+		oi.styleinfo =  get_style(ze);
+		if (ze.shape == GZShape.Circular) {
+			oi.name = "Circle %2d".printf(j);
+			sb.append_printf(" circle %d %d %d", ze.vertices.nth_data(0).latitude,
+							 ze.vertices.nth_data(0).longitude,
+							 ze.vertices.nth_data(1).latitude);
+			var clat = (double)ze.vertices.nth_data(0).latitude/1e7;
+			var clon = (double)ze.vertices.nth_data(0).longitude/1e7;
+			var range = (double)ze.vertices.nth_data(1).latitude/(100.0*1852.0);
+			oi.circ.lat = clat;
+			oi.circ.lon = clon;
+			oi.circ.radius_nm = range;
+			for (var i = 0; i < 360; i += 5) {
+				double plat, plon;
+				Geo.posit(clat, clon, i, range, out plat, out plon);
+				oi.add_point(plat, plon);
+			}
+		} else {
+			oi.name = "Polygon %2d".printf(j);
+			var k = 0;
+			ze.vertices.foreach((ve) => {
+					double plat = (double)ve.latitude / 1e7;
+					double plon = (double)ve.longitude / 1e7;
+					oi.add_point(plat, plon);
+					k++;
+				});
+		}
+		oi.desc = sb.str;
+		o.add_element(oi);
+		return oi;
+	}
+
 	public Overlay generate_overlay(Champlain.View view) {
 		var o = new Overlay(view);
 		var j = 0;
 		zs.foreach((ze) => {
-				var oi = new OverlayItem();
-				oi.type = OverlayItem.OLType.POLYGON;
-				oi.idx = ze.index;
-				var sb = new StringBuilder();
-				sb.append_printf("geozone %d %d %d %d %d %d", ze.index, ze.shape, ze.type,
-								 ze.minalt, ze.maxalt, ze.action);
-				oi.styleinfo =  get_style(ze);
-				if (ze.shape == GZShape.Circular) {
-					oi.name = "Circle %2d".printf(j);
-					sb.append_printf(" circle %d %d %d", ze.vertices.nth_data(0).latitude,
-									 ze.vertices.nth_data(0).longitude,
-									 ze.vertices.nth_data(1).latitude);
-					var clat = (double)ze.vertices.nth_data(0).latitude/1e7;
-					var clon = (double)ze.vertices.nth_data(0).longitude/1e7;
-					var range = (double)ze.vertices.nth_data(1).latitude/(100.0*1852.0);
-					oi.circ.lat = clat;
-					oi.circ.lon = clon;
-					oi.circ.radius_nm = range;
-					for (var i = 0; i < 360; i += 5) {
-						double plat, plon;
-						Geo.posit(clat, clon, i, range, out plat, out plon);
-						oi.add_point(plat, plon);
-					}
-				} else {
-					oi.name = "Polygon %2d".printf(j);
-					var k = 0;
-					ze.vertices.foreach((ve) => {
-							double plat = (double)ve.latitude / 1e7;
-							double plon = (double)ve.longitude / 1e7;
-							oi.add_point(plat, plon);
-							k++;
-						});
-				}
-				oi.desc = sb.str;
-				o.add_element(oi);
+				generate_overlay_item(o, ze, j);
 				j++;
 			});
 		return o;
@@ -300,27 +301,19 @@ public class GeoZoneReader {
 				if (parts.length > 5) {
 					switch (parts[1]) {
 					case "vertex":
-						int zid = int.parse(parts[2]);
-						var v = Vertex();
-						v.index = (uint8)int.parse(parts[3]);
-						v.latitude = int.parse(parts[4]);
-						v.longitude = int.parse(parts[5]);
-						if (zid < zs.length()) {
-							zs.nth_data(zid).vertices.append(v);
-							zs.nth_data(zid).nvertices += 1;
-						}
+						append_vertex(int.parse(parts[2]),
+									  int.parse(parts[3]),
+									  int.parse(parts[4]),
+									  int.parse(parts[5]));
 						break;
 					default:
-						var z = GeoZone();
-						z.index = (uint8)int.parse(parts[1]);
-						z.shape = (GZShape)int.parse(parts[2]);
-						z.type =(GZType)int.parse(parts[3]);
-						z.minalt = int.parse(parts[4]);
-						z.maxalt = int.parse(parts[5]);
-						z.action = (GZAction)int.parse(parts[6]);
-						var uv = new List<Vertex?>();
-						z.vertices = uv;
-						zs.append(z);
+						append_zone(
+							int.parse(parts[1]),
+							int.parse(parts[2]),
+							int.parse(parts[3]),
+							int.parse(parts[4]),
+							int.parse(parts[5]),
+							int.parse(parts[6]));
 						break;
 					}
 				}
@@ -330,6 +323,31 @@ public class GeoZoneReader {
 			res = false;
 		}
 		return res;
+	}
+
+	public void append_vertex(int zid, int idx, int lat, int lon) {
+		var v = Vertex();
+		v.index = (uint8)idx;
+		v.latitude = lat;
+		v.longitude = lon;
+		if (zid < zs.length()) {
+			zs.nth_data(zid).vertices.append(v);
+			zs.nth_data(zid).nvertices += 1;
+		}
+	}
+
+	public uint append_zone(uint id, int shape, int ztype, int minalt, int maxalt, int action) {
+		var z = GeoZone();
+		z.index = (uint8)id;
+		z.shape = (GZShape)shape;
+		z.type  = (GZType)ztype;
+		z.minalt = minalt;
+		z.maxalt = maxalt;
+		z.action = (GZAction)action;
+		var uv = new List<Vertex?>();
+		z.vertices = uv;
+		zs.append(z);
+		return zs.length();
 	}
 
 	public void from_file(string fn) {

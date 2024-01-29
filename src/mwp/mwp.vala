@@ -280,7 +280,7 @@ public class MWP : Gtk.Application {
 	private GeoZoneReader gzr;
 	private Overlay? gzone;
     private TelemTracker ttrk;
-
+	bool gz_from_msp = false;
 	private uint32 feature_mask;
 
 	//    private uint radartid = -1;
@@ -1231,15 +1231,22 @@ public class MWP : Gtk.Application {
 					gz_load = null;
 					if (vfn != null) {
 						gzr.from_file(vfn);
-						if(gzone != null)
+						if(gzone != null) {
 							gzone.remove();
+						}
 						gzone = gzr.generate_overlay(view);
 						gzone.display();
+						set_gzsave_state(true);
 					}
 				}
 
 				return false;
 			});
+	}
+
+	private void set_gzsave_state(bool val) {
+		set_menu_state("gz-save", val);
+		set_menu_state("gz-clear", val);
 	}
 
 	private void set_act_mission_combo(bool isnew=false) {
@@ -1861,7 +1868,6 @@ public class MWP : Gtk.Application {
             });
 
 		gzr = new GeoZoneReader();
-		gzedit = new GZEdit(window, gzr);
 
 		Places.get_places();
         setpos.load_places();
@@ -2187,13 +2193,22 @@ public class MWP : Gtk.Application {
 
         saq = new GLib.SimpleAction("gz-edit",null);
         saq.activate.connect(() => {
+				gzedit = new GZEdit(window, gzr);
+				if(gzone == null) {
+					gzone = new Overlay(view);
+				}
+				set_gzsave_state(true);
                 gzedit.edit(gzone);
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("gz-clear",null);
         saq.activate.connect(() => {
-
+				if(gzone!=null) {
+					gzone.remove();
+				}
+				gzr.reset();
+				set_gzsave_state(false);
             });
         window.add_action(saq);
 
@@ -2345,8 +2360,7 @@ public class MWP : Gtk.Application {
         set_menu_state("followme", false);
 		set_menu_state("gz-dl", false);
 		set_menu_state("gz-ul", false);
-		set_menu_state("gz-clear", false);
-		set_menu_state("gz-save", false);
+		set_gzsave_state(false);
 
         art_win = new ArtWin(conf.ah_inv_roll);
 
@@ -3471,10 +3485,12 @@ public class MWP : Gtk.Application {
 					var fns = chooser.get_filename ();
                     chooser.close ();
 					gzr.from_file(fns);
-						if(gzone != null)
-							gzone.remove();
-						gzone = gzr.generate_overlay(view);
-						gzone.display();
+					if(gzone != null) {
+						gzone.remove();
+						set_gzsave_state(false);
+					}
+					gzone = gzr.generate_overlay(view);
+					gzone.display();
 				} else
                     chooser.close ();
             });
@@ -6757,10 +6773,11 @@ public class MWP : Gtk.Application {
 				navstatus.amp_hide(true);
 
 			if(conf.need_telemetry && (0 == (feature_mask & MSP.Feature.TELEMETRY)))
-                    Utils.warning_box("TELEMETRY requested but not enabled in iNav", Gtk.MessageType.ERROR);
-			if ((feature_mask & MSP.Feature.GEOZONE) == MSP.Feature.GEOZONE) {
+                    Utils.warning_box("TELEMETRY requested but not enabled in INAV", Gtk.MessageType.ERROR);
+			if ((feature_mask & MSP.Feature.GEOZONE) == MSP.Feature.GEOZONE && conf.autoload_geozones) {
 				gzr.reset();
 				queue_gzone(0);
+				gz_from_msp = true;
 			} else {
 				queue_cmd(MSP.Cmds.BLACKBOX_CONFIG,null,0);
 			 }
@@ -6771,8 +6788,10 @@ public class MWP : Gtk.Application {
 			if (cnt >= GeoZoneReader.MAXGZ) {
 				if(gzone != null) {
 					gzone.remove();
+					set_menu_state("gz-save", false);
 				}
 				gzone = gzr.generate_overlay(view);
+				set_menu_state("gz-save", true);
 				Idle.add(() => {
 						gzone.display();
 						if (Logger.is_logging) {
@@ -7569,8 +7588,10 @@ public class MWP : Gtk.Application {
 				if (gzone == null) {
 					var txt = (string)raw[0:len];
 					gzr.from_string(txt);
-					if(gzone != null)
+					if(gzone != null) {
+						set_menu_state("gz-save", false);
 						gzone.remove();
+					}
 					gzone = gzr.generate_overlay(view);
 					Idle.add(() => {
 							gzone.display();
@@ -9024,9 +9045,14 @@ public class MWP : Gtk.Application {
         set_replay_menus(true);
         reboot_status();
 		if(gzone != null) {
-			gzr.dump(gzone, vname);
-			gzone.remove();
-			gzone = null;
+			if(gz_from_msp) {
+				gzr.dump(gzone, vname);
+				gzone.remove();
+				gzone = null;
+				gzr.reset();
+				set_gzsave_state(false);
+				gz_from_msp = false;
+			}
 		}
 		if(sh_load == "-FC-") {
 			safehomed.remove_homes();

@@ -138,6 +138,10 @@ public class Overlay : Object {
         at_bottom(mlayer);
 	}
 
+	public Champlain.View get_view() {
+		return view;
+	}
+
 	public void remove() {
 		mlayer.remove_all();
 		elements.foreach((el) => {
