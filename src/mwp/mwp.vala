@@ -316,6 +316,7 @@ public class MWP : Gtk.Application {
         hasABSALT = 0x030000,
         hasWP_V4 = 0x040000,
         hasWP1m = 0x060000,
+		hasGeoZones = 0x080000,
     }
 
 	public enum WPS {
@@ -2190,6 +2191,23 @@ public class MWP : Gtk.Application {
             });
         window.add_action(saq);
 
+        saq = new GLib.SimpleAction("gz-clear",null);
+        saq.activate.connect(() => {
+
+            });
+        window.add_action(saq);
+
+        saq = new GLib.SimpleAction("gz-dl",null);
+        saq.activate.connect(() => {
+
+            });
+        window.add_action(saq);
+        saq = new GLib.SimpleAction("gz-ul",null);
+        saq.activate.connect(() => {
+
+            });
+        window.add_action(saq);
+
         saq = new GLib.SimpleAction("safe-homes",null);
         saq.activate.connect(() => {
                 safehomed.show(window);
@@ -2325,6 +2343,10 @@ public class MWP : Gtk.Application {
         set_menu_state("stop-replay", false);
         set_menu_state("mission-info", false);
         set_menu_state("followme", false);
+		set_menu_state("gz-dl", false);
+		set_menu_state("gz-ul", false);
+		set_menu_state("gz-clear", false);
+		set_menu_state("gz-save", false);
 
         art_win = new ArtWin(conf.ah_inv_roll);
 
@@ -9049,6 +9071,10 @@ public class MWP : Gtk.Application {
 		}
 		if(vi.fc_vers >= FCVERS.hasWP_V4)
 			set_menu_state("upload-missions", state);
+
+		if(vi.fc_vers >= FCVERS.hasGeoZones) {
+			set_menu_state("upload-missions", state);
+		}
 	}
 
     private void init_sstats() {
