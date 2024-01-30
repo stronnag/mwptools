@@ -36,8 +36,7 @@ public class SafeHomeMarkers : GLib.Object {
     private bool []onscreen;
 	private uint16 maxd = 200;
     public signal void safe_move(int idx, double lat, double lon);
-    private Clutter.Color c_enabled;
-    private Clutter.Color c_disabled;
+    private Clutter.Color scolour;
     private Clutter.Color white;
 	private Clutter.Color landcol;
 	private Clutter.Color appcol;
@@ -49,8 +48,7 @@ public class SafeHomeMarkers : GLib.Object {
         appcol.init(0x63, 0xa0, 0xfc, 0xff);
 		lpaths = {};
 		apaths = {};
-        c_enabled.init(0xfb, 0xea, 0x04, 0xc8);
-        c_disabled.init(0xfb, 0xea, 0x04, 0x68);
+        scolour.init(0xfb, 0xea, 0x04, 0x68);
         white.init(0xff,0xff,0xff, 0xff);
         onscreen = new bool[SAFEHOMES.maxhomes];
         safept = new  Champlain.Label[SAFEHOMES.maxhomes];
@@ -67,7 +65,7 @@ public class SafeHomeMarkers : GLib.Object {
         for(var idx = 0; idx < SAFEHOMES.maxhomes; idx++) {
             safept[idx] = new Champlain.Label.with_text ("⏏#%d".printf(idx), "Sans 10",null,null);
 			safept[idx].set_alignment (Pango.Alignment.RIGHT);
-            safept[idx].set_color (c_disabled);
+            safept[idx].set_color (scolour);
             safept[idx].set_text_color(white);
 
 			var sd = new Champlain.PathLayer();
@@ -78,8 +76,10 @@ public class SafeHomeMarkers : GLib.Object {
 			safed += sd;
 			var l0 = new Champlain.PathLayer();
 			l0.set_stroke_width (3);
+			l0.set_stroke_color(landcol);
 			var l1 = new Champlain.PathLayer();
 			l1.set_stroke_width (3);
+			l1.set_stroke_color(landcol);
 			view.add_layer(l0);
 			view.add_layer(l1);
 			lpaths += l0;
@@ -87,9 +87,11 @@ public class SafeHomeMarkers : GLib.Object {
 
 			var a0 = new Champlain.PathLayer();
 			a0.set_stroke_width (3);
+			a0.set_stroke_color(appcol);
 			a0.set_dash(llist);
 			var a1 = new Champlain.PathLayer();
 			a1.set_stroke_width (3);
+			a1.set_stroke_color(appcol);
 			a1.set_dash(llist);
 			view.add_layer(a0);
 			view.add_layer(a1);
@@ -111,51 +113,69 @@ public class SafeHomeMarkers : GLib.Object {
 		return ip0;
 	}
 
-
 	public void update_laylines(int idx, SafeHome h) {
-		int pi = idx*2;
-		lpaths[pi].remove_all();
-		apaths[pi].remove_all();
-
 		Champlain.Location ip0;
 		Champlain.Location ip1;
-
+		int pi = idx*2;
+		landcol.alpha = (h.enabled) ? 0xa0 : 0x60;
+		appcol.alpha = (h.enabled) ? 0xff : 0x80;
 		if(h.dirn1 != 0) {
-			lpaths[pi].set_stroke_color(landcol);
+			var pts = lpaths[pi].get_nodes();
+			bool upd = (pts != null && pts.length() > 0);
 			if(h.ex1) {
 				ip0 = safept[idx];
 			} else {
 				ip0 =  set_laypoint(h.dirn1, h.lat, h.lon);
 			}
-			lpaths[pi].add_node(ip0);
+			if (upd) {
+				pts.nth_data(0).latitude = ip0.latitude;
+				pts.nth_data(0).longitude = ip0.longitude;
+			} else {
+				lpaths[pi].add_node(ip0);
+			}
 			var adir = (h.dirn1 + 180) % 360;
 			ip1 =  set_laypoint(adir, h.lat, h.lon);
-			lpaths[pi].add_node(ip1);
+			if (upd) {
+				pts.nth_data(1).latitude = ip1.latitude;
+				pts.nth_data(1).longitude = ip1.longitude;
+			} else {
+				lpaths[pi].add_node(ip1);
+			}
 			add_approach(idx, pi, h.dirn1, h.ex1, h.dref, ip0, ip1);
 		}
 
-		pi += 1;
-		lpaths[pi].remove_all();
-		apaths[pi].remove_all();
+		pi++;
 
 		if(h.dirn2 != 0) {
-			lpaths[pi].set_stroke_color(landcol);
+			var pts = lpaths[pi].get_nodes();
+			bool upd = (pts != null && pts.length() > 0);
 			if(h.ex2) {
 				ip0 = safept[idx];
 			} else {
 				ip0 =  set_laypoint(h.dirn2, h.lat, h.lon);
 			}
-			lpaths[pi].add_node(ip0);
+			if(upd) {
+				pts.nth_data(0).latitude = ip0.latitude;
+				pts.nth_data(0).longitude = ip0.longitude;
+			} else {
+				lpaths[pi].add_node(ip0);
+			}
 			var adir = (h.dirn2 + 180) % 360;
 			ip1 =  set_laypoint(adir, h.lat, h.lon);
-			lpaths[pi].add_node(ip1);
+			if(upd) {
+				pts.nth_data(1).latitude = ip1.latitude;
+				pts.nth_data(1).longitude = ip1.longitude;
+			} else {
+				lpaths[pi].add_node(ip1);
+			}
 			add_approach(idx, pi, h.dirn2, h.ex2, h.dref, ip0, ip1);
 		}
 	}
 
 	private void add_approach(int idx, int pi, int dirn, bool ex, bool dref,
 							  Champlain.Location ip0, Champlain.Location ip1) {
-			int xdir= dirn;
+		apaths[pi].remove_all(); // number of nodes will change if exclusive changed ..
+		int xdir= dirn;
 			if(dref)
 				xdir += 90;
 			else
@@ -172,7 +192,6 @@ public class SafeHomeMarkers : GLib.Object {
 				apaths[pi].add_node(ipx);
 				apaths[pi].add_node(ip0);
 			}
-			apaths[pi].set_stroke_color(appcol);
 	}
 
     public void show_safe_home(int idx, SafeHome h) {
@@ -199,17 +218,24 @@ public class SafeHomeMarkers : GLib.Object {
     }
 
 	public void update_distance(int idx, SafeHome h) {
-		safed[idx].remove_all();
+		var lp = safed[idx].get_nodes();
+		bool upd  = (lp != null && lp.length() > 0);
 		double plat, plon;
+		var j = 0;
 		for (var i = 0; i < 360; i += 5) {
 			Geo.posit(h.lat, h.lon, i, maxd/1852.0, out plat, out plon);
-			var pt = new Champlain.Point();
-			pt.latitude = plat;
-			pt.longitude = plon;
-			safed[idx].add_node(pt);
+			if(upd) {
+				lp.nth_data(j).latitude = plat;
+				lp.nth_data(j).longitude = plon;
+				j++;
+			} else {
+				var pt = new Champlain.Point();
+				pt.latitude = plat;
+				pt.longitude = plon;
+				safed[idx].add_node(pt);
+			}
 		}
 	}
-
 
     public void set_interactive(bool state) {
         for(var i = 0; i < SAFEHOMES.maxhomes; i++) {
@@ -218,9 +244,18 @@ public class SafeHomeMarkers : GLib.Object {
     }
 
     public void set_safe_colour(int idx, bool state) {
-		Clutter.Color c = (state) ? c_enabled : c_disabled;
-		safept[idx].set_color (c);
-		safed[idx].set_stroke_color(c);
+		scolour.alpha = (state) ? 0xc8 : 0x68;
+		safept[idx].set_color (scolour);
+		safed[idx].set_stroke_color(scolour);
+
+		int pi = idx*2;
+		landcol.alpha = (state) ? 0xa0 : 0x60;
+		appcol.alpha = (state) ? 0xff : 0x80;
+
+		for(var j = 0; j < 2; j++) {
+			lpaths[pi+j].set_stroke_color(landcol);
+			apaths[pi+j].set_stroke_color(appcol);
+		}
 	}
 
     public void hide_safe_home(int idx) {
@@ -787,7 +822,7 @@ public class  SafeHomeDialog : Object {
         shmarkers.safept_move.connect((idx,la,lo) => {
             homes[idx].lat = la;
             homes[idx].lon = lo;
-			shmarkers.update_laylines(idx,homes[idx]);
+			shmarkers.update_laylines(idx, homes[idx]);
 			shmarkers.update_distance(idx, homes[idx]);
 
             Gtk.TreeIter iter;
