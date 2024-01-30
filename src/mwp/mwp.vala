@@ -3529,7 +3529,6 @@ public class MWP : Gtk.Application {
 
 			gpsfix = (gpsinfo.update(rg, conf.dms, item_visible(DOCKLETS.GPS),
 									 out ddm) != 0);
-
 			MSP_ALTITUDE al = MSP_ALTITUDE();
 			al.estalt = alt*100;
 			al.vario =  calc_vario(alt*100);
@@ -3734,6 +3733,9 @@ public class MWP : Gtk.Application {
             case "TRTLE":
             case "ZIGZAG":
 				ltmflags = MSP.LTM.acro;
+				break;
+			case "OK":
+				ltmflags = MSP.LTM.undefined;
 				break;
 
             default:
