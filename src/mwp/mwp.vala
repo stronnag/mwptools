@@ -2337,6 +2337,7 @@ public class MWP : Gtk.Application {
 		view = embed.get_view();
         view.set_reactive(true);
 		view.animate_zoom = true;
+
         var place_editor = new PlaceEdit(window, view);
         setpos.place_edit.connect(() => {
                 place_editor.show();
@@ -3530,7 +3531,6 @@ public class MWP : Gtk.Application {
 
 			gpsfix = (gpsinfo.update(rg, conf.dms, item_visible(DOCKLETS.GPS),
 									 out ddm) != 0);
-
 			MSP_ALTITUDE al = MSP_ALTITUDE();
 			al.estalt = alt*100;
 			al.vario =  calc_vario(alt*100);
@@ -3735,6 +3735,9 @@ public class MWP : Gtk.Application {
             case "TRTLE":
             case "ZIGZAG":
 				ltmflags = MSP.LTM.acro;
+				break;
+			case "OK":
+				ltmflags = MSP.LTM.undefined;
 				break;
 
             default:

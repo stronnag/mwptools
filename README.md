@@ -111,7 +111,7 @@ cd mwptools # the initial installation directory
 git pull && cd build && ninja install
 ````
 
-Note also that there is a **Current Build** Debian package `mwptools_X.Y.Z_amd64.deb` in the [Github Releases](https://github.com/stronnag/mwptools/releases) area that is updated frequently.
+Note also that there is a **Current Build** Debian package `mwptools_X.Y.Z_amd64.deb` in the [Github Releases](https://github.com/stronnag/mwptools/releases) area that is updated infrequently.
 
 ## Arch Linux
 
