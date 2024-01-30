@@ -106,6 +106,26 @@ public class OverlayItem : Object {
 		}
 	}
 
+	public void update_style(StyleItem si) {
+		styleinfo = si;
+		pl.set_stroke_color(Clutter.Color.from_string(styleinfo.line_colour));
+		pl.set_stroke_width (styleinfo.line_width);
+		pl.fill = (styleinfo.fill_colour != null);
+		if (pl.fill)
+			pl.set_fill_color(Clutter.Color.from_string(styleinfo.fill_colour));
+
+		var llist = new List<uint>();
+		if (styleinfo.line_dotted) {
+			llist.append(5);
+			llist.append(5);
+		}
+		pl.set_dash(llist);
+		string? c = (styleinfo.point_colour != null) ? styleinfo.point_colour : styleinfo.line_colour;
+		pl.get_nodes().foreach ((mk) => {
+				((Champlain.Label)mk).set_color(Clutter.Color.from_string(c));
+			});
+	}
+
 	public void show_polygon() {
 		pl.closed=true;
 		pl.set_stroke_color(Clutter.Color.from_string(styleinfo.line_colour));

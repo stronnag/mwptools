@@ -59,6 +59,41 @@ public class GeoZoneReader {
 		return zs.nth_data(n);
 	}
 
+	public GZType get_ztype(uint nitem) {
+		return zs.nth_data(nitem).type;
+	}
+	public void set_ztype(uint nitem, GZType val) {
+		zs.nth_data(nitem).type = val;
+	}
+
+	public GZAction get_action(uint nitem) {
+		return zs.nth_data(nitem).action;
+	}
+	public void set_action(uint nitem, GZAction val) {
+		zs.nth_data(nitem).action = val;
+	}
+
+	public uint8 get_nvertices(uint nitem) {
+		return zs.nth_data(nitem).nvertices;
+	}
+	public void set_nvertices(uint nitem, uint8 val) {
+		zs.nth_data(nitem).nvertices = val;
+	}
+
+	public void set_minalt(uint nitem, int val) {
+		zs.nth_data(nitem).minalt = val;
+	}
+	public int get_minalt(uint nitem) {
+		return zs.nth_data(nitem).minalt;
+	}
+
+	public int get_maxalt(uint nitem) {
+		return zs.nth_data(nitem).maxalt;
+	}
+	public void set_maxalt(uint nitem, int val) {
+		zs.nth_data(nitem).maxalt = val;
+	}
+
 	public void remove_zone(uint nitem) {
 		//		zs.remove(zs.nth_data(nitem));
 		zs.remove_link(zs.nth(nitem));
@@ -105,25 +140,28 @@ public class GeoZoneReader {
 	}
 
 	/*
-	  ACTION    |   TYPE      | FILL COLOUR | OUTLINE COLOUR
-	  -------------------------------------------------------
-	  None 0    │ Inclusive 1 |    none     │   Green(dots)
-	  None 0    │ Exclusive 0 │    none     │    Red(dots)
-	  ------------------------------------------------------
-	  Avoid 1   │ Inclusive 1 │    none     │   Green(thin)
-	  Avoid 1   │ Exclusive 0 │     Red     │    Red(thin)
-	  ------------------------------------------------------
-	  PosHold 2 │ Inclusive 1 │    None     │   Green(thick)
-	  PosHold 2 │ Exclusive 0 │     Red     │    Red(thick)
-	  ------------------------------------------------------
-	  RTH 3     │ Inclusive 1 │    Green    │   Green(thick)
-	  RTH 3     │ Exclusive 0 │     Red     │    Red(thick)
+# Colours
 
-	*/
+|  ACTION    |   TYPE      | FILL COLOUR | OUTLINE COLOUR |
+| ---------- | ----------- | ----------- | -------------- |
+|  None 0    | Inclusive 1 |    none     |   Green(dots)  |
+|  None 0    | Exclusive 0 |    none     |    Red(dots)   |
+|  Avoid 1   | Inclusive 1 |    none     |   Green(thin)  |
+|  Avoid 1   | Exclusive 0 |     Red     |    Red(thin)   |
+|  PosHold 2 | Inclusive 1 |    None     |   Green(thick) |
+|  PosHold 2 | Exclusive 0 |     Red     |    Red(thick)  |
+|  RTH 3     | Inclusive 1 |    Green    |   Green(thick) |
+|  RTH 3     | Exclusive 0 |     Red     |    Red(thick)  |
+	 */
+
+	public OverlayItem.StyleItem fetch_style(uint nitem) {
+		return get_style(zs.nth_data(nitem));
+	}
 
 	private OverlayItem.StyleItem get_style(GeoZone z) {
 		OverlayItem.StyleItem s = OverlayItem.StyleItem();
 		s.styled = true;
+		s.line_dotted = false;
 		switch (z.type) {
 		case GZType.Exclusive:
 			s.line_colour = LCOL_RED;
