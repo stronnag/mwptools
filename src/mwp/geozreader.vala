@@ -17,7 +17,7 @@ public class GeoZoneReader {
 	}
 
 	const size_t VSIZE = 9;
-	const size_t ZSIZEMIN = 13;
+	public const size_t ZSIZEMIN = 13;
 
 	public struct Vertex {
 		uint8 index;
@@ -125,10 +125,7 @@ public class GeoZoneReader {
 					ptr = SEDE.serialise_i32(ptr, v.latitude);
 					ptr = SEDE.serialise_i32(ptr, v.longitude);
 				});
-			var pdif = (int64)ptr - (int64)&buf[0];
-			stderr.printf("DBG: encode calc=%s bufsz %s pdif %s\n", zvsize.to_string(), buf.length.to_string(), pdif.to_string());
 		} else {
-			stderr.printf("DBG: empty buffer\n");
 			buf = new uint8[ZSIZEMIN];
 			Posix.memset(buf, 0, ZSIZEMIN);
 		}

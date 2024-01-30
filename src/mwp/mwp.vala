@@ -278,6 +278,7 @@ public class MWP : Gtk.Application {
 	}
 	private RadarDev[] radardevs;
 	private GeoZoneReader gzr;
+	private uint8 gzcnt;
 	private Overlay? gzone;
     private TelemTracker ttrk;
 	bool gz_from_msp = false;
@@ -2226,10 +2227,9 @@ public class MWP : Gtk.Application {
         window.add_action(saq);
         saq = new GLib.SimpleAction("gz-ul",null);
         saq.activate.connect(() => {
-				for(var j = 0; j < 10; j++) {
-					gzr.encode(j);
-				}
-
+				gzcnt = 0;
+				var mbuf = gzr.encode(gzcnt);
+				queue_cmd(MSP.Cmds.SET_GEOZONE, mbuf, mbuf.length);
             });
         window.add_action(saq);
 
@@ -2369,7 +2369,7 @@ public class MWP : Gtk.Application {
         set_menu_state("mission-info", false);
         set_menu_state("followme", false);
 		set_menu_state("gz-dl", false);
-		set_menu_state("gz-ul", true); // FIXME TEST
+		set_menu_state("gz-ul", false);
 		set_gzsave_state(false);
 
         art_win = new ArtWin(conf.ah_inv_roll);
@@ -6825,6 +6825,14 @@ public class MWP : Gtk.Application {
 				queue_cmd(MSP.Cmds.BLACKBOX_CONFIG,null,0);
 			} else {
 				queue_gzone(cnt);
+			}
+			break;
+
+		case MSP.Cmds.SET_GEOZONE:
+			gzcnt++;
+			if (gzcnt < GeoZoneReader.MAXGZ) {
+				var mbuf = gzr.encode(gzcnt);
+				queue_cmd(MSP.Cmds.SET_GEOZONE, mbuf, mbuf.length);
 			}
 			break;
 

@@ -137,6 +137,7 @@ public class MSP : Object {
         SET_SAFEHOME = 0x2039,
 
 		GEOZONE =  0x2050,
+		SET_GEOZONE =  0x2051,
 
 		PRIV_TEXT_GEOZ = 0x2ffe,
 		PRIV_TEXT_EOM = 0x2ffd,
