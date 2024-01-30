@@ -60,7 +60,7 @@ public class GeoZoneReader {
 	}
 
 	public void remove_zone(uint nitem) {
-		zs.remove(zs.nth_data(nitem));
+		//		zs.remove(zs.nth_data(nitem));
 		zs.remove_link(zs.nth(nitem));
 	}
 

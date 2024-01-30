@@ -139,6 +139,11 @@
           </item>
 
           <item>
+            <attribute name="label">Export KML</attribute>
+            <attribute name="action">win.gz-kml</attribute>
+          </item>
+
+          <item>
             <attribute name="label">Clear</attribute>
             <attribute name="action">win.gz-clear</attribute>
           </item>

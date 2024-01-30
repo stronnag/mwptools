@@ -1246,6 +1246,7 @@ public class MWP : Gtk.Application {
 
 	private void set_gzsave_state(bool val) {
 		set_menu_state("gz-save", val);
+		set_menu_state("gz-kml", val);
 		set_menu_state("gz-clear", val);
 	}
 
@@ -2187,7 +2188,13 @@ public class MWP : Gtk.Application {
 
         saq = new GLib.SimpleAction("gz-save",null);
         saq.activate.connect(() => {
-                gz_save_dialog();
+                gz_save_dialog(false);
+            });
+        window.add_action(saq);
+
+        saq = new GLib.SimpleAction("gz-kml",null);
+        saq.activate.connect(() => {
+                gz_save_dialog(true);
             });
         window.add_action(saq);
 
@@ -9658,7 +9665,7 @@ Error: <i>%s</i>
 		chooser.show();
     }
 
-    private void gz_save_dialog () {
+    private void gz_save_dialog (bool iskml) {
         Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
             "Save GZone", null, Gtk.FileChooserAction.SAVE,
             "_Cancel",
@@ -9669,10 +9676,14 @@ Error: <i>%s</i>
         chooser.select_multiple = false;
         Gtk.FileFilter filter = new Gtk.FileFilter ();
 
-        filter.set_filter_name ("Text");
-        filter.add_pattern ("*.txt");
+		if(iskml) {
+			filter.set_filter_name ("KML");
+			filter.add_pattern ("*.kml");
+		} else {
+			filter.set_filter_name ("Text");
+			filter.add_pattern ("*.txt");
+		}
         chooser.add_filter (filter);
-
         filter = new Gtk.FileFilter ();
         filter.set_filter_name ("All Files");
         filter.add_pattern ("*");
@@ -9682,13 +9693,18 @@ Error: <i>%s</i>
                 if (id == Gtk.ResponseType.ACCEPT) {
                     var fn = chooser.get_filename ();
                     chooser.destroy ();
-					var s = gzr.to_string();
+					string s;
+					if(iskml) {
+						s = KMLWriter.ovly_to_string(gzone);
+					} else {
+						s = gzr.to_string();
+					}
 					try {
 						FileUtils.set_contents(fn,s );
 					} catch (Error e) {
 						MWPLog.message("GZ Save %s %s\n", fn,e.message);
 					}
-                } else {
+				} else {
                     chooser.destroy ();
                 }
             });

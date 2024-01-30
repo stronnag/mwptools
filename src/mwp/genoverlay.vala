@@ -214,7 +214,6 @@ public class Overlay : Object {
 
 	public void display() {
 		elements.foreach((o) => {
-				stderr.printf("DBG: Add element %s\n", o.name);
 				o.display();
 				switch(o.type) {
 				case OverlayItem.OLType.POINT:
