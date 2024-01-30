@@ -47,7 +47,11 @@ There is a "rolling release" [release note on the wiki](https://github.com/stron
 * The actual and expected outcomes
 * Please include {{ mwp }}'s console log, from your home directory, `mwp_stderr_YYYY-MM-DD.txt`, e.g. `$HOME/mwp_stderr_2021-12-28.txt`. Please do not delete any information from this file; the contents are there for a purpose, or paste the terminal output into a file (or copy paste into the issue). The terminal output may include information from system components that are not the mwp log (e.g. GDK / GTK / Wayland messages).
 
-If you're having a problem playing a blackbox log, any reports that do not include the log will most likely be ignored.
+If your issue concerns telemetry, please include a sample of data that causes the issue. Raw logs may be captured with the `--raw-log` option.
+
+If you're having a problem playing a blackbox log (or other flight log), please include that log.
+
+Non-reproducible issues that do not include supporting data will most likely be ignored and closed.
 
 ### Unsupported
 
