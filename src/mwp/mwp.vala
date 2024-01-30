@@ -2336,6 +2336,7 @@ public class MWP : Gtk.Application {
 		view = embed.get_view();
         view.set_reactive(true);
 		view.animate_zoom = true;
+
         var place_editor = new PlaceEdit(window, view);
         setpos.place_edit.connect(() => {
                 place_editor.show();

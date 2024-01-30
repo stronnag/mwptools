@@ -1157,7 +1157,12 @@ public class SetPosDialog : GLib.Object {
 
     public SetPosDialog(Gtk.Builder builder,Gtk.Window? w=null) {
         dialog = builder.get_object ("gotodialog") as Gtk.Dialog;
-        dialog.set_transient_for(w);
+		dialog.delete_event.connect(() => {
+				dialog.hide();
+				return true;
+			});
+
+		dialog.set_transient_for(w);
         lat_entry = builder.get_object ("golat") as Gtk.Entry;
         lon_entry = builder.get_object ("golon") as Gtk.Entry;
         pcombo = builder.get_object("place_combo") as Gtk.ComboBoxText;
