@@ -106,6 +106,35 @@ public class GeoZoneReader {
 		}
 	}
 
+	public uint8[] encode (int n) {
+		uint8[] buf;
+		if (n < zs.length()) {
+			var zvsize = ZSIZEMIN + zs.nth_data(n).vertices.length()*VSIZE;
+			buf = new uint8[zvsize];
+			uint8*ptr = &buf[0];
+			*ptr++ = (uint8)zs.nth_data(n).type;
+			*ptr++ = (uint8)zs.nth_data(n).shape;
+			ptr = SEDE.serialise_i32(ptr, zs.nth_data(n).minalt);
+			ptr = SEDE.serialise_i32(ptr, zs.nth_data(n).maxalt);
+			*ptr++ = (uint8)zs.nth_data(n).action;
+			*ptr++ = (uint8)zs.nth_data(n).vertices.length();
+			*ptr++ = (uint8)n;
+
+			zs.nth_data(n).vertices.foreach((v) => {
+					*ptr++ = v.index;
+					ptr = SEDE.serialise_i32(ptr, v.latitude);
+					ptr = SEDE.serialise_i32(ptr, v.longitude);
+				});
+			var pdif = (int64)ptr - (int64)&buf[0];
+			stderr.printf("DBG: encode calc=%s bufsz %s pdif %s\n", zvsize.to_string(), buf.length.to_string(), pdif.to_string());
+		} else {
+			stderr.printf("DBG: empty buffer\n");
+			buf = new uint8[ZSIZEMIN];
+			Posix.memset(buf, 0, ZSIZEMIN);
+		}
+		return buf;
+	}
+
 	public void parse(uint8[] buf) {
 		uint8* ptr = &buf[0];
 		var ztype = (GZType)*ptr++;

@@ -2226,6 +2226,9 @@ public class MWP : Gtk.Application {
         window.add_action(saq);
         saq = new GLib.SimpleAction("gz-ul",null);
         saq.activate.connect(() => {
+				for(var j = 0; j < 10; j++) {
+					gzr.encode(j);
+				}
 
             });
         window.add_action(saq);
@@ -2366,7 +2369,7 @@ public class MWP : Gtk.Application {
         set_menu_state("mission-info", false);
         set_menu_state("followme", false);
 		set_menu_state("gz-dl", false);
-		set_menu_state("gz-ul", false);
+		set_menu_state("gz-ul", true); // FIXME TEST
 		set_gzsave_state(false);
 
         art_win = new ArtWin(conf.ah_inv_roll);
