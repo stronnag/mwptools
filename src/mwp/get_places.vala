@@ -89,7 +89,8 @@ namespace Places {
     }
 }
 
-class PlaceEdit : Gtk.Window {
+class PlaceEdit : Object {
+    Gtk.Window w;
     Gtk.TreeView view;
     Gtk.ListStore listmodel;
     Gtk.Button[] buttons;
@@ -113,16 +114,11 @@ class PlaceEdit : Gtk.Window {
     }
 
     public PlaceEdit (Gtk.Window? _w, Champlain.View cv) {
-        set_position(Gtk.WindowPosition.MOUSE);
-        title = "Edit Stored Places";
-        delete_event.connect (() => {
-				stderr.printf("DBG: hide on close\n");
-				return hide_on_delete();
-            });
-
-		var scrolled = new Gtk.ScrolledWindow (null, null);
-        set_default_size (360, 360);
-
+        w = new Gtk.Window();
+        w.set_position(Gtk.WindowPosition.MOUSE);
+        var scrolled = new Gtk.ScrolledWindow (null, null);
+        w.set_default_size (360, 360);
+        w.title = "Edit Stored Places";
         view = new Gtk.TreeView ();
         setup_treeview ();
         view.expand = true;
@@ -144,9 +140,14 @@ class PlaceEdit : Gtk.Window {
         box.pack_end (bbox, false, false, 0);
         grid.attach (scrolled, 0, 0, 1, 1);
         grid.attach (box, 0, 1, 1, 1);
-        add (grid);
-        set_transient_for(_w);
-		set_keep_above(true);
+        w.add (grid);
+        w.set_transient_for(_w);
+
+        w.delete_event.connect (() => {
+                w.hide();
+                return true;
+            });
+
 
         buttons[Buttons.ADD].clicked.connect (() => {
                 Gtk.TreeIter iter;
@@ -335,9 +336,13 @@ class PlaceEdit : Gtk.Window {
                        Column.ZOOM, r.zoom);
     }
 
-    public override void show() {
+    public void show() {
         load_places();
-        base.show_all();
+        w.show_all();
+    }
+
+    public void hide() {
+        w.hide();
     }
 
     public void load_places() {
