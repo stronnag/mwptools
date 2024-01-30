@@ -32,7 +32,6 @@ public class GeoZoneReader {
 		int minalt;
 		int maxalt;
 		GZAction action;
-		uint8 nvertices;
 		unowned List<Vertex?> vertices;
 	}
 
@@ -71,13 +70,6 @@ public class GeoZoneReader {
 	}
 	public void set_action(uint nitem, GZAction val) {
 		zs.nth_data(nitem).action = val;
-	}
-
-	public uint8 get_nvertices(uint nitem) {
-		return zs.nth_data(nitem).nvertices;
-	}
-	public void set_nvertices(uint nitem, uint8 val) {
-		zs.nth_data(nitem).nvertices = val;
 	}
 
 	public void set_minalt(uint nitem, int val) {
@@ -368,7 +360,6 @@ public class GeoZoneReader {
 		v.longitude = lon;
 		if (zid < zs.length()) {
 			zs.nth_data(zid).vertices.append(v);
-			zs.nth_data(zid).nvertices += 1;
 		}
 	}
 
@@ -379,7 +370,6 @@ public class GeoZoneReader {
 		v.longitude = lon;
 		if (zid < zs.length()) {
 			zs.nth_data(zid).vertices.insert(v, idx);
-			zs.nth_data(zid).nvertices += 1;
 			uint8 j = 0;
 			zs.nth_data(zid).vertices.foreach((v) => {
 					v.index = j;

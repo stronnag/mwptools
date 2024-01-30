@@ -232,8 +232,6 @@ public class GZEdit :Gtk.Window {
 				if(z.vertices.length() == 0) {
 					remove_current_zone();
 				} else {
-					z.nvertices--;
-					gzr.set_nvertices(nitem, z.nvertices);
 					uint8 j = 0;
 					z.vertices.foreach((v) => {
 							v.index = j;
