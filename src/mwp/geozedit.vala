@@ -17,7 +17,7 @@ public class GZEdit :Gtk.Window {
 	private int popno;
 	private Champlain.Label? mk;
 	private Overlay? ovl;
-	private GeoZoneReader gzr;
+	private GeoZoneManager gzmgr;
 	private Gtk.Label lradius;
 	private Gtk.Grid grid;
 	private Gtk.Label newlab;
@@ -42,8 +42,8 @@ public class GZEdit :Gtk.Window {
 	}
 
 
-	public GZEdit(Gtk.Window? _w=null, GeoZoneReader _gzr) {
-		gzr = _gzr;
+	public GZEdit(Gtk.Window? _w=null, GeoZoneManager _gzr) {
+		gzmgr = _gzr;
 		popid = -1;
 		title = "mwp GeoZone Editor";
 		window_position = Gtk.WindowPosition.CENTER;
@@ -129,8 +129,8 @@ public class GZEdit :Gtk.Window {
 				remove_edit_markers();
 				newlab.hide();
 				if (nitem == 0) {
-					if(gzr.length() > 0)
-						nitem = gzr.length()-1;
+					if(gzmgr.length() > 0)
+						nitem = gzmgr.length()-1;
 				} else {
 					nitem -= 1;
 				}
@@ -141,7 +141,7 @@ public class GZEdit :Gtk.Window {
 		buttons[Buttons.NEXT].clicked.connect(() => {
 				remove_edit_markers();
 				newlab.hide();
-				nitem = (nitem + 1) % gzr.length();
+				nitem = (nitem + 1) % gzmgr.length();
 				set_buttons_sensitive();
 				edit_markers();
 			});
@@ -157,10 +157,9 @@ public class GZEdit :Gtk.Window {
 			});
 
 		buttons[Buttons.REFRESH].clicked.connect(() => {
-				if(nitem >= gzr.length()) {
+				if(nitem >= gzmgr.length()) {
 					var minalt = (int)(100* double.parse(zminalt.text));
 					var maxalt = (int)(100* double.parse(zmaxalt.text));
-					var z = gzr.nth_data(nitem);
 					if(zshape.active == 0) {
 						var rad = double.parse(zradius.text);
 						if (rad <= 0.0) {
@@ -169,17 +168,17 @@ public class GZEdit :Gtk.Window {
 						newlab.hide();
 						var clat = ovl.get_view().get_center_latitude();
 						var clon = ovl.get_view().get_center_longitude();
-						gzr.append_zone(nitem, zshape.active, ztype.active, minalt, maxalt, zaction.active);
-						gzr.append_vertex((int)nitem, 0, (int)(clat*1e7), (int)(clon*1e7));
-						gzr.append_vertex((int)nitem, 1, (int)(rad*100), 0);
-						var oi = gzr.generate_overlay_item(ovl, z, (int)nitem);
+						gzmgr.append_zone(nitem, zshape.active, ztype.active, minalt, maxalt, zaction.active);
+						gzmgr.append_vertex(nitem, 0, (int)(clat*1e7), (int)(clon*1e7));
+						gzmgr.append_vertex(nitem, 1, (int)(rad*100), 0);
+						var oi = gzmgr.generate_overlay_item(ovl, nitem);
 						oi.show_polygon();
 						ovl.get_view().add_layer (oi.pl);
 						show_markers();
 					} else {
 						newlab.hide();
-						gzr.append_zone(nitem, zshape.active, ztype.active, minalt, maxalt, zaction.active);
-						var oi = gzr.generate_overlay_item(ovl, z, (int)nitem);
+						gzmgr.append_zone(nitem, zshape.active, ztype.active, minalt, maxalt, zaction.active);
+						var oi = gzmgr.generate_overlay_item(ovl, nitem);
 						oi.show_polygon();
 						ovl.get_view().add_layer (oi.pl);
 						show_markers();
@@ -208,7 +207,7 @@ public class GZEdit :Gtk.Window {
 					nlat = (mk.latitude + popmk.latitude)/2;
 					nlon = (mk.longitude + popmk.longitude)/2;
 				}
-				gzr.insert_vertex_position((int)nitem, (int)popno+1,
+				gzmgr.insert_vertex_at((int)nitem, (int)popno+1,
 										   (int)(nlat*1e7), (int)(nlon*1e7));
 				mk = el.insert_line_position(nlat, nlon, popno+1);
 				ovl.add_marker(mk);
@@ -224,19 +223,10 @@ public class GZEdit :Gtk.Window {
         pop_menu.add (mitem);
 		mitem = new Gtk.MenuItem.with_label ("Delete");
         mitem.activate.connect (() => {
-				var z = gzr.nth_data(nitem);
-				//var d = gzr.nth_data(nitem).vertices.nth_data(popno);
-				unowned var l = z.vertices.nth(popno);
-				//z.vertices.remove(d);
-				z.vertices.remove_link(l);
-				if(z.vertices.length() == 0) {
+				gzmgr.remove_vertex_at(nitem, popno);
+				if(gzmgr.nvertices(nitem) == 0) {
 					remove_current_zone();
 				} else {
-					uint8 j = 0;
-					z.vertices.foreach((v) => {
-							v.index = j;
-							j++;
-						});
 					var ml = ovl.get_mlayer();
 					unowned var el = ovl.get_elements().nth_data(nitem);
 					el.pl.remove_node(popmk);
@@ -284,78 +274,80 @@ public class GZEdit :Gtk.Window {
 
 	private void refresh_storage(uint8 mask, bool display) {
 		uint8 upd = 0; // 1 = colours etc, 0x100 = radius
-		var len = gzr.length();
+		var len = gzmgr.length();
 		bool valid = (nitem < len);
 		if(valid) {
 			if((mask & Upd.TYPE) == Upd.TYPE) {
-				if ((GeoZoneReader.GZType)ztype.active != gzr.get_ztype(nitem)) {
+				if ((GeoZoneManager.GZType)ztype.active != gzmgr.get_ztype(nitem)) {
 					upd |= Upd.TYPE;
-					gzr.set_ztype(nitem, (GeoZoneReader.GZType)ztype.active);
+					gzmgr.set_ztype(nitem, (GeoZoneManager.GZType)ztype.active);
 				}
 			}
 			if((mask & Upd.ACTION) == Upd.ACTION) {
-				if ((GeoZoneReader.GZAction)zaction.active != gzr.get_action(nitem)) {
+				if ((GeoZoneManager.GZAction)zaction.active != gzmgr.get_action(nitem)) {
 					upd |= Upd.ACTION;
-					gzr.set_action(nitem, (GeoZoneReader.GZAction)zaction.active);
+					gzmgr.set_action(nitem, (GeoZoneManager.GZAction)zaction.active);
 				}
 			}
 
 			if((mask & Upd.RADIUS) == Upd.RADIUS) {
-				unowned var z = gzr.nth_data(nitem);
-				if(z.shape ==  GeoZoneReader.GZShape.Circular) {
-					if(z.vertices.length() == 2) {
-						int alt = z.vertices.nth_data(1).latitude;
+				if(gzmgr.get_shape(nitem) ==  GeoZoneManager.GZShape.Circular) {
+					var nvs = gzmgr.find_vertices(nitem);
+					if(nvs.length == 2) {
+						int alt = gzmgr.get_latitude(nvs[1]);
 						int talt = (int)(1e2*double.parse(zradius.text));
 						if(alt != talt) {
 							upd |= Upd.RADIUS;
-							z.vertices.nth_data(1).latitude = talt;
+							gzmgr.set_latitude(nvs[1], talt);
 						}
 					}
 				}
 			}
 			if((mask & Upd.MINALT) == Upd.MINALT) {
-				int alt = gzr.get_minalt(nitem);
+				int alt = gzmgr.get_minalt(nitem);
 				int talt = (int)(1e2*double.parse(zminalt.text));
 				if(alt != talt) {
 					upd |= Upd.MINALT;
-					gzr.set_minalt(nitem, talt);
+					gzmgr.set_minalt(nitem, talt);
 				}
 			}
 
 			if((mask & Upd.MAXALT) == Upd.MAXALT) {
-				int alt = gzr.get_maxalt(nitem);
+				int alt = gzmgr.get_maxalt(nitem);
 				int talt = (int)(1e2*double.parse(zmaxalt.text));
 				if(alt != talt) {
 					upd |= Upd.MAXALT;
-					gzr.set_maxalt(nitem, talt);
+					gzmgr.set_maxalt(nitem, talt);
 				}
 			}
 
 			if(upd != 0 && display) {
 				if((upd & Upd.PROPERTIES) != 0) {
 					var el = ovl.get_elements().nth_data(nitem);
-					var si = gzr.fetch_style(nitem);
+					var si = gzmgr.fetch_style(nitem);
 					el.update_style(si);
-					if (gzr.nth_data(nitem).shape ==  GeoZoneReader.GZShape.Circular) {
+					if (gzmgr.get_shape(nitem) ==  GeoZoneManager.GZShape.Circular) {
 						ovl.get_mlayer().get_markers().foreach((mk) => {
 								((Champlain.Label)mk).color = Clutter.Color.from_string(si.line_colour);
 							});
 					}
 				}
 				if((upd & Upd.RADIUS) != 0) {
-					var el = ovl.get_elements().nth_data(nitem);
-					el.circ.radius_nm = gzr.nth_data(nitem).vertices.nth_data(1).latitude/100.0/1852.0;
-					var mk = ovl.get_mlayer().get_markers().nth_data(0);
-					update_circle(mk);
+					var nvs = gzmgr.find_vertices(nitem);
+					if(nvs.length == 2) {
+						var el = ovl.get_elements().nth_data(nitem);
+						el.circ.radius_nm = gzmgr.get_latitude(nvs[1])/100.0/1852.0;
+						var mk = ovl.get_mlayer().get_markers().nth_data(0);
+						update_circle(mk);
+					}
 				}
-
 			}
 		}
 	}
 
 	private void remove_current_zone() {
 		remove_edit_markers();
-		gzr.remove_zone(nitem);
+		gzmgr.remove_zone(nitem);
 		ovl.remove_element(nitem);
 		nitem = 0;
 		set_buttons_sensitive();
@@ -374,25 +366,20 @@ public class GZEdit :Gtk.Window {
 		newlab.wrap=true;
 		newlab.show();
 		grid.attach(newlab, 2, 2, 2, 3);
-		nitem = gzr.length();
+		nitem = gzmgr.length();
 		toggle_shape();
 		zidx.set_label(nitem.to_string());
 		set_buttons_sensitive();
 	}
 
 	private void set_buttons_sensitive() {
-		var len = gzr.length();
-
+		var len = gzmgr.length();
 		buttons[Buttons.REMOVE].sensitive = (len > 0);
-		//		if (len > 1)  {
-		//	buttons[Buttons.PREV].sensitive = (nitem != 0);
-		//	buttons[Buttons.NEXT].sensitive = (nitem < len -1);
-		//}
 	}
 
 	private void remove_edit_markers() {
 		ovl.get_view().button_release_event.disconnect (on_button_release);
-		if(gzr.length() > 0) {
+		if(gzmgr.length() > 0) {
 			ovl.get_mlayer().get_markers().foreach((mk) => {
 					mk.drag_finish.disconnect(on_poly_finish);
 					mk.drag_finish.disconnect(on_circ_finish);
@@ -413,11 +400,11 @@ public class GZEdit :Gtk.Window {
 
 	private void set_zradius() {
 		double rad = 0.0;
-		if(gzr.length() > 0 && nitem < gzr.length()) {
-			var z = gzr.nth_data(nitem);
-			if(z.shape ==  GeoZoneReader.GZShape.Circular) {
-				if(z.vertices.length() == 2) {
-					rad = z.vertices.nth_data(1).latitude/100.0;
+		if(gzmgr.length() > 0 && nitem < gzmgr.length()) {
+			if(gzmgr.get_shape(nitem) ==  GeoZoneManager.GZShape.Circular) {
+				var nvs = gzmgr.find_vertices(nitem);
+				if(nvs.length == 2) {
+					rad = gzmgr.get_latitude(nvs[1])/100.0;
 				}
 			}
 		}
@@ -447,7 +434,7 @@ public class GZEdit :Gtk.Window {
 	}
 
 	private void edit_markers() {
-		var ulen = gzr.length();
+		var ulen = gzmgr.length();
 		if(ulen > 0) {
 			show_markers();
 		} else {
@@ -469,10 +456,10 @@ public class GZEdit :Gtk.Window {
 	public void on_poly_finish(Champlain.Marker mk, Clutter.Event e) {
 		var parts = ((Champlain.Label)mk).text.split("/");
 		if (parts.length == 2) {
-			var z = gzr.nth_data(nitem);
-			int vlen = int.parse(parts[1]);
-			z.vertices.nth_data(vlen).latitude = (int) (mk.latitude*1e7);
-			z.vertices.nth_data(vlen).longitude =  (int)(mk.longitude*1e7);
+			int vidx = int.parse(parts[1]);
+			var k = gzmgr.find_vertex(nitem, vidx);
+			gzmgr.set_latitude(k, (int)(mk.latitude*1e7));
+			gzmgr.set_longitude(k, (int)(mk.longitude*1e7));
 		}
 	}
 
@@ -501,7 +488,6 @@ public class GZEdit :Gtk.Window {
 		}
 	}
 
-
 	public void on_circ_motion(Champlain.Marker mk, double x, double y, Clutter.Event e) {
 		update_circle(mk);
 	}
@@ -509,10 +495,10 @@ public class GZEdit :Gtk.Window {
 	public void on_circ_finish(Champlain.Marker mk, Clutter.Event e) {
 		unowned var el = ovl.get_elements().nth_data(nitem);
 		el.circ.lat = mk.latitude;
-		var z = gzr.nth_data(nitem);
-		z.vertices.nth_data(0).latitude = (int) (mk.latitude*1e7);
+		int k = gzmgr.find_vertex(nitem, 0);
+		gzmgr.set_latitude(k, (int)(mk.latitude*1e7));
 		el.circ.lon = mk.longitude;
-		z.vertices.nth_data(0).longitude =  (int)(mk.longitude*1e7);
+		gzmgr.set_longitude(k, (int)(mk.longitude*1e7));
 	}
 
 	public bool on_poly_capture(Clutter.Actor mk, Clutter.Event e) {
@@ -529,10 +515,8 @@ public class GZEdit :Gtk.Window {
 	}
 
 	private void add_polypoint(double lat, double lon) {
-		var z = gzr.nth_data(nitem);
-		var vlen = z.vertices.length();
-		gzr.append_vertex((int)nitem, (int)vlen,
-										  (int)(lat*1e7), (int)(lon*1e7));
+		var vlen = gzmgr.nvertices(nitem);
+		gzmgr.append_vertex(nitem, vlen, (int)(lat*1e7), (int)(lon*1e7));
 		unowned var el = ovl.get_elements().nth_data(nitem);
 		var mk = el.add_line_point(lat,lon, "%u/%u".printf(nitem, vlen));
 		ovl.add_marker(mk);
@@ -552,20 +536,18 @@ public class GZEdit :Gtk.Window {
 	}
 
 	private void show_markers() {
-		var z = gzr.nth_data(nitem);
 		zidx.set_label(nitem.to_string());
-		ztype.active = (int)z.type;
-		zshape.active = (int)z.shape;
+		ztype.active = (int)gzmgr.get_ztype(nitem);
+		zshape.active = (int)gzmgr.get_shape(nitem);
 		zshape.sensitive = false;
-		zaction.active = (int)z.action;
-		zminalt.set_text("%.2f".printf(z.minalt/100.0));
-		zmaxalt.set_text("%.2f".printf(z.maxalt/100.0));
+		zaction.active = (int)gzmgr.get_action(nitem);
+		zminalt.set_text("%.2f".printf(gzmgr.get_minalt(nitem)/100.0));
+		zmaxalt.set_text("%.2f".printf(gzmgr.get_maxalt(nitem)/100.0));
 		toggle_shape();
 		unowned var el = ovl.get_elements().nth_data(nitem);
 		if(el.circ.radius_nm == 0) {
 			int nz = 0;
 			ovl.get_view().button_release_event.connect (on_button_release);
-
 			el.mks.foreach((mk) => {
 					var pname = "%d/%d".printf(el.idx, nz);
 					el.set_label(mk, pname);

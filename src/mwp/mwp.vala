@@ -277,7 +277,7 @@ public class MWP : Gtk.Application {
 		uint tid;
 	}
 	private RadarDev[] radardevs;
-	private GeoZoneReader gzr;
+	private GeoZoneManager gzr;
 	private uint8 gzcnt;
 	private Overlay? gzone;
     private TelemTracker ttrk;
@@ -1869,7 +1869,7 @@ public class MWP : Gtk.Application {
                 msp_publish_home(safeindex);
             });
 
-		gzr = new GeoZoneReader();
+		gzr = new GeoZoneManager();
 		gzedit = new GZEdit(window, gzr);
 		Places.get_places();
         setpos.load_places();
@@ -6808,7 +6808,7 @@ public class MWP : Gtk.Application {
 
 		case MSP.Cmds.GEOZONE:
 			var cnt = gzr.append(raw, len);
-			if (cnt >= GeoZoneReader.MAXGZ) {
+			if (cnt >= GeoZoneManager.MAXGZ) {
 				if(gzone != null) {
 					gzone.remove();
 					set_gzsave_state(false);
@@ -6830,7 +6830,7 @@ public class MWP : Gtk.Application {
 
 		case MSP.Cmds.SET_GEOZONE:
 			gzcnt++;
-			if (gzcnt < GeoZoneReader.MAXGZ) {
+			if (gzcnt < GeoZoneManager.MAXGZ) {
 				var mbuf = gzr.encode(gzcnt);
 				queue_cmd(MSP.Cmds.SET_GEOZONE, mbuf, mbuf.length);
 			}
