@@ -149,12 +149,13 @@ public class GeoZoneManager {
 		zs[n].action = action;
 	}
 
-	public void append_vertex(uint n, uint zidx, int lat, int lon) {
+	public int append_vertex(uint n, uint zidx, int lat, int lon) {
 		var k = find_free_vertex();
 		vs[k].zindex = (uint8)n;
 		vs[k].index = (uint8)zidx;
 		vs[k].latitude = lat;
 		vs[k].longitude = lon;
+		return k;
 	}
 
 	public void insert_vertex_at(uint n, uint zidx, int lat, int lon) {
@@ -273,31 +274,28 @@ public class GeoZoneManager {
 
 	public int parse(uint8[] buf) {
 		uint8* ptr = &buf[0];
-		var z = GeoZone();
-		z.type = (GZType)*ptr++;
-		z.shape = (GZShape)*ptr++;
-		ptr = SEDE.deserialise_i32(ptr, out z.minalt);
-		ptr = SEDE.deserialise_i32(ptr, out z.maxalt);
-
-		z.action = (GZAction)*ptr++;
-
+		var ztype = (GZType)*ptr++;
+		var shape = (GZShape)*ptr++;
+		int minalt, maxalt;
+		ptr = SEDE.deserialise_i32(ptr, out minalt);
+		ptr = SEDE.deserialise_i32(ptr, out maxalt);
+		var action = (GZAction)*ptr++;
 		var nvertices = *ptr++;
-		var index = (int)*ptr++;
+		var index = *ptr++;
 		var zvsize = ZSIZEMIN + nvertices*VSIZE;
-
-		var k = find_free_vertex();
-		if(k != -1 && index < MAXGZ && zvsize ==  buf.length) {
-			zs[index] = z;
+		if(index < MAXGZ && zvsize ==  buf.length) {
+			append_zone(index, shape, ztype, minalt, maxalt, action);
 			for (var j = 0; j < nvertices; j++) {
-				vs[k].zindex = (uint8)index;
-				vs[k].index = *ptr++;
-				ptr = SEDE.deserialise_i32(ptr, out vs[k].latitude);
-				ptr = SEDE.deserialise_i32(ptr, out vs[k].longitude);
+				int lat, lon;
+				var vindex = *ptr++;
+				ptr = SEDE.deserialise_i32(ptr, out lat);
+				ptr = SEDE.deserialise_i32(ptr, out lon);
+				append_vertex(index, vindex, lat, lon);
 			}
 		} else {
 			return -1;
 		}
-		return index;
+		return (int)index;
 	}
 
   /*
@@ -409,10 +407,12 @@ public class GeoZoneManager {
 		} else {
 			oi.name = "Polygon %2u".printf(n);
 			var nvs = find_vertices(n);
+			var j = 0;
 			foreach (var l in nvs) {
 				double plat = (double)vs[l].latitude / 1e7;
 				double plon = (double)vs[l].longitude / 1e7;
-				oi.add_line_point(plat, plon, "");
+				oi.add_line_point(plat, plon, "%u/%d".printf(n, j));
+				j++;
 			}
 		}
 		oi.desc = sb.str;
@@ -432,7 +432,7 @@ public class GeoZoneManager {
 
 	public int append(uint8[] raw, size_t len) {
 		if (len > ZSIZEMIN) {
-			return parse(raw[0:len]);
+			return 1+parse(raw[0:len]);
 		}
 		return MAXGZ;
 	}
@@ -442,11 +442,9 @@ public class GeoZoneManager {
 		int n = 0;
 		foreach (var z in zs) {
 			if(z.type != GZType.Unused) {
-				stderr.printf("GZ %d\n", n);
 				sb.append_printf("geozone %d %d %d %d %d %d\n", n, z.shape, z.type,
 							 z.minalt, z.maxalt, z.action);
 				var nvs = find_vertices(n);
-				stderr.printf("Find vertices for %d %u\n", n, nvs.length);
 				foreach(var v in nvs) {
 					sb.append_printf("geozone vertex %d %d %d %d\n", vs[v].zindex, vs[v].index, vs[v].latitude, vs[v].longitude);
 				}
@@ -497,7 +495,6 @@ public class GeoZoneManager {
 		try {
 			reset();
 			while ((line = ds.read_line (null)) != null) {
-				stderr.printf("%s\n", line);
 				if(line.length == 0 || line.has_prefix(";") || line.has_prefix("#")
 				   || !line.has_prefix("geozone"))
 					continue;

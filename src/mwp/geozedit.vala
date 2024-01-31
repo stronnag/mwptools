@@ -67,6 +67,9 @@ public class GZEdit :Gtk.Window {
 		};
 
 		newlab = new Gtk.Label(null);
+		newlab.set_use_markup(true);
+		newlab.wrap=true;
+		newlab.set_label("Once you've set any required fields (including <b>radius</b> for circles), click the <b>REFRESH</b> button to enable the shape");
 
 		Gtk.ButtonBox bbox = new Gtk.ButtonBox (Gtk.Orientation.HORIZONTAL);
 		bbox.set_layout (Gtk.ButtonBoxStyle.START);
@@ -75,6 +78,12 @@ public class GZEdit :Gtk.Window {
 		foreach (unowned var button in buttons) {
 			bbox.add (button);
 		}
+
+		buttons[0].set_tooltip_text("Add new shape");
+		buttons[1].set_tooltip_text("Previous shape");
+		buttons[2].set_tooltip_text("Next shape");
+		buttons[3].set_tooltip_text("Delete current shape");
+		buttons[4].set_tooltip_text("Refresh");
 
 		var vbox = new Gtk.Box(Gtk.Orientation.VERTICAL, 2);
 		vbox.pack_start (bbox, false, false, 2);
@@ -372,16 +381,8 @@ public class GZEdit :Gtk.Window {
 
 	private void new_zone() {
 		remove_edit_markers();
-		string ltext;
-		if(zshape.active == 0) {
-			ltext = "Once you've filled in the radius (and other fields), click the refresh button to enable the shape";
-		} else {
-			ltext = "Once you've filled necessary, click the refresh button to enable the shape; click on the map to generate points";
-		}
-		newlab.set_label(ltext);
-		newlab.wrap=true;
 		newlab.show();
-		grid.attach(newlab, 2, 2, 2, 3);
+		grid.attach(newlab, 2, 2, 2, 4);
 		nitem = gzmgr.length();
 		toggle_shape();
 		zidx.set_label(nitem.to_string());

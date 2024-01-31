@@ -4922,16 +4922,17 @@ public class MWP : Gtk.Application {
 
     private void setup_buttons() {
         embed.button_release_event.connect((evt) => {
+				bool handled = false;
                 if(evt.button == 3) {
-                    if(!ls.pop_marker_menu(evt)) {
-						if (!safehomed.pop_menu(evt)) {
-							if(!gzedit.popup(evt)) {
-								stderr.printf("DBG: Unhandled embed event\n");
-							}
+					handled = ls.pop_marker_menu(evt);
+					if(!handled) {
+						handled = safehomed.pop_menu(evt);
+						if (!handled) {
+							handled = gzedit.popup(evt);
 						}
 					}
 				}
-                return false;
+                return handled;
             });
 
         view.button_release_event.connect((evt) => {
@@ -6808,6 +6809,7 @@ public class MWP : Gtk.Application {
 		case MSP.Cmds.GEOZONE:
 			var cnt = gzr.append(raw, len);
 			if (cnt >= GeoZoneManager.MAXGZ) {
+				stderr.printf("DBG: %s", gzr.to_string());
 				if(gzone != null) {
 					gzone.remove();
 					set_gzsave_state(false);
