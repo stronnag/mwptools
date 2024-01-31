@@ -190,6 +190,7 @@ public class GZEdit :Gtk.Window {
 					var oi = gzmgr.generate_overlay_item(ovl, nitem);
 					oi.show_polygon();
 					view.add_layer (oi.pl);
+					set_buttons_sensitive();
 					show_markers();
 				} else {
 					refresh_storage(Upd.ANY, true);;
