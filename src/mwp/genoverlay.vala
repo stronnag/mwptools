@@ -35,7 +35,6 @@ public class OverlayItem : Object {
 	public Champlain.PathLayer? pl;
 	public List<Champlain.Label?> mks;
 
-
 	public OverlayItem() {
 		pl = new Champlain.PathLayer();
 		mks = new List<Champlain.Label?>();
@@ -72,7 +71,6 @@ public class OverlayItem : Object {
 		set_label(mk, label);
 		mk.visible = true;
 		mk.set_draggable(true);
-		mks.append(mk);
 		pl.add_node(mk);
 		return mk;
 	}
@@ -88,7 +86,6 @@ public class OverlayItem : Object {
 		var n = pl.get_nodes().length();
 		pl.insert_node(mk, n - ipos);
 		//		pl.get_nodes().insert(mk, ipos);
-		mks.append(mk);
 		return mk;
 	}
 
@@ -100,10 +97,6 @@ public class OverlayItem : Object {
 		pl.closed=false;
 		pl.set_stroke_color(Clutter.Color.from_string(styleinfo.line_colour));
 		pl.set_stroke_width (styleinfo.line_width);
-		foreach (var mk in mks) {
-			pl.add_node(mk);
-			mk.visible = false;
-		}
 	}
 
 	public void update_style(StyleItem si) {
@@ -138,10 +131,6 @@ public class OverlayItem : Object {
 			llist.append(5);
 			llist.append(5);
 			pl.set_dash(llist);
-		}
-		foreach (var mk in mks) {
-			pl.add_node(mk);
-			mk.visible = false;
 		}
 	}
 

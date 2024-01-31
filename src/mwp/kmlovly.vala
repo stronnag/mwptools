@@ -131,8 +131,13 @@ public class KmlOverlay : Object {
                 var cs = Regex.split_simple("\\s+", coords);
                 foreach(var s in cs) {
                     var ss = s.split(",");
-					o.add_point(double.parse(ss[1].strip()),
-								double.parse(ss[0].strip()));
+					var p1= double.parse(ss[1].strip());
+					var p0 = double.parse(ss[0].strip());
+					if(o.type ==  OverlayItem.OLType.POINT) {
+						o.add_point(p1, p0);
+					} else {
+						o.add_line_point(p1, p0, "") ;
+					}
                 }
 				ovly.add_element(o);
             }

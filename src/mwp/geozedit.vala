@@ -22,6 +22,10 @@ public class GZEdit :Gtk.Window {
 	private Gtk.Grid grid;
 	private Gtk.Label newlab;
     private Gtk.Menu pop_menu;
+	private double llat=0;
+	private double llon=0;
+	private Champlain.View view;
+	private Gtk.MenuItem ditem;
 	private unowned Champlain.Label? popmk;
 	enum Buttons {
 		ADD,
@@ -42,8 +46,9 @@ public class GZEdit :Gtk.Window {
 	}
 
 
-	public GZEdit(Gtk.Window? _w=null, GeoZoneManager _gzr) {
+	public GZEdit(Gtk.Window? _w=null, GeoZoneManager _gzr, Champlain.View _v) {
 		gzmgr = _gzr;
+		view = _v;
 		popid = -1;
 		title = "mwp GeoZone Editor";
 		window_position = Gtk.WindowPosition.CENTER;
@@ -160,35 +165,39 @@ public class GZEdit :Gtk.Window {
 				if(nitem >= gzmgr.length()) {
 					var minalt = (int)(100* double.parse(zminalt.text));
 					var maxalt = (int)(100* double.parse(zmaxalt.text));
+					var clat = view.get_center_latitude();
+					var clon = view.get_center_longitude();
+
 					if(zshape.active == 0) {
 						var rad = double.parse(zradius.text);
 						if (rad <= 0.0) {
 							return;
 						}
 						newlab.hide();
-						var clat = ovl.get_view().get_center_latitude();
-						var clon = ovl.get_view().get_center_longitude();
 						gzmgr.append_zone(nitem, zshape.active, ztype.active, minalt, maxalt, zaction.active);
 						gzmgr.append_vertex(nitem, 0, (int)(clat*1e7), (int)(clon*1e7));
 						gzmgr.append_vertex(nitem, 1, (int)(rad*100), 0);
-						var oi = gzmgr.generate_overlay_item(ovl, nitem);
-						oi.show_polygon();
-						ovl.get_view().add_layer (oi.pl);
-						show_markers();
 					} else {
 						newlab.hide();
 						gzmgr.append_zone(nitem, zshape.active, ztype.active, minalt, maxalt, zaction.active);
-						var oi = gzmgr.generate_overlay_item(ovl, nitem);
-						oi.show_polygon();
-						ovl.get_view().add_layer (oi.pl);
-						show_markers();
+						var delta = 16*Math.pow(2, (20-view.zoom_level));
+						double nlat, nlon;
+						for(var i = 0; i < 3; i++) {
+							Geo.posit(clat, clon, i*120, delta/1852.0, out nlat, out nlon);
+							gzmgr.append_vertex(nitem, i, (int)(nlat*1e7), (int)(nlon*1e7));
+						}
 					}
+					var oi = gzmgr.generate_overlay_item(ovl, nitem);
+					oi.show_polygon();
+					view.add_layer (oi.pl);
+					show_markers();
 				} else {
-					refresh_storage(Upd.ANY, true);
+					refresh_storage(Upd.ANY, true);;
 				}
 			});
 
 		pop_menu = new Gtk.Menu();
+		ditem = new Gtk.MenuItem.with_label ("Delete");
 		var mitem = new Gtk.MenuItem.with_label ("Insert");
         mitem.activate.connect (() => {
 				unowned var el = ovl.get_elements().nth_data(nitem);
@@ -196,8 +205,8 @@ public class GZEdit :Gtk.Window {
 				Champlain.Label? mk;
 				var npts = el.pl.get_nodes().length();
 				if(npts == 1) {
-					nlat = popmk.latitude + 0.001;
-					nlon = popmk.longitude + 0.0001;
+					var delta = 16*Math.pow(2, (20-view.zoom_level));
+					Geo.posit(popmk.latitude, popmk.longitude, 0, delta/1852.0, out nlat, out nlon);
 				} else if(popno == npts - 1) {
 					mk = (Champlain.Label)el.pl.get_nodes().nth_data(0);
 					nlat = (mk.latitude + popmk.latitude)/2;
@@ -219,10 +228,13 @@ public class GZEdit :Gtk.Window {
 				mk.drag_finish.connect(on_poly_finish);
 				mk.captured_event.connect(on_poly_capture);
 				popmk = null;
+				var nv = gzmgr.nvertices(nitem);
+				if  (nv > 3)
+					ditem.sensitive = true;
 			});
         pop_menu.add (mitem);
-		mitem = new Gtk.MenuItem.with_label ("Delete");
-        mitem.activate.connect (() => {
+
+        ditem.activate.connect (() => {
 				gzmgr.remove_vertex_at(nitem, popno);
 				if(gzmgr.nvertices(nitem) == 0) {
 					remove_current_zone();
@@ -238,8 +250,11 @@ public class GZEdit :Gtk.Window {
 						});
 				}
 				popmk = null;
+				var nv = gzmgr.nvertices(nitem);
+				if  (nv < 4)
+					ditem.sensitive = false;
             });
-        pop_menu.add (mitem);
+        pop_menu.add (ditem);
 		pop_menu.show_all();
 		pop_menu.deactivate.connect(() => {
 				popid = -1;
@@ -378,7 +393,8 @@ public class GZEdit :Gtk.Window {
 	}
 
 	private void remove_edit_markers() {
-		ovl.get_view().button_release_event.disconnect (on_button_release);
+		view.button_release_event.disconnect (on_button_release);
+		view.button_press_event.disconnect (on_button_press);
 		if(gzmgr.length() > 0) {
 			ovl.get_mlayer().get_markers().foreach((mk) => {
 					mk.drag_finish.disconnect(on_poly_finish);
@@ -408,16 +424,6 @@ public class GZEdit :Gtk.Window {
 				}
 			}
 		}
-		/*
-		stderr.printf("DBG: %u zradius %u %u %.2f\n", nitem, gzr.nth_data(nitem).shape,
-					  gzr.nth_data(nitem).vertices.length(),
-					  rad);
-		for(var i = 0; i < 2; i++) {
-			stderr.printf("DBG:  %d la = %d lo = %d\n", i,
-						  gzr.nth_data(nitem).vertices.nth_data(i).latitude,
-						  gzr.nth_data(nitem).vertices.nth_data(i).longitude);
-		}
-		*/
 		zradius.set_text("%.2f".printf(rad));
 	}
 
@@ -463,13 +469,25 @@ public class GZEdit :Gtk.Window {
 		}
 	}
 
+	public bool on_button_press (Clutter.Actor a, Clutter.ButtonEvent event) {
+		if (event.button == 1) {
+			llat = view.get_center_latitude();
+			llon = view.get_center_longitude();
+		}
+		return false;
+	}
+
 	public bool on_button_release (Clutter.Actor a, Clutter.ButtonEvent event) {
 		double lat, lon;
 		if (event.button == 1) {
-			if(popid != -2) {
-				lat = ovl.get_view().y_to_latitude (event.y);
-				lon = ovl.get_view().x_to_longitude (event.x);
-				add_polypoint(lat, lon);
+			if (popid != -2) {
+				lat = view.get_center_latitude();
+				lon = view.get_center_longitude();
+				if((!view_delta_diff(llon,lon) && !view_delta_diff(llat,lat))) {
+					lat = view.y_to_latitude (event.y);
+					lon = view.x_to_longitude (event.x);
+					add_polypoint(lat, lon);
+				}
 			}
 		}
 		return false;
@@ -508,6 +526,8 @@ public class GZEdit :Gtk.Window {
 				if (parts.length == 2) {
 					popid = int.parse(parts[1]);
 					popmk = (Champlain.Label)mk;
+					var nv = gzmgr.nvertices(nitem);
+					ditem.sensitive = (nv > 3);
 				}
 			}
 		}
@@ -547,15 +567,16 @@ public class GZEdit :Gtk.Window {
 		unowned var el = ovl.get_elements().nth_data(nitem);
 		if(el.circ.radius_nm == 0) {
 			int nz = 0;
-			ovl.get_view().button_release_event.connect (on_button_release);
-			el.mks.foreach((mk) => {
+			view.button_release_event.connect (on_button_release);
+			view.button_press_event.connect (on_button_press);
+			el.pl.get_nodes().foreach((mk) => {
 					var pname = "%d/%d".printf(el.idx, nz);
-					el.set_label(mk, pname);
-					mk.visible = true;
-					mk.draggable = true;
-					ovl.add_marker(mk);
-					mk.drag_finish.connect(on_poly_finish);
-					mk.captured_event.connect(on_poly_capture);
+					el.set_label((Champlain.Label)mk, pname);
+					((Champlain.Label)mk).visible = true;
+					((Champlain.Label)mk).draggable = true;
+					ovl.add_marker((Champlain.Label)mk);
+					((Champlain.Label)mk).drag_finish.connect(on_poly_finish);
+					((Champlain.Label)mk).captured_event.connect(on_poly_capture);
 					nz++;
 				});
 		} else {
@@ -575,4 +596,11 @@ public class GZEdit :Gtk.Window {
 			mk.drag_finish.connect(on_circ_finish);
 		}
 	}
+
+    private bool view_delta_diff(double f0, double f1) {
+        double delta;
+        delta = 0.0000025 * Math.pow(2, (20-view.zoom_level));
+        var res = (Math.fabs(f0-f1) > delta);
+        return res;
+    }
 }

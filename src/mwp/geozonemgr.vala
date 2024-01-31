@@ -404,7 +404,7 @@ public class GeoZoneManager {
 			for (var i = 0; i < 360; i += 5) {
 				double plat, plon;
 				Geo.posit(clat, clon, i, range, out plat, out plon);
-				oi.add_point(plat, plon);
+				oi.add_line_point(plat, plon, "");
 			}
 		} else {
 			oi.name = "Polygon %2u".printf(n);
@@ -412,7 +412,7 @@ public class GeoZoneManager {
 			foreach (var l in nvs) {
 				double plat = (double)vs[l].latitude / 1e7;
 				double plon = (double)vs[l].longitude / 1e7;
-				oi.add_point(plat, plon);
+				oi.add_line_point(plat, plon, "");
 			}
 		}
 		oi.desc = sb.str;
