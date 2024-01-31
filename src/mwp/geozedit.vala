@@ -21,7 +21,7 @@ public class GZEdit :Gtk.Window {
 	private Gtk.Label lradius;
 	private Gtk.Grid grid;
 	private Gtk.Label newlab;
-    private Gtk.Menu pop_menu;
+	private Gtk.Menu pop_menu;
 	private double llat=0;
 	private double llon=0;
 	private Champlain.View view;
@@ -75,7 +75,7 @@ public class GZEdit :Gtk.Window {
 		bbox.set_layout (Gtk.ButtonBoxStyle.START);
 
 		bbox.set_spacing (5);
-		foreach (unowned var button in buttons) {
+		foreach (unowned Gtk.Button button in buttons) {
 			bbox.add (button);
 		}
 
@@ -183,12 +183,19 @@ public class GZEdit :Gtk.Window {
 							return;
 						}
 						newlab.hide();
-						gzmgr.append_zone(nitem, zshape.active, ztype.active, minalt, maxalt, zaction.active);
+						gzmgr.append_zone(nitem, (GeoZoneManager.GZShape)zshape.active,
+										  (GeoZoneManager.GZType)ztype.active,
+										  minalt, maxalt,
+										  (GeoZoneManager.GZAction)zaction.active);
 						gzmgr.append_vertex(nitem, 0, (int)(clat*1e7), (int)(clon*1e7));
 						gzmgr.append_vertex(nitem, 1, (int)(rad*100), 0);
 					} else {
 						newlab.hide();
-						gzmgr.append_zone(nitem, zshape.active, ztype.active, minalt, maxalt, zaction.active);
+						gzmgr.append_zone(nitem,
+										  (GeoZoneManager.GZShape)zshape.active,
+										  (GeoZoneManager.GZType)ztype.active,
+										  minalt, maxalt,
+										  (GeoZoneManager.GZAction)zaction.active);
 						var delta = 16*Math.pow(2, (20-view.zoom_level));
 						double nlat, nlon;
 						for(var i = 0; i < 3; i++) {
@@ -209,25 +216,25 @@ public class GZEdit :Gtk.Window {
 		pop_menu = new Gtk.Menu();
 		ditem = new Gtk.MenuItem.with_label ("Delete");
 		var mitem = new Gtk.MenuItem.with_label ("Insert");
-        mitem.activate.connect (() => {
-				unowned var el = ovl.get_elements().nth_data(nitem);
-				double nlat, nlon;
-				Champlain.Label? mk;
-				var npts = el.pl.get_nodes().length();
-				if(npts == 1) {
-					var delta = 16*Math.pow(2, (20-view.zoom_level));
-					Geo.posit(popmk.latitude, popmk.longitude, 0, delta/1852.0, out nlat, out nlon);
-				} else if(popno == npts - 1) {
-					mk = (Champlain.Label)el.pl.get_nodes().nth_data(0);
-					nlat = (mk.latitude + popmk.latitude)/2;
-					nlon = (mk.longitude + popmk.longitude)/2;
-				} else {
-					mk = (Champlain.Label)el.pl.get_nodes().nth_data(popno+1);
-					nlat = (mk.latitude + popmk.latitude)/2;
-					nlon = (mk.longitude + popmk.longitude)/2;
-				}
-				gzmgr.insert_vertex_at((int)nitem, (int)popno+1,
-										   (int)(nlat*1e7), (int)(nlon*1e7));
+                mitem.activate.connect (() => {
+                        unowned OverlayItem el = ovl.get_elements().nth_data(nitem);
+                        double nlat, nlon;
+                        Champlain.Label? mk;
+                        var npts = el.pl.get_nodes().length();
+                        if(npts == 1) {
+                    var delta = 16*Math.pow(2, (20-view.zoom_level));
+                    Geo.posit(popmk.latitude, popmk.longitude, 0, delta/1852.0, out nlat, out nlon);
+                } else if(popno == npts - 1) {
+                    mk = (Champlain.Label)el.pl.get_nodes().nth_data(0);
+                    nlat = (mk.latitude + popmk.latitude)/2;
+                    nlon = (mk.longitude + popmk.longitude)/2;
+                } else {
+                    mk = (Champlain.Label)el.pl.get_nodes().nth_data(popno+1);
+                    nlat = (mk.latitude + popmk.latitude)/2;
+                    nlon = (mk.longitude + popmk.longitude)/2;
+                }
+                gzmgr.insert_vertex_at((int)nitem, (int)popno+1,
+                                       (int)(nlat*1e7), (int)(nlon*1e7));
 				mk = el.insert_line_position(nlat, nlon, popno+1);
 				ovl.add_marker(mk);
 				var id = 0;
@@ -250,7 +257,7 @@ public class GZEdit :Gtk.Window {
 					remove_current_zone();
 				} else {
 					var ml = ovl.get_mlayer();
-					unowned var el = ovl.get_elements().nth_data(nitem);
+					unowned OverlayItem el = ovl.get_elements().nth_data(nitem);
 					el.pl.remove_node(popmk);
 					ml.remove_marker(popmk);
 					var id = 0;
@@ -496,7 +503,7 @@ public class GZEdit :Gtk.Window {
 	}
 
 	private void update_circle(Champlain.Marker mk) {
-		unowned var el = ovl.get_elements().nth_data(nitem);
+		unowned OverlayItem el = ovl.get_elements().nth_data(nitem);
 		var pts = el.pl.get_nodes();
 		var j = 0;
 		for (var i = 0; i < 360; i += 5) {
@@ -513,7 +520,7 @@ public class GZEdit :Gtk.Window {
 	}
 
 	public void on_circ_finish(Champlain.Marker mk, Clutter.Event e) {
-		unowned var el = ovl.get_elements().nth_data(nitem);
+            unowned OverlayItem el = ovl.get_elements().nth_data(nitem);
 		el.circ.lat = mk.latitude;
 		int k = gzmgr.find_vertex(nitem, 0);
 		gzmgr.set_latitude(k, (int)(mk.latitude*1e7));
@@ -539,7 +546,7 @@ public class GZEdit :Gtk.Window {
 	private void add_polypoint(double lat, double lon) {
 		var vlen = gzmgr.nvertices(nitem);
 		gzmgr.append_vertex(nitem, vlen, (int)(lat*1e7), (int)(lon*1e7));
-		unowned var el = ovl.get_elements().nth_data(nitem);
+		unowned OverlayItem el = ovl.get_elements().nth_data(nitem);
 		var mk = el.add_line_point(lat,lon, "%u/%u".printf(nitem, vlen));
 		ovl.add_marker(mk);
 		mk.drag_finish.connect(on_poly_finish);
@@ -566,7 +573,7 @@ public class GZEdit :Gtk.Window {
 		zminalt.set_text("%.2f".printf(gzmgr.get_minalt(nitem)/100.0));
 		zmaxalt.set_text("%.2f".printf(gzmgr.get_maxalt(nitem)/100.0));
 		toggle_shape();
-		unowned var el = ovl.get_elements().nth_data(nitem);
+		unowned OverlayItem el = ovl.get_elements().nth_data(nitem);
 		if(el.circ.radius_nm == 0) {
 			int nz = 0;
 			view.button_release_event.connect (on_button_release);
