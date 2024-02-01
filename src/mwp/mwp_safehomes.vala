@@ -969,10 +969,11 @@ public class  SafeHomeDialog : Object {
         }
 	}
 
-    private void write_out(FileStream fs) {
+    private void save_file() {
+		StringBuilder sb = new StringBuilder();
         var idx = 0;
         foreach (var h in homes) {
-            var ena = (h.enabled) ? 1 : 0;
+			var ena = (h.enabled) ? 1 : 0;
 			var aref = (h.aref) ? 1 : 0;
 			var dref = (h.dref) ? 1 : 0;
 			if(h.ex1) {
@@ -981,43 +982,13 @@ public class  SafeHomeDialog : Object {
 			if(h.ex2) {
 				h.dirn2 = -h.dirn2;
 			}
-			fs.printf("safehome %d %d %d %d %d %d %d %d %d %d\n", idx, ena,
+			sb.append_printf("safehome %d %d %d %d %d %d %d %d %d %d\n", idx, ena,
                       (int)(h.lat*10000000), (int)(h.lon*10000000),
 					  (int)(h.appalt*100), (int)(h.landalt*100),
 					  h.dirn1, h.dirn2, aref, dref);
             idx++;
         }
-    }
-
-    private void save_file() {
-        if(FileUtils.test(filename, FileTest.EXISTS)) {
-            string []lines = {};
-            string s;
-            bool written = false;
-
-            FileStream fs = FileStream.open (filename, "r");
-            while((s = fs.read_line()) != null)
-                lines += s;
-
-            fs = FileStream.open (filename, "w");
-            foreach (var l in lines) {
-                if(l.has_prefix("safehome ")) {
-                    if (written == false) {
-                        write_out(fs);
-                        written = true;
-                    }
-                } else {
-                    fs.puts(l);
-                    fs.puts("\n");
-                }
-            }
-            if (written == false)
-                write_out(fs);
-        } else {
-            FileStream fs = FileStream.open (filename, "w");
-            fs.puts("# safehome\n");
-            write_out(fs);
-        }
+		UpdateFile.save(filename, "safehome", sb.str);
     }
 //current_folder_changed ()
     private void run_chooser(Gtk.FileChooserAction action, Gtk.Window window) {
