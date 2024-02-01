@@ -4926,9 +4926,9 @@ public class MWP : Gtk.Application {
                 if(evt.button == 3) {
 					handled = ls.pop_marker_menu(evt);
 					if(!handled) {
-						handled = safehomed.pop_menu(evt);
+						handled = gzedit.popup(evt);
 						if (!handled) {
-							handled = gzedit.popup(evt);
+							handled = safehomed.pop_menu(evt);
 						}
 					}
 				}
