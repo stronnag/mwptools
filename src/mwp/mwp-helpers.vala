@@ -483,3 +483,38 @@ namespace MWPFileType {
 		return ftyp;
 	}
 }
+
+namespace  UpdateFile {
+    private void save(string filename, string key, string keyline) {
+        if(FileUtils.test(filename, FileTest.EXISTS)) {
+			string keyspc = "%s ".printf(key);
+            string []lines = {};
+            string s;
+            bool written = false;
+
+            FileStream fs = FileStream.open (filename, "r");
+            while((s = fs.read_line()) != null)
+                lines += s;
+
+            fs = FileStream.open (filename, "w");
+            foreach (var l in lines) {
+                if(l.has_prefix(keyspc)) {
+                    if (written == false) {
+						fs.puts(keyline);
+                        written = true;
+                    }
+                } else {
+                    fs.puts(l);
+                    fs.puts("\n");
+                }
+            }
+            if (written == false) {
+				fs.puts(keyline);
+			}
+        } else {
+            FileStream fs = FileStream.open (filename, "w");
+            fs.printf("# %s\n", key);
+			fs.puts(keyline);
+        }
+    }
+}
