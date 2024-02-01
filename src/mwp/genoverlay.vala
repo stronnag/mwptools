@@ -5,12 +5,12 @@ using GtkChamplain;
 
 public class OverlayItem : Object {
     public struct StyleItem {
-        bool styled;
-		bool line_dotted;
+		uint line_dash;
+		uint line_width;
         string line_colour;
         string fill_colour;
         string point_colour;
-		int line_width;
+        bool styled;
     }
 
 	public enum OLType {
@@ -108,9 +108,9 @@ public class OverlayItem : Object {
 			pl.set_fill_color(Clutter.Color.from_string(styleinfo.fill_colour));
 
 		var llist = new List<uint>();
-		if (styleinfo.line_dotted) {
-			llist.append(5);
-			llist.append(5);
+		if (styleinfo.line_dash != 0) {
+			llist.append(styleinfo.line_dash);
+			llist.append(styleinfo.line_dash);
 		}
 		pl.set_dash(llist);
 		string? c = (styleinfo.point_colour != null) ? styleinfo.point_colour : styleinfo.line_colour;
@@ -126,10 +126,10 @@ public class OverlayItem : Object {
 		pl.fill = (styleinfo.fill_colour != null);
 		if (pl.fill)
 			pl.set_fill_color(Clutter.Color.from_string(styleinfo.fill_colour));
-		if (styleinfo.line_dotted) {
+		if (styleinfo.line_dash != 0) {
 			var llist = new List<uint>();
-			llist.append(5);
-			llist.append(5);
+			llist.append(styleinfo.line_dash);
+			llist.append(styleinfo.line_dash);
 			pl.set_dash(llist);
 		}
 	}

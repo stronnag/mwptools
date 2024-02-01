@@ -35,18 +35,27 @@ public class GeoZoneManager {
 		int maxalt;
 	}
 
+	private struct ZoneColours {
+		string lncolour;
+		uint lnwidth;
+		uint lndashed;
+		string? fillcolour;
+	}
+
 	public const int MAXGZ = 63;
 	private const int MAXVTX = 126;
 
 	private const int W_Thin = 4;
-	private const int W_Thick = 12;//012345678
-	private const string LCOL_RED = "#ff0000a0";
-	private const string LCOL_GREEN = "#00ff00a0";
-	private const string FCOL_RED = "#ff00001a";
-	private const string FCOL_GREEN = "#00ff001a";
+	private const int W_Thick = 10;
+	private const int W_OpacHack = 8;
+	private const string LCOL_RED = "rgba(255,0,0,0.625)";
+	private const string LCOL_GREEN = "rgba(0,255,0,0.625)";
+	private const string FCOL_RED = "rgba(255,0,0,0.125)";
+	private const string FCOL_GREEN = "rgba(0,255,0,0.125)";
 
 	private GeoZone []zs;
 	private Vertex []vs;
+	private ZoneColours [,] zc;
 
 	public void reset() {
 		for(var k = 0; k < MAXGZ; k++) {
@@ -60,7 +69,105 @@ public class GeoZoneManager {
 	public GeoZoneManager() {
 		zs = new GeoZone[MAXGZ];
 		vs = new Vertex[MAXVTX];
+		init_colours();
+		try_user_colours();
 		reset();
+	}
+
+	private void init_colours() {
+		zc = new ZoneColours[2,4];
+		zc[GZType.Exclusive, GZAction.None    ] = {LCOL_RED, W_Thin, W_Thin, null};
+		zc[GZType.Exclusive, GZAction.Avoid   ] = {LCOL_RED, W_Thin, 0, FCOL_RED};
+		zc[GZType.Exclusive, GZAction.PosHold ] = {LCOL_RED, W_Thick, 0, FCOL_RED};
+		zc[GZType.Exclusive, GZAction.RTH     ] = {LCOL_RED, W_Thick, 0, FCOL_RED};
+		zc[GZType.Inclusive, GZAction.None    ] = {LCOL_GREEN, W_Thin, W_Thin, null};
+		zc[GZType.Inclusive, GZAction.Avoid   ] = {LCOL_GREEN, W_Thin,  0, null};
+		zc[GZType.Inclusive, GZAction.PosHold ] = {LCOL_GREEN, W_Thick, 0, null};
+		zc[GZType.Inclusive, GZAction.RTH     ] = {LCOL_GREEN, W_Thick, 0, FCOL_GREEN};
+	}
+
+		private string? parse_colour(string s) {
+		Gdk.RGBA col = Gdk.RGBA();
+		string rbg = s;
+		double falpha = 0.0;
+		if(s[0] == '#' && s.length == 9) {
+			rbg = s[0:7];
+			int a;
+			int.try_parse(s[7:9], out a, null, 16);
+			falpha = (double)(a/256.0);
+		} else {
+			var ss = s.split(";");
+			if(ss.length == 2) {
+				rbg = ss[0];
+				falpha=double.parse(ss[1]);
+			}
+		}
+
+		if(col.parse(rbg)) {
+			if(falpha != 0) {
+				col.alpha = falpha;
+			}
+			return col.to_string();
+		} else {
+			return null;
+		}
+	}
+
+	private bool normalise_colour(string s, out string? col) {
+		bool ok = false;
+		var fcol = s.strip();
+		if (fcol.length > 0) {
+			col = parse_colour(fcol);
+			if( col != null) {
+				ok = true;
+			}
+		} else {
+			col = null;
+			ok = true;
+		}
+		return ok;
+	}
+
+	public void try_user_colours() {
+		var fn = MWPUtils.find_conf_file("zone_colours");
+		if(fn != null) {
+			FileStream fs = FileStream.open (fn, "r");
+			if(fs != null) {
+				string s;
+				int lineno = 0;
+				while((s = fs.read_line()) != null) {
+					lineno++;
+					if(s.strip().length > 0 && !s.has_prefix("#") && !s.has_prefix(";")) {
+						bool ok = false;
+						var parts = s.split("|");
+						if(parts.length == 6) {
+							uint i,j,lw;
+							if (uint.try_parse(parts[0], out i)) {
+								if (uint.try_parse(parts[1], out j)) {
+									if(parts[2].strip().length != 0) {
+										if (uint.try_parse(parts[3], out lw)) {
+											if(i < 2 && j < 4) {
+												uint dl;
+												if(uint.try_parse (parts[4], out dl)) {
+													zc[i,j].lnwidth = lw;
+													zc[i,j].lndashed = dl;
+													if(normalise_colour(parts[2], out zc[i,j].lncolour)) {
+														ok = normalise_colour(parts[5], out zc[i,j].fillcolour);
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+						if(!ok) {
+							MWPLog.message("%s failed to parse line %d, %s\n", fn, lineno, s);
+						}
+					}
+				}
+			}
+		}
 	}
 
 	public uint length() {
@@ -298,82 +405,26 @@ public class GeoZoneManager {
 		return (int)index;
 	}
 
-  /*
-# Colours
-
-|  ACTION    |   TYPE      | FILL COLOUR | OUTLINE COLOUR |
-| ---------- | ----------- | ----------- | -------------- |
-|  None 0    | Inclusive 1 |    none     |   Green(dots)  |
-|  None 0    | Exclusive 0 |    none     |    Red(dots)   |
-|  Avoid 1   | Inclusive 1 |    none     |   Green(thin)  |
-|  Avoid 1   | Exclusive 0 |     Red     |    Red(thin)   |
-|  PosHold 2 | Inclusive 1 |    None     |   Green(thick) |
-|  PosHold 2 | Exclusive 0 |     Red     |    Red(thick)  |
-|  RTH 3     | Inclusive 1 |    Green    |   Green(thick) |
-|  RTH 3     | Exclusive 0 |     Red     |    Red(thick)  |
-   */
-
 	public OverlayItem.StyleItem fetch_style(uint n) {
 		return get_style(zs[n]);
+	}
+
+	private string adjust_colour(string s) {
+		Gdk.RGBA col = Gdk.RGBA();
+		col.parse(s);
+		col.alpha *= 0.8;
+		return col.to_string();
 	}
 
 	private OverlayItem.StyleItem get_style(GeoZone z) {
 		OverlayItem.StyleItem s = OverlayItem.StyleItem();
 		s.styled = true;
-		s.line_dotted = false;
-		switch (z.type) {
-		case GZType.Exclusive:
-			s.line_colour = LCOL_RED;
-			s.line_width = W_Thick;
-			s.fill_colour = null;
-			switch (z.action) {
-			case GZAction.None:
-				s.line_width = W_Thin;
-				s.line_dotted = true;
-				break;
-			case GZAction.Avoid:
-				s.line_width = W_Thin;
-				s.fill_colour = FCOL_RED;
-				break;
-			case GZAction.PosHold:
-				s.fill_colour = FCOL_RED;
-				break;
-			case GZAction.RTH:
-				s.fill_colour = FCOL_RED;
-				break;
-			default:
-				s.styled = false;
-				break;
-			}
-			break;
-		case GZType.Inclusive:
-			s.line_colour = LCOL_GREEN;
-			s.line_width = W_Thick;
-			s.fill_colour = null /*""*/;
-			switch (z.action) {
-			case GZAction.None:
-				s.line_width = W_Thin;
-				s.line_dotted = true;
-				break;
-			case GZAction.Avoid:
-				s.line_width = W_Thin;
-				break;
-			case GZAction.PosHold:
-				break;
-			case GZAction.RTH:
-				s.fill_colour = FCOL_GREEN;
-				break;
-			default:
-				s.styled = false;
-				break;
-			}
-			break;
-		default:
-			s.styled = false;
-			break;
-		}
-		if (s.line_colour != null && s.line_width == W_Thick) {
-			s.line_colour = s.line_colour.replace("a0", "80");
+		s.line_colour = zc[z.type, z.action].lncolour;
+		s.line_width = zc[z.type, z.action].lnwidth;
+		s.line_dash = zc[z.type, z.action].lndashed;
+		s.fill_colour = zc[z.type, z.action].fillcolour;
+		if (s.line_colour != null && s.line_width > W_OpacHack) {
+			s.line_colour = adjust_colour(s.line_colour);
 		}
 		return s;
 	}
