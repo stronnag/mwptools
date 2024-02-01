@@ -488,6 +488,11 @@ public class GeoZoneManager {
 		return MAXGZ;
 	}
 
+	public void save_file(string filename) {
+		var s = to_string();
+		UpdateFile.save(filename, "geozone", s);
+	}
+
 	public string to_string() {
 		StringBuilder sb = new StringBuilder();
 		int n = 0;
@@ -500,6 +505,7 @@ public class GeoZoneManager {
 					sb.append_printf("geozone vertex %d %d %d %d\n", vs[v].zindex, vs[v].index, vs[v].latitude, vs[v].longitude);
 				}
 				n++;
+				sb.append_c('\n');
 			}
 		}
 		return sb.str;

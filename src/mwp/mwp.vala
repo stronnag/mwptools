@@ -9711,13 +9711,13 @@ Error: <i>%s</i>
 					string s;
 					if(iskml) {
 						s = KMLWriter.ovly_to_string(gzone);
+						try {
+							FileUtils.set_contents(fn,s );
+						} catch (Error e) {
+							MWPLog.message("GZ Save %s %s\n", fn,e.message);
+						}
 					} else {
-						s = gzr.to_string();
-					}
-					try {
-						FileUtils.set_contents(fn,s );
-					} catch (Error e) {
-						MWPLog.message("GZ Save %s %s\n", fn,e.message);
+						gzr.save_file(fn);
 					}
 				} else {
                     chooser.destroy ();
