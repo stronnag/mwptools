@@ -27,7 +27,7 @@ public class  OTXDialog : Object {
     }
 
     private string filename;
-    private Gtk.Dialog dialog;
+    private Gtk.Window dialog;
     private Gtk.Button otx_cancel;
     private Gtk.Button otx_ok;
     private Gtk.TreeView otx_treeview;
@@ -44,7 +44,7 @@ public class  OTXDialog : Object {
                      string? logpath, bool _fl2ltm) {  //, FakeOffsets? _fo = null)
         _w = w;
         x_fl2ltm = _fl2ltm;
-        dialog = builder.get_object ("otx_dialog") as Gtk.Dialog;
+        dialog = builder.get_object ("otx_dialog") as Gtk.Window;
         otx_cancel = builder.get_object ("otx_cancel") as Button;
         otx_ok = builder.get_object ("otx_ok") as Button;
         otx_treeview = builder.get_object ("otx_treeview") as TreeView;
@@ -102,13 +102,17 @@ public class  OTXDialog : Object {
             });
 
         otx_treeview.row_activated.connect((p,c) => {
-                dialog.response(1001);
+                ready(1001);
             });
 
         dialog.title = "mwp Misc Log replay";
         dialog.set_transient_for(w);
-        dialog.response.connect((resp) => {
-                ready(resp);
+
+		otx_ok.clicked.connect(() => {
+                ready(1001);
+            });
+		otx_cancel.clicked.connect(() => {
+                ready(999);
             });
     }
 

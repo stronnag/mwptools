@@ -781,11 +781,15 @@ public class MWP : Gtk.Application {
 
     void show_startup() {
 		builder = new Builder ();
-        string[]ts={"mwp.ui", "menubar.ui", "mwpsc.ui"};
+        string[]ts={"mwp.ui", "seeder.ui","fm-dialog.ui", "altdialog.ui", "bb_dialog.ui",
+			"cvt_dialog.ui", "delta_dialog.ui", "goto_dialog.ui", "gps_stats_dialog.ui",
+			"map_source_dialog.ui", "odoview.ui", "otxdialog.ui", "pe-dialog.ui", "prefs.ui",
+			"raw_dialog.ui", "shape_dialog.ui", "speed_dialog.ui", "switch_dialog.ui",
+			"wprep_dialog.ui", "menubar.ui", "mwpsc.ui"};
         foreach(var fnm in ts) {
             var fn = MWPUtils.find_conf_file(fnm);
             if (fn == null) {
-                MWPLog.message ("No UI definition file\n");
+                MWPLog.message ("No UI definition file %s\n", fnm);
                 quit();
             } else {
                 try {
@@ -1708,7 +1712,7 @@ public class MWP : Gtk.Application {
                 return true;
             });
 
-        mseed = new MapSeeder(builder,window);
+		mseed = new MapSeeder(builder,window);
 
 		var scview = builder.get_object("scwindow") as ShortcutsWindow;
 		var scsect = builder.get_object("shortcuts") as ShortcutsSection;
@@ -2066,7 +2070,6 @@ public class MWP : Gtk.Application {
                 mseed.run_seeder(view.map_source.get_id(),
                                  (int)zoomer.adjustment.value,
                                  view.get_bounding_box());
-
             });
         window.add_action(saq);
 

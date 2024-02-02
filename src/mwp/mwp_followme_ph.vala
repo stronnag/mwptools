@@ -94,7 +94,7 @@ public class FollowMePoint : GLib.Object {
 }
 
 public class FollowMeDialog : GLib.Object {
-    private Gtk.Dialog dialog;
+    private Gtk.Window dialog;
     private Gtk.Label label;
     private Gtk.Button ok;
     private Gtk.Button clear;
@@ -104,7 +104,7 @@ public class FollowMeDialog : GLib.Object {
     public signal void ready(int state, int alt);
 
     public FollowMeDialog (Gtk.Builder builder, Gtk.Window? w) {
-        dialog = builder.get_object ("fm-dialog") as Gtk.Dialog;
+        dialog = builder.get_object ("fm-dialog") as Gtk.Window;
         ok = builder.get_object ("fm-ok") as Gtk.Button;
         clear = builder.get_object ("fm-clear") as Gtk.Button;
         label = builder.get_object ("fm-label") as Gtk.Label;

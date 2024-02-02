@@ -139,7 +139,7 @@ public class Units :  GLib.Object {
 }
 
 public class OdoView : GLib.Object {
-    private Gtk.Dialog dialog;
+    private Gtk.Window dialog;
     private Gtk.Label odotime;
     private Gtk.Label odospeed;
     private Gtk.Label odospeed_u;
@@ -168,7 +168,7 @@ public class OdoView : GLib.Object {
 	private time_t atime;
 
     public OdoView(Gtk.Builder builder, Gtk.Window? w, uint _to) {
-        dialog = builder.get_object ("odoview") as Gtk.Dialog;
+        dialog = builder.get_object ("odoview") as Gtk.Window;
         odotime = builder.get_object ("odotime") as Gtk.Label;
         ododist = builder.get_object ("ododist") as Gtk.Label;
         ododist_u = builder.get_object ("ododist_u") as Gtk.Label;
@@ -508,7 +508,6 @@ public class DirtyDialog : Gtk.Dialog {
     }
 }
 
-
 public class DirnBox : GLib.Object {
     public Gtk.Box dbox;
     private Gtk.Label dlabel1;
@@ -753,7 +752,7 @@ public class FlightBox : GLib.Object {
 }
 
 public class MapSeeder : GLib.Object {
-    private Gtk.Dialog dialog;
+    private Gtk.Window dialog;
     private Gtk.SpinButton tile_minzoom;
     private Gtk.SpinButton tile_maxzoom;
     private Gtk.SpinButton tile_age;
@@ -764,7 +763,7 @@ public class MapSeeder : GLib.Object {
     private TileUtil ts;
 
     public MapSeeder(Gtk.Builder builder, Gtk.Window? w) {
-        dialog = builder.get_object ("seeder_dialog") as Gtk.Dialog;
+        dialog = builder.get_object ("seeder_dialog") as Gtk.Window;
         tile_minzoom = builder.get_object ("tile_minzoom") as Gtk.SpinButton;
         tile_maxzoom = builder.get_object ("tile_maxzoom") as Gtk.SpinButton;
         tile_age = builder.get_object ("tile_age") as Gtk.SpinButton;
@@ -885,7 +884,7 @@ public class MapSeeder : GLib.Object {
 }
 
 public class MapSourceDialog : GLib.Object {
-    private Gtk.Dialog dialog;
+    private Gtk.Window dialog;
     private Gtk.Label map_name;
     private Gtk.Label map_id;
     private Gtk.Label map_minzoom;
@@ -893,16 +892,17 @@ public class MapSourceDialog : GLib.Object {
     private Gtk.Label map_uri;
 
     public MapSourceDialog(Gtk.Builder builder, Gtk.Window? w=null) {
-        dialog = builder.get_object ("map_source_dialog") as Gtk.Dialog;
+        dialog = builder.get_object ("map_source_dialog") as Gtk.Window;
         map_name = builder.get_object ("map_name") as Gtk.Label;
         map_id = builder.get_object ("map_id") as Gtk.Label;
         map_uri = builder.get_object ("map_uri") as Gtk.Label;
         map_minzoom = builder.get_object ("map_minzoom") as Gtk.Label;
         map_maxzoom = builder.get_object ("map_maxzoom") as Gtk.Label;
-        dialog.response.connect((id) => {
-                dialog.hide();
-            });
-        dialog.set_transient_for(w);
+        Gtk.Button b0 = builder.get_object ("ms_close") as Gtk.Button;
+		b0.clicked.connect(()=>{
+				dialog.hide();
+			});
+		dialog.set_transient_for(w);
     }
 
     public void show_source(string name, string id, string uri, uint minzoom, uint maxzoom) {
@@ -916,20 +916,30 @@ public class MapSourceDialog : GLib.Object {
 }
 
 public class SpeedDialog : GLib.Object {
-    private Gtk.Dialog dialog;
+    private Gtk.Window dialog;
     private Gtk.Entry spd_entry;
     private bool flag;
     public signal void get_value(double value, bool flag);
     public SpeedDialog(Gtk.Builder builder, Gtk.Window? _w) {
 
-        dialog = builder.get_object ("speeddialog") as Gtk.Dialog;
+        dialog = builder.get_object ("speeddialog") as Gtk.Window;
         spd_entry = builder.get_object ("defspeedset") as Gtk.Entry;
-        dialog.response.connect((id) => {
-                if (id == 1001) {
-                    var spd  = InputParser.get_scaled_real(spd_entry.get_text(),"s");
-                    get_value(spd, flag);
-                }
-                dialog.hide();
+		dialog.delete_event.connect(() => {
+				dialog.hide();
+				return true;
+			});
+
+		var b1 =  builder.get_object ("speedapp") as Gtk.Button;
+		var b2 =  builder.get_object ("speedcan") as Gtk.Button;
+
+		b1.clicked.connect(() => {
+				var spd  = InputParser.get_scaled_real(spd_entry.get_text(),"s");
+				get_value(spd, flag);
+				dialog.hide();
+            });
+
+		b2.clicked.connect(() => {
+				dialog.hide();
             });
 
         dialog.set_transient_for (_w);
@@ -944,21 +954,33 @@ public class SpeedDialog : GLib.Object {
 }
 
 public class AltDialog : GLib.Object {
-    private Gtk.Dialog adialog;
+    private Gtk.Window adialog;
     private Gtk.Entry alt_entry;
+	private Gtk.Button altapp;
+	private Gtk.Button altcan;
+
     private bool flag;
 
     public AltDialog(Gtk.Builder builder, Gtk.Window? _w) {
-        adialog = builder.get_object ("altdialog") as Gtk.Dialog;
+        adialog = builder.get_object ("altdialog") as Gtk.Window;
         alt_entry = builder.get_object ("defaltset") as Gtk.Entry;
-        adialog.response.connect((id) => {
-                if (id == 1001) {
-                    var alt = InputParser.get_scaled_real(alt_entry.get_text(),"d");
-                    get_value(alt, flag);
-                }
-                adialog.hide();
+		altapp = builder.get_object ("altapp") as Gtk.Button;
+		altcan = builder.get_object ("altcan") as Gtk.Button;
+		adialog.delete_event.connect(() => {
+				adialog.hide();
+				return true;
+			});
+
+
+		altapp.clicked.connect(() => {
+				var alt = InputParser.get_scaled_real(alt_entry.get_text(),"d");
+				get_value(alt, flag);
+				adialog.hide();
             });
-        adialog.set_transient_for (_w);
+        altcan.clicked.connect(() => {
+				adialog.hide();
+			});
+		adialog.set_transient_for (_w);
         adialog.set_keep_above(true);
 		alt_entry.show();
     }
@@ -971,25 +993,36 @@ public class AltDialog : GLib.Object {
 }
 
 public class WPRepDialog : GLib.Object {
-    private Gtk.Dialog dialog;
+    private Gtk.Window dialog;
     private Gtk.Entry rep_start;
     private Gtk.Entry rep_end;
     private Gtk.Entry rep_num;
 
     public signal void get_values(uint start, uint end, uint repl);
     public WPRepDialog(Gtk.Builder builder, Gtk.Window? _w) {
-        dialog = builder.get_object ("wprep-dialog") as Gtk.Dialog;
+        dialog = builder.get_object ("wprep-dialog") as Gtk.Window;
         rep_start = builder.get_object ("rep_start") as Gtk.Entry;
         rep_end = builder.get_object ("rep_end") as Gtk.Entry;
         rep_num = builder.get_object ("rep_num") as Gtk.Entry;
-        dialog.response.connect((id) => {
-                if(id == 1001) {
-                    uint start = (uint)int.parse(rep_start.text);
-                    uint end = (uint)int.parse(rep_end.text);
-                    uint number = (uint)int.parse(rep_num.text);
-                    get_values(start, end, number);
-                }
+		Gtk.Button button1 = builder.get_object ("wprapp") as Gtk.Button;
+		Gtk.Button button2 = builder.get_object ("wprcan") as Gtk.Button;
+
+
+		button1.clicked.connect(() => {
+				uint start = (uint)int.parse(rep_start.text);
+				uint end = (uint)int.parse(rep_end.text);
+				uint number = (uint)int.parse(rep_num.text);
+				get_values(start, end, number);
+				dialog.hide();
+            });
+
+		button2.clicked.connect(() => {
+				dialog.hide();
+			});
+
+        dialog.delete_event.connect (() => {
                 dialog.hide();
+                return true;
             });
 
         dialog.set_transient_for (_w);
@@ -1009,7 +1042,7 @@ public class WPRepDialog : GLib.Object {
 }
 
 public class DeltaDialog : GLib.Object {
-    private Gtk.Dialog dialog;
+    private Gtk.Window dialog;
     private Gtk.Entry dlt_entry1;
     private Gtk.Entry dlt_entry2;
     private Gtk.Entry dlt_entry3;
@@ -1018,7 +1051,7 @@ public class DeltaDialog : GLib.Object {
     public signal void get_values(double dlat, double dlon, int ialt, bool move_home);
 
     public DeltaDialog(Gtk.Builder builder, Gtk.Window? _w) {
-        dialog = builder.get_object ("delta-dialog") as Gtk.Dialog;
+        dialog = builder.get_object ("delta_dialog") as Gtk.Window;
         dlt_entry1 = builder.get_object ("dlt_entry1") as Gtk.Entry;
         dlt_entry2 = builder.get_object ("dlt_entry2") as Gtk.Entry;
         dlt_entry3 = builder.get_object ("dlt_entry3") as Gtk.Entry;
@@ -1030,16 +1063,28 @@ public class DeltaDialog : GLib.Object {
         lab.label = "Longitude (X) delta (%s)".printf(Units.distance_units());
         lab = builder.get_object ("dlt_label3") as Gtk.Label;
         lab.label = "Altitude (Z) delta (%s)".printf(Units.distance_units());
-        dialog.response.connect((id) => {
-                if (id == 1001) {
-                    var dlat = InputParser.get_scaled_real(dlt_entry1.get_text());
-                    var dlon = InputParser.get_scaled_real(dlt_entry2.get_text());
-                    var ialt = (int)InputParser.get_scaled_int(dlt_entry3.get_text());
-					var move_home = dlt_switch.active;
-                    get_values(dlat, dlon, ialt, move_home);
-                }
-                dialog.hide();
+		Gtk.Button button1 = builder.get_object ("ddbutton1") as Gtk.Button;
+		Gtk.Button button2 = builder.get_object ("ddbutton2") as Gtk.Button;
+
+
+		button1.clicked.connect(() => {
+				var dlat = InputParser.get_scaled_real(dlt_entry1.get_text());
+				var dlon = InputParser.get_scaled_real(dlt_entry2.get_text());
+				var ialt = (int)InputParser.get_scaled_int(dlt_entry3.get_text());
+				var move_home = dlt_switch.active;
+				get_values(dlat, dlon, ialt, move_home);
+				dialog.hide();
             });
+
+		button2.clicked.connect(() => {
+				dialog.hide();
+			});
+
+        dialog.delete_event.connect (() => {
+                dialog.hide();
+                return true;
+            });
+
 
 		dialog.set_transient_for (_w);
         dialog.set_keep_above(true);
@@ -1057,7 +1102,7 @@ public class DeltaDialog : GLib.Object {
 }
 
 public class AltModeDialog : GLib.Object {
-    private Gtk.Dialog cdialog;
+    private Gtk.Window cdialog;
     private Gtk.RadioButton button_rel;
     private Gtk.RadioButton button_abs;
     private Gtk.RadioButton ground_ref0;
@@ -1072,7 +1117,7 @@ public class AltModeDialog : GLib.Object {
     public signal void complete (ListBox.ALTMODES amode, ListBox.POSREF posref, int act);
 
     public AltModeDialog(Gtk.Builder builder, Gtk.Window w) {
-        cdialog = builder.get_object ("cvtmode_dialog") as Gtk.Dialog;
+        cdialog = builder.get_object ("cvtmode_dialog") as Gtk.Window;
         button_rel = builder.get_object ("alt_mode_rel") as Gtk.RadioButton;
         button_abs = builder.get_object ("alt_mode_amsl") as Gtk.RadioButton;
 
@@ -1146,7 +1191,7 @@ public class AltModeDialog : GLib.Object {
 }
 
 public class SetPosDialog : GLib.Object {
-    private Gtk.Dialog dialog;
+    private Gtk.Window dialog;
     private Gtk.Entry lat_entry;
     private Gtk.Entry lon_entry;
     private Gtk.ComboBoxText pcombo;
@@ -1156,7 +1201,7 @@ public class SetPosDialog : GLib.Object {
     public signal void place_edit();
 
     public SetPosDialog(Gtk.Builder builder,Gtk.Window? w=null) {
-        dialog = builder.get_object ("gotodialog") as Gtk.Dialog;
+        dialog = builder.get_object ("gotodialog") as Gtk.Window;
 		dialog.delete_event.connect(() => {
 				dialog.hide();
 				return true;
@@ -1176,10 +1221,13 @@ public class SetPosDialog : GLib.Object {
                     }
                 }
             });
-        dialog.response.connect((id) => {
+
+		Gtk.Button  b1 =  builder.get_object ("gotoapp") as Gtk.Button;
+		Gtk.Button  b2 =  builder.get_object ("gotocan") as Gtk.Button;
+		Gtk.Button  b3 =  builder.get_object ("place_edit") as Gtk.Button;
+
+        b1.clicked.connect(() => {
                 double glat = 0,  glon = 0;
-                switch (id) {
-                case 1001:
                 var t1 = lat_entry.get_text();
                 var t2 = lon_entry.get_text();
                 if (t2 == "") {
@@ -1197,16 +1245,19 @@ public class SetPosDialog : GLib.Object {
                 if(n > 0)
                     zoom = pls[n].zoom;
                 new_pos(glat, glon, zoom);
-                break;
-                case 1003:
-                place_edit();
-                break;
-                default:
-                break;
-                }
+				dialog.hide();
+			});
+
+		b2.clicked.connect(() => {
                 dialog.hide();
             });
-    }
+
+		b3.clicked.connect(() => {
+                place_edit();
+                dialog.hide();
+			});;
+
+	}
 
     public void load_places() {
         pls = {};
@@ -1232,14 +1283,24 @@ public class SetPosDialog : GLib.Object {
 }
 
 public class SwitchDialog : GLib.Object {
-    private Gtk.Dialog dialog;
+    private Gtk.Window dialog;
     public SwitchDialog(Gtk.Builder builder, Gtk.Window? w=null) {
-        dialog = builder.get_object ("switch-dialogue") as Gtk.Dialog;
-        dialog.set_transient_for(w);
-        dialog.response.connect((id) => {
+        dialog = builder.get_object ("switch-dialogue") as Gtk.Window;
+		dialog.delete_event.connect(() => {
+				dialog.hide();
+				return true;
+			});
+
+		dialog.set_transient_for(w);
+        var b1 = builder.get_object ("swok") as Gtk.Button;
+        var b2 = builder.get_object ("swquit") as Gtk.Button;
+
+		b2.clicked.connect(() => {
                 dialog.hide();
-                if(id == 1002)
-                    Posix.exit(255);
+				Posix.exit(255);
+            });
+		b1.clicked.connect(() => {
+                dialog.hide();
             });
     }
 
@@ -1249,7 +1310,7 @@ public class SwitchDialog : GLib.Object {
 }
 
 public class PrefsDialog : GLib.Object {
-    private Gtk.Dialog dialog;
+    private Gtk.Window dialog;
     private Gtk.Entry[]ents = {};
     private Gtk.RadioButton[] buttons={};
     private Gtk.ComboBoxText pcombo;
@@ -1314,7 +1375,7 @@ public class PrefsDialog : GLib.Object {
     }
 
     public PrefsDialog(Gtk.Builder builder, Gtk.Window? w) {
-        dialog = builder.get_object ("prefs-dialog") as Gtk.Dialog;
+        dialog = builder.get_object ("prefs-dialog") as Gtk.Window;
         for (int i = 1; i < 9; i++) {
             var id = "prefentry%d".printf(i);
             var e = builder.get_object (id) as Gtk.Entry;
@@ -1337,19 +1398,25 @@ public class PrefsDialog : GLib.Object {
 
         dialog.set_default_size (640, 320);
         dialog.set_transient_for(w);
-        var content = dialog.get_content_area () as Gtk.Box;
+
         Gtk.Notebook notebook = new Gtk.Notebook ();
-        content.pack_start (notebook, false, true, 0);
-        content.spacing = 4;
 
         var gprefs = builder.get_object ("gprefs") as Gtk.Box;
         var uprefs = builder.get_object ("uprefs") as Gtk.Box;
+        var b1 = builder.get_object ("button1") as Gtk.Button;
+        var b2 = builder.get_object ("uprefs") as Gtk.Button;
+        var vbox = builder.get_object ("prefsbox") as Gtk.Box;
+		vbox.pack_start (notebook, false, true, 0);
 
         notebook.append_page(gprefs,new Gtk.Label("General"));
         notebook.append_page(uprefs,new Gtk.Label("Units"));
-        dialog.response.connect((id) => {
+        b1.clicked.connect(() => {
                 dialog.hide();
-                done(id);
+                done(1001);
+            });
+        b2.clicked.connect(() => {
+                dialog.hide();
+                done(1002);
             });
     }
 
@@ -1485,7 +1552,7 @@ public class ShapeDialog : GLib.Object {
         public int no;
     }
 
-    private Gtk.Dialog dialog;
+    private Gtk.Window dialog;
     private Gtk.SpinButton spin1;
     private Gtk.SpinButton spin2;
     private Gtk.SpinButton spin3;
@@ -1496,28 +1563,40 @@ public class ShapeDialog : GLib.Object {
     public signal void get_values(ShapePoint[] pts);
 
     public ShapeDialog (Gtk.Builder builder, Gtk.Window? w=null) {
-        dialog = builder.get_object ("shape-dialog") as Gtk.Dialog;
+        dialog = builder.get_object ("shape-dialog") as Gtk.Window;
         spin1  = builder.get_object ("shp_spinbutton1") as Gtk.SpinButton;
         spin2  = builder.get_object ("shp_spinbutton2") as Gtk.SpinButton;
         spin3  = builder.get_object ("shp_spinbutton3") as Gtk.SpinButton;
         combo  = builder.get_object ("shp-combo") as Gtk.ComboBoxText;
         spin2.adjustment.value = 0;
-        dialog.response.connect((id) => {
-                if (id == 1001) {
-                    var npts = (int)spin1.adjustment.value;
-                    var radius = spin2.adjustment.value;
-                    var start = spin3.adjustment.value;
-                    var dtext = combo.get_active_id();
-                    int dirn = 1;
 
-                    if(dtext != null)
-                        dirn = int.parse(dtext);
-                    radius = InputParser.get_scaled_real(radius.to_string());
-                    if(radius > 0) {
-                        var p = mkshape(clat, clon, radius, npts, start, dirn);
-                        get_values(p);
-                    }
-                }
+		var b1 = builder.get_object ("shpbutton1") as Gtk.Button;
+		var b2 = builder.get_object ("shpbutton2") as Gtk.Button;
+
+		dialog.delete_event.connect (() => {
+				dialog.hide();
+				return true;
+                });
+
+		b1.clicked.connect(() => {
+				var npts = (int)spin1.adjustment.value;
+				var radius = spin2.adjustment.value;
+				var start = spin3.adjustment.value;
+				var dtext = combo.get_active_id();
+				int dirn = 1;
+
+				if(dtext != null)
+					dirn = int.parse(dtext);
+				radius = InputParser.get_scaled_real(radius.to_string());
+				if(radius > 0) {
+					var p = mkshape(clat, clon, radius, npts, start, dirn);
+					get_values(p);
+				}
+                dialog.hide();
+            });
+
+
+		b2.clicked.connect(() => {
                 dialog.hide();
             });
         dialog.set_transient_for(w);
@@ -3151,7 +3230,7 @@ public class GPSInfo : GLib.Object {
 }
 
 public class GPSStatus : GLib.Object {
-    private Gtk.Dialog dialog;
+    private Gtk.Window dialog;
     private Gtk.Label gps_stats_last_dt;
     private Gtk.Label gps_stats_errors;
     private Gtk.Label gps_stats_timeouts;
@@ -3164,7 +3243,7 @@ public class GPSStatus : GLib.Object {
     public bool visible {get; private set;}
 
     public GPSStatus(Gtk.Builder builder, Gtk.Window? w) {
-        dialog = builder.get_object ("gps_stats_dialog") as Gtk.Dialog;
+        dialog = builder.get_object ("gps_stats_dialog") as Gtk.Window;
         gps_stats_last_dt = builder.get_object ("gps_stats_last_dt") as Gtk.Label;
         gps_stats_errors = builder.get_object ("gps_stats_errors") as Gtk.Label;
         gps_stats_timeouts = builder.get_object ("gps_stats_timeouts") as Gtk.Label;
