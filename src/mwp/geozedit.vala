@@ -536,7 +536,16 @@ public class GZEdit :Gtk.Window {
 					popid = int.parse(parts[1]);
 					popmk = (Champlain.Label)mk;
 					var nv = gzmgr.nvertices(nitem);
-					ditem.sensitive = (nv > 3);
+					if(nv > 3) {
+						ditem.sensitive = true;
+					} else {
+						ditem.sensitive = false;
+					}
+					var p = MWP.ViewPop();
+					p.id = MWP.POPSOURCE.Geozone;
+					p.mk = (Champlain.Label?)mk;
+					p.funcid = popid;
+					MWP.popqueue.push(p);
 				}
 			}
 		}
@@ -553,11 +562,12 @@ public class GZEdit :Gtk.Window {
 		mk.captured_event.connect(on_poly_capture);
 	}
 
-	public bool popup(Gdk.Event e) {
+	public bool popup(Gdk.Event e, MWP.ViewPop p) {
 		if(popid < 0) {
 			return false;
 		} else {
-			popno = popid;
+			popno = p.funcid;
+			popmk = p.mk;
 			popid = -2;
 			pop_menu.popup_at_pointer(e);
 			return true;

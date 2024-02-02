@@ -543,7 +543,7 @@ public class ListBox : GLib.Object {
         return s;
     }
 
-    public bool pop_marker_menu(Gdk.EventButton e) {
+    public bool pop_marker_menu(Gdk.EventButton e, MWP.ViewPop vp) {
         if(miter_ok) {
             Gtk.TreeIter miter;
             if(list_model.iter_nth_child(out miter, null, mpop_no-1)) {
@@ -582,6 +582,11 @@ public class ListBox : GLib.Object {
     public void set_popup_needed(int _ino) {
         mpop_no =  _ino;
         miter_ok = true;
+		var p = MWP.ViewPop();
+		p.id = MWP.POPSOURCE.Mission;
+		p.mk = null;
+		p.funcid = mpop_no;
+		MWP.popqueue.push(p);
     }
 
     public ListBox() {

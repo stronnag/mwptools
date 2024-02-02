@@ -205,6 +205,7 @@ public class MWP : Gtk.Application {
     private uint8 wp_max = 0;
 
     private uint16 nav_wp_safe_distance = 10000;
+    private uint16 safehome_max_distance = 20000;
     private uint16 inav_max_eph_epv = 1000;
     private uint16 nav_rth_home_offset_distance = 0;
 
@@ -674,6 +675,20 @@ public class MWP : Gtk.Application {
     public static bool has_bing_key;
 	public static DEMMgr? demmgr = null;
     public static AsyncDL? asyncdl = null;
+
+	public enum POPSOURCE {
+		Mission =1,
+		Safehome = 2,
+		Geozone = 3,
+	}
+
+	public struct ViewPop {
+		int id;
+		Champlain.Label? mk;
+		int funcid;
+	}
+
+	public static AsyncQueue<ViewPop?> popqueue;
 
 	public enum HomeType {
 		NONE,
@@ -4922,17 +4937,25 @@ public class MWP : Gtk.Application {
 
     private void setup_buttons() {
         embed.button_release_event.connect((evt) => {
-				bool handled = false;
                 if(evt.button == 3) {
-					handled = ls.pop_marker_menu(evt);
-					if(!handled) {
-						handled = gzedit.popup(evt);
-						if (!handled) {
-							handled = safehomed.pop_menu(evt);
+					var popreq = popqueue.try_pop();
+					if(popreq != null) {
+						switch (popreq.id) {
+						case POPSOURCE.Mission:
+							ls.pop_marker_menu(evt, popreq);
+							return true;
+						case POPSOURCE.Geozone:
+							gzedit.popup(evt, popreq);
+							return true;
+						case POPSOURCE.Safehome:
+							safehomed.pop_menu(evt, popreq);
+							return true;
+						default:
+							break;
 						}
 					}
 				}
-                return handled;
+                return false;
             });
 
         view.button_release_event.connect((evt) => {
@@ -6429,6 +6452,7 @@ public class MWP : Gtk.Application {
     private void msp_publish_home(uint8 id) {
         if(id < SAFEHOMES.maxhomes) {
             var h = safehomed.get_home(id);
+			// safehome FIXME
             uint8 tbuf[10];
             tbuf[0] = id;
             tbuf[1] = (h.enabled) ? 1 : 0;
@@ -7129,6 +7153,7 @@ public class MWP : Gtk.Application {
                     if(vi.fc_vers > FCVERS.hasJUMP && vi.fc_vers <= FCVERS.hasPOI) { // also 2.6 feature
 						request_common_setting("nav_rth_home_offset_distance");
                     }
+					request_common_setting("safehome_max_distance");
                 }
                 queue_cmd(msp_get_status,null,0);
 				if(sh_load == "-FC-") {
@@ -7172,10 +7197,16 @@ public class MWP : Gtk.Application {
 				 wpdist = nav_wp_safe_distance / 100;
 				 MWPLog.message("Received nav_wp_safe_distance %um\n", wpdist);
 				 break;
+			 case "safehome_max_distance":
+				 SEDE.deserialise_u16(raw, out safehome_max_distance);
+				 safehome_max_distance /= 100;
+				 safehomed.set_distance(safehome_max_distance);
+				 MWPLog.message("Received safehome_max_distance %um\n", wpdist);
+				 break;
 			 case "nav_wp_max_safe_distance":
 				 SEDE.deserialise_u16(raw, out nav_wp_safe_distance);
 				 wpdist = nav_wp_safe_distance;
-				 MWPLog.message("Received nav_wp_max_safe_distance %um\n", wpdist);
+				 MWPLog.message("Received nav_wp_max_safe_distance %um\n", safehome_max_distance);
 				 break;
 			 case "inav_max_eph_epv":
 				 uint32 ift;
@@ -7565,6 +7596,7 @@ public class MWP : Gtk.Application {
             case MSP.Cmds.SAFEHOME:
                 uint8* rp = raw;
                 uint8 id = *rp++;
+				// safehome FIXME
                 SafeHome shm = SafeHome();
                 shm.enabled = (*rp == 1) ? true : false;
                 rp++;
@@ -7583,6 +7615,7 @@ public class MWP : Gtk.Application {
                 break;
 
 		    case MSP.Cmds.SET_SAFEHOME:
+				// safehome FIXME
                 safeindex += 1;
                 msp_publish_home(safeindex);
                 break;
@@ -10517,6 +10550,9 @@ Error: <i>%s</i>
     }
 
 	public static int main (string[] args) {
+		if(Environment.get_variable("GDK_BACKEND") == null) {
+			Environment.set_variable("GDK_BACKEND","x11",true);
+		}
 		MWPUtils.set_app_name("mwp");
 		Environment.set_prgname(MWP.MWPID);
 		MwpLibC.atexit(MWP.xchild);
@@ -10537,6 +10573,7 @@ Error: <i>%s</i>
 		}
         Gst.init (ref args);
 		MWP.user_args = sb.str;
+		MWP.popqueue = new AsyncQueue<MWP.ViewPop?>();
         var app = new MWP(s);
 		return app.run (args);
     }
