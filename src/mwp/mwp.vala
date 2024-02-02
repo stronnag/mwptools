@@ -2226,6 +2226,7 @@ public class MWP : Gtk.Application {
         saq = new GLib.SimpleAction("gz-clear",null);
         saq.activate.connect(() => {
 				if(gzone!=null) {
+					gzedit.clear();
 					gzone.remove();
 				}
 				gzr.reset();
@@ -2948,8 +2949,9 @@ public class MWP : Gtk.Application {
 			}
         }
         map_centre_on(clat, clon);
-        if (check_zoom_sanity(zm))
-            view.zoom_level = zm;
+		if (check_zoom_sanity(zm)) {
+			view.zoom_level = zm;
+		}
 
         msp.force4 = force4;
         msp.serial_lost.connect(() => {
@@ -3511,11 +3513,14 @@ public class MWP : Gtk.Application {
                     chooser.close ();
 					gzr.from_file(fns);
 					if(gzone != null) {
+						gzedit.clear();
 						gzone.remove();
 						set_gzsave_state(false);
 					}
 					gzone = gzr.generate_overlay(view);
 					gzone.display();
+					gzedit.refresh(gzone);
+					set_gzsave_state(true);
 				} else
                     chooser.close ();
             });
@@ -6831,6 +6836,7 @@ public class MWP : Gtk.Application {
 			 break;
 
 		case MSP.Cmds.GEOZONE:
+			gzedit.clear();
 			var cnt = gzr.append(raw, len);
 			if (cnt >= GeoZoneManager.MAXGZ) {
 				stderr.printf("DBG: %s", gzr.to_string());
@@ -6842,6 +6848,7 @@ public class MWP : Gtk.Application {
 				set_gzsave_state(true);
 				Idle.add(() => {
 						gzone.display();
+						gzedit.refresh(gzone);
 						if (Logger.is_logging) {
 							Logger.logstring("geozone", gzr.to_string());
 						}

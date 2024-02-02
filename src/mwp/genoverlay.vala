@@ -217,6 +217,10 @@ public class Overlay : Object {
 		mlayer.add_marker (m);
 	}
 
+	public void remove_marker(Champlain.Marker m) {
+		mlayer.remove_marker (m);
+	}
+
 	public void remove_all_markers() {
 		mlayer.remove_all();
 	}

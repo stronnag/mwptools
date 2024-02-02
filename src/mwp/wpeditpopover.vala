@@ -34,6 +34,7 @@ private class QLabel : Gtk.Label {
 
 private class QEntry : Gtk.Entry {
     public QEntry(string? etext, int len, Gtk.InputPurpose pp) {
+		editable = true;
         hexpand = false;
         halign = Gtk.Align.START;
         expand = false;
@@ -43,7 +44,7 @@ private class QEntry : Gtk.Entry {
     }
 }
 
-public class WPPopEdit : Gtk.Dialog {
+public class WPPopEdit : Gtk.Window {
     private Gtk.Box vbox;
     private Gtk.ComboBoxText wp_combo;
     private Gtk.Grid  grid0;
@@ -63,17 +64,22 @@ public class WPPopEdit : Gtk.Dialog {
     private Gtk.CheckButton rthcb;
     private Gtk.CheckButton landcb;
     private Gtk.CheckButton wpaction[4];
+	private Gtk.Button apply;
+
+	public signal void completed();
 
     public WPPopEdit(Gtk.Window? window, string posit) {
         pos = posit;
         title = "WP Edit";
-        add_button("Apply", Gtk.ResponseType.OK);
+		//        add_button("Apply", Gtk.ResponseType.OK);
         set_position(Gtk.WindowPosition.MOUSE);
         set_transient_for(window);
         set_keep_above(true);
         build_box();
-        var content = get_content_area ();
-        content.pack_start (vbox, false, false, 0);
+		add(vbox);
+		apply.clicked.connect(()=>{
+				completed();
+			});
     }
 
     public void wpedit(EditItem wpt) {
@@ -103,8 +109,13 @@ public class WPPopEdit : Gtk.Dialog {
         grid = new Gtk.Grid();
         grid.column_homogeneous = true;
         grid.hexpand = false;
-        vbox.pack_start (grid0, false, false, 0);
+		apply = new Gtk.Button.with_label("Apply");
+        apply.hexpand = false;
+        apply.halign = Gtk.Align.END;
+
+		vbox.pack_start (grid0, false, false, 0);
         vbox.pack_start (grid, false, false, 0);
+        vbox.pack_end (apply, false, false, 0);
     }
 
     private void add_grid(EditItem wpt) {

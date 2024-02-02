@@ -13,8 +13,6 @@ public class GZEdit :Gtk.Window {
 	private Gtk.Entry zradius;
 	private Gtk.Button[] buttons;
 	private uint nitem;
-	private int popid;
-	private int popno;
 	private Champlain.Label? mk;
 	private Overlay? ovl;
 	private GeoZoneManager gzmgr;
@@ -27,6 +25,10 @@ public class GZEdit :Gtk.Window {
 	private Champlain.View view;
 	private Gtk.MenuItem ditem;
 	private unowned Champlain.Label? popmk;
+
+	private int popid; //FIXME
+	private int popno; //FIXME
+
 	enum Buttons {
 		ADD,
 		PREV,
@@ -133,7 +135,6 @@ public class GZEdit :Gtk.Window {
 		grid.attach (zminalt, 1, 4);
 		grid.attach (new Gtk.Label("Max Altitude (m)"), 0, 5);
 		grid.attach (zmaxalt, 1, 5);
-
 		vbox.pack_start (grid, false, false, 2);
 		set_transient_for (_w);
 		set_keep_above(true);
@@ -301,6 +302,8 @@ public class GZEdit :Gtk.Window {
 				refresh_storage(Upd.MAXALT, true);
 			});
 
+		newlab.no_show_all = true;
+		grid.attach(newlab, 2, 2, 2, 4);
 		set_buttons_sensitive();
 	}
 
@@ -359,9 +362,12 @@ public class GZEdit :Gtk.Window {
 					var si = gzmgr.fetch_style(nitem);
 					el.update_style(si);
 					if (gzmgr.get_shape(nitem) ==  GeoZoneManager.GZShape.Circular) {
-						ovl.get_mlayer().get_markers().foreach((mk) => {
+						var ml = ovl.get_mlayer();
+						if(ml != null) {
+							ml.get_markers().foreach((mk) => {
 								((Champlain.Label)mk).color = Clutter.Color.from_string(si.line_colour);
 							});
+						}
 					}
 				}
 				if((upd & Upd.RADIUS) != 0) {
@@ -386,10 +392,9 @@ public class GZEdit :Gtk.Window {
 		edit_markers();
 	}
 
-	private void new_zone() {
-		remove_edit_markers();
+	private void new_zone(bool rm = true) {
+		remove_edit_markers(rm);
 		newlab.show();
-		grid.attach(newlab, 2, 2, 2, 4);
 		nitem = gzmgr.length();
 		toggle_shape();
 		zidx.set_label(nitem.to_string());
@@ -401,16 +406,19 @@ public class GZEdit :Gtk.Window {
 		buttons[Buttons.REMOVE].sensitive = (len > 0);
 	}
 
-	private void remove_edit_markers() {
+	private void remove_edit_markers(bool am = true) {
 		view.button_release_event.disconnect (on_button_release);
 		view.button_press_event.disconnect (on_button_press);
 		if(gzmgr.length() > 0) {
-			ovl.get_mlayer().get_markers().foreach((mk) => {
-					mk.drag_finish.disconnect(on_poly_finish);
-					mk.drag_finish.disconnect(on_circ_finish);
-					mk.drag_motion.disconnect(on_circ_motion);														});
-
-			ovl.remove_all_markers();
+			var ml = ovl.get_mlayer();
+			if(ml != null) {
+				ovl.get_mlayer().get_markers().foreach((mk) => {
+						mk.drag_finish.disconnect(on_poly_finish);
+						mk.drag_finish.disconnect(on_circ_finish);
+						mk.drag_motion.disconnect(on_circ_motion);														});
+				if(am)
+					ovl.remove_all_markers();
+			}
 		}
 		mk = null;
 	}
@@ -436,7 +444,7 @@ public class GZEdit :Gtk.Window {
 		zradius.set_text("%.2f".printf(rad));
 	}
 
-	private void init_markers() {
+	private void init_markers(bool rm = true) {
 		zidx.set_label("-");
 		ztype.active = 0;
 		zshape.active = 0;
@@ -445,7 +453,7 @@ public class GZEdit :Gtk.Window {
 		zminalt.set_text("0.0");
 		zmaxalt.set_text("0.0");
 		set_zradius();
-		new_zone();
+		new_zone(rm);
 	}
 
 	private void edit_markers() {
@@ -575,6 +583,7 @@ public class GZEdit :Gtk.Window {
 	}
 
 	private void show_markers() {
+		newlab.hide();
 		zidx.set_label(nitem.to_string());
 		ztype.active = (int)gzmgr.get_ztype(nitem);
 		zshape.active = (int)gzmgr.get_shape(nitem);
@@ -622,4 +631,18 @@ public class GZEdit :Gtk.Window {
         var res = (Math.fabs(f0-f1) > delta);
         return res;
     }
+
+	public void clear() {
+		remove_edit_markers(false);
+		nitem = 0;
+		set_buttons_sensitive();
+		init_markers(false);
+	}
+
+	public void refresh(Overlay? o) {
+		ovl = o;
+		nitem = 0;
+		set_buttons_sensitive();
+		edit_markers();
+	}
 }

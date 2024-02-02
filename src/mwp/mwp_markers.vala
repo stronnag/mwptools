@@ -636,7 +636,14 @@ public class MWPMarkers : GLib.Object {
                         var _t1 = marker.extras[Extra.Q_0] as MWPLabel;
                         if (_t1 != null)
                             marker.remove_child(_t1);
-                    l.set_popup_needed(ino);
+						Idle.add(() => {
+								var p = MWP.ViewPop();
+								p.id = MWP.POPSOURCE.Mission;
+								p.mk = null;
+								p.funcid = ino;
+								MWP.popqueue.push(p);
+								return false;
+							});
                     }
                 }
                 return false;

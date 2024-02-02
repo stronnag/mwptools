@@ -333,7 +333,7 @@ public class ListBox : GLib.Object {
 
         item = new Gtk.MenuItem.with_label ("Edit WP ...");
         item.activate.connect (() => {
-                pop_menu_edit(mpop_no);
+				pop_menu_edit(mpop_no);
             });
         marker_menu.add (item);
 
@@ -544,7 +544,8 @@ public class ListBox : GLib.Object {
     }
 
     public bool pop_marker_menu(Gdk.EventButton e, MWP.ViewPop vp) {
-        if(miter_ok) {
+		mpop_no = vp.funcid;
+        if(true/*miter_ok*/) {
             Gtk.TreeIter miter;
             if(list_model.iter_nth_child(out miter, null, mpop_no-1)) {
                 bool sens = true;
@@ -579,6 +580,7 @@ public class ListBox : GLib.Object {
         return false;
     }
 
+	/*
     public void set_popup_needed(int _ino) {
         mpop_no =  _ino;
         miter_ok = true;
@@ -588,6 +590,7 @@ public class ListBox : GLib.Object {
 		p.funcid = mpop_no;
 		MWP.popqueue.push(p);
     }
+	*/
 
     public ListBox() {
         purge=false;
@@ -2898,16 +2901,16 @@ public class ListBox : GLib.Object {
             var orig = ei;
             var dlg = new WPPopEdit(mp.window,posit);
             mp.markers.set_markers_active(false);
-            dlg.response.connect((resp) => {
-                    if (resp != Gtk.ResponseType.DELETE_EVENT) {
-                        dlg.extract_data(MSP.Action.UNKNOWN, ref ei);
-                        if(iter_from_ei(ref miter, ei, orig)) {
-                            renumber_steps(list_model);
-                        }
-                    }
-                    dlg.close();
-                    mp.markers.set_markers_active(true);
-                });
+
+            dlg.completed.connect(() => {
+					dlg.extract_data(MSP.Action.UNKNOWN, ref ei);
+					if(iter_from_ei(ref miter, ei, orig)) {
+						renumber_steps(list_model);
+					}
+
+					dlg.close();
+					mp.markers.set_markers_active(true);
+				});
             dlg.wpedit(ei);
         }
     }
