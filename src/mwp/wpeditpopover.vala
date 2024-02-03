@@ -80,7 +80,12 @@ public class WPPopEdit : Gtk.Window {
 		apply.clicked.connect(()=>{
 				completed();
 			});
-    }
+
+		delete_event.connect(() => {
+				completed();
+				return false;
+			});
+	}
 
     public void wpedit(EditItem wpt) {
         add_grid(wpt);
