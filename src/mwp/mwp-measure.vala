@@ -129,14 +129,10 @@ public class Measure : Gtk.Window {
 
 	private string format_distance() {
 		var md = tdist*1852.0;
-		var u = "m";
-		var fmt = "%.0f%s";
-		if(md >= 10000.0) {
-			md = md /1000;
-			u = "km";
-			fmt = "%.3f%s";
-		}
-		return fmt.printf(md, u);
+		string ds;
+		string du;
+		Units.scaled_distance(md, out ds, out du);
+		return "%s%s".printf(ds, du);
 	}
 
 	private void calc_distance() {

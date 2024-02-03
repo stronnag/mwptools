@@ -921,6 +921,12 @@ public class MapSourceDialog : GLib.Object {
 		b0.clicked.connect(()=>{
 				dialog.hide();
 			});
+
+        dialog.delete_event.connect (() => {
+				dialog.hide();
+                return true;
+            });
+
 		dialog.set_transient_for(w);
     }
 
@@ -990,7 +996,6 @@ public class AltDialog : GLib.Object {
 				return true;
 			});
 
-
 		altapp.clicked.connect(() => {
 				var alt = InputParser.get_scaled_real(alt_entry.get_text(),"d");
 				get_value(alt, flag);
@@ -1025,7 +1030,6 @@ public class WPRepDialog : GLib.Object {
         rep_num = builder.get_object ("rep_num") as Gtk.Entry;
 		Gtk.Button button1 = builder.get_object ("wprapp") as Gtk.Button;
 		Gtk.Button button2 = builder.get_object ("wprcan") as Gtk.Button;
-
 
 		button1.clicked.connect(() => {
 				uint start = (uint)int.parse(rep_start.text);
@@ -1085,7 +1089,6 @@ public class DeltaDialog : GLib.Object {
 		Gtk.Button button1 = builder.get_object ("ddbutton1") as Gtk.Button;
 		Gtk.Button button2 = builder.get_object ("ddbutton2") as Gtk.Button;
 
-
 		button1.clicked.connect(() => {
 				var dlat = InputParser.get_scaled_real(dlt_entry1.get_text());
 				var dlon = InputParser.get_scaled_real(dlt_entry2.get_text());
@@ -1103,7 +1106,6 @@ public class DeltaDialog : GLib.Object {
                 dialog.hide();
                 return true;
             });
-
 
 		dialog.set_transient_for (_w);
         dialog.set_keep_above(true);
@@ -1395,11 +1397,17 @@ public class PrefsDialog : GLib.Object {
 
     public PrefsDialog(Gtk.Builder builder, Gtk.Window? w) {
         dialog = builder.get_object ("prefs-dialog") as Gtk.Window;
+		dialog.delete_event.connect(() => {
+				dialog.hide();
+				return true;
+			});
+
         for (int i = 1; i < 9; i++) {
             var id = "prefentry%d".printf(i);
             var e = builder.get_object (id) as Gtk.Entry;
             ents += e;
         }
+
         rthland = builder.get_object("prefswitch10") as Gtk.Switch;
         pcombo =  builder.get_object("prefs_map_combo") as Gtk.ComboBoxText;
         Gtk.RadioButton button;
@@ -2758,6 +2766,11 @@ public class NavConfig : GLib.Object {
                 w.hide();
             });
 
+		w.delete_event.connect(() => {
+				w.hide();
+				return true;
+			});
+
         var apply = builder.get_object ("inav_fw_apply") as Gtk.Button;
         apply.clicked.connect(() => {
                 fw_config_event(inav_fw_get_values());
@@ -2829,6 +2842,11 @@ public class NavConfig : GLib.Object {
                 w.hide();
             });
 
+		w.delete_event.connect(() => {
+				w.hide();
+				return true;
+			});
+
         var apply = builder.get_object ("inav_mr_apply") as Gtk.Button;
         apply.clicked.connect(() => {
                 mr_nav_poshold_event(inav_mr_get_values());
@@ -2851,6 +2869,10 @@ public class NavConfig : GLib.Object {
         button.clicked.connect(() => {
                 w.hide();
             });
+		w.delete_event.connect(() => {
+				w.hide();
+				return true;
+			});
 
         var apply = builder.get_object ("nc_apply") as Gtk.Button;
         apply.clicked.connect(() => {
