@@ -3531,13 +3531,11 @@ public class MWP : Gtk.Application {
     }
 
     private void kml_remove_dialog() {
-        var dialog = new Dialog.with_buttons ("Remove Overlays", null,
-                                              DialogFlags.DESTROY_WITH_PARENT,
-                                              "Cancel", ResponseType.CANCEL,
-                                              "OK", ResponseType.OK);
 
+		var dialog = new Gtk.Window();
+		dialog.title = "Remove Overlays";
         Gtk.Box box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
-        var content = dialog.get_content_area ();
+        var content = new Gtk.Box (Gtk.Orientation.VERTICAL, 4);
         content.pack_start (box, false, false, 0);
 
         CheckButton[] btns = {};
@@ -3551,22 +3549,35 @@ public class MWP : Gtk.Application {
             box.pack_start (button, false, false, 0);
         }
 
-        box.show_all ();
-		dialog.show();
-        dialog.response.connect((resp) => {
-                if (resp == ResponseType.OK) {
-                    var i = btns.length;
-                    foreach (var b in btns) {
-                        i--;
-                        if(b.get_active()) {
-                            kmls.index(i).remove_overlay();
-                            kmls.remove_index(i);
-                        }
-                    }
-                }
+		Gtk.ButtonBox bbox = new Gtk.ButtonBox (Gtk.Orientation.HORIZONTAL);
+		bbox.set_layout (Gtk.ButtonBoxStyle.END);
+		bbox.set_spacing (5);
+
+		var button = new Button.with_label("OK");
+		button.clicked.connect(()=> {
+				var i = btns.length;
+				foreach (var b in btns) {
+					i--;
+					if(b.get_active()) {
+						kmls.index(i).remove_overlay();
+						kmls.remove_index(i);
+					}
+				}
                 set_menu_state("kml-remove", (kmls.length != 0));
-                dialog.destroy ();
-            });
+				dialog.destroy();
+			});
+		bbox.add(button);
+
+		button = new Button.with_label("Cancel");
+		button.clicked.connect(()=> {
+				set_menu_state("kml-remove", (kmls.length != 0));
+				dialog.destroy();
+			});
+
+		bbox.add(button);
+		content.pack_end(bbox);
+		dialog.add(content);
+		dialog.show_all();
     }
 
     private void remove_all_kml() {

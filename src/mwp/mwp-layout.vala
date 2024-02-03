@@ -156,13 +156,11 @@ class LayMan : Object {
     }
 
     public void save () {
-        var dialog = new Dialog.with_buttons ("New Layout", null,
-                                              DialogFlags.DESTROY_WITH_PARENT,
-                                              "Cancel", ResponseType.CANCEL,
-                                              "OK", ResponseType.OK);
+        var dialog = new Gtk.Window();
+		dialog.title = "New Layout";
         var hbox = new Box (Orientation.HORIZONTAL, 8);
         hbox.border_width = 8;
-        var content = dialog.get_content_area ();
+        var content = new Box (Orientation.VERTICAL, 4);
         content.pack_start (hbox, false, false, 0);
 
         var label = new Label ("Name:");
@@ -171,15 +169,26 @@ class LayMan : Object {
         var entry = new Entry ();
         hbox.pack_start (entry, true, true, 0);
 
-        hbox.show_all ();
-        dialog.response.connect((response) => {
-                if (response == ResponseType.OK) {
-                    layname = entry.text;
-                    save_config();
-                }
-                dialog.destroy();
-            });
-        dialog.show();
+		Gtk.ButtonBox bbox = new Gtk.ButtonBox (Gtk.Orientation.HORIZONTAL);
+		bbox.set_layout (Gtk.ButtonBoxStyle.END);
+		bbox.set_spacing (5);
+
+		var button = new Button.with_label("OK");
+		button.clicked.connect(()=> {
+				layname = entry.text;
+				save_config();
+				dialog.destroy();
+			});
+
+		bbox.add(button);
+		button = new Button.with_label("Cancel");
+		button.clicked.connect(()=> {
+				dialog.destroy();
+			});
+		bbox.add(button);
+		content.pack_end(bbox);
+		dialog.add(content);
+		dialog.show_all();
     }
 
     private string[] get_layout_names(string dir, string typ=".xml") {
@@ -208,13 +217,11 @@ class LayMan : Object {
     public signal void get_value(string s);
 
     public void restore () {
-        var dialog = new Dialog.with_buttons ("Restore", null,
-                                              DialogFlags.DESTROY_WITH_PARENT,
-                                              "Cancel", ResponseType.CANCEL,
-                                              "OK", ResponseType.OK);
+		var dialog = new Gtk.Window();
+		dialog.title = "Restore";
 
         Box box = new Box (Gtk.Orientation.VERTICAL, 0);
-        var content = dialog.get_content_area ();
+        var content = new Box (Gtk.Orientation.VERTICAL, 0);
         content.pack_start (box, false, false, 0);
 
         string id = null;
@@ -222,31 +229,44 @@ class LayMan : Object {
         bool found = false;
 
         foreach (var s in get_layout_names(confdir)) {
-            var button = new Gtk.RadioButton.with_label_from_widget (b, s);
+            var rbutton = new Gtk.RadioButton.with_label_from_widget (b, s);
             if(b == null)
-                b = button;
-            box.pack_start (button, false, false, 0);
+                b = rbutton;
+            box.pack_start (rbutton, false, false, 0);
             if(s == layname) {
-                button.set_active(true);
+                rbutton.set_active(true);
                 found = true;
             }
-            button.toggled.connect (() => {
-                    if(button.get_active())
-                        id = button.label;
+            rbutton.toggled.connect (() => {
+                    if(rbutton.get_active())
+                        id = rbutton.label;
                 });
         }
 
         if(!found)
             id = layname;
 
-        box.show_all ();
+		Gtk.ButtonBox bbox = new Gtk.ButtonBox (Gtk.Orientation.HORIZONTAL);
+		bbox.set_layout (Gtk.ButtonBoxStyle.END);
+		bbox.set_spacing (5);
+
+		var button = new Button.with_label("OK");
+		button.clicked.connect(()=> {
+				layname = id;
+				load_init();
+				dialog.destroy();
+			});
+		bbox.add(button);
+
+		button = new Button.with_label("Cancel");
+		button.clicked.connect(()=> {
+				dialog.destroy();
+			});
+		bbox.add(button);
+
+		content.pack_end(bbox);
+
+		dialog.add(content);
         dialog.show_all();
-        dialog.response.connect((response) => {
-                if (response == ResponseType.OK) {
-                    layname = id;
-                    load_init();
-                }
-                dialog.destroy ();
-            });
-    }
+	}
 }

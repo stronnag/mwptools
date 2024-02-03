@@ -369,33 +369,71 @@ namespace SportDev {
 
 namespace Utils {
 	public static bool permawarn;
+
+	private uint tid;
 	public void warning_box(string warnmsg,
 							Gtk.MessageType klass=Gtk.MessageType.WARNING,
 							int timeout = 0) {
-        var msg = new Gtk.MessageDialog.with_markup (null, 0, klass,
-                                                     Gtk.ButtonsType.OK, warnmsg, null);
+		var msg = new Gtk.Window();
+		tid = 0;
 
-        var bin = msg.get_message_area() as Gtk.Container;
-        var glist = bin.get_children();
-		//        glist.foreach((i) => {
-		for(unowned GLib.List<weak Gtk.Widget> lp = glist.first(); lp != null; lp = lp.next) {
-			var i = lp.data;
-			if (i.get_class().get_name() == "GtkLabel")
-				((Gtk.Label)i).set_selectable(true);
+        var vbox = new Gtk.Box(Gtk.Orientation.VERTICAL, 2);
+        var hbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 8);
+		string symb;
+
+		switch (klass) {
+		case Gtk.MessageType.ERROR:
+			symb = "dialog-error-symbolic";
+			break;
+		case Gtk.MessageType.INFO:
+			symb = "dialog-information-symbolic";
+			break;
+		case Gtk.MessageType.QUESTION:
+			symb = "dialog-question-symbolic";
+			break;
+		default:
+			symb = "dialog-warning-symbolic";
+			break;
+
 		}
+
+		var img = new Gtk.Image.from_icon_name(symb, Gtk.IconSize.DIALOG);
+		var label = new Gtk.Label(null);
+		label.use_markup = true;
+		label.label = warnmsg;
+		label.show();
+
+
+		hbox.pack_start(img, false, false);
+		hbox.pack_end(label, false, false);
+		vbox.pack_start(hbox, false, false);
+
+		var button = new Gtk.Button.with_label("OK");
+		button.hexpand = false;
+		button.halign = Gtk.Align.END;
+        button.expand = false;
+
+		vbox.pack_end(button, false, false);
+
+		button.clicked.connect(() => {
+				if(tid != 0) {
+					Source.remove(tid);
+				}
+                msg.destroy();
+			});
 
         if(timeout > 0 && permawarn == false) {
             Timeout.add_seconds(timeout, () => {
+					tid = 0;
                     msg.destroy();
-                    return Source.CONTINUE;
+                    return false;;
                 });
         }
-        msg.response.connect ((response_id) => {
-                msg.destroy();
-            });
-
-        msg.set_title("MWP Notice");
-        msg.show();
+		msg.set_title("MWP Notice");
+		msg.set_keep_above(true);
+		msg.add(vbox);
+		msg.show_all();
+		label.selectable = true;
     }
 
 	public void terminate_plots() {
