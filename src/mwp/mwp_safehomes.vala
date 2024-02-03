@@ -291,14 +291,13 @@ public struct SafeHome {
 	bool dref;
 }
 
-public class  SafeHomeDialog : Object {
+public class  SafeHomeDialog : Window {
 	private string filename;
 	private Gtk.ListStore sh_liststore;
-	private bool visible = false;
+	private bool available = false;
 	private Champlain.View view;
 	//	private int pop_idx = -1;
 	private Gtk.Switch switcher;
-	private Gtk.Dialog dialog;
 	private GLib.SimpleAction aq_fcl;
 	private GLib.SimpleAction aq_fcs;
 
@@ -356,10 +355,7 @@ public class  SafeHomeDialog : Object {
 		homes = new SafeHome[SAFEHOMES.maxhomes];
 		filename = "None";
 
-		dialog = new Gtk.Dialog.with_buttons("Safehomes", _w,
-											 DialogFlags.DESTROY_WITH_PARENT|
-											 DialogFlags.USE_HEADER_BAR);
-		dialog.set_transient_for(_w);
+		set_transient_for(_w);
 
 		var fsmenu_button = new Gtk.MenuButton();
 		Gtk.Image img = new Gtk.Image.from_icon_name("open-menu-symbolic",
@@ -367,26 +363,25 @@ public class  SafeHomeDialog : Object {
 		var childs = fsmenu_button.get_children();
 		fsmenu_button.remove(childs.nth_data(0));
 		fsmenu_button.add(img);
-
-		var tbox = (Gtk.HeaderBar)dialog.get_header_bar();
-		tbox.pack_start (fsmenu_button);
-
+		var header_bar = new Gtk.HeaderBar ();
+		header_bar.set_title ("Safehomes Manager");
+		//		headervbar.set_decoration_layout(":close");
+		header_bar.show_close_button = true;
+		header_bar.pack_start (fsmenu_button);
+		header_bar.has_subtitle = false;
 		switcher =	new Gtk.Switch();
+		header_bar.pack_end (switcher);
+		header_bar.pack_end (new Gtk.Label("Persistent map display"));
+		set_titlebar (header_bar);
 
-/*
+
+		/*
   This does not affec the edit display, just the permanence
   switcher.notify["active"].connect (() => {
   var state = switcher.get_active();
   display_homes(state);
   });
 */
-		dialog.response.connect((v) => {
-				hide_action();
-			});
-
-		tbox.pack_end (switcher);
-		tbox.pack_end (new Gtk.Label("Persistent map display"));
-
 		var sbuilder = new Gtk.Builder.from_string(xml, -1);
 		var menu = sbuilder.get_object("app-menu") as GLib.MenuModel;
 		var pop = new Gtk.Popover.from_model(fsmenu_button, menu);
@@ -421,9 +416,8 @@ public class  SafeHomeDialog : Object {
 		aq_fcs.set_enabled(false);
 		dg.add_action(aq_fcs);
 
-		dialog.insert_action_group("dialog", dg);
-
-		dialog.delete_event.connect (() => {
+		this.insert_action_group("dialog", dg);
+		this.delete_event.connect (() => {
 				hide_action();
 				return true;
 			});
@@ -585,7 +579,7 @@ public class  SafeHomeDialog : Object {
 				int idx = 0;
 				sh_liststore.get (iter, Column.ID, &idx);
 				// @+N @-N use landing alt + offset
-				stderr.printf("DBG: app edit newtext %s\n", new_text);
+
 				if(new_text[0] == '@') {
 					d = double.parse(new_text[1:new_text.length]);
 					stderr.printf("DBG: newtext %s d=%f la=%f\n", new_text, d, homes[idx].landalt);
@@ -714,12 +708,8 @@ public class  SafeHomeDialog : Object {
 		DREF,
 		*/
 
-
-		var box = dialog.get_content_area();
-		box.pack_start (tview, false, false, 0);
-
-		tbox.set_decoration_layout(":close");
-		tbox.set_show_close_button(true);
+		var vbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 2);
+		vbox.pack_start (tview, false, false, 0);
 
 		Gtk.TreeIter iter;
 		for(var i = 0; i < SAFEHOMES.maxhomes; i++) {
@@ -739,6 +729,7 @@ public class  SafeHomeDialog : Object {
 							  Column.DREF, false
 							  );
 		}
+		add(vbox);
 	}
 
 	public void remove_homes() {
@@ -746,12 +737,12 @@ public class  SafeHomeDialog : Object {
 	}
 
 	private void hide_action() {
-		visible = false;
+		available = false;
 		shmarkers.set_interactive(false);
 		var state = switcher.get_active();
 		if(!state)
 			display_homes(false);
-		dialog.hide();
+		hide();
 	}
 
 	public void online_change(uint32 v) {
@@ -1034,10 +1025,10 @@ public class  SafeHomeDialog : Object {
         fc.show();
     }
 
-    public void show(Gtk.Window w) {
-        if(!visible) {
-            visible = true;
-            dialog.show_all ();
+    public void display() {
+        if(!available) {
+			available = true;
+            show_all ();
             shmarkers.set_interactive(true);
 			var state = switcher.get_active();
 			if(!state)

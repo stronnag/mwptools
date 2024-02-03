@@ -483,15 +483,7 @@ public class  BBoxDialog : Object {
     private void show_child_err(string e) {
         var s = "Running blackbox_decode failed (is it on the PATH?)\n%s\n".printf(e);
         MWPLog.message(s);
-        var msg = new Gtk.MessageDialog (_w,
-                                         Gtk.DialogFlags.MODAL,
-                                         Gtk.MessageType.WARNING,
-                                         Gtk.ButtonsType.OK,
-                                         s);
-        msg.show_all();
-        msg.response.connect((id) => {
-            msg.destroy();
-            });
+		Utils.warning_box(s, Gtk.MessageType.WARNING);
     }
 
     public void run(string? fn = null) {

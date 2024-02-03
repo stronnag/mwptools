@@ -494,18 +494,37 @@ public class VarioBox : GLib.Object {
     }
 }
 
-public class DirtyDialog : Gtk.Dialog {
+public class DirtyDialog : Gtk.Window {
+	public signal void response(int d);
     public DirtyDialog(bool addcancel) {
         title = "Uncommitted mission file";
         border_width = 5;
-        var content = get_content_area () as Gtk.Box;
-        content.pack_start(new Gtk.Label("Uncommitted mission changes will be lost unless the current mission is saved."));
-        add_button ("Don't Save", ResponseType.NO);
-        add_button ("Save", ResponseType.YES);
+        var vbox = new Gtk.Box(Gtk.Orientation.VERTICAL, 4);
+        vbox.pack_start(new Gtk.Label("Uncommitted mission changes will be lost unless the current mission is saved."));
+		var hbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 2);
+		var button = new Gtk.Button.with_label("Don't Save");
+		button.clicked.connect(() => {
+				response(ResponseType.NO);
+			});
+		hbox.pack_end(button);
+		button = new Gtk.Button.with_label("Save");
+		button.clicked.connect(() => {
+				response(ResponseType.YES);
+			});
+		hbox.pack_end(button);
+
         if(addcancel ) {
-            add_button ("Cancel", ResponseType.CANCEL);
+			button = new Gtk.Button.with_label("Cancel");
+			button.clicked.connect(() => {
+					response(ResponseType.CANCEL);
+			});
+			hbox.pack_end(button);
         }
-    }
+
+		vbox.pack_start(hbox);
+		add(vbox);
+		show_all();
+	}
 }
 
 public class DirnBox : GLib.Object {

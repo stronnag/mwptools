@@ -668,8 +668,6 @@ public class MWP : Gtk.Application {
 	private int imdx = 0;
 	private bool ms_from_loader; // loading from file
 
-    private MeasureLayer? mlayer = null;
-
 	public static string? user_args;
 	public static string? demdir;
     public static bool has_bing_key;
@@ -2254,7 +2252,7 @@ public class MWP : Gtk.Application {
 
         saq = new GLib.SimpleAction("safe-homes",null);
         saq.activate.connect(() => {
-                safehomed.show(window);
+                safehomed.display();
             });
         window.add_action(saq);
 
@@ -2529,18 +2527,19 @@ public class MWP : Gtk.Application {
 
         add_source_combo(conf.defmap,msources);
 
-        mlayer = new MeasureLayer(window, view);
-
+		var measure =  new Measure(window, view);
         var ag = new Gtk.AccelGroup();
         ag.connect('d', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
-                int mx = 0;
-                int my = 0;
-                Gdk.Display display = Gdk.Display.get_default ();
-                var seat = display.get_default_seat();
-                var ptr = seat.get_pointer();
-                embed.get_window().get_device_position(ptr, out mx, out my, null);
-                mlayer.toggle_state(window, view, mx ,my);
-                return true;
+			  if(!Measure.active) {
+				  int mx = 0;
+				  int my = 0;
+				  Gdk.Display display = Gdk.Display.get_default ();
+				  var seat = display.get_default_seat();
+				  var ptr = seat.get_pointer();
+				  embed.get_window().get_device_position(ptr, out mx, out my, null);
+				  measure.run(mx,my);
+			  }
+			  return true;
           });
 
         ag.connect('?', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
@@ -4969,7 +4968,7 @@ public class MWP : Gtk.Application {
 
         view.button_release_event.connect((evt) => {
                 bool ret = false;
-                if (evt.button == 1 && wp_edit && !mlayer.is_active()) {
+                if (evt.button == 1 && wp_edit && !Measure.active) {
                     if(!map_moved()) {
                         insert_new_wp(evt.x, evt.y);
                         ret = true;
@@ -9555,7 +9554,7 @@ Error: <i>%s</i>
 		}
 		if(is_dirty) {
             var dirtyd = new DirtyDialog(cancel);
-            dirtyd.response.connect((id) => {
+			dirtyd.response.connect((id) => {
                     switch(id) {
                     case ResponseType.YES:
                         on_file_save_as(func);
@@ -9566,7 +9565,7 @@ Error: <i>%s</i>
                     default:
                         break;
                     }
-                    dirtyd.close();
+                    dirtyd.destroy();
                 });
             dirtyd.show_all();
 		} else {
