@@ -262,6 +262,8 @@ public class V4L2_dialog : Gtk.Window {
 				hide();
 			});
         delete_event.connect(hide_on_delete);
+		add(cbox);
+		show_all();
     }
 
 	public int result(out string uri) {
