@@ -1403,14 +1403,15 @@ public class PrefsDialog : GLib.Object {
 
         var gprefs = builder.get_object ("gprefs") as Gtk.Box;
         var uprefs = builder.get_object ("uprefs") as Gtk.Box;
-        var b1 = builder.get_object ("button1") as Gtk.Button;
-        var b2 = builder.get_object ("uprefs") as Gtk.Button;
+        var b1 = builder.get_object ("prefbutton1") as Gtk.Button;
+        var b2 = builder.get_object ("prefbutton2") as Gtk.Button;
         var vbox = builder.get_object ("prefsbox") as Gtk.Box;
 		vbox.pack_start (notebook, false, true, 0);
 
         notebook.append_page(gprefs,new Gtk.Label("General"));
         notebook.append_page(uprefs,new Gtk.Label("Units"));
-        b1.clicked.connect(() => {
+
+		b1.clicked.connect(() => {
                 dialog.hide();
                 done(1001);
             });

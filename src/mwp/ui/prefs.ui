@@ -340,7 +340,7 @@ along with mwp.  If not, see <http://www.gnu.org/licenses/>.
             <property name="can-focus">False</property>
             <property name="layout-style">end</property>
             <child>
-              <object class="GtkButton" id="button1">
+              <object class="GtkButton" id="prefbutton1">
                 <property name="label">Apply</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
@@ -353,7 +353,7 @@ along with mwp.  If not, see <http://www.gnu.org/licenses/>.
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="button2">
+              <object class="GtkButton" id="prefbutton2">
                 <property name="label">Cancel</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>

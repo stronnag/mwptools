@@ -185,7 +185,7 @@ Note that for versions prior to 3.0 and Multiwii, altitudes will be interpreted 
               </packing>
             </child>
             <child>
-              <object class="GtkEntry" id="altmodemanual1">
+              <object class="GtkEntry" id="altmodemanual">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="placeholder-text" translatable="yes">0</property>
@@ -225,7 +225,7 @@ then select &lt;b&gt;Apply&lt;/b&gt;. Uses an Internet service&lt;/i&gt;</proper
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="altmode_location1">
+              <object class="GtkLabel" id="altmode_location">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="label" translatable="yes">DD.dddddd DDD.ddddd</property>

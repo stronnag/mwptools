@@ -800,6 +800,7 @@ public class MWP : Gtk.Application {
                 }
             }
         }
+
         builder.connect_signals (null);
 
 		MWPLog.message("%s\n", MWP.user_args);
@@ -2516,7 +2517,7 @@ public class MWP : Gtk.Application {
         view.set_keep_center_on_resize(true);
 
         prefs = new PrefsDialog(builder, window);
-        prefs.done.connect((id) => {
+		prefs.done.connect((id) => {
                 if(id  == 1001) {
                     prefs.update_conf(ref conf);
                     build_serial_combo();
