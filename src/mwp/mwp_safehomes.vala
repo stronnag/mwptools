@@ -907,14 +907,14 @@ public class  SafeHomeDialog : Window {
 							h.aref = (parts[9] == "1") ? true : false;
 							h.dref = (parts[10] == "1") ? true : false;
 						}
-						refresh_home(idx, h);
+						refresh_home(idx, h, true);
 					}
 				}
             }
         }
     }
 
-    private void refresh_home(int idx, SafeHome h) {
+    private void refresh_home(int idx, SafeHome h, bool forced = false) {
         homes[idx] = h;
         Gtk.TreeIter iter;
         if(sh_liststore.iter_nth_child (out iter, null, idx))
@@ -931,7 +931,7 @@ public class  SafeHomeDialog : Window {
                               Column.AREF, homes[idx].aref,
                               Column.DREF, homes[idx].dref
 							  );
-        if(switcher.active) {
+        if(switcher.active || forced) {
             if(homes[idx].lat != 0 && homes[idx].lon != 0)
                 shmarkers.show_safe_home(idx, homes[idx]);
             else

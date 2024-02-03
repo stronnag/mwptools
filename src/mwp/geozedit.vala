@@ -633,16 +633,20 @@ public class GZEdit :Gtk.Window {
     }
 
 	public void clear() {
-		remove_edit_markers(false);
-		nitem = 0;
-		set_buttons_sensitive();
-		init_markers(false);
+		if (visible) {
+			remove_edit_markers(false);
+			nitem = 0;
+			set_buttons_sensitive();
+			init_markers(false);
+		}
 	}
 
 	public void refresh(Overlay? o) {
-		ovl = o;
-		nitem = 0;
-		set_buttons_sensitive();
-		edit_markers();
+		if(visible) {
+			ovl = o;
+			nitem = 0;
+			set_buttons_sensitive();
+			edit_markers();
+		}
 	}
 }
