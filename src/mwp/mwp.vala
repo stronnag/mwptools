@@ -10570,7 +10570,10 @@ Error: <i>%s</i>
 
 	public static int main (string[] args) {
 		if(Environment.get_variable("GDK_BACKEND") == null) {
-			Environment.set_variable("GDK_BACKEND","x11",true);
+			var u = Posix.utsname();
+			if(!u.release.contains("microsoft-standard-WSL2")) {
+				Environment.set_variable("GDK_BACKEND","x11",true);
+			}
 		}
 		MWPUtils.set_app_name("mwp");
 		Environment.set_prgname(MWP.MWPID);
