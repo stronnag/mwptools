@@ -392,26 +392,38 @@ public class  SafeHomeDialog : Window {
 
 		var aq = new GLib.SimpleAction("load",null);
 		aq.activate.connect(() => {
-				run_chooser( Gtk.FileChooserAction.OPEN, _w);
+				Idle.add(() => {
+						run_chooser( Gtk.FileChooserAction.OPEN, _w);
+						return false;
+					});
 			});
 		dg.add_action(aq);
 
 		aq = new GLib.SimpleAction("save",null);
 		aq.activate.connect(() => {
-				run_chooser( Gtk.FileChooserAction.SAVE, _w);
+				Idle.add(() => {
+						run_chooser( Gtk.FileChooserAction.SAVE, _w);
+						return false;
+					});
 			});
 		dg.add_action(aq);
 
 		aq_fcl = new GLib.SimpleAction("loadfc",null);
 		aq_fcl.activate.connect(() => {
-				request_safehomes(0, 7);
+				Idle.add(() => {
+						request_safehomes(0, 7);
+						return false;
+					});
 			});
 		aq_fcl.set_enabled(false);
 		dg.add_action(aq_fcl);
 
 		aq_fcs = new GLib.SimpleAction("savefc",null);
 		aq_fcs.activate.connect(() => {
-				notify_publish_request();
+				Idle.add(() => {
+						notify_publish_request();
+						return false;
+					});
 			});
 		aq_fcs.set_enabled(false);
 		dg.add_action(aq_fcs);
