@@ -71,6 +71,10 @@ namespace MwpLibC {
     int atexit(GLib.VoidFunc f);
     [CCode (cname="ptsname")]
     unowned string ptsname(int fd);
+    [CCode (cname="strtol")]
+	long strtol (string nptr, out char* endptr, int _base);
+    [CCode (cname="strtoul")]
+	long strtoul (string nptr, out char* endptr, int _base);
 }
 
 [CCode (cheader_filename = "glib.h")]

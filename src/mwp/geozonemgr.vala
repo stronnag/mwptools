@@ -93,7 +93,8 @@ public class GeoZoneManager {
 		if(s[0] == '#' && s.length == 9) {
 			rbg = s[0:7];
 			int a;
-			int.try_parse(s[7:9], out a, null, 16);
+			//			int.try_parse(s[7:9], out a, null, 16); // Cygwin alas
+			a = (int)MwpLibC.strtol (s[7:9], null, 16);
 			falpha = (double)(a/256.0);
 		} else {
 			var ss = s.split(";");
@@ -142,13 +143,21 @@ public class GeoZoneManager {
 						var parts = s.split("|");
 						if(parts.length == 6) {
 							uint i,j,lw;
-							if (uint.try_parse(parts[0], out i)) {
-								if (uint.try_parse(parts[1], out j)) {
+							//if (uint.try_parse(parts[0], out i)) { // replaced for cygwin
+							i = (uint)MwpLibC.strtoul(parts[0], null, 0);
+							{
+							    //if (uint.try_parse(parts[1], out j)) {
+								j = (uint)MwpLibC.strtoul(parts[1], null, 0);
+								{
 									if(parts[2].strip().length != 0) {
-										if (uint.try_parse(parts[3], out lw)) {
+										//if (uint.try_parse(parts[3], out lw)) {
+										lw = (uint)MwpLibC.strtoul(parts[3], null, 0);
+										{
 											if(i < 2 && j < 4) {
 												uint dl;
-												if(uint.try_parse (parts[4], out dl)) {
+												//if(uint.try_parse (parts[4], out dl)) {
+												dl = (uint)MwpLibC.strtoul(parts[4], null, 0);
+												{
 													zc[i,j].lnwidth = lw;
 													zc[i,j].lndashed = dl;
 													if(normalise_colour(parts[2], out zc[i,j].lncolour)) {
