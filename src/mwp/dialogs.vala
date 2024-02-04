@@ -1275,7 +1275,6 @@ public class SetPosDialog : GLib.Object {
 
 		b3.clicked.connect(() => {
                 place_edit();
-                dialog.hide();
 			});;
 
 	}

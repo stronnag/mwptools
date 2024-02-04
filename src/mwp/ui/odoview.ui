@@ -323,6 +323,9 @@ along with mwp.  If not, see <http://www.gnu.org/licenses/>.
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="shadow-type">in</property>
+                    <property name="min-content-width">400</property>
+                    <property name="min-content-height">200</property>
+                    <property name="max-content-width">0</property>
                     <child>
                       <object class="GtkTextView" id="odo_tview">
                         <property name="visible">True</property>
@@ -353,6 +356,9 @@ along with mwp.  If not, see <http://www.gnu.org/licenses/>.
           <object class="GtkButtonBox">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="margin-top">4</property>
+            <property name="margin-bottom">4</property>
+            <property name="spacing">4</property>
             <property name="layout-style">end</property>
             <child>
               <placeholder/>

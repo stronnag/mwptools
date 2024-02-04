@@ -976,8 +976,8 @@ public class MWSerial : Object {
 
     public bool open_fd(int _fd, int rate, bool rawfd = false) {
         devname = "fd #%d".printf(_fd);
-        fd = _fd;
-        fwd =  false;
+        fd = wrfd = _fd;
+		fwd =  false;
         if(rate != -1)
             commode = ComMode.TTY|ComMode.STREAM;
         if(rawfd)
@@ -1690,9 +1690,9 @@ public class MWSerial : Object {
 			} else {
 				size = Posix.send(fd, buf, count, 0);
 			}
-		} else if((commode & ComMode.STREAM) == ComMode.STREAM)
+		} else if((commode & ComMode.STREAM) == ComMode.STREAM) {
 			size = Posix.write(wrfd, buf, count);
-		else {
+		} else {
 			unowned uint8[] sbuf = (uint8[]) buf;
 			sbuf.length = (int)count;
 			try {

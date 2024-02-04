@@ -39,7 +39,7 @@ along with mwp.  If not, see <http://www.gnu.org/licenses/>.
     <property name="page-increment">10</property>
   </object>
   <object class="GtkWindow" id="seeder_dialog">
-    <property name="width-request">800</property>
+    <property name="width-request">600</property>
     <property name="can-focus">False</property>
     <property name="title" translatable="yes">mwp map seeder</property>
     <child>
@@ -58,6 +58,8 @@ along with mwp.  If not, see <http://www.gnu.org/licenses/>.
                 <property name="can-focus">False</property>
                 <property name="halign">start</property>
                 <property name="valign">start</property>
+                <property name="margin-top">2</property>
+                <property name="margin-bottom">2</property>
                 <property name="hexpand">False</property>
                 <property name="label" translatable="yes">The tile seeder will pre-seed the tile cache for the currently selected map source, where tiles are missing or older than the stale time (days).
 
@@ -65,7 +67,8 @@ All tiles within the area currently displayed will be downloaded at the max zoom
 
 Use the min and max zoom to select the zoom levels and then click "Apply". Statistics showing the status of the download will be displayed. Clicking "Stop" or closing the dialogue will terminate the seeding.  </property>
                 <property name="wrap">True</property>
-                <property name="width-chars">80</property>
+                <property name="wrap-mode">word-char</property>
+                <property name="max-width-chars">80</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -77,6 +80,8 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
               <object class="GtkBox" id="box5">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="margin-top">2</property>
+                <property name="margin-bottom">2</property>
                 <child>
                   <object class="GtkLabel" id="label6">
                     <property name="visible">True</property>
@@ -174,6 +179,8 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
               <object class="GtkLabel" id="tile_stats">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="margin-top">2</property>
+                <property name="margin-bottom">2</property>
                 <property name="label" translatable="yes">0/0/0</property>
               </object>
               <packing>

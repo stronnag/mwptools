@@ -6853,7 +6853,6 @@ public class MWP : Gtk.Application {
 			gzedit.clear();
 			var cnt = gzr.append(raw, len);
 			if (cnt >= GeoZoneManager.MAXGZ) {
-				stderr.printf("DBG: %s", gzr.to_string());
 				if(gzone != null) {
 					gzone.remove();
 					set_gzsave_state(false);
@@ -9185,11 +9184,8 @@ public class MWP : Gtk.Application {
 			set_menu_state("upload-missions", state);
 
 		if((feature_mask & MSP.Feature.GEOZONE) != 0) {
-			stderr.printf("DBG: Setting gz msp\n");
 			set_menu_state("gz-dl", state);
 			set_menu_state("gz-ul", state);
-		} else {
-			stderr.printf("DBG: NOT Setting gz msp\n");
 		}
 	}
 

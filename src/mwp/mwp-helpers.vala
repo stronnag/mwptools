@@ -377,8 +377,8 @@ namespace Utils {
 		var msg = new Gtk.Window();
 		tid = 0;
 
-        var vbox = new Gtk.Box(Gtk.Orientation.VERTICAL, 2);
-        var hbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 8);
+        var vbox = new Gtk.Box(Gtk.Orientation.VERTICAL, 8);
+        var hbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 12);
 		string symb;
 
 		switch (klass) {
@@ -401,12 +401,13 @@ namespace Utils {
 		var label = new Gtk.Label(null);
 		label.use_markup = true;
 		label.label = warnmsg;
+		label.margin = 8;
 		label.show();
 
 
-		hbox.pack_start(img, false, false);
-		hbox.pack_end(label, false, false);
-		vbox.pack_start(hbox, false, false);
+		hbox.pack_start(img, false, false,4);
+		hbox.pack_end(label, false, false,2);
+		vbox.pack_start(hbox, false, false,4);
 
 		var button = new Gtk.Button.with_label("OK");
 		button.hexpand = false;
