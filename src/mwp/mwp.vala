@@ -1922,7 +1922,10 @@ public class MWP : Gtk.Application {
 
         saq = new GLib.SimpleAction("menu-save",null);
         saq.activate.connect(() => {
-                on_file_save();
+				Idle.add(() => {
+						on_file_save();
+						return false;
+					});
             });
         window.add_action(saq);
 
@@ -1937,7 +1940,10 @@ public class MWP : Gtk.Application {
 
         saq = new GLib.SimpleAction("prefs",null);
         saq.activate.connect(() => {
-                prefs.run_prefs(conf);
+				Idle.add(() => {
+						prefs.run_prefs(conf);
+						return false;
+					});
             });
         window.add_action(saq);
 
