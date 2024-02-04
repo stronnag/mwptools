@@ -1904,13 +1904,19 @@ public class MWP : Gtk.Application {
 
         var saq = new GLib.SimpleAction("file-open",null);
         saq.activate.connect(() => {
-                check_mission_clean(on_file_openf);
+				Idle.add(() => {
+						check_mission_clean(on_file_openf);
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("file-append",null);
         saq.activate.connect(() => {
-                check_mission_clean(on_file_opent);
+				Idle.add(() => {
+						check_mission_clean(on_file_opent);
+						return false;
+					});
             });
         window.add_action(saq);
 
@@ -1922,7 +1928,10 @@ public class MWP : Gtk.Application {
 
         saq = new GLib.SimpleAction("menu-save-as",null);
         saq.activate.connect(() => {
-                on_file_save_as(null);
+				Idle.add(() => {
+						on_file_save_as(null);
+						return false;
+					});
             });
         window.add_action(saq);
 
@@ -1934,264 +1943,351 @@ public class MWP : Gtk.Application {
 
         saq = new GLib.SimpleAction("followme",null);
         saq.activate.connect(() => {
-                fmdlg.unhide();
-                if (!fmpt.has_location()) {
-                    fmpt.set_followme(view.get_center_latitude(), view.get_center_longitude());
-                }
-                fmpt.show_followme(true);
+				Idle.add(() => {
+						fmdlg.unhide();
+						if (!fmpt.has_location()) {
+							fmpt.set_followme(view.get_center_latitude(), view.get_center_longitude());
+						}
+						fmpt.show_followme(true);
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("mman",null);
         saq.activate.connect(() => {
-				var dialog = new MDialog (msx);
-				dialog.remitems.connect((mitem) => {
-						mm_regenerate(mitem);
+				Idle.add(() => {
+						var dialog = new MDialog (msx);
+						dialog.remitems.connect((mitem) => {
+								mm_regenerate(mitem);
+							});
+						dialog.show ();
+						return false;
 					});
-				dialog.show ();
 			});
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("centre-on",null);
         saq.activate.connect(() => {
-                setpos.get_position();
+				Idle.add(() => {
+						setpos.get_position();
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("defloc",null);
         saq.activate.connect(() => {
-                conf.latitude = view.get_center_latitude();
-                conf.longitude = view.get_center_longitude();
-                conf.zoom = view.get_zoom_level();
-                conf.save_settings();
-                setpos.load_places();
+				Idle.add(() => {
+						conf.latitude = view.get_center_latitude();
+						conf.longitude = view.get_center_longitude();
+						conf.zoom = view.get_zoom_level();
+						conf.save_settings();
+						setpos.load_places();
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("recentre",null);
         saq.activate.connect(() => {
-                centre_mission(ls.to_mission(), true);
+				Idle.add(() => {
+						centre_mission(ls.to_mission(), true);
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("mission-info",null);
         saq.activate.connect(() => {
-                if(msp.available && (serstate == SERSTATE.POLLER ||
-                                     serstate == SERSTATE.NORMAL)) {
-                    wpmgr.wp_flag |= WPDL.GETINFO;
-                    queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
-                }
+				Idle.add(() => {
+						if(msp.available && (serstate == SERSTATE.POLLER ||
+											 serstate == SERSTATE.NORMAL)) {
+							wpmgr.wp_flag |= WPDL.GETINFO;
+							queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
+						}
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("terminal",null);
         saq.activate.connect(() => {
-				var txpoll = nopoll;
-				var in_cli = false;
-				var devname = msp.get_devname();
-                if(msp.available && armed == 0) {
-                    mq.clear();
-                    serstate = SERSTATE.NONE;
-					nopoll = true;
-                    CLITerm t = new CLITerm(window);
-                    t.on_exit.connect(() => {
-							MWPLog.message("Dead  terminal\n");
-							//							if (in_cli) {
-								serial_doom(conbutton);
-								try_reopen(devname);
-								//}
-							nopoll = txpoll;
-							serstate = SERSTATE.NORMAL;
-							t=null;
-                        });
-					t.reboot.connect(() => {
-							MWPLog.message("Terminal reboot signalled\n");
-							in_cli = false;
-							try_reopen(devname);
-						});
-
-					t.enter_cli.connect(() => {
-							in_cli = true;
-							nopoll = true;
+				Idle.add(() => {
+						var txpoll = nopoll;
+						var in_cli = false;
+						var devname = msp.get_devname();
+						if(msp.available && armed == 0) {
 							mq.clear();
 							serstate = SERSTATE.NONE;
-						});
-					t.configure_serial(msp, true);
-                    t.show_all ();
-                }
-            });
+							nopoll = true;
+							CLITerm t = new CLITerm(window);
+							t.on_exit.connect(() => {
+									MWPLog.message("Dead  terminal\n");
+									//							if (in_cli) {
+									serial_doom(conbutton);
+									try_reopen(devname);
+									//}
+									nopoll = txpoll;
+									serstate = SERSTATE.NORMAL;
+									t=null;
+								});
+							t.reboot.connect(() => {
+									MWPLog.message("Terminal reboot signalled\n");
+									in_cli = false;
+									try_reopen(devname);
+								});
+
+							t.enter_cli.connect(() => {
+									in_cli = true;
+									nopoll = true;
+									mq.clear();
+									serstate = SERSTATE.NONE;
+								});
+							t.configure_serial(msp, true);
+							t.show_all ();
+						}
+						return false;
+					});
+			});
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("reboot",null);
         saq.activate.connect(() => {
-                if(msp.available && armed == 0) {
-                    queue_cmd(MSP.Cmds.REBOOT,null, 0);
-                }
+				Idle.add(() => {
+						if(msp.available && armed == 0) {
+							queue_cmd(MSP.Cmds.REBOOT,null, 0);
+						}
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("audio",null);
         saq.activate.connect(() => {
-                var aon = audio_cb.active;
-                if(aon == false) {
-                    audio_cb.active = true;
-                }
-                navstatus.audio_test();
-                if(aon == false) {
-                    Timeout.add(1000, () => {
-                            audio_cb.active = false;
-                            return false;
-                        });
-                }
-            });
+				Idle.add(() => {
+						var aon = audio_cb.active;
+						if(aon == false) {
+							audio_cb.active = true;
+						}
+						navstatus.audio_test();
+						if(aon == false) {
+							Timeout.add(1000, () => {
+									audio_cb.active = false;
+									return false;
+								});
+						}
+						return false;
+					});
+			});
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("map-source",null);
         saq.activate.connect(() => {
-                var map_source_factory = Champlain.MapSourceFactory.dup_default();
-                var sources =  map_source_factory.get_registered();
-                foreach (Champlain.MapSourceDesc sr in sources) {
-                    if(view.map_source.get_id() == sr.get_id()) {
-                        msview.show_source(
-                            sr.get_name(),
-                            sr.get_id(),
-                            sr.get_uri_format (),
-                            sr.get_min_zoom_level(),
-                            sr.get_max_zoom_level());
+				Idle.add(() => {
+						var map_source_factory = Champlain.MapSourceFactory.dup_default();
+						var sources =  map_source_factory.get_registered();
+						foreach (Champlain.MapSourceDesc sr in sources) {
+							if(view.map_source.get_id() == sr.get_id()) {
+								msview.show_source(
+												   sr.get_name(),
+												   sr.get_id(),
+												   sr.get_uri_format (),
+												   sr.get_min_zoom_level(),
+												   sr.get_max_zoom_level());
                         break;
-                    }
-                }
+							}
+						}
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("seed-map",null);
         saq.activate.connect(() => {
-                mseed.run_seeder(view.map_source.get_id(),
-                                 (int)zoomer.adjustment.value,
-                                 view.get_bounding_box());
+				Idle.add(() => {
+						mseed.run_seeder(view.map_source.get_id(),
+										 (int)zoomer.adjustment.value,
+										 view.get_bounding_box());
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("gps-stats",null);
         saq.activate.connect(() => {
-                if(!gps_status.visible) {
-                    gps_status.update(gpsstats);
-                    gps_status.show();
-                }
+				Idle.add(() => {
+						if(!gps_status.visible) {
+							gps_status.update(gpsstats);
+							gps_status.show();
+						}
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("about",null);
         saq.activate.connect(() => {
-                about.show_all();
-                about.response.connect(() => {
-                        about.hide();
-                    });
-                about.delete_event.connect (() => {
-                        about.hide();
-                        return true;
-                    });
+				Idle.add(() => {
+						about.show_all();
+						about.response.connect(() => {
+								about.hide();
+							});
+						about.delete_event.connect (() => {
+								about.hide();
+								return true;
+							});
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("manual",null);
         saq.activate.connect(() => {
-				try {
-					Gtk.show_uri_on_window (null, "https://stronnag.github.io/mwptools/",
-											Gdk.CURRENT_TIME);
-				} catch {}
+				Idle.add(() => {
+						try {
+							Gtk.show_uri_on_window (null, "https://stronnag.github.io/mwptools/",
+													Gdk.CURRENT_TIME);
+						} catch {}
+						return false;
+					});
 			});
 		window.add_action(saq);
 
         saq = new GLib.SimpleAction("upload-mission",null);
         saq.activate.connect(() => {
-                upload_mm(mdx, WPDL.GETINFO);
+				Idle.add(() => {
+						upload_mm(mdx, WPDL.GETINFO);
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("upload-missions",null);
         saq.activate.connect(() => {
-                upload_mm(-1, WPDL.GETINFO|WPDL.SET_ACTIVE);
+				Idle.add(() => {
+						upload_mm(-1, WPDL.GETINFO|WPDL.SET_ACTIVE);
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("download-mission",null);
         saq.activate.connect(() => {
-                download_mission();
+				Idle.add(() => {
+						download_mission();
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("restore-mission",null);
         saq.activate.connect(() => {
-                uint8 zb=0;
-                queue_cmd(MSP.Cmds.WP_MISSION_LOAD, &zb, 1);
+				Idle.add(() => {
+						uint8 zb=0;
+						queue_cmd(MSP.Cmds.WP_MISSION_LOAD, &zb, 1);
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("store-mission",null);
         saq.activate.connect(() => {
-                upload_mm(-1, WPDL.SAVE_EEPROM|WPDL.SET_ACTIVE);
+				Idle.add(() => {
+						upload_mm(-1, WPDL.SAVE_EEPROM|WPDL.SET_ACTIVE);
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("replay-log",null);
         saq.activate.connect(() => {
-                replay_log(true);
+				Idle.add(() => {
+						replay_log(true);
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("load-log",null);
         saq.activate.connect(() => {
-                replay_log(false);
+				Idle.add(() => {
+						replay_log(false);
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("replay-bb",null);
         saq.activate.connect(() => {
-                replay_bbox(true);
+				Idle.add(() => {
+						replay_bbox(true);
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("load-bb",null);
         saq.activate.connect(() => {
-                replay_bbox(false);
+				Idle.add(() => {
+						replay_bbox(false);
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("replay-otx",null);
         saq.activate.connect(() => {
-                bbl_delay = true;
-                replay_otx();
+				Idle.add(() => {
+						bbl_delay = true;
+						replay_otx();
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("load-otx",null);
         saq.activate.connect(() => {
-                bbl_delay = true;
-                replay_otx();
+				Idle.add(() => {
+						bbl_delay = true;
+						replay_otx();
+						return false;
+					});
             });
         window.add_action(saq);
         saq = new GLib.SimpleAction("replayraw",null);
         saq.activate.connect(() => {
-                replay_raw();
+				Idle.add(() => {
+						replay_raw();
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("stop-replay",null);
         saq.activate.connect(() => {
-                stop_replayer();
+				Idle.add(() => {
+						stop_replayer();
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("kml-load",null);
         saq.activate.connect(() => {
-                kml_load_dialog();
+				Idle.add(() => {
+						kml_load_dialog();
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("kml-remove",null);
         saq.activate.connect(() => {
-                kml_remove_dialog();
+				Idle.add(() => {
+						kml_remove_dialog();
+						return false;
+					});
             });
         window.add_action(saq);
 
@@ -2199,178 +2295,258 @@ public class MWP : Gtk.Application {
 
         saq = new GLib.SimpleAction("gz-load",null);
         saq.activate.connect(() => {
-                gz_load_dialog();
+				Idle.add(() => {
+						gz_load_dialog();
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("gz-save",null);
         saq.activate.connect(() => {
-                gz_save_dialog(false);
+				Idle.add(() => {
+						gz_save_dialog(false);
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("gz-kml",null);
         saq.activate.connect(() => {
-                gz_save_dialog(true);
+				Idle.add(() => {
+						gz_save_dialog(true);
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("gz-edit",null);
         saq.activate.connect(() => {
-				if(gzone == null) {
-					gzone = new Overlay(view);
-				}
-				set_gzsave_state(true);
-                gzedit.edit(gzone);
+				Idle.add(() => {
+						if(gzone == null) {
+							gzone = new Overlay(view);
+						}
+						set_gzsave_state(true);
+						gzedit.edit(gzone);
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("gz-clear",null);
         saq.activate.connect(() => {
-				if(gzone!=null) {
-					gzedit.clear();
-					gzone.remove();
-				}
-				gzr.reset();
-				set_gzsave_state(false);
+				Idle.add(() => {
+						if(gzone!=null) {
+							gzedit.clear();
+							gzone.remove();
+						}
+						gzr.reset();
+						set_gzsave_state(false);
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("gz-dl",null);
         saq.activate.connect(() => {
-				gzr.reset();
-				queue_gzone(0);
+				Idle.add(() => {
+						gzr.reset();
+						queue_gzone(0);
+						return false;
+					});
             });
         window.add_action(saq);
         saq = new GLib.SimpleAction("gz-ul",null);
         saq.activate.connect(() => {
-				gzcnt = 0;
-				var mbuf = gzr.encode(gzcnt);
-				queue_cmd(MSP.Cmds.SET_GEOZONE, mbuf, mbuf.length);
+				Idle.add(() => {
+						gzcnt = 0;
+						var mbuf = gzr.encode(gzcnt);
+						queue_cmd(MSP.Cmds.SET_GEOZONE, mbuf, mbuf.length);
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("safe-homes",null);
         saq.activate.connect(() => {
-                safehomed.display();
+				Idle.add(() => {
+						safehomed.display();
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("navconfig",null);
         saq.activate.connect(() => {
-                navconf.show();
+				Idle.add(() => {
+						navconf.show();
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("flight-stats",null);
         saq.activate.connect(() => {
-                odoview.display(odo, false);
+				Idle.add(() => {
+						odoview.display(odo, false);
+						return false;
+					});
             });
         window.add_action(saq);
 
 		saq = new GLib.SimpleAction("vstream",null);
         saq.activate.connect(() => {
-                load_v4l2_video();
+				Idle.add(() => {
+						load_v4l2_video();
+						return false;
+					});
             });
         window.add_action(saq);
 
 		var lsaq = new GLib.SimpleAction.stateful ("locicon", null, false);
 		lsaq.change_state.connect((s) => {
-				var b = s.get_boolean();
-				GCSIcon.default_location(view.get_center_latitude(),
-									 view.get_center_longitude());
-				GCSIcon.set_visible(b);
-				lsaq.set_state (s);
+				Idle.add(() => {
+						var b = s.get_boolean();
+						GCSIcon.default_location(view.get_center_latitude(),
+												 view.get_center_longitude());
+						GCSIcon.set_visible(b);
+						lsaq.set_state (s);
+						return false;
+					});
 		});
 		window.add_action(lsaq);
 
         saq = new GLib.SimpleAction("layout-save",null);
         saq.activate.connect(() => {
-                lman.save();
+				Idle.add(() => {
+						lman.save();
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("layout-restore",null);
         saq.activate.connect(() => {
-                lman.restore();
+				Idle.add(() => {
+						lman.restore();
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("mission-list",null);
         saq.activate.connect(() => {
-                show_dock_id(DOCKLETS.MISSION, false);
+				Idle.add(() => {
+						show_dock_id(DOCKLETS.MISSION, false);
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("gps-status",null);
         saq.activate.connect(() => {
-                show_dock_id(DOCKLETS.GPS, true);
+				Idle.add(() => {
+						show_dock_id(DOCKLETS.GPS, true);
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("nav-status",null);
         saq.activate.connect(() => {
-                show_dock_id(DOCKLETS.NAVSTATUS,true);
+				Idle.add(() => {
+						show_dock_id(DOCKLETS.NAVSTATUS,true);
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("bat-mon",null);
         saq.activate.connect(() => {
-                show_dock_id(DOCKLETS.VOLTAGE, true);
+				Idle.add(() => {
+						show_dock_id(DOCKLETS.VOLTAGE, true);
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("radio-status",null);
         saq.activate.connect(() => {
-                show_dock_id(DOCKLETS.RADIO, true);
+				Idle.add(() => {
+						show_dock_id(DOCKLETS.RADIO, true);
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("tel-stats",null);
         saq.activate.connect(() => {
-                show_dock_id(DOCKLETS.TELEMETRY, true);
+				Idle.add(() => {
+						show_dock_id(DOCKLETS.TELEMETRY, true);
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("art-hor",null);
         saq.activate.connect(() => {
-                show_dock_id(DOCKLETS.ARTHOR, true);
+				Idle.add(() => {
+						show_dock_id(DOCKLETS.ARTHOR, true);
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("flight-view",null);
         saq.activate.connect(() => {
-                show_dock_id(DOCKLETS.FBOX, true);
+				Idle.add(() => {
+						show_dock_id(DOCKLETS.FBOX, true);
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("direction-view",null);
         saq.activate.connect(() => {
-                show_dock_id(DOCKLETS.DBOX, true);
+				Idle.add(() => {
+						show_dock_id(DOCKLETS.DBOX, true);
+						return false;
+					});
             });
         window.add_action(saq);
         saq = new GLib.SimpleAction("vario-view",null);
         saq.activate.connect(() => {
-                show_dock_id(DOCKLETS.VBOX, true);
+				Idle.add(() => {
+						show_dock_id(DOCKLETS.VBOX, true);
+						return false;
+					});
             });
         window.add_action(saq);
         saq = new GLib.SimpleAction("radar-view",null);
         saq.activate.connect(() => {
-                radarv.show_or_hide();
+				Idle.add(() => {
+						radarv.show_or_hide();
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("ttrack-view",null);
         saq.activate.connect(() => {
-                ttrk.show_dialog();
+				Idle.add(() => {
+						ttrk.show_dialog();
+						return false;
+					});
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("keys",null);
         saq.activate.connect(() => {
-                scview.show_all();
+				Idle.add(() => {
+						scview.show_all();
+						return false;
+					});
             });
-
         window.add_action(saq);
 
         reboot_status();
