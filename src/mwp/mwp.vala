@@ -10123,7 +10123,9 @@ Error: <i>%s</i>
 				if (sticks_ok && !sticks.active)
 					sticks.show_all();
 			}
-        }
+        } else {
+			MWPLog.message("DBG: get replay fd failed %d (raw %s)\n", sr, rawfd.to_string());
+		}
     }
 
     private void check_mission(string missionlog) {
