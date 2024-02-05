@@ -1,16 +1,7 @@
 #!/usr/bin/ruby
 require 'xmlsimple'
-require 'optparse'
 
-cli = true
-ARGV.options do |opt|
-  opt.on('-p','--pretty'){cli=false}
-  begin
-    opt.parse!
-  rescue
-    puts opt ; exit
-  end
-end
+# Convert mwp Geozone kml back to Geozone text
 
 doc=IO.read(ARGV[0] || STDIN)
 doc.downcase!
@@ -34,7 +25,7 @@ if m['folder']
         else
          c = f['placemark']['polygon']['outerboundaryis']['linearring']['coordinates']
          cp = c.split(' ')
-         # length -1 (as closed)
+         # length - 2 (as closed shape)
          0.upto(cp.length-2) do |i|
            cr = cp[i]
            lo,la,al = cr.split(',')
