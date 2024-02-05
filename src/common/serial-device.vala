@@ -976,7 +976,7 @@ public class MWSerial : Object {
 
     public bool open_fd(int _fd, int rate, bool rawfd = false) {
         devname = "fd #%d".printf(_fd);
-        fd = _fd;
+        fd = wrfd = _fd;
         fwd =  false;
         if(rate != -1)
             commode = ComMode.TTY|ComMode.STREAM;
