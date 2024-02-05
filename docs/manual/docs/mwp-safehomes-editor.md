@@ -29,6 +29,8 @@ It can be error prone to get locations into the correct format, particularly whe
 
 ### Graphical User Interface
 
+Note: Since mwp 7.32.?, mwp provides additional fields for the Autoland function that will / may appear in INAV 7.1.0 (or later). As the technical details for this feature has not yet been made publicly available, its extended MSP is not supported. The additional fields beyond those described below should be considered experimental.
+
 {{ mwp }} now offers a `Safe Homes` menu option:
 
 ![mwp safehome](images/mwp-safehome-menu.png){: width="25%" }
