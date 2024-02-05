@@ -177,7 +177,7 @@ public class GZEdit :Gtk.Window {
 					var maxalt = (int)(100* double.parse(zmaxalt.text));
 					var clat = view.get_center_latitude();
 					var clon = view.get_center_longitude();
-
+					int k=-1;
 					if(zshape.active == 0) {
 						var rad = double.parse(zradius.text);
 						if (rad <= 0.0) {
@@ -188,8 +188,8 @@ public class GZEdit :Gtk.Window {
 										  (GeoZoneManager.GZType)ztype.active,
 										  minalt, maxalt,
 										  (GeoZoneManager.GZAction)zaction.active);
-						gzmgr.append_vertex(nitem, 0, (int)(clat*1e7), (int)(clon*1e7));
-						gzmgr.append_vertex(nitem, 1, (int)(rad*100), 0);
+						k = gzmgr.append_vertex(nitem, 0, (int)(clat*1e7), (int)(clon*1e7));
+						k = gzmgr.append_vertex(nitem, 1, (int)(rad*100), 0);
 					} else {
 						newlab.hide();
 						gzmgr.append_zone(nitem,
@@ -201,8 +201,13 @@ public class GZEdit :Gtk.Window {
 						double nlat, nlon;
 						for(var i = 0; i < 3; i++) {
 							Geo.posit(clat, clon, i*120, delta/1852.0, out nlat, out nlon);
-							gzmgr.append_vertex(nitem, i, (int)(nlat*1e7), (int)(nlon*1e7));
+							k = gzmgr.append_vertex(nitem, i, (int)(nlat*1e7), (int)(nlon*1e7));
 						}
+					}
+					if(k == -1) {
+						MWPLog.message("failed to add zone %u\n", nitem);
+						gzmgr.remove_zone(nitem);
+						return;
 					}
 					var oi = gzmgr.generate_overlay_item(ovl, nitem);
 					oi.show_polygon();

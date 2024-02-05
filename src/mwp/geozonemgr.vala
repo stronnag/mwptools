@@ -237,7 +237,7 @@ public class GeoZoneManager {
 	public void remove_zone(uint n) {
 		zs[n].type = GZType.Unused;
 		for(var j = 0; j < MAXVTX; j++) {
-			if (vs[j].zindex == n) {
+			if (vs[j].zindex == (uint8)n) {
 				vs[j].zindex = 0xff;
 			}
 		}
@@ -250,8 +250,10 @@ public class GeoZoneManager {
 		}
 
 		for(var j = 0; j < MAXVTX; j++) {
-			if(vs[j].zindex > n) {
-				vs[j].zindex -= 1;
+			if(vs[j].zindex != 0xff) {
+				if(vs[j].zindex > n) {
+					vs[j].zindex -= 1;
+				}
 			}
 		}
 	}
@@ -267,10 +269,12 @@ public class GeoZoneManager {
 
 	public int append_vertex(uint n, uint zidx, int lat, int lon) {
 		var k = find_free_vertex();
-		vs[k].zindex = (uint8)n;
-		vs[k].index = (uint8)zidx;
-		vs[k].latitude = lat;
-		vs[k].longitude = lon;
+		if(k != -1) {
+			vs[k].zindex = (uint8)n;
+			vs[k].index = (uint8)zidx;
+			vs[k].latitude = lat;
+			vs[k].longitude = lon;
+		}
 		return k;
 	}
 
@@ -439,6 +443,7 @@ public class GeoZoneManager {
 	}
 
 	public OverlayItem generate_overlay_item(Overlay o, uint n) {
+		bool genok = false;
 		var oi = new OverlayItem();
 		oi.type = OverlayItem.OLType.POLYGON;
 		oi.idx = (uint8)n;
@@ -446,37 +451,44 @@ public class GeoZoneManager {
 		sb.append_printf("geozone %u %d %d %d %d %d", n, zs[n].shape, zs[n].type,
 						 zs[n].minalt, zs[n].maxalt, zs[n].action);
 		oi.styleinfo =  get_style(zs[n]);
-
 		if (zs[n].shape == GZShape.Circular) {
 			oi.name = "Circle %2u".printf(n);
 			var nvs = find_vertices(n);
-			sb.append_printf(" circle %d %d %d", vs[nvs[0]].latitude, vs[nvs[0]].longitude,
-							 vs[nvs[1]].latitude);
-			var clat = (double)vs[nvs[0]].latitude/1e7;
-			var clon = (double)vs[nvs[0]].longitude/1e7;
-			var range = (double)vs[nvs[1]].latitude/(100.0*1852.0);
-
-			oi.circ.lat = clat;
-			oi.circ.lon = clon;
-			oi.circ.radius_nm = range;
-			for (var i = 0; i < 360; i += 5) {
-				double plat, plon;
-				Geo.posit(clat, clon, i, range, out plat, out plon);
-				oi.add_line_point(plat, plon, "");
+			if (nvs.length == 2) {
+				sb.append_printf(" circle %d %d %d", vs[nvs[0]].latitude, vs[nvs[0]].longitude,
+								 vs[nvs[1]].latitude);
+				var clat = (double)vs[nvs[0]].latitude/1e7;
+				var clon = (double)vs[nvs[0]].longitude/1e7;
+				var range = (double)vs[nvs[1]].latitude/(100.0*1852.0);
+				oi.circ.lat = clat;
+				oi.circ.lon = clon;
+				oi.circ.radius_nm = range;
+				for (var i = 0; i < 360; i += 5) {
+					double plat, plon;
+					Geo.posit(clat, clon, i, range, out plat, out plon);
+					oi.add_line_point(plat, plon, "");
+				}
+				genok = true;
 			}
 		} else {
 			oi.name = "Polygon %2u".printf(n);
 			var nvs = find_vertices(n);
-			var j = 0;
-			foreach (var l in nvs) {
-				double plat = (double)vs[l].latitude / 1e7;
-				double plon = (double)vs[l].longitude / 1e7;
-				oi.add_line_point(plat, plon, "%u/%d".printf(n, j));
-				j++;
+			if(nvs.length > 2) {
+				var j = 0;
+				foreach (var l in nvs) {
+					double plat = (double)vs[l].latitude / 1e7;
+					double plon = (double)vs[l].longitude / 1e7;
+					oi.add_line_point(plat, plon, "%u/%d".printf(n, j));
+					j++;
+				}
+				genok = true;
 			}
 		}
 		oi.desc = sb.str;
 		o.add_element(oi);
+		if (!genok) {
+			MWPLog.message("failed to generate overlay item\n");
+		}
 		return oi;
 	}
 
