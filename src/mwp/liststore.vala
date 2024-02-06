@@ -545,39 +545,39 @@ public class ListBox : GLib.Object {
 
     public bool pop_marker_menu(Gdk.EventButton e, MWP.ViewPop vp) {
 		mpop_no = vp.funcid;
-        if(true/*miter_ok*/) {
-            Gtk.TreeIter miter;
-            if(list_model.iter_nth_child(out miter, null, mpop_no-1)) {
-                bool sens = true;
-                var xiter = miter;
-                var next=list_model.iter_next(ref xiter);
-                GLib.Value cell;
+        //if(miter_ok) {
+		Gtk.TreeIter miter;
+		if(list_model.iter_nth_child(out miter, null, mpop_no-1)) {
+			bool sens = true;
+			var xiter = miter;
+			var next=list_model.iter_next(ref xiter);
+			GLib.Value cell;
 
-                list_model.get_value (miter, WY_Columns.ACTION, out cell);
-                var ntyp = (MSP.Action)cell;
+			list_model.get_value (miter, WY_Columns.ACTION, out cell);
+			var ntyp = (MSP.Action)cell;
 
-                if(next) {
-                    list_model.get_value (xiter, WY_Columns.ACTION, out cell);
-                    ntyp = (MSP.Action)cell;
-                    if(ntyp == MSP.Action.JUMP || ntyp == MSP.Action.RTH)
-                        sens = false;
-                }
-                list_model.get_value (miter, WY_Columns.FLAG, out cell);
-                list_model.get_value (miter, WY_Columns.IDX, out cell);
-                mpop_no = int.parse((string)cell);
-                int j = 0;
-                marker_menu.@foreach((mi) => {
-                        if(j == 0)
-                            ((Gtk.MenuItem)mi).set_label("WP: %d".printf(mpop_no));
-                        j++;
-                    });
-                terrain_popitem.sensitive = terrain_item.sensitive;
-                marker_menu.popup_at_pointer(e);
-                miter_ok = false;
-                return true;
-            }
-        }
-        return false;
+			if(next) {
+				list_model.get_value (xiter, WY_Columns.ACTION, out cell);
+				ntyp = (MSP.Action)cell;
+				if(ntyp == MSP.Action.JUMP || ntyp == MSP.Action.RTH)
+					sens = false;
+			}
+			list_model.get_value (miter, WY_Columns.FLAG, out cell);
+			list_model.get_value (miter, WY_Columns.IDX, out cell);
+			mpop_no = int.parse((string)cell);
+			int j = 0;
+			marker_menu.@foreach((mi) => {
+					if(j == 0)
+						((Gtk.MenuItem)mi).set_label("WP: %d".printf(mpop_no));
+					j++;
+				});
+
+			set_terrain_state(miter, true);
+			marker_menu.popup_at_pointer(e);
+			miter_ok = false;
+			return true;
+		}
+		return false;
     }
 
 	/*
@@ -1579,6 +1579,7 @@ public class ListBox : GLib.Object {
                 Value val;
                 list_model.get_iter (out iter, t.get_path ());
                 list_model.get_value (iter, WY_Columns.ACTION, out val);
+				set_terrain_state(iter, true);
                 if ((MSP.Action)val != MSP.Action.SET_HEAD &&
                     (MSP.Action)val != MSP.Action.RTH &&
                     (MSP.Action)val != MSP.Action.JUMP) {
@@ -1603,10 +1604,11 @@ public class ListBox : GLib.Object {
             list_model.get_value (iv, WY_Columns.ACTION, out val);
             shp_item.sensitive=((MSP.Action)val == MSP.Action.SET_POI);
             lnd_item.sensitive=((MSP.Action)val == MSP.Action.LAND);
+			set_terrain_state(iv, true);
         } else {
             up_item.sensitive = down_item.sensitive = false;
         }
-        menu.popup_at_pointer(event);
+		menu.popup_at_pointer(event);
     }
 
     private void list_validate(string path, string new_text, int colno,
@@ -2301,12 +2303,23 @@ public class ListBox : GLib.Object {
         wprepdialog.get_rep(start, end, number);
     }
 
-    private void set_terrain_item(bool state) {
-        if(mp.x_plot_elevations_rb == false)
-            state = false;
-        terrain_item.sensitive = state;
-        los_popitem.sensitive = state;
-		//        los_item.sensitive = state;
+    private void set_terrain_state(Gtk.TreeIter iter, bool state) {
+		if(state) {
+			state = false;
+			if(mp.x_plot_elevations_rb) {
+				if(EvCache.is_local()) {
+					GLib.Value cell;
+					list_model.get_value (iter, WY_Columns.LAT, out cell);
+					var xlat = (double)cell;
+					list_model.get_value (iter, WY_Columns.LON, out cell);
+					var xlon = (double)cell;
+					if (MWP.demmgr.lookup(xlat, xlon) != HGT.NODATA) {
+						state = true;
+					}
+				}
+			}
+		}
+		terrain_popitem.sensitive = terrain_item.sensitive = los_popitem.sensitive = state;
     }
 
     private void set_replicate_item(bool state) {
@@ -2995,7 +3008,9 @@ public class ListBox : GLib.Object {
         } else  {
             route = "Empty mission";
         }
-        set_terrain_item(n_rows > 2);
+
+		if (n_rows < 3)
+			terrain_popitem.sensitive = terrain_item.sensitive = los_popitem.sensitive = false;
         set_replicate_item(n_rows > 2);
         set_preview_item(n_rows > 2);
         mp.stslabel.set_text(route);
