@@ -686,7 +686,6 @@ public class MWSerial : Object {
 
         fd = -1;
         baudrate = 0;
-		MWPLog.message("DBG: setup_ip() host is %s\n", host);
 		if((host == null || host.length == 0) &&
            ((commode & ComMode.STREAM) != ComMode.STREAM)) {
                 SocketFamily[] fams = {};

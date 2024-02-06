@@ -10306,8 +10306,9 @@ Error: <i>%s</i>
 					sticks.show_all();
 			}
         } else {
-			MWPLog.message("DBG: get replay fd failed %d (raw %s)\n", sr, rawfd.to_string());
+			MWPLog.message("[replayer]: get replay fd failed %d (raw %s)\n", sr, rawfd.to_string());
 		}
+
     }
 
     private void check_mission(string missionlog) {
@@ -10763,14 +10764,24 @@ Error: <i>%s</i>
         var s = MWP.read_env_args();
 
 		StringBuilder sb = new StringBuilder();
+		bool rtn = false;
 		foreach(var a in args) {
             if (a == "--version" || a == "-v") {
-                stdout.printf("%s\n", MwpVers.get_id());
-                return 0;
+                stdout.printf("%s ", MwpVers.get_id());
+                rtn = true;
             }
+			if (a == "--build-id") {
+				stdout.printf("%s ", MwpVers.get_build());
+				rtn = true;
+			}
 			sb.append(a);
 			sb.append_c(' ');
 		}
+		if(rtn) {
+			stdout.putc('\n');
+			return 0;
+		}
+
 		if (GtkClutter.init (ref args) != InitError.SUCCESS) {
 			stderr.printf("Fatal: can't GtkClutter.init\n");
             return 17;

@@ -557,7 +557,7 @@ public class  SafeHomeDialog : Window {
 				sh_liststore.get_iter (out iter, new Gtk.TreePath.from_string (path));
 				int idx = 0;
 				sh_liststore.get (iter, Column.ID, &idx);
-				if(new_text == "?") {
+				if(new_text == "?" || new_text == "@") {
 					if(homes[idx].lat != 0.0 && homes[idx].lon != 0.0) {
 						var e = MWP.demmgr.lookup(homes[idx].lat, homes[idx].lon);
 						if (e != HGT.NODATA)  {
@@ -594,7 +594,6 @@ public class  SafeHomeDialog : Window {
 
 				if(new_text[0] == '@') {
 					d = double.parse(new_text[1:new_text.length]);
-					stderr.printf("DBG: newtext %s d=%f la=%f\n", new_text, d, homes[idx].landalt);
 					d += homes[idx].landalt;
 				} else {
 					d = double.parse(new_text);
