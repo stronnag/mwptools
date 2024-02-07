@@ -222,62 +222,34 @@ public class GZEdit :Gtk.Window {
 		pop_menu = new Gtk.Menu();
 		ditem = new Gtk.MenuItem.with_label ("Delete");
 		var mitem = new Gtk.MenuItem.with_label ("Insert");
-                mitem.activate.connect (() => {
-                        unowned OverlayItem el = ovl.get_elements().nth_data(nitem);
-                        double nlat, nlon;
-                        Champlain.Label? mk;
-                        var npts = el.pl.get_nodes().length();
-                        if(npts == 1) {
-                    var delta = 16*Math.pow(2, (20-view.zoom_level));
-                    Geo.posit(popmk.latitude, popmk.longitude, 0, delta/1852.0, out nlat, out nlon);
-                } else if(popno == npts - 1) {
-                    mk = (Champlain.Label)el.pl.get_nodes().nth_data(0);
-                    nlat = (mk.latitude + popmk.latitude)/2;
-                    nlon = (mk.longitude + popmk.longitude)/2;
-                } else {
-                    mk = (Champlain.Label)el.pl.get_nodes().nth_data(popno+1);
-                    nlat = (mk.latitude + popmk.latitude)/2;
-                    nlon = (mk.longitude + popmk.longitude)/2;
-                }
-                gzmgr.insert_vertex_at((int)nitem, (int)popno+1,
-                                       (int)(nlat*1e7), (int)(nlon*1e7));
-				mk = el.insert_line_position(nlat, nlon, popno+1);
-				ovl.add_marker(mk);
-				var id = 0;
-				el.pl.get_nodes().foreach((m) => {
-						((Champlain.Label)m).text = "%u/%d".printf(nitem, id);
-						id++;
-					});
-				mk.drag_finish.connect(on_poly_finish);
-				mk.captured_event.connect(on_poly_capture);
-				popmk = null;
-				var nv = gzmgr.nvertices(nitem);
-				if  (nv > 3)
-					ditem.sensitive = true;
-			});
-        pop_menu.add (mitem);
-
-        ditem.activate.connect (() => {
-				gzmgr.remove_vertex_at(nitem, popno);
-				if(gzmgr.nvertices(nitem) == 0) {
-					remove_current_zone();
+		mitem.activate.connect (() => {
+				unowned OverlayItem el = ovl.get_elements().nth_data(nitem);
+				double nlat, nlon;
+				Champlain.Label? mk;
+				var npts = el.pl.get_nodes().length();
+				if(npts == 1) {
+					var delta = 16*Math.pow(2, (20-view.zoom_level));
+					Geo.posit(popmk.latitude, popmk.longitude, 0, delta/1852.0, out nlat, out nlon);
+				} else if(popno == npts - 1) {
+					mk = (Champlain.Label)el.pl.get_nodes().nth_data(0);
+					nlat = (mk.latitude + popmk.latitude)/2;
+					nlon = (mk.longitude + popmk.longitude)/2;
 				} else {
-					var ml = ovl.get_mlayer();
-					unowned OverlayItem el = ovl.get_elements().nth_data(nitem);
-					el.pl.remove_node(popmk);
-					ml.remove_marker(popmk);
-					var id = 0;
-					el.pl.get_nodes().foreach((m) => {
-							((Champlain.Label)m).text = "%u/%d".printf(nitem, id);
-							id++;
-						});
+					mk = (Champlain.Label)el.pl.get_nodes().nth_data(popno+1);
+					nlat = (mk.latitude + popmk.latitude)/2;
+					nlon = (mk.longitude + popmk.longitude)/2;
 				}
-				popmk = null;
-				var nv = gzmgr.nvertices(nitem);
-				if  (nv < 4)
-					ditem.sensitive = false;
-            });
-        pop_menu.add (ditem);
+				gzmgr.insert_vertex_at((int)nitem, (int)popno+1,
+									   (int)(nlat*1e7), (int)(nlon*1e7));
+				redraw();
+			});
+		pop_menu.add (mitem);
+
+		ditem.activate.connect (() => {
+				gzmgr.remove_vertex_at(nitem, popno);
+				redraw();
+			});
+		pop_menu.add (ditem);
 		pop_menu.show_all();
 		pop_menu.deactivate.connect(() => {
 				popid = -1;
@@ -310,6 +282,27 @@ public class GZEdit :Gtk.Window {
 		newlab.no_show_all = true;
 		grid.attach(newlab, 2, 2, 2, 4);
 		set_buttons_sensitive();
+	}
+
+	private void redraw() {
+		var nv = gzmgr.nvertices(nitem);
+		unowned OverlayItem el = ovl.get_elements().nth_data(nitem);
+		el.pl.remove_all();
+		ovl.remove_all_markers();
+		for(var j = 0; j < nv; j++) {
+			int k = gzmgr.find_vertex(nitem, j);
+			if(k == -1) {
+				MWPLog.message("**BUG** Failed to lookup vertex %u/%d\n", nitem, j);
+			} else {
+				var lat = gzmgr.get_latitude(k)/1e7;
+				var lon = gzmgr.get_longitude(k)/1e7;
+				var mk = el.add_line_point(lat,lon, "%u/%u".printf(nitem, j));
+				ovl.add_marker(mk);
+				mk.drag_finish.connect(on_poly_finish);
+				mk.captured_event.connect(on_poly_capture);
+			}
+		}
+		ditem.sensitive = (nv > 3);
 	}
 
 	private void refresh_storage(uint8 mask, bool display) {
@@ -481,13 +474,32 @@ public class GZEdit :Gtk.Window {
 		}
 	}
 
+	/**
+	private void dump_points() {
+		unowned OverlayItem el = ovl.get_elements().nth_data(nitem);
+		var pts = el.pl.get_nodes();
+		pts.foreach((pt) => {
+				stderr.printf("DBG: Point <%s>\n", ((Champlain.Label)pt).text);
+			});
+	}
+	**/
+
 	public void on_poly_finish(Champlain.Marker mk, Clutter.Event e) {
-		var parts = ((Champlain.Label)mk).text.split("/");
-		if (parts.length == 2) {
-			int vidx = int.parse(parts[1]);
-			var k = gzmgr.find_vertex(nitem, vidx);
-			gzmgr.set_latitude(k, (int)(mk.latitude*1e7));
-			gzmgr.set_longitude(k, (int)(mk.longitude*1e7));
+		var txt = ((Champlain.Label)mk).text;
+		if (txt != null) {
+			var parts = ((Champlain.Label)mk).text.split("/");
+			if (parts.length == 2) {
+				int vidx = int.parse(parts[1]);
+				var k = gzmgr.find_vertex(nitem, vidx);
+				if (k != -1) {
+					gzmgr.set_latitude(k, (int)(mk.latitude*1e7));
+					gzmgr.set_longitude(k, (int)(mk.longitude*1e7));
+				} else {
+					MWPLog.message("**BUG** Failed to lookup \"%s\" %u/%d\n", txt, nitem, vidx);
+					//gzmgr.dump_vertices(nitem);
+					//dump_points();
+				}
+			}
 		}
 	}
 
@@ -533,12 +545,16 @@ public class GZEdit :Gtk.Window {
 	}
 
 	public void on_circ_finish(Champlain.Marker mk, Clutter.Event e) {
-            unowned OverlayItem el = ovl.get_elements().nth_data(nitem);
+		unowned OverlayItem el = ovl.get_elements().nth_data(nitem);
 		el.circ.lat = mk.latitude;
 		int k = gzmgr.find_vertex(nitem, 0);
-		gzmgr.set_latitude(k, (int)(mk.latitude*1e7));
-		el.circ.lon = mk.longitude;
-		gzmgr.set_longitude(k, (int)(mk.longitude*1e7));
+		if (k != -1) {
+			gzmgr.set_latitude(k, (int)(mk.latitude*1e7));
+			el.circ.lon = mk.longitude;
+			gzmgr.set_longitude(k, (int)(mk.longitude*1e7));
+		} else {
+			MWPLog.message("**BUG** failed to find circ vertext %u\n", nitem);
+		}
 	}
 
 	public bool on_poly_capture(Clutter.Actor mk, Clutter.Event e) {
