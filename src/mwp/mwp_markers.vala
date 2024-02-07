@@ -278,13 +278,13 @@ public class MWPMarkers : GLib.Object {
                         _r.heading);
                     _tx.set_position(ce.x, ce.y);
                     _v.add_child (_ta);
-                    return false;
+                    return true; /**/
                 });
 
             rp.leave_event.connect((ce) => {
                     var _ta = rp.extras[Extra.Q_0] as Clutter.Actor;
                     _v.remove_child(_ta);
-                    return false;
+                    return true; /**/
                 });
 
             if((r.source & RadarSource.M_INAV) != 0) {
@@ -626,7 +626,6 @@ public class MWPMarkers : GLib.Object {
 				if(e.get_type() == Clutter.EventType.BUTTON_PRESS)
 					if(e.button.button == 1) {
 						wp_selected(ino);
-						return true;
 					}
                return false;
            });
@@ -662,7 +661,6 @@ public class MWPMarkers : GLib.Object {
                     var par = marker.get_parent();
                     if (par != null)
                         par.set_child_above_sibling(marker,null);
-					return true;
                 }
                 return false;
             });
@@ -671,7 +669,6 @@ public class MWPMarkers : GLib.Object {
                 var _t1 = marker.extras[Extra.Q_0] as MWPLabel;
                 if(_t1.get_parent() != null) {
                     marker.remove_child(_t1);
-					return true;
 				}
                 return false;
             });

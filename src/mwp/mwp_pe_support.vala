@@ -71,6 +71,7 @@ public class FakeHome : GLib.Object {
                         homept.x = 30;
                         homept.y = 10;
                         homep.add_child(homept);
+						return true;
                     }
                 }
                 return false;
@@ -80,6 +81,7 @@ public class FakeHome : GLib.Object {
                 if(homept != null) {
                     homep.remove_child(homept);
                     homept = null;
+					return true;
                 }
                 return false;
             });
