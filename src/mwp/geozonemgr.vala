@@ -279,22 +279,18 @@ public class GeoZoneManager {
 	}
 
 	public void insert_vertex_at(uint n, uint zidx, int lat, int lon) {
-		//stderr.printf("DBG: INSERT AT %u %u ##PRE ##\n", n, zidx);
-		//dump_vertices(n);
 		for(var j = 0; j < MAXVTX; j++) {
 			if (vs[j].zindex == (uint8)n && vs[j].index >= (uint8)zidx) {
 				vs[j].index += 1;
 			}
 		}
 		append_vertex(n, zidx, lat, lon);
-		//stderr.printf("DBG: INSERT AT %u %u **POST**\n", n, zidx);
-		//dump_vertices(n);
 	}
 
 	public void remove_vertex_at(uint n, uint zidx) {
 		var k = find_vertex(n, zidx);
 		if (k == -1) {
-			stderr.printf("DBG: Failed to find %u %u\n", n, zidx);
+			MWPLog.message("BUG: Failed to find %u %u\n", n, zidx);
 		} else {
 			vs[k].zindex = 0xff;
 			for(var j = 0; j < MAXVTX; j++) {
@@ -302,7 +298,6 @@ public class GeoZoneManager {
 					vs[j].index -= 1;
 				}
 			}
-			//dump_vertices(n);
 		}
 	}
 

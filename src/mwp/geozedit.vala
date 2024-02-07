@@ -222,34 +222,63 @@ public class GZEdit :Gtk.Window {
 		pop_menu = new Gtk.Menu();
 		ditem = new Gtk.MenuItem.with_label ("Delete");
 		var mitem = new Gtk.MenuItem.with_label ("Insert");
-		mitem.activate.connect (() => {
-				unowned OverlayItem el = ovl.get_elements().nth_data(nitem);
-				double nlat, nlon;
-				Champlain.Label? mk;
-				var npts = el.pl.get_nodes().length();
-				if(npts == 1) {
-					var delta = 16*Math.pow(2, (20-view.zoom_level));
-					Geo.posit(popmk.latitude, popmk.longitude, 0, delta/1852.0, out nlat, out nlon);
-				} else if(popno == npts - 1) {
-					mk = (Champlain.Label)el.pl.get_nodes().nth_data(0);
-					nlat = (mk.latitude + popmk.latitude)/2;
-					nlon = (mk.longitude + popmk.longitude)/2;
-				} else {
-					mk = (Champlain.Label)el.pl.get_nodes().nth_data(popno+1);
-					nlat = (mk.latitude + popmk.latitude)/2;
-					nlon = (mk.longitude + popmk.longitude)/2;
-				}
-				gzmgr.insert_vertex_at((int)nitem, (int)popno+1,
-									   (int)(nlat*1e7), (int)(nlon*1e7));
-				redraw();
-			});
-		pop_menu.add (mitem);
+                mitem.activate.connect (() => {
+                        unowned OverlayItem el = ovl.get_elements().nth_data(nitem);
+                        double nlat, nlon;
+                        Champlain.Label? mk;
+                        var npts = el.pl.get_nodes().length();
+                        if(npts == 1) {
+							var delta = 16*Math.pow(2, (20-view.zoom_level));
+							Geo.posit(popmk.latitude, popmk.longitude, 0, delta/1852.0, out nlat, out nlon);
+						} else if(popno == npts - 1) {
+							mk = (Champlain.Label)el.pl.get_nodes().nth_data(0);
+							nlat = (mk.latitude + popmk.latitude)/2;
+							nlon = (mk.longitude + popmk.longitude)/2;
+						} else {
+							mk = (Champlain.Label)el.pl.get_nodes().nth_data(popno+1);
+							nlat = (mk.latitude + popmk.latitude)/2;
+							nlon = (mk.longitude + popmk.longitude)/2;
+						}
+						gzmgr.insert_vertex_at((int)nitem, (int)popno+1,
+											   (int)(nlat*1e7), (int)(nlon*1e7));
+						mk = el.insert_line_position(nlat, nlon, popno+1);
+						ovl.add_marker(mk);
+						var id = 0;
+						el.pl.get_nodes().foreach((m) => {
+								((Champlain.Label)m).text = "%u/%d".printf(nitem, id);
+								id++;
+							});
+						mk.drag_finish.connect(on_poly_finish);
+						mk.captured_event.connect(on_poly_capture);
+						var nv = gzmgr.nvertices(nitem);
+						validate(nv);
+						if  (nv > 3)
+							ditem.sensitive = true;
+					});
+				pop_menu.add (mitem);
 
-		ditem.activate.connect (() => {
+        ditem.activate.connect (() => {
 				gzmgr.remove_vertex_at(nitem, popno);
-				redraw();
-			});
-		pop_menu.add (ditem);
+				unowned OverlayItem el = ovl.get_elements().nth_data(nitem);
+				var ml = ovl.get_mlayer();
+				var i = 0;
+				el.pl.get_nodes().foreach( (e) => {
+						if(i == popno) {
+							((Champlain.Marker)e).drag_finish.disconnect(on_poly_finish);
+							((Champlain.Marker)e).captured_event.disconnect(on_poly_capture);
+							el.pl.remove_node(e);
+							ml.remove_marker((Champlain.Marker)e);
+						} else if (i > popno) {
+							((Champlain.Label)e).text = "%u/%d".printf(nitem, i-1);
+						}
+						i++;
+					});
+				var nv = gzmgr.nvertices(nitem);
+				validate(nv);
+				if  (nv < 4)
+					ditem.sensitive = false;
+            });
+        pop_menu.add (ditem);
 		pop_menu.show_all();
 		pop_menu.deactivate.connect(() => {
 				popid = -1;
@@ -284,25 +313,32 @@ public class GZEdit :Gtk.Window {
 		set_buttons_sensitive();
 	}
 
-	private void redraw() {
-		var nv = gzmgr.nvertices(nitem);
+	private void validate(uint nv) {
+		var ok = true;
 		unowned OverlayItem el = ovl.get_elements().nth_data(nitem);
-		el.pl.remove_all();
-		ovl.remove_all_markers();
+		StringBuilder sb = new StringBuilder();
 		for(var j = 0; j < nv; j++) {
-			int k = gzmgr.find_vertex(nitem, j);
-			if(k == -1) {
-				MWPLog.message("**BUG** Failed to lookup vertex %u/%d\n", nitem, j);
-			} else {
-				var lat = gzmgr.get_latitude(k)/1e7;
-				var lon = gzmgr.get_longitude(k)/1e7;
-				var mk = el.add_line_point(lat,lon, "%u/%u".printf(nitem, j));
-				ovl.add_marker(mk);
-				mk.drag_finish.connect(on_poly_finish);
-				mk.captured_event.connect(on_poly_capture);
+			var k = gzmgr.find_vertex(nitem, j);
+			var pname="%u/%d".printf(nitem, j);
+			var lat = gzmgr.get_latitude(k)/1e7;
+			var lon = gzmgr.get_longitude(k)/1e7;
+			sb.append_printf("BUG: V: %s %f %f ", pname, lat, lon);
+			var mk = (Champlain.Label)el.pl.get_nodes().nth_data(j);
+			sb.append_printf("P: %s %f %f", mk.text, mk.latitude, mk.longitude);
+			if(mk.text != pname || !same_pos(lat, mk.latitude) || !same_pos(lon, mk.longitude)) {
+				sb.append(" ****************");
+				ok = false;
 			}
+			sb.append_c('\n');
 		}
-		ditem.sensitive = (nv > 3);
+		if(!ok) {
+			MWPLog.message(sb.str);
+			MWPLog.message("BUG:  ******* Conistency Error *********");
+		}
+	}
+
+	private bool same_pos(double f1, double f0) {
+		return (Math.fabs(f1-f0) < 1e6);
 	}
 
 	private void refresh_storage(uint8 mask, bool display) {
@@ -575,6 +611,7 @@ public class GZEdit :Gtk.Window {
 					p.mk = (Champlain.Label?)mk;
 					p.funcid = popid;
 					MWP.popqueue.push(p);
+					return true;
 				}
 			}
 		}
