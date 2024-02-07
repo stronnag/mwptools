@@ -622,11 +622,12 @@ public class MWPMarkers : GLib.Object {
         mc.y = 5;
         marker.extras[Extra.Q_0] = mc;
 
-       marker.captured_event.connect((e) => {
-               if(e.get_type() == Clutter.EventType.BUTTON_PRESS)
-                   if(e.button.button == 1) {
-                       wp_selected(ino);
-                   }
+		marker.captured_event.connect((e) => {
+				if(e.get_type() == Clutter.EventType.BUTTON_PRESS)
+					if(e.button.button == 1) {
+						wp_selected(ino);
+						return true;
+					}
                return false;
            });
 
@@ -644,6 +645,7 @@ public class MWPMarkers : GLib.Object {
 								MWP.popqueue.push(p);
 								return false;
 							});
+						return true;
                     }
                 }
                 return false;
@@ -660,14 +662,17 @@ public class MWPMarkers : GLib.Object {
                     var par = marker.get_parent();
                     if (par != null)
                         par.set_child_above_sibling(marker,null);
+					return true;
                 }
                 return false;
             });
 
         marker.leave_event.connect((ce) => {
                 var _t1 = marker.extras[Extra.Q_0] as MWPLabel;
-                if(_t1.get_parent() != null)
+                if(_t1.get_parent() != null) {
                     marker.remove_child(_t1);
+					return true;
+				}
                 return false;
             });
 
