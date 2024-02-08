@@ -986,17 +986,73 @@ public class  SafeHomeDialog : Window {
     }
 //current_folder_changed ()
     private void run_chooser(Gtk.FileChooserAction action, Gtk.Window window) {
-        Gtk.FileChooserDialog fc = new Gtk.FileChooserDialog (
-            "Safehome definition",
-            window, action,
-            "_Cancel",
-            Gtk.ResponseType.CANCEL,
-            (action == Gtk.FileChooserAction.SAVE) ? "_Save" : "_Open",
-            Gtk.ResponseType.ACCEPT);
 
+		var fc = new SHFChooser(action, window);
+        fc.response.connect((result) => {
+                if (result== Gtk.ResponseType.ACCEPT) {
+                    filename  = fc.get_file().get_path ();
+                    if (action == Gtk.FileChooserAction.OPEN) {
+                        load_homes(filename, switcher.active);
+                    }
+                    else if (result == Gtk.ResponseType.ACCEPT) {
+                        save_file();
+                    }
+                }
+                fc.close();
+                fc.destroy();
+            });
+        fc.run(filename);
+    }
+
+    public void display() {
+        if(!available) {
+			available = true;
+            show_all ();
+            shmarkers.set_interactive(true);
+			var state = switcher.get_active();
+			if(!state)
+				display_homes(true);
+		}
+    }
+}
+
+private class SHFChooser : Gtk.Window {
+	private  Gtk.FileChooserWidget fc;
+	public signal void response(int id);
+
+	public SHFChooser (Gtk.FileChooserAction action, Gtk.Window _w) {
+		fc = new Gtk.FileChooserWidget (action);
+		set_transient_for(_w);
+		fc.set_action(action);
+
+
+		var b0 = new Gtk.Button.with_label((action == Gtk.FileChooserAction.SAVE) ? "Save" : "Open");
+		b0.clicked.connect(() => {
+				response(Gtk.ResponseType.ACCEPT);
+			});
+
+		var b1 = new Gtk.Button.with_label("Cancel");
+		b1.clicked.connect(() => {
+				response(Gtk.ResponseType.CANCEL);
+
+			});
+
+		var header_bar = new Gtk.HeaderBar ();
+		header_bar.set_title ("Safehomes File Chooser");
+		//		headervbar.set_decoration_layout(":close");
+		header_bar.show_close_button = true;
+		header_bar.pack_start (b1);
+		header_bar.has_subtitle = false;
+		header_bar.pack_end (b0);
+		set_titlebar (header_bar);
+		Gtk.Box vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 5);
+		this.add (vbox);
+		vbox.pack_start (fc, true, true, 0);
+	}
+
+	public void run(string? filename ) {
         fc.select_multiple = false;
-
-        if(action == Gtk.FileChooserAction.SAVE && filename != null)
+        if(fc.get_action() == Gtk.FileChooserAction.SAVE && filename != null)
             fc.set_filename(filename);
 
         var filter = new Gtk.FileFilter ();
@@ -1008,7 +1064,16 @@ public class  SafeHomeDialog : Window {
         filter.set_filter_name ("All Files");
         filter.add_pattern ("*");
         fc.add_filter (filter);
+		fc.show();
+		show_all();
+	}
 
+	public File get_file() {
+		return fc.get_file();
+	}
+}
+
+	/*
         fc.response.connect((result) => {
                 if (result== Gtk.ResponseType.ACCEPT) {
                     filename  = fc.get_file().get_path ();
@@ -1024,15 +1089,4 @@ public class  SafeHomeDialog : Window {
             });
         fc.show();
     }
-
-    public void display() {
-        if(!available) {
-			available = true;
-            show_all ();
-            shmarkers.set_interactive(true);
-			var state = switcher.get_active();
-			if(!state)
-				display_homes(true);
-		}
-    }
-}
+	*/
