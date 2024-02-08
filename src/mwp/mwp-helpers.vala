@@ -367,6 +367,70 @@ namespace SportDev {
     double volts;
 }
 
+
+namespace Acme {
+	public class FileChooser : Gtk.FileChooserWidget {
+		private   Gtk.Window w;
+		public signal void response(int id);
+
+		~FileChooser () {
+			w.destroy();
+		}
+
+		public FileChooser (Gtk.FileChooserAction action, Gtk.Window _w, string? _title = null) {
+			w = new Gtk.Window();
+			w.set_default_size (1024, 640);
+			w.set_transient_for(_w);
+
+			set_action(action);
+
+			var b0 = new Gtk.Button.with_label((action == Gtk.FileChooserAction.SAVE) ? "Save" : "Open");
+			b0.clicked.connect(() => {
+					response(Gtk.ResponseType.ACCEPT);
+				});
+
+			var b1 = new Gtk.Button.with_label("Cancel");
+			b1.clicked.connect(() => {
+					response(Gtk.ResponseType.CANCEL);
+
+				});
+
+			var header_bar = new Gtk.HeaderBar ();
+			if(_title == null) {
+				_title = "MWP File Chooser";
+			}
+			header_bar.set_title (_title);
+			header_bar.show_close_button = true;
+			header_bar.pack_start (b1);
+			header_bar.has_subtitle = false;
+			header_bar.pack_end (b0);
+			w.set_titlebar (header_bar);
+			select_multiple = false;
+			Gtk.Box vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 5);
+			w.add (vbox);
+			vbox.pack_start (this, true, true, 0);
+
+			file_activated.connect(() => {
+					response(Gtk.ResponseType.ACCEPT);
+				});
+		}
+
+		public void run(string? filename = null ) {
+			if(get_action() == Gtk.FileChooserAction.SAVE && filename != null)
+				set_filename(filename);
+			w.show_all();
+		}
+
+		public void close() {
+			w.close();
+		}
+
+		public new void show() {
+			w.show_all();
+		}
+	}
+}
+
 namespace Utils {
 	public static bool permawarn;
 

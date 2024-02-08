@@ -3448,15 +3448,7 @@ public class MWP : Gtk.Application {
 	}
 
     private void kml_load_dialog() {
-        Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
-            "Select Overlay(s)", null, Gtk.FileChooserAction.OPEN,
-            "_Cancel",
-            Gtk.ResponseType.CANCEL,
-            "_Open",
-            Gtk.ResponseType.ACCEPT);
-        chooser.select_multiple = true;
-
-        chooser.set_transient_for(window);
+		var chooser = new Acme.FileChooser(Gtk.FileChooserAction.OPEN, window, "Open KML/Z files");
         Gtk.FileFilter filter = new Gtk.FileFilter ();
         StringBuilder sb = new StringBuilder("KML");
         filter.add_pattern ("*.kml");
@@ -3471,7 +3463,9 @@ public class MWP : Gtk.Application {
         filter.set_filter_name ("All files");
         filter.add_pattern ("*");
         chooser.add_filter (filter);
-        if(conf.kmlpath != null)
+		chooser.select_multiple = true;
+
+		if(conf.kmlpath != null)
             chooser.set_current_folder (conf.kmlpath);
 
         chooser.response.connect((id) => {
@@ -3482,22 +3476,17 @@ public class MWP : Gtk.Application {
                         if(is_kml_loaded(fn) == false)
                             try_load_overlay(fn);
                     }
-                } else
+                } else {
                     chooser.close ();
+				}
+				chooser.destroy();
             });
-        chooser.show_all();
+		chooser.run(null);
     }
 
     private void gz_load_dialog() {
-        Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
-            "Select Overlay(s)", null, Gtk.FileChooserAction.OPEN,
-            "_Cancel",
-            Gtk.ResponseType.CANCEL,
-            "_Open",
-            Gtk.ResponseType.ACCEPT);
+		var chooser = new Acme.FileChooser(Gtk.FileChooserAction.OPEN,window, "Open GeoZone File");
         chooser.select_multiple = false;
-
-        chooser.set_transient_for(window);
         Gtk.FileFilter filter = new Gtk.FileFilter ();
         filter.add_pattern ("*.txt");
         filter.set_filter_name ("txt files");
@@ -3526,11 +3515,10 @@ public class MWP : Gtk.Application {
 				} else
                     chooser.close ();
             });
-        chooser.show_all();
+        chooser.run();
     }
 
     private void kml_remove_dialog() {
-
 		var dialog = new Gtk.Window();
 		dialog.title = "Remove Overlays";
         Gtk.Box box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
@@ -9675,13 +9663,7 @@ Error: <i>%s</i>
 	}
 
     private void on_file_save_as (ActionFunc? func) {
-        Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
-            "Save to mission file", null, Gtk.FileChooserAction.SAVE,
-            "_Cancel",
-            Gtk.ResponseType.CANCEL,
-            "_Save",
-            Gtk.ResponseType.ACCEPT);
-        chooser.set_transient_for(window);
+		var chooser = new Acme.FileChooser(Gtk.FileChooserAction.SAVE, window, "Save Mission File");
         chooser.select_multiple = false;
         Gtk.FileFilter filter = new Gtk.FileFilter ();
         if(conf.missionpath != null)
@@ -9706,7 +9688,7 @@ Error: <i>%s</i>
 					dialog.remitems.connect((mitem) => {
 							smask = mitem;
 					});
-					dialog.set_transient_for(chooser);
+					dialog.set_transient_for(window);
                     dialog.show_all();
 				});
 			chooser.set_extra_widget(btn);
@@ -9726,17 +9708,12 @@ Error: <i>%s</i>
                     func();
                 }
             });
-		chooser.show();
+		chooser.run();
     }
 
     private void gz_save_dialog (bool iskml) {
-        Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
-            "Save GZone", null, Gtk.FileChooserAction.SAVE,
-            "_Cancel",
-            Gtk.ResponseType.CANCEL,
-            "_Save",
-            Gtk.ResponseType.ACCEPT);
-        chooser.set_transient_for(window);
+		var chooser = new Acme.FileChooser(Gtk.FileChooserAction.SAVE, window, "Save Geozone File");
+
         chooser.select_multiple = false;
         Gtk.FileFilter filter = new Gtk.FileFilter ();
 
@@ -9756,7 +9733,7 @@ Error: <i>%s</i>
         chooser.response.connect((id) => {
                 if (id == Gtk.ResponseType.ACCEPT) {
                     var fn = chooser.get_filename ();
-                    chooser.destroy ();
+                    chooser.close ();
 					string s;
 					if(iskml) {
 						s = KMLWriter.ovly_to_string(gzone);
@@ -9769,10 +9746,10 @@ Error: <i>%s</i>
 						gzr.save_file(fn);
 					}
 				} else {
-                    chooser.destroy ();
+                    chooser.close ();
                 }
             });
-		chooser.show();
+		chooser.run();
     }
 
     private void update_title_from_file(string fname) {
@@ -9850,17 +9827,12 @@ Error: <i>%s</i>
 
 
     private void on_file_open(bool append=false) {
-        Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
-            "Open a mission file", null, Gtk.FileChooserAction.OPEN,
-            "_Cancel",
-            Gtk.ResponseType.CANCEL,
-            "_Open",
-            Gtk.ResponseType.ACCEPT);
+		var chooser = new Acme.FileChooser(Gtk.FileChooserAction.OPEN,
+										   window, "Open Mission File" );
         chooser.select_multiple = false;
         if(conf.missionpath != null)
             chooser.set_current_folder (conf.missionpath);
 
-        chooser.set_transient_for(window);
         Gtk.FileFilter filter = new Gtk.FileFilter ();
         filter.set_filter_name ("Mission");
         filter.add_pattern ("*.mission");
@@ -9938,8 +9910,7 @@ Error: <i>%s</i>
                 } else
                     prebox.hide ();
             });
-        chooser.show_all();
-        chooser.modal = false;
+
         chooser.response.connect((id) => {
                 if (id == Gtk.ResponseType.ACCEPT) {
                     var fn = chooser.get_filename ();
@@ -9952,6 +9923,7 @@ Error: <i>%s</i>
                     chooser.destroy ();
                 }
         });
+		chooser.run();
     }
 
     private void replay_otx(string? fn = null) {
@@ -9966,14 +9938,8 @@ Error: <i>%s</i>
         if(thr != null) {
             robj.stop();
         } else {
-            Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
-            "Select a log file", null, Gtk.FileChooserAction.OPEN,
-            "_Cancel",
-            Gtk.ResponseType.CANCEL,
-            "_Open",
-            Gtk.ResponseType.ACCEPT);
+			var chooser = new Acme.FileChooser(Gtk.FileChooserAction.OPEN, window, "Select a log file");
             chooser.select_multiple = false;
-            chooser.set_transient_for(window);
             Gtk.FileFilter filter = new Gtk.FileFilter ();
             filter.set_filter_name ("Log");
             filter.add_pattern ("*.log");
@@ -9995,8 +9961,9 @@ Error: <i>%s</i>
                     }
                     else
                         chooser.close ();
+					chooser.destroy();
                 });
-            chooser.show_all();
+            chooser.show();
         }
     }
 
