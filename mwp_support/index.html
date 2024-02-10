@@ -1053,15 +1053,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#first-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      First steps
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#how-where" class="md-nav__link">
     <span class="md-ellipsis">
       How, where
@@ -1248,15 +1239,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#first-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      First steps
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#how-where" class="md-nav__link">
     <span class="md-ellipsis">
       How, where
@@ -1370,8 +1352,6 @@
 </li>
 </ul>
 <h2 id="support">Support<a class="headerlink" href="#support" title="Permanent link">#</a></h2>
-<h3 id="first-steps">First steps<a class="headerlink" href="#first-steps" title="Permanent link">#</a></h3>
-<p>There is a "rolling release" <a href="https://github.com/stronnag/mwptools/wiki/Recent-Changes">release note on the wiki</a>. Please check that your issue is not due to a new dependency or requirement since your previous installation.</p>
 <h3 id="how-where">How, where<a class="headerlink" href="#how-where" title="Permanent link">#</a></h3>
 <ul>
 <li><a href="https://github.com/stronnag/mwptools/issues"><strong>GitHub Issues preferred</strong></a></li>
@@ -1403,16 +1383,16 @@
 <ul>
 <li>A step of steps to reproduce the issue</li>
 <li>The actual and expected outcomes</li>
-<li>Please include <a href="https://github.com/stronnag/mwptools">mwp</a>'s console log, from your home directory, <code>mwp_stderr_YYYY-MM-DD.txt</code>, e.g. <code>$HOME/mwp_stderr_2021-12-28.txt</code>. Please do not delete any information from this file; the contents are there for a purpose, or paste the terminal output into a file (or copy paste into the issue). The terminal output may include information from system components that are not the mwp log (e.g. GDK / GTK / Wayland messages).</li>
+<li>Include <a href="https://github.com/stronnag/mwptools">mwp</a>'s console log, from your home directory, <code>mwp_stderr_YYYY-MM-DD.txt</code>, e.g. <code>$HOME/mwp_stderr_2021-12-28.txt</code>. Do not delete any information from this file; the contents are there for a purpose, or paste the terminal output into a file (or copy paste into the issue). The terminal output may include information from system components that are not the mwp log (e.g. GDK / GTK / Wayland messages).</li>
 </ul>
-<p>If your issue concerns telemetry, please include a sample of data that causes the issue. Raw logs may be captured with the <code>--raw-log</code> option.</p>
-<p>If you're having a problem playing a blackbox log (or other flight log), please include that log.</p>
-<p>Non-reproducible issues that do not include supporting data will most likely be ignored and closed.</p>
+<p>If your issue concerns telemetry, include a sample of data that causes the issue. Raw logs may be captured with the <code>--raw-log</code> option.</p>
+<p>If you're having a problem playing a blackbox log (or other flight log), include the problematic log.</p>
+<p>Issues that do not meet these information requirements will be closed without explanation.</p>
 <h3 id="unsupported">Unsupported<a class="headerlink" href="#unsupported" title="Permanent link">#</a></h3>
 <ul>
 <li>Anything else!</li>
 </ul>
-<p>Problem reports on non-supported platforms will not be dismissed without <em>some</em> consideration, however it's unlikely that too much time be expended on such environments unless the problem can also be demonstrated on a supported platform (or it's an interesting issue).</p>
+<p>Problem reports on non-supported platforms may receive some consideration, however it's unlikely that too much time be expended on such environments unless the problem can also be demonstrated on a supported platform (or it's an interesting issue). Compliance with the Information requirements above is mandatory.</p>
 <h3 id="wayland-xlib">Wayland / XLib<a class="headerlink" href="#wayland-xlib" title="Permanent link">#</a></h3>
 <p>Different behaviours may be experienced using different display environments.</p>
 <p>mwp (and other applications) can have a problem with OpenGL and the (GNOME) Wayland compositor. Typically this is manifest by being unable to pick mission WP icons for large (&gt;40 point) missions. This problem does not appear on other compositors (<code>wlroots</code> and derivatives,  WSL).</p>
@@ -1452,7 +1432,7 @@ GDK_BACKEND=wayland
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    2024-01-29
+    2024-02-10
   </span>
 
     
