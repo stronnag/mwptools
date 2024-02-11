@@ -124,10 +124,10 @@ namespace XmlIO {
 						l.dref = (attr_content.down() == "right");
 						break;
 					case "landheading1":
-						l.dirn1 = int.parse(attr_content);
+						l.dirn1 = (int16)int.parse(attr_content);
 						break;
 					case "landheading2":
-						l.dirn2 = int.parse(attr_content);
+						l.dirn2 = (int16)int.parse(attr_content);
 						break;
 					case "sealevelref":
 						l.aref = bool.parse(attr_content.down());
@@ -135,7 +135,6 @@ namespace XmlIO {
 					}
 				}
 				if(set_fwa && idx > 7) {
-					stderr.printf("DBG: idx=%d, l.dirn1=%d l.dirn2=%d\n", idx, l.dirn1, l.dirn2);
 					FWApproach.set(idx, l);
 				}
 				break;

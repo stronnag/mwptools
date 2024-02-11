@@ -193,11 +193,11 @@ public class  SafeHomeDialog : Window {
 		<menu id="app-menu">
 		<section>
 		<item>
-		<attribute name="label">Load safehome file</attribute>
+		<attribute name="label">Load from file</attribute>
 		<attribute name="action">dialog.load</attribute>
 		</item>
 		<item>
-		<attribute name="label">Save safehome file</attribute>
+		<attribute name="label">Save to file</attribute>
 		<attribute name="action">dialog.save</attribute>
 		</item>
 		</section>
@@ -462,7 +462,7 @@ public class  SafeHomeDialog : Window {
 				sh_liststore.get_iter (out iter, new Gtk.TreePath.from_string (path));
 				int idx = 0;
 				sh_liststore.get (iter, Column.ID, &idx);
-				var dirn1 = int.parse(new_text);
+				var dirn1 = (int16)int.parse(new_text);
 				sh_liststore.set_value (iter, Column.DIRN1, dirn1);
 				FWApproach.set_dirn1(idx, dirn1);
 				if (homes[idx].lat != 0 && homes[idx].lon != 0) {
@@ -506,7 +506,7 @@ public class  SafeHomeDialog : Window {
 				sh_liststore.get_iter (out iter, new Gtk.TreePath.from_string (path));
 				int idx = 0;
 				sh_liststore.get (iter, Column.ID, &idx);
-				var dirn2 = int.parse(new_text);
+				var dirn2 = (int16)int.parse(new_text);
 				sh_liststore.set_value (iter, Column.DIRN2, dirn2);
 				FWApproach.set_dirn2(idx, dirn2);
 				if (homes[idx].lat != 0 && homes[idx].lon != 0) {
@@ -769,15 +769,15 @@ public class  SafeHomeDialog : Window {
 					if (idx >= 0 && idx < FWAPPROACH.maxapproach) {
 						FWApproach.approach l={};
 						if(parts.length == 8) {
-							l.dref = (parts[2] == "1") ? true : false;
-							l.appalt = double.parse(parts[3]) /100.0;
-							l.landalt = double.parse(parts[4]) /100.0;
-							l.dirn1 = int.parse(parts[5]);
+							l.appalt = double.parse(parts[2]) /100.0;
+							l.landalt = double.parse(parts[3]) /100.0;
+							l.dref = (parts[4] == "1") ? true : false;
+							l.dirn1 = (int16)int.parse(parts[5]);
 							if(l.dirn1 < 0) {
 								l.dirn1 = -l.dirn1;
 								l.ex1 = true;
 							}
-							l.dirn2 = int.parse(parts[6]);
+							l.dirn2 = (int16)int.parse(parts[6]);
 							if(l.dirn2 < 0) {
 								l.dirn2 = -l.dirn2;
 								l.ex2 = true;
@@ -870,7 +870,7 @@ public class  SafeHomeDialog : Window {
 					l.dirn2 = -l.dirn2;
 				}
 				sb.append_printf("fwapproach %d %d %d %d %d %d %d\n", j,
-								 dref, (int)(l.appalt*100), (int)(l.landalt*100),
+								 (int)(l.appalt*100), (int)(l.landalt*100), dref,
 								 l.dirn1, l.dirn2, aref);
 			}
 		}

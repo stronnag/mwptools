@@ -51,7 +51,7 @@ ublxccommon = files('cserial.c',
 
 apcommon = files('utils.vala',
 		 'mwplog.vala',
-		 'xmlio.vala', 'autoland.vala',
+		 'xmlio.vala', 'autoland.vala', 'sede.vala',
 		 'geocalc.vala',
 		 'mspcmd.vala')
 
