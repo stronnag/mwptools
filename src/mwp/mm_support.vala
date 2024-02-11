@@ -97,7 +97,7 @@ int main(string[] ? args) {
 		id = int.parse(args[2]);
 	}
 
-    var  msx = XmlIO.read_xml_file (args[1]);
+    var  msx = XmlIO.read_xml_file (args[1], true);
 	var wps = MultiM.missonx_to_wps(msx, id);
 	foreach(var w in wps) {
 		stderr.printf("%d %d %d %x\n", w.wp_no, w.lat, w.lon, w.flag);

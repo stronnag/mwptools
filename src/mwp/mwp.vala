@@ -2856,7 +2856,7 @@ public class MWP : Gtk.Application {
                 var ms = new Mission();
                 ms.set_ways(wp_resp);
 
-                ls.import_mission(ms, (conf.rth_autoland && Craft.is_mr(vi.mrtype)));
+                ls.import_mission(ms, mdx, (conf.rth_autoland && Craft.is_mr(vi.mrtype)));
                 markers.add_list_store(ls);
                 NavStatus.nm_pts = (uint8)wp_resp.length;
                 NavStatus.have_rth = (wp_resp[n-1].action == MSP.Action.RTH);
@@ -4695,7 +4695,7 @@ public class MWP : Gtk.Application {
                 unichar c = s.get_char(0);
 
                 if(c == '<') {
-                    msx = XmlIO.read_xml_string(s);
+                    msx = XmlIO.read_xml_string(s, true);
 				} else
                     msx = JsonIO.from_json(s);
 
@@ -9584,7 +9584,7 @@ Error: <i>%s</i>
 		ms_from_loader = true;
 		Mission _ms = null;
 		bool is_j = fn.has_suffix(".json");
-		var _msx =  (is_j) ? JsonIO.read_json_file(fn) : XmlIO.read_xml_file (fn);
+		var _msx =  (is_j) ? JsonIO.read_json_file(fn) : XmlIO.read_xml_file (fn, true);
 		if (_msx == null)
 			return null;
 
@@ -9798,7 +9798,7 @@ Error: <i>%s</i>
             craft.init_trail();
         }
         validatelab.set_text("");
-        ls.import_mission(ms, (conf.rth_autoland && Craft.is_mr(vi.mrtype)));
+        ls.import_mission(ms, mdx, (conf.rth_autoland && Craft.is_mr(vi.mrtype)));
         NavStatus.have_rth = ls.have_rth;
 		centre_mission(ms, true);
         if(have_home)
@@ -9864,7 +9864,8 @@ Error: <i>%s</i>
                     var fn = uri.substring (7);
                     if(!FileUtils.test (fn, FileTest.IS_DIR)) {
 						bool is_j = fn.has_suffix(".json");
-						var tmpmsx =  (is_j) ? JsonIO.read_json_file(fn) : XmlIO.read_xml_file (fn);
+						var tmpmsx =  (is_j) ? JsonIO.read_json_file(fn) :
+							XmlIO.read_xml_file (fn);
 						if (tmpmsx.length > 0) {
 							int k = 0;
 							mdx = 0;

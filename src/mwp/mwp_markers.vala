@@ -676,6 +676,15 @@ public class MWPMarkers : GLib.Object {
         marker.drag_motion.connect((dx,dy,evt) => {
                 var _t1 = marker.extras[Extra.Q_0] as MWPLabel;
 				wp_moved(ino, marker.get_latitude(), marker.get_longitude(), false);
+				GLib.Value val;
+				ls.get_value (iter, ListBox.WY_Columns.ACTION, out val);
+                var act =  (MSP.Action)val;
+				if(act == MSP.Action.LAND) {
+					var mdx = l.get_mdx();
+					if(FWApproach.is_active(mdx+8)) {
+						FWPlot.update_laylines(mdx+8, marker, true);
+					}
+				}
 				calc_extra_distances(l);
 				var s = l.get_marker_tip(ino);
 				_t1.set_text(s);
@@ -722,9 +731,9 @@ public class MWPMarkers : GLib.Object {
         Gtk.ListStore ls = l.list_model;
         bool rth = false;
         MWPLabel mk = null;
-
-        remove_all();
-        for(bool next=ls.get_iter_first(out iter);next;next=ls.iter_next(ref iter)) {
+		int mdx = l.get_mdx();
+        remove_all(mdx+8);
+		for(bool next=ls.get_iter_first(out iter);next;next=ls.iter_next(ref iter)) {
             GLib.Value cell;
             ls.get_value (iter, ListBox.WY_Columns.ACTION, out cell);
             var typ = (MSP.Action)cell;
@@ -744,7 +753,12 @@ public class MWPMarkers : GLib.Object {
                 case MSP.Action.POSHOLD_UNLIM:
                 case MSP.Action.LAND:
                     mk = add_single_element(l,iter,rth);
-                    rth = true;
+					if(typ == MSP.Action.LAND) {
+						if(FWApproach.is_active(mdx+8)) {
+							FWPlot.update_laylines(mdx+8, mk, true);
+						}
+					}
+					rth = true;
                     break;
 
                 default:
@@ -797,12 +811,14 @@ public class MWPMarkers : GLib.Object {
 		}
 	}
 
-    public void remove_all() {
+    public void remove_all(int mdx) {
         path.remove_all();
         hpath.remove_all();
         ipath.remove_all();
         negate_jpos();
         markers.remove_all();
+		if(mdx > 7)
+			FWPlot.remove_all(mdx);
         homep = rthp = ipos = null;
     }
 

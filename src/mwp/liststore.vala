@@ -216,6 +216,8 @@ public class ListBox : GLib.Object {
     private bool preview_running = false;
     public bool have_rth {get; private set; default= false;}
     private int mpop_no;
+	private int mdx = 0;
+
     private enum DELTAS {
         NONE=0,
         LAT=1,
@@ -239,6 +241,11 @@ public class ListBox : GLib.Object {
         ABSOLUTE=1,
         NONE=-1
     }
+
+
+	public int get_mdx() {
+		return mdx;
+	}
 
     public int get_list_size() {
         return list_model.iter_n_children(null);
@@ -608,7 +615,8 @@ public class ListBox : GLib.Object {
 		}
 	}
 
-    public void import_mission(Mission ms, bool  autoland = false) {
+    public void import_mission(Mission ms, int _mdx, bool  autoland = false) {
+		mdx = _mdx;
         Gtk.TreeIter iter;
         clear_mission();
         have_rth = false;
@@ -665,7 +673,7 @@ public class ListBox : GLib.Object {
                 pts += Elevation.Point(){y=m.lat,x=m.lon};
                 EvCache.append(lastid, EvCache.EvConst.UNAVAILABLE);
             }
-        }
+		}
         if(ms.homex != 0 && ms.homey != 0) {
             FakeHome.usedby |= FakeHome.USERS.Mission;
             fhome.set_fake_home(ms.homey, ms.homex);
@@ -677,7 +685,8 @@ public class ListBox : GLib.Object {
         if(pts.length > 0) {
             EvCache.update_all_wp_elevations(pts);
         }
-        mp.markers.add_list_store(this);
+
+		mp.markers.add_list_store(this);
         Idle.add(() => {
 				calc_mission();
 				return false;
@@ -1137,7 +1146,7 @@ public class ListBox : GLib.Object {
                 if(start < end && number > 0 && np < 121) {
                     var m = to_mission();
                     WPReplicator.replicate(m, start, end, number);
-                    import_mission(m);
+                    import_mission(m, mdx, false);
                     mp.markers.add_list_store(this);
                 } else {
                     MWPLog.message("Invalid replication %u %u %u (%u)\n", start, end, number, np);
@@ -1618,7 +1627,7 @@ public class ListBox : GLib.Object {
 
     private void renumber_steps(Gtk.ListStore ls) {
         var ms = to_mission();
-        import_mission(ms);
+        import_mission(ms, mdx, false);
     }
 
     private void update_fby_wp(double lat, double lon) {
@@ -1782,7 +1791,7 @@ public class ListBox : GLib.Object {
             }
         }
         ms.set_ways(mi);
-        import_mission(ms);
+        import_mission(ms, mdx, false);
     }
 
     private void menu_delete() {
@@ -2516,7 +2525,7 @@ public class ListBox : GLib.Object {
 							ms = msx[0];
                             if(fhome != null)
                                 fhome.get_fake_home(out ms.homey, out ms.homex);
-                            import_mission(ms, false);
+                            import_mission(ms, mdx, false);
                             mp.markers.add_list_store(this);
                         }
                     } else {
@@ -2856,16 +2865,33 @@ public class ListBox : GLib.Object {
             string posit;
             var ei = iter_to_ei(miter, mpop_no, out posit);
             var orig = ei;
-            var dlg = new WPPopEdit(mp.window,posit);
+            var dlg = new WPPopEdit(mp.window,posit, mdx);
             mp.markers.set_markers_active(false);
-
-            dlg.completed.connect(() => {
-					dlg.extract_data(MSP.Action.UNKNOWN, ref ei);
-					if(iter_from_ei(ref miter, ei, orig)) {
-						renumber_steps(list_model);
+			GLib.Value cell;
+			list_model.get_value (miter, WY_Columns.ACTION, out cell);
+			var oact = (MSP.Action)cell;
+			dlg.marker_changed.connect((str) => {
+					var typ = MSP.get_wpname(str);
+					update_marker_type(miter, typ, 0);
+				});
+            dlg.completed.connect((s) => {
+					list_model.iter_nth_child(out miter, null, mpop_no-1);
+					if(s) {
+						dlg.extract_data(MSP.Action.UNKNOWN, ref ei);
+						if(iter_from_ei(ref miter, ei, orig)) {
+							if(ei.action == MSP.Action.LAND) {
+								dlg.extract_land();
+							}
+							renumber_steps(list_model);
+						}
+					} else {
+						list_model.get_value (miter, WY_Columns.ACTION, out cell);
+						if((MSP.Action)cell != oact) {
+							list_model.set_value (miter, WY_Columns.ACTION, oact);
+							renumber_steps(list_model);
+						}
 					}
-
-					dlg.close();
+					dlg.destroy();
 					mp.markers.set_markers_active(true);
 				});
             dlg.wpedit(ei);
@@ -2918,7 +2944,7 @@ public class ListBox : GLib.Object {
 //        calc_mission();
         FakeHome.usedby &= ~FakeHome.USERS.Mission;
         unset_fake_home();
-        mp.markers.remove_all();
+        mp.markers.remove_all(mdx);
     }
 
     private string show_time(int s) {

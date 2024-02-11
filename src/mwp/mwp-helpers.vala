@@ -589,11 +589,13 @@ namespace MWPFileType {
 
 namespace  UpdateFile {
     private void save(string filename, string key, string keyline) {
+		string headerln = "# %s".printf(key);
         if(FileUtils.test(filename, FileTest.EXISTS)) {
 			string keyspc = "%s ".printf(key);
             string []lines = {};
             string s;
             bool written = false;
+			bool header = false;
 
             FileStream fs = FileStream.open (filename, "r");
             while((s = fs.read_line()) != null)
@@ -601,8 +603,15 @@ namespace  UpdateFile {
 
             fs = FileStream.open (filename, "w");
             foreach (var l in lines) {
+				if(l.has_prefix(headerln))
+				   header = true;
+
                 if(l.has_prefix(keyspc)) {
                     if (written == false) {
+						if(!header) {
+							fs.puts(headerln);
+							fs.putc('\n');
+						}
 						fs.puts(keyline);
                         written = true;
                     }
@@ -612,11 +621,16 @@ namespace  UpdateFile {
                 }
             }
             if (written == false) {
+				if(!header) {
+					fs.puts(headerln);
+					fs.putc('\n');
+				}
 				fs.puts(keyline);
 			}
         } else {
             FileStream fs = FileStream.open (filename, "w");
-            fs.printf("# %s\n", key);
+            fs.puts(headerln);
+			fs.putc('\n');
 			fs.puts(keyline);
         }
     }

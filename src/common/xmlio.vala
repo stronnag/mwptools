@@ -5,8 +5,9 @@ namespace XmlIO {
     public static bool ugly = false;
     public static bool meta = false;
     public static string generator;
+	private static bool set_fwa;
 
-    public Mission[]? read_xml_file(string path) {
+    public Mission[]? read_xml_file(string path, bool _set_fwa = false) {
         string s;
         try  {
             FileUtils.get_contents(path, out s);
@@ -15,10 +16,11 @@ namespace XmlIO {
             stderr.putc('\n');
             return null;
         }
-        return read_xml_string(s);
+        return read_xml_string(s, _set_fwa);
     }
 
-    public Mission[]? read_xml_string(string s) {
+    public Mission[]? read_xml_string(string s, bool _set_fwa = false) {
+		set_fwa = _set_fwa;
 		Mission [] msx = null;
 		Parser.init ();
 		Xml.Doc* doc = Parser.parse_memory(s, s.length);
@@ -92,6 +94,7 @@ namespace XmlIO {
 		Mission? ms = null;
 		uint8 lflag = 0;
 		int wpno = 1;
+		int idx = 0;
 
 		for (Xml.Node* iter = node->children; iter != null; iter = iter->next) {
             if (iter->type != ElementType.ELEMENT_NODE)
@@ -100,8 +103,43 @@ namespace XmlIO {
 			if (ms == null) {
 				ms = new Mission();
 			}
-
             switch(iter->name.down()) {
+			case  "fwapproach":
+				FWApproach.approach l={};
+				for (Xml.Attr* prop = iter->properties; prop != null; prop = prop->next) {
+					string attr_content = prop->children->content;
+					switch( prop->name.down()) {
+					case "index":
+						break;
+					case "no":
+						idx = int.parse(attr_content);
+						break;
+					case "approachalt":
+						l.appalt = int.parse(attr_content)/100.0;
+						break;
+					case "landalt":
+						l.landalt = int.parse(attr_content)/100.0;
+						break;
+					case "approachdirection":
+						l.dref = (attr_content.down() == "right");
+						break;
+					case "landheading1":
+						l.dirn1 = int.parse(attr_content);
+						break;
+					case "landheading2":
+						l.dirn2 = int.parse(attr_content);
+						break;
+					case "sealevelref":
+						l.aref = bool.parse(attr_content.down());
+						break;
+					}
+				}
+				if(set_fwa && idx > 7) {
+					stderr.printf("DBG: idx=%d, l.dirn1=%d l.dirn2=%d\n", idx, l.dirn1, l.dirn2);
+					FWApproach.set(idx, l);
+				}
+				break;
+
 			case  "missionitem":
 				var m = MissionItem();
 				for (Xml.Attr* prop = iter->properties; prop != null; prop = prop->next) {
@@ -231,7 +269,10 @@ namespace XmlIO {
             subnode->new_prop ("value", msx[0].version);
         }
 		int wpno = 0;
+		int mxno = -1;
 		foreach (var ms in msx) {
+			if(ms.npoints == 0)
+				continue;
 			double d;
 			int lt;
 			if (ms.dist <= 0 && ms.npoints > 1)
@@ -301,8 +342,26 @@ namespace XmlIO {
 				}
 				subnode->new_prop ("flag", flg.to_string());
 			}
-			if(!ugly)
+
+			if(!ugly) {
 				wpno = 0;
+			}
+			mxno += 1;
+		}
+		if(mxno != -1) {
+			var lid = mxno+8;
+			if(FWApproach.is_active(lid)) {
+				var l = FWApproach.get(lid);
+				subnode = root->new_text_child (ns, "fwapproach", "");
+				subnode->new_prop ("no", lid.to_string());
+				subnode->new_prop ("index", mxno.to_string());
+				subnode->new_prop ("approachalt", ((int)(l.appalt/100)).to_string());
+				subnode->new_prop ("landalt", ((int)(l.landalt/100)).to_string());
+				subnode->new_prop ("landheading1", l.dirn1.to_string());
+				subnode->new_prop ("landheading2", l.dirn2.to_string());
+				subnode->new_prop ("approachdirection", l.aref.to_string());
+				subnode->new_prop ("sealevelref", l.dref.to_string());
+			}
 		}
 		string s;
 		doc->dump_memory_enc_format (out s, null, "utf-8", pretty);

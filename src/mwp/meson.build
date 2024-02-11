@@ -31,6 +31,7 @@ mwpsrcs = files('mwp.vala', 'liststore.vala', 'mwp_markers.vala',
                 'mwp_telem-tracker.vala', 'mwp-forwarder.vala',
                 'mwp-los-analysis.vala', 'dem-reader.vala', 'mwp-async-dem-dl.vala',
                 'geozonemgr.vala', 'genoverlay.vala', 'geozedit.vala', 'kmlwriter.vala',
+                'mwp-fwaplot.vala',
                )
 
 ublxguisrc = files('settings.vala',  'mapsources.vala')
