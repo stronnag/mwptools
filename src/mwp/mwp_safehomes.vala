@@ -311,9 +311,34 @@ public class  SafeHomeDialog : Window {
 										  typeof (bool),
 										  typeof (int),
 										  typeof (bool),
-										  typeof (bool),
-										  typeof (bool)
+										  typeof (string),
+										  typeof (string)
 										  );
+
+		Gtk.TreeIter xiter;
+		var aref_model = new Gtk.ListStore (2, typeof (string), typeof(bool));
+		var dref_model = new Gtk.ListStore (2, typeof (string), typeof(bool));
+		aref_model.append (out xiter);
+		aref_model.set (xiter, 0, "Rel", 1, false);
+		aref_model.append (out xiter);
+		aref_model.set (xiter, 0, "AMSL", 1, true);
+
+		Gtk.CellRendererCombo acombo = new Gtk.CellRendererCombo ();
+		acombo.set_property ("editable", true);
+		acombo.set_property ("model", aref_model);
+		acombo.set_property ("text-column", 0);
+		acombo.set_property ("has-entry", false);
+
+		dref_model.append (out xiter);
+		dref_model.set (xiter, 0, "Left", 1, false);
+		dref_model.append (out xiter);
+		dref_model.set (xiter, 0, "Right", 1, true);
+
+		Gtk.CellRendererCombo dcombo = new Gtk.CellRendererCombo ();
+		dcombo.set_property ("editable", true);
+		dcombo.set_property ("model", dref_model);
+		dcombo.set_property ("text-column", 0);
+		dcombo.set_property ("has-entry", false);
 
 		tview.set_model (sh_liststore);
 		tview.insert_column_with_attributes (-1, "Id",
@@ -414,7 +439,7 @@ public class  SafeHomeDialog : Window {
 						if (e != HGT.NODATA)  {
 							d = e;
 						}
-						sh_liststore.set_value (iter, Column.AREF, true);
+						sh_liststore.set_value (iter, Column.AREF, "Rel");
 						FWApproach.set_aref(idx, true);
 					}
 				} else	{
@@ -540,42 +565,38 @@ public class  SafeHomeDialog : Window {
 				}
 			});
 
-
-		var arcell = new Gtk.CellRendererToggle();
-		tview.insert_column_with_attributes (-1, "Alt AMSL",
-											 arcell, "active", Column.AREF);
-		arcell.toggled.connect((p) => {
+		tview.insert_column_with_attributes (-1, "Alt. Mode",
+											 acombo, "text", Column.AREF);
+		acombo.changed.connect((p, citer) => {
 				Gtk.TreeIter iter;
 				int idx = 0;
 				sh_liststore.get_iter(out iter, new TreePath.from_string(p));
 				sh_liststore.get (iter, Column.ID, &idx);
-				bool aref = !FWApproach.get(idx).aref;
+				GLib.Value val;
+				aref_model.get_value (citer, 1, out val);
+				bool aref = (bool)val;
+				//!FWApproach.get(idx).aref;
 				FWApproach.set_aref(idx, aref);
-				sh_liststore.set (iter, Column.AREF, aref);
+				sh_liststore.set (iter, Column.AREF, aref_name(aref));
 			});
 
-		var drcell = new Gtk.CellRendererToggle();
-		tview.insert_column_with_attributes (-1, "Approach Right",
-											 drcell, "active", Column.DREF);
-		drcell.toggled.connect((p) => {
+		tview.insert_column_with_attributes (-1, "Approach",
+											 dcombo, "text", Column.DREF);
+		dcombo.changed.connect((p, citer) => {
 				Gtk.TreeIter iter;
 				int idx = 0;
 				sh_liststore.get_iter(out iter, new TreePath.from_string(p));
 				sh_liststore.get (iter, Column.ID, &idx);
-				bool dref = !FWApproach.get(idx).dref;
+				GLib.Value val;
+				dref_model.get_value (citer, 1, out val);
+				bool dref = (bool)val;
+				// bool dref = !FWApproach.get(idx).dref;
 				FWApproach.set_dref(idx, dref);
-				sh_liststore.set (iter, Column.DREF, dref);
+				sh_liststore.set (iter, Column.DREF, dref_name(dref));
 				if (homes[idx].lat != 0 && homes[idx].lon != 0) {
 					shmarkers.show_safe_home(idx, homes[idx]);
 				}
 			});
-
-		/*
-		DIRN1,
-		DIRN2,
-		AREF,
-		DREF,
-		*/
 
 		var vbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 2);
 		vbox.pack_start (tview, false, false, 0);
@@ -594,9 +615,8 @@ public class  SafeHomeDialog : Window {
 							  Column.EX1, false,
 							  Column.DIRN2, 0,
 							  Column.EX2, false,
-							  Column.AREF, false,
-							  Column.DREF, false
-							  );
+							  Column.AREF, "Rel",
+							  Column.DREF, "Left" );
 		}
 		add(vbox);
 	}
@@ -676,8 +696,8 @@ public class  SafeHomeDialog : Window {
 						  Column.EX1, false,
 						  Column.DIRN2, 0,
 						  Column.EX2, false,
-						  Column.AREF, false,
-						  Column.DREF, false
+						  Column.AREF, aref_name(false),
+						  Column.DREF, dref_name(false)
 						  );
 		shmarkers.hide_safe_home(idx);
 	}
@@ -811,8 +831,8 @@ public class  SafeHomeDialog : Window {
 							  Column.EX1, lnd.ex1,
 							  Column.DIRN2, lnd.dirn2,
 							  Column.EX2, lnd.ex2,
-                              Column.AREF, lnd.aref,
-                              Column.DREF, lnd.dref
+                              Column.AREF, aref_name(lnd.aref),
+                              Column.DREF, dref_name(lnd.dref)
 							  );
         if(switcher.active || forced) {
             if(homes[idx].lat != 0 && homes[idx].lon != 0)
@@ -821,6 +841,15 @@ public class  SafeHomeDialog : Window {
                 shmarkers.hide_safe_home(idx);
         }
     }
+
+	private string aref_name(bool a)  {
+		return (a) ? "AMSL" : "Rel";
+	}
+
+	private string dref_name(bool b)  {
+		return (b) ? "Right" : "Left";
+	}
+
 
     private void display_homes(bool state) {
         for (var idx = 0; idx < SAFEHOMES.maxhomes; idx++) {

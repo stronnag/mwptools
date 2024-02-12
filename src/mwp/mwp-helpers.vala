@@ -371,6 +371,7 @@ namespace SportDev {
 namespace Acme {
 	public class FileChooser : Gtk.FileChooserWidget {
 		private   Gtk.Window w;
+		private Gtk.Button b0;
 		public signal void response(int id);
 
 		~FileChooser () {
@@ -384,7 +385,7 @@ namespace Acme {
 
 			set_action(action);
 
-			var b0 = new Gtk.Button.with_label((action == Gtk.FileChooserAction.SAVE) ? "Save" : "Open");
+			b0 = new Gtk.Button.with_label((action == Gtk.FileChooserAction.SAVE) ? "Save" : "Open");
 			b0.clicked.connect(() => {
 					response(Gtk.ResponseType.ACCEPT);
 				});
@@ -409,6 +410,7 @@ namespace Acme {
 			Gtk.Box vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 5);
 			w.add (vbox);
 			vbox.pack_start (this, true, true, 0);
+			b0.set_can_default(true);
 
 			file_activated.connect(() => {
 					response(Gtk.ResponseType.ACCEPT);
@@ -418,6 +420,7 @@ namespace Acme {
 		public void run(string? filename = null ) {
 			if(get_action() == Gtk.FileChooserAction.SAVE && filename != null)
 				set_filename(filename);
+			b0.grab_default();
 			w.show_all();
 		}
 
