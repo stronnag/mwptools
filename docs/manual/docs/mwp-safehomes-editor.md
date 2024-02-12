@@ -29,7 +29,7 @@ It can be error prone to get locations into the correct format, particularly whe
 
 ### Graphical User Interface
 
-Note: Since mwp 7.32.?, mwp provides additional fields for the Autoland function that will / may appear in INAV 7.1.0 (or later). As the technical details for this feature has not yet been made publicly available, its extended MSP is not supported. The additional fields beyond those described below should be considered experimental.
+Note: Since mwp 7.32.?, mwp provides additional fields for the Autoland function that will / may appear in INAV 7.1.0 (or later).
 
 {{ mwp }} now offers a `Safe Homes` menu option:
 
@@ -46,6 +46,8 @@ From here it is possible to:
 * Display safehomes on the map. Active safehomes are displayed with greater opacity than inactive locations.
 * Change the status (active, inactive). If a previously unused item is enabled, an icon is placed on the centre of the map for positioning.
 * Clear (unset) one or all safehomes.
+* Upload and Download safehomes to/from the flight controller.
+* Manage IANV 7.1.0+ Autoland data
 
 Note that editing functions are only available when the `Safe Homes` window is active; if the windows is dismissed with icons displayed, then the icons remain on the map, but are not editable.
 
@@ -56,6 +58,11 @@ It also is possible to set a `gsettings` key to define a file of safehomes to lo
     gsettings set org.mwptools.planner load-safehome ~/.config/mwp/safehome.txt,Y
 
 This sets the default safehomes file to `~/.config/mwp/safehome.txt` and the appended `,Y` means display the icons on the map.
+
+If the name part is set to `-FC-`, then the safehomes will be loaded from the flight controller, for example:
+
+    gsettings get org.mwptools.planner load-safehome
+	'-FC-,Y'
 
 ### Example
 
