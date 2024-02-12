@@ -817,8 +817,7 @@ public class MWPMarkers : GLib.Object {
         ipath.remove_all();
         negate_jpos();
         markers.remove_all();
-		if(mdx > 7)
-			FWPlot.remove_all(mdx);
+		FWPlot.remove_all(mdx);
         homep = rthp = ipos = null;
     }
 

@@ -616,9 +616,9 @@ public class ListBox : GLib.Object {
 	}
 
     public void import_mission(Mission ms, int _mdx, bool  autoland = false) {
-		mdx = _mdx;
         Gtk.TreeIter iter;
         clear_mission();
+		mdx = _mdx;
         have_rth = false;
         Elevation.Point[] pts={};
         int lastid = 0;
@@ -2877,11 +2877,14 @@ public class ListBox : GLib.Object {
             dlg.completed.connect((s) => {
 					list_model.iter_nth_child(out miter, null, mpop_no-1);
 					if(s) {
+						bool ll = false;
 						dlg.extract_data(MSP.Action.UNKNOWN, ref ei);
-						if(iter_from_ei(ref miter, ei, orig)) {
-							if(ei.action == MSP.Action.LAND) {
-								dlg.extract_land();
-							}
+						if(ei.action == MSP.Action.LAND) {
+							var l = dlg.extract_land();
+							FWApproach.set(mdx+8, l);
+							ll = true;
+						}
+						if(iter_from_ei(ref miter, ei, orig) || ll) {
 							renumber_steps(list_model);
 						}
 					} else {
@@ -2897,6 +2900,10 @@ public class ListBox : GLib.Object {
             dlg.wpedit(ei);
         }
     }
+
+	public void refresh_mission() {
+		renumber_steps(list_model);
+	}
 
     public void pop_menu_delete() {
         Gtk.TreeIter miter;
@@ -2944,7 +2951,8 @@ public class ListBox : GLib.Object {
 //        calc_mission();
         FakeHome.usedby &= ~FakeHome.USERS.Mission;
         unset_fake_home();
-        mp.markers.remove_all(mdx);
+        mp.markers.remove_all(mdx+8);
+
     }
 
     private string show_time(int s) {

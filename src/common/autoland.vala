@@ -46,7 +46,7 @@ namespace FWApproach {
 	}
 
 	public static void set_ex2(int j, bool e2) {
-		approaches[j].ex1 = e2;
+		approaches[j].ex2 = e2;
 	}
 
 	public static void set_aref(int j, bool ar) {

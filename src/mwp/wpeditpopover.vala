@@ -70,6 +70,8 @@ public class WPPopEdit : Gtk.Window {
 	private QEntry fwdirn1;
 	private QEntry fwdirn2;
     private Gtk.ComboBoxText dref_combo;
+    private Gtk.CheckButton ex1;
+    private Gtk.CheckButton ex2;
 
 	private int mdx;
 
@@ -304,11 +306,19 @@ public class WPPopEdit : Gtk.Window {
 				txt = "%d".printf(fwl.dirn1);
                 fwdirn1 = new QEntry(txt, 5, Gtk.InputPurpose.NUMBER);
                 grid.attach (fwdirn1, 1, j);
+				ex1 = new Gtk.CheckButton.with_label("Exclusive");
+				ex1.active = fwl.ex1;
+				grid.attach (ex1, 2, j);
+				j++;
 
-				grid.attach (qlabel("Direction 2"), 2, j);
+				grid.attach (qlabel("Direction 2"), 0, j);
 				txt = "%d".printf(fwl.dirn2);
                 fwdirn2 = new QEntry(txt, 5, Gtk.InputPurpose.NUMBER);
-                grid.attach (fwdirn2, 3, j);
+                grid.attach (fwdirn2, 1, j);
+				ex2 = new Gtk.CheckButton.with_label("Exclusive");
+				ex2.active = fwl.ex2;
+				grid.attach (ex2, 2, j);
+
 				amslcb.clicked.connect(() => {
                         if(wpt.homeelev != EvCache.EvConst.UNAVAILABLE) {
                             var na = double.parse(appalt.text);
@@ -389,7 +399,17 @@ public class WPPopEdit : Gtk.Window {
         }
     }
 
-	public void extract_land() {
+	public FWApproach.approach extract_land() {
+		FWApproach.approach l = {};
+		l.landalt = double.parse(altent.text);
+		l.appalt = double.parse(appalt.text);
+		l.dirn1 = (int16) int.parse(fwdirn1.text);
+		l.ex1 = ex1.active;
+		l.dirn2 = (int16) int.parse(fwdirn2.text);
+		l.ex2 = ex2.active;
+		l.aref = amslcb.active;
+		l.dref = (dref_combo.active == 1);
+		return l;
 	}
 
 	void set_alt_border(Gtk.Widget w, bool flag) {

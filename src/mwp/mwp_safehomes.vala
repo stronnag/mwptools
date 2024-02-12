@@ -267,7 +267,7 @@ public class  SafeHomeDialog : Window {
 
 		aq_fcl = new GLib.SimpleAction("loadfc",null);
 		aq_fcl.activate.connect(() => {
-				request_safehomes(0, 7);
+				request_safehomes(0, SAFEHOMES.maxhomes);
 			});
 		aq_fcl.set_enabled(false);
 		dg.add_action(aq_fcl);
@@ -490,7 +490,7 @@ public class  SafeHomeDialog : Window {
 				sh_liststore.get_iter(out iter, new TreePath.from_string(p));
 				sh_liststore.get (iter, Column.ID, &idx);
 				bool ex1 = !FWApproach.get(idx).ex1;
-				FWApproach.set_ex1(idx, ex1);
+				FWApproach.set_ex1(idx, ex1cell.active);
 				sh_liststore.set (iter, Column.EX1, ex1);
 				if (homes[idx].lat != 0 && homes[idx].lon != 0) {
 					shmarkers.show_safe_home(idx, homes[idx]);
@@ -526,13 +526,14 @@ public class  SafeHomeDialog : Window {
 		var ex2cell = new Gtk.CellRendererToggle();
 		tview.insert_column_with_attributes (-1, "Exc2",
 											 ex2cell, "active", Column.EX2);
+		ex2cell.set_property ("editable", true);
 		ex2cell.toggled.connect((p) => {
 				Gtk.TreeIter iter;
 				int idx = 0;
 				sh_liststore.get_iter(out iter, new TreePath.from_string(p));
 				sh_liststore.get (iter, Column.ID, &idx);
 				bool ex2 = !FWApproach.get(idx).ex2;
-				FWApproach.set_ex2(idx, ex2);
+				FWApproach.set_ex2(idx, ex2cell.active);
 				sh_liststore.set (iter, Column.EX2, ex2);
 				if (homes[idx].lat != 0 && homes[idx].lon != 0) {
 					shmarkers.show_safe_home(idx, homes[idx]);
@@ -863,15 +864,17 @@ public class  SafeHomeDialog : Window {
 			if(l.dirn1 != 0 || l.dirn2 != 0) {
 				var aref = (l.aref) ? 1 : 0;
 				var dref = (l.dref) ? 1 : 0;
+				var d1 = l.dirn1;
 				if(l.ex1) {
-					l.dirn1 = -l.dirn1;
+					d1 = -d1;
 				}
+				var d2 = l.dirn2;
 				if(l.ex2) {
-					l.dirn2 = -l.dirn2;
+					d2 = -d2;
 				}
 				sb.append_printf("fwapproach %d %d %d %d %d %d %d\n", j,
 								 (int)(l.appalt*100), (int)(l.landalt*100), dref,
-								 l.dirn1, l.dirn2, aref);
+								 d1, d2, aref);
 			}
 		}
 		UpdateFile.save(filename, "fwapproach", sb.str);

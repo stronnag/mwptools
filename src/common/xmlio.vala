@@ -125,9 +125,17 @@ namespace XmlIO {
 						break;
 					case "landheading1":
 						l.dirn1 = (int16)int.parse(attr_content);
+						if (l.dirn1 < 0) {
+							l.ex1 = true;
+							l.dirn1 = -l.dirn1;
+						}
 						break;
 					case "landheading2":
 						l.dirn2 = (int16)int.parse(attr_content);
+						if (l.dirn2 < 0) {
+							l.ex2 = true;
+							l.dirn2 = -l.dirn2;
+						}
 						break;
 					case "sealevelref":
 						l.aref = bool.parse(attr_content.down());
@@ -211,9 +219,10 @@ namespace XmlIO {
 			}
 			if (lflag == 0xa5) {
 				ms.npoints = mi.length;
-				if(ms.npoints != 0)
+				if(ms.npoints != 0) {
 					ms.update_meta(mi);
-				msx += ms;
+					msx += ms;
+				}
 				ms = null;
 				lflag = 0;
 				wpno = 1;
@@ -226,8 +235,8 @@ namespace XmlIO {
 			ms.set_ways(mi);
 			if(ms.npoints != 0) {
 				ms.update_meta(mi);
+				msx += ms;
 			}
-			msx += ms;
 		}
 		return msx;
 	}
@@ -268,7 +277,7 @@ namespace XmlIO {
             subnode->new_prop ("value", msx[0].version);
         }
 		int wpno = 0;
-		int mxno = -1;
+		int mxno = 0;
 		foreach (var ms in msx) {
 			if(ms.npoints == 0)
 				continue;
@@ -321,6 +330,7 @@ namespace XmlIO {
 			if (uc)
 				mstr = mstr.ascii_up();
 
+			bool has_land = false;
 			foreach (MissionItem m in ms.get_ways()) {
 				wpno++;
 				subnode = root->new_text_child (ns, mstr, "");
@@ -340,16 +350,16 @@ namespace XmlIO {
 					flg = 0;
 				}
 				subnode->new_prop ("flag", flg.to_string());
+				if(m.action == MSP.Action.LAND) {
+					has_land = true;
+				}
 			}
 
 			if(!ugly) {
 				wpno = 0;
 			}
-			mxno += 1;
-		}
-		if(mxno != -1) {
 			var lid = mxno+8;
-			if(FWApproach.is_active(lid)) {
+			if(has_land && FWApproach.is_active(lid)) {
 				var l = FWApproach.get(lid);
 				subnode = root->new_text_child (ns, "fwapproach", "");
 				subnode->new_prop ("no", lid.to_string());
@@ -361,6 +371,7 @@ namespace XmlIO {
 				subnode->new_prop ("approachdirection", l.aref.to_string());
 				subnode->new_prop ("sealevelref", l.dref.to_string());
 			}
+			mxno += 1;
 		}
 		string s;
 		doc->dump_memory_enc_format (out s, null, "utf-8", pretty);

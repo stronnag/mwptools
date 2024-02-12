@@ -253,7 +253,7 @@ public class MWP : Gtk.Application {
 
     private SafeHomeDialog safehomed;
     private uint8 last_safehome = 0;
-    private uint8 safeindex = 0;
+    private int8 safeindex = 0;
 	private string sh_load = null;
 	private string gz_load = null;
 	private bool sh_disp;
@@ -336,6 +336,7 @@ public class MWP : Gtk.Application {
         NORMAL,
         POLLER,
 		SET_WP,
+		EXTRA_WP,
         TELEM = 128,
         TELEM_SP,
     }
@@ -456,6 +457,7 @@ public class MWP : Gtk.Application {
 		RESET_POLLER = (1<<10),
 		KICK_DL = (1<<11),
         FOLLOW_ME = (1 << 12),
+		SAVE_FWA = (1 << 13),
     }
 
     private struct WPMGR {
@@ -2106,13 +2108,13 @@ public class MWP : Gtk.Application {
 
         saq = new GLib.SimpleAction("upload-mission",null);
         saq.activate.connect(() => {
-				upload_mm(mdx, WPDL.GETINFO);
+				upload_mm(mdx, WPDL.GETINFO|WPDL.SAVE_FWA);
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("upload-missions",null);
         saq.activate.connect(() => {
-				upload_mm(-1, WPDL.GETINFO|WPDL.SET_ACTIVE);
+				upload_mm(-1, WPDL.GETINFO|WPDL.SAVE_FWA|WPDL.SET_ACTIVE);
             });
         window.add_action(saq);
 
@@ -6332,22 +6334,26 @@ public class MWP : Gtk.Application {
 			if(nwp > 0) {
 				msx = mmsx;
 				setup_mission_from_mm();
-				MWPLog.message("Download completed #%d\n", nwp);
+				MWPLog.message("Download completed #%d (%d)\n", nwp, mdx);
 				validatelab.set_text("✔"); // u+2714
+				wp_get_approaches(0);
 			} else {
 				Utils.warning_box("Fallback safe mission, 0 points", Gtk.MessageType.INFO,10);
 				MWPLog.message("Fallback safe mission\n");
 			}
-			MWPCursor.set_normal_cursor(window);
-            remove_tid(ref upltid);
-            wp_reset_poller();
 		} else {
             validatelab.set_text("WP:%3d".printf(w.wp_no));
 			request_wp(w.wp_no+1);
 		}
 	}
 
-    private void process_msp_analog(MSP_ANALOG an) {
+	private void reset_wp_dl() {
+		MWPCursor.set_normal_cursor(window);
+		remove_tid(ref upltid);
+		wp_reset_poller();
+	}
+
+	private void process_msp_analog(MSP_ANALOG an) {
         if ((replayer & Player.MWP) == Player.NONE) {
             if(have_mspradio)
                 an.rssi = 0;
@@ -6469,11 +6475,10 @@ public class MWP : Gtk.Application {
             SEDE.serialise_i32(&tbuf[6], ll);
             queue_cmd(MSP.Cmds.SET_SAFEHOME, tbuf, 10);
         } else {
-			stderr.printf("DBG: id = %d vers %x %x\n", id, vi.fc_vers, FCVERS.hasFWApp);
 			if (vi.fc_vers >= FCVERS.hasFWApp) {
 				safeindex = 0;
+				last_safehome = SAFEHOMES.maxhomes;
 				var b = FWApproach.serialise(0);
-				stderr.printf("DBG: Send set fw %u %u\n", b[0], b.length);
 				queue_cmd(MSP.Cmds.SET_FW_APPROACH, b, b.length);
 			} else {
 				queue_cmd(MSP.Cmds.EEPROM_WRITE,null, 0);
@@ -6481,6 +6486,22 @@ public class MWP : Gtk.Application {
 		}
         run_queue();
     }
+
+	private int mission_has_land(int idx) {
+		if (vi.fc_vers >= FCVERS.hasFWApp) {
+			if (msx != null) {
+				for(var j = idx; j < msx.length; j++) {
+					MissionItem [] mis = msx[j].get_ways();
+					foreach(MissionItem mi in mis) {
+						if(mi.action == MSP.Action.LAND) {
+							return j;
+						}
+					}
+				}
+			}
+		}
+		return -1;
+	}
 
     private int16 calc_vario(int ealt) {
         int16 diff = 0;
@@ -6505,6 +6526,61 @@ public class MWP : Gtk.Application {
 		wpmgr.wp_flag = 0;
 		wpmgr.wps = {};
 		reset_poller();
+	}
+
+	private void wp_get_approaches(int j) {
+		j = mission_has_land(j);
+		if(j != -1) {
+			lastm = nticks;
+			uint8 k = (uint8)(j+SAFEHOMES.maxhomes);
+			last_safehome = k+1;
+			queue_cmd(MSP.Cmds.FW_APPROACH, &k, 1);
+		} else {
+			reset_wp_dl();
+			if (ls.get_list_size() > 0)
+				ls.refresh_mission();
+		}
+	}
+
+	private void wp_set_approaches(int j) {
+		wpmgr.wp_flag &= ~WPDL.SAVE_FWA;
+		j = mission_has_land(j);
+		if(j == -1) {
+			handle_extra_up_tasks();
+		} else {
+			serstate = SERSTATE.EXTRA_WP;
+			lastm = nticks;
+			safeindex = SAFEHOMES.maxhomes+j;
+			last_safehome = SAFEHOMES.maxhomes+j+1;
+			var b = FWApproach.serialise(safeindex);
+			queue_cmd(MSP.Cmds.SET_FW_APPROACH, b, b.length);
+		}
+	}
+
+	private void handle_extra_up_tasks() {
+		if ((wpmgr.wp_flag & WPDL.DOWNLOAD) != 0) {
+			wpmgr.wp_flag &= ~WPDL.DOWNLOAD;
+			download_mission();
+		} else if ((wpmgr.wp_flag & WPDL.SET_ACTIVE) != 0) {
+			wpmgr.wp_flag &= ~WPDL.SET_ACTIVE;
+			if(vi.fc_vers >= FCVERS.hasWP_V4) {
+				uint8 msg[128];
+				var s = "nav_wp_multi_mission_index";
+				var k = 0;
+				for(k =0; k < s.length; k++) {
+					msg[k] = s.data[k];
+				}
+				msg[k] = 0;
+				msg[k+1] = (uint8)mdx+1;
+				MWPLog.message("Set active %d\n", msg[k+1]);
+				queue_cmd(MSP.Cmds.COMMON_SET_SETTING, msg, k+2);
+			}
+		} else if ((wpmgr.wp_flag & WPDL.RESET_POLLER) != 0) {
+			wp_reset_poller();
+		}
+		if(last_wp_pts > 0 /*&& wpi.wps_valid == 1*/ && ls.get_list_size() == 0) {
+			need_mission = true;
+		}
 	}
 
 	private void queue_gzone(int cnt) {
@@ -6599,8 +6675,8 @@ public class MWP : Gtk.Application {
 				run_queue();
 				break;
 			case  MSP.Cmds.WP_GETINFO:
-			case  MSP.Cmds.COMMON_SETTING:
 			case  MSP.Cmds.SET_RTC:
+			case  MSP.Cmds.COMMON_SETTING:
 				run_queue();
 				break;
 			case MSP.Cmds.COMMON_SET_TZ:
@@ -7174,7 +7250,7 @@ public class MWP : Gtk.Application {
                 queue_cmd(msp_get_status,null,0);
 				if(sh_load == "-FC-") {
 					Timeout.add(1200, () => {
-							last_safehome = 7;
+							last_safehome = SAFEHOMES.maxhomes;
 							uint8 shid = 0;
 							MWPLog.message("Load FC safehomes\n");
 							queue_cmd(MSP.Cmds.SAFEHOME,&shid,1);
@@ -7277,7 +7353,7 @@ public class MWP : Gtk.Application {
 				 arm_warn.show();
 				 break;
 
-		 case MSP.Cmds.WP_GETINFO:
+		case MSP.Cmds.WP_GETINFO:
 			 var wpi = MSP_WP_GETINFO();
 			 uint8* rp = raw;
 			 rp++;
@@ -7292,28 +7368,11 @@ public class MWP : Gtk.Application {
 				 Utils.warning_box(s, Gtk.MessageType.INFO, 5);
 				 wpmgr.wp_flag &= ~WPDL.GETINFO;
 			 }
-			 if ((wpmgr.wp_flag & WPDL.DOWNLOAD) != 0) {
-				 wpmgr.wp_flag &= ~WPDL.DOWNLOAD;
-				 download_mission();
-			 } else if ((wpmgr.wp_flag & WPDL.SET_ACTIVE) != 0) {
-				 wpmgr.wp_flag &= ~WPDL.SET_ACTIVE;
-				 if(vi.fc_vers >= FCVERS.hasWP_V4) {
-					 uint8 msg[128];
-					 var s = "nav_wp_multi_mission_index";
-					 var k = 0;
-					 for(k =0; k < s.length; k++) {
-						 msg[k] = s.data[k];
-					 }
-					 msg[k] = 0;
-					 msg[k+1] = (uint8)mdx+1;
-					 MWPLog.message("Set active %d\n", msg[k+1]);
-					 queue_cmd(MSP.Cmds.COMMON_SET_SETTING, msg, k+2);
-				 }
-			 } else if ((wpmgr.wp_flag & WPDL.RESET_POLLER) != 0) {
-				 wp_reset_poller();
-			 }
-			 if(wpi.wp_count > 0 && wpi.wps_valid == 1 && ls.get_list_size() == 0) {
-				 need_mission = true;
+
+			 if((wpmgr.wp_flag & WPDL.SAVE_FWA) != 0) {
+				 wp_set_approaches(0);
+			 } else {
+				 handle_extra_up_tasks();
 			 }
 			 break;
 
@@ -7590,11 +7649,13 @@ public class MWP : Gtk.Application {
 							queue_cmd(MSP.Cmds.WP_MISSION_SAVE, &zb, 1);
 						} else if ((wpmgr.wp_flag & WPDL.GETINFO) != 0) {
 							wpmgr.wp_flag |= WPDL.SET_ACTIVE|WPDL.RESET_POLLER;
-                            if(inav)
+
+							if(inav)
                                 queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
-                            else
+                            else {
                                 wpmgr.wp_flag = WPDL.RESET_POLLER;
                                 wp_reset_poller();
+							}
                             validatelab.set_text("✔"); // u+2714
 							Utils.warning_box("Mission uploaded", Gtk.MessageType.INFO,5);
 						} else if ((wpmgr.wp_flag & WPDL.FOLLOW_ME) !=0 ) {
@@ -7614,9 +7675,13 @@ public class MWP : Gtk.Application {
 
 		case MSP.Cmds.FW_APPROACH:
 			var id = FWApproach.deserialise(raw, len);
-			if (id == FWAPPROACH.maxapproach-1) {
-				safehomed.set_status(sh_disp);
-			} else if (id != -1) {
+			if(id == last_safehome-1) {
+				if(id ==SAFEHOMES.maxhomes-1) {
+					safehomed.set_status(sh_disp);
+				} else {
+					wp_get_approaches(id+1-SAFEHOMES.maxhomes);
+				}
+			} else {
 				id++;
 				queue_cmd(MSP.Cmds.FW_APPROACH,&id,1);
 			}
@@ -7636,11 +7701,12 @@ public class MWP : Gtk.Application {
                 shm.lon = ll / 10000000.0;
                 safehomed.receive_safehome(id, shm);
                 id += 1;
-                if (id < 8 && id <= last_safehome) {
+                if (id < SAFEHOMES.maxhomes && id < last_safehome) {
                     queue_cmd(MSP.Cmds.SAFEHOME,&id,1);
 				} else {
 					safehomed.set_status(sh_disp);
 					id = 0;
+					last_safehome = SAFEHOMES.maxhomes;
 					queue_cmd(MSP.Cmds.FW_APPROACH,&id,1);
 				}
                 break;
@@ -7653,14 +7719,21 @@ public class MWP : Gtk.Application {
 
 		case MSP.Cmds.SET_FW_APPROACH:
 			safeindex++;
-			if(safeindex == FWAPPROACH.maxapproach) {
-				queue_cmd(MSP.Cmds.EEPROM_WRITE,null, 0);
+			if(safeindex == last_safehome) {
+				if(safeindex <= SAFEHOMES.maxhomes) {
+					queue_cmd(MSP.Cmds.EEPROM_WRITE,null, 0);
+				} else {
+					wp_set_approaches(safeindex-SAFEHOMES.maxhomes);
+				}
 			} else {
-				var b = FWApproach.serialise(safeindex);
-				stderr.printf("DBG: Send set fw %u %u\n", b[0], b.length);
-				queue_cmd(MSP.Cmds.SET_FW_APPROACH, b, b.length);
+				if(safeindex < FWAPPROACH.maxapproach) {
+					var b = FWApproach.serialise(safeindex);
+					queue_cmd(MSP.Cmds.SET_FW_APPROACH, b, b.length);
+				} else {
+					MWPLog.message("BUG: unexpected req for SET_FW %d\n", safeindex);
+				}
 			}
-			run_queue();
+			//			run_queue();
 			break;
 
 		case MSP.Cmds.WP_MISSION_SAVE:

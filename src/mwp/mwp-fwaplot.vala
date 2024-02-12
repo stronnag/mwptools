@@ -5,7 +5,6 @@ namespace FWPlot {
 	private Clutter.Color landcol;
 	private Clutter.Color appcol;
 	public void init(Champlain.View view) {
-		stderr.printf("DBG: lpaths init %p\n", lpaths);
 		landcol.init(0xfc, 0xac, 0x64, 0xa0);
 		appcol.init(0x63, 0xa0, 0xfc, 0xff);
 		lpaths = {};
@@ -82,10 +81,11 @@ namespace FWPlot {
 				lpaths[pi].add_node(ip1);
 			}
 			add_approach(idx, pi, lnd.dirn1, lnd.ex1, lnd.dref, ip0, ip1, mk);
+		} else {
+			lpaths[pi].remove_all();
+			apaths[pi].remove_all();
 		}
-
 		pi++;
-
 		if(lnd.dirn2 != 0) {
 			var pts = lpaths[pi].get_nodes();
 			bool upd = (pts != null && pts.length() > 0);
@@ -109,6 +109,9 @@ namespace FWPlot {
 				lpaths[pi].add_node(ip1);
 			}
 			add_approach(idx, pi, lnd.dirn2, lnd.ex2, lnd.dref, ip0, ip1, mk);
+		} else {
+			lpaths[pi].remove_all();
+			apaths[pi].remove_all();
 		}
 	}
 
