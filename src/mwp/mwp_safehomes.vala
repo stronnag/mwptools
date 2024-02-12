@@ -374,6 +374,7 @@ public class  SafeHomeDialog : Window {
 			});
 
 		var lacell = new Gtk.CellRendererText ();
+		lacell.set_property ("editable", true);
 		tview.insert_column_with_attributes (-1, "Latitude", lacell, "text", Column.LAT);
 		var col =  tview.get_column(Column.LAT);
 		col.set_cell_data_func(lacell, (col,_cell,model,iter) => {
@@ -384,7 +385,6 @@ public class  SafeHomeDialog : Window {
 				_cell.set_property("text",s);
 			});
 
-		lacell.set_property ("editable", true);
 		((Gtk.CellRendererText)lacell).edited.connect((path,new_text) => {
 				Gtk.TreeIter iter;
 				sh_liststore.get_iter (out iter, new Gtk.TreePath.from_string (path));
@@ -398,6 +398,7 @@ public class  SafeHomeDialog : Window {
 			});
 
 		var locell = new Gtk.CellRendererText ();
+		locell.set_property ("editable", true);
 		tview.insert_column_with_attributes (-1, "Longitude", locell, "text", Column.LON);
 		col =  tview.get_column(Column.LON);
 		col.set_cell_data_func(locell, (col,_cell,model,iter) => {
@@ -408,7 +409,6 @@ public class  SafeHomeDialog : Window {
 				_cell.set_property("text",s);
 			});
 
-		locell.set_property ("editable", true);
 		((Gtk.CellRendererText)locell).edited.connect((path,new_text) => {
 				Gtk.TreeIter iter;
 				sh_liststore.get_iter (out iter, new Gtk.TreePath.from_string (path));
@@ -422,6 +422,7 @@ public class  SafeHomeDialog : Window {
 			});
 
 		var alcell = new Gtk.CellRendererText ();
+		alcell.set_property ("editable", true);
 		tview.insert_column_with_attributes (-1, "Land Alt", alcell, "text", Column.LANDALT);
 		col =  tview.get_column(Column.LANDALT);
 		col.set_cell_data_func(alcell, (col,_cell,model,iter) => {
@@ -431,7 +432,7 @@ public class  SafeHomeDialog : Window {
 				string s = "%8.2f".printf(val);
 				_cell.set_property("text",s);
 			});
-		alcell.set_property ("editable", true);
+
 		((Gtk.CellRendererText)alcell).edited.connect((path,new_text) => {
 				double d = 0.0;
 				Gtk.TreeIter iter;
@@ -455,6 +456,7 @@ public class  SafeHomeDialog : Window {
 			});
 
 		var aacell = new Gtk.CellRendererText ();
+		aacell.set_property ("editable", true);
 		tview.insert_column_with_attributes (-1, "Approach Alt", aacell, "text", Column.APPALT);
 		col =  tview.get_column(Column.APPALT);
 		col.set_cell_data_func(aacell, (col,_cell,model,iter) => {
@@ -464,7 +466,7 @@ public class  SafeHomeDialog : Window {
 				string s = "%8.2f".printf(val);
 				_cell.set_property("text",s);
 			});
-		aacell.set_property ("editable", true);
+
 		((Gtk.CellRendererText)aacell).edited.connect((path,new_text) => {
 				double d;
 				Gtk.TreeIter iter;
@@ -484,9 +486,9 @@ public class  SafeHomeDialog : Window {
 			});
 
 		var d1cell = new Gtk.CellRendererText ();
+		d1cell.set_property ("editable", true);
 		tview.insert_column_with_attributes (-1, "Direction 1", d1cell, "text", Column.DIRN1);
 		col =  tview.get_column(Column.DIRN1);
-		d1cell.set_property ("editable", true);
 		((Gtk.CellRendererText)d1cell).edited.connect((path,new_text) => {
 				Gtk.TreeIter iter;
 				sh_liststore.get_iter (out iter, new Gtk.TreePath.from_string (path));
@@ -510,7 +512,6 @@ public class  SafeHomeDialog : Window {
 				_cell.set_property("text",s);
 			});
 
-
 		var ex1cell = new Gtk.CellRendererToggle();
 		tview.insert_column_with_attributes (-1, "Exc1",
 											 ex1cell, "active", Column.EX1);
@@ -529,9 +530,10 @@ public class  SafeHomeDialog : Window {
 			});
 
 		var d2cell = new Gtk.CellRendererText ();
+		d2cell.set_property ("editable", true);
+
 		tview.insert_column_with_attributes (-1, "Direction 2", d2cell, "text", Column.DIRN2);
 		col =  tview.get_column(Column.DIRN2);
-		d2cell.set_property ("editable", true);
 		((Gtk.CellRendererText)d2cell).edited.connect((path,new_text) => {
 				Gtk.TreeIter iter;
 				sh_liststore.get_iter (out iter, new Gtk.TreePath.from_string (path));
@@ -557,7 +559,6 @@ public class  SafeHomeDialog : Window {
 		var ex2cell = new Gtk.CellRendererToggle();
 		tview.insert_column_with_attributes (-1, "Exc2",
 											 ex2cell, "active", Column.EX2);
-		ex2cell.set_property ("editable", true);
 		ex2cell.toggled.connect((t, p) => {
 				Gtk.TreeIter iter;
 				int idx = 0;
