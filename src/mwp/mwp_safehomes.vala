@@ -488,7 +488,7 @@ public class  SafeHomeDialog : Window {
 				int idx = 0;
 				sh_liststore.get (iter, Column.ID, &idx);
 				var dirn1 = (int16)int.parse(new_text);
-				sh_liststore.set_value (iter, Column.DIRN1, dirn1);
+				sh_liststore.set_value (iter, Column.DIRN1, (int)dirn1);
 				FWApproach.set_dirn1(idx, dirn1);
 				if (homes[idx].lat != 0 && homes[idx].lon != 0) {
 					shmarkers.show_safe_home(idx, homes[idx]);
@@ -532,7 +532,7 @@ public class  SafeHomeDialog : Window {
 				int idx = 0;
 				sh_liststore.get (iter, Column.ID, &idx);
 				var dirn2 = (int16)int.parse(new_text);
-				sh_liststore.set_value (iter, Column.DIRN2, dirn2);
+				sh_liststore.set_value (iter, Column.DIRN2, (int)dirn2);
 				FWApproach.set_dirn2(idx, dirn2);
 				if (homes[idx].lat != 0 && homes[idx].lon != 0) {
 					shmarkers.show_safe_home(idx, homes[idx]);
