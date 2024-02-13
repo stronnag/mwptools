@@ -206,7 +206,7 @@ public class MWP : Gtk.Application {
 
     private uint16 nav_wp_safe_distance = 10000;
     private uint16 safehome_max_distance = 20000;
-    private uint16 inav_max_eph_epv = 1000;
+	private uint16 inav_max_eph_epv = 1000;
     private uint16 nav_rth_home_offset_distance = 0;
 
     private bool need_mission = false;
@@ -7246,7 +7246,10 @@ public class MWP : Gtk.Application {
 						request_common_setting("nav_rth_home_offset_distance");
                     }
 					request_common_setting("safehome_max_distance");
-                }
+					if(vi.fc_vers >= FCVERS.hasFWApp) {
+						request_common_setting("nav_fw_land_approach_length");
+					}
+				}
                 queue_cmd(msp_get_status,null,0);
 				if(sh_load == "-FC-") {
 					Timeout.add(1200, () => {
@@ -7273,37 +7276,43 @@ public class MWP : Gtk.Application {
 			switch ((string)lastmsg.data) {
 			case "nav_wp_multi_mission_index":
 				MWPLog.message("Received mm index %u\n", raw[0]);
-						 if (raw[0] > 0) {
-							 imdx = raw[0]-1;
-						 } else {
-							 imdx = 0;
-						 }
-						 if ((wpmgr.wp_flag & WPDL.KICK_DL) != 0) {
-							 wpmgr.wp_flag &= ~WPDL.KICK_DL;
-							 start_download();
-						 }
-						 break;
-			 case "gps_min_sats":
-				 msats = raw[0];
-				 MWPLog.message("Received gps_min_sats %u\n", msats);
+				if (raw[0] > 0) {
+					imdx = raw[0]-1;
+				} else {
+					imdx = 0;
+				}
+				if ((wpmgr.wp_flag & WPDL.KICK_DL) != 0) {
+					wpmgr.wp_flag &= ~WPDL.KICK_DL;
+					start_download();
+				}
+				break;
+			case "gps_min_sats":
+				msats = raw[0];
+				MWPLog.message("Received gps_min_sats %u\n", msats);
+				break;
+			case "nav_wp_safe_distance":
+				SEDE.deserialise_u16(raw, out nav_wp_safe_distance);
+				wpdist = nav_wp_safe_distance / 100;
+				MWPLog.message("Received nav_wp_safe_distance %um\n", wpdist);
+				break;
+			case "safehome_max_distance":
+				SEDE.deserialise_u16(raw, out safehome_max_distance);
+				safehome_max_distance /= 100;
+				safehomed.set_distance(safehome_max_distance);
+				MWPLog.message("Received safehome_max_distance %um\n", wpdist);
+				break;
+			case "nav_wp_max_safe_distance":
+				SEDE.deserialise_u16(raw, out nav_wp_safe_distance);
+				wpdist = nav_wp_safe_distance;
+				MWPLog.message("Received nav_wp_max_safe_distance %um\n", safehome_max_distance);
 				 break;
-			 case "nav_wp_safe_distance":
-				 SEDE.deserialise_u16(raw, out nav_wp_safe_distance);
-				 wpdist = nav_wp_safe_distance / 100;
-				 MWPLog.message("Received nav_wp_safe_distance %um\n", wpdist);
-				 break;
-			 case "safehome_max_distance":
-				 SEDE.deserialise_u16(raw, out safehome_max_distance);
-				 safehome_max_distance /= 100;
-				 safehomed.set_distance(safehome_max_distance);
-				 MWPLog.message("Received safehome_max_distance %um\n", wpdist);
-				 break;
-			 case "nav_wp_max_safe_distance":
-				 SEDE.deserialise_u16(raw, out nav_wp_safe_distance);
-				 wpdist = nav_wp_safe_distance;
-				 MWPLog.message("Received nav_wp_max_safe_distance %um\n", safehome_max_distance);
-				 break;
-			 case "inav_max_eph_epv":
+			case "nav_fw_land_approach_length":
+				uint32 tmp;
+				SEDE.deserialise_u32(raw, out FWPlot.nav_fw_land_approach_length);
+				FWPlot.nav_fw_land_approach_length /= 100;
+				MWPLog.message("fw_land_approach len %u m\n", FWPlot.nav_fw_land_approach_length);
+				break;
+			case "inav_max_eph_epv":
 				 uint32 ift;
 				 SEDE.deserialise_u32(raw, out ift);
 				 // This stupidity is for Mint ...

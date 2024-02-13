@@ -1,9 +1,12 @@
 namespace FWPlot {
-	private const double LAYLEN = (200.0/1852.0);
+
 	private Champlain.PathLayer []lpaths;
 	private Champlain.PathLayer []apaths;
 	private Clutter.Color landcol;
 	private Clutter.Color appcol;
+	public uint32 nav_fw_land_approach_length = 350;
+	private double laylen;
+
 	public void init(Champlain.View view) {
 		landcol.init(0xfc, 0xac, 0x64, 0xa0);
 		appcol.init(0x63, 0xa0, 0xfc, 0xff);
@@ -40,9 +43,10 @@ namespace FWPlot {
 			apaths += a0;
 			apaths += a1;
 		}
+		laylen = (nav_fw_land_approach_length/1852.0);
 	}
 
-	private Champlain.Point set_laypoint(int dirn, double lat, double lon, double dlen=LAYLEN) {
+	private Champlain.Point set_laypoint(int dirn, double lat, double lon, double dlen=laylen) {
 		double dlat, dlon;
 		Geo.posit(lat, lon, dirn, dlen, out dlat, out dlon);
 		var ip0 =  new	Champlain.Point();
@@ -124,14 +128,14 @@ namespace FWPlot {
 			else
 				xdir -= 90;
 			xdir %= 360;
-			var ipx =  set_laypoint(xdir, ip1.latitude, ip1.longitude, LAYLEN/3);
+			var ipx =  set_laypoint(xdir, ip1.latitude, ip1.longitude, laylen/3);
 			apaths[pi].add_node(ip1);
 			apaths[pi].add_node(ipx);
 			if(ex) {
 				apaths[pi].add_node(ip0);
 			} else {
 				apaths[pi].add_node(mk);
-				ipx =  set_laypoint(xdir, ip0.latitude, ip0.longitude, LAYLEN/3);
+				ipx =  set_laypoint(xdir, ip0.latitude, ip0.longitude, laylen/3);
 				apaths[pi].add_node(ipx);
 				apaths[pi].add_node(ip0);
 			}
