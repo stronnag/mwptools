@@ -6004,9 +6004,11 @@ public class MWP : Gtk.Application {
                 if(replayer == Player.NONE) {
                     MWPLog.message("switch val == %08x (%08x)\n", bxflag, lmask);
                     if(Craft.is_mr(vi.mrtype) && ((bxflag & lmask) == 0) && robj == null) {
-                        if(conf.checkswitches)
+                        if(conf.checkswitches) {
                             swd.runner();
+						}
                     }
+
                     if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
                         queue_cmd(MSP.Cmds.NAV_CONFIG,null,0);
                     else if((navcap & NAVCAPS.INAV_MR)!= 0)
@@ -7307,7 +7309,6 @@ public class MWP : Gtk.Application {
 				MWPLog.message("Received nav_wp_max_safe_distance %um\n", safehome_max_distance);
 				 break;
 			case "nav_fw_land_approach_length":
-				uint32 tmp;
 				SEDE.deserialise_u32(raw, out FWPlot.nav_fw_land_approach_length);
 				FWPlot.nav_fw_land_approach_length /= 100;
 				MWPLog.message("fw_land_approach len %u m\n", FWPlot.nav_fw_land_approach_length);
