@@ -368,8 +368,8 @@ namespace XmlIO {
 				subnode->new_prop ("landalt", ((int)(l.landalt/100)).to_string());
 				subnode->new_prop ("landheading1", l.dirn1.to_string());
 				subnode->new_prop ("landheading2", l.dirn2.to_string());
-				subnode->new_prop ("approachdirection", l.aref.to_string());
-				subnode->new_prop ("sealevelref", l.dref.to_string());
+				subnode->new_prop ("approachdirection", (l.dref) ? "right" : "left");
+				subnode->new_prop ("sealevelref", l.aref.to_string());
 			}
 			mxno += 1;
 		}
