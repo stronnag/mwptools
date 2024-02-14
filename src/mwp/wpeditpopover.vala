@@ -285,10 +285,10 @@ public class WPPopEdit : Gtk.Window {
                 grid.attach (qlabel("Land Altitude"), 2, j);
 				var fwl = FWApproach.get(mdx+8);
 				amslcb.active = fwl.aref;
-				if (fwl.dirn1 != 0 || fwl.dirn2 != 0) {
-					txt = "%.2f".printf(fwl.landalt);
-				} else {
+				if (fwl.dirn1 == 0 && fwl.dirn2 == 0) {
 					txt = "%.0f".printf(wpt.p2);
+				} else {
+					txt = "%.2f".printf(fwl.landalt);
 				}
                 landent = new QEntry(txt, 6, Gtk.InputPurpose.NUMBER);
                 grid.attach (landent, 3, j);
@@ -401,7 +401,7 @@ public class WPPopEdit : Gtk.Window {
 
 	public FWApproach.approach extract_land() {
 		FWApproach.approach l = {};
-		l.landalt = double.parse(altent.text);
+		l.landalt = double.parse(landent.text);
 		l.appalt = double.parse(appalt.text);
 		l.dirn1 = (int16) int.parse(fwdirn1.text);
 		l.ex1 = ex1.active;

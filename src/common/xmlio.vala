@@ -364,8 +364,8 @@ namespace XmlIO {
 				subnode = root->new_text_child (ns, "fwapproach", "");
 				subnode->new_prop ("no", lid.to_string());
 				subnode->new_prop ("index", mxno.to_string());
-				subnode->new_prop ("approachalt", ((int)(l.appalt/100)).to_string());
-				subnode->new_prop ("landalt", ((int)(l.landalt/100)).to_string());
+				subnode->new_prop ("approachalt", ((int)(l.appalt*100)).to_string());
+				subnode->new_prop ("landalt", ((int)(l.landalt*100)).to_string());
 				subnode->new_prop ("landheading1", l.dirn1.to_string());
 				subnode->new_prop ("landheading2", l.dirn2.to_string());
 				subnode->new_prop ("approachdirection", (l.dref) ? "right" : "left");

@@ -62,7 +62,7 @@ namespace FWApproach {
 	}
 
 	public string to_string(int j) {
-		return "%d a=%.2f l=%2.f d1=%d d2=%d dr=%s ar=%s".printf(j,
+		return "%d a=%.2f l=%.2f d1=%d d2=%d dr=%s ar=%s".printf(j,
 					   approaches[j].appalt,
 					   approaches[j].landalt,
 					   approaches[j].dirn1,
