@@ -55,15 +55,15 @@ Searchable [online user guide](https://stronnag.github.io/mwptools/).
 
 The tools are designed to be portable and as far as possible platform and architecture agnostic. The suite is developed on Arch Linux and is tested on Debian (Bullseye, Sid), Ubuntu (latest and most recent LTS), Fedora (current)  and FreeBSD (current release). mwp also runs on MS Windows, with Windows 11 / WSL-g is is pretty almost on feature parity with Linux / FreeBSD. Other (older) OS are unsupported, but may work (i.e. Debian 10).
 
-mwp should  build and running on any platform that supports (recent versions of):
+mwp should  build and run on any platform that supports (recent versions of):
 
- * gtk+3.0 (3.18 or later);
+ * gtk+3.0
  * meson / ninja
- * vala and gcc or clang;
- * Clutter (software GL is fine);
- * libchamplain;
- * libespeak;
- * libgdl;
+ * vala and gcc or clang
+ * Clutter (software GL is fine)
+ * libchamplain
+ * libespeak
+ * libgdl
  * POSIX API
  * Go (golang) > 1.17. Please install the latest vendor release on older Linux distros.
 
@@ -84,7 +84,7 @@ The [user guide](https://stronnag.github.io/mwptools/) and [wiki](https://github
 
 ### Other OS / See also
 
-For OS not supported by mwp (e.g. MacOS, IOS, Andriod), see also [impload](https://github.com/stronnag/impload) for a mission format converter and upload application.
+For OS not supported by mwp, see also [impload](https://github.com/stronnag/impload) for a mission format converter and upload application.
 
 ## Manual / User Guide
 
@@ -96,11 +96,7 @@ For OS not supported by mwp (e.g. MacOS, IOS, Andriod), see also [impload](https
 
 * [Installation Guide (wiki)](https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja/).
 
-Support questions are best asked in the [RC Groups board](https://www.rcgroups.com/forums/showthread.php?2633708-mwp), the INAV Discord (off-topic) or Telegram channels or Github discussions / issues.
-
-### Changelog / Announcements
-
-Important changes are (sometimes) [announced on the wiki](https://github.com/stronnag/mwptools/wiki/Recent-Changes).
+Support questions are best asked in the INAV Discord (#off-topic) or [RC Groups board](https://www.rcgroups.com/forums/showthread.php?2633708-mwp) or Github discussions / issues.
 
 ### Updating
 
@@ -119,7 +115,7 @@ Arch users can install mwptools from the [AUR](https://aur.archlinux.org/package
 
 ## Compatibility
 
-As well as supporting INAV, mwp aims to be compatible with EOSBandi's WinGUI for MW. It used the same XML mission file format (with INAV and mwp extensions) and aims to provide similar functionally where possible.
+As well as supporting INAV, mwp aims to be compatible with EOSBandi's WinGUI for MultiWii. It used the same XML mission file format (with INAV and mwp extensions) and aims to provide similar functionally where possible.
 
 ## Licence
 
@@ -130,7 +126,7 @@ GPL v3 or later
 In addition to [mwp](https://github.com/stronnag/mwptools), the following INAV mission planners (and GCS in some cases) exist, in various states of usefulness, at least:
 
 * [INAV Configurator (for INAV 2.x)](https://github.com/iNavFlight/inav-configurator/tree/2.6.1), limited planning support
-* [INAV Configurator (for current INAV)]( https://github.com/iNavFlight/inav-configurator), supports most current WP types (other than Fly-by-home waypoints). [Development branch preview builds](http://seyrsnys.myzen.co.uk/inav-configurator-next/), may be augmented with [impload](https://github.com/stronnag/impload/) to upload missions to 2.x firmware.
+* [INAV Configurator (for current INAV)]( https://github.com/iNavFlight/inav-configurator), supports most current WP types (other than "Fly-by-home" waypoints).
 * [Bullet GCSS](https://github.com/danarrib/BulletGCSS/wiki) GPRS based telemetry using MQTT and a web client (most browsers, Desktop / Tablet / Mobile). Very cool project (you can also use its MQTT protocol with mwp for long range tracking).
 * [Drone Helper](https://www.microsoft.com/en-us/p/drone-helper/9ncs8zwxn58x?activetab=pivot:overviewtab) (Windows 10+)
 * [Android Telemetry Viewer](https://github.com/RomanLut/android-taranis-smartport-telemetry) Android GCS for INAV (CRSF, LTM, Smartport telemetry).
