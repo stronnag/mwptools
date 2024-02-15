@@ -16,7 +16,7 @@
         <link rel="prev" href="../mwp-Configuration/">
       
       
-        <link rel="next" href="../mwp-Radar-View/">
+        <link rel="next" href="../mwp-geozones/">
       
       
       <link rel="icon" href="../images/mwp_icon.ico">
@@ -655,6 +655,27 @@
   
   
     <li class="md-nav__item">
+      <a href="../mwp-geozones/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    mwp and Geozones
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../mwp-Radar-View/" class="md-nav__link">
         
   
@@ -1240,6 +1261,7 @@ safehome 7 0 0 0
 <p>It can be error prone to get locations into the correct format, particularly when a common source (Google Maps) only provides 6 decimal places of precision.</p>
 <h2 id="mwp-solution">mwp solution<a class="headerlink" href="#mwp-solution" title="Permanent link">#</a></h2>
 <h3 id="graphical-user-interface">Graphical User Interface<a class="headerlink" href="#graphical-user-interface" title="Permanent link">#</a></h3>
+<p>Note: Since mwp 7.32.?, mwp provides additional fields for the Autoland function that will / may appear in INAV 7.1.0 (or later).</p>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> now offers a <code>Safe Homes</code> menu option:</p>
 <p><img alt="mwp safehome" src="../images/mwp-safehome-menu.png" width="25%" /></p>
 <p>This will launch the <code>Safe Home</code> window:</p>
@@ -1251,6 +1273,8 @@ safehome 7 0 0 0
 <li>Display safehomes on the map. Active safehomes are displayed with greater opacity than inactive locations.</li>
 <li>Change the status (active, inactive). If a previously unused item is enabled, an icon is placed on the centre of the map for positioning.</li>
 <li>Clear (unset) one or all safehomes.</li>
+<li>Upload and Download safehomes to/from the flight controller.</li>
+<li>Manage IANV 7.1.0+ Autoland data</li>
 </ul>
 <p>Note that editing functions are only available when the <code>Safe Homes</code> window is active; if the windows is dismissed with icons displayed, then the icons remain on the map, but are not editable.</p>
 <h3 id="display-safehomes-at-startup">Display safehomes at startup<a class="headerlink" href="#display-safehomes-at-startup" title="Permanent link">#</a></h3>
@@ -1258,6 +1282,10 @@ safehome 7 0 0 0
 <pre><code>gsettings set org.mwptools.planner load-safehome ~/.config/mwp/safehome.txt,Y
 </code></pre>
 <p>This sets the default safehomes file to <code>~/.config/mwp/safehome.txt</code> and the appended <code>,Y</code> means display the icons on the map.</p>
+<p>If the name part is set to <code>-FC-</code>, then the safehomes will be loaded from the flight controller, for example:</p>
+<pre><code>gsettings get org.mwptools.planner load-safehome
+'-FC-,Y'
+</code></pre>
 <h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">#</a></h3>
 <p>The image below shows a blackbox replay. Note that the flight home location (brown icon) is coincident with the pale orange safehome icon.</p>
 <p><img alt="mwp safehomes replay" src="../images/mwp-safehomes-replay.png" width="50%" /></p>
@@ -1281,7 +1309,7 @@ safehome 7 0 0 0
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    2022-04-26
+    2024-02-12
   </span>
 
     
