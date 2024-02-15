@@ -119,6 +119,48 @@
 	</section>
       </submenu>
       </section>
+
+      <section>
+	<submenu>
+        <attribute name="label">Geo Zones</attribute>
+	<section>
+          <item>
+            <attribute name="label">Open File</attribute>
+            <attribute name="action">win.gz-load</attribute>
+          </item>
+          <item>
+            <attribute name="label">Edit</attribute>
+            <attribute name="action">win.gz-edit</attribute>
+          </item>
+
+          <item>
+            <attribute name="label">Save file</attribute>
+            <attribute name="action">win.gz-save</attribute>
+          </item>
+
+          <item>
+            <attribute name="label">Export as KML</attribute>
+            <attribute name="action">win.gz-kml</attribute>
+          </item>
+
+          <item>
+            <attribute name="label">Clear</attribute>
+            <attribute name="action">win.gz-clear</attribute>
+          </item>
+
+          <item>
+            <attribute name="label">Download</attribute>
+            <attribute name="action">win.gz-dl</attribute>
+          </item>
+
+          <item>
+            <attribute name="label">Upload</attribute>
+            <attribute name="action">win.gz-ul</attribute>
+          </item>
+
+	</section>
+      </submenu>
+      </section>
       <section>
         <item>
           <attribute name="label">Safe Homes</attribute>

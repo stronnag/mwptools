@@ -52,8 +52,11 @@ public class MWPLog : GLib.Object {
         if(init == false) {
             time_t currtime;
             time_t(out currtime);
-            echo = Posix.isatty(stderr.fileno());
-            string logdir;
+			Posix.Stat st;
+			if (Posix.fstat(stderr.fileno(), out st) == 0) {
+				echo = ((st.st_mode & (Posix.S_IFCHR|Posix.S_IFIFO)) != 0);
+			}
+			string logdir;
             if ((logdir = Environment.get_variable ("MWP_LOG_DIR")) == null)
                 logdir = Environment.get_home_dir();
 

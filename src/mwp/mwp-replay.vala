@@ -190,7 +190,7 @@ public class ReplayThread : GLib.Object {
 
     public Thread<int> run(int fd, string relog, bool delay=true) {
         MWSerial msp =  new MWSerial.forwarder();
-        msp.open_fd(fd,115200);
+        msp.open_fd(fd,-1,true);
         return run_msp(msp, relog, delay);
     }
 

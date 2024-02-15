@@ -16,6 +16,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+namespace Elevation {
+	public struct Point {
+        double y;
+        double x;
+    }
+}
+
 public class ScrollView : Gtk.Window {
 	private Gtk.Label label;
     public ScrollView (string _title = "Text View") {
@@ -122,7 +129,7 @@ public class EvCache : Object {
         elevs += ElevData(){idx = idx, elev = elev};
     }
 
-    public static void update_all_wp_elevations (BingElevations.Point[] pts) {
+    public static void update_all_wp_elevations (Elevation.Point[] pts) {
 		if(EvCache.is_local()) {
 			int j = 0;
 			foreach (var p in pts) {
@@ -132,31 +139,6 @@ public class EvCache : Object {
 					j++;
 				}
 			}
-		} else {
-#if COLDSOUP
-			BingElevations.get_elevations.begin(pts, (obj, res) => {
-					var bingelevs = BingElevations.get_elevations.end(res);
-					if(bingelevs.length == pts.length) {
-						int j = 0;
-						foreach(var e in bingelevs) {
-							EvCache.set_elev_index_value(j, e);
-							j++;
-						}
-					}
-				});
-#else
-			var be = new BingElevations();
-			be.elevations.connect((elevs) => {
-					if(elevs.length == pts.length) {
-						int j = 0;
-						foreach(var e in elevs) {
-							EvCache.set_elev_index_value(j, e);
-                        j++;
-						}
-					}
-				});
-			be.get_elevations(pts);
-#endif
 		}
 	}
 
@@ -166,26 +148,6 @@ public class EvCache : Object {
 			if (e != HGT.NODATA) {
 				EvCache.set_elev(idx,(int)e);
 			}
-		} else {
-			BingElevations.Point pts[1];
-			pts[0].y = lat;
-			pts[0].x = lon;
-#if COLDSOUP
-			BingElevations.get_elevations.begin(pts, (obj, res) => {
-					var bingelevs = BingElevations.get_elevations.end(res);
-					if(bingelevs.length == 1) {
-						EvCache.set_elev(idx, bingelevs[0]);
-					}
-				});
-#else
-			var be = new BingElevations();
-			be.elevations.connect((elevs) => {
-					if(elevs.length == 1) {
-						EvCache.set_elev(idx, elevs[0]);
-					}
-				});
-			be.get_elevations(pts);
-#endif
 		}
 	}
 }
@@ -254,6 +216,8 @@ public class ListBox : GLib.Object {
     private bool preview_running = false;
     public bool have_rth {get; private set; default= false;}
     private int mpop_no;
+	private int mdx = 0;
+
     private enum DELTAS {
         NONE=0,
         LAT=1,
@@ -277,6 +241,11 @@ public class ListBox : GLib.Object {
         ABSOLUTE=1,
         NONE=-1
     }
+
+
+	public int get_mdx() {
+		return mdx;
+	}
 
     public int get_list_size() {
         return list_model.iter_n_children(null);
@@ -333,7 +302,7 @@ public class ListBox : GLib.Object {
 
         item = new Gtk.MenuItem.with_label ("Edit WP ...");
         item.activate.connect (() => {
-                pop_menu_edit(mpop_no);
+				pop_menu_edit(mpop_no);
             });
         marker_menu.add (item);
 
@@ -368,7 +337,7 @@ public class ListBox : GLib.Object {
 				bool wants_auto = false;
 				if ( Gtk.get_current_event_state(out es)) {
 					if ((es & (Gdk.ModifierType.SHIFT_MASK|Gdk.ModifierType.CONTROL_MASK|Gdk.ModifierType.MOD1_MASK)) != 0) {
-						wants_auto = (MWP.has_bing_key||EvCache.is_local());
+						wants_auto = EvCache.is_local();
 					}
 				}
 				LOS_analysis(mpop_no, wants_auto);
@@ -543,46 +512,54 @@ public class ListBox : GLib.Object {
         return s;
     }
 
-    public bool pop_marker_menu(Gdk.EventButton e) {
-        if(miter_ok) {
-            Gtk.TreeIter miter;
-            if(list_model.iter_nth_child(out miter, null, mpop_no-1)) {
-                bool sens = true;
-                var xiter = miter;
-                var next=list_model.iter_next(ref xiter);
-                GLib.Value cell;
+    public bool pop_marker_menu(Gdk.EventButton e, MWP.ViewPop vp) {
+		mpop_no = vp.funcid;
+        //if(miter_ok) {
+		Gtk.TreeIter miter;
+		if(list_model.iter_nth_child(out miter, null, mpop_no-1)) {
+			bool sens = true;
+			var xiter = miter;
+			var next=list_model.iter_next(ref xiter);
+			GLib.Value cell;
 
-                list_model.get_value (miter, WY_Columns.ACTION, out cell);
-                var ntyp = (MSP.Action)cell;
+			list_model.get_value (miter, WY_Columns.ACTION, out cell);
+			var ntyp = (MSP.Action)cell;
 
-                if(next) {
-                    list_model.get_value (xiter, WY_Columns.ACTION, out cell);
-                    ntyp = (MSP.Action)cell;
-                    if(ntyp == MSP.Action.JUMP || ntyp == MSP.Action.RTH)
-                        sens = false;
-                }
-                list_model.get_value (miter, WY_Columns.FLAG, out cell);
-                list_model.get_value (miter, WY_Columns.IDX, out cell);
-                mpop_no = int.parse((string)cell);
-                int j = 0;
-                marker_menu.@foreach((mi) => {
-                        if(j == 0)
-                            ((Gtk.MenuItem)mi).set_label("WP: %d".printf(mpop_no));
-                        j++;
-                    });
-                terrain_popitem.sensitive = terrain_item.sensitive;
-                marker_menu.popup_at_pointer(e);
-                miter_ok = false;
-                return true;
-            }
-        }
-        return false;
+			if(next) {
+				list_model.get_value (xiter, WY_Columns.ACTION, out cell);
+				ntyp = (MSP.Action)cell;
+				if(ntyp == MSP.Action.JUMP || ntyp == MSP.Action.RTH)
+					sens = false;
+			}
+			list_model.get_value (miter, WY_Columns.FLAG, out cell);
+			list_model.get_value (miter, WY_Columns.IDX, out cell);
+			mpop_no = int.parse((string)cell);
+			int j = 0;
+			marker_menu.@foreach((mi) => {
+					if(j == 0)
+						((Gtk.MenuItem)mi).set_label("WP: %d".printf(mpop_no));
+					j++;
+				});
+
+			set_terrain_state(miter, true);
+			marker_menu.popup_at_pointer(e);
+			miter_ok = false;
+			return true;
+		}
+		return false;
     }
 
+	/*
     public void set_popup_needed(int _ino) {
         mpop_no =  _ino;
         miter_ok = true;
+		var p = MWP.ViewPop();
+		p.id = MWP.POPSOURCE.Mission;
+		p.mk = null;
+		p.funcid = mpop_no;
+		MWP.popqueue.push(p);
     }
+	*/
 
     public ListBox() {
         purge=false;
@@ -611,7 +588,7 @@ public class ListBox : GLib.Object {
 
 	private void reload_elevations (Mission ms) {
 		if (ms != null) {
-			BingElevations.Point[] pts={};
+			Elevation.Point[] pts={};
 			EvCache.clear();
 			int lastid = 0;
 			foreach (MissionItem m in ms.get_ways()) {
@@ -621,7 +598,7 @@ public class ListBox : GLib.Object {
 					m.action == MSP.Action.POSHOLD_TIME ||
 					m.action == MSP.Action.SET_POI ||
 					m.action == MSP.Action.LAND)) {
-					pts += BingElevations.Point(){y=m.lat,x=m.lon};
+					pts += Elevation.Point(){y=m.lat,x=m.lon};
 					EvCache.append(lastid, EvCache.EvConst.UNAVAILABLE);
 				}
 			}
@@ -629,7 +606,7 @@ public class ListBox : GLib.Object {
 				FakeHome.usedby |= FakeHome.USERS.Mission;
 				fhome.set_fake_home(ms.homey, ms.homex);
 				fhome.show_fake_home(true);
-				pts += BingElevations.Point(){y=ms.homey,x=ms.homex};
+				pts += Elevation.Point(){y=ms.homey,x=ms.homex};
 				EvCache.append(EvCache.EvConst.HOME, EvCache.EvConst.UNAVAILABLE);
 			}
 			if(pts.length > 0) {
@@ -638,11 +615,12 @@ public class ListBox : GLib.Object {
 		}
 	}
 
-    public void import_mission(Mission ms, bool  autoland = false) {
+    public void import_mission(Mission ms, int _mdx, bool  autoland = false) {
         Gtk.TreeIter iter;
         clear_mission();
+		mdx = _mdx;
         have_rth = false;
-        BingElevations.Point[] pts={};
+        Elevation.Point[] pts={};
         int lastid = 0;
         EvCache.clear();
         foreach (MissionItem m in ms.get_ways()) {
@@ -692,22 +670,23 @@ public class ListBox : GLib.Object {
                 m.action == MSP.Action.POSHOLD_TIME ||
                 m.action == MSP.Action.SET_POI ||
                 m.action == MSP.Action.LAND)) {
-                pts += BingElevations.Point(){y=m.lat,x=m.lon};
+                pts += Elevation.Point(){y=m.lat,x=m.lon};
                 EvCache.append(lastid, EvCache.EvConst.UNAVAILABLE);
             }
-        }
+		}
         if(ms.homex != 0 && ms.homey != 0) {
             FakeHome.usedby |= FakeHome.USERS.Mission;
             fhome.set_fake_home(ms.homey, ms.homex);
             fhome.show_fake_home(true);
-            pts += BingElevations.Point(){y=ms.homey,x=ms.homex};
+            pts += Elevation.Point(){y=ms.homey,x=ms.homex};
             EvCache.append(EvCache.EvConst.HOME, EvCache.EvConst.UNAVAILABLE);
         }
 
         if(pts.length > 0) {
             EvCache.update_all_wp_elevations(pts);
         }
-        mp.markers.add_list_store(this);
+
+		mp.markers.add_list_store(this);
         Idle.add(() => {
 				calc_mission();
 				return false;
@@ -957,7 +936,19 @@ public class ListBox : GLib.Object {
         }
     }
 
-    private void bing_complete(ALTMODES amode, POSREF posref, int act) {
+    public void connect_markers() {
+        mp.markers.wp_moved.connect((ino, lat, lon, flag) => {
+                Gtk.TreeIter iter;
+                if(list_model.iter_nth_child(out iter, null, ino-1))
+                    list_model.set (iter, WY_Columns.LAT, lat, WY_Columns.LON, lon);
+                mp.update_pointer_pos(lat, lon);
+                if(flag) {
+                    EvCache.update_single_elevation(ino, lat, lon);
+                }
+            });
+    }
+
+    private void alt_elev_complete(ALTMODES amode, POSREF posref, int act) {
         if ((act & 1) == 1) {
             FakeHome.usedby |= FakeHome.USERS.ElevMode;
             unset_fake_home();
@@ -971,67 +962,37 @@ public class ListBox : GLib.Object {
         } else {
             var pts = get_geo_points_for_mission(posref);
             if(pts.length > 0) {
-#if COLDSOUP
-                BingElevations.get_elevations.begin(pts, (obj, res) => {
-                        var bingelevs = BingElevations.get_elevations.end(res);
-                        if (bingelevs.length > 0) {
-                            if ((posref & (POSREF.LANDA|POSREF.LANDR)) != 0) {
-                                if((posref & POSREF.MANUAL) != 0) {
-                                    var tmp = bingelevs[0];
-                                    bingelevs[0] = altmodedialog.get_manual();
-                                    bingelevs += tmp;
-                                }
-                                update_land_offset(bingelevs);
-                            } else {
-                                update_altmode(amode, bingelevs[0]);
-                            }
-                        }
-                        if((act & 2) == 2) {
-                            unset_selection();
-                        }
-                    });
-#else
-        var be = new BingElevations();
-        be.elevations.connect((elevs) => {
-                if (elevs.length > 0) {
-                    if ((posref & (POSREF.LANDA|POSREF.LANDR)) != 0) {
-                        int[] ee = {};
-                        foreach (var el in elevs) {
-                            ee += el;
-                        }
-                        if((posref & POSREF.MANUAL) != 0) {
-                            var tmp = ee[0];
-                            ee[0] = altmodedialog.get_manual();
-                            ee += tmp;
-                        }
-                        update_land_offset(ee);
-                    } else {
-                        update_altmode(amode, elevs[0]);
-                    }
-                }
-                if((act & 2) == 2) {
-                    unset_selection();
-                }
-            });
-        be.get_elevations(pts);
-#endif
+				int []elevs = {};
+				foreach (var p in pts) {
+					var e = MWP.demmgr.lookup(p.y, p.x);
+					if (e != HGT.NODATA) {
+						elevs += (int)e;
+					}
+				}
+				if (elevs.length > 0) {
+					if ((posref & (POSREF.LANDA|POSREF.LANDR)) != 0) {
+						int[] ee = {};
+						foreach (var el in elevs) {
+							ee += el;
+						}
+						if((posref & POSREF.MANUAL) != 0) {
+							var tmp = ee[0];
+							ee[0] = altmodedialog.get_manual();
+							ee += tmp;
+						}
+						update_land_offset(ee);
+					} else {
+						update_altmode(amode, elevs[0]);
+					}
+				}
+				if((act & 2) == 2) {
+					unset_selection();
+				}
             } else {
                 if((act & 2) == 2)
                     unset_selection();
             }
         }
-    }
-
-    public void connect_markers() {
-        mp.markers.wp_moved.connect((ino, lat, lon, flag) => {
-                Gtk.TreeIter iter;
-                if(list_model.iter_nth_child(out iter, null, ino-1))
-                    list_model.set (iter, WY_Columns.LAT, lat, WY_Columns.LON, lon);
-                mp.update_pointer_pos(lat, lon);
-                if(flag) {
-                    EvCache.update_single_elevation(ino, lat, lon);
-                }
-            });
     }
 
     public void create_view(MWP _mp) {
@@ -1046,7 +1007,7 @@ public class ListBox : GLib.Object {
         altdialog = new AltDialog(mp.builder, mp.window);
         wprepdialog = new WPRepDialog(mp.builder, mp.window);
         altmodedialog = new AltModeDialog(mp.builder, mp.window);
-        altmodedialog.complete.connect(bing_complete);
+        altmodedialog.complete.connect(alt_elev_complete);
         fhome.fake_move.connect((lat,lon) => {
                 altmodedialog.set_location(PosFormat.pos(lat,lon,MWP.conf.dms));
                 EvCache.update_single_elevation(EvCache.EvConst.HOME, lat, lon);
@@ -1185,7 +1146,7 @@ public class ListBox : GLib.Object {
                 if(start < end && number > 0 && np < 121) {
                     var m = to_mission();
                     WPReplicator.replicate(m, start, end, number);
-                    import_mission(m);
+                    import_mission(m, mdx, false);
                     mp.markers.add_list_store(this);
                 } else {
                     MWPLog.message("Invalid replication %u %u %u (%u)\n", start, end, number, np);
@@ -1571,6 +1532,7 @@ public class ListBox : GLib.Object {
                 Value val;
                 list_model.get_iter (out iter, t.get_path ());
                 list_model.get_value (iter, WY_Columns.ACTION, out val);
+				set_terrain_state(iter, true);
                 if ((MSP.Action)val != MSP.Action.SET_HEAD &&
                     (MSP.Action)val != MSP.Action.RTH &&
                     (MSP.Action)val != MSP.Action.JUMP) {
@@ -1595,10 +1557,11 @@ public class ListBox : GLib.Object {
             list_model.get_value (iv, WY_Columns.ACTION, out val);
             shp_item.sensitive=((MSP.Action)val == MSP.Action.SET_POI);
             lnd_item.sensitive=((MSP.Action)val == MSP.Action.LAND);
+			set_terrain_state(iv, true);
         } else {
             up_item.sensitive = down_item.sensitive = false;
         }
-        menu.popup_at_pointer(event);
+		menu.popup_at_pointer(event);
     }
 
     private void list_validate(string path, string new_text, int colno,
@@ -1664,7 +1627,7 @@ public class ListBox : GLib.Object {
 
     private void renumber_steps(Gtk.ListStore ls) {
         var ms = to_mission();
-        import_mission(ms);
+        import_mission(ms, mdx, false);
     }
 
     private void update_fby_wp(double lat, double lon) {
@@ -1828,7 +1791,7 @@ public class ListBox : GLib.Object {
             }
         }
         ms.set_ways(mi);
-        import_mission(ms);
+        import_mission(ms, mdx, false);
     }
 
     private void menu_delete() {
@@ -1937,14 +1900,14 @@ public class ListBox : GLib.Object {
         }
     }
 
-    private BingElevations.Point [] get_geo_points_for_mission(POSREF posref) {
-        BingElevations.Point [] pts = {};
+    private Elevation.Point [] get_geo_points_for_mission(POSREF posref) {
+        Elevation.Point [] pts = {};
         Gtk.TreeIter iter;
         GLib.Value val;
         if ((posref & POSREF.HOME) != 0) {
             double hlat, hlon;
             fhome.get_fake_home(out hlat, out hlon);
-            pts += BingElevations.Point(){y = hlat, x = hlon};
+            pts += Elevation.Point(){y = hlat, x = hlon};
         }
 
         if ((posref & (POSREF.WPONE|POSREF.LANDA|POSREF.LANDR)) != 0) {
@@ -1964,7 +1927,7 @@ public class ListBox : GLib.Object {
                     var alat = (double)val;
                     list_model.get_value (iter, WY_Columns.LON, out val);
                     var alon = (double)val;
-                    pts += BingElevations.Point(){y = alat, x = alon};
+                    pts += Elevation.Point(){y = alat, x = alon};
                     needone = false;
                 }
 
@@ -1974,7 +1937,7 @@ public class ListBox : GLib.Object {
                         var alat = (double)val;
                         list_model.get_value (iter, WY_Columns.LON, out val);
                         var alon = (double)val;
-                        pts += BingElevations.Point(){y = alat, x = alon};
+                        pts += Elevation.Point(){y = alat, x = alon};
                         needland = false;
                     }
                 }
@@ -2293,12 +2256,23 @@ public class ListBox : GLib.Object {
         wprepdialog.get_rep(start, end, number);
     }
 
-    private void set_terrain_item(bool state) {
-        if(mp.x_plot_elevations_rb == false)
-            state = false;
-        terrain_item.sensitive = state;
-        los_popitem.sensitive = state;
-		//        los_item.sensitive = state;
+    private void set_terrain_state(Gtk.TreeIter iter, bool state) {
+		if(state) {
+			state = false;
+			if(mp.x_plot_elevations_rb) {
+				if(EvCache.is_local()) {
+					GLib.Value cell;
+					list_model.get_value (iter, WY_Columns.LAT, out cell);
+					var xlat = (double)cell;
+					list_model.get_value (iter, WY_Columns.LON, out cell);
+					var xlon = (double)cell;
+					if (MWP.demmgr.lookup(xlat, xlon) != HGT.NODATA) {
+						state = true;
+					}
+				}
+			}
+		}
+		terrain_popitem.sensitive = terrain_item.sensitive = los_popitem.sensitive = state;
     }
 
     private void set_replicate_item(bool state) {
@@ -2551,7 +2525,7 @@ public class ListBox : GLib.Object {
 							ms = msx[0];
                             if(fhome != null)
                                 fhome.get_fake_home(out ms.homey, out ms.homex);
-                            import_mission(ms, false);
+                            import_mission(ms, mdx, false);
                             mp.markers.add_list_store(this);
                         }
                     } else {
@@ -2891,21 +2865,45 @@ public class ListBox : GLib.Object {
             string posit;
             var ei = iter_to_ei(miter, mpop_no, out posit);
             var orig = ei;
-            var dlg = new WPPopEdit(mp.window,posit);
+            var dlg = new WPPopEdit(mp.window,posit, mdx);
             mp.markers.set_markers_active(false);
-            dlg.response.connect((resp) => {
-                    if (resp != Gtk.ResponseType.DELETE_EVENT) {
-                        dlg.extract_data(MSP.Action.UNKNOWN, ref ei);
-                        if(iter_from_ei(ref miter, ei, orig)) {
-                            renumber_steps(list_model);
-                        }
-                    }
-                    dlg.close();
-                    mp.markers.set_markers_active(true);
-                });
+			GLib.Value cell;
+			list_model.get_value (miter, WY_Columns.ACTION, out cell);
+			var oact = (MSP.Action)cell;
+			dlg.marker_changed.connect((str) => {
+					var typ = MSP.get_wpname(str);
+					update_marker_type(miter, typ, 0);
+				});
+            dlg.completed.connect((s) => {
+					list_model.iter_nth_child(out miter, null, mpop_no-1);
+					if(s) {
+						bool ll = false;
+						dlg.extract_data(MSP.Action.UNKNOWN, ref ei);
+						if(ei.action == MSP.Action.LAND) {
+							var l = dlg.extract_land();
+							FWApproach.set(mdx+8, l);
+							ll = true;
+						}
+						if(iter_from_ei(ref miter, ei, orig) || ll) {
+							renumber_steps(list_model);
+						}
+					} else {
+						list_model.get_value (miter, WY_Columns.ACTION, out cell);
+						if((MSP.Action)cell != oact) {
+							list_model.set_value (miter, WY_Columns.ACTION, oact);
+							renumber_steps(list_model);
+						}
+					}
+					dlg.destroy();
+					mp.markers.set_markers_active(true);
+				});
             dlg.wpedit(ei);
         }
     }
+
+	public void refresh_mission() {
+		renumber_steps(list_model);
+	}
 
     public void pop_menu_delete() {
         Gtk.TreeIter miter;
@@ -2953,7 +2951,8 @@ public class ListBox : GLib.Object {
 //        calc_mission();
         FakeHome.usedby &= ~FakeHome.USERS.Mission;
         unset_fake_home();
-        mp.markers.remove_all();
+        mp.markers.remove_all(mdx+8);
+
     }
 
     private string show_time(int s) {
@@ -2987,7 +2986,9 @@ public class ListBox : GLib.Object {
         } else  {
             route = "Empty mission";
         }
-        set_terrain_item(n_rows > 2);
+
+		if (n_rows < 3)
+			terrain_popitem.sensitive = terrain_item.sensitive = los_popitem.sensitive = false;
         set_replicate_item(n_rows > 2);
         set_preview_item(n_rows > 2);
         mp.stslabel.set_text(route);

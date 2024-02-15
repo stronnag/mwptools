@@ -1,7 +1,7 @@
 mwpcommon = files('btdev.c',
 		  'cserial.c',
 		  'mwp_glinfo.c',
-		  'xmlio.vala',
+		  'xmlio.vala', 'autoland.vala',
 		  'serial-device.vala',
 		  'mwp_uriparser.vala',
 		  'geocalc.vala',
@@ -51,7 +51,7 @@ ublxccommon = files('cserial.c',
 
 apcommon = files('utils.vala',
 		 'mwplog.vala',
-		 'xmlio.vala',
+		 'xmlio.vala', 'autoland.vala', 'sede.vala',
 		 'geocalc.vala',
 		 'mspcmd.vala')
 

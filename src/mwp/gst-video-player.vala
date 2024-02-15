@@ -232,29 +232,39 @@ public class VideoPlayer : Window {
 	}
 }
 
-public class V4L2_dialog : Dialog {
+public class V4L2_dialog : Gtk.Window {
 
 	private Gtk.Entry e;
 	private Gtk.RadioButton rb0;
 	private Gtk.RadioButton rb1;
 
+	public signal void response(int id);
+
 	public V4L2_dialog(Gtk.ComboBoxText viddev_c) {
-		this.title = "Select Video Source";
-		this.border_width = 5;
+		title = "Select Video Source";
+		border_width = 5;
+        delete_event.connect(hide_on_delete);
 		rb0  = new Gtk.RadioButton.with_label_from_widget (null, "Webcams");
 		rb1 = new Gtk.RadioButton.with_label_from_widget (rb0, "URI");
 		e = new Gtk.Entry();
 		e.placeholder_text = "http://daria.co.uk/stream.mp4";
 		e.input_purpose = Gtk.InputPurpose.URL;
-		var content = get_content_area () as Box;
+
 		var grid = new Gtk.Grid();
 		grid.attach(rb0, 0, 0);
 		grid.attach(viddev_c, 1, 0);
 		grid.attach(rb1, 0, 1);
 		grid.attach(e, 1, 1);
-		content.pack_start (grid, false, true, 2);
-		add_button ("OK", 1000);
-        delete_event.connect(hide_on_delete);
+		var cbox = new Gtk.Box(Gtk.Orientation.VERTICAL, 4);
+		cbox.pack_start (grid, false, true, 2);
+		var button = new Gtk.Button.with_label("OK");
+		button.clicked.connect(() => {
+				response(1000);
+				hide();
+			});
+		cbox.pack_end (button, false, true, 2);
+		add(cbox);
+		show_all();
     }
 
 	public int result(out string uri) {

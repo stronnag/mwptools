@@ -278,13 +278,13 @@ public class MWPMarkers : GLib.Object {
                         _r.heading);
                     _tx.set_position(ce.x, ce.y);
                     _v.add_child (_ta);
-                    return false;
+                    return true; /**/
                 });
 
             rp.leave_event.connect((ce) => {
                     var _ta = rp.extras[Extra.Q_0] as Clutter.Actor;
                     _v.remove_child(_ta);
-                    return false;
+                    return true; /**/
                 });
 
             if((r.source & RadarSource.M_INAV) != 0) {
@@ -622,11 +622,11 @@ public class MWPMarkers : GLib.Object {
         mc.y = 5;
         marker.extras[Extra.Q_0] = mc;
 
-       marker.captured_event.connect((e) => {
-               if(e.get_type() == Clutter.EventType.BUTTON_PRESS)
-                   if(e.button.button == 1) {
-                       wp_selected(ino);
-                   }
+		marker.captured_event.connect((e) => {
+				if(e.get_type() == Clutter.EventType.BUTTON_PRESS)
+					if(e.button.button == 1) {
+						wp_selected(ino);
+					}
                return false;
            });
 
@@ -636,7 +636,15 @@ public class MWPMarkers : GLib.Object {
                         var _t1 = marker.extras[Extra.Q_0] as MWPLabel;
                         if (_t1 != null)
                             marker.remove_child(_t1);
-                    l.set_popup_needed(ino);
+						Idle.add(() => {
+								var p = MWP.ViewPop();
+								p.id = MWP.POPSOURCE.Mission;
+								p.mk = null;
+								p.funcid = ino;
+								MWP.popqueue.push(p);
+								return false;
+							});
+						return true;
                     }
                 }
                 return false;
@@ -659,14 +667,24 @@ public class MWPMarkers : GLib.Object {
 
         marker.leave_event.connect((ce) => {
                 var _t1 = marker.extras[Extra.Q_0] as MWPLabel;
-                if(_t1.get_parent() != null)
+                if(_t1.get_parent() != null) {
                     marker.remove_child(_t1);
+				}
                 return false;
             });
 
         marker.drag_motion.connect((dx,dy,evt) => {
                 var _t1 = marker.extras[Extra.Q_0] as MWPLabel;
 				wp_moved(ino, marker.get_latitude(), marker.get_longitude(), false);
+				GLib.Value val;
+				ls.get_value (iter, ListBox.WY_Columns.ACTION, out val);
+                var act =  (MSP.Action)val;
+				if(act == MSP.Action.LAND) {
+					var mdx = l.get_mdx();
+					if(FWApproach.is_active(mdx+8)) {
+						FWPlot.update_laylines(mdx+8, marker, true);
+					}
+				}
 				calc_extra_distances(l);
 				var s = l.get_marker_tip(ino);
 				_t1.set_text(s);
@@ -713,9 +731,9 @@ public class MWPMarkers : GLib.Object {
         Gtk.ListStore ls = l.list_model;
         bool rth = false;
         MWPLabel mk = null;
-
-        remove_all();
-        for(bool next=ls.get_iter_first(out iter);next;next=ls.iter_next(ref iter)) {
+		int mdx = l.get_mdx();
+        remove_all(mdx+8);
+		for(bool next=ls.get_iter_first(out iter);next;next=ls.iter_next(ref iter)) {
             GLib.Value cell;
             ls.get_value (iter, ListBox.WY_Columns.ACTION, out cell);
             var typ = (MSP.Action)cell;
@@ -735,7 +753,12 @@ public class MWPMarkers : GLib.Object {
                 case MSP.Action.POSHOLD_UNLIM:
                 case MSP.Action.LAND:
                     mk = add_single_element(l,iter,rth);
-                    rth = true;
+					if(typ == MSP.Action.LAND) {
+						if(FWApproach.is_active(mdx+8)) {
+							FWPlot.update_laylines(mdx+8, mk, true);
+						}
+					}
+					rth = true;
                     break;
 
                 default:
@@ -788,12 +811,13 @@ public class MWPMarkers : GLib.Object {
 		}
 	}
 
-    public void remove_all() {
+    public void remove_all(int mdx) {
         path.remove_all();
         hpath.remove_all();
         ipath.remove_all();
         negate_jpos();
         markers.remove_all();
+		FWPlot.remove_all(mdx);
         homep = rthp = ipos = null;
     }
 

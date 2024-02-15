@@ -205,7 +205,8 @@ public class MWP : Gtk.Application {
     private uint8 wp_max = 0;
 
     private uint16 nav_wp_safe_distance = 10000;
-    private uint16 inav_max_eph_epv = 1000;
+    private uint16 safehome_max_distance = 20000;
+	private uint16 inav_max_eph_epv = 1000;
     private uint16 nav_rth_home_offset_distance = 0;
 
     private bool need_mission = false;
@@ -252,7 +253,7 @@ public class MWP : Gtk.Application {
 
     private SafeHomeDialog safehomed;
     private uint8 last_safehome = 0;
-    private uint8 safeindex = 0;
+    private int8 safeindex = 0;
 	private string sh_load = null;
 	private string gz_load = null;
 	private bool sh_disp;
@@ -269,6 +270,7 @@ public class MWP : Gtk.Application {
 	}
 	private BBVideoList? bbvlist;
 	private  bool bbl_delay = true;
+	private GZEdit gzedit;
 
 	private struct RadarDev {
 		MWSerial dev;
@@ -276,9 +278,11 @@ public class MWP : Gtk.Application {
 		uint tid;
 	}
 	private RadarDev[] radardevs;
+	private GeoZoneManager gzr;
+	private uint8 gzcnt;
 	private Overlay? gzone;
     private TelemTracker ttrk;
-
+	bool gz_from_msp = false;
 	private uint32 feature_mask;
 
 	//    private uint radartid = -1;
@@ -314,6 +318,8 @@ public class MWP : Gtk.Application {
         hasABSALT = 0x030000,
         hasWP_V4 = 0x040000,
         hasWP1m = 0x060000,
+		hasFWApp = 0x070100,
+		hasGeoZones = 0x080000,
     }
 
 	public enum WPS {
@@ -330,6 +336,7 @@ public class MWP : Gtk.Application {
         NORMAL,
         POLLER,
 		SET_WP,
+		EXTRA_WP,
         TELEM = 128,
         TELEM_SP,
     }
@@ -450,6 +457,7 @@ public class MWP : Gtk.Application {
 		RESET_POLLER = (1<<10),
 		KICK_DL = (1<<11),
         FOLLOW_ME = (1 << 12),
+		SAVE_FWA = (1 << 13),
     }
 
     private struct WPMGR {
@@ -663,13 +671,25 @@ public class MWP : Gtk.Application {
 	private int imdx = 0;
 	private bool ms_from_loader; // loading from file
 
-    private MeasureLayer? mlayer = null;
-
 	public static string? user_args;
 	public static string? demdir;
     public static bool has_bing_key;
 	public static DEMMgr? demmgr = null;
     public static AsyncDL? asyncdl = null;
+
+	public enum POPSOURCE {
+		Mission =1,
+		Safehome = 2,
+		Geozone = 3,
+	}
+
+	public struct ViewPop {
+		int id;
+		Champlain.Label? mk;
+		int funcid;
+	}
+
+	public static AsyncQueue<ViewPop?> popqueue;
 
 	public enum HomeType {
 		NONE,
@@ -762,11 +782,15 @@ public class MWP : Gtk.Application {
 
     void show_startup() {
 		builder = new Builder ();
-        string[]ts={"mwp.ui", "menubar.ui", "mwpsc.ui"};
+        string[]ts={"mwp.ui", "seeder.ui","fm-dialog.ui", "altdialog.ui", "bb_dialog.ui",
+			"cvt_dialog.ui", "delta_dialog.ui", "goto_dialog.ui", "gps_stats_dialog.ui",
+			"map_source_dialog.ui", "odoview.ui", "otxdialog.ui", "pe-dialog.ui", "prefs.ui",
+			"raw_dialog.ui", "shape_dialog.ui", "speed_dialog.ui", "switch_dialog.ui",
+			"wprep_dialog.ui", "menubar.ui", "mwpsc.ui"};
         foreach(var fnm in ts) {
             var fn = MWPUtils.find_conf_file(fnm);
             if (fn == null) {
-                MWPLog.message ("No UI definition file\n");
+                MWPLog.message ("No UI definition file %s\n", fnm);
                 quit();
             } else {
                 try {
@@ -777,6 +801,7 @@ public class MWP : Gtk.Application {
                 }
             }
         }
+
         builder.connect_signals (null);
 
 		MWPLog.message("%s\n", MWP.user_args);
@@ -1227,16 +1252,24 @@ public class MWP : Gtk.Application {
 					var vfn = validate_cli_file(gz_load);
 					gz_load = null;
 					if (vfn != null) {
-						GeoZoneReader.from_file(vfn);
-						if(gzone != null)
+						gzr.from_file(vfn);
+						if(gzone != null) {
 							gzone.remove();
-						gzone = GeoZoneReader.generate_overlay(view);
+						}
+						gzone = gzr.generate_overlay(view);
 						gzone.display();
+						set_gzsave_state(true);
 					}
 				}
 
 				return false;
 			});
+	}
+
+	private void set_gzsave_state(bool val) {
+		set_menu_state("gz-save", val);
+		set_menu_state("gz-kml", val);
+		set_menu_state("gz-clear", val);
 	}
 
 	private void set_act_mission_combo(bool isnew=false) {
@@ -1681,7 +1714,7 @@ public class MWP : Gtk.Application {
                 return true;
             });
 
-        mseed = new MapSeeder(builder,window);
+		mseed = new MapSeeder(builder,window);
 
 		var scview = builder.get_object("scwindow") as ShortcutsWindow;
 		var scsect = builder.get_object("shortcuts") as ShortcutsSection;
@@ -1857,57 +1890,58 @@ public class MWP : Gtk.Application {
                 msp_publish_home(safeindex);
             });
 
-        Places.get_places();
+		gzr = new GeoZoneManager();
+		Places.get_places();
         setpos.load_places();
         setpos.new_pos.connect((la, lo, zoom) => {
-				Idle.add(() => {
+				//				Idle.add(() => {
 						map_centre_on(la, lo);
 						if(zoom > 0)
 							view.zoom_level = zoom;
 						map_moved();
 						update_at_pointer();
 						valid_flash();
-						return false;
-					});
+						//		return false;
+						//});
             });
 
         var saq = new GLib.SimpleAction("file-open",null);
         saq.activate.connect(() => {
-                check_mission_clean(on_file_openf);
-            });
+				check_mission_clean(on_file_openf);
+			});
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("file-append",null);
         saq.activate.connect(() => {
-                check_mission_clean(on_file_opent);
+				check_mission_clean(on_file_opent);
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("menu-save",null);
         saq.activate.connect(() => {
-                on_file_save();
+				on_file_save();
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("menu-save-as",null);
         saq.activate.connect(() => {
-                on_file_save_as(null);
+				on_file_save_as(null);
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("prefs",null);
         saq.activate.connect(() => {
-                prefs.run_prefs(conf);
+				prefs.run_prefs(conf);
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("followme",null);
         saq.activate.connect(() => {
-                fmdlg.unhide();
-                if (!fmpt.has_location()) {
-                    fmpt.set_followme(view.get_center_latitude(), view.get_center_longitude());
-                }
-                fmpt.show_followme(true);
+				fmdlg.unhide();
+				if (!fmpt.has_location()) {
+					fmpt.set_followme(view.get_center_latitude(), view.get_center_longitude());
+				}
+				fmpt.show_followme(true);
             });
         window.add_action(saq);
 
@@ -1923,33 +1957,33 @@ public class MWP : Gtk.Application {
 
         saq = new GLib.SimpleAction("centre-on",null);
         saq.activate.connect(() => {
-                setpos.get_position();
+				setpos.get_position();
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("defloc",null);
         saq.activate.connect(() => {
-                conf.latitude = view.get_center_latitude();
-                conf.longitude = view.get_center_longitude();
-                conf.zoom = view.get_zoom_level();
-                conf.save_settings();
-                setpos.load_places();
+				conf.latitude = view.get_center_latitude();
+				conf.longitude = view.get_center_longitude();
+				conf.zoom = view.get_zoom_level();
+				conf.save_settings();
+				setpos.load_places();
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("recentre",null);
         saq.activate.connect(() => {
-                centre_mission(ls.to_mission(), true);
+				centre_mission(ls.to_mission(), true);
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("mission-info",null);
         saq.activate.connect(() => {
-                if(msp.available && (serstate == SERSTATE.POLLER ||
-                                     serstate == SERSTATE.NORMAL)) {
-                    wpmgr.wp_flag |= WPDL.GETINFO;
-                    queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
-                }
+				if(msp.available && (serstate == SERSTATE.POLLER ||
+									 serstate == SERSTATE.NORMAL)) {
+					wpmgr.wp_flag |= WPDL.GETINFO;
+					queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
+				}
             });
         window.add_action(saq);
 
@@ -1958,21 +1992,21 @@ public class MWP : Gtk.Application {
 				var txpoll = nopoll;
 				var in_cli = false;
 				var devname = msp.get_devname();
-                if(msp.available && armed == 0) {
-                    mq.clear();
-                    serstate = SERSTATE.NONE;
+				if(msp.available && armed == 0) {
+					mq.clear();
+					serstate = SERSTATE.NONE;
 					nopoll = true;
-                    CLITerm t = new CLITerm(window);
-                    t.on_exit.connect(() => {
+					CLITerm t = new CLITerm(window);
+					t.on_exit.connect(() => {
 							MWPLog.message("Dead  terminal\n");
 							//							if (in_cli) {
-								serial_doom(conbutton);
-								try_reopen(devname);
-								//}
+							serial_doom(conbutton);
+							try_reopen(devname);
+							//}
 							nopoll = txpoll;
 							serstate = SERSTATE.NORMAL;
 							t=null;
-                        });
+						});
 					t.reboot.connect(() => {
 							MWPLog.message("Terminal reboot signalled\n");
 							in_cli = false;
@@ -1986,81 +2020,80 @@ public class MWP : Gtk.Application {
 							serstate = SERSTATE.NONE;
 						});
 					t.configure_serial(msp, true);
-                    t.show_all ();
-                }
-            });
+					t.show_all ();
+				}
+			});
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("reboot",null);
         saq.activate.connect(() => {
-                if(msp.available && armed == 0) {
-                    queue_cmd(MSP.Cmds.REBOOT,null, 0);
-                }
+				if(msp.available && armed == 0) {
+					queue_cmd(MSP.Cmds.REBOOT,null, 0);
+				}
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("audio",null);
         saq.activate.connect(() => {
-                var aon = audio_cb.active;
-                if(aon == false) {
-                    audio_cb.active = true;
-                }
-                navstatus.audio_test();
-                if(aon == false) {
-                    Timeout.add(1000, () => {
-                            audio_cb.active = false;
-                            return false;
-                        });
-                }
-            });
+				var aon = audio_cb.active;
+				if(aon == false) {
+					audio_cb.active = true;
+				}
+				navstatus.audio_test();
+				if(aon == false) {
+					Timeout.add(1000, () => {
+							audio_cb.active = false;
+							return false;
+						});
+				}
+			});
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("map-source",null);
         saq.activate.connect(() => {
-                var map_source_factory = Champlain.MapSourceFactory.dup_default();
-                var sources =  map_source_factory.get_registered();
-                foreach (Champlain.MapSourceDesc sr in sources) {
-                    if(view.map_source.get_id() == sr.get_id()) {
-                        msview.show_source(
-                            sr.get_name(),
-                            sr.get_id(),
-                            sr.get_uri_format (),
-                            sr.get_min_zoom_level(),
-                            sr.get_max_zoom_level());
+				var map_source_factory = Champlain.MapSourceFactory.dup_default();
+				var sources =  map_source_factory.get_registered();
+				foreach (Champlain.MapSourceDesc sr in sources) {
+					if(view.map_source.get_id() == sr.get_id()) {
+						msview.show_source(
+										   sr.get_name(),
+										   sr.get_id(),
+										   sr.get_uri_format (),
+										   sr.get_min_zoom_level(),
+										   sr.get_max_zoom_level());
                         break;
-                    }
-                }
+					}
+				}
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("seed-map",null);
         saq.activate.connect(() => {
-                mseed.run_seeder(view.map_source.get_id(),
-                                 (int)zoomer.adjustment.value,
-                                 view.get_bounding_box());
-
+				mseed.run_seeder(view.map_source.get_id(),
+								 (int)zoomer.adjustment.value,
+								 view.get_bounding_box());
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("gps-stats",null);
         saq.activate.connect(() => {
-                if(!gps_status.visible) {
-                    gps_status.update(gpsstats);
-                    gps_status.show();
-                }
+				if(!gps_status.visible) {
+					gps_status.update(gpsstats);
+					gps_status.show();
+				}
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("about",null);
         saq.activate.connect(() => {
-                about.show_all();
-                about.response.connect(() => {
-                        about.hide();
-                    });
-                about.delete_event.connect (() => {
-                        about.hide();
-                        return true;
-                    });
+				about.show_all();
+				about.response.connect(() => {
+						about.hide();
+					});
+				about.delete_event.connect (() => {
+						about.hide();
+						return true;
+					});
             });
         window.add_action(saq);
 
@@ -2075,119 +2108,172 @@ public class MWP : Gtk.Application {
 
         saq = new GLib.SimpleAction("upload-mission",null);
         saq.activate.connect(() => {
-                upload_mm(mdx, WPDL.GETINFO);
+				upload_mm(mdx, WPDL.GETINFO|WPDL.SAVE_FWA);
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("upload-missions",null);
         saq.activate.connect(() => {
-                upload_mm(-1, WPDL.GETINFO|WPDL.SET_ACTIVE);
+				upload_mm(-1, WPDL.GETINFO|WPDL.SAVE_FWA|WPDL.SET_ACTIVE);
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("download-mission",null);
         saq.activate.connect(() => {
-                download_mission();
+				download_mission();
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("restore-mission",null);
         saq.activate.connect(() => {
-                uint8 zb=0;
-                queue_cmd(MSP.Cmds.WP_MISSION_LOAD, &zb, 1);
+				uint8 zb=0;
+				queue_cmd(MSP.Cmds.WP_MISSION_LOAD, &zb, 1);
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("store-mission",null);
         saq.activate.connect(() => {
-                upload_mm(-1, WPDL.SAVE_EEPROM|WPDL.SET_ACTIVE);
+				upload_mm(-1, WPDL.SAVE_EEPROM|WPDL.SET_ACTIVE);
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("replay-log",null);
         saq.activate.connect(() => {
-                replay_log(true);
+				replay_log(true);
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("load-log",null);
         saq.activate.connect(() => {
-                replay_log(false);
+				replay_log(false);
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("replay-bb",null);
         saq.activate.connect(() => {
-                replay_bbox(true);
+				replay_bbox(true);
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("load-bb",null);
         saq.activate.connect(() => {
-                replay_bbox(false);
+				replay_bbox(false);
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("replay-otx",null);
         saq.activate.connect(() => {
-                bbl_delay = true;
-                replay_otx();
+				bbl_delay = true;
+				replay_otx();
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("load-otx",null);
         saq.activate.connect(() => {
-                bbl_delay = true;
-                replay_otx();
+				bbl_delay = true;
+				replay_otx();
             });
         window.add_action(saq);
         saq = new GLib.SimpleAction("replayraw",null);
         saq.activate.connect(() => {
-                replay_raw();
+				replay_raw();
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("stop-replay",null);
         saq.activate.connect(() => {
-                stop_replayer();
+				stop_replayer();
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("kml-load",null);
         saq.activate.connect(() => {
-                kml_load_dialog();
+				kml_load_dialog();
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("kml-remove",null);
         saq.activate.connect(() => {
-                kml_remove_dialog();
+				kml_remove_dialog();
             });
         window.add_action(saq);
 
         set_menu_state("kml-remove", false);
 
+        saq = new GLib.SimpleAction("gz-load",null);
+        saq.activate.connect(() => {
+				gz_load_dialog();
+            });
+        window.add_action(saq);
+
+        saq = new GLib.SimpleAction("gz-save",null);
+        saq.activate.connect(() => {
+				gz_save_dialog(false);
+            });
+        window.add_action(saq);
+
+        saq = new GLib.SimpleAction("gz-kml",null);
+        saq.activate.connect(() => {
+				gz_save_dialog(true);
+            });
+        window.add_action(saq);
+
+        saq = new GLib.SimpleAction("gz-edit",null);
+        saq.activate.connect(() => {
+				if(gzone == null) {
+					gzone = new Overlay(view);
+				}
+				set_gzsave_state(true);
+				gzedit.edit(gzone);
+            });
+        window.add_action(saq);
+
+        saq = new GLib.SimpleAction("gz-clear",null);
+        saq.activate.connect(() => {
+				if(gzone!=null) {
+					gzedit.clear();
+					gzone.remove();
+				}
+				gzr.reset();
+				set_gzsave_state(false);
+            });
+        window.add_action(saq);
+
+        saq = new GLib.SimpleAction("gz-dl",null);
+        saq.activate.connect(() => {
+				gzr.reset();
+				queue_gzone(0);
+            });
+        window.add_action(saq);
+        saq = new GLib.SimpleAction("gz-ul",null);
+        saq.activate.connect(() => {
+				gzcnt = 0;
+				var mbuf = gzr.encode(gzcnt);
+				queue_cmd(MSP.Cmds.SET_GEOZONE, mbuf, mbuf.length);
+            });
+        window.add_action(saq);
+
         saq = new GLib.SimpleAction("safe-homes",null);
         saq.activate.connect(() => {
-                safehomed.show(window);
+				safehomed.display();
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("navconfig",null);
         saq.activate.connect(() => {
-                navconf.show();
+				navconf.show();
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("flight-stats",null);
         saq.activate.connect(() => {
-                odoview.display(odo, false);
+				odoview.display(odo, false);
             });
         window.add_action(saq);
 
 		saq = new GLib.SimpleAction("vstream",null);
         saq.activate.connect(() => {
-                load_v4l2_video();
+				load_v4l2_video();
             });
         window.add_action(saq);
 
@@ -2195,99 +2281,98 @@ public class MWP : Gtk.Application {
 		lsaq.change_state.connect((s) => {
 				var b = s.get_boolean();
 				GCSIcon.default_location(view.get_center_latitude(),
-									 view.get_center_longitude());
+												 view.get_center_longitude());
 				GCSIcon.set_visible(b);
 				lsaq.set_state (s);
-		});
+			});
 		window.add_action(lsaq);
 
         saq = new GLib.SimpleAction("layout-save",null);
         saq.activate.connect(() => {
-                lman.save();
+				lman.save();
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("layout-restore",null);
         saq.activate.connect(() => {
-                lman.restore();
+				lman.restore();
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("mission-list",null);
         saq.activate.connect(() => {
-                show_dock_id(DOCKLETS.MISSION, false);
-            });
+				show_dock_id(DOCKLETS.MISSION, false);
+			});
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("gps-status",null);
         saq.activate.connect(() => {
-                show_dock_id(DOCKLETS.GPS, true);
+				show_dock_id(DOCKLETS.GPS, true);
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("nav-status",null);
         saq.activate.connect(() => {
-                show_dock_id(DOCKLETS.NAVSTATUS,true);
+				show_dock_id(DOCKLETS.NAVSTATUS,true);
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("bat-mon",null);
         saq.activate.connect(() => {
-                show_dock_id(DOCKLETS.VOLTAGE, true);
+				show_dock_id(DOCKLETS.VOLTAGE, true);
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("radio-status",null);
         saq.activate.connect(() => {
-                show_dock_id(DOCKLETS.RADIO, true);
+				show_dock_id(DOCKLETS.RADIO, true);
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("tel-stats",null);
         saq.activate.connect(() => {
-                show_dock_id(DOCKLETS.TELEMETRY, true);
+				show_dock_id(DOCKLETS.TELEMETRY, true);
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("art-hor",null);
         saq.activate.connect(() => {
-                show_dock_id(DOCKLETS.ARTHOR, true);
+				show_dock_id(DOCKLETS.ARTHOR, true);
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("flight-view",null);
         saq.activate.connect(() => {
-                show_dock_id(DOCKLETS.FBOX, true);
+				show_dock_id(DOCKLETS.FBOX, true);
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("direction-view",null);
         saq.activate.connect(() => {
-                show_dock_id(DOCKLETS.DBOX, true);
+				show_dock_id(DOCKLETS.DBOX, true);
             });
         window.add_action(saq);
         saq = new GLib.SimpleAction("vario-view",null);
         saq.activate.connect(() => {
-                show_dock_id(DOCKLETS.VBOX, true);
+				show_dock_id(DOCKLETS.VBOX, true);
             });
         window.add_action(saq);
         saq = new GLib.SimpleAction("radar-view",null);
         saq.activate.connect(() => {
-                radarv.show_or_hide();
+				radarv.show_or_hide();
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("ttrack-view",null);
         saq.activate.connect(() => {
-                ttrk.show_dialog();
+				ttrk.show_dialog();
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("keys",null);
         saq.activate.connect(() => {
-                scview.show_all();
+				scview.show_all();
             });
-
         window.add_action(saq);
 
         reboot_status();
@@ -2302,6 +2387,9 @@ public class MWP : Gtk.Application {
         set_menu_state("stop-replay", false);
         set_menu_state("mission-info", false);
         set_menu_state("followme", false);
+		set_menu_state("gz-dl", false);
+		set_menu_state("gz-ul", false);
+		set_gzsave_state(false);
 
         art_win = new ArtWin(conf.ah_inv_roll);
 
@@ -2336,7 +2424,7 @@ public class MWP : Gtk.Application {
 		view = embed.get_view();
         view.set_reactive(true);
 		view.animate_zoom = true;
-
+		gzedit = new GZEdit(window, gzr, view);
         var place_editor = new PlaceEdit(window, view);
         setpos.place_edit.connect(() => {
                 place_editor.show();
@@ -2429,7 +2517,7 @@ public class MWP : Gtk.Application {
         view.set_keep_center_on_resize(true);
 
         prefs = new PrefsDialog(builder, window);
-        prefs.done.connect((id) => {
+		prefs.done.connect((id) => {
                 if(id  == 1001) {
                     prefs.update_conf(ref conf);
                     build_serial_combo();
@@ -2441,18 +2529,19 @@ public class MWP : Gtk.Application {
 
         add_source_combo(conf.defmap,msources);
 
-        mlayer = new MeasureLayer(window, view);
-
+		var measure =  new Measure(window, view);
         var ag = new Gtk.AccelGroup();
         ag.connect('d', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
-                int mx = 0;
-                int my = 0;
-                Gdk.Display display = Gdk.Display.get_default ();
-                var seat = display.get_default_seat();
-                var ptr = seat.get_pointer();
-                embed.get_window().get_device_position(ptr, out mx, out my, null);
-                mlayer.toggle_state(window, view, mx ,my);
-                return true;
+			  if(!Measure.active) {
+				  int mx = 0;
+				  int my = 0;
+				  Gdk.Display display = Gdk.Display.get_default ();
+				  var seat = display.get_default_seat();
+				  var ptr = seat.get_pointer();
+				  embed.get_window().get_device_position(ptr, out mx, out my, null);
+				  measure.run(mx,my);
+			  }
+			  return true;
           });
 
         ag.connect('?', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
@@ -2636,7 +2725,7 @@ public class MWP : Gtk.Application {
                         Logger.fcinfo(last_file,vi,capability,profile, boxnames,
                                       vname, devnam);
 						if(gzone != null) {
-							Logger.logstring("geozone", GeoZoneReader.to_string());
+							Logger.logstring("geozone", gzr.to_string());
 						}
 					}
                 }
@@ -2770,7 +2859,7 @@ public class MWP : Gtk.Application {
                 var ms = new Mission();
                 ms.set_ways(wp_resp);
 
-                ls.import_mission(ms, (conf.rth_autoland && Craft.is_mr(vi.mrtype)));
+                ls.import_mission(ms, mdx, (conf.rth_autoland && Craft.is_mr(vi.mrtype)));
                 markers.add_list_store(ls);
                 NavStatus.nm_pts = (uint8)wp_resp.length;
                 NavStatus.have_rth = (wp_resp[n-1].action == MSP.Action.RTH);
@@ -2865,8 +2954,9 @@ public class MWP : Gtk.Application {
 			}
         }
         map_centre_on(clat, clon);
-        if (check_zoom_sanity(zm))
-            view.zoom_level = zm;
+		if (check_zoom_sanity(zm)) {
+			view.zoom_level = zm;
+		}
 
         msp.force4 = force4;
         msp.serial_lost.connect(() => {
@@ -3361,15 +3451,7 @@ public class MWP : Gtk.Application {
 	}
 
     private void kml_load_dialog() {
-        Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
-            "Select Overlay(s)", null, Gtk.FileChooserAction.OPEN,
-            "_Cancel",
-            Gtk.ResponseType.CANCEL,
-            "_Open",
-            Gtk.ResponseType.ACCEPT);
-        chooser.select_multiple = true;
-
-        chooser.set_transient_for(window);
+		var chooser = new Acme.FileChooser(Gtk.FileChooserAction.OPEN, window, "Open KML/Z files");
         Gtk.FileFilter filter = new Gtk.FileFilter ();
         StringBuilder sb = new StringBuilder("KML");
         filter.add_pattern ("*.kml");
@@ -3384,7 +3466,9 @@ public class MWP : Gtk.Application {
         filter.set_filter_name ("All files");
         filter.add_pattern ("*");
         chooser.add_filter (filter);
-        if(conf.kmlpath != null)
+		chooser.select_multiple = true;
+
+		if(conf.kmlpath != null)
             chooser.set_current_folder (conf.kmlpath);
 
         chooser.response.connect((id) => {
@@ -3395,20 +3479,53 @@ public class MWP : Gtk.Application {
                         if(is_kml_loaded(fn) == false)
                             try_load_overlay(fn);
                     }
-                } else
+                } else {
+                    chooser.close ();
+				}
+				chooser.destroy();
+            });
+		chooser.run(null);
+    }
+
+    private void gz_load_dialog() {
+		var chooser = new Acme.FileChooser(Gtk.FileChooserAction.OPEN,window, "Open GeoZone File");
+        chooser.select_multiple = false;
+        Gtk.FileFilter filter = new Gtk.FileFilter ();
+        filter.add_pattern ("*.txt");
+        filter.set_filter_name ("txt files");
+        chooser.add_filter (filter);
+        filter = new Gtk.FileFilter ();
+        filter.set_filter_name ("All files");
+        filter.add_pattern ("*");
+        chooser.add_filter (filter);
+		//        if(conf.kmlpath != null)
+        //    chooser.set_current_folder (conf.kmlpath);
+
+        chooser.response.connect((id) => {
+                if (id == Gtk.ResponseType.ACCEPT) {
+					var fns = chooser.get_filename ();
+                    chooser.close ();
+					gzr.from_file(fns);
+					if(gzone != null) {
+						gzedit.clear();
+						gzone.remove();
+						set_gzsave_state(false);
+					}
+					gzone = gzr.generate_overlay(view);
+					gzone.display();
+					gzedit.refresh(gzone);
+					set_gzsave_state(true);
+				} else
                     chooser.close ();
             });
-        chooser.show_all();
+        chooser.run();
     }
 
     private void kml_remove_dialog() {
-        var dialog = new Dialog.with_buttons ("Remove Overlays", null,
-                                              DialogFlags.DESTROY_WITH_PARENT,
-                                              "Cancel", ResponseType.CANCEL,
-                                              "OK", ResponseType.OK);
-
+		var dialog = new Gtk.Window();
+		dialog.title = "Remove Overlays";
         Gtk.Box box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
-        var content = dialog.get_content_area ();
+        var content = new Gtk.Box (Gtk.Orientation.VERTICAL, 4);
         content.pack_start (box, false, false, 0);
 
         CheckButton[] btns = {};
@@ -3422,22 +3539,35 @@ public class MWP : Gtk.Application {
             box.pack_start (button, false, false, 0);
         }
 
-        box.show_all ();
-		dialog.show();
-        dialog.response.connect((resp) => {
-                if (resp == ResponseType.OK) {
-                    var i = btns.length;
-                    foreach (var b in btns) {
-                        i--;
-                        if(b.get_active()) {
-                            kmls.index(i).remove_overlay();
-                            kmls.remove_index(i);
-                        }
-                    }
-                }
+		Gtk.ButtonBox bbox = new Gtk.ButtonBox (Gtk.Orientation.HORIZONTAL);
+		bbox.set_layout (Gtk.ButtonBoxStyle.END);
+		bbox.set_spacing (5);
+
+		var button = new Button.with_label("OK");
+		button.clicked.connect(()=> {
+				var i = btns.length;
+				foreach (var b in btns) {
+					i--;
+					if(b.get_active()) {
+						kmls.index(i).remove_overlay();
+						kmls.remove_index(i);
+					}
+				}
                 set_menu_state("kml-remove", (kmls.length != 0));
-                dialog.destroy ();
-            });
+				dialog.destroy();
+			});
+		bbox.add(button);
+
+		button = new Button.with_label("Cancel");
+		button.clicked.connect(()=> {
+				set_menu_state("kml-remove", (kmls.length != 0));
+				dialog.destroy();
+			});
+
+		bbox.add(button);
+		content.pack_end(bbox);
+		dialog.add(content);
+		dialog.show_all();
     }
 
     private void remove_all_kml() {
@@ -4568,7 +4698,7 @@ public class MWP : Gtk.Application {
                 unichar c = s.get_char(0);
 
                 if(c == '<') {
-                    msx = XmlIO.read_xml_string(s);
+                    msx = XmlIO.read_xml_string(s, true);
 				} else
                     msx = JsonIO.from_json(s);
 
@@ -4816,15 +4946,30 @@ public class MWP : Gtk.Application {
 
     private void setup_buttons() {
         embed.button_release_event.connect((evt) => {
-                if(evt.button == 3)
-                    if(!ls.pop_marker_menu(evt))
-                        safehomed.pop_menu(evt);
+                if(evt.button == 3) {
+					var popreq = popqueue.try_pop();
+					if(popreq != null) {
+						switch (popreq.id) {
+						case POPSOURCE.Mission:
+							ls.pop_marker_menu(evt, popreq);
+							return true;
+						case POPSOURCE.Geozone:
+							gzedit.popup(evt, popreq);
+							return true;
+						case POPSOURCE.Safehome:
+							safehomed.pop_menu(evt, popreq);
+							return true;
+						default:
+							break;
+						}
+					}
+				}
                 return false;
             });
 
         view.button_release_event.connect((evt) => {
                 bool ret = false;
-                if (evt.button == 1 && wp_edit && !mlayer.is_active()) {
+                if (evt.button == 1 && wp_edit && !Measure.active) {
                     if(!map_moved()) {
                         insert_new_wp(evt.x, evt.y);
                         ret = true;
@@ -5859,9 +6004,11 @@ public class MWP : Gtk.Application {
                 if(replayer == Player.NONE) {
                     MWPLog.message("switch val == %08x (%08x)\n", bxflag, lmask);
                     if(Craft.is_mr(vi.mrtype) && ((bxflag & lmask) == 0) && robj == null) {
-                        if(conf.checkswitches)
+                        if(conf.checkswitches) {
                             swd.runner();
+						}
                     }
+
                     if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
                         queue_cmd(MSP.Cmds.NAV_CONFIG,null,0);
                     else if((navcap & NAVCAPS.INAV_MR)!= 0)
@@ -6189,22 +6336,26 @@ public class MWP : Gtk.Application {
 			if(nwp > 0) {
 				msx = mmsx;
 				setup_mission_from_mm();
-				MWPLog.message("Download completed #%d\n", nwp);
+				MWPLog.message("Download completed #%d (%d)\n", nwp, mdx);
 				validatelab.set_text("✔"); // u+2714
+				wp_get_approaches(0);
 			} else {
 				Utils.warning_box("Fallback safe mission, 0 points", Gtk.MessageType.INFO,10);
 				MWPLog.message("Fallback safe mission\n");
 			}
-			MWPCursor.set_normal_cursor(window);
-            remove_tid(ref upltid);
-            wp_reset_poller();
 		} else {
             validatelab.set_text("WP:%3d".printf(w.wp_no));
 			request_wp(w.wp_no+1);
 		}
 	}
 
-    private void process_msp_analog(MSP_ANALOG an) {
+	private void reset_wp_dl() {
+		MWPCursor.set_normal_cursor(window);
+		remove_tid(ref upltid);
+		wp_reset_poller();
+	}
+
+	private void process_msp_analog(MSP_ANALOG an) {
         if ((replayer & Player.MWP) == Player.NONE) {
             if(have_mspradio)
                 an.rssi = 0;
@@ -6316,6 +6467,7 @@ public class MWP : Gtk.Application {
     private void msp_publish_home(uint8 id) {
         if(id < SAFEHOMES.maxhomes) {
             var h = safehomed.get_home(id);
+			// safehome FIXME
             uint8 tbuf[10];
             tbuf[0] = id;
             tbuf[1] = (h.enabled) ? 1 : 0;
@@ -6325,10 +6477,33 @@ public class MWP : Gtk.Application {
             SEDE.serialise_i32(&tbuf[6], ll);
             queue_cmd(MSP.Cmds.SET_SAFEHOME, tbuf, 10);
         } else {
-            queue_cmd(MSP.Cmds.EEPROM_WRITE,null, 0);
-        }
+			if (vi.fc_vers >= FCVERS.hasFWApp) {
+				safeindex = 0;
+				last_safehome = SAFEHOMES.maxhomes;
+				var b = FWApproach.serialise(0);
+				queue_cmd(MSP.Cmds.SET_FW_APPROACH, b, b.length);
+			} else {
+				queue_cmd(MSP.Cmds.EEPROM_WRITE,null, 0);
+			}
+		}
         run_queue();
     }
+
+	private int mission_has_land(int idx) {
+		if (vi.fc_vers >= FCVERS.hasFWApp) {
+			if (msx != null) {
+				for(var j = idx; j < msx.length; j++) {
+					MissionItem [] mis = msx[j].get_ways();
+					foreach(MissionItem mi in mis) {
+						if(mi.action == MSP.Action.LAND) {
+							return j;
+						}
+					}
+				}
+			}
+		}
+		return -1;
+	}
 
     private int16 calc_vario(int ealt) {
         int16 diff = 0;
@@ -6353,6 +6528,61 @@ public class MWP : Gtk.Application {
 		wpmgr.wp_flag = 0;
 		wpmgr.wps = {};
 		reset_poller();
+	}
+
+	private void wp_get_approaches(int j) {
+		j = mission_has_land(j);
+		if(j != -1) {
+			lastm = nticks;
+			uint8 k = (uint8)(j+SAFEHOMES.maxhomes);
+			last_safehome = k+1;
+			queue_cmd(MSP.Cmds.FW_APPROACH, &k, 1);
+		} else {
+			reset_wp_dl();
+			if (ls.get_list_size() > 0)
+				ls.refresh_mission();
+		}
+	}
+
+	private void wp_set_approaches(int j) {
+		wpmgr.wp_flag &= ~WPDL.SAVE_FWA;
+		j = mission_has_land(j);
+		if(j == -1) {
+			handle_extra_up_tasks();
+		} else {
+			serstate = SERSTATE.EXTRA_WP;
+			lastm = nticks;
+			safeindex = SAFEHOMES.maxhomes+j;
+			last_safehome = SAFEHOMES.maxhomes+j+1;
+			var b = FWApproach.serialise(safeindex);
+			queue_cmd(MSP.Cmds.SET_FW_APPROACH, b, b.length);
+		}
+	}
+
+	private void handle_extra_up_tasks() {
+		if ((wpmgr.wp_flag & WPDL.DOWNLOAD) != 0) {
+			wpmgr.wp_flag &= ~WPDL.DOWNLOAD;
+			download_mission();
+		} else if ((wpmgr.wp_flag & WPDL.SET_ACTIVE) != 0) {
+			wpmgr.wp_flag &= ~WPDL.SET_ACTIVE;
+			if(vi.fc_vers >= FCVERS.hasWP_V4) {
+				uint8 msg[128];
+				var s = "nav_wp_multi_mission_index";
+				var k = 0;
+				for(k =0; k < s.length; k++) {
+					msg[k] = s.data[k];
+				}
+				msg[k] = 0;
+				msg[k+1] = (uint8)mdx+1;
+				MWPLog.message("Set active %d\n", msg[k+1]);
+				queue_cmd(MSP.Cmds.COMMON_SET_SETTING, msg, k+2);
+			}
+		} else if ((wpmgr.wp_flag & WPDL.RESET_POLLER) != 0) {
+			wp_reset_poller();
+		}
+		if(last_wp_pts > 0 /*&& wpi.wps_valid == 1*/ && ls.get_list_size() == 0) {
+			need_mission = true;
+		}
 	}
 
 	private void queue_gzone(int cnt) {
@@ -6447,8 +6677,8 @@ public class MWP : Gtk.Application {
 				run_queue();
 				break;
 			case  MSP.Cmds.WP_GETINFO:
-			case  MSP.Cmds.COMMON_SETTING:
 			case  MSP.Cmds.SET_RTC:
+			case  MSP.Cmds.COMMON_SETTING:
 				run_queue();
 				break;
 			case MSP.Cmds.COMMON_SET_TZ:
@@ -6679,31 +6909,49 @@ public class MWP : Gtk.Application {
 				navstatus.amp_hide(true);
 
 			if(conf.need_telemetry && (0 == (feature_mask & MSP.Feature.TELEMETRY)))
-                    Utils.warning_box("TELEMETRY requested but not enabled in iNav", Gtk.MessageType.ERROR);
+                    Utils.warning_box("TELEMETRY requested but not enabled in INAV", Gtk.MessageType.ERROR);
 			if ((feature_mask & MSP.Feature.GEOZONE) == MSP.Feature.GEOZONE) {
-				GeoZoneReader.reset();
-				queue_gzone(0);
+				set_menu_state("gz-dl", true);
+				set_menu_state("gz-ul", true);
+				if(conf.autoload_geozones) {
+					gzr.reset();
+					queue_gzone(0);
+					gz_from_msp = true;
+				}
 			} else {
 				queue_cmd(MSP.Cmds.BLACKBOX_CONFIG,null,0);
 			 }
 			 break;
 
 		case MSP.Cmds.GEOZONE:
-			var cnt = GeoZoneReader.append(raw, len);
-			if (cnt >= GeoZoneReader.MAXGZ) {
-				if(gzone != null)
+			gzedit.clear();
+			var cnt = gzr.append(raw, len);
+			if (cnt >= GeoZoneManager.MAXGZ) {
+				if(gzone != null) {
 					gzone.remove();
-				gzone = GeoZoneReader.generate_overlay(view);
+					set_gzsave_state(false);
+				}
+				gzone = gzr.generate_overlay(view);
+				set_gzsave_state(true);
 				Idle.add(() => {
 						gzone.display();
+						gzedit.refresh(gzone);
 						if (Logger.is_logging) {
-							Logger.logstring("geozone", GeoZoneReader.to_string());
+							Logger.logstring("geozone", gzr.to_string());
 						}
 						return false;
 					});
 				queue_cmd(MSP.Cmds.BLACKBOX_CONFIG,null,0);
 			} else {
 				queue_gzone(cnt);
+			}
+			break;
+
+		case MSP.Cmds.SET_GEOZONE:
+			gzcnt++;
+			if (gzcnt < GeoZoneManager.MAXGZ) {
+				var mbuf = gzr.encode(gzcnt);
+				queue_cmd(MSP.Cmds.SET_GEOZONE, mbuf, mbuf.length);
 			}
 			break;
 
@@ -6999,13 +7247,20 @@ public class MWP : Gtk.Application {
                     if(vi.fc_vers > FCVERS.hasJUMP && vi.fc_vers <= FCVERS.hasPOI) { // also 2.6 feature
 						request_common_setting("nav_rth_home_offset_distance");
                     }
-                }
+					request_common_setting("safehome_max_distance");
+					if(vi.fc_vers >= FCVERS.hasFWApp) {
+						request_common_setting("nav_fw_land_approach_length");
+					}
+				}
                 queue_cmd(msp_get_status,null,0);
 				if(sh_load == "-FC-") {
-					MWPLog.message("Load FC safehomes\n");
-					last_safehome = 7;
-					uint8 shid = 0;
-					queue_cmd(MSP.Cmds.SAFEHOME,&shid,1);
+					Timeout.add(1200, () => {
+							last_safehome = SAFEHOMES.maxhomes;
+							uint8 shid = 0;
+							MWPLog.message("Load FC safehomes\n");
+							queue_cmd(MSP.Cmds.SAFEHOME,&shid,1);
+							return false;
+						});
 				}
                 break;
 
@@ -7023,31 +7278,42 @@ public class MWP : Gtk.Application {
 			switch ((string)lastmsg.data) {
 			case "nav_wp_multi_mission_index":
 				MWPLog.message("Received mm index %u\n", raw[0]);
-						 if (raw[0] > 0) {
-							 imdx = raw[0]-1;
-						 } else {
-							 imdx = 0;
-						 }
-						 if ((wpmgr.wp_flag & WPDL.KICK_DL) != 0) {
-							 wpmgr.wp_flag &= ~WPDL.KICK_DL;
-							 start_download();
-						 }
-						 break;
-			 case "gps_min_sats":
-				 msats = raw[0];
-				 MWPLog.message("Received gps_min_sats %u\n", msats);
+				if (raw[0] > 0) {
+					imdx = raw[0]-1;
+				} else {
+					imdx = 0;
+				}
+				if ((wpmgr.wp_flag & WPDL.KICK_DL) != 0) {
+					wpmgr.wp_flag &= ~WPDL.KICK_DL;
+					start_download();
+				}
+				break;
+			case "gps_min_sats":
+				msats = raw[0];
+				MWPLog.message("Received gps_min_sats %u\n", msats);
+				break;
+			case "nav_wp_safe_distance":
+				SEDE.deserialise_u16(raw, out nav_wp_safe_distance);
+				wpdist = nav_wp_safe_distance / 100;
+				MWPLog.message("Received nav_wp_safe_distance %um\n", wpdist);
+				break;
+			case "safehome_max_distance":
+				SEDE.deserialise_u16(raw, out safehome_max_distance);
+				safehome_max_distance /= 100;
+				safehomed.set_distance(safehome_max_distance);
+				MWPLog.message("Received safehome_max_distance %um\n", wpdist);
+				break;
+			case "nav_wp_max_safe_distance":
+				SEDE.deserialise_u16(raw, out nav_wp_safe_distance);
+				wpdist = nav_wp_safe_distance;
+				MWPLog.message("Received nav_wp_max_safe_distance %um\n", safehome_max_distance);
 				 break;
-			 case "nav_wp_safe_distance":
-				 SEDE.deserialise_u16(raw, out nav_wp_safe_distance);
-				 wpdist = nav_wp_safe_distance / 100;
-				 MWPLog.message("Received nav_wp_safe_distance %um\n", wpdist);
-				 break;
-			 case "nav_wp_max_safe_distance":
-				 SEDE.deserialise_u16(raw, out nav_wp_safe_distance);
-				 wpdist = nav_wp_safe_distance;
-				 MWPLog.message("Received nav_wp_max_safe_distance %um\n", wpdist);
-				 break;
-			 case "inav_max_eph_epv":
+			case "nav_fw_land_approach_length":
+				SEDE.deserialise_u32(raw, out FWPlot.nav_fw_land_approach_length);
+				FWPlot.nav_fw_land_approach_length /= 100;
+				MWPLog.message("fw_land_approach len %u m\n", FWPlot.nav_fw_land_approach_length);
+				break;
+			case "inav_max_eph_epv":
 				 uint32 ift;
 				 SEDE.deserialise_u32(raw, out ift);
 				 // This stupidity is for Mint ...
@@ -7097,7 +7363,7 @@ public class MWP : Gtk.Application {
 				 arm_warn.show();
 				 break;
 
-		 case MSP.Cmds.WP_GETINFO:
+		case MSP.Cmds.WP_GETINFO:
 			 var wpi = MSP_WP_GETINFO();
 			 uint8* rp = raw;
 			 rp++;
@@ -7112,28 +7378,11 @@ public class MWP : Gtk.Application {
 				 Utils.warning_box(s, Gtk.MessageType.INFO, 5);
 				 wpmgr.wp_flag &= ~WPDL.GETINFO;
 			 }
-			 if ((wpmgr.wp_flag & WPDL.DOWNLOAD) != 0) {
-				 wpmgr.wp_flag &= ~WPDL.DOWNLOAD;
-				 download_mission();
-			 } else if ((wpmgr.wp_flag & WPDL.SET_ACTIVE) != 0) {
-				 wpmgr.wp_flag &= ~WPDL.SET_ACTIVE;
-				 if(vi.fc_vers >= FCVERS.hasWP_V4) {
-					 uint8 msg[128];
-					 var s = "nav_wp_multi_mission_index";
-					 var k = 0;
-					 for(k =0; k < s.length; k++) {
-						 msg[k] = s.data[k];
-					 }
-					 msg[k] = 0;
-					 msg[k+1] = (uint8)mdx+1;
-					 MWPLog.message("Set active %d\n", msg[k+1]);
-					 queue_cmd(MSP.Cmds.COMMON_SET_SETTING, msg, k+2);
-				 }
-			 } else if ((wpmgr.wp_flag & WPDL.RESET_POLLER) != 0) {
-				 wp_reset_poller();
-			 }
-			 if(wpi.wp_count > 0 && wpi.wps_valid == 1 && ls.get_list_size() == 0) {
-				 need_mission = true;
+
+			 if((wpmgr.wp_flag & WPDL.SAVE_FWA) != 0) {
+				 wp_set_approaches(0);
+			 } else {
+				 handle_extra_up_tasks();
 			 }
 			 break;
 
@@ -7410,11 +7659,13 @@ public class MWP : Gtk.Application {
 							queue_cmd(MSP.Cmds.WP_MISSION_SAVE, &zb, 1);
 						} else if ((wpmgr.wp_flag & WPDL.GETINFO) != 0) {
 							wpmgr.wp_flag |= WPDL.SET_ACTIVE|WPDL.RESET_POLLER;
-                            if(inav)
+
+							if(inav)
                                 queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
-                            else
+                            else {
                                 wpmgr.wp_flag = WPDL.RESET_POLLER;
                                 wp_reset_poller();
+							}
                             validatelab.set_text("✔"); // u+2714
 							Utils.warning_box("Mission uploaded", Gtk.MessageType.INFO,5);
 						} else if ((wpmgr.wp_flag & WPDL.FOLLOW_ME) !=0 ) {
@@ -7432,9 +7683,24 @@ public class MWP : Gtk.Application {
                 handle_mm_download(raw, len);
                 break;
 
-            case MSP.Cmds.SAFEHOME:
+		case MSP.Cmds.FW_APPROACH:
+			var id = FWApproach.deserialise(raw, len);
+			if(id == last_safehome-1) {
+				if(id ==SAFEHOMES.maxhomes-1) {
+					safehomed.set_status(sh_disp);
+				} else {
+					wp_get_approaches(id+1-SAFEHOMES.maxhomes);
+				}
+			} else {
+				id++;
+				queue_cmd(MSP.Cmds.FW_APPROACH,&id,1);
+			}
+			break;
+
+		case MSP.Cmds.SAFEHOME:
                 uint8* rp = raw;
                 uint8 id = *rp++;
+				// safehome FIXME
                 SafeHome shm = SafeHome();
                 shm.enabled = (*rp == 1) ? true : false;
                 rp++;
@@ -7445,19 +7711,42 @@ public class MWP : Gtk.Application {
                 shm.lon = ll / 10000000.0;
                 safehomed.receive_safehome(id, shm);
                 id += 1;
-                if (id < 8 && id <= last_safehome) {
+                if (id < SAFEHOMES.maxhomes && id < last_safehome) {
                     queue_cmd(MSP.Cmds.SAFEHOME,&id,1);
 				} else {
 					safehomed.set_status(sh_disp);
+					id = 0;
+					last_safehome = SAFEHOMES.maxhomes;
+					queue_cmd(MSP.Cmds.FW_APPROACH,&id,1);
 				}
                 break;
 
 		    case MSP.Cmds.SET_SAFEHOME:
+				// safehome FIXME
                 safeindex += 1;
                 msp_publish_home(safeindex);
                 break;
 
-            case MSP.Cmds.WP_MISSION_SAVE:
+		case MSP.Cmds.SET_FW_APPROACH:
+			safeindex++;
+			if(safeindex == last_safehome) {
+				if(safeindex <= SAFEHOMES.maxhomes) {
+					queue_cmd(MSP.Cmds.EEPROM_WRITE,null, 0);
+				} else {
+					wp_set_approaches(safeindex-SAFEHOMES.maxhomes);
+				}
+			} else {
+				if(safeindex < FWAPPROACH.maxapproach) {
+					var b = FWApproach.serialise(safeindex);
+					queue_cmd(MSP.Cmds.SET_FW_APPROACH, b, b.length);
+				} else {
+					MWPLog.message("BUG: unexpected req for SET_FW %d\n", safeindex);
+				}
+			}
+			//			run_queue();
+			break;
+
+		case MSP.Cmds.WP_MISSION_SAVE:
                 MWPLog.message("Confirmed mission save\n");
 				if ((wpmgr.wp_flag & WPDL.GETINFO) != 0) {
                     if(inav)
@@ -7489,10 +7778,12 @@ public class MWP : Gtk.Application {
             case MSP.Cmds.PRIV_TEXT_GEOZ:
 				if (gzone == null) {
 					var txt = (string)raw[0:len];
-					GeoZoneReader.from_string(txt);
-					if(gzone != null)
+					gzr.from_string(txt);
+					if(gzone != null) {
+						set_gzsave_state(false);
 						gzone.remove();
-					gzone = GeoZoneReader.generate_overlay(view);
+					}
+					gzone = gzr.generate_overlay(view);
 					Idle.add(() => {
 							gzone.display();
 							return false;
@@ -8945,9 +9236,14 @@ public class MWP : Gtk.Application {
         set_replay_menus(true);
         reboot_status();
 		if(gzone != null) {
-			GeoZoneReader.dump(gzone, vname);
-			gzone.remove();
-			gzone = null;
+			if(gz_from_msp) {
+				gzr.dump(gzone, vname);
+				gzone.remove();
+				gzone = null;
+				gzr.reset();
+				set_gzsave_state(false);
+				gz_from_msp = false;
+			}
 		}
 		if(sh_load == "-FC-") {
 			safehomed.remove_homes();
@@ -8992,6 +9288,11 @@ public class MWP : Gtk.Application {
 		}
 		if(vi.fc_vers >= FCVERS.hasWP_V4)
 			set_menu_state("upload-missions", state);
+
+		if((feature_mask & MSP.Feature.GEOZONE) != 0) {
+			set_menu_state("gz-dl", state);
+			set_menu_state("gz-ul", state);
+		}
 	}
 
     private void init_sstats() {
@@ -9366,7 +9667,7 @@ Error: <i>%s</i>
 		}
 		if(is_dirty) {
             var dirtyd = new DirtyDialog(cancel);
-            dirtyd.response.connect((id) => {
+			dirtyd.response.connect((id) => {
                     switch(id) {
                     case ResponseType.YES:
                         on_file_save_as(func);
@@ -9377,7 +9678,7 @@ Error: <i>%s</i>
                     default:
                         break;
                     }
-                    dirtyd.close();
+                    dirtyd.destroy();
                 });
             dirtyd.show_all();
 		} else {
@@ -9402,7 +9703,7 @@ Error: <i>%s</i>
 		ms_from_loader = true;
 		Mission _ms = null;
 		bool is_j = fn.has_suffix(".json");
-		var _msx =  (is_j) ? JsonIO.read_json_file(fn) : XmlIO.read_xml_file (fn);
+		var _msx =  (is_j) ? JsonIO.read_json_file(fn) : XmlIO.read_xml_file (fn, true);
 		if (_msx == null)
 			return null;
 
@@ -9481,13 +9782,7 @@ Error: <i>%s</i>
 	}
 
     private void on_file_save_as (ActionFunc? func) {
-        Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
-            "Save to mission file", null, Gtk.FileChooserAction.SAVE,
-            "_Cancel",
-            Gtk.ResponseType.CANCEL,
-            "_Save",
-            Gtk.ResponseType.ACCEPT);
-        chooser.set_transient_for(window);
+		var chooser = new Acme.FileChooser(Gtk.FileChooserAction.SAVE, window, "Save Mission File");
         chooser.select_multiple = false;
         Gtk.FileFilter filter = new Gtk.FileFilter ();
         if(conf.missionpath != null)
@@ -9512,7 +9807,7 @@ Error: <i>%s</i>
 					dialog.remitems.connect((mitem) => {
 							smask = mitem;
 					});
-					dialog.set_transient_for(chooser);
+					dialog.set_transient_for(window);
                     dialog.show_all();
 				});
 			chooser.set_extra_widget(btn);
@@ -9532,7 +9827,48 @@ Error: <i>%s</i>
                     func();
                 }
             });
-		chooser.show();
+		chooser.run();
+    }
+
+    private void gz_save_dialog (bool iskml) {
+		var chooser = new Acme.FileChooser(Gtk.FileChooserAction.SAVE, window, "Save Geozone File");
+
+        chooser.select_multiple = false;
+        Gtk.FileFilter filter = new Gtk.FileFilter ();
+
+		if(iskml) {
+			filter.set_filter_name ("KML");
+			filter.add_pattern ("*.kml");
+		} else {
+			filter.set_filter_name ("Text");
+			filter.add_pattern ("*.txt");
+		}
+        chooser.add_filter (filter);
+        filter = new Gtk.FileFilter ();
+        filter.set_filter_name ("All Files");
+        filter.add_pattern ("*");
+        chooser.add_filter (filter);
+
+        chooser.response.connect((id) => {
+                if (id == Gtk.ResponseType.ACCEPT) {
+                    var fn = chooser.get_filename ();
+                    chooser.close ();
+					string s;
+					if(iskml) {
+						s = KMLWriter.ovly_to_string(gzone);
+						try {
+							FileUtils.set_contents(fn,s );
+						} catch (Error e) {
+							MWPLog.message("GZ Save %s %s\n", fn,e.message);
+						}
+					} else {
+						gzr.save_file(fn);
+					}
+				} else {
+                    chooser.close ();
+                }
+            });
+		chooser.run();
     }
 
     private void update_title_from_file(string fname) {
@@ -9581,7 +9917,7 @@ Error: <i>%s</i>
             craft.init_trail();
         }
         validatelab.set_text("");
-        ls.import_mission(ms, (conf.rth_autoland && Craft.is_mr(vi.mrtype)));
+        ls.import_mission(ms, mdx, (conf.rth_autoland && Craft.is_mr(vi.mrtype)));
         NavStatus.have_rth = ls.have_rth;
 		centre_mission(ms, true);
         if(have_home)
@@ -9610,17 +9946,12 @@ Error: <i>%s</i>
 
 
     private void on_file_open(bool append=false) {
-        Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
-            "Open a mission file", null, Gtk.FileChooserAction.OPEN,
-            "_Cancel",
-            Gtk.ResponseType.CANCEL,
-            "_Open",
-            Gtk.ResponseType.ACCEPT);
+		var chooser = new Acme.FileChooser(Gtk.FileChooserAction.OPEN,
+										   window, "Open Mission File" );
         chooser.select_multiple = false;
         if(conf.missionpath != null)
             chooser.set_current_folder (conf.missionpath);
 
-        chooser.set_transient_for(window);
         Gtk.FileFilter filter = new Gtk.FileFilter ();
         filter.set_filter_name ("Mission");
         filter.add_pattern ("*.mission");
@@ -9652,7 +9983,8 @@ Error: <i>%s</i>
                     var fn = uri.substring (7);
                     if(!FileUtils.test (fn, FileTest.IS_DIR)) {
 						bool is_j = fn.has_suffix(".json");
-						var tmpmsx =  (is_j) ? JsonIO.read_json_file(fn) : XmlIO.read_xml_file (fn);
+						var tmpmsx =  (is_j) ? JsonIO.read_json_file(fn) :
+							XmlIO.read_xml_file (fn);
 						if (tmpmsx.length > 0) {
 							int k = 0;
 							mdx = 0;
@@ -9698,8 +10030,7 @@ Error: <i>%s</i>
                 } else
                     prebox.hide ();
             });
-        chooser.show_all();
-        chooser.modal = false;
+
         chooser.response.connect((id) => {
                 if (id == Gtk.ResponseType.ACCEPT) {
                     var fn = chooser.get_filename ();
@@ -9712,6 +10043,7 @@ Error: <i>%s</i>
                     chooser.destroy ();
                 }
         });
+		chooser.run();
     }
 
     private void replay_otx(string? fn = null) {
@@ -9726,14 +10058,8 @@ Error: <i>%s</i>
         if(thr != null) {
             robj.stop();
         } else {
-            Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
-            "Select a log file", null, Gtk.FileChooserAction.OPEN,
-            "_Cancel",
-            Gtk.ResponseType.CANCEL,
-            "_Open",
-            Gtk.ResponseType.ACCEPT);
+			var chooser = new Acme.FileChooser(Gtk.FileChooserAction.OPEN, window, "Select a log file");
             chooser.select_multiple = false;
-            chooser.set_transient_for(window);
             Gtk.FileFilter filter = new Gtk.FileFilter ();
             filter.set_filter_name ("Log");
             filter.add_pattern ("*.log");
@@ -9755,8 +10081,9 @@ Error: <i>%s</i>
                     }
                     else
                         chooser.close ();
+					chooser.destroy();
                 });
-            chooser.show_all();
+            chooser.show();
         }
     }
 
@@ -9882,7 +10209,10 @@ Error: <i>%s</i>
 				if (sticks_ok && !sticks.active)
 					sticks.show_all();
 			}
-        }
+        } else {
+			MWPLog.message("[replayer]: get replay fd failed %d (raw %s)\n", sr, rawfd.to_string());
+		}
+
     }
 
     private void check_mission(string missionlog) {
@@ -10326,26 +10656,43 @@ Error: <i>%s</i>
     }
 
 	public static int main (string[] args) {
+		if(Environment.get_variable("GDK_BACKEND") == null) {
+			var u = Posix.utsname();
+			if(!u.release.contains("microsoft-standard-WSL2")) {
+				Environment.set_variable("GDK_BACKEND","x11",true);
+			}
+		}
 		MWPUtils.set_app_name("mwp");
 		Environment.set_prgname(MWP.MWPID);
 		MwpLibC.atexit(MWP.xchild);
         var s = MWP.read_env_args();
 
 		StringBuilder sb = new StringBuilder();
+		bool rtn = false;
 		foreach(var a in args) {
             if (a == "--version" || a == "-v") {
-                stdout.printf("%s\n", MwpVers.get_id());
-                return 0;
+                stdout.printf("%s ", MwpVers.get_id());
+                rtn = true;
             }
+			if (a == "--build-id") {
+				stdout.printf("%s ", MwpVers.get_build());
+				rtn = true;
+			}
 			sb.append(a);
 			sb.append_c(' ');
 		}
+		if(rtn) {
+			stdout.putc('\n');
+			return 0;
+		}
+
 		if (GtkClutter.init (ref args) != InitError.SUCCESS) {
 			stderr.printf("Fatal: can't GtkClutter.init\n");
             return 17;
 		}
         Gst.init (ref args);
 		MWP.user_args = sb.str;
+		MWP.popqueue = new AsyncQueue<MWP.ViewPop?>();
         var app = new MWP(s);
 		return app.run (args);
     }

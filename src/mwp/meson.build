@@ -21,7 +21,7 @@ mwpsrcs = files('mwp.vala', 'liststore.vala', 'mwp_markers.vala',
 		'kmlovly.vala', 'mwp_upower.vala', 'replicate_wp.vala',
 		'mwp-mission-preview.vala', 'mwp-radar_list.vala',
 		'mwp_safehomes.vala', 'mwp_otx.vala',
-		'mwp_xdg_notify.vala', 'mwp_elevations.vala', 'mdialog.vala',
+		'mwp_xdg_notify.vala', 'mdialog.vala',
 		'mm_support.vala', 'flysky.vala', 'gst-devmon.vala',
 		'gst-video-player.vala', 'gst-audio-player.vala',
 		'mwp_gcs_icon.vala', 'mwp_preview_image.vala',
@@ -30,7 +30,8 @@ mwpsrcs = files('mwp.vala', 'liststore.vala', 'mwp_markers.vala',
 		'mwp-measure.vala', 'mwp_rraw.vala', 'mwp_followme_ph.vala',
                 'mwp_telem-tracker.vala', 'mwp-forwarder.vala',
                 'mwp-los-analysis.vala', 'dem-reader.vala', 'mwp-async-dem-dl.vala',
-                'geozreader.vala'
+                'geozonemgr.vala', 'genoverlay.vala', 'geozedit.vala', 'kmlwriter.vala',
+                'mwp-fwaplot.vala',
                )
 
 ublxguisrc = files('settings.vala',  'mapsources.vala')

@@ -686,35 +686,39 @@ public class MWSerial : Object {
 
         fd = -1;
         baudrate = 0;
-        if((host == null || host.length == 0) &&
+		if((host == null || host.length == 0) &&
            ((commode & ComMode.STREAM) != ComMode.STREAM)) {
-            try {
                 SocketFamily[] fams = {};
                 if(!force4)
                     fams += SocketFamily.IPV6;
                 fams += SocketFamily.IPV4;
                 foreach(var fam in fams) {
-                    var sa = new InetSocketAddress (new InetAddress.any(fam),
+					try {
+						var sa = new InetSocketAddress (new InetAddress.any(fam),
                                                     (uint16)port);
-                    skt = new Socket (fam, SocketType.DATAGRAM, SocketProtocol.UDP);
-                    if (skt != null) {
-                        skt.bind (sa, true);
-                        fd = skt.fd;
-						if(debug) {
-							MWPLog.message("bound: %s %d %d\n", fam.to_string(), fd, port);
+						skt = new Socket (fam, SocketType.DATAGRAM, SocketProtocol.UDP);
+						if (skt != null) {
+							skt.bind (sa, true);
+							fd = skt.fd;
+							if(debug) {
+								MWPLog.message("bound: %s %d %d\n", fam.to_string(), fd, port);
+							}
+							break;
 						}
-                        break;
-                    }
+					} catch (Error e) {
+						MWPLog.message ("Bind %s\n", e.message);
+					}
                 }
                 if(rhost != null && rport != 0) {
-                    var resolver = Resolver.get_default ();
-                    var addresses = resolver.lookup_by_name (rhost, null);
-                    var addr0 = addresses.nth_data (0);
-                    sockaddr = new InetSocketAddress(addr0,rport);
+					try {
+						var resolver = Resolver.get_default ();
+						var addresses = resolver.lookup_by_name (rhost, null);
+						var addr0 = addresses.nth_data (0);
+						sockaddr = new InetSocketAddress(addr0,rport);
+					} catch (Error e) {
+						MWPLog.message ("RBind %s\n", e.message);
+					}
                 }
-            } catch (Error e) {
-                MWPLog.message ("binder: %s\n", e.message);
-            }
         } else {
             SocketProtocol sproto;
             SocketType stype;
@@ -977,7 +981,7 @@ public class MWSerial : Object {
     public bool open_fd(int _fd, int rate, bool rawfd = false) {
         devname = "fd #%d".printf(_fd);
         fd = wrfd = _fd;
-        fwd =  false;
+		fwd =  false;
         if(rate != -1)
             commode = ComMode.TTY|ComMode.STREAM;
         if(rawfd)
@@ -1690,9 +1694,9 @@ public class MWSerial : Object {
 			} else {
 				size = Posix.send(fd, buf, count, 0);
 			}
-		} else if((commode & ComMode.STREAM) == ComMode.STREAM)
+		} else if((commode & ComMode.STREAM) == ComMode.STREAM) {
 			size = Posix.write(wrfd, buf, count);
-		else {
+		} else {
 			unowned uint8[] sbuf = (uint8[]) buf;
 			sbuf.length = (int)count;
 			try {

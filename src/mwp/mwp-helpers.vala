@@ -367,35 +367,141 @@ namespace SportDev {
     double volts;
 }
 
+
+namespace Acme {
+	public class FileChooser : Gtk.FileChooserWidget {
+		private   Gtk.Window w;
+		private Gtk.Button b0;
+		public signal void response(int id);
+
+		~FileChooser () {
+			w.destroy();
+		}
+
+		public FileChooser (Gtk.FileChooserAction action, Gtk.Window _w, string? _title = null) {
+			w = new Gtk.Window();
+			w.set_default_size (1024, 640);
+			w.set_transient_for(_w);
+
+			set_action(action);
+
+			b0 = new Gtk.Button.with_label((action == Gtk.FileChooserAction.SAVE) ? "Save" : "Open");
+			b0.clicked.connect(() => {
+					response(Gtk.ResponseType.ACCEPT);
+				});
+
+			var b1 = new Gtk.Button.with_label("Cancel");
+			b1.clicked.connect(() => {
+					response(Gtk.ResponseType.CANCEL);
+
+				});
+
+			var header_bar = new Gtk.HeaderBar ();
+			if(_title == null) {
+				_title = "MWP File Chooser";
+			}
+			header_bar.set_title (_title);
+			header_bar.show_close_button = true;
+			header_bar.pack_start (b1);
+			header_bar.has_subtitle = false;
+			header_bar.pack_end (b0);
+			w.set_titlebar (header_bar);
+			select_multiple = false;
+			Gtk.Box vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 5);
+			w.add (vbox);
+			vbox.pack_start (this, true, true, 0);
+			b0.set_can_default(true);
+
+			file_activated.connect(() => {
+					response(Gtk.ResponseType.ACCEPT);
+				});
+		}
+
+		public void run(string? filename = null ) {
+			if(get_action() == Gtk.FileChooserAction.SAVE && filename != null)
+				set_filename(filename);
+			b0.grab_default();
+			w.show_all();
+		}
+
+		public void close() {
+			w.close();
+		}
+
+		public new void show() {
+			w.show_all();
+		}
+	}
+}
+
 namespace Utils {
 	public static bool permawarn;
+
+	private uint tid;
 	public void warning_box(string warnmsg,
 							Gtk.MessageType klass=Gtk.MessageType.WARNING,
 							int timeout = 0) {
-        var msg = new Gtk.MessageDialog.with_markup (null, 0, klass,
-                                                     Gtk.ButtonsType.OK, warnmsg, null);
+		var msg = new Gtk.Window();
+		tid = 0;
 
-        var bin = msg.get_message_area() as Gtk.Container;
-        var glist = bin.get_children();
-		//        glist.foreach((i) => {
-		for(unowned GLib.List<weak Gtk.Widget> lp = glist.first(); lp != null; lp = lp.next) {
-			var i = lp.data;
-			if (i.get_class().get_name() == "GtkLabel")
-				((Gtk.Label)i).set_selectable(true);
+        var vbox = new Gtk.Box(Gtk.Orientation.VERTICAL, 8);
+        var hbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 12);
+		string symb;
+
+		switch (klass) {
+		case Gtk.MessageType.ERROR:
+			symb = "dialog-error-symbolic";
+			break;
+		case Gtk.MessageType.INFO:
+			symb = "dialog-information-symbolic";
+			break;
+		case Gtk.MessageType.QUESTION:
+			symb = "dialog-question-symbolic";
+			break;
+		default:
+			symb = "dialog-warning-symbolic";
+			break;
+
 		}
+
+		var img = new Gtk.Image.from_icon_name(symb, Gtk.IconSize.DIALOG);
+		var label = new Gtk.Label(null);
+		label.use_markup = true;
+		label.label = warnmsg;
+		label.margin = 8;
+		label.show();
+
+
+		hbox.pack_start(img, false, false,4);
+		hbox.pack_end(label, false, false,2);
+		vbox.pack_start(hbox, false, false,4);
+
+		var button = new Gtk.Button.with_label("OK");
+		button.hexpand = false;
+		button.halign = Gtk.Align.END;
+        button.expand = false;
+
+		vbox.pack_end(button, false, false);
+
+		button.clicked.connect(() => {
+				if(tid != 0) {
+					Source.remove(tid);
+				}
+                msg.destroy();
+			});
 
         if(timeout > 0 && permawarn == false) {
             Timeout.add_seconds(timeout, () => {
+					tid = 0;
                     msg.destroy();
-                    return Source.CONTINUE;
+                    return false;;
                 });
         }
-        msg.response.connect ((response_id) => {
-                msg.destroy();
-            });
-
-        msg.set_title("MWP Notice");
-        msg.show();
+		msg.set_title("MWP Notice");
+		msg.set_keep_above(true);
+		msg.add(vbox);
+		msg.show_all();
+		label.selectable = true;
     }
 
 	public void terminate_plots() {
@@ -482,4 +588,53 @@ namespace MWPFileType {
 		}
 		return ftyp;
 	}
+}
+
+namespace  UpdateFile {
+    private void save(string filename, string key, string keyline) {
+		string headerln = "# %s".printf(key);
+        if(FileUtils.test(filename, FileTest.EXISTS)) {
+			string keyspc = "%s ".printf(key);
+            string []lines = {};
+            string s;
+            bool written = false;
+			bool header = false;
+
+            FileStream fs = FileStream.open (filename, "r");
+            while((s = fs.read_line()) != null)
+                lines += s;
+
+            fs = FileStream.open (filename, "w");
+            foreach (var l in lines) {
+				if(l.has_prefix(headerln))
+				   header = true;
+
+                if(l.has_prefix(keyspc)) {
+                    if (written == false) {
+						if(!header) {
+							fs.puts(headerln);
+							fs.putc('\n');
+						}
+						fs.puts(keyline);
+                        written = true;
+                    }
+                } else {
+                    fs.puts(l);
+                    fs.puts("\n");
+                }
+            }
+            if (written == false) {
+				if(!header) {
+					fs.puts(headerln);
+					fs.putc('\n');
+				}
+				fs.puts(keyline);
+			}
+        } else {
+            FileStream fs = FileStream.open (filename, "w");
+            fs.puts(headerln);
+			fs.putc('\n');
+			fs.puts(keyline);
+        }
+    }
 }

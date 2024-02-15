@@ -21,7 +21,7 @@ public class  BBoxDialog : Object {
     private string filename;
     private int nidx;
     private int maxidx;
-    private Gtk.Dialog dialog;
+    private Gtk.Window dialog;
     private Gtk.Button bb_cancel;
     private Gtk.Button bb_ok;
     private Gtk.Label bb_items;
@@ -62,7 +62,7 @@ public class  BBoxDialog : Object {
         bbox_decode = bboxdec;
         fo = _fo;
 
-        dialog = builder.get_object ("bb_dialog") as Gtk.Dialog;
+        dialog = builder.get_object ("bb_dialog") as Gtk.Window;
         bb_cancel = builder.get_object ("bb_cancel") as Button;
         bb_ok = builder.get_object ("bb_ok") as Button;
         bb_items = builder.get_object ("bb_items") as Label;
@@ -149,7 +149,7 @@ public class  BBoxDialog : Object {
             });
 
         bb_treeview.row_activated.connect((p,c) => {
-                dialog.response(1001);
+				finish(1001);
             });
 
         dialog.title = "mwp BBL replay";
@@ -483,15 +483,7 @@ public class  BBoxDialog : Object {
     private void show_child_err(string e) {
         var s = "Running blackbox_decode failed (is it on the PATH?)\n%s\n".printf(e);
         MWPLog.message(s);
-        var msg = new Gtk.MessageDialog (_w,
-                                         Gtk.DialogFlags.MODAL,
-                                         Gtk.MessageType.WARNING,
-                                         Gtk.ButtonsType.OK,
-                                         s);
-        msg.show_all();
-        msg.response.connect((id) => {
-            msg.destroy();
-            });
+		Utils.warning_box(s, Gtk.MessageType.WARNING);
     }
 
     public void run(string? fn = null) {
@@ -523,14 +515,23 @@ public class  BBoxDialog : Object {
                 get_bbox_file_status();
             }
             dialog.show_all ();
-			dialog.response.connect((id) => {
-					MWPCursor.set_normal_cursor(dialog);
-					dialog.hide();
-					complete(id);
+
+			bb_ok.clicked.connect(() => {
+					finish(1001);
+				});
+
+			bb_cancel.clicked.connect(() => {
+					finish(-1);
 				});
         } else {
 			complete(id);
 		}
+	}
+
+	private void finish(int id) {
+		MWPCursor.set_normal_cursor(dialog);
+		dialog.hide();
+		complete(id);
 	}
 
 	public bool get_vtimer(out int64 nsecs) {

@@ -63,7 +63,7 @@ _mwp_complete()
       return 0
       ;;
 
-    '-h'|'--help'|'-V'|'--version')
+    '-h'|'--help'|'-V'|'--version'|'build-id')
       return 0
       ;;
   esac

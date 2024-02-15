@@ -34,6 +34,7 @@ private class QLabel : Gtk.Label {
 
 private class QEntry : Gtk.Entry {
     public QEntry(string? etext, int len, Gtk.InputPurpose pp) {
+		editable = true;
         hexpand = false;
         halign = Gtk.Align.START;
         expand = false;
@@ -43,7 +44,7 @@ private class QEntry : Gtk.Entry {
     }
 }
 
-public class WPPopEdit : Gtk.Dialog {
+public class WPPopEdit : Gtk.Window {
     private Gtk.Box vbox;
     private Gtk.ComboBoxText wp_combo;
     private Gtk.Grid  grid0;
@@ -63,18 +64,39 @@ public class WPPopEdit : Gtk.Dialog {
     private Gtk.CheckButton rthcb;
     private Gtk.CheckButton landcb;
     private Gtk.CheckButton wpaction[4];
+	private Gtk.Button apply;
 
-    public WPPopEdit(Gtk.Window? window, string posit) {
+	private QEntry appalt;
+	private QEntry fwdirn1;
+	private QEntry fwdirn2;
+    private Gtk.ComboBoxText dref_combo;
+    private Gtk.CheckButton ex1;
+    private Gtk.CheckButton ex2;
+
+	private int mdx;
+
+	public signal void completed(bool state);
+	public signal void marker_changed(MSP.Action act);
+
+    public WPPopEdit(Gtk.Window? window, string posit, int _mdx) {
+		mdx = _mdx;
         pos = posit;
         title = "WP Edit";
-        add_button("Apply", Gtk.ResponseType.OK);
+		//        add_button("Apply", Gtk.ResponseType.OK);
         set_position(Gtk.WindowPosition.MOUSE);
         set_transient_for(window);
         set_keep_above(true);
         build_box();
-        var content = get_content_area ();
-        content.pack_start (vbox, false, false, 0);
-    }
+		add(vbox);
+		apply.clicked.connect(()=>{
+				completed(true);
+			});
+
+		delete_event.connect(() => {
+				completed(false);
+				return false;
+			});
+	}
 
     public void wpedit(EditItem wpt) {
         add_grid(wpt);
@@ -96,6 +118,11 @@ public class WPPopEdit : Gtk.Dialog {
         wp_combo.append("5", "SET_POI");
         wp_combo.append("8", "LAND");
 
+		dref_combo = new Gtk.ComboBoxText();
+		dref_combo.append_text("Left");
+		dref_combo.append_text("Right");
+		dref_combo.active = 0;
+
         grid0 = new Gtk.Grid();
         grid0.column_homogeneous = false;
         grid0.set_column_spacing (2);
@@ -103,8 +130,13 @@ public class WPPopEdit : Gtk.Dialog {
         grid = new Gtk.Grid();
         grid.column_homogeneous = true;
         grid.hexpand = false;
-        vbox.pack_start (grid0, false, false, 0);
+		apply = new Gtk.Button.with_label("Apply");
+        apply.hexpand = false;
+        apply.halign = Gtk.Align.END;
+
+		vbox.pack_start (grid0, false, false, 0);
         vbox.pack_start (grid, false, false, 0);
+        vbox.pack_end (apply, false, false, 0);
     }
 
     private void add_grid(EditItem wpt) {
@@ -113,6 +145,7 @@ public class WPPopEdit : Gtk.Dialog {
                 if(isset) {
                     var no = wpt.no;
                     extract_data(wpt.action, ref wpt);
+					marker_changed(wpt.action);
                     wpt.no = no;
                     refresh_grid(wpt);
                 }
@@ -185,10 +218,12 @@ public class WPPopEdit : Gtk.Dialog {
         default:
             break;
         }
-        nstr = wp_combo.get_active_id();
+		nstr = wp_combo.get_active_id();
         nv = (MSP.Action)(int.parse(nstr));
         wpt.action = nv;
-    }
+		if(nv == MSP.Action.LAND) {
+		}
+	}
 
     private void refresh_grid(EditItem wpt) {
         grid.foreach ((element) => grid.remove (element));
@@ -248,10 +283,67 @@ public class WPPopEdit : Gtk.Dialog {
             }
             if(wpt.action == MSP.Action.LAND) {
                 grid.attach (qlabel("Land Altitude"), 2, j);
-                txt = "%.0f".printf(wpt.p2);
-                landent = new QEntry(txt, 5, Gtk.InputPurpose.DIGITS);
+				var fwl = FWApproach.get(mdx+8);
+				amslcb.active = fwl.aref;
+				if (fwl.dirn1 == 0 && fwl.dirn2 == 0) {
+					txt = "%.0f".printf(wpt.p2);
+				} else {
+					txt = "%.2f".printf(fwl.landalt);
+				}
+                landent = new QEntry(txt, 6, Gtk.InputPurpose.NUMBER);
                 grid.attach (landent, 3, j);
-            } else {
+				j++;
+                grid.attach (qlabel("Approach Alt"), 0, j);
+				txt = "%.2f".printf(fwl.appalt);
+                appalt = new QEntry(txt, 6, Gtk.InputPurpose.NUMBER);
+                grid.attach (appalt, 1, j);
+
+				grid.attach (qlabel("From"), 2, j);
+				dref_combo.active = (fwl.dref) ? 1 : 0;
+				grid.attach (dref_combo, 3, j);
+				j++;
+				grid.attach (qlabel("Direction 1"), 0, j);
+				txt = "%d".printf(fwl.dirn1);
+                fwdirn1 = new QEntry(txt, 5, Gtk.InputPurpose.NUMBER);
+                grid.attach (fwdirn1, 1, j);
+				ex1 = new Gtk.CheckButton.with_label("Exclusive");
+				ex1.active = fwl.ex1;
+				grid.attach (ex1, 2, j);
+				j++;
+
+				grid.attach (qlabel("Direction 2"), 0, j);
+				txt = "%d".printf(fwl.dirn2);
+                fwdirn2 = new QEntry(txt, 5, Gtk.InputPurpose.NUMBER);
+                grid.attach (fwdirn2, 1, j);
+				ex2 = new Gtk.CheckButton.with_label("Exclusive");
+				ex2.active = fwl.ex2;
+				grid.attach (ex2, 2, j);
+
+				amslcb.clicked.connect(() => {
+                        if(wpt.homeelev != EvCache.EvConst.UNAVAILABLE) {
+                            var na = double.parse(appalt.text);
+                            if (amslcb.active) {
+                                na = na + wpt.homeelev;
+                            } else {
+                                na = na - wpt.homeelev;
+                            }
+                            appalt.text = "%.2f".printf(na);
+                            set_alt_border(appalt, false);
+                            var na1 = int.parse(altent.text);
+                            if (amslcb.active) {
+                                na1 = na1 + wpt.homeelev;
+                            } else {
+                                na1 = na1 - wpt.homeelev;
+                            }
+                            altent.text = na1.to_string();
+                            set_alt_border(altent, false);
+                        } else {
+                            set_alt_border(altent, true);
+							set_alt_border(appalt, true);
+                        }
+                    });
+
+			} else {
                 j++;
                 headcb = new Gtk.CheckButton.with_label("Set Head");
                 headcb.active = ((wpt.optional & WPEditMask.SETHEAD) == WPEditMask.SETHEAD);
@@ -292,9 +384,9 @@ public class WPPopEdit : Gtk.Dialog {
                                 na = na - wpt.homeelev;
                             }
                             altent.text = na.to_string();
-                            set_alt_border(false);
+                            set_alt_border(altent, false);
                         } else {
-                            set_alt_border(true);
+                            set_alt_border(altent, true);
                         }
                     });
             }
@@ -306,7 +398,21 @@ public class WPPopEdit : Gtk.Dialog {
             }
         }
     }
-    void set_alt_border(bool flag) {
+
+	public FWApproach.approach extract_land() {
+		FWApproach.approach l = {};
+		l.landalt = double.parse(landent.text);
+		l.appalt = double.parse(appalt.text);
+		l.dirn1 = (int16) int.parse(fwdirn1.text);
+		l.ex1 = ex1.active;
+		l.dirn2 = (int16) int.parse(fwdirn2.text);
+		l.ex2 = ex2.active;
+		l.aref = amslcb.active;
+		l.dref = (dref_combo.active == 1);
+		return l;
+	}
+
+	void set_alt_border(Gtk.Widget w, bool flag) {
         string css;
         if (flag) {
             css =  "entry { border-style: solid; border-color: red; border-width: 1px;}";
@@ -316,7 +422,7 @@ public class WPPopEdit : Gtk.Dialog {
         try {
             var provider = new CssProvider();
             provider.load_from_data(css);
-            var stylec = altent.get_style_context();
+            var stylec = w.get_style_context();
             stylec.add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
         } catch (Error e) {
             MWPLog.message ("CSS: %s\n", e.message);

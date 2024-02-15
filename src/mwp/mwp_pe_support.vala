@@ -71,6 +71,7 @@ public class FakeHome : GLib.Object {
                         homept.x = 30;
                         homept.y = 10;
                         homep.add_child(homept);
+						return true;
                     }
                 }
                 return false;
@@ -80,6 +81,7 @@ public class FakeHome : GLib.Object {
                 if(homept != null) {
                     homep.remove_child(homept);
                     homept = null;
+					return true;
                 }
                 return false;
             });
@@ -187,7 +189,7 @@ public class FakeHome : GLib.Object {
 }
 
 public class FakeHomeDialog : GLib.Object {
-    private Gtk.Dialog pe_dialog;
+    private Gtk.Window pe_dialog;
     private Gtk.Entry pe_home_text;
     private Gtk.Entry pe_margin;
     private Gtk.Entry pe_rthalt;
@@ -203,7 +205,7 @@ public class FakeHomeDialog : GLib.Object {
     public signal void ready(bool state);
 
     public FakeHomeDialog (Gtk.Builder builder, Gtk.Window? w) {
-		pe_dialog = builder.get_object ("pe-dialog") as Gtk.Dialog;
+		pe_dialog = builder.get_object ("pe-dialog") as Gtk.Window;
         pe_home_text = builder.get_object ("pe-home-text") as Gtk.Entry;
         pe_margin = builder.get_object ("pe-clearance") as Gtk.Entry;
         pe_rthalt = builder.get_object ("pe-rthalt") as Gtk.Entry;

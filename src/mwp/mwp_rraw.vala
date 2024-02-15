@@ -19,7 +19,7 @@ using Gtk;
 
 public class  RAWDialog : Object {
     private string filename;
-    private Gtk.Dialog dialog;
+    private Gtk.Window dialog;
     private Gtk.Button raw_cancel;
     private Gtk.Button raw_ok;
     private Gtk.ComboBoxText raw_combo;
@@ -32,12 +32,17 @@ public class  RAWDialog : Object {
 
     public RAWDialog(Gtk.Builder builder, Gtk.Window? w, string? logpath) {
         _w = w;
-        dialog = builder.get_object ("raw_dialog") as Gtk.Dialog;
+        dialog = builder.get_object ("raw_dialog") as Gtk.Window;
         raw_entry = builder.get_object ("raw_delay") as Entry;
         raw_cancel = builder.get_object ("raw_cancel") as Button;
         raw_ok = builder.get_object ("raw_ok") as Button;
         raw_filechooser = builder.get_object("raw_filechooser") as FileChooserButton;
         raw_combo = builder.get_object("raw_combo") as ComboBoxText;
+        dialog.delete_event.connect (() => {
+                ready(999);
+				dialog.hide();
+                return true;
+            });
 
         raw_entry.text = "%d".printf(raw_delay);
 
@@ -64,8 +69,14 @@ public class  RAWDialog : Object {
 
         dialog.title = "mwp Raw Log replay";
         dialog.set_transient_for(w);
-        dialog.response.connect((resp) => {
-                ready(resp);
+
+		raw_ok.clicked.connect((resp) => {
+				dialog.hide();
+                ready(1001);
+            });
+		raw_cancel.clicked.connect((resp) => {
+				dialog.hide();
+                ready(999);
             });
     }
 

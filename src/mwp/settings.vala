@@ -117,6 +117,7 @@ public class MWPSettings : GLib.Object {
     public int show_sticks {get; set; default=0;}
 	public int los_margin {get; set; default=0;}
 	public bool bluez_disco {get; set; default=false;}
+	public bool autoload_geozones {get; set; default=true;}
 
     public signal void settings_update (string s);
 
@@ -416,6 +417,8 @@ public class MWPSettings : GLib.Object {
             los_margin = settings.get_int("los-margin");
         if(s == null || s == "bluez-disco")
             bluez_disco = settings.get_boolean ("bluez-disco");
+        if(s == null || s == "autoload-geozones")
+            autoload_geozones = settings.get_boolean ("autoload-geozones");
 	}
 
     public void save_pane() {

@@ -240,7 +240,7 @@ public class LOSSlider : Gtk.Window {
 	}
 
 	public LOSSlider (Gtk.Window? _w, Champlain.View view, int lmargin) {
-		_can_auto = (MWP.has_bing_key || EvCache.is_local());
+		_can_auto = EvCache.is_local();
 		_margin = lmargin;
 		this.title = "LOS Analysis";
 		this.window_position = Gtk.WindowPosition.CENTER;
