@@ -4,7 +4,7 @@ One of the great features of {{ inav }} 2.6 was the `safehome` capability. The u
 
 ## INAV setting
 
-`safehome` is set in {{ inav }} using the CLI, here's an example:
+`safehome` is set in {{ inav }} using the CLI, (note more recent Configurators also have a UI);  here's an example:
 
     # safehome
     safehome 0 1 508047750 -14948970
@@ -47,7 +47,7 @@ From here it is possible to:
 * Change the status (active, inactive). If a previously unused item is enabled, an icon is placed on the centre of the map for positioning.
 * Clear (unset) one or all safehomes.
 * Upload and Download safehomes to/from the flight controller.
-* Manage IANV 7.1.0+ Autoland data
+* Manage INAV 7.1.0+ Autoland data
 
 Note that editing functions are only available when the `Safe Homes` window is active; if the windows is dismissed with icons displayed, then the icons remain on the map, but are not editable.
 
