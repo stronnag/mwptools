@@ -2475,7 +2475,9 @@ public class MWP : Gtk.Application {
 					return;
 
 				if(!ms_from_loader && msx.length > 0) {
-					msx[mdx] = ls.to_mission();
+					var ms = ls.to_mission();
+					check_home_sanity(ms);
+					msx[mdx] = ms;
 				}
 				if (s == "New") {
 					mdx = msx.length;
@@ -9925,6 +9927,13 @@ Error: <i>%s</i>
         if(have_home)
             markers.add_home_point(home_pos.lat,home_pos.lon,ls);
 
+		check_home_sanity(ms);
+		need_preview = true;
+		msx[mdx] = ms;
+		validatelab.set_text("✔"); // u+2714
+	}
+
+	private void check_home_sanity(Mission ms) {
 		uint8 ot;
 		double alat, alon;
 		var hr = any_home(out ot, out alat, out alon);
@@ -9940,11 +9949,8 @@ Error: <i>%s</i>
 							   ms.homey, ms.homex, mdx);
 			}
 		}
-
-		need_preview = true;
-		msx[mdx] = ms;
-		validatelab.set_text("✔"); // u+2714
 	}
+
 
 	private Mission?[] msx_clone() {
 		Mission? []_lm = {};
