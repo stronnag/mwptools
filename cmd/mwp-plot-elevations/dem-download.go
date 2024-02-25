@@ -58,6 +58,7 @@ func unpack(fname string) {
 	}
 	defer outfh.Close()
 	_, err = io.Copy(outfh, gzrd)
+	gzfh.Close() // for windows .... broken unlink
 	if err == nil {
 		os.Remove(fname)
 	}

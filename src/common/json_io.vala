@@ -57,6 +57,10 @@ namespace JsonIO {
 				var msobj = obj.get_object_member("meta");
 				parse_meta(msobj, ref ms);
 				break;
+			case "fwapproach":
+				var fwobj = obj.get_object_member("fwapproach");
+				parse_fwa(fwobj);
+				break;
 			}
 		}
 		return ms;
@@ -91,6 +95,49 @@ namespace JsonIO {
 
 		return msx;
     }
+
+    private static void parse_fwa(Json.Object o) {
+		FWApproach.approach l={};
+		int idx=0;
+        foreach (var name in o.get_members()) {
+            switch (name) {
+                case "appalt":
+					l.appalt = o.get_int_member("appalt")/100.0;
+					break;
+                case "aref":
+					l.aref = o.get_boolean_member("aref");
+					break;
+                case "dirn1":
+					l.dirn1 = (int16)o.get_int_member("dirn1");
+					if (l.dirn1 < 0) {
+						l.ex1 = true;
+						l.dirn1 = -l.dirn1;
+					}
+					break;
+                case "dirn2":
+					l.dirn2 = (int16)o.get_int_member("dirn2");
+					if (l.dirn2 < 0) {
+						l.ex2 = true;
+						l.dirn2 = -l.dirn2;
+					}
+					break;
+                case "dref":
+					l.dref = o.get_string_member("dref") == "right";
+					break;
+                case "index":
+					break;
+                case "landalt":
+					l.landalt = o.get_int_member("landalt")/100.0;
+					break;
+                case "no":
+					idx = (int)o.get_int_member("no");
+					break;
+			}
+		}
+		if(idx > 7) {
+			FWApproach.set(idx, l);
+		}
+	}
 
     private static void parse_meta(Json.Object o, ref Mission ms) {
         foreach (var name in o.get_members()) {
@@ -139,7 +186,8 @@ namespace JsonIO {
         }
     }
 
-	private void encode_mission(Json.Builder builder, Mission ms) {
+	private void encode_mission(Json.Builder builder, Mission ms, int mxno) {
+		bool has_land = false;
         builder.set_member_name ("meta");
         builder.begin_object ();
         builder.set_member_name ("save-date");
@@ -160,44 +208,76 @@ namespace JsonIO {
         builder.end_object (); // meta
         builder.set_member_name ("mission");
         builder.begin_array ();
-			var wpno = 1;
-			foreach (MissionItem m in ms.get_ways()) {
-				builder.begin_object (); //mi
-				builder.set_member_name ("no");
-				builder.add_int_value (wpno++);
-				builder.set_member_name ("action");
-				builder.add_string_value(MSP.get_wpname(m.action));
-				builder.set_member_name ("lat");
-				builder.add_double_value( m.lat);
-				builder.set_member_name ("lon");
-				builder.add_double_value( m.lon);
-				builder.set_member_name ("alt");
-				builder.add_int_value( m.alt);
-				builder.set_member_name ("p1");
-				builder.add_int_value( m.param1);
-				builder.set_member_name ("p2");
-				builder.add_int_value( m.param2);
-				builder.set_member_name ("p3");
-				builder.add_int_value( m.param3);
-				builder.set_member_name ("flag");
-				builder.add_int_value( m.flag);
-				builder.end_object (); // mi
+		var wpno = 1;
+		foreach (MissionItem m in ms.get_ways()) {
+			builder.begin_object (); //mi
+			builder.set_member_name ("no");
+			builder.add_int_value (wpno++);
+			builder.set_member_name ("action");
+			builder.add_string_value(MSP.get_wpname(m.action));
+			if (m.action ==  MSP.Action.LAND) {
+				has_land = true;
 			}
-			builder.end_array ();
+			builder.set_member_name ("lat");
+			builder.add_double_value( m.lat);
+			builder.set_member_name ("lon");
+			builder.add_double_value( m.lon);
+			builder.set_member_name ("alt");
+			builder.add_int_value( m.alt);
+			builder.set_member_name ("p1");
+			builder.add_int_value( m.param1);
+			builder.set_member_name ("p2");
+			builder.add_int_value( m.param2);
+			builder.set_member_name ("p3");
+			builder.add_int_value( m.param3);
+			builder.set_member_name ("flag");
+			builder.add_int_value( m.flag);
+			builder.end_object (); // mi
+		}
+		builder.end_array ();
+
+		var lid = mxno+8;
+		if(has_land && FWApproach.is_active(lid)) {
+			var l = FWApproach.get(lid);
+			builder.set_member_name ("fwapproach");
+			builder.begin_object ();
+			builder.set_member_name ("no");
+			builder.add_int_value(lid);
+			builder.set_member_name ("index");
+			builder.add_int_value(mxno);
+			builder.set_member_name ("appalt");
+			builder.add_int_value((int)(l.appalt*100));
+			builder.set_member_name ("landalt");
+			builder.add_int_value((int)(l.landalt*100));
+			builder.set_member_name ("dirn1");
+			var d = (!l.ex1) ? l.dirn1 : -l.dirn1;
+			builder.add_int_value(d);
+			builder.set_member_name ("dirn2");
+			d = (!l.ex2) ? l.dirn2 : -l.dirn2;
+			builder.add_int_value(d);
+			builder.set_member_name ("dref");
+			var s = (l.dref) ? "right" : "left";
+			builder.add_string_value(s);
+			builder.set_member_name ("aref");
+			builder.add_boolean_value(l.aref);
+			builder.end_object (); // fwapproach
+		}
 	}
 
     public string? to_json(Mission []msx, bool indent=true) {
 		var builder = new Json.Builder ();
 		builder.begin_object ();
 		if (msx.length == 1) {
-			encode_mission(builder, msx[0]);
+			encode_mission(builder, msx[0], 0);
 		} else {
 			builder.set_member_name ("missions");
 			builder.begin_array ();
+			var j = 0;
 			foreach (var ms in msx) {
 				builder.begin_object ();
-				encode_mission(builder, ms);
+				encode_mission(builder, ms, j);
 				builder.end_object ();
+				j++;
 			}
 			builder.end_array ();
 		}

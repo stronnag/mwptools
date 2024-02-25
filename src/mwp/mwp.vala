@@ -2475,7 +2475,9 @@ public class MWP : Gtk.Application {
 					return;
 
 				if(!ms_from_loader && msx.length > 0) {
-					msx[mdx] = ls.to_mission();
+					var ms = ls.to_mission();
+					check_home_sanity(ms);
+					msx[mdx] = ms;
 				}
 				if (s == "New") {
 					mdx = msx.length;
@@ -6160,7 +6162,8 @@ public class MWP : Gtk.Application {
                 ms.zoom = guess_appropriate_zoom(bb_from_mission(ms));
                 set_view_zoom(ms.zoom);
             }
-            map_moved();
+
+			map_moved();
 			valid_flash();
 			update_at_pointer();
 		}
@@ -9644,6 +9647,7 @@ Error: <i>%s</i>
 				mmsx += msx[j];
 			}
 		}
+
 		if (ftype == 'm') {
 			XmlIO.to_xml_file(fn, mmsx);
 		} else {
@@ -9922,10 +9926,31 @@ Error: <i>%s</i>
 		centre_mission(ms, true);
         if(have_home)
             markers.add_home_point(home_pos.lat,home_pos.lon,ls);
-        need_preview = true;
+
+		check_home_sanity(ms);
+		need_preview = true;
 		msx[mdx] = ms;
 		validatelab.set_text("✔"); // u+2714
 	}
+
+	private void check_home_sanity(Mission ms) {
+		uint8 ot;
+		double alat, alon;
+		var hr = any_home(out ot, out alat, out alon);
+
+		if(hr && msx.length > 1) {
+			var bb = view.get_bounding_box();
+            if (bb.covers(alat, alon) == false) {
+				ms.homex = ms.cx;
+				ms.homey = ms.cy;
+				FakeHome.usedby |= FakeHome.USERS.Mission;
+				ls.set_fake_home_pos(ms.homey, ms.homex);
+				MWPLog.message("DBG: Home outside bbox, setting %f %f (%d)\n",
+							   ms.homey, ms.homex, mdx);
+			}
+		}
+	}
+
 
 	private Mission?[] msx_clone() {
 		Mission? []_lm = {};

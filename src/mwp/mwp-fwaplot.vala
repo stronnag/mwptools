@@ -20,10 +20,10 @@ namespace FWPlot {
 
 		for(var i = 0; i < 	FWAPPROACH.maxapproach; i++) {
 			var l0 = new Champlain.PathLayer();
-			l0.set_stroke_width (3);
+			l0.set_stroke_width (4);
 			l0.set_stroke_color(landcol);
 			var l1 = new Champlain.PathLayer();
-			l1.set_stroke_width (3);
+			l1.set_stroke_width (4);
 			l1.set_stroke_color(landcol);
 			view.add_layer(l0);
 			view.add_layer(l1);
@@ -31,11 +31,11 @@ namespace FWPlot {
 			lpaths += l1;
 
 			var a0 = new Champlain.PathLayer();
-			a0.set_stroke_width (3);
+			a0.set_stroke_width (4);
 			a0.set_stroke_color(appcol);
 			a0.set_dash(llist);
 			var a1 = new Champlain.PathLayer();
-			a1.set_stroke_width (3);
+			a1.set_stroke_width (4);
 			a1.set_stroke_color(appcol);
 			a1.set_dash(llist);
 			view.add_layer(a0);

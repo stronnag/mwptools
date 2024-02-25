@@ -51,6 +51,7 @@ In this image, note:
 	* JUMP parameters (-1 Iterations == infinite)
 	* Return to Home (and land).
 * {{ inav }} 6.0, user defined actions 1-4. Invoked via INAV logic conditions.
+* {{ inav }} 7.1.0, edit FW Approach (Auto-land) parameters for `LAND` WP types.
 
 Multiple attributes may be set.
 
@@ -67,6 +68,10 @@ If there is no planned home location, and the AMSL box is toggled, then the Alti
 In the above image, a relative altitude of 16m has been toggled to absolute; there is no home position, so the altitude entry has a red border, as this is now below the absolute altitude of the terrain.
 
 Note also that this example has multiple option set (SET HEAD and JUMP).
+
+For a `LAND` WP, the FW Approach parameters are available.
+
+![ui_edit](images/wpmenu05.png){: width="30%" }
 
 ## Mission Editor
 
