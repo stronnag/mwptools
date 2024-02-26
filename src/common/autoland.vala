@@ -89,8 +89,16 @@ namespace FWApproach {
 				l.dref = (u8 == 1);
 				rp = SEDE.deserialise_i16(rp, out i16);
 				l.dirn1 = i16;
+				if (l.dirn1 < 0) {
+					l.dirn1 = -l.dirn1;
+					l.ex1 = true;
+				}
 				rp = SEDE.deserialise_i16(rp, out i16);
 				l.dirn2 = i16;
+				if (l.dirn2 < 0) {
+					l.dirn2 = -l.dirn2;
+					l.ex2 = true;
+				}
 				u8 = *rp++;
 				l.aref = (u8 == 1);
 				approaches[idx] = l;
@@ -102,15 +110,17 @@ namespace FWApproach {
 
 	public uint8 [] serialise(int idx) {
 		uint8 []buf = new uint8[FWAPPROACH.msplength];
+		var l = approaches[idx];
 		uint8 *rp = buf;
-
 		*rp++ = idx;
-		rp = SEDE.serialise_i32(rp, ((int32)(approaches[idx].appalt*100.0)));
-		rp = SEDE.serialise_i32(rp, ((int32)(approaches[idx].landalt*100.0)));
-		*rp++ = (approaches[idx].dref) ? 1 : 0;
-		rp = SEDE.serialise_i16(rp, approaches[idx].dirn1);
-		rp = SEDE.serialise_i16(rp, approaches[idx].dirn2);
-		*rp++ = (approaches[idx].aref) ? 1 : 0;
+		rp = SEDE.serialise_i32(rp, ((int32)(l.appalt*100.0)));
+		rp = SEDE.serialise_i32(rp, ((int32)(l.landalt*100.0)));
+		*rp++ = (l.dref) ? 1 : 0;
+		int16 dirn = (!l.ex1) ? l.dirn1 : -l.dirn1;
+		rp = SEDE.serialise_i16(rp, dirn);
+		dirn = (!l.ex2) ? l.dirn2 : -l.dirn2;
+		rp = SEDE.serialise_i16(rp, dirn);
+		*rp++ = (l.aref) ? 1 : 0;
 		return buf;
 	}
 }
