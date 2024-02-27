@@ -577,7 +577,7 @@
       <description>Set to file[,Y]. File defines a set of safehome
       lines (CLI format), optionally followed by a comma and Y. If the
       definition includes ",Y", then the safehome locations will be
-      displayed. If the name is the special value `-FC-`, then
+      displayed. If the name has the special value '-FC-', then
       safehomes will be loaded from the FC on connection.</description>
     </key>
 

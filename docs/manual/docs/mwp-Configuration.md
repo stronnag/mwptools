@@ -204,6 +204,7 @@ This *may* not be installed by default, but should be available via the OS packa
 | auto-follow | set auto-follow | set auto-follow on start | true |
 | auto-restore-mission | Whether to automatically import a mission in FC memory to MWP | If the FC holds a valid mission in memory, and there is no mission loaded into MWP, this setting controls whether MWP automatically downloads the mission. | false |
 | auto-wp-edit | Whether direct WP editing is available | If true, the user can edit / create waypoints directly by clicking on the map, if false, it is necessary to toggle the WP Edit button to enable editing. | false |
+| autoload-geozones | Autoload geozones from FC | Autoload geozones from FC on connect, remove from display on disconnect | true |
 | baudrate | Baud rate | Serial baud rate | 115200 |
 | blackbox-decode | Name of the blackbox_decode application | Name of the blackbox_decode application (in case there are separate for iNav and betaflight) | "blackbox_decode" |
 | bluez-disco | Use Bluetooth discovery | Only discovered Bluetooth serial devices with non-zero RSSI will be offered | false |
@@ -237,7 +238,7 @@ This *may* not be installed by default, but should be available via the OS packa
 | ignore-nm | Ignore Network Manager | Set to true to always ignore NM status (may slow down startup) | false |
 | kml-path | Directory for KML overlays | Directory for KML overlays, default = current directory | "" |
 | led | GPS LED colour | GPS LED colour as well know string or #RRGGBB | "#60ff00" |
-| load-safehome | Load default set of safehomes | Set to file[,Y]. File defines a set of safehome lines (CLI format), optionally followed by a comma and Y. If the definition includes ",Y", then the safehome locations will be displayed. | "" |
+| load-safehome | Load default set of safehomes | Set to file[,Y]. File defines a set of safehome lines (CLI format), optionally followed by a comma and Y. If the definition includes ",Y", then the safehome locations will be displayed. If the name has the special value '-FC-', then safehomes will be loaded from the FC on connection. | "" |
 | log-on-arm | start logging on arm | start logging on arm (and stop on disarm) | false |
 | log-path | Directory for replay log files | Directory for log files (for replay), default = current directory | "" |
 | log-save-path | Directory for storing log files | Directory for log files (for save), default = current directory | "" |
