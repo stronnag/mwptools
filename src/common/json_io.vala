@@ -198,7 +198,11 @@ namespace JsonIO {
         builder.add_double_value (ms.cx);
         builder.set_member_name ("cy");
         builder.add_double_value (ms.cy);
-        builder.set_member_name ("details");
+		builder.set_member_name ("home-x");
+		builder.add_double_value (ms.homex);
+		builder.set_member_name ("home-y");
+		builder.add_double_value (ms.homey);
+		builder.set_member_name ("details");
         builder.begin_object ();
         builder.set_member_name ("distance");
         builder.add_double_value (ms.dist);
