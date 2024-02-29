@@ -92,16 +92,17 @@ Digital elevation services can use the WGS84 Ellipsoid or "sea level"; survey ma
 * mwp currently uses locally (and transparently) hosted [Mapzen DEM](https://registry.opendata.aws/terrain-tiles/) DEMs to obtain elevations. The user should apply a suitable margin.
 * {{ inav }} firmware uses the GPS' AMSL value, so {{ inav }} and {{ mwp }} are consistent on this.
 
-There may be a between ASML, "sea level", WGS84 Ellipsoid and Survey heights, for example, for a test point of  54.149461 -4.669315 (summit of South Barrule, Isle of Man):
+There may be a difference  between ASML, "sea level", WGS84 Ellipsoid and Survey heights, for example, for a test point of  54.149461 -4.669315 (summit of South Barrule, Isle of Man):
 
 * Ordnance Survey (OS) Map (official survey): 483m
 * Mapzen DEM (mwp) 476m
-* OpenTopoData: 476m (via Mapzen)
+* OpenTopoData: 476m (mapzen)
+* OpenTopoData: 485 (aster30m)
 * Google Earth : 470m
-* Bing Ellipsoid (prior Configurator): 526m
+* Bing Ellipsoid (Configurator): 526m
 * Bing "Sea Level" (Configurator): 470m
 
-Note that while OpenTopo appears to be the most accurate web service, it has significant issues that mean it is unacceptable as a reliable data source:
+Note that while OpenTopo appears to be an accurate web service, it has significant issues that mean it is unacceptable as a reliable data source:
 
 * Rate limited to one query per second.
 * Limited to 100 points per query (INAV supports 120 point missions...).
