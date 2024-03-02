@@ -87,7 +87,7 @@ On all operating systems, the terrain graph is also plotted interactively, regar
 
 ## Datum
 
-Digital elevation services can use the WGS84 Ellipsoid or "sea level"; survey maps typically use AMSL (Above Mean Sea Level); GPS can report either or both of WGS Ellipsoid and above MSL (mean sea level).
+Digital elevation services can use the WGS84 Ellipsoid or "sea level"; survey maps typically use AMSL (Above Mean Sea Level); GPS can report either or both of WGS Ellipsoid and above MSL (mean sea level). INAV and mwp both use AMSL.
 
 * mwp currently uses locally (and transparently) hosted [Mapzen DEM](https://registry.opendata.aws/terrain-tiles/) DEMs to obtain elevations. The user should apply a suitable margin.
 * {{ inav }} firmware uses the GPS' AMSL value, so {{ inav }} and {{ mwp }} are consistent on this.
@@ -109,6 +109,8 @@ Note that while OpenTopo appears to be an accurate web service, it has significa
 * Limited to 1000 queries per 24 hour period.
 
 For these reasons, {{ mwp }} used locally hosted Mapzen DEMs.
+
+There is a more detailed analysis of the available DEMs [on the wiki](https://github.com/stronnag/mwptools/wiki/Comparison-of-Digital-Elevations-Models-%28DEMs%29).
 
 ## So who's right?
 
