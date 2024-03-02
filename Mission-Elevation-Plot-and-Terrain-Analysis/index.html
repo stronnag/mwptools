@@ -1511,27 +1511,29 @@
 <li>RTH altitude has to specified if you wish to model it, and assumes 'AT LEAST' behaviour.</li>
 </ul>
 <h2 id="datum">Datum<a class="headerlink" href="#datum" title="Permanent link">#</a></h2>
-<p>Digital elevation services can use the WGS84 Ellipsoid or "sea level"; survey maps typically use AMSL (Above Mean Sea Level); GPS can report either or both of WGS Ellipsoid and above MSL (mean sea level).</p>
+<p>Digital elevation services can use the WGS84 Ellipsoid or "sea level"; survey maps typically use AMSL (Above Mean Sea Level); GPS can report either or both of WGS Ellipsoid and above MSL (mean sea level). INAV and mwp both use AMSL.</p>
 <ul>
 <li>mwp currently uses locally (and transparently) hosted <a href="https://registry.opendata.aws/terrain-tiles/">Mapzen DEM</a> DEMs to obtain elevations. The user should apply a suitable margin.</li>
 <li><a href="https://github.com/iNavFlight/inav">INAV</a> firmware uses the GPS' AMSL value, so <a href="https://github.com/iNavFlight/inav">INAV</a> and <a href="https://github.com/stronnag/mwptools">mwp</a> are consistent on this.</li>
 </ul>
-<p>There may be a between ASML, "sea level", WGS84 Ellipsoid and Survey heights, for example, for a test point of  54.149461 -4.669315 (summit of South Barrule, Isle of Man):</p>
+<p>There may be a difference  between ASML, "sea level", WGS84 Ellipsoid and Survey heights, for example, for a test point of  54.149461 -4.669315 (summit of South Barrule, Isle of Man):</p>
 <ul>
 <li>Ordnance Survey (OS) Map (official survey): 483m</li>
 <li>Mapzen DEM (mwp) 476m</li>
-<li>OpenTopoData: 476m (via Mapzen)</li>
+<li>OpenTopoData: 476m (mapzen)</li>
+<li>OpenTopoData: 485 (aster30m)</li>
 <li>Google Earth : 470m</li>
-<li>Bing Ellipsoid (prior Configurator): 526m</li>
+<li>Bing Ellipsoid (Configurator): 526m</li>
 <li>Bing "Sea Level" (Configurator): 470m</li>
 </ul>
-<p>Note that while OpenTopo appears to be the most accurate web service, it has significant issues that mean it is unacceptable as a reliable data source:</p>
+<p>Note that while OpenTopo appears to be an accurate web service, it has significant issues that mean it is unacceptable as a reliable data source:</p>
 <ul>
 <li>Rate limited to one query per second.</li>
 <li>Limited to 100 points per query (INAV supports 120 point missions...).</li>
 <li>Limited to 1000 queries per 24 hour period.</li>
 </ul>
 <p>For these reasons, <a href="https://github.com/stronnag/mwptools">mwp</a> used locally hosted Mapzen DEMs.</p>
+<p>There is a more detailed analysis of the available DEMs <a href="https://github.com/stronnag/mwptools/wiki/Comparison-of-Digital-Elevations-Models-%28DEMs%29">on the wiki</a>.</p>
 <h2 id="so-whos-right">So who's right?<a class="headerlink" href="#so-whos-right" title="Permanent link">#</a></h2>
 <p>Many years ago, I took a GPS up South Barrule.</p>
 <p><img alt="barrule" src="https://user-images.githubusercontent.com/158229/129704384-a91904b9-becc-435d-9c38-9bc0fa31563d.png" width="40%" /></p>
@@ -1669,7 +1671,7 @@ WP15 -  RTH  -3.6°  (dive)
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    2023-11-16
+    2024-03-02
   </span>
 
     
