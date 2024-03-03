@@ -1353,8 +1353,8 @@
 
 <h1 id="mwp-and-geozones">mwp and Geozones<a class="headerlink" href="#mwp-and-geozones" title="Permanent link">#</a></h1>
 <h2 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permanent link">#</a></h2>
-<p>Since mwp 7.32.?, mwp provides a UI for the Geozones function that will / may appear in INAV 8.0.0 (or later). As the technical details for this feature has not yet been made publicly available, the implementation described below should be considered experimental.</p>
-<p>Geozones provides a set of geographical shapes that the FC can navigate around, characterised by:</p>
+<p>Since mwp 7.32.?, mwp provides a UI for the Geozones function that may appear in INAV 8.0.0 (or later). As the technical details for this feature has not yet been made publicly available, the implementation described below should be considered experimental; at least the user can generate colourful shapes ...</p>
+<p>Geozones provides (in theory at least) a set of geographical shapes that the FC can navigate around, characterised by:</p>
 <ul>
 <li>
 <p>Shape</p>
@@ -1380,19 +1380,19 @@
 </ul>
 </li>
 </ul>
-<p>The effect these parameters have an FC behaviour will, presumably, be made available once the Geozones function is publicly available.</p>
+<p>The effect these parameters have on FC behaviour will, presumably, be made available once the Geozones function is publicly available in the firmware.</p>
 <h2 id="mwp-user-interface">mwp User interface<a class="headerlink" href="#mwp-user-interface" title="Permanent link">#</a></h2>
 <h3 id="menu-options">Menu options<a class="headerlink" href="#menu-options" title="Permanent link">#</a></h3>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> adds a Geozones menu option, with suboptions:</p>
 <p><img alt="mwp geozones" src="../images/geozones_00.png" width="50%" /></p>
-<p>Note that the Save, Export, Clear, Downlaod and Upload  options are not sensitive if no geozone is loaded. Once a geozone is loaded, some or all of these options will be enabled. The MSP options are only enabled if the FC offers <code>feature GEOZONE</code>.</p>
+<p>Note that the Save, Export, Clear, Download and Upload  options are not sensitive if no geozone is loaded. Once a geozone is loaded, some or all of these options will be enabled. The MSP options are only enabled if the FC offers <code>feature GEOZONE</code>.</p>
 <p>Note that if <code>feature GEOZONE</code> is present, nwp will attempt to load Geozones from the FC unless the setting <code>autoload-geozones</code> is false, e.g.:</p>
 <pre><code>gsettings set org.mwptools.planner autoload-geozones false
 </code></pre>
 <h2 id="user-interface">User Interface<a class="headerlink" href="#user-interface" title="Permanent link">#</a></h2>
 <ul>
 <li>Open, Save: Expects a textual definition in INAV CLI format</li>
-<li>Export: Exports a loaded Geozone to KML. Geozone specific parameters are stored in the KML such that the original Geozone could be reproduced.</li>
+<li>Export: Exports a loaded Geozone to KML. Geozone specific parameters are stored in the KML such that the original Geozone in CLI notation could be reproduced from the KML.</li>
 </ul>
 <h3 id="editor">Editor<a class="headerlink" href="#editor" title="Permanent link">#</a></h3>
 <p><img alt="mwp geozones" src="../images/geozones_01.png" width="50%" /></p>
@@ -1521,19 +1521,15 @@
 <h3 id="colour-defintion">Colour defintion<a class="headerlink" href="#colour-defintion" title="Permanent link">#</a></h3>
 <p>Colours may be defined as:</p>
 <ul>
-<li>
-<p>A standard name (taken from the <a href="https://en.wikipedia.org/wiki/X11_color_names">X11 "rgb.txt"</a> file) ; or</p>
-</li>
-<li>
-<p>A hexadecimal value in the form <code>#rrggbb</code> or <code>#rrggbbaa</code> ; or</p>
-</li>
+<li>A "standard" name (taken from the <a href="https://en.wikipedia.org/wiki/X11_color_names">X11 "rgb.txt"</a> file) ; or</li>
+<li>A hexadecimal value in the form <code>#rrggbb</code> or <code>#rrggbbaa</code> ; or</li>
 <li>A RGB colour in the form <code>rgb(r,g,b)</code>); or <code>rgba(r,g,b,a)</code></li>
 </ul>
 <p>Where <code>r</code>, <code>g</code>, <code>b</code> and <code>a</code> are respectively the red, green, blue and alpha colour values. In the "<code>rgb()</code>" format, <code>r</code>, <code>g</code>, and <code>b</code> are either integers in the range 0 to 255 or percentage values in the range 0% to 100%, and <code>a</code> is a floating point value in the range 0 to 1.</p>
 <p>If the alpha component is not specified then it is set to be fully opaque.</p>
 <p>For "standard X11 names", an opacity may be defined by appending a floating point value in the range 0 to 1.0 to the name, separated by a semi-colon, for example <code>steelblue;0.8</code></p>
 <h3 id="example-default-settings-as-zone_colours-file">Example: default settings as <code>zone_colours</code> file<a class="headerlink" href="#example-default-settings-as-zone_colours-file" title="Permanent link">#</a></h3>
-<p>The default settings can bee represented in a <code>zone_colours</code> file as:</p>
+<p>The default settings can be represented in a <code>zone_colours</code> file as:</p>
 <pre><code>0|0|rgba(255,0,0,0.625)|4|4|
 0|1|rgba(255,0,0,0.625)|4|0|rgba(255,0,0,0.125)
 0|2|rgba(255,0,0,0.625)|10|0|rgba(255,0,0,0.125)
@@ -1571,7 +1567,7 @@ Blank lines and comment lines (starting with <code>#</code> or <code>;</code>) a
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    2024-02-05
+    2024-03-03
   </span>
 
     
