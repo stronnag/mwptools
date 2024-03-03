@@ -2,9 +2,9 @@
 
 ## Introduction
 
-Since mwp 7.32.?, mwp provides a UI for the Geozones function that will / may appear in INAV 8.0.0 (or later). As the technical details for this feature has not yet been made publicly available, the implementation described below should be considered experimental.
+Since mwp 7.32.?, mwp provides a UI for the Geozones function that may appear in INAV 8.0.0 (or later). As the technical details for this feature has not yet been made publicly available, the implementation described below should be considered experimental; at least the user can generate colourful shapes ...
 
-Geozones provides a set of geographical shapes that the FC can navigate around, characterised by:
+Geozones provides (in theory at least) a set of geographical shapes that the FC can navigate around, characterised by:
 
 * Shape
     - Circular
@@ -20,7 +20,7 @@ Geozones provides a set of geographical shapes that the FC can navigate around, 
     - Poshold
     - RTH
 
-The effect these parameters have an FC behaviour will, presumably, be made available once the Geozones function is publicly available.
+The effect these parameters have on FC behaviour will, presumably, be made available once the Geozones function is publicly available in the firmware.
 
 ## mwp User interface
 
@@ -30,7 +30,7 @@ The effect these parameters have an FC behaviour will, presumably, be made avail
 
 ![mwp geozones](images/geozones_00.png){: width="50%" }
 
-Note that the Save, Export, Clear, Downlaod and Upload  options are not sensitive if no geozone is loaded. Once a geozone is loaded, some or all of these options will be enabled. The MSP options are only enabled if the FC offers `feature GEOZONE`.
+Note that the Save, Export, Clear, Download and Upload  options are not sensitive if no geozone is loaded. Once a geozone is loaded, some or all of these options will be enabled. The MSP options are only enabled if the FC offers `feature GEOZONE`.
 
 Note that if `feature GEOZONE` is present, nwp will attempt to load Geozones from the FC unless the setting `autoload-geozones` is false, e.g.:
 
@@ -40,7 +40,7 @@ Note that if `feature GEOZONE` is present, nwp will attempt to load Geozones fro
 ## User Interface
 
 * Open, Save: Expects a textual definition in INAV CLI format
-* Export: Exports a loaded Geozone to KML. Geozone specific parameters are stored in the KML such that the original Geozone could be reproduced.
+* Export: Exports a loaded Geozone to KML. Geozone specific parameters are stored in the KML such that the original Geozone in CLI notation could be reproduced from the KML.
 
 ### Editor
 
@@ -130,8 +130,7 @@ The user may specify their own colours by creating a _pipe separated_ file, `$HO
 
 Colours may be defined as:
 
-* A standard name (taken from the [X11 "rgb.txt"](https://en.wikipedia.org/wiki/X11_color_names) file) ; or
-
+* A "standard" name (taken from the [X11 "rgb.txt"](https://en.wikipedia.org/wiki/X11_color_names) file) ; or
 * A hexadecimal value in the form `#rrggbb` or `#rrggbbaa` ; or
 * A RGB colour in the form `rgb(r,g,b)`); or `rgba(r,g,b,a)`
 
@@ -143,7 +142,7 @@ For "standard X11 names", an opacity may be defined by appending a floating poin
 
 ### Example: default settings as `zone_colours` file
 
-The default settings can bee represented in a `zone_colours` file as:
+The default settings can be represented in a `zone_colours` file as:
 
     0|0|rgba(255,0,0,0.625)|4|4|
     0|1|rgba(255,0,0,0.625)|4|0|rgba(255,0,0,0.125)
