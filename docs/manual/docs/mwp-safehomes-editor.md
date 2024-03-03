@@ -1,4 +1,4 @@
-# Ssafehome and Auto-land
+# Safehome and Auto-land
 
 One of the great features of {{ inav }} 2.6 was the `safehome` capability. The user can define of set of up to eight locations, and if any of these is within 200m (configurable up to 650m in {{ inav }} 2.7), then that is used as the home location for RTH (and RTH failsafe).
 
