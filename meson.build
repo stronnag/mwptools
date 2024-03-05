@@ -68,14 +68,14 @@ executable('fc-get',
           )
 
 executable('ublox-geo',
-           sources: [ ublxgsrcs, ublxguisrc, ublxgcommon],
+           sources: [ ublxgsrcs, ublxguisrc, ublxgcommon, dev_src],
 	   dependencies: [ ublxgdeps ],
 	   include_directories : common_inc_dir,
 	   vala_args : [dopts, ublx_v_args],
 	   install:false,
            build_by_default: false)
 
-executable('ublox-cli', sources: [ublxcsrcs, ublxccommon], dependencies: [ ublxcdeps ],
+executable('ublox-cli', sources: [ublxcsrcs, ublxccommon, dev_src ], dependencies: [ ublxcdeps ],
 	   include_directories : common_inc_dir, vala_args : [dopts, ublx_v_args],
 	   install: false, build_by_default: false )
 

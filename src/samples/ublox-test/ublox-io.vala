@@ -58,7 +58,7 @@ public class MWSerial : Object {
     private int64 stime;
     private int64 ltime;
 
-    public static string devname = null;
+    public static string? devname = null;
     public static int brate = 115200;
     public static bool ureset = false;
     public static bool force6 = false;
@@ -759,8 +759,7 @@ public class MWSerial : Object {
     }
 
     public int parse_option(string [] args) {
-        var dmgr = new DevManager(DevMask.USB);
-        var devs = dmgr.get_serial_devices();
+        new DevManager();
 
         try {
             var opt = new OptionContext("");
@@ -775,11 +774,18 @@ public class MWSerial : Object {
             return 1;
         }
 
-        if(devname == null)
-            if(devname == null && devs.length > 0)
-                devname = devs[0];
-            else
-                devname = MwpSerial.default_name();
+        if(devname == null) {
+			if(DevManager.serials.length() == 1) {
+				var dx = DevManager.serials.nth_data(0);
+				if (dx.type == DevMask.USB) {
+					devname = dx.name;
+				}
+			}
+		}
+
+		if (devname == null) {
+			devname = MwpSerial.default_name();
+		}
         return 0;
     }
 
