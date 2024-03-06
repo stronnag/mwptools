@@ -402,7 +402,8 @@ public class MWSerial : Object {
                     stdout.printf("Chn\tID\tused\thealthy\tquality\n");
                     for(var i = 0; i < _buffer.svinfo.numch; i++) {
                         string gnssid;
-                        var sv = _buffer.svinfo.svitems[i];
+						var ptr = &_buffer.xbytes[8 + i*12];
+						var sv = *((ubx_nav_svitem*)ptr);
                         var svid = sv.svid;
                         if (svid >= 1 && svid <= 32)
                             gnssid = "G%d".printf(svid);

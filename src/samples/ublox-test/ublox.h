@@ -143,7 +143,7 @@ struct  __attribute__ ((__packed__))  _ubx_nav_svinfo
   uint8_t globalflags;
   uint8_t res1;
   uint8_t res2;
-  ubx_nav_svitem svitems[32];
+  ubx_nav_svitem svitems[];
 };
 typedef struct _ubx_nav_svinfo ubx_nav_svinfo;
 
