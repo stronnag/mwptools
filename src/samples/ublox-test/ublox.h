@@ -154,6 +154,6 @@ union _ublox_buffer  {
     ubx_nav_timeutc timeutc;
     ubx_nav_pvt pvt;
     ubx_nav_svinfo svinfo;
-    uint8_t xbytes[512];
+    uint8_t xbytes[2048];
 };
 typedef union _ublox_buffer ublox_buffer;

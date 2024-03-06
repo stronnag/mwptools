@@ -354,7 +354,7 @@ public class MWSerial : Object {
                 _step++;
                 _ck_b += (_ck_a += data);  // checksum byte
                 _payload_length += (uint16)(data<<8);
-                if (_payload_length > 512) {
+                if (_payload_length > 2048) {
                     stderr.printf("Error: Data size over-run %d\n", _payload_length);
                     _payload_length = 0;
                     _step = 0;
@@ -366,8 +366,9 @@ public class MWSerial : Object {
                 if (_payload_counter < sizeof(ublox_buffer)) {
                     _buffer.xbytes[_payload_counter] = data;
                 }
-                if (++_payload_counter == _payload_length)
+                if (++_payload_counter == _payload_length) {
                     _step++;
+				}
                 break;
             case 7:
                 _step++;
@@ -392,7 +393,7 @@ public class MWSerial : Object {
     private bool ublox_parse_gps() {
         bool ret = false;
         if(_class != 5)
-            stdout.printf("Data size %db (%x %x)\n",
+            stdout.printf("Data size %db (0x%02x 0x%02x)\n",
                           _payload_length, _class, _msg_id);
         if(_class == 1) {
             switch (_msg_id) {
@@ -626,17 +627,16 @@ public class MWSerial : Object {
             0xB5, 0x62, 0x06, 0x08, 0x06, 0x00, 0x64, 0x00, 0x01, 0x00, 0x01, 0x00, 0x7A, 0x12, // set rate to 10Hz (measurement period: 100ms, navigation rate: 1 cycle)
         };
        uint8 [] timeutc = {0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0x01, 0x21, 0x05, 0x31, 0x89 };
-        uint8 [] reset = {0xB5, 0x62, 0x06, 0x04, 0x04, 0x00, 0xFF, 0x87,
-                          0x00, 0x00, 0x94, 0xF5};
-        uint8 [] sbas = {
+
+	   uint8 [] reset = {0xB5, 0x62, 0x06, 0x04, 0x04, 0x00, 0xFF, 0xff, 0x00, 0x00, 0x0c, 0x5d};
+	   uint8 [] sbas = {
             /* SBAS_AUTO */  0xB5, 0x62, 0x06, 0x16, 0x08, 0x00, 0x03, 0x03, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x2D, 0xC9
         };
         int [] init_speed = {115200, 57600, 38400, 19200, 9600};
         uint8 [] v7init = {0xB5, 0x62, 0x0A, 0x04, 0x00, 0x00, 0x0E, 0x34 };
 
         uint8 [] svinfo = {
-                0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0x01, 0x30, 0x00, 0x0A, 0x00, 0x00, 0x00, 0x00, 0x4A, 0x2D };// enable SVINFO 10 cycle
-
+			0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0x01, 0x30, 0x00, 0x0A, 0x00, 0x00, 0x00, 0x00, 0x4A, 0x2D };// enable SVINFO 10 cycle
 
         bool ret = true;
 
@@ -675,33 +675,33 @@ public class MWSerial : Object {
                 break;
 
             case State.START:
-                    if(ureset) {
-                        stdout.puts("send hard reset\n");
-                        ublox_write(fd, reset);
-                        ret = true;
-                    } else if(noinit == false) {
-                        stdout.printf("Disable NMEA\n");
-                        ublox_write(fd, nonmea); // 2
-                        gps_state++;
-                    } else {
-                        stdout.printf("No init requested\n");
-                        ret = false;
-                    }
-                    break;
+				if(ureset) {
+					stdout.puts("send hard reset\n");
+					ublox_write(fd, reset);
+					ret = true;
+				} else if(noinit == false) {
+					stdout.printf("Disable NMEA\n");
+					ublox_write(fd, nonmea); // 2
+					gps_state++;
+				} else {
+					stdout.printf("No init requested\n");
+					ret = false;
+				}
+				break;
             case State.MOTION:
                 switch(air_model) {
-                    case 0:
-                        stdout.printf("Set pedestrian\n");
-                        ublox_write(fd, pedestrain);
-                        break;
-                    case 4:
-                        stdout.printf("Set air 4G\n");
-                        ublox_write(fd, air4g);
-                        break;
-                    default:
-                        stdout.printf("Set air 1G\n");
-                        ublox_write(fd, air1g);
-                        break;
+				case 0:
+					stdout.printf("Set pedestrian\n");
+					ublox_write(fd, pedestrain);
+					break;
+				case 4:
+					stdout.printf("Set air 4G\n");
+					ublox_write(fd, air4g);
+					break;
+				default:
+					stdout.printf("Set air 1G\n");
+					ublox_write(fd, air1g);
+					break;
                 }
                 gps_state++;
                 break;
@@ -722,45 +722,44 @@ public class MWSerial : Object {
                 gps_state++;
                 break;
 
-            case State.GALILEO:
-                if (galileo && (gpsvers >= 70000)) {
-                    stdout.printf("Set galileo\n");
-                    ublox_write(fd, gnss_galileo);
-                }
-                gps_state++;
-                break;
-            case State.RATE:
-                if(urate == 10 && (gpsvers >= 70000 ))
-                    ublox_write(fd, rate_10hz);
-                else {
-                    switch(urate) {
-                        case 1:
-                            ublox_write(fd, rate_1hz);
-                            break;
-                        case 2:
-                            ublox_write(fd, rate_2hz);
-                            break;
-                        default:
-                            urate = 5;
-                            ublox_write(fd, rate_5hz);
-                            break;
-                    }
-                    stdout.printf("Set rate %d Hz\n", urate);
-                }
-                gps_state++;
-                break;
-            case State.SBAS:
-                stdout.printf("Set SBAS\n");
-                ublox_write(fd, sbas);
-                ret = false;
-                break;
+		case State.GALILEO:
+			if (galileo && (gpsvers >= 70000)) {
+				stdout.printf("Set galileo\n");
+				ublox_write(fd, gnss_galileo);
+			}
+			gps_state++;
+			break;
+		case State.RATE:
+			if(urate == 10 && (gpsvers >= 70000 ))
+				ublox_write(fd, rate_10hz);
+			else {
+				switch(urate) {
+				case 1:
+					ublox_write(fd, rate_1hz);
+					break;
+				case 2:
+					ublox_write(fd, rate_2hz);
+					break;
+				default:
+					urate = 5;
+					ublox_write(fd, rate_5hz);
+					break;
+				}
+				stdout.printf("Set rate %d Hz\n", urate);
+			}
+			gps_state++;
+			break;
+		case State.SBAS:
+			stdout.printf("Set SBAS\n");
+			ublox_write(fd, sbas);
+			ret = false;
+			break;
         }
         return ret;
     }
 
     public int parse_option(string [] args) {
         new DevManager();
-
         try {
             var opt = new OptionContext("");
             opt.set_help_enabled(true);
