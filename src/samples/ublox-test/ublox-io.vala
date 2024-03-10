@@ -80,7 +80,7 @@ public class MWSerial : Object {
         { "air-model", 'a', 0, OptionArg.INT, out air_model, "0,1,4", null},
         { "update-rate", 'z', 0, OptionArg.INT, out urate, "1,2,_5_,10 Hz", null},
         { "slow", 's', 0, OptionArg.NONE, out slow, "slower initialisation", null},
-        { "pass", 'p', 0, OptionArg.NONE, out pass, "cf gps passthrough", null},
+        { "pass", 'p', 0, OptionArg.NONE, out pass, "FC gps passthrough", null},
         { "galileo", 'g', 0, OptionArg.NONE, out galileo, "enable Galileo", null},
         {null}
     };
