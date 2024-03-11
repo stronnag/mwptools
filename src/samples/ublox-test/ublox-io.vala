@@ -77,7 +77,7 @@ public class MWSerial : Object {
         { "no-init", 'n', 0, OptionArg.NONE, out noinit, "No init", null},
         { "no-autobaud", 'N', 0, OptionArg.NONE, out noautob, "No autobaud", null},
         { "force-v6", '6', 0, OptionArg.NONE, out force6, "Force V6 init (vice inav autodetect)", null},
-        { "air-model", 'a', 0, OptionArg.INT, out air_model, "0,1,4", null},
+        { "air-model", 'a', 0, OptionArg.INT, out air_model, "0,1,2,4", null},
         { "update-rate", 'z', 0, OptionArg.INT, out urate, "1,2,_5_,10 Hz", null},
         { "slow", 's', 0, OptionArg.NONE, out slow, "slower initialisation", null},
         { "pass", 'p', 0, OptionArg.NONE, out pass, "FC gps passthrough", null},
@@ -556,25 +556,52 @@ public class MWSerial : Object {
         return available;
     }
 
-    private bool setup_gps() {
-        uint8 [] pedestrain = {
-            0xB5, 0x62, 0x06, 0x24, 0x24, 0x00, 0xFF, 0xFF, 0x03, 0x03, 0x00,           // CFG-NAV5 - Set engine settings (original MWII code)
-            0x00, 0x00, 0x00, 0x10, 0x27, 0x00, 0x00, 0x05, 0x00, 0xFA, 0x00,           // Collected by resetting a GPS unit to defaults. Changing mode to Pedistrian and
-            0xFA, 0x00, 0x64, 0x00, 0x2C, 0x01, 0x00, 0x3C, 0x00, 0x00, 0x00,           // capturing the data from the U-Center binary console.
-            0x00, 0xC8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x17, 0xC2
-        };
-        uint8 [] air1g = {
-            0xB5, 0x62, 0x06, 0x24, 0x24, 0x00, 0xFF, 0xFF, 0x06, 0x03, 0x00,           // CFG-NAV5 - Set engine settings
-            0x00, 0x00, 0x00, 0x10, 0x27, 0x00, 0x00, 0x05, 0x00, 0xFA, 0x00,           // Airborne <1G
-            0xFA, 0x00, 0x64, 0x00, 0x2C, 0x01, 0x00, 0x3C, 0x00, 0x00, 0x00,
-            0x00, 0xC8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1A, 0x28
-        };
-        uint8 [] air4g = {
-            0xB5, 0x62, 0x06, 0x24, 0x24, 0x00, 0xFF, 0xFF, 0x08, 0x03, 0x00,           // CFG-NAV5 - Set engine settings
-            0x00, 0x00, 0x00, 0x10, 0x27, 0x00, 0x00, 0x05, 0x00, 0xFA, 0x00,           // Airborne <4G
-            0xFA, 0x00, 0x64, 0x00, 0x2C, 0x01, 0x00, 0x3C, 0x00, 0x00, 0x00,
-            0x00, 0xC8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1C, 0x6C
-        };
+
+	private void setchk(ref uint8[]body) {
+		uint8 chk_a = 0;
+		uint8 chk_b = 0;
+		uint16 len = body[4]+(uint16)(body[5]<<8);
+		int j = 0;
+		while(true) {
+			switch (j) {
+			case 0:
+			case 1:
+				break;
+			case 2:
+				chk_a = chk_b = body[j];
+				break;
+			default:
+				chk_b += (chk_a += body[j]);
+				break;
+			}
+			j++;
+			if (j == len+6) {
+				body[j] = chk_a;
+				body[j+1] = chk_b;
+				break;
+			}
+		}
+	}
+
+	private uint8[] construct_nav5(uint8 airtype) {
+		uint8 [] nav5 = {
+			0xB5, 0x62, 0x06, 0x24, 0x24, 0x00, 0xFF, 0xFF, 0x03, 0x03, 0x00,           // CFG-NAV5 - Set engine settings (original MWII code)
+			0x00, 0x00, 0x00, 0x10, 0x27, 0x00, 0x00, 0x05, 0x00, 0xFA, 0x00,           // Collected by resetting a GPS unit to defaults. Changing mode to Pedistrian and
+			0xFA, 0x00, 0x64, 0x00, 0x2C, 0x01, 0x00, 0x3C, 0x00, 0x00, 0x00,           // capturing the data from the U-Center binary console.
+			0x00, 0xC8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0, 0x0
+		};
+
+		uint8[] body = nav5.copy();
+		body[8] = airtype;
+		setchk(ref body);
+		return body;
+	}
+
+	private bool setup_gps() {
+        uint8 [] pedestrain = construct_nav5(0x03);
+        uint8 [] air1g = construct_nav5(0x06);
+        uint8 [] air2g = construct_nav5(0x07);
+        uint8 [] air4g = construct_nav5(0x08);
 
         uint8 [] nonmea = {
                 // DISABLE NMEA messages
@@ -694,6 +721,10 @@ public class MWSerial : Object {
 				case 0:
 					stdout.printf("Set pedestrian\n");
 					ublox_write(fd, pedestrain);
+					break;
+				case 2:
+					stdout.printf("Set air 2G\n");
+					ublox_write(fd, air2g);
 					break;
 				case 4:
 					stdout.printf("Set air 4G\n");
