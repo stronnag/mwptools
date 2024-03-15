@@ -62,10 +62,7 @@ mwpdeps = [deps,
           ]
 
 # for BSD etc.
-ldirs = ['/usr/lib', '/usr/local/lib']
 mwp_c_args = []
-
-paho = meson.get_compiler('c').find_library('paho-mqtt3cs', dirs: ldirs, required: false)
 
 if paho.found()
   mwp_v_args += '--define=MQTT'
