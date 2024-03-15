@@ -5,6 +5,10 @@ namespace MWPLog {
 	}
 }
 
+// Should not be necessary, but the posix vapi doesn't assert _XOPEN_SOURCE
+// correctly on Linux (and valac 0.56.16 is verbose about macro redefinition).
+extern unowned string ptsname(int fd);
+
 public class GattTest : Application {
 	private string? addr;
 	private BleSerial gs;
@@ -271,7 +275,7 @@ public class GattTest : Application {
 				if (pfd != -1) {
 					Posix.grantpt(pfd);
 					Posix.unlockpt(pfd);
-					unowned string s = Posix.ptsname(pfd);
+					unowned string s = ptsname(pfd);
 					print("%s <=> %s\n",addr, s);
 					ioreader();
 				}

@@ -3,7 +3,27 @@ project('mwptools', 'c', 'vala', version : '7.057.554', meson_version : '>= 0.60
 # vala / clang16 workaround
 if meson.get_compiler('c').get_id() == 'clang'
   add_global_arguments('-Wno-error=incompatible-function-pointer-types', language : 'c')
+  add_project_arguments('-Wno-macro-redefined', language : 'c')
+  add_project_arguments('-Wno-tautological-pointer-compare', language : 'c')
+  add_project_arguments('-Wno-bitwise-instead-of-logical', language : 'c')
+  add_project_arguments('-Wno-void-pointer-to-enum-cast',  language : 'c')
 endif
+
+if meson.get_compiler('c').get_id() == 'gcc'
+  add_project_arguments('-Wno-incompatible-pointer-types',  language : 'c')
+  add_project_arguments('-Wno-address',  language : 'c')
+  add_project_arguments('-Wno-implicit-function-declaration', language : 'c')
+  add_project_arguments('-Wno-discarded-qualifiers', language : 'c')
+  add_project_arguments('-Wno-tautological-compare', language : 'c')
+endif
+
+add_project_arguments('-Wno-unused-variable', language : 'c')
+add_project_arguments('-Wno-unused-function', language : 'c')
+add_project_arguments('-Wno-unused-but-set-variable', language : 'c')
+add_project_arguments('-Wno-pointer-sign', language : 'c')
+add_project_arguments('-Wno-deprecated-declarations', language : 'c')
+add_project_arguments('-Wno-unused-value', language : 'c')
+add_project_arguments('-Wno-format',  language : 'c')
 
 nogo = get_option('nogo')
 
