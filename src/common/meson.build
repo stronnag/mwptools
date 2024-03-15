@@ -1,7 +1,5 @@
-mwpcommon = files('btdev.c',
-		  'cserial.c',
-		  'mwp_glinfo.c',
-		  'xmlio.vala', 'autoland.vala',
+mwpcommon = files('xmlio.vala',
+                  'autoland.vala',
 		  'serial-device.vala',
 		  'mwp_uriparser.vala',
 		  'geocalc.vala',
@@ -17,9 +15,7 @@ mwpcommon = files('btdev.c',
 		  'json_io.vala',
 		  'devman.vala')
 
-clicommon = files('btdev.c',
-	    	  'cserial.c',
-		  'serial-device.vala',
+clicommon = files('serial-device.vala',
 		  'mwp_uriparser.vala',
 		  'mspmsg.vala',
 		  'sede.vala',
@@ -28,9 +24,7 @@ clicommon = files('btdev.c',
 		  'utils.vala',
 		  'devman.vala')
 
-fccommon = files('btdev.c',
-	    	  'cserial.c',
-		  'serial-device.vala',
+fccommon = files( 'serial-device.vala',
 		  'mwp_uriparser.vala',
 		  'mspmsg.vala',
 		  'sede.vala',
@@ -39,14 +33,12 @@ fccommon = files('btdev.c',
 		  'devman.vala',
 		  'mwptermcap.vala')
 
-ublxgcommon = files('cserial.c',
-		    'utils.vala',
+ublxgcommon = files('utils.vala',
 		    'geocalc.vala',
 		    'mwplog.vala',
 		    'devman.vala')
 
-ublxccommon = files('cserial.c',
-		    'mwplog.vala',
+ublxccommon = files('mwplog.vala',
 		    'devman.vala')
 
 apcommon = files('utils.vala',

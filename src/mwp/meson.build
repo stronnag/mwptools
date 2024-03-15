@@ -14,7 +14,7 @@ libmwpvers = static_library('mwpvers', ['_mwpvers.c', mwpvers_h],
 
 mwpsrcs = files('mwp.vala', 'liststore.vala', 'mwp_markers.vala',
 		'mwp_craft.vala', 'settings.vala', 'dialogs.vala', 'mapsources.vala',
-		'local_geo.vala', 'logger.vala', 'speech_wrapper.c', 'mwp-replay.vala',
+		'local_geo.vala', 'logger.vala', 'mwp-replay.vala',
 		'map_seeder.vala', 'mwp-layout.vala', 'iparser.vala', 'mwp_bbox.vala',
 		'ah_widget.vala', 'get_places.vala', 'mission.vala',
 		'mwp_dbus.vala', 'name_type_map.vala', 'mwp_pe_support.vala',
@@ -71,7 +71,7 @@ if paho.found()
   mwp_v_args += '--define=MQTT'
   mwp_v_args += '--define=MQTT_PAHO'
   mwpdeps += paho
-  mwpsrcs += files('paho_wrapper.c', 'mwp_mqtt_common.vala')
+  mwpsrcs += files('mwp_mqtt_common.vala')
 else
   mosquitto = meson.get_compiler('c').find_library('mosquitto', dirs: ldirs, required: false)
   if mosquitto.found()
