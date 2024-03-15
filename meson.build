@@ -1,29 +1,6 @@
 project('mwptools', 'c', 'vala', version : '7.057.554', meson_version : '>= 0.60')
 
 # vala / clang16 workaround
-if meson.get_compiler('c').get_id() == 'clang'
-  add_global_arguments('-Wno-error=incompatible-function-pointer-types', language : 'c')
-  add_project_arguments('-Wno-macro-redefined', language : 'c')
-  add_project_arguments('-Wno-tautological-pointer-compare', language : 'c')
-  add_project_arguments('-Wno-bitwise-instead-of-logical', language : 'c')
-  add_project_arguments('-Wno-void-pointer-to-enum-cast',  language : 'c')
-endif
-
-if meson.get_compiler('c').get_id() == 'gcc'
-  add_project_arguments('-Wno-incompatible-pointer-types',  language : 'c')
-  add_project_arguments('-Wno-address',  language : 'c')
-  add_project_arguments('-Wno-implicit-function-declaration', language : 'c')
-  add_project_arguments('-Wno-discarded-qualifiers', language : 'c')
-  add_project_arguments('-Wno-tautological-compare', language : 'c')
-endif
-
-add_project_arguments('-Wno-unused-variable', language : 'c')
-add_project_arguments('-Wno-unused-function', language : 'c')
-add_project_arguments('-Wno-unused-but-set-variable', language : 'c')
-add_project_arguments('-Wno-pointer-sign', language : 'c')
-add_project_arguments('-Wno-deprecated-declarations', language : 'c')
-add_project_arguments('-Wno-unused-value', language : 'c')
-add_project_arguments('-Wno-format',  language : 'c')
 
 nogo = get_option('nogo')
 
@@ -43,6 +20,7 @@ configure_file(
 configuration_inc = []
 common_inc_dir = []
 
+subdir('valaopts')
 subdir('meson')
 
 subdir('src/common')
@@ -59,7 +37,7 @@ executable('mwp',
 	   link_with: libmwpvers,
 	   include_directories : [common_inc_dir, configuration_inc],
 	   vala_args : [dopts, mwp_v_args ],
-	   c_args: [mwp_c_args, dev_args ],
+	   c_args: [mwp_c_args, dev_args, vcargs ],
 	   install : true,
           )
 
@@ -68,7 +46,7 @@ executable('cliterm',
            dependencies: [ clideps ],
            include_directories : common_inc_dir,
            vala_args : [dopts, cli_v_args ],
-           c_args: [dev_args, cli_args],
+           c_args: [dev_args, cli_args, vcargs ],
            install : true,
           )
 
@@ -76,6 +54,7 @@ executable('bproxy',
            sources: bproxsrc,
            dependencies: [ proxdeps ],
 	   vala_args : dopts,
+           c_args: vcargs,
            install : true)
 
 executable('fc-get',
@@ -83,7 +62,7 @@ executable('fc-get',
            dependencies: [ fcdeps ],
            include_directories : common_inc_dir,
            vala_args : [dopts, fc_v_args ],
-           c_args: [dev_args],
+           c_args: [dev_args, vcargs],
            install : true,
           )
 
@@ -92,15 +71,23 @@ executable('ublox-geo',
 	   dependencies: [ ublxgdeps ],
 	   include_directories : common_inc_dir,
 	   vala_args : [dopts, ublx_v_args],
+           c_args: vcargs,
 	   install:false,
            build_by_default: false)
 
-executable('ublox-cli', sources: [ublxcsrcs, ublxccommon, dev_src ], dependencies: [ ublxcdeps ],
-	   include_directories : common_inc_dir, vala_args : [dopts, ublx_v_args],
+executable('ublox-cli',
+           sources: [ublxcsrcs, ublxccommon, dev_src ],
+           dependencies: [ ublxcdeps ],
+	   include_directories : common_inc_dir,
+           vala_args : [dopts, ublx_v_args],
+           c_args: vcargs,
 	   install: false, build_by_default: false )
 
-executable('mwp-area-planner', sources: [apsrcs, apuisrcs, apcommon], dependencies: [ apdeps ],
-	   include_directories : common_inc_dir, vala_args : [dopts, ap_v_args],
+executable('mwp-area-planner',
+           sources: [apsrcs, apuisrcs, apcommon], dependencies: [ apdeps ],
+	   include_directories : common_inc_dir,
+           vala_args : [dopts, ap_v_args],
+           c_args: vcargs,
 	   install:true
 	   )
 
@@ -109,7 +96,7 @@ executable('flashdl',
            dependencies: [ fdldeps ],
 	   include_directories : common_inc_dir,
            vala_args : [dopts, fdl_v_args ],
-           c_args: [dev_args],
+           c_args: [dev_args, vcargs],
            build_by_default: false,
            install : false,
 	   install_tag : 'flashdl',
@@ -119,6 +106,7 @@ executable('gmproxy',
            sources: proxsrc,
            dependencies: [ proxdeps ],
 	   vala_args : dopts,
+           c_args: vcargs,
            build_by_default: false,
            install : false,
            install_tag: 'gmproxy',
@@ -129,7 +117,7 @@ if with_gatt
            sources: [gatt_app_src, bt_src],
            dependencies: [gatt_deps],
            vala_args : [ dopts ],
-           c_args: [dev_args],
+           c_args: [dev_args, vcargs],
            build_by_default: true,
            install : true,
 	   )
