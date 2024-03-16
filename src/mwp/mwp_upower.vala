@@ -107,7 +107,7 @@ public class PowerState : Object {
                                 if(dev.time_to_empty > 0) {
                                     var mins = dev.time_to_empty / 60;
                                     var secs = dev.time_to_empty % 60;
-                                    sb.append_printf(", %lld:%02lld remaining", mins,secs);
+                                    sb.append_printf(", %d:%02d remaining", (int)mins,(int)secs);
                                 }
                                 host_power_alert(sb.str);
                             }
