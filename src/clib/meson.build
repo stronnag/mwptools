@@ -13,5 +13,6 @@ endif
 libmwpclib = static_library('mwpclib',
                             clsrcs,
                             include_directories :  common_inc_dir,
-                            dependencies : glib_dep
+                            dependencies : glib_dep,
+                            install: true
                            )

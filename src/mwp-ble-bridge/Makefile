@@ -1,26 +1,24 @@
-prefix ?= $$HOME/.local
+include ../common.mk
+include ../valaopts.mk
 
 VALAC = valac
 
 COPTS = -X -D_XOPEN_SOURCE=701
-OPTS=-X -O2 -X -s
-OPTS += -X -Wno-unused-result -X -Wno-format -X -Wno-implicit-function-declaration
-OPTS += -X -Wno-incompatible-pointer-types -X  -Wno-discarded-qualifiers -X -Wno-deprecated-declarations
-#CLANGOPTS += -X -Wno-pointer-type-mismatch -X -Wno-incompatible-pointer-types-discards-qualifiers -X -Wno-tautological-pointer-compare
+OPTS +=  -X -O2 -X -s
+COMMOND=../common
+LOPTS= -X -L$(prefix)/lib -X -lmwpvlib #-X -lmwpclib
+OPTS+= --vapidir $(COMMOND) --vapidir $(prefix)/share/vala/vapi -X -I$(COMMOND) -X -I$(prefix)/include/
+PKGS = --pkg mwpfuncs --pkg mwpvlib
 
-PKGS = --pkg gio-2.0 --pkg posix
-C = ../common
-COMSRC = $(C)/bluetooth.vala  $(C)/bluez.vala $(C)/btdevice.vala $(C)/ble-helper.vala $(C)/ble_uuids.vala
-
+PKGS += --pkg gio-2.0 --pkg posix
 APP=mwp-ble-bridge
 
 all : $(APP)
 
-$(APP): mwp-ble-bridge.vala socket-utils.vala $(COMSRC)
-	$(VALAC) --define=TEST --define=LINUX $(COPTS) $(OPTS) $(PKGS) -o $@  $^
+$(APP): mwp-ble-bridge.vala socket-utils.vala
+	$(VALAC) --define=TEST --define=LINUX $(COPTS) $(OPTS) $(PKGS) $(LOPTS) -o $@  $^
 
 install: $(APP)
-	install -d $(prefix)/bin
 	install -s $(APP) $(prefix)/bin/
 
 clean:

@@ -1,10 +1,3 @@
-namespace MWPLog {
-	public void  message(string format, ...) {
-		var args = va_list();
-		stdout.vprintf(format, args);
-	}
-}
-
 // Should not be necessary, but the posix vapi doesn't assert _XOPEN_SOURCE
 // correctly on Linux (and valac 0.56.16 is verbose about macro redefinition).
 //extern unowned string ptsname(int fd);
