@@ -76,5 +76,7 @@ endif
 
 VTEVERS=2.91
 
-prefix?=$(DESTDIR)/usr
-datadir?=$(DESTDIR)/usr
+
+
+#prefix?=$(DESTDIR)/usr
+#datadir?=$(DESTDIR)/usr

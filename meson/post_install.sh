@@ -10,10 +10,7 @@ fi
 
 ln -f ${INSTDIR}/bin/fc-get  ${INSTDIR}/bin/fc-set
 
-# Additional programs, without whinging
-#for FN in ublox-geo ublox-cli flashdl ; do
-#  if [ -e  $MESON_BUILD_ROOT/$FN ] ; then
-#    rm -f $INSTDIR/bin/$FN
-#    install -C $MESON_BUILD_ROOT/$FN $INSTDIR/bin
-#  fi
-#done
+install -d $INSTDIR/share/vala/vapi/
+install -d $INSTDIR/include/
+install ${MESON_BUILD_ROOT}/src/common/mwpvlib.vapi  $INSTDIR/share/vala/vapi/
+install ${MESON_BUILD_ROOT}/src/common/mwpvlib.h  $INSTDIR/include/

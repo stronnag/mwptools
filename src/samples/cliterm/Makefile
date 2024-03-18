@@ -7,24 +7,13 @@ APP=xcliterm
 CLI=cliterm
 
 COMMOND=../../common
-CLIB=../../clib
+LOPTS= -X -L$(prefix)/lib -X -lmwpvlib -X -lmwpclib -X -lm
+OPTS+= --vapidir $(COMMOND) --vapidir $(prefix)/share/vala/vapi -X -I$(COMMOND) -X -I$(prefix)/include/
+PKGS = --pkg mwpfuncs --pkg mwpvlib   $(GUDEV)
 
-CLIBS= $(CLIB)/btdev.c $(CLIB)/cserial.c
-
-DEVSRC=$(COMMOND)/devman.vala
-ifeq ($(XOS),Linux)
-DEVSRC += $(COMMOND)/usbmgr.vala $(COMMOND)/bluez.vala $(COMMOND)/bluetooth.vala $(COMMOND)/ble-helper.vala $(COMMOND)/btdevice.vala $(COMMOND)/ble_uuids.vala
-endif
-
-COMMONC=$(COMMOND)/serial-device.vala $(COMMOND)/mspcmd.vala $(COMMOND)/mwplog.vala \
-	$(COMMOND)/mspmsg.vala $(COMMOND)/sede.vala $(COMMOND)/mwp_uriparser.vala \
-	$(COMMOND)/utils.vala $(DEVSRC) $(CLIBS)
-
-PKGS = --pkg posix --pkg gio-2.0 --pkg gtk+-3.0 --pkg linux --pkg mwpfuncs
+PKGS += --pkg posix --pkg gio-2.0 --pkg gtk+-3.0 --pkg linux
 PKGSV = --pkg vte-$(VTEVERS)
-PKGSR = --pkg gio-2.0  $(GUDEV)
-OPTS+=--vapidir=$(COMMOND) -X -I$(COMMOND)
-
+PKGSR = --pkg gio-2.0
 
 APPS=$(APP) $(CLI)
 

@@ -1,51 +1,33 @@
 mwpcommon = files('xmlio.vala',
                   'autoland.vala',
-		  'serial-device.vala',
-		  'mwp_uriparser.vala',
-		  'geocalc.vala',
-		  'utils.vala',
-		  'mspmsg.vala',
-		  'sede.vala',
-		  'mspcmd.vala',
-		  'mwc.vala',
-		  'mwplog.vala',
-		  'mavcmd.vala',
 		  'cliterm.vala',
-		  'mlock.vala',
-		  'json_io.vala',
-		  'devman.vala')
+		  'json_io.vala'
+                 )
 
-clicommon = files('serial-device.vala',
-		  'mwp_uriparser.vala',
-		  'mspmsg.vala',
-		  'sede.vala',
-		  'mspcmd.vala',
-		  'mwplog.vala',
-		  'utils.vala',
-		  'devman.vala')
+vcommon = files( 'serial-device.vala',
+		'mwp_uriparser.vala',
+		'geocalc.vala',
+		'utils.vala',
+		'mspmsg.vala',
+		'sede.vala',
+		'mspcmd.vala',
+		'mwc.vala',
+		'mwplog.vala',
+		'mavcmd.vala',
+		'mlock.vala',
+		'devman.vala')
 
-fccommon = files( 'serial-device.vala',
-		  'mwp_uriparser.vala',
-		  'mspmsg.vala',
-		  'sede.vala',
-		  'mspcmd.vala',
-		  'mwplog.vala',
-		  'devman.vala',
-		  'mwptermcap.vala')
+clicommon = ''
 
-ublxgcommon = files('utils.vala',
-		    'geocalc.vala',
-		    'mwplog.vala',
-		    'devman.vala')
+fccommon = files( 'mwptermcap.vala')
 
-ublxccommon = files('mwplog.vala',
-		    'devman.vala')
+ublxgcommon = ''
 
-apcommon = files('utils.vala',
-		 'mwplog.vala',
-		 'xmlio.vala', 'autoland.vala', 'sede.vala',
-		 'geocalc.vala',
-		 'mspcmd.vala')
+ublxccommon = ''
+
+apcommon = files('xmlio.vala',
+                 'autoland.vala'
+                )
 
 devman = files('devman.vala')
 
@@ -65,5 +47,19 @@ if host_machine.system() == 'linux'
   bt_src = files('bluez.vala', 'bluetooth.vala', 'ble-helper.vala', 'btdevice.vala', 'ble_uuids.vala' )
   dev_src = [usb_src, bt_src]
 endif
+
+mwpv_args = ['--vapidir', vapi_dir, '--pkg', 'mwpfuncs']
+
+libmwpvlib = static_library('mwpvlib',
+                            sources: [vcommon, dev_src],
+                            include_directories :  common_inc_dir,
+                            dependencies : [ deps, dependency('gio-2.0'),
+                                             meson.get_compiler('vala').find_library('posix'),
+                                             meson.get_compiler('vala').find_library('linux'),
+                                           ],
+                            vala_args : [dopts, mwpv_args],
+                            c_args: [dev_args, vcargs],
+                            install: true
+                           )
 
 install_data('mwp_icon.svg', install_dir: get_option('datadir') / 'icons/hicolor/scalable/apps')
