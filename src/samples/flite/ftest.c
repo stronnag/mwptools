@@ -5,7 +5,7 @@
 #include <gmodule.h>
 
 #include <flite/flite.h>
-#include <flite //flite_version.h>
+#include <flite/flite_version.h>
 
 typedef cst_voice *(*register_internal_t)(void);
 typedef void (*usenglish_init_t)(cst_voice *);
@@ -22,6 +22,14 @@ static usenglish_init_t fl_eng;
 static cmulex_init_t fl_cmu;
 static GModule *handle;
 
+static inline gchar *m_module_build_path(const gchar *dir, const gchar *name) {
+// Once GLIB actually documents the replacement, the pragmas can be removed
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+  return g_module_build_path(dir, name);
+#pragma GCC diagnostic pop
+}
+
 static int fl_init(char *vname) {
   /**
    * for this test we allow old versions
@@ -33,7 +41,7 @@ if(FLITE_PROJECT_VERSION[0] < '2')
 }
   **/
   gchar *modname;
-  modname = g_module_build_path(NULL, "flite");
+  modname = m_module_build_path(NULL, "flite");
   if (modname) {
     handle = g_module_open(modname, 0);
     if (handle) {
@@ -51,14 +59,14 @@ if(FLITE_PROJECT_VERSION[0] < '2')
         g_module_symbol(handle, "feat_string", (gpointer *)&fl_fstr);
         g_module_symbol(handle, "flite_text_to_speech", (gpointer *)&fl_tts);
         GModule *handle2;
-        modname = g_module_build_path(NULL, "flite_usenglish");
+        modname = m_module_build_path(NULL, "flite_usenglish");
         handle2 = g_module_open(modname, 0);
         if (handle2 == NULL)
           goto out;
         g_module_symbol(handle2, "usenglish_init", (gpointer *)&fl_eng);
 
         GModule *handle3;
-        modname = g_module_build_path(NULL, "flite_cmulex");
+        modname = m_module_build_path(NULL, "flite_cmulex");
         handle3 = g_module_open(modname, 0);
 
         if (handle3 == NULL)
@@ -79,12 +87,12 @@ if(FLITE_PROJECT_VERSION[0] < '2')
 
         GModule *handle1;
         register_internal_t fl_slt;
-        modname = g_module_build_path(NULL, "flite_cmu_us_slt");
+        modname = m_module_build_path(NULL, "flite_cmu_us_slt");
         handle1 = g_module_open(modname, 0);
         if (handle1 != NULL)
           g_module_symbol(handle1, "register_cmu_us_slt", (gpointer *)&fl_slt);
         else {
-          modname = g_module_build_path(NULL, "flite_cmu_us_kal");
+          modname = m_module_build_path(NULL, "flite_cmu_us_kal");
           handle1 = g_module_open(modname, 0);
           if (handle1 != NULL)
             g_module_symbol(handle1, "register_cmu_us_kal", (gpointer *)&fl_slt);

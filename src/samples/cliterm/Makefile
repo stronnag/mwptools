@@ -1,15 +1,25 @@
 VALAC=valac
 
 include ../../common.mk
+include ../../valaopts.mk
 
 APP=xcliterm
 CLI=cliterm
 
 COMMOND=../../common
+CLIB=../../clib
 
-COMMONC=$(COMMOND)/serial-device.vala $(COMMOND)/btdev.c \
-	$(COMMOND)/cserial.c $(COMMOND)/mspcmd.vala $(COMMOND)/mwplog.vala \
-	$(COMMOND)/mspmsg.vala $(COMMOND)/devman.vala
+CLIBS= $(CLIB)/btdev.c $(CLIB)/cserial.c
+
+DEVSRC=$(COMMOND)/devman.vala
+ifeq ($(XOS),Linux)
+DEVSRC += $(COMMOND)/usbmgr.vala $(COMMOND)/bluez.vala $(COMMOND)/bluetooth.vala $(COMMOND)/ble-helper.vala $(COMMOND)/btdevice.vala $(COMMOND)/ble_uuids.vala
+endif
+
+COMMONC=$(COMMOND)/serial-device.vala $(COMMOND)/mspcmd.vala $(COMMOND)/mwplog.vala \
+	$(COMMOND)/mspmsg.vala $(COMMOND)/sede.vala $(COMMOND)/mwp_uriparser.vala \
+	$(COMMOND)/utils.vala $(DEVSRC) $(CLIBS)
+
 PKGS = --pkg posix --pkg gio-2.0 --pkg gtk+-3.0 --pkg linux --pkg mwpfuncs
 PKGSV = --pkg vte-$(VTEVERS)
 PKGSR = --pkg gio-2.0  $(GUDEV)

@@ -1,4 +1,5 @@
 include ../common.mk
+include ../valaopts.mk
 
 all: gmproxy
 

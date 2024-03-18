@@ -44,9 +44,6 @@ public static int main (string[] args) {
     if(s.open(dev, baud, out estr)) {
         var ml = new MainLoop();
         var robj = new ReplayThread();
-        robj.replay_done.connect(() => {
-                ml.quit();
-            });
         var thr = robj.run_msp(s, file, true);
         ml.run();
         thr.join();

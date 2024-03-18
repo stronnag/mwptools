@@ -13,21 +13,6 @@ endif
 
 OPTS += -X -O2
 
-ifeq ($(WARN),)
-OPTS += -X -Wno-unused-result -X -Wno-format
- ifeq ($(XOS),FreeBSD)
-  USE_CLANG=1
- endif
- ifeq ($(CC),clang)
-  USE_CLANG=1
- endif
- ifeq ($(USE_CLANG),1)
-  OPTS += -X -Wno-incompatible-pointer-types-discards-qualifiers -X -Wno-pointer-sign -X -Wno-incompatible-pointer-types -X -Wno-sentinel -X -Wno-deprecated-declarations -X -Wno-tautological-pointer-compare -X -Wno-void-pointer-to-enum-cast -X -Wno-unused-value -X -Wno-pointer-type-mismatch
- else
-  OPTS += -X -Wno-incompatible-pointer-types -X  -Wno-discarded-qualifiers -X -Wno-deprecated-declarations
- endif
-endif
-
 ifeq ($(origin DEBUG), undefined)
  OPTS += -X -s
 else

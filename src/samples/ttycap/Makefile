@@ -1,12 +1,13 @@
 VALAC=valac
 
 include ../../common.mk
+include ../../valaopts.mk
 
 APP=ttycap
 
 all: $(APP)
 
-CLISRC=	ttycap.vala ../../common/cserial.c
+CLISRC=	ttycap.vala ../../clib/cserial.c
 VAPI= --vapidir ../../common
 OPTS+= -X -I../../common
 

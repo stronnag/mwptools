@@ -1,10 +1,12 @@
+include ../../valaopts.mk
+
 ALL = gst-devmon gst-video-player
 
 prefix ?= $(HOME)/.local
 
 all: $(ALL)
 
-OPTS=-X -O3 -X -s
+OPTS += -X -O3 -X -s
 
 gst-video-player: gst-video-player.vala
 	valac $(OPTS) -D TEST --pkg gtk+-3.0 --pkg gstreamer-1.0 --pkg gstreamer-pbutils-1.0 gst-video-player.vala
