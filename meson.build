@@ -57,7 +57,7 @@ executable('bproxy',
            dependencies: [ proxdeps ],
 	   vala_args : dopts,
            c_args: vcargs,
-	   link_with: libmwpclib,
+#	   link_with: libmwpclib,
            install : true)
 
 executable('fc-get',
