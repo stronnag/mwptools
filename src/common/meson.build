@@ -50,16 +50,19 @@ endif
 
 mwpv_args = ['--vapidir', vapi_dir, '--pkg', 'mwpfuncs']
 
-libmwpvlib = static_library('mwpvlib',
-                            sources: [vcommon, dev_src],
-                            include_directories :  common_inc_dir,
-                            dependencies : [ deps, dependency('gio-2.0'),
-                                             meson.get_compiler('vala').find_library('posix'),
-                                             meson.get_compiler('vala').find_library('linux'),
+mwpvlib = both_libraries('mwpvlib',
+                         sources: [vcommon, dev_src],
+                         include_directories :  common_inc_dir,
+                         dependencies : [ deps, dependency('gio-2.0'),
+                                          meson.get_compiler('vala').find_library('posix'),
+                                          meson.get_compiler('vala').find_library('linux'),
                                            ],
-                            vala_args : [dopts, mwpv_args],
-                            c_args: [dev_args, vcargs],
-                            install: true
-                           )
+                         vala_args : [dopts, mwpv_args],
+                         c_args: [dev_args, vcargs],
+                         install: true,
+                         install_dir: [true, true, true],
+                         install_rpath: get_option('prefix') + '/lib',
+                         link_with: mwpclib,
+                        )
 
 install_data('mwp_icon.svg', install_dir: get_option('datadir') / 'icons/hicolor/scalable/apps')

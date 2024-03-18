@@ -22,9 +22,8 @@ common_inc_dir = []
 
 subdir('valaopts')
 subdir('meson')
-
-subdir('src/common')
 subdir('src/clib')
+subdir('src/common')
 subdir('src/mwp')
 subdir('src/fc-cli')
 subdir('src/qproxy')
@@ -35,7 +34,8 @@ subdir('docs')
 executable('mwp',
 	   sources: [mwpsrcs, mwpcommon, mwpvers_h],
 	   dependencies: [mwpdeps ],
-	   link_with: [libmwpclib, libmwpvers, libmwpvlib ],
+	   link_with: [mwpclib, libmwpvers, mwpvlib ],
+           install_rpath: get_option('prefix') + '/lib',
 	   include_directories : [common_inc_dir, configuration_inc],
 	   vala_args : [dopts, mwp_v_args ],
 	   c_args: [mwp_c_args, dev_args, vcargs ],
@@ -46,7 +46,8 @@ executable('cliterm',
            sources: [clisrcs ],
            dependencies: [ clideps ],
            include_directories : common_inc_dir,
-	   link_with: [ libmwpclib, libmwpvlib ],
+	   link_with: [ mwpclib, mwpvlib ],
+           install_rpath: get_option('prefix') + '/lib',
            vala_args : [dopts, cli_v_args ],
            c_args: [dev_args, cli_args, vcargs ],
            install : true,
@@ -65,7 +66,8 @@ executable('fc-get',
            include_directories : common_inc_dir,
            vala_args : [dopts, fc_v_args ],
            c_args: [dev_args, vcargs],
-	   link_with: [libmwpclib, libmwpvlib],
+	   link_with: [mwpclib, mwpvlib],
+           install_rpath: get_option('prefix') + '/lib',
            install : true,
           )
 
@@ -75,7 +77,8 @@ executable('ublox-geo',
 	   include_directories : common_inc_dir,
 	   vala_args : [dopts, ublx_v_args],
            c_args: vcargs,
-	   link_with: [libmwpclib, libmwpvlib],
+	   link_with: [mwpclib, mwpvlib],
+           install_rpath: get_option('prefix') + '/lib',
 	   install:false,
            build_by_default: false)
 
@@ -85,7 +88,7 @@ executable('ublox-cli',
 	   include_directories : common_inc_dir,
            vala_args : [dopts, ublx_v_args],
            c_args: vcargs,
-	   link_with: [libmwpclib, libmwpvlib],
+	   link_with: [mwpclib, mwpvlib],
 	   install: false, build_by_default: false )
 
 executable('mwp-area-planner',
@@ -94,7 +97,8 @@ executable('mwp-area-planner',
 	   include_directories : common_inc_dir,
            vala_args : [dopts, ap_v_args],
            c_args: vcargs,
-	   link_with: [libmwpclib, libmwpvlib],
+	   link_with: [mwpclib, mwpvlib],
+           install_rpath: get_option('prefix') + '/lib',
 	   install:true
 	   )
 
@@ -104,7 +108,8 @@ executable('flashdl',
 	   include_directories : common_inc_dir,
            vala_args : [dopts, fdl_v_args ],
            c_args: [dev_args, vcargs],
-	   link_with: [libmwpclib,libmwpvlib],
+	   link_with: [mwpclib,mwpvlib],
+           install_rpath: get_option('prefix') + '/lib',
            build_by_default: false,
            install : false,
 	   install_tag : 'flashdl',
@@ -115,7 +120,8 @@ executable('gmproxy',
            dependencies: [ proxdeps ],
 	   vala_args : dopts,
            c_args: vcargs,
-	   link_with: [libmwpclib, libmwpvlib],
+	   link_with: [mwpclib, mwpvlib],
+           install_rpath: get_option('prefix') + '/lib',
            build_by_default: false,
            install : false,
            install_tag: 'gmproxy',
@@ -127,7 +133,8 @@ if with_gatt
            dependencies: [gatt_deps],
            vala_args : [ dopts ],
            c_args: [vcargs, gatt_args],
-	   link_with: [libmwpclib, libmwpvlib],
+	   link_with: [ mwpvlib],
+           install_rpath: get_option('prefix') + '/lib',
 	   include_directories : common_inc_dir,
            build_by_default: true,
            install : true,

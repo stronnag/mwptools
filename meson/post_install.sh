@@ -10,7 +10,7 @@ fi
 
 ln -f ${INSTDIR}/bin/fc-get  ${INSTDIR}/bin/fc-set
 
-install -d $INSTDIR/share/vala/vapi/
-install -d $INSTDIR/include/
-install ${MESON_BUILD_ROOT}/src/common/mwpvlib.vapi  $INSTDIR/share/vala/vapi/
-install ${MESON_BUILD_ROOT}/src/common/mwpvlib.h  $INSTDIR/include/
+#install -d $INSTDIR/share/vala/vapi/
+#install -d $INSTDIR/include/
+#install ${MESON_BUILD_ROOT}/src/common/mwpvlib.vapi  $INSTDIR/share/vala/vapi/
+#install ${MESON_BUILD_ROOT}/src/common/mwpvlib.h  $INSTDIR/include/
