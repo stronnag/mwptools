@@ -4,6 +4,8 @@ deps = []
 dopts = []
 xopts = []
 
+deps += dependency('glib-2.0')
+
 if host_machine.system() == 'linux'
   dopts += '--define=LINUX'
   dopts += '--define=UNIX'
