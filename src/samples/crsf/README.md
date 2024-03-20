@@ -53,6 +53,15 @@ uint24    Used (mAh) ... yes, 3 bytes
 uint8     Battery remaining (percent)
 ```
 
+#### BARO_ALTITUDE id=0x09
+
+Variable size payload (vario optional)
+
+```
+int16      BaroAlt (decimetre, with 1000m offset) or (high bit set), altitude in metres.
+int16      Vertical speed (cm/s)
+```
+
 #### Link Statistics id=0x14
 
 ```
