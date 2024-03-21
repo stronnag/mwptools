@@ -47,19 +47,25 @@ endif
 
 mwpv_args = ['--vapidir', vapi_dir, '--pkg', 'mwpfuncs']
 
-mwpvlib = both_libraries('mwpvlib',
-                         sources: vcommon,
-                         include_directories :  common_inc_dir,
-                         dependencies : [ deps, dependency('gio-2.0'),
-                                          meson.get_compiler('vala').find_library('posix'),
-                                          meson.get_compiler('vala').find_library('linux'),
-                                           ],
-                         vala_args : [dopts, mwpv_args],
-                         c_args: [dev_args, vcargs],
-                         install: true,
-                         install_dir: [true, true, true],
-                         link_with: mwpclib,
-                         install_rpath: rpath,
-                        )
+libargs = {
+  'sources': vcommon,
+  'include_directories':  common_inc_dir,
+  'dependencies': [ deps, dependency('gio-2.0'),
+                    meson.get_compiler('vala').find_library('posix'),
+                    meson.get_compiler('vala').find_library('linux'),
+                  ],
+  'vala_args': [dopts, mwpv_args],
+  'c_args': [dev_args, vcargs],
+  'install': true,
+  'install_dir': [get_option('prefix') / 'lib', true, true],
+  'link_with': mwpclib,
+}
+
+if dynalib
+  libargs += { 'install_rpath': '$ORIGIN/../lib',}
+  mwpvlib = both_libraries('mwpvlib', kwargs: libargs)
+else
+  mwpvlib = static_library('mwpvlib', kwargs: libargs)
+endif
 
 install_data('mwp_icon.svg', install_dir: get_option('datadir') / 'icons/hicolor/scalable/apps')

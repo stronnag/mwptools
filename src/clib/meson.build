@@ -11,12 +11,18 @@ if paho.found()
   clib_dep += paho
 endif
 
-common_inc_dir += include_directories('.')
-common_inc_dir += include_directories('../common')
+common_inc_dir += [include_directories('.'), include_directories('../common')]
 
-mwpclib = both_libraries('mwpclib',
-                         clsrcs,
-                         include_directories :  common_inc_dir,
-                         dependencies : clib_dep,
-                         install: true,
-                        )
+libargs = {
+  'sources': clsrcs,
+  'include_directories':  common_inc_dir,
+  'dependencies': clib_dep,
+  'install': true,
+  'install_dir': [get_option('prefix') / 'lib'],
+}
+
+if dynalib
+  mwpclib = both_libraries('mwpclib', kwargs: libargs)
+else
+  mwpclib = static_library('mwpclib', kwargs: libargs)
+endif

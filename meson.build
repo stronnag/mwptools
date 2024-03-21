@@ -3,6 +3,17 @@ project('mwptools', 'c', 'vala', version : '7.057.554', meson_version : '>= 0.60
 # vala / clang16 workaround
 
 nogo = get_option('nogo')
+force_s = get_option('force-static')
+force_d = get_option('force-dynamic')
+
+dynalib = false
+if force_d
+  dynalib = true
+elif force_s
+  dynalib = false
+else
+  dynalib = build_machine.system() == 'linux'
+endif
 
 with_gatt = true
 if build_machine.system() != 'linux'
@@ -32,29 +43,34 @@ subdir('src/mwp-ble-bridge')
 subdir('docs')
 
 
-rpath =  '$ORIGIN/../lib'
+exargs = {
+  'sources': [mwpsrcs, mwpcommon, mwpvers_h],
+  'dependencies': [mwpdeps ],
+  'link_with': [mwpclib, libmwpvers, mwpvlib ],
+  'include_directories': [common_inc_dir, configuration_inc],
+  'vala_args': [dopts, mwp_v_args ],
+  'c_args': [mwp_c_args, dev_args, vcargs ],
+  'install' : true,
+}
+if dynalib
+    exargs += { 'install_rpath': '$ORIGIN/../lib',}
+endif
+executable('mwp', kwargs: exargs)
 
-executable('mwp',
-	   sources: [mwpsrcs, mwpcommon, mwpvers_h],
-	   dependencies: [mwpdeps ],
-	   link_with: [mwpclib, libmwpvers, mwpvlib ],
-           install_rpath: rpath,
-	   include_directories : [common_inc_dir, configuration_inc],
-	   vala_args : [dopts, mwp_v_args ],
-	   c_args: [mwp_c_args, dev_args, vcargs ],
-	   install : true,
-          )
+exargs = {
+  'sources': [clisrcs ],
+  'dependencies': [ clideps ],
+  'include_directories': common_inc_dir,
+  'link_with': [ mwpclib, mwpvlib ],
+  'vala_args': [dopts, cli_v_args ],
+  'c_args': [dev_args, cli_args, vcargs ],
+  'install': true,
+}
 
-executable('cliterm',
-           sources: [clisrcs ],
-           dependencies: [ clideps ],
-           include_directories : common_inc_dir,
-	   link_with: [ mwpclib, mwpvlib ],
-           install_rpath: rpath,
-           vala_args : [dopts, cli_v_args ],
-           c_args: [dev_args, cli_args, vcargs ],
-           install : true,
-          )
+if dynalib
+    exargs += { 'install_rpath': '$ORIGIN/../lib',}
+endif
+executable('cliterm', kwargs: exargs)
 
 executable('bproxy',
            sources: bproxsrc,
@@ -63,85 +79,109 @@ executable('bproxy',
            c_args: vcargs,
            install : true)
 
-executable('fc-get',
-           sources: [fcsrcs, fccommon ],
-           dependencies: [ fcdeps ],
-           include_directories : common_inc_dir,
-           vala_args : [dopts, fc_v_args ],
-           c_args: [dev_args, vcargs],
-	   link_with: [mwpclib, mwpvlib],
-           install_rpath: get_option('prefix') + '/lib',
-           install : true,
-          )
+exargs = {
+  'sources': [fcsrcs, fccommon ],
+  'dependencies': [ fcdeps ],
+  'include_directories': common_inc_dir,
+  'vala_args': [dopts, fc_v_args ],
+  'c_args': [dev_args, vcargs],
+  'link_with': [mwpclib, mwpvlib],
+  'install': true,
+}
+if dynalib
+    exargs += { 'install_rpath': '$ORIGIN/../lib',}
+endif
+executable('fc-get', kwargs: exargs)
 
-executable('ublox-geo',
-           sources: [ ublxgsrcs, ublxguisrc ],
-	   dependencies: [ ublxgdeps ],
-	   include_directories : common_inc_dir,
-	   vala_args : [dopts, ublx_v_args],
-           c_args: vcargs,
-	   link_with: [mwpclib, mwpvlib],
-           install_rpath: rpath,
-	   install:false,
-           build_by_default: false)
 
-executable('ublox-cli',
-           sources: [ublxcsrcs ],
-           dependencies: [ ublxcdeps ],
-	   include_directories : common_inc_dir,
-           vala_args : [dopts, ublx_v_args],
-           c_args: vcargs,
-	   link_with: [mwpclib, mwpvlib],
-	   install: false, build_by_default: false )
+exargs = {
+  'sources': [ ublxgsrcs, ublxguisrc ],
+  'dependencies': ublxgdeps,
+  'include_directories' : common_inc_dir,
+  'vala_args': [dopts, ublx_v_args],
+  'c_args': vcargs,
+  'link_with': [mwpclib, mwpvlib],
+  'install':false,
+  'build_by_default': false,
+}
+if dynalib
+    exargs += { 'install_rpath': '$ORIGIN/../lib',}
+endif
+executable('ublox-geo', kwargs: exargs)
 
-executable('mwp-area-planner',
-           sources: [apsrcs, apuisrcs, apcommon],
-           dependencies: [ apdeps ],
-	   include_directories : common_inc_dir,
-           vala_args : [dopts, ap_v_args],
-           c_args: vcargs,
-	   link_with: [mwpclib, mwpvlib],
-           install_rpath: rpath,
-	   install:true
-	   )
+exargs = {
+  'sources': ublxcsrcs,
+  'dependencies': ublxcdeps,
+  'include_directories': common_inc_dir,
+  'vala_args': [dopts, ublx_v_args],
+  'c_args': vcargs,
+  'link_with': [mwpclib, mwpvlib],
+  'install': false,
+  'build_by_default': false,
+}
+if dynalib
+    exargs += { 'install_rpath': '$ORIGIN/../lib',}
+endif
+executable('ublox-cli', kwargs: exargs)
 
-executable('flashdl',
-           sources: [fdlsrcs, fccommon ],
-           dependencies: [ fdldeps ],
-	   include_directories : common_inc_dir,
-           vala_args : [dopts, fdl_v_args ],
-           c_args: [dev_args, vcargs],
-	   link_with: [mwpclib,mwpvlib],
-           install_rpath: rpath,
-           build_by_default: false,
-           install : false,
-	   install_tag : 'flashdl',
-          )
+exargs = {
+  'sources': [apsrcs, apuisrcs, apcommon],
+  'dependencies': [ apdeps ],
+  'include_directories': common_inc_dir,
+  'vala_args': [dopts, ap_v_args],
+  'c_args': vcargs,
+  'link_with': [mwpclib, mwpvlib],
+  'install': true,
+}
+if dynalib
+    exargs += { 'install_rpath': '$ORIGIN/../lib',}
+endif
+executable('mwp-area-planner', kwargs: exargs)
 
-executable('gmproxy',
-           sources: proxsrc,
-           dependencies: [ proxdeps ],
-	   vala_args : dopts,
-           c_args: vcargs,
-	   link_with: [mwpclib, mwpvlib],
-           install_rpath: rpath,
-           build_by_default: false,
-           install : false,
-           install_tag: 'gmproxy',
-	   )
+exargs = {
+  'sources': [fdlsrcs, fccommon ],
+  'dependencies': fdldeps,
+  'include_directories' : common_inc_dir,
+  'vala_args': [dopts, fdl_v_args ],
+  'c_args': [dev_args, vcargs],
+  'link_with': [mwpclib,mwpvlib],
+  'build_by_default': false,
+  'install': false,
+}
+if dynalib
+    exargs += { 'install_rpath': '$ORIGIN/../lib',}
+endif
+executable('flashdl', kwargs: exargs)
+
+exargs = {
+  'sources': proxsrc,
+           'dependencies': [ proxdeps ],
+	   'vala_args': dopts,
+           'c_args': vcargs,
+	   'link_with': [mwpclib, mwpvlib],
+           'build_by_default': false,
+           'install': false,
+}
+if dynalib
+    exargs += { 'install_rpath': '$ORIGIN/../lib',}
+endif
+executable('gmproxy', kwargs: exargs)
 
 if with_gatt
-  executable('mwp-ble-bridge',
-           sources: [gatt_app_src ],
-           dependencies: [gatt_deps],
-           vala_args : [ dopts ],
-           c_args: [vcargs, gatt_args],
-	   link_with: [ mwpvlib],
-           install_rpath: rpath,
-	   include_directories : common_inc_dir,
-           build_by_default: true,
-           install : true,
-	   )
+  exargs = {
+    'sources': gatt_app_src,
+    'dependencies': gatt_deps,
+    'vala_args': dopts,
+    'c_args': [vcargs, gatt_args],
+    'link_with': [ mwpvlib],
+    'include_directories': common_inc_dir,
+    'build_by_default': true,
+    'install' : true,
+  }
+  if dynalib
+    exargs += { 'install_rpath': '$ORIGIN/../lib',}
+  endif
+  executable('mwp-ble-bridge', kwargs: exargs)
 endif
 
 subdir('src/bbox-replay')
