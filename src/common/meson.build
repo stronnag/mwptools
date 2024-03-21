@@ -56,13 +56,15 @@ libargs = {
                   ],
   'vala_args': [dopts, mwpv_args],
   'c_args': [dev_args, vcargs],
-  'install': true,
-  'install_dir': [get_option('prefix') / 'lib', true, true],
   'link_with': mwpclib,
+  'install': true,
+  'install_dir': get_option('prefix') / 'lib',
 }
 
 if dynalib
-  libargs += { 'install_rpath': '$ORIGIN/../lib',}
+  libargs += {
+    'install_rpath': '$ORIGIN/../lib',
+  }
   mwpvlib = both_libraries('mwpvlib', kwargs: libargs)
 else
   mwpvlib = static_library('mwpvlib', kwargs: libargs)

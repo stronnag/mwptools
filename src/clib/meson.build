@@ -18,7 +18,7 @@ libargs = {
   'include_directories':  common_inc_dir,
   'dependencies': clib_dep,
   'install': true,
-  'install_dir': [get_option('prefix') / 'lib'],
+  'install_dir': get_option('prefix') / 'lib',
 }
 
 if dynalib
