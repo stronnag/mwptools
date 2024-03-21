@@ -29,37 +29,45 @@ apcommon = files('xmlio.vala',
                  'autoland.vala'
                 )
 
-devman = files('devman.vala')
-
 common_inc_dir += include_directories('.')
 vapi_dir = meson.current_source_dir()
 
-dev_src = []
 dev_args = []
 cli_args = []
+
+rpath =  '$ORIGIN/../lib'
 
 if meson.get_compiler('c').get_id() == 'clang'
   cli_args += ['-D_DEFAULT_SOURCE=1']
 endif
 
 if host_machine.system() == 'linux'
-  usb_src = files('usbmgr.vala')
-  bt_src = files('bluez.vala', 'bluetooth.vala', 'ble-helper.vala', 'btdevice.vala', 'ble_uuids.vala' )
-  dev_src = [usb_src, bt_src]
+  vcommon += files('usbmgr.vala', 'bluez.vala', 'bluetooth.vala', 'ble-helper.vala', 'btdevice.vala', 'ble_uuids.vala' )
 endif
 
 mwpv_args = ['--vapidir', vapi_dir, '--pkg', 'mwpfuncs']
 
-libmwpvlib = static_library('mwpvlib',
-                            sources: [vcommon, dev_src],
-                            include_directories :  common_inc_dir,
-                            dependencies : [ deps, dependency('gio-2.0'),
-                                             meson.get_compiler('vala').find_library('posix'),
-                                             meson.get_compiler('vala').find_library('linux'),
-                                           ],
-                            vala_args : [dopts, mwpv_args],
-                            c_args: [dev_args, vcargs],
-                            install: true
-                           )
+libargs = {
+  'sources': vcommon,
+  'include_directories':  common_inc_dir,
+  'dependencies': [ deps, dependency('gio-2.0'),
+                    meson.get_compiler('vala').find_library('posix'),
+                    meson.get_compiler('vala').find_library('linux'),
+                  ],
+  'vala_args': [dopts, mwpv_args],
+  'c_args': [dev_args, vcargs],
+  'link_with': mwpclib,
+  'install': true,
+  'install_dir': get_option('prefix') / 'lib',
+}
+
+if dynalib
+  libargs += {
+    'install_rpath': '$ORIGIN/../lib',
+  }
+  mwpvlib = both_libraries('mwpvlib', kwargs: libargs)
+else
+  mwpvlib = static_library('mwpvlib', kwargs: libargs)
+endif
 
 install_data('mwp_icon.svg', install_dir: get_option('datadir') / 'icons/hicolor/scalable/apps')

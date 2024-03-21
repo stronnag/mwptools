@@ -28,7 +28,7 @@
 #define API_SPEECHD 2
 #define API_FLITE 3
 
-extern void mwp_log_message(const gchar *format, ...);
+extern void __attribute__((weak)) mwp_log_message(const gchar *format, ...);
 #if defined(USE_ESPEAK) || defined(USE_SPEECHD) || defined(USE_FLITE)
 
 static GModule *handle;
@@ -317,7 +317,7 @@ unsigned char get_speech_api_mask() {
 
 static int ss_init(char *v) { return 0; }
 
-static void ss_say(char *t) { mwp_log_message("null speech say %s\n", t); }
+static void ss_say(char *t) { mwp_log_message ("null speech say %s\n", t); }
 
 static void ss_close(void) {}
 
