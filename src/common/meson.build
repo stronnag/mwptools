@@ -58,13 +58,16 @@ libargs = {
   'c_args': [dev_args, vcargs],
   'link_with': mwpclib,
   'install': true,
-  'install_dir': [ get_option('prefix') / 'lib', true, true]
 }
 
+if meson.version().version_compare('>= 1.2.0')
+  libargs += { 'install_dir': [ get_option('prefix') / 'lib', true, true] }
+else
+  libargs += { 'install_dir': get_option('prefix') / 'lib', }
+endif
+
 if dynalib
-  libargs += {
-    'install_rpath': '$ORIGIN/../lib',
-  }
+  libargs += { 'install_rpath': '$ORIGIN/../lib', }
   mwpvlib = both_libraries('mwpvlib', kwargs: libargs)
 else
   mwpvlib = static_library('mwpvlib', kwargs: libargs)
