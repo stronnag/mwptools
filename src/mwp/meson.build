@@ -72,7 +72,7 @@ else
   if mosquitto.found()
     mwp_v_args += '--define=MQTT'
     mwp_v_args += '--define=MQTT_MOSQUITTO'
-    mwp_v_args += ['--vapidir', vapi_dir, '--pkg', 'libmosquitto']
+    mwp_v_args += ['--vapidir', meson.current_source_dir(), '--pkg', 'libmosquitto']
     mwpdeps +=  mosquitto
     mwpsrcs += files('mwp_mqtt_common.vala')
   endif
