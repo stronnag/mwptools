@@ -22,7 +22,7 @@ const OptionEntry[] options = {
     {null}
 };
 
-class CliTerm : Object {
+class ClITerm : Object {
     private MWSerial msp;
     private MWSerial.ProtoMode oldmode;
     public DevManager dmgr;
@@ -32,7 +32,7 @@ class CliTerm : Object {
 	private uint8 inavvers;
 	private Posix.termios oldtio = Posix.termios();
 
-	public CliTerm() {
+	public ClITerm() {
 	}
 
 	public void init() {
@@ -306,7 +306,7 @@ class CliTerm : Object {
             eolm = 3;
             break;
 		}
-		var cli = new CliTerm();
+		var cli = new ClITerm();
 		Timeout.add(700, () => {
 				cli.init();
 				cli.run();

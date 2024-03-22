@@ -29,7 +29,7 @@ if host_machine.system() == 'windows'
   ap_v_args += '-mwindows'
 endif
 
-ap_v_args = ['--vapidir', vapi_dir, '--pkg', 'mwpfuncs']
+ap_v_args = []
 
 install_data(
   'mwp_area_icon.svg', install_dir: get_option('datadir') / 'icons/hicolor/scalable/apps'

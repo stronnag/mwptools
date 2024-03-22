@@ -2,6 +2,8 @@ XOS := $(shell uname)
 
 -include local.mk
 
+prefix ?= /usr/local
+
 ifeq ($(XOS),Linux)
  DOPTS += -D LINUX
  GUDEV = --pkg gudev-1.0
@@ -75,8 +77,3 @@ else
 endif
 
 VTEVERS=2.91
-
-
-
-#prefix?=$(DESTDIR)/usr
-#datadir?=$(DESTDIR)/usr

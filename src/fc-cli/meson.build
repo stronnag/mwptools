@@ -5,7 +5,7 @@ fcdeps = [deps,
            meson.get_compiler('vala').find_library('linux'),
 	  ]
 
-fc_v_args = ['--vapidir', vapi_dir, '--pkg', 'mwpfuncs']
+fc_v_args = []
 
 if termcap.found()
   fcdeps += meson.get_compiler('c').find_library('ncurses')

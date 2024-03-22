@@ -3,14 +3,24 @@ include ../valaopts.mk
 
 VALAC = valac
 
-COPTS = -X -D_XOPEN_SOURCE=701
-OPTS +=  -X -O2 -X -s
-COMMOND=../common
-LOPTS= -X -L$(prefix)/lib -X -lmwpvlib #-X -lmwpclib
-OPTS+= --vapidir $(COMMOND) --vapidir $(prefix)/share/vala/vapi -X -I$(COMMOND) -X -I$(prefix)/include/
-PKGS = --pkg mwpfuncs --pkg mwpvlib
+COPTS = -X -D_XOPEN_SOURCE=701 -X -O2 -X -s
 
+
+INCDIR ?= $(prefix)/include
+VAPIDIR ?= $(prefix)/share/vala/vapi
+LIBDIR ?= $(prefix)/lib
+
+PKGS=--pkg mwpfuncs --pkg mwpvlib
 PKGS += --pkg gio-2.0 --pkg posix
+
+RPTH=
+ifneq ("$(wildcard $(prefix)/lib/libmwpvlib.so)","")
+  RPTH=-X -Wl,-rpath,$(prefix)/lib
+endif
+
+OPTS+= --vapidir $(VAPIDIR) -X -I$(INCDIR)
+LOPTS= -X -L$(prefix)/lib -X -lmwpvlib -X -lmwpclib -X -lm $(RPTH)
+
 APP=mwp-ble-bridge
 
 all : $(APP)

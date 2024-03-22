@@ -30,7 +30,7 @@ apcommon = files('xmlio.vala',
                 )
 
 common_inc_dir += include_directories('.')
-vapi_dir = meson.current_source_dir()
+
 
 dev_args = []
 cli_args = []
@@ -45,7 +45,7 @@ if host_machine.system() == 'linux'
   vcommon += files('usbmgr.vala', 'bluez.vala', 'bluetooth.vala', 'ble-helper.vala', 'btdevice.vala', 'ble_uuids.vala' )
 endif
 
-mwpv_args = ['--vapidir', vapi_dir, '--pkg', 'mwpfuncs']
+dopts += ['--vapidir', meson.current_source_dir() ]
 
 libargs = {
   'sources': vcommon,
@@ -54,11 +54,11 @@ libargs = {
                     meson.get_compiler('vala').find_library('posix'),
                     meson.get_compiler('vala').find_library('linux'),
                   ],
-  'vala_args': [dopts, mwpv_args],
+  'vala_args': dopts,
   'c_args': [dev_args, vcargs],
   'link_with': mwpclib,
   'install': true,
-  'install_dir': get_option('prefix') / 'lib',
+  'install_dir': [ get_option('prefix') / 'lib', true, true]
 }
 
 if dynalib

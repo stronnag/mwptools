@@ -42,7 +42,6 @@ subdir('src/samples/')
 subdir('src/mwp-ble-bridge')
 subdir('docs')
 
-
 exargs = {
   'sources': [mwpsrcs, mwpcommon, mwpvers_h],
   'dependencies': [mwpdeps ],

@@ -1,7 +1,12 @@
-C = ../../common
-opts = -X -Oz -X -s --vapidir $C -X -I$C -X -lm
-pkgs = --pkg gio-2.0 --pkg posix --pkg mwpfuncs
-cf = $C/serial-device.vala $C/geocalc.vala $C/utils.vala $C/mspcmd.vala $C/mspmsg.vala $C/mwplog.vala $C/btdev.c $C/cserial.c $C/sede.vala $C/mwp_uriparser.vala
+
+
+vapidir = $${prefix:-/usr/local}/share/vala/vapi
+incdir = $${prefix:-/usr/local}/include
+libdir = $${prefix:-/usr/local}/lib
+
+opts = -X -Oz -X -s --vapidir $vapidir -X -I$incdir -X -L$libdir -X -lmwpvlib -X -lmwpclib   -X -lm -X -Wl,-rpath,$libdir
+
+pkgs = --pkg gio-2.0 --pkg posix --pkg mwpfuncs --pkg mwpvlib
 
 rule valac
     command = valac $opts -o $out $pkgs $in $cf

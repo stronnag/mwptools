@@ -28,7 +28,5 @@ ublxcdeps =  [deps,
 	      meson.get_compiler('vala').find_library('posix')
 	     ]
 
-ublx_v_args = ['--vapidir', vapi_dir, '--pkg', 'mwpfuncs',
-	       '--vapidir', meson.current_source_dir(), '--pkg', 'ublox'
-	      ]
+ublx_v_args = ['--vapidir', meson.current_source_dir(), '--pkg', 'ublox']
 common_inc_dir += include_directories('.')

@@ -1,6 +1,6 @@
 
 getinfo = files('getinfo.sh')
-
+mwp_v_args = []
 
 mwpvers_h = custom_target(
     '_mwpvers.h',
@@ -37,8 +37,6 @@ mwpsrcs = files('mwp.vala', 'liststore.vala', 'mwp_markers.vala',
 ublxguisrc = files('settings.vala',  'mapsources.vala')
 
 apuisrcs = files('settings.vala',  'mapsources.vala', 'mission.vala')
-
-mwp_v_args = ['--vapidir', vapi_dir, '--pkg', 'mwpfuncs']
 
 mwpdeps = [deps,
 	   dependency('gtk+-3.0'),
@@ -80,38 +78,10 @@ else
   endif
 endif
 
-spk = false
-speak = meson.get_compiler('c').find_library('espeak-ng', dirs: ldirs, required: false).found()
-if speak
-    xopts += 'USE_ESPEAK_NG'
-else
-  speak = meson.get_compiler('c').find_library('espeak', dirs: ldirs, required: false).found()
-endif
-
-if speak
-  mwp_v_args += '--define=USE_ESPEAK'
-  spk = true
-  xopts += 'USE_ESPEAK'
-endif
-
-speak = meson.get_compiler('c').find_library('speechd', dirs: ldirs, required: false).found()
-if speak
-  mwp_v_args += '--define=USE_SPEECHD'
-  xopts += 'USE_SPEECHD'
-  spk = true
-endif
-
-speak = meson.get_compiler('c').find_library('flite', dirs: ldirs, required: false).found()
-if speak
-  mwp_v_args += '--define=USE_FLITE'
-  xopts += 'USE_FLITE'
-  spk = true
-endif
-
-if spk
+if xopts.length() > 0
   mwpdeps += dependency('gmodule-2.0')
   foreach x : xopts
-    mwp_c_args += '-D'+x
+    mwp_v_args += '--define='+x
   endforeach
 endif
 

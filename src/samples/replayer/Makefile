@@ -7,16 +7,25 @@ APP=mwplog-runner
 
 all: $(APP)
 
-COMMOND=../../common
-LOPTS= -X -L$(prefix)/lib -X -lmwpvlib -X -lmwpclib -X -lm
-OPTS+= --vapidir $(COMMOND) --vapidir $(prefix)/share/vala/vapi -X -I$(COMMOND) -X -I$(prefix)/include/
-PKGS = --pkg mwpfuncs --pkg mwpvlib
+INCDIR ?= $(prefix)/include
+VAPIDIR ?= $(prefix)/share/vala/vapi
+LIBDIR ?= $(prefix)/lib
 
+PKGS += --pkg mwpfuncs --pkg mwpvlib
 PKGS += --pkg posix --pkg gio-2.0 --pkg linux --pkg json-glib-1.0
-CLISRC=	$(APP).vala ../../mwp/mwp-replay.vala
+
+RPTH=
+ifneq ("$(wildcard $(prefix)/lib/libmwpvlib.so)","")
+  RPTH=-X -Wl,-rpath,$(prefix)/lib
+endif
+
+LOPTS= -X -L$(prefix)/lib -X -lmwpvlib -X -lmwpclib -X -lm
+OPTS+= --vapidir $(VAPIDIR) -X -I$(INCDIR)
+
+CLISRC=	$(APP).vala mwp-replay.vala
 
 $(APP): $(CLISRC)
-	$(VALAC) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS)
+	$(VALAC) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS) $(RPTH)
 
 clean:
 	rm -f $(APP) *~ *.vala.c

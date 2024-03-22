@@ -1,8 +1,10 @@
+ldirs = ['/usr/lib', '/usr/local/lib']
 gnome = import('gnome')
 
 deps = []
 dopts = []
 xopts = []
+mwpv_args = []
 
 deps += dependency('glib-2.0')
 
@@ -63,6 +65,27 @@ if champvers.version_compare('<0.12.21')
   dopts += '--define=COLDSOUP'
 else
   soupdep =  dependency('libsoup-3.0')
+endif
+
+speak = meson.get_compiler('c').find_library('espeak-ng', dirs: ldirs, required: false).found()
+if speak
+    xopts += 'USE_ESPEAK_NG'
+else
+  speak = meson.get_compiler('c').find_library('espeak', dirs: ldirs, required: false).found()
+endif
+
+if speak
+  xopts += 'USE_ESPEAK'
+endif
+
+speak = meson.get_compiler('c').find_library('speechd', dirs: ldirs, required: false).found()
+if speak
+  xopts += 'USE_SPEECHD'
+endif
+
+speak = meson.get_compiler('c').find_library('flite', dirs: ldirs, required: false).found()
+if speak
+  xopts += 'USE_FLITE'
 endif
 
 termcap = dependency('ncurses', required: false)

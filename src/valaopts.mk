@@ -1,5 +1,3 @@
-prefix ?= $$HOME/.local
-
 VALAC = valac
 
 OPTS=--enable-deprecated -X -Wno-deprecated-declarations -X -Wno-unused-variable -X -Wno-unused-function -X -Wno-unused-but-set-variable -X -Wno-pointer-sign -X -Wno-deprecated-declarations -X -Wno-unused-value -X -Wno-format

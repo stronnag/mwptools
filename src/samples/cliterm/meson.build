@@ -6,5 +6,5 @@ clideps = [deps,
            meson.get_compiler('vala').find_library('linux'),
 	  ]
 
-cli_v_args = ['--vapidir', vapi_dir, '--pkg', 'mwpfuncs']
+cli_v_args = []
 common_inc_dir += include_directories('.')
