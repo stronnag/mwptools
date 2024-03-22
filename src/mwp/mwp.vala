@@ -3739,6 +3739,15 @@ public class MWP : Gtk.Application {
 //			stdout.printf("VARIO %d cm/s\n", (int16)val16);
 			CRSF.teledata.vario = (int)Posix.ntohs(val16);
 			break;
+		case CRSF.BARO_ID:
+			ptr= SEDE.deserialise_u16(ptr, out val16);  // Voltage ( mV * 100 )
+//			stdout.printf("VARIO %d cm/s\n", (int16)val16);
+			CRSF.teledata.alt = (int)Posix.ntohs(val16);
+			if (buffer.length > 5) {
+				SEDE.deserialise_u16(ptr, out val16);  // Voltage ( mV * 100 )
+				CRSF.teledata.vario = (int)Posix.ntohs(val16);
+			}
+			break;
 		case CRSF.ATTI_ID:
 			ptr= SEDE.deserialise_u16(ptr, out val16);  // Pitch radians *10000
 			double pitch = 0;

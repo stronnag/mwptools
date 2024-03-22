@@ -313,6 +313,7 @@ public class MwpDockHelper : Gtk.Window {
 namespace CRSF {
 	const uint8 GPS_ID = 0x02;
 	const uint8 VARIO_ID = 0x07;
+	const uint8 BARO_ID = 0x09;
 	const uint8 BAT_ID = 0x08;
 	const uint8 ATTI_ID = 0x1E;
 	const uint8 FM_ID = 0x21;
