@@ -64,6 +64,7 @@ if meson.version().version_compare('>= 1.2.0')
   libargs += { 'install_dir': [ get_option('prefix') / 'lib', true, true] }
 else
   libargs += { 'install_dir': get_option('prefix') / 'lib', }
+  # It will be necessary to install the *.h and *.vapi manually if required.
 endif
 
 if dynalib
