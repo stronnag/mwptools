@@ -2527,163 +2527,163 @@ public class AudioThread : Object {
                 while((c = msgs.pop()) != Vox.DONE) {
                     string s=null;
                     switch(c) {
-                        case Vox.HOST_POWER:
-                            s = NavStatus.host_batt_status;
-                            break;
-                        case Vox.AUDIO_TEST:
-                            s = "MWP audio test, version %s".printf(MwpVers.get_id());
-                            break;
-                        case Vox.ARM_STATUS:
-                            s = NavStatus.arm_msg;
-                            break;
-                        case Vox.HW_OK:
-                            s = "Sensors OK";
-                            break;
-                        case Vox.HW_BAD:
-                            s = "Sensor Failure";
-                            break;
-                        case Vox.NAV_ERR:
-                            s = MSP.nav_error(NavStatus.n.nav_error);
-                            break;
-                        case Vox.GPS_CRIT:
-                            s = "GPS Critical Failure";
-                            break;
-                        case Vox.HOME_CHANGED:
-                            s = "Home position changed";
-                            break;
-                        case Vox.HOME_OFFSET:
-                            s = "Home offset applied";
-                            break;
-                        case Vox.NAV_STATUS:
-                            switch(NavStatus.n.nav_mode) {
-                                case 0:
-                                    s = "Pilot has control";
-                                    break;
-                                case 1:
-                                    s = "Return to home initiated";
-                                    break;
-                                case 2:
-                                    s = "Returning home";
-                                    break;
-                                case 3:
-                                    s = "Position hold";
-                                    break;
-                                case 4:
-                                    s = "Timed position hold";
-                                    break;
-                                case 5:
-                                    var wpno = NavStatus.n.wp_number;
-                                    if(wpno == 0)
-                                        s = "Starting Mission";
-                                    else if (NavStatus.have_rth && wpno == NavStatus.nm_pts)
-                                        s = "Navigating home";
-                                    else
-                                        s = "Navigating to way point %d".printf(wpno);
-                                    break;
-                                case 7:
-                                    s = "Starting jump for %d".printf(NavStatus.n.wp_number);
-                                    break;
-                                case 8:
-                                    s = "Starting to land";
-                                    break;
-                                case 9:
-                                    s = "Landing";
-                                    break;
-                                case 10:
-                                    s = "Landed";
-                                    break;
-                                case 11:
-                                    s = "Settling before land";
-                                    break;
-                                case 12:
-                                    s = "Starting descent";
-                                    break;
-                                case 13:
-                                    s = "Hover above home";
-                                    break;
-                                case 14:
-                                    s = "Emergency landing";
-                                    break;
-                            }
-                            break;
-                        case Vox.DURATION:
-                            var ms = (NavStatus.mins > 1) ? "minutes" : "minute";
-                            s = "%d %s".printf(NavStatus.mins, ms);
-                            break;
-                        case Vox.MAH:
-                            s = "%u milliamp hour".printf(NavStatus.mah);
-                            break;
-                        case Vox.FMODE:
-                            s = "%s mode".printf(NavStatus.fmode);
-                            break;
-                        case Vox.RANGE_BRG:
-                            StringBuilder sbrg = new StringBuilder();
-                            sbrg.append("Range ");
-                            if(NavStatus.cg.range > 999 && MWP.conf.p_distance == 0) {
-                                double km = NavStatus.cg.range/1000.0;
-                                sbrg.append("%.1fk".printf(km));
-                            }
-                            else
-                                sbrg.append(say_nicely((int)Units.distance(NavStatus.cg.range)));
-                            if(MWP.conf.say_bearing) {
-                                var brg = NavStatus.cg.direction;
-                                if(brg < 0)
-                                    brg += 360;
-                                if(NavStatus.recip)
-                                    brg = ((brg + 180) % 360);
-                                sbrg.append(", bearing ");
-                                sbrg.append(say_nicely(brg));
-                            }
-                            s = sbrg.str;
-                            break;
-                        case Vox.ELEVATION:
-                            s = "Elevation %s.".printf(say_nicely((int)Units.distance(GPSInfo.elev)));
-                            break;
-                        case Vox.BARO:
-                            double estalt = (double)NavStatus.alti.estalt/100.0;
-                            if(estalt < 0.0 || estalt > 20.0) {
-                                estalt = Math.round(estalt);
-                                s = "Altitude %s".printf(say_nicely((int)estalt));
-                            } else
-                                s = "Altitude %.1f".printf(estalt).replace(".0","");
-                            break;
-                        case Vox.HEADING:
-                            s = "Heading %s".printf(say_nicely(NavStatus.hdr));
-                            break;
-                        case Vox.VOLTAGE:
-                            s = "Voltage %.1f".printf(NavStatus.volts).replace(".0","");
-                            break;
-                        case Vox.MODSAT:
-                            var now = timer.elapsed();
-                            if(lsats != NavStatus.numsat || (now - lsat_t) > 10) {
-                                string ss = "";
-                                if(NavStatus.numsat != 1)
-                                    ss = "s";
-                                s = "%d satellite%s".printf(NavStatus.numsat,ss);
-                                lsats = NavStatus.numsat;
-                                lsat_t = now;
-                            }
-                            break;
-                        case Vox.LTM_MODE:
-                            var xfmode = NavStatus.xfmode;
-                            if((xfmode > 0 && xfmode < 5) || xfmode == 8 ||
-                               xfmode > 17)
-                                s = MSP.ltm_mode(xfmode);
-                            break;
-                        case Vox.SPORT_MODE:
-                            s = MSP.ltm_mode(NavStatus.xfmode);
-                            break;
-                        case Vox.FAILSAFE:
-                            s="FAIL SAFE";
-                            break;
+					case Vox.HOST_POWER:
+						s = NavStatus.host_batt_status;
+						break;
+					case Vox.AUDIO_TEST:
+						s = "MWP audio test, version %s".printf(MwpVers.get_id());
+						break;
+					case Vox.ARM_STATUS:
+						s = NavStatus.arm_msg;
+						break;
+					case Vox.HW_OK:
+						s = "Sensors OK";
+						break;
+					case Vox.HW_BAD:
+						s = "Sensor Failure";
+						break;
+					case Vox.NAV_ERR:
+						s = MSP.nav_error(NavStatus.n.nav_error);
+						break;
+					case Vox.GPS_CRIT:
+						s = "GPS Critical Failure";
+						break;
+					case Vox.HOME_CHANGED:
+						s = "Home relocated";
+						break;
+					case Vox.HOME_OFFSET:
+						s = null; //"Home offset applied";
+						break;
+					case Vox.NAV_STATUS:
+						switch(NavStatus.n.nav_mode) {
+						case 0:
+							s = "Pilot has control";
+							break;
+						case 1:
+							s = "Return to home initiated";
+							break;
+						case 2:
+							s = "Returning home";
+							break;
+						case 3:
+							s = "Position hold";
+							break;
+						case 4:
+							s = "Timed position hold";
+							break;
+						case 5:
+							var wpno = NavStatus.n.wp_number;
+							if(wpno == 0)
+								s = "Starting Mission";
+							else if (NavStatus.have_rth && wpno == NavStatus.nm_pts)
+								s = "Navigating home";
+							else
+								s = "Navigating to way point %d".printf(wpno);
+							break;
+						case 7:
+							s = "Starting jump for %d".printf(NavStatus.n.wp_number);
+							break;
+						case 8:
+							s = "Starting to land";
+							break;
+						case 9:
+							s = "Landing";
+							break;
+						case 10:
+							s = "Landed";
+							break;
+						case 11:
+							s = "Settling before land";
+							break;
+						case 12:
+							s = "Starting descent";
+							break;
+						case 13:
+							s = "Hover above home";
+							break;
+						case 14:
+							s = "Emergency landing";
+							break;
+						}
+						break;
+					case Vox.DURATION:
+						var ms = (NavStatus.mins > 1) ? "minutes" : "minute";
+						s = "%d %s".printf(NavStatus.mins, ms);
+						break;
+					case Vox.MAH:
+						s = "%u milliamp hour".printf(NavStatus.mah);
+						break;
+					case Vox.FMODE:
+						s = "%s mode".printf(NavStatus.fmode);
+						break;
+					case Vox.RANGE_BRG:
+						StringBuilder sbrg = new StringBuilder();
+						sbrg.append("Range ");
+						if(NavStatus.cg.range > 999 && MWP.conf.p_distance == 0) {
+							double km = NavStatus.cg.range/1000.0;
+							sbrg.append("%.1fk".printf(km));
+						}
+						else
+							sbrg.append(say_nicely((int)Units.distance(NavStatus.cg.range)));
+						if(MWP.conf.say_bearing) {
+							var brg = NavStatus.cg.direction;
+							if(brg < 0)
+								brg += 360;
+							if(NavStatus.recip)
+								brg = ((brg + 180) % 360);
+							sbrg.append(", bearing ");
+							sbrg.append(say_nicely(brg));
+						}
+						s = sbrg.str;
+						break;
+					case Vox.ELEVATION:
+						s = "Elevation %s.".printf(say_nicely((int)Units.distance(GPSInfo.elev)));
+						break;
+					case Vox.BARO:
+						double estalt = (double)NavStatus.alti.estalt/100.0;
+						if(estalt < 0.0 || estalt > 20.0) {
+							estalt = Math.round(estalt);
+							s = "Altitude %s".printf(say_nicely((int)estalt));
+						} else
+							s = "Altitude %.1f".printf(estalt).replace(".0","");
+						break;
+					case Vox.HEADING:
+						s = "Heading %s".printf(say_nicely(NavStatus.hdr));
+						break;
+					case Vox.VOLTAGE:
+						s = "Voltage %.1f".printf(NavStatus.volts).replace(".0","");
+						break;
+					case Vox.MODSAT:
+						var now = timer.elapsed();
+						if(lsats != NavStatus.numsat || (now - lsat_t) > 10) {
+							string ss = "";
+							if(NavStatus.numsat != 1)
+								ss = "s";
+							s = "%d satellite%s".printf(NavStatus.numsat,ss);
+							lsats = NavStatus.numsat;
+							lsat_t = now;
+						}
+						break;
+					case Vox.LTM_MODE:
+						var xfmode = NavStatus.xfmode;
+						if((xfmode > 0 && xfmode < 5) || xfmode == 8 ||
+						   xfmode > 17)
+							s = MSP.ltm_mode(xfmode);
+						break;
+					case Vox.SPORT_MODE:
+						s = MSP.ltm_mode(NavStatus.xfmode);
+						break;
+					case Vox.FAILSAFE:
+						s="FAIL SAFE";
+						break;
 
-                        default:
-                            break;
+					default:
+						break;
                     }
                     if(s != null) {
                         if(use_en)
                             s = s.replace(",",".");
-//                        MWPLog.message("Q %s\n", s);
+						//                        MWPLog.message("Q %s\n", s);
                         if(efd != 0) {
                             Posix.write(efd, s, s.length);
                             Posix.write(efd, "\n\n", 2);

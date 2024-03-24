@@ -288,6 +288,7 @@ public class MWP : Gtk.Application {
 	//    private uint radartid = -1;
 	private Sticks.StickWindow sticks;
 	private bool sticks_ok = false;
+	private bool bblosd_ok = false;
 
 	public struct MQI {
         MSP.Cmds cmd;
@@ -319,6 +320,7 @@ public class MWP : Gtk.Application {
         hasWP_V4 = 0x040000,
         hasWP1m = 0x060000,
 		hasFWApp = 0x070100,
+		hasActiveWP = 0x070100,
 		hasGeoZones = 0x080000,
     }
 
@@ -1403,12 +1405,15 @@ public class MWP : Gtk.Application {
 						if (lparts.length == 3) {
 							var vparts = lparts[1].split(".");
 							for(var i = 0; i < 3 && i < vparts.length; i++) {
-								vsum = int.parse(vparts[i])+ 10*vsum;
+								vsum = int.parse(vparts[i]) + 100 * vsum;
 							}
 						}
-						if (vsum > 100) {
+						if (vsum > 10000) {
 							ok = true;
 							sticks_ok = true;
+							if (vsum > 10017) {
+								bblosd_ok = true;
+							}
 						}
 						text = p;
 						break;
@@ -6268,7 +6273,8 @@ public class MWP : Gtk.Application {
                     lat = wp_resp[np].lat;
                     lon = wp_resp[np].lon;
                 }
-                double dist,cse;
+
+				double dist,cse;
                 Geo.csedist(GPSInfo.lat, GPSInfo.lon,
                             lat, lon, out dist, out cse);
                 StringBuilder sb = new StringBuilder();
@@ -7427,7 +7433,11 @@ public class MWP : Gtk.Application {
 				ns.target_bearing = *rp++;
 			}
 			navstatus.update(ns,item_visible(DOCKLETS.NAVSTATUS),flg);
-			if((replayer & Player.BBOX) == 0 && (NavStatus.nm_pts > 0 && NavStatus.nm_pts != 255)) {
+			//			MWPLog.message("DBG: NFRAME gmode %d nmode %d wpno %d\n", (int)ns.gps_mode, (int)ns.nav_mode, (int)ns.wp_number);
+
+			bool bok = ((vi.fc_vers >= FCVERS.hasActiveWP) && bblosd_ok) || ((replayer & Player.BBOX) == 0);
+
+			if(bok && (NavStatus.nm_pts > 0 && NavStatus.nm_pts != 255)) {
 				if(ns.gps_mode == 3) {
 					if ((conf.osd_mode & OSD.show_mission) != 0) {
 						if (last_nmode != 3 || ns.wp_number != last_nwp) {
@@ -8759,8 +8769,7 @@ public class MWP : Gtk.Application {
 
             dist *= 1852;
             if(nav_rth_home_offset_distance > 0 || (dist > 10.0 && dist <= 200.0)) {
-                var s = "Home offset %.0fm @ %.0f°".printf(dist, cse);
-                map_show_warning(s);
+                map_show_warning("Home relocated");
                 navstatus.alert_home_offset();
                 if(!permawarn)
                     Timeout.add_seconds(15, () => {
@@ -9742,12 +9751,34 @@ Error: <i>%s</i>
 		if (nwp > wp_max) {
 			Utils.warning_box("Total number of WP (%u) exceeds firmware maximum (%u).\nYou will not be able to download the whole set to the FC".printf(nwp,wp_max), Gtk.MessageType.WARNING, 30);
 		}
+
 		if (msx.length > 0) {
+			for(var j = 0; j < msx.length; j++) {
+				if(fakeoff.faking) {
+					rewrite_mission(ref msx[j]);
+				}
+			}
 			_ms = setup_mission_from_mm();
 		}
 		ms_from_loader = false;
 		return _ms;
     }
+
+	private void rewrite_mission(ref Mission m) {
+		for(var i = 0; i < m.npoints; i++) {
+			var mi = m.get_waypoint(i);
+
+			if(mi.action != MSP.Action.RTH && mi.action != MSP.Action.JUMP &&  mi.action != MSP.Action.SET_HEAD) {
+				mi.lat += fakeoff.dlat;
+				mi.lon += fakeoff.dlon;
+			}
+			m.set_waypoint(mi, i);
+		}
+		m.cx += fakeoff.dlon;
+		m.cy += fakeoff.dlat;
+		m.homex += fakeoff.dlon;
+		m.homey += fakeoff.dlat;
+	}
 
 	public Mission? setup_mission_from_mm() {
 		Mission m=null;
@@ -9759,20 +9790,8 @@ Error: <i>%s</i>
 			m = msx[mdx];
 			ls.reset_fake_home();
 			NavStatus.nm_pts = (uint8)m.npoints;
-			if(fakeoff.faking) {
-				for(var i = 0; i < m.npoints; i++) {
-					var mi = m.get_waypoint(i);
-
-					if(mi.action != MSP.Action.RTH && mi.action != MSP.Action.JUMP &&  mi.action != MSP.Action.SET_HEAD) {
-						mi.lat += fakeoff.dlat;
-						mi.lon += fakeoff.dlon;
-					}
-					m.set_waypoint(mi, i);
-				}
-				m.cx += fakeoff.dlon;
-				m.cy += fakeoff.dlat;
-			}
 			wp_resp = m.get_ways();
+
 			if (m.homex != 0.0 && m.homey != 0.0) {
 				FakeHome.usedby |= FakeHome.USERS.Mission;
 				ls.set_fake_home_pos(m.homey, m.homex);
@@ -9954,8 +9973,6 @@ Error: <i>%s</i>
 				ms.homey = ms.cy;
 				FakeHome.usedby |= FakeHome.USERS.Mission;
 				ls.set_fake_home_pos(ms.homey, ms.homex);
-				MWPLog.message("DBG: Home outside bbox, setting %f %f (%d)\n",
-							   ms.homey, ms.homex, mdx);
 			}
 		}
 	}
