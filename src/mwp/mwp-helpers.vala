@@ -639,3 +639,32 @@ namespace  UpdateFile {
         }
     }
 }
+
+
+public class Frobricator : Object {
+	public struct Point {
+		double lat;
+		double lon;
+	}
+	public Point orig;
+	public Point reloc;
+	public bool is_valid;
+
+	public Frobricator(double rlat, double rlon) {
+		reloc.lat = rlat;
+		reloc.lon = rlon;
+	}
+
+	public bool set_origin(double olat, double olon) {
+		is_valid = true;
+		orig.lat = olat;
+		orig.lon = olon;
+		return true;
+	}
+
+	public void rebase(double lat, double lon, out double olat, out double olon) {
+		double c,d;
+		Geo.csedist(orig.lat, orig.lon, lat, lon, out c, out d);
+		Geo.posit(reloc.lat, reloc.lon, c, d, out olat, out olon);
+	}
+}
