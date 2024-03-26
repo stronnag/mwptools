@@ -9,22 +9,18 @@ module Poscalc
   RAD = 0.017453292
 
   def Poscalc.d2r d
-    private
     d*RAD
   end
 
   def Poscalc.r2d r
-    private
     r/RAD
   end
 
   def Poscalc.nm2r nm
-    private
     (PI/(180*60))*nm
   end
 
   def Poscalc.r2nm r
-    private
     ((180*60)/PI)*r
   end
 
@@ -40,6 +36,19 @@ module Poscalc
 		 cos(lat1)*sin(lat2)-sin(lat1)*cos(lat2)*cos(lon2-lon1))) % (2.0*PI)
     cse = r2d(cse)
     [cse,d]
+  end
+
+    def Poscalc.posit lat1, lon1, cse, dist
+    tc = d2r(cse)
+    rlat1= d2r(lat1)
+    rdist = nm2r(dist)
+    lat = asin(sin(rlat1)*cos(rdist)+cos(rlat1)* sin(rdist)*cos(tc))
+    dlon = atan2(sin(tc)*sin(rdist)*cos(rlat1),
+                 cos(rdist)-sin(rlat1)*sin(lat))
+    long = ((PI + d2r(lon1) + dlon) % (2 * PI)) - PI
+    lat=r2d(lat)
+    long = r2d(long)
+    [lat, long]
   end
 
 end

@@ -1,31 +1,58 @@
 #!/usr/bin/ruby
+# -*- coding: utf-8 -*-
+
+# MIT licence
+
 require 'xmlsimple'
 require 'optparse'
 require 'tempfile'
 include Math
 
-def ll2metres lat, lon
-  x = lon * 20037508.34 / 180;
-  y = log(tan((90 + lat) * PI / 360)) / (PI / 180);
-  y = y * 20037508.34 / 180;
-  [x, y]
-end
+module Poscalc
+  RAD = 0.017453292
 
-def metres2ll x,y
-  lon = x*180.0/20037508.34
-  lat = y*180.0/20037508.34
-  lat = (atan(E ** (lat * (PI / 180))) * 360) / PI - 90
-  [lat,lon]
-end
-
-def move11 lat, lon, dx, dy
-  if lat != 0 && lon !=0
-    lx,ly = ll2metres lat,lon
-    lx += dx
-    ly += dy
-    lat,lon = metres2ll lx, ly
+  def Poscalc.d2r d
+    d*RAD
   end
-  [lat,lon]
+
+  def Poscalc.r2d r
+    r/RAD
+  end
+
+  def Poscalc.nm2r nm
+    (PI/(180*60))*nm
+  end
+
+  def Poscalc.r2nm r
+    ((180*60)/PI)*r
+  end
+
+  def Poscalc.csedist lat1,lon1,lat2,lon2
+    lat1 = d2r(lat1)
+    lon1 = d2r(lon1)
+    lat2 = d2r(lat2)
+    lon2 = d2r(lon2)
+    d=2.0*asin(sqrt((sin((lat1-lat2)/2.0))**2 +
+		    cos(lat1)*cos(lat2)*(sin((lon2-lon1)/2.0))**2))
+    d = r2nm(d)
+    cse =  (atan2(sin(lon2-lon1)*cos(lat2),
+		 cos(lat1)*sin(lat2)-sin(lat1)*cos(lat2)*cos(lon2-lon1))) % (2.0*PI)
+    cse = r2d(cse)
+    [cse,d]
+  end
+
+  def Poscalc.posit lat1, lon1, cse, dist
+    tc = d2r(cse)
+    rlat1= d2r(lat1)
+    rdist = nm2r(dist)
+    lat = asin(sin(rlat1)*cos(rdist)+cos(rlat1)* sin(rdist)*cos(tc))
+    dlon = atan2(sin(tc)*sin(rdist)*cos(rlat1),
+                 cos(rdist)-sin(rlat1)*sin(lat))
+    long = ((PI + d2r(lon1) + dlon) % (2 * PI)) - PI
+    lat=r2d(lat)
+    long = r2d(long)
+    [lat, long]
+  end
 end
 
 outfile=nil
@@ -58,34 +85,35 @@ elsif  m['mission']['meta']
 end
 
 a=rebase.split(/,/)
-blat = a[0].to_f
-blon = a[1].to_f
-bx,by = ll2metres blat,blon
+tolat = a[0].to_f
+tolon = a[1].to_f
+
+blat = mx['home-y'].to_f
+blon = mx['home-x'].to_f
+if blat == 0.0  && blon == 0.0
+  blat = m['mission']['missionitem'][0]['lat'].to_f
+  blon = m['mission']['missionitem'][0]['lon'].to_f
+end
+
 m['mission']['missionitem'].each_with_index do |mi,j|
   lat = mi['lat'].to_f
   lon = mi['lon'].to_f
   mi['action'].upcase!
-  case j
-  when 0
-    lx,ly = ll2metres lat,lon
-    dx = bx - lx
-    dy = by - ly
-    lat = blat
-    lon = blon
-  else
-    lat,lon = move11(lat, lon, dx, dy)
+  if !(mi['action'] == "RTH" || mi['action'] == "SET_HEAD" || mi['action'] == "JUMP")
+    c, d = Poscalc.csedist(blat, blon, lat, lon)
+    lat, lon = Poscalc.posit(tolat, tolon, c, d)
+    mi['lat'] = lat
+    mi['lon'] = lon
   end
-  mi['lat'] = lat
-  mi['lon'] = lon
 end
 
 lat = mx['cy'].to_f
 lon = mx['cx'].to_f
-mx['cy'], mx['cx'] = move11(lat, lon, dx, dy)
+c, d = Poscalc.csedist(blat, blon, lat, lon)
+mx['cy'], mx['cx'] = Poscalc.posit(tolat, tolon, c, d)
 
-lat = mx['home-y'].to_f
-lon = mx['home-x'].to_f
-mx['home-y'], mx['home-x'] = move11(lat, lon, dx, dy)
+mx['home-y'] = tolat
+mx['home-x'] = tolon
 
 xml = XmlSimple.xml_out(m, { 'KeepRoot' => true })
 if outfile.nil?
