@@ -42,6 +42,9 @@ _mwp_complete()
     '--centre')
       return 0
       ;;
+    '--rebase')
+      return 0
+      ;;
     '-S'|'--n-points')
       return 0
       ;;

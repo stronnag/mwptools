@@ -93,6 +93,7 @@ The install process installs an desktop icon and `mwp.desktop` application file 
       --perma-warn                        info dialogues never time out
       --fsmenu                            use a menu bar in full screen (vice a menu button)
       -k, --kmlfile=file-name             KML file
+      --rebase=lat,lon                    rebase location (for replay)
       --relaxed-msp                       don't check MSP direction flag
       --display=DISPLAY                   X display to use
 

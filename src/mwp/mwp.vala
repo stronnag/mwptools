@@ -245,8 +245,7 @@ public class MWP : Gtk.Application {
     public bool x_plot_elevations_rb;
 
     private Array<KmlOverlay> kmls;
-    private FakeOffsets fakeoff;
-
+	private Frobricator frob;
     public DevManager devman;
     public PowerState pstate;
     private bool seenMSP = false;
@@ -647,6 +646,7 @@ public class MWP : Gtk.Application {
     private bool chome = false;
     private string mwoptstr;
     private string llstr=null;
+    private string rebasestr=null;
     private string layfile=null;
     private bool asroot = false;
     private bool legacy_unused;
@@ -761,6 +761,7 @@ public class MWP : Gtk.Application {
         {"fsmenu", 0, 0, OptionArg.NONE, null, "use a menu bar in full screen (vice a menu button)", null},
         { "kmlfile", 'k', 0, OptionArg.STRING, null, "KML file", "file-name"},
         {"relaxed-msp", 0, 0, OptionArg.NONE, null, "don't check MSP direction flag", null},
+        { "rebase", 0, 0, OptionArg.STRING, null, "rebase location (for replay)", "lat,lon"},
         {null}
     };
 
@@ -980,6 +981,7 @@ public class MWP : Gtk.Application {
             o.lookup("centre-on-home", "b", ref chome);
             o.lookup("debug-flags", "i", ref debug_flags);
             o.lookup("centre", "s", ref llstr);
+            o.lookup("rebase", "s", ref rebasestr);
             o.lookup("offline", "b", ref offline);
             o.lookup("n-points", "i", ref stack_size);
             o.lookup("mod-points", "i", ref mod_points);
@@ -1549,16 +1551,16 @@ public class MWP : Gtk.Application {
         }
 
         ltm_force_sats = (Environment.get_variable("MWP_IGNORE_SATS") != null);
-        var fstr = Environment.get_variable("MWP_POS_OFFSET");
-        if(fstr != null) {
-            string[] delims =  {","," "};
+		frob = new Frobricator();
+        if(rebasestr != null) {
+            string[] delims =  {",",";"," "};
             foreach (var delim in delims) {
-                var parts = fstr.split(delim);
+                var parts = rebasestr.split(delim);
                 if(parts.length == 2) {
-                    fakeoff.dlat += InputParser.get_latitude(parts[0]);
-                    fakeoff.dlon += InputParser.get_longitude(parts[1]);
-                    fakeoff.faking = true;
-                    MWPLog.message("Faking %f %f\n", fakeoff.dlat, fakeoff.dlon);
+                    var dlat = InputParser.get_latitude(parts[0]);
+                    var dlon = InputParser.get_longitude(parts[1]);
+					frob.set_reloc(dlat, dlon);
+                    MWPLog.message("Rebase to %f %f\n", dlat, dlon);
                     break;
                 }
             }
@@ -1746,8 +1748,7 @@ public class MWP : Gtk.Application {
         setpos = new SetPosDialog(builder, window);
 
         navconf = new NavConfig(window, builder);
-        bb_runner = new BBoxDialog(builder, window, conf.blackbox_decode,
-                                   conf.logpath, fakeoff);
+        bb_runner = new BBoxDialog(builder, window, conf.blackbox_decode, conf.logpath);
 
 		bb_runner.complete.connect( (id) => {
 				if(id == 1001) {
@@ -1834,13 +1835,23 @@ public class MWP : Gtk.Application {
         bb_runner.set_tz_tools(conf.geouser, conf.zone_detect);
 
         bb_runner.new_pos.connect((la, lo) => {
-               try_centre_on(la, lo);
+				if(frob.has_reloc()) {
+					frob.set_origin(la, lo);
+					la = frob.reloc.lat;
+					lo = frob.reloc.lon;
+				}
+				bb_runner.set_relocated(la, lo);
+				try_centre_on(la, lo);
 			   poslabel.label = PosFormat.pos(la,lo,conf.dms);
             });
 
         bb_runner.rescale.connect((llx, lly, urx,ury) => {
                 if(replayer != Player.NONE) {
 					Champlain.BoundingBox bbox = new Champlain.BoundingBox();
+					if(frob.is_valid()) {
+						frob.relocate(ref lly, ref llx);
+						frob.relocate(ref ury, ref urx);
+					}
                     bbox.left = llx;
                     bbox.bottom = lly;
                     bbox.right = urx;
@@ -2905,9 +2916,9 @@ public class MWP : Gtk.Application {
         clat= conf.latitude;
         clon = conf.longitude;
 
-        if(fakeoff.faking) {
-            clat += fakeoff.dlat;
-            clon += fakeoff.dlon;
+        if(frob.has_reloc()) {
+            clat = frob.reloc.lat;
+            clon = frob.reloc.lon;
         }
 
         kmls = new Array<KmlOverlay>();
@@ -3603,6 +3614,14 @@ public class MWP : Gtk.Application {
 		process_msp_analog(an);
 	}
 
+	private void relocate_int_pos(ref int32 ilat, ref int32 ilon) {
+		var rlat = ilat / 1e7;
+		var rlon = ilon / 1e7;
+		frob.relocate(ref rlat, ref rlon);
+		ilat = (int32)(rlat*10000000);
+		ilon = (int32)(rlon*10000000);
+	}
+
 	private void ProcessCRSF(uint8 []buffer) {
 		if(!CRSF.teledata.setlab) {
 			verlab.label = verlab.tooltip_text = "CRSF telemetry";
@@ -3660,9 +3679,8 @@ public class MWP : Gtk.Application {
 			rg.gps_speed = (uint16)gspeed*100;
 			rg.gps_ground_course = (uint16)hdg*10;
 			double ddm;
-			if(fakeoff.faking) {
-				rg.gps_lat += (int32)(fakeoff.dlat*10000000);
-				rg.gps_lon += (int32)(fakeoff.dlon*10000000);
+			if(frob.is_valid()) {
+				relocate_int_pos(ref rg.gps_lat, ref rg.gps_lon);
 			}
 
 			gpsfix = (gpsinfo.update(rg, conf.dms, item_visible(DOCKLETS.GPS),
@@ -4030,11 +4048,9 @@ public class MWP : Gtk.Application {
 			rg.gps_speed = (uint16)t.speed*100;
 			rg.gps_ground_course = (uint16)t.cog*10;
 			double ddm;
-			if(fakeoff.faking) {
-				rg.gps_lat += (int32)(fakeoff.dlat*10000000);
-				rg.gps_lon += (int32)(fakeoff.dlon*10000000);
+			if(frob.is_valid()) {
+				relocate_int_pos(ref rg.gps_lat, ref rg.gps_lon);
 			}
-
 			mhead = (int16)t.heading;
 			LTM_AFRAME af = LTM_AFRAME();
 			af.pitch = 0;
@@ -7617,12 +7633,9 @@ public class MWP : Gtk.Application {
 						gpsinfo.set_hdop(rg.gps_hdop/100.0);
 					}
 					double ddm;
-
-					if(fakeoff.faking) {
-						rg.gps_lat += (int32)(fakeoff.dlat*10000000);
-						rg.gps_lon += (int32)(fakeoff.dlon*10000000);
+					if(frob.is_valid()) {
+						relocate_int_pos(ref rg.gps_lat,ref rg.gps_lon);
 					}
-
 					gpsfix = (gpsinfo.update(rg, conf.dms, item_visible(DOCKLETS.GPS),out ddm) != 0);
 					fbox.update(item_visible(DOCKLETS.FBOX));
 					dbox.update(item_visible(DOCKLETS.DBOX));
@@ -7827,11 +7840,13 @@ public class MWP : Gtk.Application {
                 wp0.lat = of.lat/10000000.0;
                 wp0.lon = of.lon/10000000.0;
                 double ofalt = of.alt/100.0;
+				if (frob.has_reloc()) {
+					if (!frob.has_origin()) {
+						frob.set_origin(wp0.lat, wp0.lon);
+					}
+					frob.relocate(ref wp0.lat, ref wp0.lon);
+				}
 
-                if(fakeoff.faking) {
-                    wp0.lat += fakeoff.dlat;
-                    wp0.lon += fakeoff.dlon;
-                }
                 if(home_changed(wp0.lat, wp0.lon)) {
                     if(of.fix == 0) {
                         no_ofix++;
@@ -7857,10 +7872,9 @@ public class MWP : Gtk.Application {
 
                 rp = SEDE.deserialise_i32(raw, out gf.lat);
                 rp = SEDE.deserialise_i32(rp, out gf.lon);
-                if(fakeoff.faking) {
-                    gf.lat += (int32)(fakeoff.dlat*10000000);
-                    gf.lon += (int32)(fakeoff.dlon*10000000);
-                }
+				if(frob.is_valid()) {
+					relocate_int_pos(ref gf.lat,ref gf.lon);
+				}
 
                 gf.speed = *rp++;
                 rp = SEDE.deserialise_i32(rp, out gf.alt);
@@ -9754,7 +9768,7 @@ Error: <i>%s</i>
 
 		if (msx.length > 0) {
 			for(var j = 0; j < msx.length; j++) {
-				if(fakeoff.faking) {
+				if(frob.has_reloc()) {
 					rewrite_mission(ref msx[j]);
 				}
 			}
@@ -9765,19 +9779,32 @@ Error: <i>%s</i>
     }
 
 	private void rewrite_mission(ref Mission m) {
+		//		MWPLog.message(":DBG: reloc is %s\n", frob.has_reloc().to_string());
+		//MWPLog.message(":DBG: home %f %f\n", m.homey, m.homex);
+
+		if (frob.has_reloc()) {
+			if (m.homex != 0 && m.homey != 0) {
+				frob.set_origin(m.homey, m.homex);
+			}
+			m.homey = frob.reloc.lat;
+			m.homex = frob.reloc.lon;
+		}
 		for(var i = 0; i < m.npoints; i++) {
 			var mi = m.get_waypoint(i);
 
 			if(mi.action != MSP.Action.RTH && mi.action != MSP.Action.JUMP &&  mi.action != MSP.Action.SET_HEAD) {
-				mi.lat += fakeoff.dlat;
-				mi.lon += fakeoff.dlon;
+				if(!frob.is_valid()) {
+					MWPLog.message("WARNING: No home for relocated mission, using WP %d\n",
+								   mi.no);
+					frob.set_origin(mi.lat, mi.lon);
+				}
+				frob.relocate(ref mi.lat, ref mi.lon);
 			}
 			m.set_waypoint(mi, i);
 		}
-		m.cx += fakeoff.dlon;
-		m.cy += fakeoff.dlat;
-		m.homex += fakeoff.dlon;
-		m.homey += fakeoff.dlat;
+		if (frob.is_valid()) {
+			frob.relocate(ref m.cy, ref m.cx);
+		}
 	}
 
 	public Mission? setup_mission_from_mm() {

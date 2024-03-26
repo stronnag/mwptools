@@ -19,6 +19,21 @@ In order to replay log files, {{ mwp }} has a number of external dependencies, i
 
 [bbl2kml](https://github.com/stronnag/bbl2kml) binary packages are provided for many popular platforms.
 
+## Log replay
+
+{{ mwp }} can replay a number of "flight log" formats. Other artefacts such as mission files / safehomes / (geozones) can be displayed while the replay is in progress.
+
+### Location rebase
+
+You may wish to obfuscate the location of log replay, particularly if you are publishing screen shots or vidoes. The `--rebase` option allows this. `--rebase` requires a latitude and longitude of the relocated position; the latitude and longitude may be separated by comma, semi-colon or space (the latter two quoted or shell escape) and may be decimal degrees or DD:MM:SS.ss format. The following would relocate a replay to Narita Airport in Japan (plausible denial, protect the innocent etc.):
+
+    mwp --rebase 35.761000,140.378945 -b reloc-test.TXT -m reloc-test.mission
+    mwp --rebase 35.761000\;140.378945 -b reloc-test.TXT -m reloc-test.mission
+	mwp --rebase 35.761000\ 140.378945 -b reloc-test.TXT -m reloc-test.mission
+	mwp --rebase "35:45:39.6N 140:22:44.2E" -b reloc-test.TXT -m reloc-test.mission
+
+Currently (March 2024) only flight logs and mission files are rebased. Safehomes (and Geozones) may also be relocated in future.
+
 ## Blackbox replay
 
 In order to replay blackbox logs, you additionally need [inav blackbox tools](https://github.com/iNavFlight/blackbox-tools), specifically `blackbox_decode`). Binary packages are provided for many popular platforms. The minimum required version in 0.4.4, the latest release is recommended.

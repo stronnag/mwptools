@@ -46,8 +46,6 @@ public class  BBoxDialog : Object {
     private string []orig_times={};
     private string geouser;
     private string zone_detect;
-    private bool azoom;
-    private FakeOffsets fo;
 
     private const int BB_MINSIZE = (10*1024);
 
@@ -57,10 +55,10 @@ public class  BBoxDialog : Object {
 	public signal void videofile(string fn);
 
     public BBoxDialog(Gtk.Builder builder, Gtk.Window? w = null,
-                      string bboxdec,  string? logpath = null, FakeOffsets _fo) {
+                      string bboxdec,  string? logpath = null) {
         _w = w;
         bbox_decode = bboxdec;
-        fo = _fo;
+		//        fo = _fo;
 
         dialog = builder.get_object ("bb_dialog") as Gtk.Window;
         bb_cancel = builder.get_object ("bb_cancel") as Button;
@@ -155,8 +153,6 @@ public class  BBoxDialog : Object {
         dialog.title = "mwp BBL replay";
         dialog.set_transient_for(w);
 
-        azoom =(Environment.get_variable("MWP_BB_NOZOOM") == null) ;
-        MWPLog.message("BB load async map zoom : %s\n", azoom.to_string());
     }
 
 	public void set_tz_tools(string? _geouser, string? _zone_detect) {
@@ -198,13 +194,14 @@ public class  BBoxDialog : Object {
         bb_ok.sensitive = false;
     }
 
+	public void set_relocated(double la, double lo) {
+		get_tz(la, lo);
+	}
+
     private void process_tz_record(int idx) {
         double xlat,xlon;
-        if(find_base_position(filename, idx.to_string(),
-                              out xlat, out xlon)) {
-            if (azoom)
-                new_pos(xlat, xlon);
-            get_tz(xlat, xlon);
+        if(find_base_position(filename, idx.to_string(), out xlat, out xlon)) {
+			new_pos(xlat, xlon);
         }
     }
 
@@ -654,10 +651,12 @@ public class  BBoxDialog : Object {
         } catch (SpawnError e) {
             MWPLog.message("%s\n", e.message);
         }
+		/*
         if(fo.faking) {
             xlat += fo.dlat;
             xlon += fo.dlon;
         }
+		*/
         MWPLog.message("Getting base location from index %s %f %f %s\n",
                        index, xlat, xlon, ok.to_string());
         return ok;
@@ -860,10 +859,12 @@ public class  BBoxDialog : Object {
 									if(ns > 5) {
 										lat = double.parse(parts[latp]);
 										lon = double.parse(parts[lonp]);
+										/*
 										if(fo.faking) {
 											lat += fo.dlat;
 											lon += fo.dlon;
 										}
+										*/
 										if(lat < lamin)
 											lamin = lat;
 										if(lat > lamax)

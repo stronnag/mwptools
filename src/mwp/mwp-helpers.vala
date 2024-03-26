@@ -648,23 +648,49 @@ public class Frobricator : Object {
 	}
 	public Point orig;
 	public Point reloc;
-	public bool is_valid;
+	private uint8 status;
 
-	public Frobricator(double rlat, double rlon) {
+	public void set_reloc(double rlat, double rlon) {
 		reloc.lat = rlat;
 		reloc.lon = rlon;
+		status |= 1;
 	}
 
-	public bool set_origin(double olat, double olon) {
-		is_valid = true;
+	public void set_origin(double olat, double olon) {
+		status |= 2;
 		orig.lat = olat;
 		orig.lon = olon;
-		return true;
 	}
 
-	public void rebase(double lat, double lon, out double olat, out double olon) {
-		double c,d;
-		Geo.csedist(orig.lat, orig.lon, lat, lon, out c, out d);
-		Geo.posit(reloc.lat, reloc.lon, c, d, out olat, out olon);
+	public bool has_reloc() {
+		return ((status & 1) == 1);
+	}
+
+	public bool has_origin() {
+		return ((status & 2) == 2);
+	}
+
+	public bool is_valid() {
+		return ((status & 3) == 3);
+	}
+
+	/*
+	public void _relocate(double lat, double lon, out double olat, out double olon) {
+		if (is_valid()) {
+			double c,d;
+			Geo.csedist(orig.lat, orig.lon, lat, lon, out d, out c);
+			Geo.posit(reloc.lat, reloc.lon, c, d, out olat, out olon);
+		} else {
+			olat = lat;
+			olon = lon;
+		}
+	}
+	*/
+	public void relocate(ref double lat, ref double lon) {
+		if (is_valid()) {
+			double c,d;
+			Geo.csedist(orig.lat, orig.lon, lat, lon, out d, out c);
+			Geo.posit(reloc.lat, reloc.lon, c, d, out lat, out lon);
+		}
 	}
 }

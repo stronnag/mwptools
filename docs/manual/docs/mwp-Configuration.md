@@ -337,7 +337,6 @@ Note also that the resize step is no longer required, as {{ mwp }} scales the ic
 | `MWP_IGNORE_SATS` | Consider LTM positions valid even with low satellite count |
 | `MWP_LOG_DIR` | Location of console logs ($HOME if undefined) |
 | `MWP_PLAYBIN` | The gstreamer playbin for video. By default, mwp uses `playbin`, `playbin3` is an experimental (gstreamer_) alternative |
-| `MWP_POS_OFFSET` | The fake position offset "delta-lat,delta-lon" |
 | `MWP_PREF_DEVICE` | The serial device (from the preferences set) to display as default |
 | `MWP_PRINT_RAW` | If defined, output hex bytes from serial I/O |
 | `MWP_SERIAL_HOST` | The host for the magic `udp://__MWP_SERIAL_HOST` name (default undefined)  |
