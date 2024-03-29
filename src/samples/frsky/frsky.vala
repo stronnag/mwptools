@@ -40,7 +40,9 @@ public class Frsky : Object {
         FUEL_QTY_ID = 0x0a10,
         PITCH      = 0x0430 ,
         ROLL       = 0x0440 ,
-        HOME_DIST  = 0x0420
+        HOME_DIST  = 0x0420,
+		MODES      = 0x0470,
+		GNSS       = 0x0480,
     }
 
     enum FrProto {
@@ -125,6 +127,7 @@ public class Frsky : Object {
                 stdout.printf("%s %.2f m/s\n", id.to_string(), r);
                 break;
             case FrID.T1_ID: // flight modes
+            case FrID.MODES: // flight modes
                 uint ival = val;
                 bool armOK = false;
                 bool armed = false;
@@ -182,6 +185,7 @@ public class Frsky : Object {
                               fmode, nmode, emode);
                 break;
             case FrID.T2_ID: // GPS info
+            case FrID.GNSS: // GPS info
                 uint nsats = val % 100;
                 uint8 gfix = (uint8)(val /1000);
                 uint16 hdp;
