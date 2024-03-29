@@ -65,7 +65,10 @@ namespace SportDev {
         FUEL_QTY_ID = 0x0a10,
         PITCH      = 0x0430 ,
         ROLL       = 0x0440 ,
-        HOME_DIST  = 0x0420
+        HOME_DIST  = 0x0420,
+		MODES      = 0x0470,
+		GNSS       = 0x0480,
+
     }
 
     private enum FrProto {

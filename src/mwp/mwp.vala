@@ -4239,345 +4239,347 @@ public class MWP : Gtk.Application {
         }
 
         switch(id) {
-            case SportDev.FrID.VFAS_ID:
-                if (val /100  < 80) {
-                    SportDev.volts = val / 100.0;
-                    sflags |=  NavStatus.SPK.Volts;
-                }
-                break;
-            case SportDev.FrID.GPS_LONG_LATI_ID:
-                int32 ipos;
-                uint8 lorl = sport_parse_lat_lon (val, out ipos);
-                if (lorl == 0) {
-                    SportDev.lat = ipos;
+		case SportDev.FrID.VFAS_ID:
+			if (val /100  < 80) {
+				SportDev.volts = val / 100.0;
+				sflags |=  NavStatus.SPK.Volts;
+			}
+			break;
+		case SportDev.FrID.GPS_LONG_LATI_ID:
+			int32 ipos;
+			uint8 lorl = sport_parse_lat_lon (val, out ipos);
+			if (lorl == 0) {
+				SportDev.lat = ipos;
+			} else {
+				SportDev.lon = ipos;
+				init_craft_icon();
+				MSP_ALTITUDE al = MSP_ALTITUDE();
+				al.estalt = SportDev.alt;
+				al.vario = SportDev.vario;
+				navstatus.set_altitude(al, item_visible(DOCKLETS.NAVSTATUS));
+				vabox.update(item_visible(DOCKLETS.VBOX), al.vario);
+				double ddm;
+				gpsinfo.update_sport(conf.dms, item_visible(DOCKLETS.GPS), out ddm);
+
+				if(SportDev.fix > 0) {
+					sat_coverage();
+					if(armed != 0) {
+						if(have_home) {
+							if(_nsats >= msats) {
+								if(pos_valid(GPSInfo.lat, GPSInfo.lon)) {
+									last_gps = nticks;
+									double dist,cse;
+									Geo.csedist(GPSInfo.lat, GPSInfo.lon,
+												home_pos.lat, home_pos.lon,
+												out dist, out cse);
+									if(dist < 256) {
+										var cg = MSP_COMP_GPS();
+										cg.range = (uint16)Math.lround(dist*1852);
+										cg.direction = (int16)Math.lround(cse);
+										navstatus.comp_gps(cg, item_visible(DOCKLETS.NAVSTATUS));
+										update_odo(SportDev.spd, ddm);
+										SportDev.range =  cg.range;
+									}
+								}
+							}
+						} else {
+							if(no_ofix == 10) {
+								MWPLog.message("No home position yet\n");
+							}
+						}
+					}
+
+					if(craft != null && SportDev.fix > 0 && SportDev.sats >= msats) {
+						update_pos_info();
+					}
+
+					if(want_special != 0)
+						process_pos_states(GPSInfo.lat, GPSInfo.lon, SportDev.alt/100.0, "Sport");
+				}
+				fbox.update(item_visible(DOCKLETS.FBOX));
+				dbox.update(item_visible(DOCKLETS.DBOX));
+			}
+			break;
+		case SportDev.FrID.GPS_ALT_ID:
+			r =((int)val) / 100.0;
+			SportDev.galt = r;
+			break;
+		case SportDev.FrID.GPS_SPEED_ID:
+			r = ((val/1000.0)*0.51444444);
+			SportDev.spd = r;
+			break;
+		case SportDev.FrID.GPS_COURS_ID:
+			r = val / 100.0;
+			SportDev.cse = r;
+			navstatus.sport_hdr(r);
+			break;
+		case SportDev.FrID.ADC2_ID: // AKA HDOP
+			rhdop = (uint16)((val &0xff)*10);
+			SportDev.rhdop = rhdop;
+			SportDev.flags |= 1;
+			break;
+		case SportDev.FrID.ALT_ID:
+			r = (int)val / 100.0;
+			SportDev.alt = (int)val;
+			sflags |=  NavStatus.SPK.ELEV;
+			break;
+		case SportDev.FrID.T1_ID: // flight modes
+		case SportDev.FrID.MODES:
+			uint ival = val;
+			uint32 arm_flags = 0;
+			uint64 mwflags = 0;
+			uint8 ltmflags = 0;
+			bool failsafe = false;
+
+			var modeU = ival % 10;
+			var modeT = (ival % 100) / 10;
+			var modeH = (ival % 1000) / 100;
+			var modeK = (ival % 10000) / 1000;
+			var modeJ = ival / 10000;
+
+			if((modeU & 1) == 0)
+				arm_flags |=  ARMFLAGS.ARMING_DISABLED_OTHER;
+			if ((modeU & 4) == 4) { // armed
+				mwflags = arm_mask;
+				armed = 1;
+				dac = 0;
+			} else {
+				dac++;
+				if(dac == 1 && armed != 0) {
+					MWPLog.message("Assumed disarm from SPORT %ds\n", duration);
+					mwflags = 0;
+					armed = 0;
+					init_have_home();
+				}
+			}
+
+			if(modeT == 0)
+				ltmflags = MSP.LTM.acro; // Acro
+			if (modeT == 1)
+				ltmflags = MSP.LTM.angle; // Angle
+			else if (modeT == 2)
+				ltmflags = MSP.LTM.horizon; // Horizon
+			else if(modeT == 4)
+				ltmflags = MSP.LTM.acro; // Acro
+
+			if((modeH & 2) == 2)
+				ltmflags = MSP.LTM.althold; // AltHold
+			if((modeH & 4) == 4)
+				ltmflags = MSP.LTM.poshold; // PH
+
+			if(modeK == 1)
+				ltmflags = MSP.LTM.rth; // RTH
+			if(modeK == 2)
+				ltmflags = MSP.LTM.waypoints;  // WP
+			//                            if(modeK == 4) ltmflags = 11;
+			if(modeK == 8)
+				ltmflags = MSP.LTM.cruise; // Cruise
+
+			// if(modeK == 2) emode = "AUTOTUNE";
+			failsafe = (modeJ == 4);
+			if(xfailsafe != failsafe) {
+				if(failsafe) {
+					arm_flags |=  ARMFLAGS.ARMING_DISABLED_FAILSAFE_SYSTEM;
+					MWPLog.message("Failsafe asserted %ds\n", duration);
+					map_show_warning("FAILSAFE");
 				} else {
-                    SportDev.lon = ipos;
-                    init_craft_icon();
-                    MSP_ALTITUDE al = MSP_ALTITUDE();
-                    al.estalt = SportDev.alt;
-                    al.vario = SportDev.vario;
-                    navstatus.set_altitude(al, item_visible(DOCKLETS.NAVSTATUS));
-                    vabox.update(item_visible(DOCKLETS.VBOX), al.vario);
-                    double ddm;
-                    gpsinfo.update_sport(conf.dms, item_visible(DOCKLETS.GPS), out ddm);
+					MWPLog.message("Failsafe cleared %ds\n", duration);
+					map_hide_warning();
+				}
+				xfailsafe = failsafe;
+			}
 
-                    if(SportDev.fix > 0) {
-                        sat_coverage();
-                        if(armed != 0) {
-                            if(have_home) {
-                                if(_nsats >= msats) {
-                                    if(pos_valid(GPSInfo.lat, GPSInfo.lon)) {
-										last_gps = nticks;
-                                        double dist,cse;
-                                        Geo.csedist(GPSInfo.lat, GPSInfo.lon,
-                                                    home_pos.lat, home_pos.lon,
-                                                    out dist, out cse);
-                                        if(dist < 256) {
-                                            var cg = MSP_COMP_GPS();
-                                            cg.range = (uint16)Math.lround(dist*1852);
-                                            cg.direction = (int16)Math.lround(cse);
-                                            navstatus.comp_gps(cg, item_visible(DOCKLETS.NAVSTATUS));
-                                            update_odo(SportDev.spd, ddm);
-                                            SportDev.range =  cg.range;
-                                        }
-                                    }
-                                }
-                            } else {
-                                if(no_ofix == 10) {
-                                    MWPLog.message("No home position yet\n");
-                                }
-                            }
-                        }
+			if(arm_flags != xarm_flags) {
+				xarm_flags = arm_flags;
+				if((arm_flags & ~(ARMFLAGS.ARMED|ARMFLAGS.WAS_EVER_ARMED)) != 0) {
+					arm_warn.show();
+				} else {
+					arm_warn.hide();
+				}
+			}
 
-                        if(craft != null && SportDev.fix > 0 && SportDev.sats >= msats) {
-                            update_pos_info();
-                        }
+			if(ltmflags == MSP.LTM.angle)
+				mwflags |= angle_mask;
+			if(ltmflags == MSP.LTM.horizon)
+				mwflags |= horz_mask;
+			if(ltmflags == MSP.LTM.poshold)
+				mwflags |= ph_mask;
+			if(ltmflags == MSP.LTM.waypoints)
+				mwflags |= wp_mask;
+			if(ltmflags == MSP.LTM.rth || ltmflags == MSP.LTM.land)
+				mwflags |= rth_mask;
+			else
+				mwflags = xbits; // don't know better
 
-                        if(want_special != 0)
-                            process_pos_states(GPSInfo.lat, GPSInfo.lon, SportDev.alt/100.0, "Sport");
-                    }
-                    fbox.update(item_visible(DOCKLETS.FBOX));
-                    dbox.update(item_visible(DOCKLETS.DBOX));
-                }
-                break;
-            case SportDev.FrID.GPS_ALT_ID:
-                r =((int)val) / 100.0;
-                SportDev.galt = r;
-                break;
-            case SportDev.FrID.GPS_SPEED_ID:
-                r = ((val/1000.0)*0.51444444);
-                SportDev.spd = r;
-                break;
-            case SportDev.FrID.GPS_COURS_ID:
-                r = val / 100.0;
-                SportDev.cse = r;
-                navstatus.sport_hdr(r);
-                break;
-            case SportDev.FrID.ADC2_ID: // AKA HDOP
-                rhdop = (uint16)((val &0xff)*10);
-                SportDev.rhdop = rhdop;
-                SportDev.flags |= 1;
-                break;
-            case SportDev.FrID.ALT_ID:
-                r = (int)val / 100.0;
-                SportDev.alt = (int)val;
-                sflags |=  NavStatus.SPK.ELEV;
-                break;
-            case SportDev.FrID.T1_ID: // flight modes
-                uint ival = val;
-                uint32 arm_flags = 0;
-                uint64 mwflags = 0;
-                uint8 ltmflags = 0;
-                bool failsafe = false;
+			var achg = armed_processing(mwflags,"Sport");
+			var xws = want_special;
+			var mchg = (ltmflags != last_ltmf);
+			if (mchg) {
+				last_ltmf = ltmflags;
+				if(ltmflags == MSP.LTM.poshold)
+					want_special |= POSMODE.PH;
+				else if(ltmflags == MSP.LTM.waypoints) {
+					want_special |= POSMODE.WP;
+					if (NavStatus.nm_pts == 0 || NavStatus.nm_pts == 255)
+						NavStatus.nm_pts = last_wp_pts;
+				}
+				else if(ltmflags == MSP.LTM.rth)
+					want_special |= POSMODE.RTH;
+				else if(ltmflags == MSP.LTM.althold)
+					want_special |= POSMODE.ALTH;
+				else if(ltmflags == MSP.LTM.cruise)
+					want_special |= POSMODE.CRUISE;
+				else if(ltmflags != MSP.LTM.land) {
+					if(craft != null)
+						craft.set_normal();
+				}
+				var lmstr = MSP.ltm_mode(ltmflags);
+				MWPLog.message("New SPort/LTM Mode %s (%d) %d %ds %f %f %x %x\n",
+							   lmstr, ltmflags, armed, duration, xlat, xlon,
+							   xws, want_special);
+				fmodelab.set_label(lmstr);
+			}
 
-                var modeU = ival % 10;
-                var modeT = (ival % 100) / 10;
-                var modeH = (ival % 1000) / 100;
-                var modeK = (ival % 10000) / 1000;
-                var modeJ = ival / 10000;
+			if(achg || mchg)
+				update_mss_state(ltmflags);
 
-                if((modeU & 1) == 0)
-                    arm_flags |=  ARMFLAGS.ARMING_DISABLED_OTHER;
-                if ((modeU & 4) == 4) { // armed
-                    mwflags = arm_mask;
-                    armed = 1;
-                    dac = 0;
-                } else {
-                    dac++;
-                    if(dac == 1 && armed != 0) {
-                        MWPLog.message("Assumed disarm from SPORT %ds\n", duration);
-                        mwflags = 0;
-                        armed = 0;
-                        init_have_home();
-                    }
-                }
+			if(want_special != 0 /* && have_home*/)
+				process_pos_states(xlat,xlon, 0, "SPort status");
 
-                if(modeT == 0)
-                    ltmflags = MSP.LTM.acro; // Acro
-                if (modeT == 1)
-                    ltmflags = MSP.LTM.angle; // Angle
-                else if (modeT == 2)
-                    ltmflags = MSP.LTM.horizon; // Horizon
-                else if(modeT == 4)
-                    ltmflags = MSP.LTM.acro; // Acro
+			LTM_SFRAME sf = LTM_SFRAME ();
+			sf.vbat = (uint16)(SportDev.volts*1000);
+			sf.flags = ((failsafe) ? 2 : 0) | (armed & 1) | (ltmflags << 2);
+			sf.vcurr = (conf.smartport_fuel == 2) ? (uint16)curr.mah : 0;
+			sf.rssi = (uint8)(SportDev.rssi * 255/ 1023);
+			sf.airspeed = 0;
+			navstatus.update_ltm_s(sf, item_visible(DOCKLETS.NAVSTATUS),true);
+			break;
 
-                if((modeH & 2) == 2)
-                    ltmflags = MSP.LTM.althold; // AltHold
-                if((modeH & 4) == 4)
-                    ltmflags = MSP.LTM.poshold; // PH
+		case SportDev.FrID.T2_ID: // GPS info
+		case SportDev.FrID.GNSS:
+			uint8 ifix = 0;
+			_nsats = (uint8)(val % 100);
+			uint16 hdp;
+			hdp = (uint16)(val % 1000)/100;
+			if (SportDev.flags == 0) // prefer FR_ID_ADC2_ID
+				SportDev.rhdop = rhdop = 550 - (hdp * 50);
 
-                if(modeK == 1)
-                    ltmflags = MSP.LTM.rth; // RTH
-                if(modeK == 2)
-                    ltmflags = MSP.LTM.waypoints;  // WP
-//                            if(modeK == 4) ltmflags = 11;
-                if(modeK == 8)
-                    ltmflags = MSP.LTM.cruise; // Cruise
+			uint8 gfix = (uint8)(val /1000);
+			if ((gfix & 1) == 1)
+				ifix = 3;
+			if ((gfix & 2) == 2) {
+				if(have_home == false && armed != 0) {
+					if(home_changed(GPSInfo.lat, GPSInfo.lon)) {
+						if(SportDev.fix == 0) {
+							no_ofix++;
+						} else {
+							navstatus.cg_on();
+							sflags |=  NavStatus.SPK.GPS;
+							want_special |= POSMODE.HOME;
+							process_pos_states(GPSInfo.lat, GPSInfo.lon, 0.0, "SPort");
+						}
+					}
+				}
+			}
+			if ((gfix & 4) == 4) {
+				if (SportDev.range < 500) {
+					MWPLog.message("SPORT: %s set home: changed home position %f %f\n",
+								   id.to_string(), GPSInfo.lat, GPSInfo.lon);
+					home_changed(GPSInfo.lat, GPSInfo.lon);
+					want_special |= POSMODE.HOME;
+					process_pos_states(GPSInfo.lat, GPSInfo.lon, 0.0, "SPort");
+				} else {
+					MWPLog.message("SPORT: %s Ignoring (bogus?) set home, range > 500m: requested home position %f %f\n", id.to_string(), GPSInfo.lat, GPSInfo.lon);
+				}
+			}
 
-                    // if(modeK == 2) emode = "AUTOTUNE";
-                failsafe = (modeJ == 4);
-                if(xfailsafe != failsafe) {
-                    if(failsafe) {
-                        arm_flags |=  ARMFLAGS.ARMING_DISABLED_FAILSAFE_SYSTEM;
-                        MWPLog.message("Failsafe asserted %ds\n", duration);
-                        map_show_warning("FAILSAFE");
-                    } else {
-                        MWPLog.message("Failsafe cleared %ds\n", duration);
-                        map_hide_warning();
-                    }
-                    xfailsafe = failsafe;
-                }
+			if((_nsats == 0 && nsats != 0) || (nsats == 0 && _nsats != 0)) {
+				nsats = _nsats;
+				navstatus.sats(_nsats, true);
+			}
+			SportDev.sats = _nsats;
+			SportDev.fix = ifix;
+			flash_gps();
+			last_gps = nticks;
+			break;
+		case SportDev.FrID.RSSI_ID:
+			SportDev.rssi = (uint16)((val&0xff)*1023/100);
+			MSP_ANALOG an = MSP_ANALOG();
+			an.rssi = SportDev.rssi;
+			an.vbat = (uint8)(SportDev.volts * 10);
 
-                if(arm_flags != xarm_flags) {
-                    xarm_flags = arm_flags;
-                   if((arm_flags & ~(ARMFLAGS.ARMED|ARMFLAGS.WAS_EVER_ARMED)) != 0) {
-                        arm_warn.show();
-                    } else {
-                        arm_warn.hide();
-                    }
-                }
+			an.powermetersum = (conf.smartport_fuel == 2 )? (uint16)curr.mah :0;
+			an.amps = curr.centiA;
+			process_msp_analog(an);
+			break;
+		case SportDev.FrID.PITCH:
+		case SportDev.FrID.ROLL:
+			if (id == SportDev.FrID.ROLL)
+				SportDev.roll = (int16)val;
+			else
+				SportDev.pitch = (int16)val;
 
-                if(ltmflags == MSP.LTM.angle)
-                    mwflags |= angle_mask;
-                if(ltmflags == MSP.LTM.horizon)
-                    mwflags |= horz_mask;
-                if(ltmflags == MSP.LTM.poshold)
-                    mwflags |= ph_mask;
-                if(ltmflags == MSP.LTM.waypoints)
-                    mwflags |= wp_mask;
-                if(ltmflags == MSP.LTM.rth || ltmflags == MSP.LTM.land)
-                    mwflags |= rth_mask;
-                else
-                    mwflags = xbits; // don't know better
+			LTM_AFRAME af = LTM_AFRAME();
+			af.pitch = SportDev.pitch;
+			af.roll = SportDev.roll;
+			af.heading = mhead = (int16) SportDev.cse;
+			navstatus.update_ltm_a(af, true);
+			art_win.update(af.roll*10, af.pitch*10, item_visible(DOCKLETS.ARTHOR));
+			if(Logger.is_logging)
+				Logger.attitude((double)SportDev.pitch, (double)SportDev.roll, (int)mhead);
+			break;
 
-                var achg = armed_processing(mwflags,"Sport");
-                var xws = want_special;
-                var mchg = (ltmflags != last_ltmf);
-                if (mchg) {
-                    last_ltmf = ltmflags;
-                    if(ltmflags == MSP.LTM.poshold)
-                        want_special |= POSMODE.PH;
-                    else if(ltmflags == MSP.LTM.waypoints) {
-                        want_special |= POSMODE.WP;
-                        if (NavStatus.nm_pts == 0 || NavStatus.nm_pts == 255)
-                            NavStatus.nm_pts = last_wp_pts;
-                    }
-                    else if(ltmflags == MSP.LTM.rth)
-                        want_special |= POSMODE.RTH;
-                    else if(ltmflags == MSP.LTM.althold)
-                        want_special |= POSMODE.ALTH;
-                    else if(ltmflags == MSP.LTM.cruise)
-                        want_special |= POSMODE.CRUISE;
-                    else if(ltmflags != MSP.LTM.land) {
-                        if(craft != null)
-                            craft.set_normal();
-                    }
-                    var lmstr = MSP.ltm_mode(ltmflags);
-                    MWPLog.message("New SPort/LTM Mode %s (%d) %d %ds %f %f %x %x\n",
-                                   lmstr, ltmflags, armed, duration, xlat, xlon,
-                                   xws, want_special);
-                    fmodelab.set_label(lmstr);
-                }
+		case SportDev.FrID.HOME_DIST:
+			int diff = (int)(SportDev.range - val);
+			if(SportDev.range > 100 && (diff * 100 / SportDev.range) > 9)
+				MWPLog.message("%s %um (mwp: %u, diff: %d)\n", id.to_string(), val, SportDev.range, diff);
+			break;
 
-                if(achg || mchg)
-                    update_mss_state(ltmflags);
+		case SportDev.FrID.CURR_ID:
+			if((val / 10) < 999) {
+				curr.ampsok = true;
+				curr.centiA =  (uint16)(val * 10);
+				if (curr.centiA > odo.amps)
+					odo.amps = curr.centiA;
+				navstatus.current(curr, conf.smartport_fuel);
+			}
+			break;
+		case SportDev.FrID.ACCX_ID:
+			SportDev.ax = ((int)val) / 100.0;
+			break;
+		case SportDev.FrID.ACCY_ID:
+			SportDev.ay = ((int)val) / 100.0;
+			break;
+		case SportDev.FrID.ACCZ_ID:
+			SportDev.az = ((int)val) / 100.0;
+			SportDev.pitch = -(int16)(180.0 * Math.atan2 (SportDev.ax, Math.sqrt(SportDev.ay*SportDev.ay + SportDev.az*SportDev.az))/Math.PI);
+			SportDev.roll  = (int16)(180.0 * Math.atan2 (SportDev.ay, Math.sqrt(SportDev.ax*SportDev.ax + SportDev.az*SportDev.az))/Math.PI);
+			art_win.update(SportDev.roll*10, SportDev.pitch*10, item_visible(DOCKLETS.ARTHOR));
+			if(Logger.is_logging)
+				Logger.attitude((double)SportDev.pitch, (double)SportDev.roll, (int16) SportDev.cse);
+			break;
 
-                if(want_special != 0 /* && have_home*/)
-                    process_pos_states(xlat,xlon, 0, "SPort status");
+		case SportDev.FrID.VARIO_ID:
+			SportDev.vario = (int16)((int) val / 10);
+			break;
 
-                LTM_SFRAME sf = LTM_SFRAME ();
-                sf.vbat = (uint16)(SportDev.volts*1000);
-                sf.flags = ((failsafe) ? 2 : 0) | (armed & 1) | (ltmflags << 2);
-                sf.vcurr = (conf.smartport_fuel == 2) ? (uint16)curr.mah : 0;
-                sf.rssi = (uint8)(SportDev.rssi * 255/ 1023);
-                sf.airspeed = 0;
-                navstatus.update_ltm_s(sf, item_visible(DOCKLETS.NAVSTATUS),true);
-                break;
-
-            case SportDev.FrID.T2_ID: // GPS info
-                uint8 ifix = 0;
-                _nsats = (uint8)(val % 100);
-                uint16 hdp;
-                hdp = (uint16)(val % 1000)/100;
-                if (SportDev.flags == 0) // prefer FR_ID_ADC2_ID
-                    SportDev.rhdop = rhdop = 550 - (hdp * 50);
-
-                uint8 gfix = (uint8)(val /1000);
-                if ((gfix & 1) == 1)
-                    ifix = 3;
-                if ((gfix & 2) == 2) {
-                    if(have_home == false && armed != 0) {
-                        if(home_changed(GPSInfo.lat, GPSInfo.lon)) {
-                            if(SportDev.fix == 0) {
-                                no_ofix++;
-                            } else {
-                                navstatus.cg_on();
-                                sflags |=  NavStatus.SPK.GPS;
-                                want_special |= POSMODE.HOME;
-                                process_pos_states(GPSInfo.lat, GPSInfo.lon, 0.0, "SPort");
-                            }
-                        }
-                    }
-                }
-                if ((gfix & 4) == 4) {
-                    if (SportDev.range < 500) {
-                        MWPLog.message("SPORT: %s set home: changed home position %f %f\n",
-                                       id.to_string(), GPSInfo.lat, GPSInfo.lon);
-                        home_changed(GPSInfo.lat, GPSInfo.lon);
-                        want_special |= POSMODE.HOME;
-                        process_pos_states(GPSInfo.lat, GPSInfo.lon, 0.0, "SPort");
-                    } else {
-                        MWPLog.message("SPORT: %s Ignoring (bogus?) set home, range > 500m: requested home position %f %f\n", id.to_string(), GPSInfo.lat, GPSInfo.lon);
-                    }
-                }
-
-                if((_nsats == 0 && nsats != 0) || (nsats == 0 && _nsats != 0)) {
-                    nsats = _nsats;
-                    navstatus.sats(_nsats, true);
-                }
-                SportDev.sats = _nsats;
-                SportDev.fix = ifix;
-                flash_gps();
-                last_gps = nticks;
-                break;
-            case SportDev.FrID.RSSI_ID:
-                SportDev.rssi = (uint16)((val&0xff)*1023/100);
-                MSP_ANALOG an = MSP_ANALOG();
-                an.rssi = SportDev.rssi;
-                an.vbat = (uint8)(SportDev.volts * 10);
-
-                an.powermetersum = (conf.smartport_fuel == 2 )? (uint16)curr.mah :0;
-                an.amps = curr.centiA;
-                process_msp_analog(an);
-                break;
-            case SportDev.FrID.PITCH:
-            case SportDev.FrID.ROLL:
-                if (id == SportDev.FrID.ROLL)
-                    SportDev.roll = (int16)val;
-                else
-                    SportDev.pitch = (int16)val;
-
-                LTM_AFRAME af = LTM_AFRAME();
-                af.pitch = SportDev.pitch;
-                af.roll = SportDev.roll;
-                af.heading = mhead = (int16) SportDev.cse;
-                navstatus.update_ltm_a(af, true);
-                art_win.update(af.roll*10, af.pitch*10, item_visible(DOCKLETS.ARTHOR));
-                if(Logger.is_logging)
-                    Logger.attitude((double)SportDev.pitch, (double)SportDev.roll, (int)mhead);
-                break;
-
-            case SportDev.FrID.HOME_DIST:
-                int diff = (int)(SportDev.range - val);
-                if(SportDev.range > 100 && (diff * 100 / SportDev.range) > 9)
-                    MWPLog.message("%s %um (mwp: %u, diff: %d)\n", id.to_string(), val, SportDev.range, diff);
-                break;
-
-            case SportDev.FrID.CURR_ID:
-                if((val / 10) < 999) {
-                    curr.ampsok = true;
-                    curr.centiA =  (uint16)(val * 10);
-                    if (curr.centiA > odo.amps)
-                        odo.amps = curr.centiA;
-                    navstatus.current(curr, conf.smartport_fuel);
-                }
-                break;
-            case SportDev.FrID.ACCX_ID:
-                SportDev.ax = ((int)val) / 100.0;
-                break;
-            case SportDev.FrID.ACCY_ID:
-                SportDev.ay = ((int)val) / 100.0;
-                break;
-            case SportDev.FrID.ACCZ_ID:
-                SportDev.az = ((int)val) / 100.0;
-                SportDev.pitch = -(int16)(180.0 * Math.atan2 (SportDev.ax, Math.sqrt(SportDev.ay*SportDev.ay + SportDev.az*SportDev.az))/Math.PI);
-                SportDev.roll  = (int16)(180.0 * Math.atan2 (SportDev.ay, Math.sqrt(SportDev.ax*SportDev.ax + SportDev.az*SportDev.az))/Math.PI);
-                art_win.update(SportDev.roll*10, SportDev.pitch*10, item_visible(DOCKLETS.ARTHOR));
-                if(Logger.is_logging)
-                    Logger.attitude((double)SportDev.pitch, (double)SportDev.roll, (int16) SportDev.cse);
-                break;
-
-            case SportDev.FrID.VARIO_ID:
-                SportDev.vario = (int16)((int) val / 10);
-                break;
-
-            case SportDev.FrID.FUEL_ID:
-                switch (conf.smartport_fuel) {
-                case 0:
-                    curr.mah = 0;
-                    break;
-                case 1:
-                case 2:
-                    curr.mah = (val > 0xffff) ? 0xffff : (uint16)val;
-                    break;
-                case 3:
-                default:
-                    curr.mah = val;
-                    break;
-                }
-                break;
+		case SportDev.FrID.FUEL_ID:
+			switch (conf.smartport_fuel) {
+			case 0:
+				curr.mah = 0;
+				break;
+			case 1:
+			case 2:
+				curr.mah = (val > 0xffff) ? 0xffff : (uint16)val;
+				break;
+			case 3:
+			default:
+				curr.mah = val;
+				break;
+			}
+			break;
         default:
-                break;
+			break;
         }
     }
 
