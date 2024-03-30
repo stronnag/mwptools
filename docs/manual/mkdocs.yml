@@ -72,6 +72,7 @@ extra_css:
 nav:
   - Home:
       - index.md
+      - 'Help and Support': mwp_support.md
       - running.md
       - ui.md
       - dock.md
