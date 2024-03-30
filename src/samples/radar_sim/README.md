@@ -71,7 +71,9 @@ Application Options:
 Start mwp:
 
 ```
-$ mwp  --centre "54.353974 -4.5236"  -d udp://:3000 --no-poll -a
+$ mwp  --centre "54.353974 -4.5236"  -d udp://:3000 --no-poll -a [--relaxed-msp]
+# or
+$ mwp  --centre "54.353974 -4.5236"  --radar-device udp://:3000
 ```
 
 For a local test, this uses UDP sockets.
