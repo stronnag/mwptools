@@ -1011,15 +1011,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#batch-file-considerations" class="md-nav__link">
-    <span class="md-ellipsis">
-      BATch file considerations
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -1541,15 +1532,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#batch-file-considerations" class="md-nav__link">
-    <span class="md-ellipsis">
-      BATch file considerations
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -1630,7 +1612,7 @@
 <p>There is also an excellent <a href="https://www.youtube.com/watch?v=VvnBzQR7aE8">you-tube video tutorial</a> from Marc Hoffmann (in English and German).</p>
 <iframe width="560" height="315" src="https://www.youtube.com/embed/VvnBzQR7aE8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
-<p>It is also possible to run  <a href="https://github.com/stronnag/mwptools">mwp</a> on Windows 10 (and 7) using WSL-1 (win10) and / or Cygwin.  This is documented in the <a href="https://github.com/stronnag/mwptools/wiki">mwp wiki</a>.</p>
+<p>It is also possible to run  <a href="https://github.com/stronnag/mwptools">mwp</a> on Windows 10 (and 7) using WSL-1 (win10) and / or Cygwin (win7 - win10).  This is documented in the <a href="https://github.com/stronnag/mwptools/wiki">mwp wiki</a>.</p>
 <h2 id="environment">Environment<a class="headerlink" href="#environment" title="Permanent link">#</a></h2>
 <p>Tested with Windows 11 VM hosted on Arch Linux by the developer.</p>
 <h2 id="wsl-installation">WSL Installation<a class="headerlink" href="#wsl-installation" title="Permanent link">#</a></h2>
@@ -1648,7 +1630,7 @@ The serial port problem can be mitigated by a "serial to IP" solution; mwptools 
 <li>Down load the <code>.deb</code> file</li>
 <li><code>cd</code> to where ever you saved the <code>.deb</code> file</li>
 <li>In the WSL terminal
-  <code>sudo apt install mwptools_x.y.z_amd64.deb</code></li>
+  <code>sudo apt install ./mwptools_x.y.z_amd64.deb</code></li>
 </ul>
 <p>Example: using <code>curl</code> to download ...</p>
 <pre><code>$ curl -LO https://github.com/stronnag/mwptools/releases/download/x.y.z/mwptools_x.y.z_amd64.deb
@@ -1702,6 +1684,14 @@ generateHosts = false
 # if you still have resizing problems, try 9 ....
 </code></pre>
 </li>
+<li>
+<p><code>ser2udp.exe</code>. <a name="autos2n">mwp</a> can start and stop the Windows <code>ser2udp.exe</code> on demand. This is quite a neat trick by Microsoft's enabling extra-VM process management. In the example below, we have installed <code>ser2udp.exe</code> as <code>c:\Users\win11\ser2udp.exe</code> :</p>
+<pre><code># Start command
+gsettings set org.mwptools.planner atstart '/mnt/c/Users/win11/ser2udp.exe'
+# Shutdown command
+gsettings set org.mwptools.planner atexit 'pkill ser2udp.exe'
+</code></pre>
+</li>
 </ul>
 <p>Then you are ready to run mwp.</p>
 <pre><code>mwp
@@ -1723,10 +1713,11 @@ generateHosts = false
 <li><code>make ser2udp.exe</code></li>
 <li>copy <code>ser2udp.exe</code> to the d̶a̶r̶k̶  Windows side</li>
 </ul>
+<p>See <a href="#autos2n">above</a> for automating starting and stopping <code>ser2udp.exe</code>.</p>
 <p>On the Windows side:</p>
 <ul>
 <li>Use the Windows firewall settings to allow <code>ser2udp.exe</code> to accept UDP traffic.</li>
-<li>Run <code>ser2udp.exe</code> ; it will autodetect your serial port. By default this listens on UDP port 17071, you can change this by supplying a second parameter, e.g., to use port 34567. In this case, either define the serial port or use <code>auto</code> (auto-detect).<pre><code>&gt; ser2udp.exe auto :34567
+<li>Either <a href="#autos2n">automate</a> in mwp (recommended) or run <code>ser2udp.exe</code> ; it will autodetect your serial port. By default this listens on UDP port 17071, you can change this by supplying a second parameter, e.g., to use port 34567. In this case, either define the serial port or use <code>auto</code> (auto-detect).<pre><code>&gt; ser2udp.exe auto :34567
 ## or just let ser2udp autodetect
 &gt; ser2udp.exe
 External address: fe80::1439:d6de:efcb:97e1%7
@@ -1763,14 +1754,13 @@ cliterm udp://__MWP_SERIAL_HOST:17071
 <h3 id="launch-ser2udp-and-mwp-in-one-go">Launch ser2udp and MWP in one go<a class="headerlink" href="#launch-ser2udp-and-mwp-in-one-go" title="Permanent link">#</a></h3>
 <ul>
 <li>
+<p><a href="#autos2n">Automate</a> <code>ser2udp.exe</code> in mwp's settings</p>
+</li>
+<li>
 <p>Create a new <code>txt</code> file in the same folder where <code>ser2udp.exe</code> is located and copy the following lines into that file:</p>
 <pre><code>@echo off
 echo Launching MWP Mission Planner
 start wslg.exe -d Ubuntu mwp
-echo Waiting for WSL System to boot up
-timeout 5
-echo Launching Serial to UDP Tool
-start "Serial2UDP" cmd /c ser2udp.exe -verbose 1
 exit
 </code></pre>
 </li>
@@ -1779,11 +1769,6 @@ exit
 </li>
 <li>Create a shortcut anywhere on your PC or in <code>C:\Users\&lt;username&gt;\AppData\Roaming\Microsoft\Windows\Start Menu\Programs</code> to pin it to your Start Menu</li>
 <li>Replace the shortcut symbol with the MWP icon <a href="https://github.com/stronnag/mwptools/wiki/images/mwp_icon.ico">from here</a></li>
-</ul>
-<h3 id="batch-file-considerations">BATch file considerations<a class="headerlink" href="#batch-file-considerations" title="Permanent link">#</a></h3>
-<ul>
-<li>The <code>timeout</code> value may need changing (or not be needed at all). YMMV.</li>
-<li>Consider adding the <code>/min</code> to <code>cmd</code> to minimise the <code>ser2udp</code> window on startup.</li>
 </ul>
 <h2 id="other-packages-for-additional-functionality">Other packages for additional functionality.<a class="headerlink" href="#other-packages-for-additional-functionality" title="Permanent link">#</a></h2>
 <ul>
@@ -1832,7 +1817,7 @@ Dark theme, <a href="#one-off-changes">correct system icons installed</a>, conne
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    2023-10-18
+    2024-03-31
   </span>
 
     
