@@ -7286,6 +7286,7 @@ public class MWP : Gtk.Application {
 					request_common_setting("safehome_max_distance");
 					if(vi.fc_vers >= FCVERS.hasFWApp) {
 						request_common_setting("nav_fw_land_approach_length");
+						request_common_setting("nav_fw_loiter_radius");
 					}
 				}
                 queue_cmd(msp_get_status,null,0);
@@ -7349,6 +7350,12 @@ public class MWP : Gtk.Application {
 				FWPlot.nav_fw_land_approach_length /= 100;
 				MWPLog.message("fw_land_approach len %u m\n", FWPlot.nav_fw_land_approach_length);
 				break;
+			case "nav_fw_loiter_radius":
+				SEDE.deserialise_u32(raw, out FWPlot.nav_fw_loiter_radius);
+				FWPlot.nav_fw_loiter_radius /= 100;
+				MWPLog.message("fw_loiter_radius len %u m\n", FWPlot.nav_fw_loiter_radius);
+				break;
+
 			case "inav_max_eph_epv":
 				 uint32 ift;
 				 SEDE.deserialise_u32(raw, out ift);

@@ -5,6 +5,7 @@ namespace FWPlot {
 	private Clutter.Color landcol;
 	private Clutter.Color appcol;
 	public uint32 nav_fw_land_approach_length = 350;
+	public uint32 nav_fw_loiter_radius = 50;
 	private double laylen;
 
 	public void init(Champlain.View view) {
@@ -128,14 +129,20 @@ namespace FWPlot {
 			else
 				xdir -= 90;
 			xdir %= 360;
-			var ipx =  set_laypoint(xdir, ip1.latitude, ip1.longitude, laylen/3);
+			var fwax = laylen/2.0;
+			var fwlr = nav_fw_loiter_radius * 4.0 / 1852.0;
+			if (fwax < fwlr) {
+				fwax = fwlr;
+			}
+
+			var ipx =  set_laypoint(xdir, ip1.latitude, ip1.longitude, fwax);
 			apaths[pi].add_node(ip1);
 			apaths[pi].add_node(ipx);
 			if(ex) {
 				apaths[pi].add_node(ip0);
 			} else {
 				apaths[pi].add_node(mk);
-				ipx =  set_laypoint(xdir, ip0.latitude, ip0.longitude, laylen/3);
+				ipx =  set_laypoint(xdir, ip0.latitude, ip0.longitude, fwax);
 				apaths[pi].add_node(ipx);
 				apaths[pi].add_node(ip0);
 			}
