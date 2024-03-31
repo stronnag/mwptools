@@ -8,7 +8,7 @@ There is also an excellent [you-tube video tutorial](https://www.youtube.com/wat
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/VvnBzQR7aE8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
-It is also possible to run  {{ mwp }} on Windows 10 (and 7) using WSL-1 (win10) and / or Cygwin.  This is documented in the [mwp wiki](https://github.com/stronnag/mwptools/wiki).
+It is also possible to run  {{ mwp }} on Windows 10 (and 7) using WSL-1 (win10) and / or Cygwin (win7 - win10).  This is documented in the [mwp wiki](https://github.com/stronnag/mwptools/wiki).
 
 ## Environment
 
@@ -32,7 +32,7 @@ Use one of the following:
 * Down load the `.deb` file
 * `cd ` to where ever you saved the `.deb` file
 * In the WSL terminal
-  `sudo apt install mwptools_x.y.z_amd64.deb`
+  `sudo apt install ./mwptools_x.y.z_amd64.deb`
 
 Example: using `curl` to download ...
 
@@ -97,6 +97,13 @@ Compared to Win10/WSL or Cygwin, there is no longer any need to mess around the 
     	gsettings set org.mwptools.planner font-fv 10
     	# if you still have resizing problems, try 9 ....
 
+* `ser2udp.exe`. <a name="autos2n">mwp</a> can start and stop the Windows `ser2udp.exe` on demand. This is quite a neat trick by Microsoft's enabling extra-VM process management. In the example below, we have installed `ser2udp.exe` as `c:\Users\win11\ser2udp.exe` :
+
+		# Start command
+		gsettings set org.mwptools.planner atstart '/mnt/c/Users/win11/ser2udp.exe'
+		# Shutdown command
+		gsettings set org.mwptools.planner atexit 'pkill ser2udp.exe'
+
 Then you are ready to run mwp.
 
     mwp
@@ -118,17 +125,18 @@ There are a number of existing solutions that may work; **mwp** provides a simpl
 
 ### Installing mwp's `ser2udp`
 
-
 Build on the  **Linux/WSL side**:
 
 * `cd mwptools/src/samples/s2n`
 * `make ser2udp.exe`
 * copy `ser2udp.exe` to the d̶a̶r̶k̶  Windows side
 
+See [above](#autos2n) for automating starting and stopping `ser2udp.exe`.
+
 On the Windows side:
 
 * Use the Windows firewall settings to allow `ser2udp.exe` to accept UDP traffic.
-* Run `ser2udp.exe` ; it will autodetect your serial port. By default this listens on UDP port 17071, you can change this by supplying a second parameter, e.g., to use port 34567. In this case, either define the serial port or use `auto` (auto-detect).
+* Either [automate](#autos2n) in mwp (recommended) or run `ser2udp.exe` ; it will autodetect your serial port. By default this listens on UDP port 17071, you can change this by supplying a second parameter, e.g., to use port 34567. In this case, either define the serial port or use `auto` (auto-detect).
 
     	> ser2udp.exe auto :34567
     	## or just let ser2udp autodetect
@@ -165,25 +173,18 @@ Thus:
 
 ### Launch ser2udp and MWP in one go
 
+* [Automate](#autos2n) `ser2udp.exe` in mwp's settings
+
 * Create a new `txt` file in the same folder where `ser2udp.exe` is located and copy the following lines into that file:
 
     	@echo off
     	echo Launching MWP Mission Planner
     	start wslg.exe -d Ubuntu mwp
-    	echo Waiting for WSL System to boot up
-    	timeout 5
-    	echo Launching Serial to UDP Tool
-    	start "Serial2UDP" cmd /c ser2udp.exe -verbose 1
     	exit
 
 * rename the file with any name and change the extension to `.cmd`
 * Create a shortcut anywhere on your PC or in `C:\Users\<username>\AppData\Roaming\Microsoft\Windows\Start Menu\Programs` to pin it to your Start Menu
 * Replace the shortcut symbol with the MWP icon [from here](https://github.com/stronnag/mwptools/wiki/images/mwp_icon.ico)
-
-### BATch file considerations
-
-* The `timeout` value may need changing (or not be needed at all). YMMV.
-* Consider adding the `/min` to `cmd` to minimise the `ser2udp` window on startup.
 
 ## Other packages for additional functionality.
 
