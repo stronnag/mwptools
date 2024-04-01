@@ -194,6 +194,17 @@ Thus:
 * Terrain Analysis
     * Gnuplot. Check the installer script that it's enabled.
 
+## FAQs / Oddities / Fixes
+
+### Failure to save preferences
+
+You see in the console:
+```
+(org.stronnag.mwp:462): dconf-WARNING **: 21:57:12.806: failed to commit changes to dconf: Could not connect: No such file or directory
+```
+
+This is a known WSL "feature". See the [Official WSL Issue](https://github.com/microsoft/WSL/issues/10947). Most likely, adding `export $(dbus-launch)` to `~/.bashrc` will fix it.
+
 ## Summary
 
 * Much, much better than the prior WSL instances, pity about the difficulty in using serial ports (still). Overall, the seamless WSL-g experience is impressive.

@@ -65,12 +65,7 @@ git clone --depth 1 https://github.com/stronnag/mwptools
   ninja install
 )
 
-git clone --depth 1  https://github.com/iNavFlight/blackbox-tools
-(
-  cd blackbox-tools
-  make && make install prefix=~/.local
-)
-
 echo
-echo "If all went OK, you should have mwp(tools) and blackbox-decode in $HOME/.local/bin"
+echo "If all went OK, you should have mwp(tools) in $HOME/.local/bin"
 echo "Please ensure that $HOME/.local/bin is on your PATH"
+echo "Don't forget to install replay tools, see https://stronnag.github.io/mwptools/replay-tools/"

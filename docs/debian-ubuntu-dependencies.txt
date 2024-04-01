@@ -79,13 +79,8 @@ apt $CONFIRM install gnuplot ruby-nokogiri
 ## cd build
 ## ninja install
 
-## You must install the blackbox utilities
-## https://github.com/iNavFlight/blackbox-tools in order to replay
-## blackbox logs.
-# git clone --depth 1  https://github.com/iNavFlight/blackbox-tools
-# cd blackbox-tools
-# make && sudo make install
-
+echo "Don't forget to install replay tools, see https://stronnag.github.io/mwptools/replay-tools/"
+##
 ## and you can use this file to install everything:)
 #
 ## cp ubuntu-deps.txt /tmp/ubuntu-deps.sh

@@ -54,8 +54,7 @@ mwp-log-replay is a Go language program, which should make it usable on most mod
 
 ```
 #### Go (golang) must be installed ####
-go mod tidy
-go build
+go build -ldflags "-s -w"
 ```
 
 There is also a ninja build file.
