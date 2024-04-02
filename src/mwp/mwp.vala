@@ -7320,46 +7320,75 @@ public class MWP : Gtk.Application {
 			sb.append_printf("Received %s: ", lset);
 			switch ((string)lset) {
 			case "nav_wp_multi_mission_index":
-				sb.append_printf("%u\n", raw[0]);
-				if (raw[0] > 0) {
-					imdx = raw[0]-1;
+				if (len == 1) {
+					sb.append_printf("%u\n", raw[0]);
+					if (raw[0] > 0) {
+						imdx = raw[0]-1;
+					} else {
+						imdx = 0;
+					}
+					if ((wpmgr.wp_flag & WPDL.KICK_DL) != 0) {
+						wpmgr.wp_flag &= ~WPDL.KICK_DL;
+						start_download();
+					}
 				} else {
-					imdx = 0;
-				}
-				if ((wpmgr.wp_flag & WPDL.KICK_DL) != 0) {
-					wpmgr.wp_flag &= ~WPDL.KICK_DL;
-					start_download();
+					sb.append_printf("length error %u\n", len);
 				}
 				break;
 			case "gps_min_sats":
-				msats = raw[0];
-				sb.append_printf("%u\n", msats);
+				if (len == 1) {
+					msats = raw[0];
+					sb.append_printf("%u\n", msats);
+				} else {
+					sb.append_printf("length error %u\n", len);
+				}
 				break;
 			case "nav_wp_safe_distance":
-				SEDE.deserialise_u16(raw, out nav_wp_safe_distance);
-				wpdist = nav_wp_safe_distance / 100;
-				sb.append_printf("%um\n", wpdist);
+				if (len == 2) {
+					SEDE.deserialise_u16(raw, out nav_wp_safe_distance);
+					wpdist = nav_wp_safe_distance / 100;
+					sb.append_printf("%um\n", wpdist);
+				} else {
+					sb.append_printf("length error %u\n", len);
+				}
 				break;
 			case "safehome_max_distance":
-				SEDE.deserialise_u16(raw, out safehome_max_distance);
-				safehome_max_distance /= 100;
-				safehomed.set_distance(safehome_max_distance);
-				sb.append_printf("%um\n", wpdist);
+				if (len == 2) {
+					SEDE.deserialise_u16(raw, out safehome_max_distance);
+					safehome_max_distance /= 100;
+					safehomed.set_distance(safehome_max_distance);
+					sb.append_printf("%um\n", wpdist);
+				} else {
+					sb.append_printf("length error %u\n", len);
+				}
 				break;
 			case "nav_wp_max_safe_distance":
-				SEDE.deserialise_u16(raw, out nav_wp_safe_distance);
-				wpdist = nav_wp_safe_distance;
-				sb.append_printf("%um\n", safehome_max_distance);
+				if (len == 2) {
+					SEDE.deserialise_u16(raw, out nav_wp_safe_distance);
+					wpdist = nav_wp_safe_distance;
+					sb.append_printf("%um\n", safehome_max_distance);
+				} else {
+					sb.append_printf("length error %u\n", len);
+				}
 				 break;
 			case "nav_fw_land_approach_length":
-				SEDE.deserialise_u32(raw, out FWPlot.nav_fw_land_approach_length);
-				FWPlot.nav_fw_land_approach_length /= 100;
-				sb.append_printf("%um\n", FWPlot.nav_fw_land_approach_length);
+				if (len == 4) {
+					SEDE.deserialise_u32(raw, out FWPlot.nav_fw_land_approach_length);
+					FWPlot.nav_fw_land_approach_length /= 100;
+					sb.append_printf("%um\n", FWPlot.nav_fw_land_approach_length);
+				} else {
+					sb.append_printf("length error %u\n", len);
+				}
 				break;
 			case "nav_fw_loiter_radius":
-				SEDE.deserialise_u32(raw, out FWPlot.nav_fw_loiter_radius);
-				FWPlot.nav_fw_loiter_radius /= 100;
-				sb.append_printf("%um\n", FWPlot.nav_fw_loiter_radius);
+				if(len == 2) {
+					uint16 fwr;
+					SEDE.deserialise_u16(raw, out fwr);
+					FWPlot.nav_fw_loiter_radius = fwr / 100;
+					sb.append_printf("%um\n", FWPlot.nav_fw_loiter_radius);
+				} else {
+					sb.append_printf("length error %u\n", len);
+				}
 				break;
 
 			case "inav_max_eph_epv":
@@ -7371,21 +7400,33 @@ public class MWP : Gtk.Application {
 				float f = *((float *)ipt);
 				*/
 				// .. all the world's a VAX
-				float f = (float)*((float*)raw);
-				inav_max_eph_epv = (uint16)f;
-				sb.append_printf("%u\n", inav_max_eph_epv);
+				if (len == 4) {
+					float f = (float)*((float*)raw);
+					inav_max_eph_epv = (uint16)f;
+					sb.append_printf("%u\n", inav_max_eph_epv);
+				} else {
+					sb.append_printf("length error %u\n", len);
+				}
 				break;
 			 case "nav_rth_home_offset_distance":
-				 SEDE.deserialise_u16(raw, out nav_rth_home_offset_distance);
-				 sb.append_printf("%um\n", nav_rth_home_offset_distance/100);
-				 if(nav_rth_home_offset_distance != 0) {
-					 request_common_setting("nav_rth_home_offset_direction");
+				 if(len == 2) {
+					 SEDE.deserialise_u16(raw, out nav_rth_home_offset_distance);
+					 sb.append_printf("%um\n", nav_rth_home_offset_distance/100);
+					 if(nav_rth_home_offset_distance != 0) {
+						 request_common_setting("nav_rth_home_offset_direction");
+					 }
+				 } else {
+					 sb.append_printf("length error %u\n", len);
 				 }
 				 break;
 			 case "nav_rth_home_offset_direction":
-				 uint16 odir;
-				 SEDE.deserialise_u16(raw, out odir);
-				 sb.append_printf("%u°\n", odir);
+				 if (len == 2) {
+					 uint16 odir;
+					 SEDE.deserialise_u16(raw, out odir);
+					 sb.append_printf("%u°\n", odir);
+				 } else {
+					sb.append_printf("length error %u\n", len);
+				 }
 				 break;
 			 default:
 				 sb.append_printf("**UNKNOWN**\n");
@@ -9220,6 +9261,8 @@ public class MWP : Gtk.Application {
 		if(xnopoll != nopoll)
 			nopoll = xnopoll;
         MWPLog.message("Serial doom replay %d\n", replayer);
+		csdq.clear();
+
         if(inhibit_cookie != 0) {
             uninhibit(inhibit_cookie);
             inhibit_cookie = 0;
