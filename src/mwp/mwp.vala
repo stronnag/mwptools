@@ -288,6 +288,7 @@ public class MWP : Gtk.Application {
 	private Sticks.StickWindow sticks;
 	private bool sticks_ok = false;
 	private bool bblosd_ok = false;
+	private Queue<string> csdq;
 
 	public struct MQI {
         MSP.Cmds cmd;
@@ -1321,6 +1322,8 @@ public class MWP : Gtk.Application {
         lastmission = {};
         wpmgr = WPMGR();
 		msx = {};
+
+		csdq = new Queue<string>();
 
         // GLib version 2.73+ breaks GDL, alas
         var dbstyle = DockBarStyle.ICONS;
@@ -7312,9 +7315,12 @@ public class MWP : Gtk.Application {
 			 break;
 
 		case MSP.Cmds.COMMON_SETTING:
-			switch ((string)lastmsg.data) {
+			var lset =  csdq.pop_head();
+			var sb = new StringBuilder();
+			sb.append_printf("Received %s: ", lset);
+			switch ((string)lset) {
 			case "nav_wp_multi_mission_index":
-				MWPLog.message("Received mm index %u\n", raw[0]);
+				sb.append_printf("%u\n", raw[0]);
 				if (raw[0] > 0) {
 					imdx = raw[0]-1;
 				} else {
@@ -7327,47 +7333,51 @@ public class MWP : Gtk.Application {
 				break;
 			case "gps_min_sats":
 				msats = raw[0];
-				MWPLog.message("Received gps_min_sats %u\n", msats);
+				sb.append_printf("%u\n", msats);
 				break;
 			case "nav_wp_safe_distance":
 				SEDE.deserialise_u16(raw, out nav_wp_safe_distance);
 				wpdist = nav_wp_safe_distance / 100;
-				MWPLog.message("Received nav_wp_safe_distance %um\n", wpdist);
+				sb.append_printf("%um\n", wpdist);
 				break;
 			case "safehome_max_distance":
 				SEDE.deserialise_u16(raw, out safehome_max_distance);
 				safehome_max_distance /= 100;
 				safehomed.set_distance(safehome_max_distance);
-				MWPLog.message("Received safehome_max_distance %um\n", wpdist);
+				sb.append_printf("%um\n", wpdist);
 				break;
 			case "nav_wp_max_safe_distance":
 				SEDE.deserialise_u16(raw, out nav_wp_safe_distance);
 				wpdist = nav_wp_safe_distance;
-				MWPLog.message("Received nav_wp_max_safe_distance %um\n", safehome_max_distance);
+				sb.append_printf("%um\n", safehome_max_distance);
 				 break;
 			case "nav_fw_land_approach_length":
 				SEDE.deserialise_u32(raw, out FWPlot.nav_fw_land_approach_length);
 				FWPlot.nav_fw_land_approach_length /= 100;
-				MWPLog.message("fw_land_approach len %u m\n", FWPlot.nav_fw_land_approach_length);
+				sb.append_printf("%um\n", FWPlot.nav_fw_land_approach_length);
 				break;
 			case "nav_fw_loiter_radius":
 				SEDE.deserialise_u32(raw, out FWPlot.nav_fw_loiter_radius);
 				FWPlot.nav_fw_loiter_radius /= 100;
-				MWPLog.message("fw_loiter_radius len %u m\n", FWPlot.nav_fw_loiter_radius);
+				sb.append_printf("%um\n", FWPlot.nav_fw_loiter_radius);
 				break;
 
 			case "inav_max_eph_epv":
-				 uint32 ift;
-				 SEDE.deserialise_u32(raw, out ift);
-				 // This stupidity is for Mint ...
-				 uint32 *ipt = &ift;
-				 float f = *((float *)ipt);
-				 inav_max_eph_epv = (uint16)f;
-						 MWPLog.message("Received (raw) inav_max_eph_epv %u\n",
-										inav_max_eph_epv);
-						 break;
+				/*
+				// This stupidity was for Mint ...
+				uint32 ift;
+				SEDE.deserialise_u32(raw, out ift);
+				uint32 *ipt = &ift;
+				float f = *((float *)ipt);
+				*/
+				// .. all the world's a VAX
+				float f = (float)*((float*)raw);
+				inav_max_eph_epv = (uint16)f;
+				sb.append_printf("%u\n", inav_max_eph_epv);
+				break;
 			 case "nav_rth_home_offset_distance":
 				 SEDE.deserialise_u16(raw, out nav_rth_home_offset_distance);
+				 sb.append_printf("%um\n", nav_rth_home_offset_distance/100);
 				 if(nav_rth_home_offset_distance != 0) {
 					 request_common_setting("nav_rth_home_offset_direction");
 				 }
@@ -7375,15 +7385,14 @@ public class MWP : Gtk.Application {
 			 case "nav_rth_home_offset_direction":
 				 uint16 odir;
 				 SEDE.deserialise_u16(raw, out odir);
-				 MWPLog.message("Received home offsets %um / %u°\n",
-								nav_rth_home_offset_distance/100, odir);
+				 sb.append_printf("%u°\n", odir);
 				 break;
 			 default:
-				 MWPLog.message("Unknown common setting %s\n",
-								(string)lastmsg.data);
+				 sb.append_printf("**UNKNOWN**\n");
 				 break;
 			 }
-			 break;
+			MWPLog.message(sb.str);
+			break;
 
 			 case MSP.Cmds.STATUS:
 				 if (xflags == '<') {
@@ -10481,6 +10490,7 @@ Error: <i>%s</i>
     }
 
 	private void request_common_setting(string s) {
+		csdq.push_tail(s);
 		uint8 msg[128];
 		var k = 0;
 		for(; k < s.length; k++) {
