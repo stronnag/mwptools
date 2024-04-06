@@ -1251,6 +1251,9 @@ public class MWP : Gtk.Application {
 					sh_load = null;
 					if (vfn != null) {
 						safehomed.load_homes(vfn, sh_disp);
+						if(frob.is_valid()) {
+							relocate_safehomes();
+						}
 					}
 				}
 				if(gz_load != null) {
@@ -1270,6 +1273,17 @@ public class MWP : Gtk.Application {
 				return false;
 			});
 	}
+
+	private void relocate_safehomes() {
+		for(var j = 0; j < SAFEHOMES.maxhomes; j++) {
+			var sh = safehomed.get_home(j);
+			if (sh.enabled) {
+				frob.relocate(ref sh.lat, ref sh.lon);
+				safehomed.receive_safehome(j, sh);
+			}
+		}
+	}
+
 
 	private void set_gzsave_state(bool val) {
 		set_menu_state("gz-save", val);
@@ -2470,6 +2484,9 @@ public class MWP : Gtk.Application {
 				sh_disp = (parts.length == 2 && (parts[1] == "Y" || parts[1] == "y"));
 				if (sh_load != "-FC-") {
 					safehomed.load_homes(sh_load, sh_disp);
+					if(frob.is_valid()) {
+						relocate_safehomes();
+					}
 				}
 			}
 		}
@@ -7808,6 +7825,9 @@ public class MWP : Gtk.Application {
                 if (id < SAFEHOMES.maxhomes && id < last_safehome) {
                     queue_cmd(MSP.Cmds.SAFEHOME,&id,1);
 				} else {
+					if(frob.is_valid()) {
+						relocate_safehomes();
+					}
 					safehomed.set_status(sh_disp);
 					id = 0;
 					last_safehome = SAFEHOMES.maxhomes;
@@ -9840,9 +9860,6 @@ Error: <i>%s</i>
     }
 
 	private void rewrite_mission(ref Mission m) {
-		//		MWPLog.message(":DBG: reloc is %s\n", frob.has_reloc().to_string());
-		//MWPLog.message(":DBG: home %f %f\n", m.homey, m.homex);
-
 		if (frob.has_reloc()) {
 			if (m.homex != 0 && m.homey != 0) {
 				frob.set_origin(m.homey, m.homex);
