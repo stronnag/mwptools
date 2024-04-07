@@ -35,7 +35,7 @@ The `--debug-flags` option takes a numeric value defines areas where additional 
 | 4     | MSP |
 | 8     | ADHOC |
 | 16    | RADAR |
-| 32    | LOG REPLAY |
+| 32    | (unused) |
 | 64    | SERIAL |
 | 128   | VIDEO |
 | 256   | GCS Location |

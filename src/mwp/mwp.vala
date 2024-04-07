@@ -236,7 +236,6 @@ public class MWP : Gtk.Application {
     private bool magcheck;
     private uint8 say_state = 0;
 
-    private bool x_replay_bbox_ltm_rb;
     private bool x_kmz;
     private bool x_otxlog;
     private bool x_aplog;
@@ -1448,7 +1447,6 @@ public class MWP : Gtk.Application {
 		if (conf.show_sticks == 1)
 			sticks_ok = false;
 
-		x_replay_bbox_ltm_rb = (appsts[0]&&appsts[6]);
 		x_plot_elevations_rb = (appsts[2]&&appsts[3]);
         x_kmz = appsts[4];
 		x_fl2ltm = x_otxlog = appsts[6];
@@ -9382,7 +9380,7 @@ public class MWP : Gtk.Application {
         var n = 0;
         foreach(var s in ms) {
             var istate = state;
-            if( ((n == 2 || n == 3) && x_replay_bbox_ltm_rb == false) ||
+            if( ((n == 2 || n == 3))  ||
                 ((n == 4 || n == 5) && x_otxlog == false) ||
                 ((n == 6) && x_rawreplay == false))
                 istate = false;
@@ -10453,25 +10451,44 @@ Error: <i>%s</i>
         args += null;
 
 		string sargs = string.joinv(" ",args);
+		int p_stderr;
 
         try {
-            var spf = SpawnFlags.SEARCH_PATH | SpawnFlags.DO_NOT_REAP_CHILD;
-
-            if ((debug_flags & DEBUG_FLAGS.OTXSTDERR) == 0) {
-                spf |= SpawnFlags.STDERR_TO_DEV_NULL;
-            }
-            Process.spawn_async_with_pipes (null, args, null, spf,
-											null,
-                                            out child_pid,
-                                            null, null, null);
+            Process.spawn_async_with_pipes (null, args, null, SpawnFlags.SEARCH_PATH | SpawnFlags.DO_NOT_REAP_CHILD, null, out child_pid, null, null, out p_stderr);
         } catch (SpawnError e) {
             MWPLog.message("spawnerror: %s %s \n", sargs, e.message);
         }
+		string line = null;
+		size_t len = 0;
+		StringBuilder sb = new StringBuilder();
+		IOChannel error = new IOChannel.unix_new (p_stderr);
+		error.add_watch (IOCondition.IN|IOCondition.HUP, (source, condition) => {
+				try {
+					if (condition == IOCondition.HUP)
+						return false;
+					IOStatus eos = source.read_line (out line, out len, null);
+					if(eos == IOStatus.EOF)
+                            return false;
+					if(line == null || len == 0)
+						return true;
+					sb.append(line);
+				} catch {}
+				return true;
+			});
 		MWPLog.message("%s # pid=%u\n", sargs, child_pid);
-
 		ChildWatch.add (child_pid, (pid, status) => {
 				Process.close_pid (pid);
 				cleanup_replay();
+				try {
+#if OLDTVI
+					Process.check_exit_status(status);
+#else
+					Process.check_wait_status(status);
+#endif
+				} catch (Error e) {
+					MWPLog.message("spawn: %s\n", e.message);
+					MWPLog.message("fl2ltm %s\n", sb.str);
+				}
 			});
     }
 
@@ -10480,50 +10497,7 @@ Error: <i>%s</i>
         if(x_fl2ltm) {
             replayer |= Player.OTX;
             spawn_otx_task(fn, delay, index, btype, duration);
-        } else {
-            string [] args = {"replay_bbox_ltm.rb",
-                "--fd", "%d".printf(playfd[1]),
-                "-i", "%d".printf(index),
-                "-t", "%d".printf(btype),
-                "--decoder", conf.blackbox_decode};
-            if(delay == false)
-                args += "-f";
-            if((force_gps & 1) == 1)
-                args += "-g";
-            if((force_gps & 2) == 2)
-                args += "-G";
-
-            if(duration > 600) {
-                uint intvl  =  100000 * duration / 600;
-                args += "-I";
-                args += intvl.to_string();
-            }
-            args += fn;
-            args += null;
-            MWPLog.message("%s\n", string.joinv(" ",args));
-            try {
-                Process.spawn_async_with_pipes (null, args, null,
-                                                SpawnFlags.SEARCH_PATH |
-                                                SpawnFlags.LEAVE_DESCRIPTORS_OPEN |
-                                                SpawnFlags.STDOUT_TO_DEV_NULL |
-                                                SpawnFlags.STDERR_TO_DEV_NULL |
-                                                SpawnFlags.DO_NOT_REAP_CHILD,
-                                                (() => {
-                                                    for(var i = 3; i < 512; i++) {
-                                                        if(i != playfd[1])
-                                                            Posix.close(i);
-                                                    }
-                                                }),
-                                                out child_pid,
-                                                null, null, null);
-                ChildWatch.add (child_pid, (pid, status) => {
-                        Process.close_pid (pid);
-                        cleanup_replay();
-                    });
-            } catch (SpawnError e) {
-                MWPLog.message("spawnerror: %s\n", e.message);
-            }
-        }
+		}
     }
 
     private void replay_bbox (bool delay, string? fn = null) {
