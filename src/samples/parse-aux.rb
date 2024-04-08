@@ -50,6 +50,22 @@ BOXNAMES = [
   { permid: 32, name: "FPV ANGLE MIX"},	# 39
   { permid: 49, name: "LOITER CHANGE"},	# 40
   { permid: 50, name: "MSP RC OVERRIDE"},	# 41
+  { name: "USER3", permid: 57},
+  { name: "USER4", permid: 58},
+  { name: "LOITER CHANGE",     permid: 49 },
+  { name: "MSP RC OVERRIDE",   permid: 50 },
+  { name: "PREARM",            permid: 51 },
+  { name: "TURTLE",            permid: 52 },
+  { name: "NAV CRUISE", permid: 53 },
+  { name: "AUTO LEVEL TRIM",   permid: 54 },
+  { name: "WP PLANNER",        permid: 55 },
+  { name: "SOARING",           permid: 56 },
+  { name: "MISSION CHANGE",    permid: 59 },
+  { name: "BEEPER MUTE",       permid: 60 },
+  { name: "MULTI FUNCTION",    permid: 61 },
+  { name: "MIXER PROFILE 2",   permid: 62 },
+  { name: "MIXER TRANSITION",  permid: 63 },
+  { name: "ANGLE HOLD",        permid: 64 },
   { permid: 255, name: "BoxIds"}
 ]
 
@@ -109,6 +125,16 @@ PERMNAMES = [
   { boxid: 43, name: "TURTLE"},
   { boxid: 44, name: "NAVCRUISE"},
   { boxid: 45, name: "AUTOLEVEL"},
+  { name: "PLANWPMISSION", boxid: 46},
+  { name: "SOARING", boxid: 47},
+  { name: "USER3", boxid: 48},
+  { name: "USER4", boxid: 49},
+  { name: "CHANGEMISSION", boxid: 50},
+  { name: "BEEPERMUTE", boxid: 51},
+  { name: "MULTIFUNCTION", boxid: 52},
+  { name: "MIXERPROFILE", boxid: 53},
+  { name: "MIXERTRANSITION", boxid: 54},
+  { name: "ANGLEHOLD", boxid: 55},
   { boxid: 255, name: "PermIds"}
 ]
 
@@ -181,7 +207,7 @@ SMIXES = [
   "MAX"
 ]
 
-force=nil
+force=:permids
 
 ARGV.options do |opt|
   opt.on('','--force-mode=[MODES]',[:boxids,:permids], "force aux modes (boxids,permids)") {|o|force=o}
