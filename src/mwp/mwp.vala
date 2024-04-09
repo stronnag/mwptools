@@ -628,15 +628,16 @@ public class MWP : Gtk.Application {
     private string xlib;
     private bool is_wayland = false;
     private bool xnopoll = false;
+    private bool nopoll = false;
     private bool permawarn = false;
         /* Options parsing */
+	private bool zznopoll = false; // Absoluely NOPOLL from user!
     private string mission;
     private string kmlfile;
     private string serial;
     private bool autocon;
     private bool mkcon = false;
     private bool ignore_sz = false;
-    private bool nopoll = false;
     public bool rawlog = false;
     private bool no_trail = false;
     private bool no_max = false;
@@ -965,7 +966,7 @@ public class MWP : Gtk.Application {
             o.lookup("flight-controller", "s", ref mwoptstr);
             o.lookup("connect", "b", ref mkcon);
             o.lookup("auto-connect", "b", ref autocon);
-            o.lookup("no-poll", "b", ref nopoll);
+            o.lookup("no-poll", "b", ref zznopoll);
             o.lookup("no-trail", "b", ref no_trail);
             o.lookup("raw-log", "b", ref rawlog);
             o.lookup("ignore-sizing", "b", ref ignore_sz);
@@ -999,6 +1000,7 @@ public class MWP : Gtk.Application {
             o.lookup("perma-warn", "b", ref permawarn);
             o.lookup("fsmenu", "b", ref nofsmenu);
             o.lookup("relaxed-msp", "b", ref relaxed);
+			xnopoll = nopoll = zznopoll; // FIXNOPOLL
         }
     }
 
@@ -3326,7 +3328,9 @@ public class MWP : Gtk.Application {
 
 	private void set_pmask_poller(MWSerial.PMask pmask) {
 		if (pmask == MWSerial.PMask.AUTO || pmask == MWSerial.PMask.INAV) {
-			nopoll = false;
+			if (!zznopoll) {
+				nopoll = false; // FIXNOPOLL
+			}
 		} else {
 			xnopoll = nopoll;
 			nopoll = true;
@@ -3334,7 +3338,6 @@ public class MWP : Gtk.Application {
 		msp.set_pmask(pmask);
 		msp.set_auto_mpm(pmask == MWSerial.PMask.AUTO);
 	}
-
 
     private void followme_set_wp(int alt) {
         uint8 buf[32];
@@ -5720,7 +5723,7 @@ public class MWP : Gtk.Application {
     private void reset_poller() {
         lastok = nticks;
         if(serstate != SERSTATE.NONE && serstate != SERSTATE.TELEM) {
-            if(nopoll == false)
+            if(nopoll == false) // FIXNOPOLL
                 serstate = SERSTATE.POLLER;
             msg_poller();
         }
@@ -9276,8 +9279,10 @@ public class MWP : Gtk.Application {
         if(is_shutdown == true)
             return;
 
-		if(xnopoll != nopoll)
-			nopoll = xnopoll;
+		if(!zznopoll) {
+			if(xnopoll != nopoll)
+				nopoll = xnopoll;
+		}
         MWPLog.message("Serial doom replay %d\n", replayer);
 		csdq.clear();
 
@@ -9565,7 +9570,7 @@ public class MWP : Gtk.Application {
 				var pmask = (MWSerial.PMask)(int.parse(dev_protoc.active_id));
 				set_pmask_poller(pmask);
 				msp.setup_reader();
-				MWPLog.message("Serial %s ready\n", serdev);
+				MWPLog.message("Serial %s ready %s\n", serdev, nopoll.to_string());
 				if(nopoll == false && !mqtt_available ) {
 					serstate = SERSTATE.NORMAL;
 					queue_cmd(MSP.Cmds.IDENT,null,0);
@@ -10276,7 +10281,9 @@ Error: <i>%s</i>
             armed = larmed = 0;
             replay_paused = false;
             window.title = "mwp";
-            nopoll = xnopoll;
+			if(!zznopoll) {
+				nopoll = xnopoll;
+			}
         }
     }
 
