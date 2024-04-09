@@ -1371,7 +1371,7 @@ public class MWP : Gtk.Application {
 
         string []  ext_apps = {
             conf.blackbox_decode, null, /* ex "replay_bbox_ltm.rb",*/
-            "gnuplot", "mwp-plot-elevations", "unzip", null, "fl2ltm", "mavlogdump.py",
+				"gnuplot", "mwp-plot-elevations", "unzip", null, "fl2ltm", "mavlogdump.py",
             "mwp-log-replay"};
         bool appsts[9];
         var si = 0;
@@ -1452,6 +1452,7 @@ public class MWP : Gtk.Application {
 		x_plot_elevations_rb = (appsts[2]&&appsts[3]);
         x_kmz = appsts[4];
 		x_fl2ltm = x_otxlog = appsts[6];
+		//		MWPLog.message(":DBG: x_otxlog %s\n", x_otxlog.to_string());
 		x_aplog = appsts[7];
         x_rawreplay = appsts[8];
 
@@ -9385,10 +9386,11 @@ public class MWP : Gtk.Application {
         var n = 0;
         foreach(var s in ms) {
             var istate = state;
-            if( ((n == 2 || n == 3))  ||
-                ((n == 4 || n == 5) && x_otxlog == false) ||
-                ((n == 6) && x_rawreplay == false))
+            if( ((n == 2 || n == 3) && (x_fl2ltm == false))  ||
+                ((n == 4 || n == 5) && (x_otxlog == false)) ||
+                ((n == 6) && x_rawreplay == false)) {
                 istate = false;
+			}
             set_menu_state(s, istate);
             n++;
         }
