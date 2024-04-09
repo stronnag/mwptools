@@ -29,6 +29,7 @@ public class SafeHomeMarkers : GLib.Object {
 	private Champlain.MarkerLayer safelayer;
 	private Champlain.Label []safept;
 	private Champlain.PathLayer []safed;
+	private Champlain.PathLayer []safel;
 	private bool []onscreen;
 	private uint16 maxd = 200;
 	public signal void safe_move(int idx, double lat, double lon);
@@ -43,6 +44,7 @@ public class SafeHomeMarkers : GLib.Object {
 		onscreen = new bool[SAFEHOMES.maxhomes];
 		safept = new  Champlain.Label[SAFEHOMES.maxhomes];
 		safed = {};
+		safel = {};
 		safelayer = new Champlain.MarkerLayer();
 		view.add_layer (safelayer);
 
@@ -60,11 +62,17 @@ public class SafeHomeMarkers : GLib.Object {
 
 			var sd = new Champlain.PathLayer();
 			sd.set_stroke_width (2);
-
 			sd.set_dash(llist);
 			sd.closed = true;
 			view.add_layer(sd);
 			safed += sd;
+
+			var sl = new Champlain.PathLayer();
+			sl.set_stroke_width (2);
+			sl.set_dash(llist);
+			sl.closed = true;
+			view.add_layer(sl);
+			safel += sl;
 		}
 	}
 
@@ -111,21 +119,41 @@ public class SafeHomeMarkers : GLib.Object {
 	}
 
 	public void update_distance(int idx, SafeHome h) {
-		var lp = safed[idx].get_nodes();
-		bool upd  = (lp != null && lp.length() > 0);
 		double plat, plon;
-		var j = 0;
-		for (var i = 0; i < 360; i += 5) {
-			Geo.posit(h.lat, h.lon, i, maxd/1852.0, out plat, out plon);
-			if(upd) {
-				lp.nth_data(j).latitude = plat;
-				lp.nth_data(j).longitude = plon;
-				j++;
-			} else {
+		if (maxd > 0) {
+			var lp = safed[idx].get_nodes();
+			bool upd  = (lp != null && lp.length() > 0);
+			var j = 0;
+			for (var i = 0; i < 360; i += 5) {
+				Geo.posit(h.lat, h.lon, i, maxd/1852.0, out plat, out plon);
+				if(upd) {
+					lp.nth_data(j).latitude = plat;
+					lp.nth_data(j).longitude = plon;
+					j++;
+				} else {
 				var pt = new Champlain.Point();
 				pt.latitude = plat;
 				pt.longitude = plon;
 				safed[idx].add_node(pt);
+				}
+			}
+		}
+		if (FWPlot.nav_fw_loiter_radius > 0) {
+			var lp = safel[idx].get_nodes();
+			var upd  = (lp != null && lp.length() > 0);
+			var j = 0;
+			for (var i = 0; i < 360; i += 5) {
+				Geo.posit(h.lat, h.lon, i, FWPlot.nav_fw_loiter_radius/1852.0, out plat, out plon);
+				if(upd) {
+					lp.nth_data(j).latitude = plat;
+					lp.nth_data(j).longitude = plon;
+					j++;
+				} else {
+					var pt = new Champlain.Point();
+					pt.latitude = plat;
+					pt.longitude = plon;
+					safel[idx].add_node(pt);
+				}
 			}
 		}
 	}
@@ -140,6 +168,7 @@ public class SafeHomeMarkers : GLib.Object {
 		scolour.alpha = (state) ? 0xc8 : 0x68;
 		safept[idx].set_color (scolour);
 		safed[idx].set_stroke_color(scolour);
+		safel[idx].set_stroke_color(scolour);
 		FWPlot.set_colours(idx, state);
 	}
 
@@ -147,6 +176,7 @@ public class SafeHomeMarkers : GLib.Object {
 		if (onscreen[idx]) {
 			safelayer.remove_marker(safept[idx]);
 			safed[idx].remove_all();
+			safel[idx].remove_all();
 			FWPlot.remove_all(idx);
 		}
 		onscreen[idx] = false;
