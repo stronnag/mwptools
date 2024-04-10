@@ -589,7 +589,6 @@ namespace MWPFileType {
 		} catch (Error e) {
 			message("regex %s", e.message);
 		}
-		MWPLog.message(":DBG: FTYpe %s\n",  ftyp.to_string());
 		return ftyp;
 	}
 }
@@ -695,5 +694,57 @@ public class Frobricator : Object {
 			Geo.csedist(orig.lat, orig.lon, lat, lon, out d, out c);
 			Geo.posit(reloc.lat, reloc.lon, c, d, out lat, out lon);
 		}
+	}
+}
+
+namespace LLparse {
+	bool llparse(string llstr, ref double clat, ref double clon, ref uint zm) {
+		var llok = false;
+		string[] delims =  {","," "};
+		var nps = 0;
+		foreach (var delim in delims) {
+			var parts = llstr.split(delim);
+			if(parts.length >= 2) {
+				foreach(var pp in parts) {
+					var ps = pp.strip();
+					if(InputParser.posok(ps)) {
+						switch (nps) {
+						case 0:
+							clat = InputParser.get_latitude(ps);
+							nps = 1;
+							break;
+						case 1:
+							clon = InputParser.get_longitude(ps);
+							nps = 2;
+							break;
+						case 2:
+							zm = int.parse(parts[2]);
+							break;
+						default:
+							break;
+						}
+					}
+				}
+				if (nps >= 2) {
+					llok = true;
+					break;
+				}
+			}
+		}
+		if (!llok) {
+			var pls = Places.get_places();
+			foreach(var pl in pls) {
+				if (pl.name == llstr) {
+					llok = true;
+					clat = pl.lat;
+					clon = pl.lon;
+					if (pl.zoom > -1) {
+						zm = (uint)pl.zoom;
+					}
+					break;
+				}
+			}
+		}
+		return llok;
 	}
 }

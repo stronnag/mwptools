@@ -1075,7 +1075,6 @@ public class ListBox : GLib.Object {
 						} else {
 							if((dset & DELTAS.POS) != DELTAS.NONE) {
 								Geo.move_delta(alat,alon,dnmlat, dnmlon, out alat, out alon);
-								MWPLog.message("mvdpost %f %f \n", alat,alon);
 								list_model.set_value (iter, WY_Columns.LAT, alat);
 								list_model.set_value (iter, WY_Columns.LON, alon);
 							}

@@ -912,7 +912,9 @@ public class MWP : Gtk.Application {
 			sh_disp = true;
 			break;
 		case FType.INAV_CLI_M:
-			mission = fn;
+			if (mission == null) {
+				mission = fn;
+			}
 			sh_load = fn;
 			gz_load = fn;
 			sh_disp = true;
@@ -1574,17 +1576,13 @@ public class MWP : Gtk.Application {
         ltm_force_sats = (Environment.get_variable("MWP_IGNORE_SATS") != null);
 		frob = new Frobricator();
         if(rebasestr != null) {
-            string[] delims =  {",",";"," "};
-            foreach (var delim in delims) {
-                var parts = rebasestr.split(delim);
-                if(parts.length == 2) {
-                    var dlat = InputParser.get_latitude(parts[0]);
-                    var dlon = InputParser.get_longitude(parts[1]);
-					frob.set_reloc(dlat, dlon);
-                    MWPLog.message("Rebase to %f %f\n", dlat, dlon);
-                    break;
-                }
-            }
+			double dlat = 0;
+			double dlon = 0;
+			uint zz = 0;
+			if (LLparse.llparse(rebasestr, ref dlat, ref dlon, ref zz)) {
+				frob.set_reloc(dlat, dlon);
+				MWPLog.message("Rebase to %f %f\n", dlat, dlon);
+			}
         }
 
         if(conf.ignore_nm == false) {
@@ -2948,53 +2946,9 @@ public class MWP : Gtk.Application {
         kmls = new Array<KmlOverlay>();
 
         if(llstr != null) {
-			var llok = false;
-            string[] delims =  {","," "};
-			var nps = 0;
-            foreach (var delim in delims) {
-                var parts = llstr.split(delim);
-				if(parts.length >= 2) {
-					foreach(var pp in parts) {
-						var ps = pp.strip();
-						if(InputParser.posok(ps)) {
-							switch (nps) {
-							case 0:
-								clat = InputParser.get_latitude(ps);
-								nps = 1;
-								break;
-							case 1:
-								clon = InputParser.get_longitude(ps);
-								nps = 2;
-								break;
-							case 2:
-								zm = int.parse(parts[2]);
-								break;
-							default:
-								break;
-							}
-						}
-					}
-					if (nps >= 2) {
-						llok = true;
-						break;
-					}
-				}
-			}
+			LLparse.llparse(llstr, ref clat, ref clon, ref zm);
+		}
 
-			if (!llok) {
-				var pls = Places.points();
-				foreach(var pl in pls) {
-					if (pl.name == llstr) {
-						clat = pl.lat;
-						clon = pl.lon;
-						if (pl.zoom > -1) {
-							zm = (uint)pl.zoom;
-						}
-						break;
-					}
-				}
-			}
-        }
         map_centre_on(clat, clon);
 		if (check_zoom_sanity(zm)) {
 			view.zoom_level = zm;
