@@ -1035,13 +1035,14 @@ public class ListBox : GLib.Object {
 				}
                 if(dlon != 0.0) {
                     dset |= DELTAS.LON;
-					dnmlon = dlat / 1852.0;
+					dnmlon = dlon / 1852.0;
 				}
                 if(dalt != 0) {
                     dset |= DELTAS.ALT;
 				}
 
 				fhome.get_fake_home(out hlat, out hlon);
+
 				if(FakeHome.has_loc && move_home) {
 					if((dset & DELTAS.POS) != DELTAS.NONE) {
 						Geo.move_delta(hlat,hlon,dnmlat, dnmlon, out hlat, out hlon);
@@ -1074,6 +1075,7 @@ public class ListBox : GLib.Object {
 						} else {
 							if((dset & DELTAS.POS) != DELTAS.NONE) {
 								Geo.move_delta(alat,alon,dnmlat, dnmlon, out alat, out alon);
+								MWPLog.message("mvdpost %f %f \n", alat,alon);
 								list_model.set_value (iter, WY_Columns.LAT, alat);
 								list_model.set_value (iter, WY_Columns.LON, alon);
 							}
