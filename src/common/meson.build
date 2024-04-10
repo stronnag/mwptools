@@ -1,7 +1,8 @@
 mwpcommon = files('xmlio.vala',
                   'autoland.vala',
 		  'cliterm.vala',
-		  'json_io.vala'
+		  'json_io.vala',
+                  'txtio.vala',
                  )
 
 vcommon = files( 'serial-device.vala',

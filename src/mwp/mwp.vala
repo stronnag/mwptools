@@ -114,7 +114,6 @@ public class MWP : Gtk.Application {
 
     private Mission? []lastmission;
     private MWChooser.MWVAR mwvar=MWChooser.MWVAR.AUTO;
-    private uint8 vwarn1;
     private int licol = -1;
     public  DockItem[] dockitem;
     private Gtk.CheckButton audio_cb;
@@ -164,7 +163,6 @@ public class MWP : Gtk.Application {
     private int16 mhead;
 
     private bool have_vers;
-    private bool have_misc;
     private bool have_api;
     private bool have_status;
     private bool have_wp;
@@ -913,6 +911,12 @@ public class MWP : Gtk.Application {
 			gz_load = fn;
 			sh_disp = true;
 			break;
+		case FType.INAV_CLI_M:
+			mission = fn;
+			sh_load = fn;
+			gz_load = fn;
+			sh_disp = true;
+			break;
 		default:
 			break;
 		}
@@ -1452,7 +1456,6 @@ public class MWP : Gtk.Application {
 		x_plot_elevations_rb = (appsts[2]&&appsts[3]);
         x_kmz = appsts[4];
 		x_fl2ltm = x_otxlog = appsts[6];
-		//		MWPLog.message(":DBG: x_otxlog %s\n", x_otxlog.to_string());
 		x_aplog = appsts[7];
         x_rawreplay = appsts[8];
 
@@ -6013,7 +6016,6 @@ public class MWP : Gtk.Application {
                                    arming_msg, xarm_flags, loadpct,
                                    msp_get_status.to_string());
 
-
                     if (conf.audioarmed == true)
                         audio_cb.active = true;
 
@@ -6719,7 +6721,6 @@ public class MWP : Gtk.Application {
 				run_queue();
 				break;
 			case MSP.Cmds.WP_MISSION_LOAD:
-			case MSP.Cmds.MISC:
 				queue_cmd(msp_get_status,null,0);
 				run_queue();
 				break;
@@ -7065,7 +7066,7 @@ public class MWP : Gtk.Application {
 
 						msp_get_status = (vi.fc_api < 0x200) ? MSP.Cmds.STATUS :
 							(vi.fc_vers >= FCVERS.hasV2STATUS) ? MSP.Cmds.INAV_STATUS : MSP.Cmds.STATUS_EX;
-                            // ugly hack for jh flip32 franken builds post 1.73
+						// ugly hack for jh flip32 franken builds post 1.73
 						if((vi.board == "AFNA" || vi.board == "CC3D") &&
 						   msp_get_status == MSP.Cmds.INAV_STATUS)
 							msp_get_status = MSP.Cmds.STATUS_EX;
@@ -7237,20 +7238,32 @@ public class MWP : Gtk.Application {
 						   arm_mask, angle_mask, horz_mask, ph_mask,
 						   rth_mask, wp_mask, cr_mask, fs_mask);
 
-                if(craft != null)
-                    craft.set_icon(vi.mrtype);
+			if(craft != null)
+				craft.set_icon(vi.mrtype);
 
-                set_typlab();
+			set_typlab();
 
-                if(Logger.is_logging) {
-                    string devnam = null;
-                    if(msp.available)
-                        devnam = dev_entry.get_active_text();
-                    Logger.fcinfo(last_file,vi,capability,profile,
-                                  boxnames,vname,devnam);
-                }
-                queue_cmd(MSP.Cmds.MISC,null,0);
-                break;
+			if(Logger.is_logging) {
+				string devnam = null;
+				if(msp.available)
+					devnam = dev_entry.get_active_text();
+				Logger.fcinfo(last_file,vi,capability,profile,
+							  boxnames,vname,devnam);
+			}
+				//                queue_cmd(MSP.Cmds.MISC,null,0);
+				//		 case MSP.Cmds.MISC:
+				//have_misc = true;
+			need_mission = false;
+			if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
+				queue_cmd(MSP.Cmds.STATUS,null,0);
+			else {
+				if(inav) {
+					wpmgr.wp_flag = WPDL.GETINFO;
+					queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
+				}
+				queue_cmd(MSP.Cmds.ACTIVEBOXES,null,0);
+			}
+			break;
 
 		case MSP.Cmds.GPSSTATISTICS:
 			LTM_XFRAME xf = LTM_XFRAME();
@@ -7268,21 +7281,6 @@ public class MWP : Gtk.Application {
 
 			 if(gps_status.visible)
 				 gps_status.update(gpsstats);
-			 break;
-
-		 case MSP.Cmds.MISC:
-			 have_misc = true;
-			 vwarn1 = raw[19];
-			 need_mission = false;
-			 if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
-				 queue_cmd(MSP.Cmds.STATUS,null,0);
-			 else {
-				 if(inav) {
-					 wpmgr.wp_flag = WPDL.GETINFO;
-					 queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
-				 }
-				 queue_cmd(MSP.Cmds.ACTIVEBOXES,null,0);
-			 }
 			 break;
 
             case MSP.Cmds.ACTIVEBOXES:
@@ -9003,7 +9001,6 @@ public class MWP : Gtk.Application {
             vcol.levels[i].reached = false;
         }
         vinit = true;
-        vwarn1 = 0;
     }
 
     private void bat_annul() {
@@ -9429,7 +9426,7 @@ public class MWP : Gtk.Application {
         map_hide_warning();
         xfailsafe = false;
         serstate = SERSTATE.NONE;
-        have_api = have_vers = have_misc = have_status = have_wp = have_nc =
+        have_api = have_vers = have_status = have_wp = have_nc =
             have_fcv = have_fcvv = false;
         xbits = icount = api_cnt = 0;
         autocount = 0;
@@ -9825,7 +9822,17 @@ Error: <i>%s</i>
 		ms_from_loader = true;
 		Mission _ms = null;
 		bool is_j = fn.has_suffix(".json");
-		var _msx =  (is_j) ? JsonIO.read_json_file(fn) : XmlIO.read_xml_file (fn, true);
+		bool is_x = fn.has_suffix(".mission");
+
+		Mission?[]_msx=null;
+		if (is_j) {
+			_msx = JsonIO.read_json_file(fn);
+		} else if (is_x) {
+			_msx = XmlIO.read_xml_file (fn, true);
+		} else {
+			_msx = TxtIO.read_txt(fn);
+			last_file = null;
+		}
 		if (_msx == null)
 			return null;
 

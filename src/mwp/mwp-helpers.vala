@@ -526,7 +526,8 @@ public enum FType {
 	OTXLOG = 3,
 	MWPLOG = 4,
 	KMLZ = 5,
-	INAV_CLI=6
+	INAV_CLI=6,
+	INAV_CLI_M = 7,
 }
 
 namespace MWPFileType {
@@ -539,7 +540,7 @@ namespace MWPFileType {
 			} else {
 				fn = uri;
 			}
-			uint8 []buf = new uint8[1024];
+			uint8 []buf = new uint8[64*1024];
 			var fs = FileStream.open (fn, "r");
 			if (fs != null) {
 				if(fs.read (buf) > 0) {
@@ -569,8 +570,9 @@ namespace MWPFileType {
 					if(ftyp == FType.UNKNOWN) {
 						if(Regex.match_simple ("^(geozone|safehome) ", (string)buf, RegexCompileFlags.MULTILINE|RegexCompileFlags.RAW)) {
 							ftyp = FType.INAV_CLI;
-							//							} else if(Regex.match_simple ("^safehome ", (string)buf, RegexCompileFlags.MULTILINE|RegexCompileFlags.RAW)) {
-							//							ftyp = FType.INAV_CLI;
+							if (Regex.match_simple("^#wp \\d+ valid", (string)buf, RegexCompileFlags.MULTILINE|RegexCompileFlags.RAW)) {
+							ftyp = FType.INAV_CLI_M;
+							}
 						} else if(((string)buf).contains("<mission>") || ((string)buf).contains("<MISSION>")) {
 							ftyp = FType.MISSION;
 						} else if (((string)buf).has_prefix("H Product:Blackbox flight data recorder")) {						ftyp = FType.BBL;
@@ -587,6 +589,7 @@ namespace MWPFileType {
 		} catch (Error e) {
 			message("regex %s", e.message);
 		}
+		MWPLog.message(":DBG: FTYpe %s\n",  ftyp.to_string());
 		return ftyp;
 	}
 }
