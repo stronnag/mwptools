@@ -116,18 +116,25 @@ func main() {
 		log.Fatalln("Check format")
 	}
 
-	n := 0
-	last := 0.0
-	nb := 0
+	ni := 0
+	lasti := 0.0
+	nbi := 0
+	no := 0
+	lasto := 0.0
+	nbo := 0
 	for {
 		hdr, buf, err := logf.readlog()
 		if err == nil {
-			n += 1
-			last = hdr.Offset
-			nb += int(hdr.Size)
 			dbyte := '<'
 			if hdr.Dirn == 'i' {
+				lasti = hdr.Offset
+				ni += 1
+				nbi += int(hdr.Size)
 				dbyte = '>'
+			} else {
+				lasto = hdr.Offset
+				nbo += int(hdr.Size)
+				no += 1
 			}
 			fmt.Fprintf(metafh, "Offset: %.3f dirn: %c size: %d %s\n", hdr.Offset, dbyte, hdr.Size, buf)
 			msp_parse(mspfh, buf, hdr.Offset)
@@ -137,8 +144,14 @@ func main() {
 			log.Fatal(err)
 		}
 	}
-	mrate := float64(n) / last
-	brate := float64(nb) / last
-
-	fmt.Printf("%d items %d bytes %.2f secs, %.2f msg/sec, %.2f byte/sec\n", n, nb, last, mrate, brate)
+	if lasti > 0 {
+		mratei := float64(ni) / lasti
+		bratei := float64(nbi) / lasti
+		fmt.Printf(" In: %d items %d bytes %.2f secs, %.2f msg/sec, %.2f byte/sec\n", ni, nbi, lasti, mratei, bratei)
+	}
+	if lasto > 0 {
+		mrateo := float64(no) / lasto
+		brateo := float64(nbo) / lasto
+		fmt.Printf("Out: %d items %d bytes %.2f secs, %.2f msg/sec, %.2f byte/sec\n", no, nbo, lasto, mrateo, brateo)
+	}
 }
