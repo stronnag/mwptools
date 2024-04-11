@@ -71,7 +71,7 @@ You can cross compile for any other Go supported OS / architecture, either via t
 
     GOOS=windows make
     GOOS=freebsd GOARCH=riscv64 make
-	GOOS=arm64 go build -ldflags "-s -w"
+	GOARCH=arm64 go build -ldflags "-s -w"
 
 ## Stuff
 
