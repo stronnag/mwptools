@@ -75,7 +75,11 @@ namespace KMLWriter {
 				pmark->new_text_child (ns, "name", el.name);
 				pmark->new_text_child (ns, "styleUrl", "#%s".printf(sname));
 				var polyg = pmark->new_text_child (ns, "Polygon", "");
-				polyg->new_text_child (ns, "altitudeMode", "relativeToGround");
+				var altmode = "relativeToGround";
+				if (alt == 0) {
+					altmode = "clampToGround";
+				}
+				polyg->new_text_child (ns, "altitudeMode", altmode);
 				polyg->new_text_child (ns, "extrude", "1");
 				polyg->new_text_child (ns, "tessellate", "0");
 				var obis = polyg->new_text_child (ns, "outerBoundaryIs", "");
