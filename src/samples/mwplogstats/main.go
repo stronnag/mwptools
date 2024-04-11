@@ -107,6 +107,7 @@ func main() {
 		defer metafh.Close()
 	}
 
+	mspinit()
 	logf := MWPLog{}
 	logf.fh = fh
 	defer logf.fh.Close()

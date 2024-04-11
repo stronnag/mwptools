@@ -2,8 +2,8 @@
 
 Formatted information from mwp raw logs.
 
-* metadata is written to `stdout` or user defined file
-* MSP info is written to `stderr` or user define file
+* Raw metadata is written to `stdout` or user defined file. This shows the raw data read from / written to the device in a single I/O operation, including any protocol bytes.
+* MSP / LTM info is written to `stderr` or user defined file. This is the decoded MSP and LTM payloads (if any) that can be decoded from the raw data.
 
 ### Usage
 
@@ -11,39 +11,52 @@ Formatted information from mwp raw logs.
 $ mwplogstats -help
 Usage: mwplogstats [options] logfile
   -meta string
-    	metadata output file name ('-' => stdout) (default "-")
+    	raw metadata output file name ('-' => stdout) (default "-")
   -msp string
-    	msp output file name ('-' => stderr) (default "-")
+    	msp / ltm  output file name ('-' => stderr) (default "-")
 ```
 
 ```
-mwplogstats  -msp /tmp/msp.txt -meta /tmp/meta.txt mwp.udp_MWP_SERIAL_HOST_17071.2024-04-01T100032.raw
+mwplogstats -msp /tmp/msp.txt -meta /tmp/meta.txt mwp.udp_MWP_SERIAL_HOST_17071.2024-04-01T100032.raw
 ```
 Without redirection to files, the screen output will be inter-leaved (which may be useful as well).
 
 ## MSP Output
 
-Logged as time offset, version (MSP1/MSP2), direction ('<', '>'), CmdID (decimal, hex) and payload length. For pure text (MSP_NAME, MSP_BOXNAMES, MSP2_COMMON_SETTINGS), the payload is displayed as text. The time offset should match offsets in the metadata log, noting that an MSP can span multiple I/O reads. The offset is that of the I/O that completes the message:
+Logged as time offset (s), version (MSP1/MSP2), direction ('<', '>'), Cmd name, CmdID (decimal, hex), payload length and payload data (hex dump). For pure text (MSP_NAME, MSP_BOXNAMES, MSP2_COMMON_SETTINGS), the payload is displayed as text. The time offset should match offsets in the metadata log, noting that an MSP can span multiple I/O reads. The offset is that of the I/O that completes the message:
 
-	0.001 MSP1 < (100,0x64) paylen=0
-	0.106 MSP1 ! (100,0x64) paylen=0
-	0.106 MSP1 < (1,0x1) paylen=0
-	0.145 MSP1 > (1,0x1) paylen=3 [0x00, 0x02, 0x05]
-	0.146 MSP2 < (10,0xa) paylen=0
-	0.200 MSP2 > (10,0xa) paylen=13 BENCHYMCTESTY
-	0.200 MSP2 < (8208,0x2010) paylen=0
-	0.213 MSP2 > (8208,0x2010) paylen=9 [0x00, 0x00, 0x00, 0x01, 0x00, 0x08, 0x00, 0x0c, 0x10]
-	0.213 MSP2 < (4,0x4) paylen=0
-	0.229 MSP2 > (4,0x4) paylen=15 [0x46, 0x46, 0x33, 0x35, 0x00, 0x00, 0x02, 0x03, 0x06, 0x57, 0x49, 0x4e, 0x47, 0x46, 0x43]
-	0.229 MSP2 < (2,0x2) paylen=0
+	0.000 MSP1 < MSP_IDENT (100,0x64) paylen=0
+	0.001 MSP1 ! MSP_IDENT (100,0x64) paylen=0
+	0.001 MSP1 < MSP_API_VERSION (1,0x1) paylen=0
+	0.001 MSP1 > MSP_API_VERSION (1,0x1) paylen=3 [0x00, 0x02, 0x05]
+	0.001 MSP2 < MSP_NAME (10,0xa) paylen=0
+	0.001 MSP2 > MSP_NAME (10,0xa) paylen=13 BENCHYMCTESTY
+	0.002 MSP2 < MSP2_INAV_MIXER (8208,0x2010) paylen=0
+	0.002 MSP2 > MSP2_INAV_MIXER (8208,0x2010) paylen=9 [0x00, 0x00, 0x00, 0x01, 0x00, 0x08, 0x00, 0x0c, 0x10]
+	0.002 MSP2 < MSP_BOARD_INFO (4,0x4) paylen=0
+	0.002 MSP2 > MSP_BOARD_INFO (4,0x4) paylen=13 [0x53, 0x49, 0x54, 0x4c, 0x00, 0x00, 0x02, 0x00, 0x04, 0x53, 0x49, 0x54, 0x4c]
 
 This sequence is from [mwp](https://github.com/stronnag/mwptools); as mwp supports all versions of INAV and Multiwii 2.4+, it first tries MSP1 MSP_IDENT (100), which fails on modern INAV (direction = '!').
 
 MSP_NAME (10, 0xa) returns a text string, which is displayed as such.
 
+## LTM output
+
+LTM is displayed as time offset (s), LTM Frame, payload length and payload data (hex dump).
+
+	50.348 LTM 'G' frame, paylen=14 [0xe0, 0x49, 0xd3, 0x19, 0x94, 0x0c, 0x9d, 0xfc, 0x02, 0x10, 0x09, 0x00, 0x00, 0x43]
+	50.450 LTM 'A' frame, paylen=6 [0x01, 0x00, 0x00, 0x00, 0x0c, 0x00]
+	50.450 LTM 'S' frame, paylen=7 [0x96, 0x41, 0x00, 0x00, 0x00, 0x00, 0x37]
+	50.450 LTM 'N' frame, paylen=6 [0x02, 0x09, 0x00, 0x01, 0x0b, 0x00]
+	50.548 LTM 'A' frame, paylen=6 [0x01, 0x00, 0x00, 0x00, 0x0c, 0x00]
+	50.548 LTM 'G' frame, paylen=14 [0xe0, 0x49, 0xd3, 0x19, 0x94, 0x0c, 0x9d, 0xfc, 0x02, 0x0b, 0x09, 0x00, 0x00, 0x43]
+	50.649 LTM 'A' frame, paylen=6 [0x01, 0x00, 0x00, 0x00, 0x0c, 0x00]
+	50.649 LTM 'X' frame, paylen=6 [0x64, 0x00, 0x00, 0x1a, 0x00, 0x00]
+	50.649 LTM 'S' frame, paylen=7 [0x96, 0x41, 0x00, 0x00, 0x00, 0x00, 0x37]
+
 ## Meta Info output
 
-For the metadata, the time offset (s), direction ('<'. '>'), size (bytes) and data read (hex dump) are shown. Note that this is entirely system / interface / I/O subsystem dependent and may not correspond to message boundaries.
+For the metadata, the time offset (s), direction ('<'. '>'), size (bytes) and raw data read (hex dump) are shown. The size of raw data read is entirely system / interface / I/O subsystem dependent and may not correspond to message boundaries.
 
     Offset: 0.001 dirn: < size: 6 [0x24, 0x4d, 0x3c, 0x00, 0x64, 0x64]
 	Offset: 0.106 dirn: > size: 6 [0x24, 0x4d, 0x21, 0x00, 0x64, 0x64]
@@ -55,6 +68,12 @@ For the metadata, the time offset (s), direction ('<'. '>'), size (bytes) and da
 	Offset: 0.213 dirn: > size: 18 [0x24, 0x58, 0x3e, 0x00, 0x10, 0x20, 0x09, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x08, 0x00, 0x0c, 0x10, 0x92]
 	Offset: 0.213 dirn: < size: 9 [0x24, 0x58, 0x3c, 0x00, 0x04, 0x00, 0x00, 0x00, 0xc1]
 	Offset: 0.229 dirn: > size: 24 [0x24, 0x58, 0x3e, 0x00, 0x04, 0x00, 0x0f, 0x00, 0x46, 0x46, 0x33, 0x35, 0x00, 0x00, 0x02, 0x03, 0x06, 0x57, 0x49, 0x4e, 0x47, 0x46, 0x43, 0x12]
+
+Th offset may be used to correlate raw data with decoded message output.
+
+## Restrictions
+
+Only works against mwptools "v2" raw data log files as generated by `mwp --raw-log` and `mwp-serial-cap`. The format of such files is described in `mwp-serial-cap` README.
 
 ## Building
 
