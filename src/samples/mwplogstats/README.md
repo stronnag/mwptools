@@ -17,24 +17,25 @@ Usage: mwplogstats [options] logfile
 ```
 
 ```
-mwplogstats mwp.udp_MWP_SERIAL_HOST_17071.2024-04-01T100032.raw -msp /tmp/msp.txt -meta /tmp/meta.txt
+mwplogstats  -msp /tmp/msp.txt -meta /tmp/meta.txt mwp.udp_MWP_SERIAL_HOST_17071.2024-04-01T100032.raw
 ```
 Without redirection to files, the screen output will be inter-leaved (which may be useful as well).
 
 ## MSP Output
 
-Logged as version (MSP1/MSP2), direction ('<', ">'), CmdID (decimal, hex) and payload length. For pure text (MSP_NAME, MSP_BOXNAMES, MSP2_COMMON_SETTINGS), the payload is displayed as text.
+Logged as time offset, version (MSP1/MSP2), direction ('<', '>'), CmdID (decimal, hex) and payload length. For pure text (MSP_NAME, MSP_BOXNAMES, MSP2_COMMON_SETTINGS), the payload is displayed as text. The time offset should match offsets in the metadata log, noting that an MSP can span multiple I/O reads. The offset is that of the I/O that completes the message:
 
-    MSP1 < (100,0x64) paylen=0
-	MSP1 ! (100,0x64) paylen=0
-	MSP1 < (1,0x1) paylen=0
-	MSP1 > (1,0x1) paylen=3 [0x00, 0x02, 0x05]
-	MSP2 < (10,0xa) paylen=0
-	MSP2 > (10,0xa) paylen=13 BENCHYMCTESTY
-	MSP2 < (8208,0x2010) paylen=0
-	MSP2 > (8208,0x2010) paylen=9 [0x00, 0x00, 0x00, 0x01, 0x00, 0x08, 0x00, 0x0c, 0x10]
-	MSP2 < (4,0x4) paylen=0
-	MSP2 > (4,0x4) paylen=15 [0x46, 0x46, 0x33, 0x35, 0x00, 0x00, 0x02, 0x03, 0x06, 0x57, 0x49, 0x4e, 0x47, 0x46, 0x43]
+	0.001 MSP1 < (100,0x64) paylen=0
+	0.106 MSP1 ! (100,0x64) paylen=0
+	0.106 MSP1 < (1,0x1) paylen=0
+	0.145 MSP1 > (1,0x1) paylen=3 [0x00, 0x02, 0x05]
+	0.146 MSP2 < (10,0xa) paylen=0
+	0.200 MSP2 > (10,0xa) paylen=13 BENCHYMCTESTY
+	0.200 MSP2 < (8208,0x2010) paylen=0
+	0.213 MSP2 > (8208,0x2010) paylen=9 [0x00, 0x00, 0x00, 0x01, 0x00, 0x08, 0x00, 0x0c, 0x10]
+	0.213 MSP2 < (4,0x4) paylen=0
+	0.229 MSP2 > (4,0x4) paylen=15 [0x46, 0x46, 0x33, 0x35, 0x00, 0x00, 0x02, 0x03, 0x06, 0x57, 0x49, 0x4e, 0x47, 0x46, 0x43]
+	0.229 MSP2 < (2,0x2) paylen=0
 
 This sequence is from [mwp](https://github.com/stronnag/mwptools); as mwp supports all versions of INAV and Multiwii 2.4+, it first tries MSP1 MSP_IDENT (100), which fails on modern INAV (direction = '!').
 

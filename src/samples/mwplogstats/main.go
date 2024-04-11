@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-type header struct {
+type Header struct {
 	Offset float64
 	Size   uint16
 	Dirn   byte
@@ -36,11 +36,11 @@ func (h HexArray) String() string {
 	return b.String()
 }
 
-func (l *MWPLog) readlog() (header, HexArray, error) {
+func (l *MWPLog) readlog() (Header, HexArray, error) {
 	var err error
 	var buf []byte
 
-	hdr := header{}
+	hdr := Header{}
 	err = binary.Read(l.fh, binary.LittleEndian, &hdr)
 	if err == nil {
 		l.last = hdr.Offset
@@ -129,7 +129,7 @@ func main() {
 				dbyte = '>'
 			}
 			fmt.Fprintf(metafh, "Offset: %.3f dirn: %c size: %d %s\n", hdr.Offset, dbyte, hdr.Size, buf)
-			msp_parse(mspfh, buf)
+			msp_parse(mspfh, buf, hdr.Offset)
 		} else if err == io.EOF {
 			break
 		} else {

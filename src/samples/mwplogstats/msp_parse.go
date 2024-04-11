@@ -68,7 +68,11 @@ func msp_output(mspfh io.WriteCloser, sc MsgData) {
 	fmt.Fprintln(mspfh)
 }
 
-func msp_parse(mspfh io.WriteCloser, inp []byte) {
+func ts_output(mspfh io.WriteCloser, offset float64) {
+	fmt.Fprintf(mspfh, "%8.3f ", offset)
+}
+
+func msp_parse(mspfh io.WriteCloser, inp []byte, offset float64) {
 	for i, _ := range inp {
 		switch n {
 		case state_INIT:
@@ -147,6 +151,7 @@ func msp_parse(mspfh io.WriteCloser, inp []byte) {
 			}
 		case state_X_CHECKSUM:
 			ccrc := inp[i]
+			ts_output(mspfh, offset)
 			if crc != ccrc {
 				fmt.Fprintf(mspfh, "CRC error on %d\n", sc.cmd)
 			} else {
@@ -178,6 +183,7 @@ func msp_parse(mspfh io.WriteCloser, inp []byte) {
 
 		case state_CRC:
 			ccrc := inp[i]
+			ts_output(mspfh, offset)
 			if crc != ccrc {
 				fmt.Fprintf(mspfh, "CRC error on %d\n", sc.cmd)
 			} else {
