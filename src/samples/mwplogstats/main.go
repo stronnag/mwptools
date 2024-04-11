@@ -69,7 +69,7 @@ func main() {
 	mspfile := "-"
 	metafile := "-"
 
-	flag.StringVar(&mspfile, "msp", "-", "msp output file name ('-' => stderr)")
+	flag.StringVar(&mspfile, "msp", "-", "msp / ltm output file name ('-' => stderr)")
 	flag.StringVar(&metafile, "meta", "-", "metadata output file name ('-' => stdout)")
 
 	flag.Usage = func() {
