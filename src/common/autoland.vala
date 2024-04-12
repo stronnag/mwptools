@@ -17,6 +17,10 @@ namespace FWApproach {
 
 	private static approach approaches[17];
 
+	public static void clear(int j) {
+		approaches[j]={};
+	}
+
 	public static approach get(int j) {
 		return approaches[j];
 	}

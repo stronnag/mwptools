@@ -3353,14 +3353,22 @@ public class MWP : Gtk.Application {
 
 	private void mm_regenerate(uint mitem) {
 		Mission [] mmsx = {};
+		//		clear_mission();
 		for(var j = 0; j < msx.length; j++) {
 			if ((mitem & (1 << j)) == 0) {
 				mmsx += msx[j];
+			} else {
+				for(var k = j+8; k < msx.length+8; k++) {
+					var l = FWApproach.get(k+1);
+					FWApproach.set(k,l);
+				}
 			}
 		}
 		imdx = 0;
 		msx = mmsx;
-		clear_mission();
+		for(var j = msx.length; j < 9; j++) {
+			FWApproach.clear(j+8);
+		}
 		setup_mission_from_mm();
 	}
 
