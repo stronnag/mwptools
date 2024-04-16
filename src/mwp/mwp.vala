@@ -5121,7 +5121,9 @@ public class MWP : Gtk.Application {
     }
 
     private void  run_queue() {
-        if(msp.available && !mq.is_empty()) {
+        if((replayer & (Player.BBOX|Player.OTX|Player.RAW)) != 0) {
+            mq.clear();
+        } else if(msp.available && !mq.is_empty()) {
             lastmsg = mq.pop_head();
 //            MWPLog.message("send %s\n", lastmsg.cmd.to_string());
             msp.send_command((uint16)lastmsg.cmd, lastmsg.data, lastmsg.len);
@@ -9324,9 +9326,11 @@ public class MWP : Gtk.Application {
 				gz_from_msp = false;
 			}
 		}
-		if(sh_load == "-FC-") {
-			safehomed.remove_homes();
-		}
+        if((replayer & (Player.BBOX|Player.OTX|Player.RAW)) == 0) {
+            if(sh_load == "-FC-") {
+                safehomed.remove_homes();
+            }
+        }
 	}
 
     private void clear_mission() {
