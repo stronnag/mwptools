@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/mwp_icon.ico">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.1">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.17">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.45e1311d.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.bcfcd587.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -234,10 +234,8 @@
     
     
     
-    
     <li class="md-nav__item md-nav__item--nested">
       
-        
         
         
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
@@ -742,10 +740,8 @@
     
     
     
-    
     <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
-        
         
         
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
@@ -1026,6 +1022,30 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#faqs-oddities-fixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      FAQs / Oddities / Fixes
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="FAQs / Oddities / Fixes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#failure-to-save-preferences" class="md-nav__link">
+    <span class="md-ellipsis">
+      Failure to save preferences
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#summary" class="md-nav__link">
     <span class="md-ellipsis">
       Summary
@@ -1093,10 +1113,8 @@
     
     
     
-    
     <li class="md-nav__item md-nav__item--nested">
       
-        
         
         
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
@@ -1547,6 +1565,30 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#faqs-oddities-fixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      FAQs / Oddities / Fixes
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="FAQs / Oddities / Fixes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#failure-to-save-preferences" class="md-nav__link">
+    <span class="md-ellipsis">
+      Failure to save preferences
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#summary" class="md-nav__link">
     <span class="md-ellipsis">
       Summary
@@ -1609,7 +1651,7 @@
 <h1 id="windows-11-wsl-g">Windows 11 / WSL-G<a class="headerlink" href="#windows-11-wsl-g" title="Permanent link">#</a></h1>
 <h2 id="intro">Intro<a class="headerlink" href="#intro" title="Permanent link">#</a></h2>
 <p>As a result of user interest in running <a href="https://github.com/stronnag/mwptools">mwp</a> on Windows 11 / WSL-G, here's an experiment to see if it's possible. By a Windows neophyte, so if I can install mwp on WSL, anyone can.</p>
-<p>There is also an excellent <a href="https://www.youtube.com/watch?v=VvnBzQR7aE8">you-tube video tutorial</a> from Marc Hoffmann (in English and German).</p>
+<p>There is also an excellent, but sadly obsolete, <a href="https://www.youtube.com/watch?v=VvnBzQR7aE8">you-tube video tutorial</a> from Marc Hoffmann (in English and German).</p>
 <iframe width="560" height="315" src="https://www.youtube.com/embed/VvnBzQR7aE8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 <p>It is also possible to run  <a href="https://github.com/stronnag/mwptools">mwp</a> on Windows 10 (and 7) using WSL-1 (win10) and / or Cygwin (win7 - win10).  This is documented in the <a href="https://github.com/stronnag/mwptools/wiki">mwp wiki</a>.</p>
@@ -1639,7 +1681,7 @@ $ sudo apt install ./mwptools_x.y.z_amd64.deb
 <p>Where <code>x.y.z</code> represents the build tag.</p>
 <h4 id="b-unified-first-time-build-script-build-and-install-from-source">(b) Unified first-time build script (build and install from source)<a class="headerlink" href="#b-unified-first-time-build-script-build-and-install-from-source" title="Permanent link">#</a></h4>
 <p>For the initial installation, there is a unified / simplified install / build / install script: <a href="https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja/#easy-first-time-install-on-debian-and-ubuntu">Instructions</a></p>
-<p>This installs mwptools and blackbox-tools-inav to <code>$HOME/.local/bin</code>.</p>
+<p>This installs mwptools to <code>$HOME/.local/bin</code>.</p>
 <h4 id="c-traditional-build-process-build-and-install-from-source">(c) Traditional build process (build and install from source)<a class="headerlink" href="#c-traditional-build-process-build-and-install-from-source" title="Permanent link">#</a></h4>
 <p>If you want more control over build options.</p>
 <p>If <code>git</code> is not pre-installed in WSL, then it will be necessary to install it.</p>
@@ -1782,6 +1824,12 @@ exit
 </ul>
 </li>
 </ul>
+<h2 id="faqs-oddities-fixes">FAQs / Oddities / Fixes<a class="headerlink" href="#faqs-oddities-fixes" title="Permanent link">#</a></h2>
+<h3 id="failure-to-save-preferences">Failure to save preferences<a class="headerlink" href="#failure-to-save-preferences" title="Permanent link">#</a></h3>
+<p>You see in the console:
+<div class="highlight"><pre><span></span><code>(org.stronnag.mwp:462): dconf-WARNING **: 21:57:12.806: failed to commit changes to dconf: Could not connect: No such file or directory
+</code></pre></div></p>
+<p>This is a known WSL "feature". See the <a href="https://github.com/microsoft/WSL/issues/10947">Official WSL Issue</a>. Most likely, adding <code>export $(dbus-launch)</code> to <code>~/.bashrc</code> will fix it.</p>
 <h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">#</a></h2>
 <ul>
 <li>Much, much better than the prior WSL instances, pity about the difficulty in using serial ports (still). Overall, the seamless WSL-g experience is impressive.</li>
@@ -1817,7 +1865,7 @@ Dark theme, <a href="#one-off-changes">correct system icons installed</a>, conne
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    2024-03-31
+    2024-04-17
   </span>
 
     
@@ -1868,10 +1916,10 @@ Dark theme, <a href="#one-off-changes">correct system icons installed</a>, conne
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7c377c4.min.js"></script>
+      <script src="../assets/javascripts/bundle.1e8ae164.min.js"></script>
       
     
   </body>

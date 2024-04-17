@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/mwp_icon.ico">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.1">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.17">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.45e1311d.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.bcfcd587.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -234,10 +234,8 @@
     
     
     
-    
     <li class="md-nav__item md-nav__item--nested">
       
-        
         
         
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
@@ -742,10 +740,8 @@
     
     
     
-    
     <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
-        
         
         
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
@@ -886,15 +882,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#additional-libraries-ble" class="md-nav__link">
-    <span class="md-ellipsis">
-      Additional Libraries (BLE)
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#build-and-update" class="md-nav__link">
     <span class="md-ellipsis">
       Build and update
@@ -937,9 +924,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#gattlin" class="md-nav__link">
+  <a href="#libraries" class="md-nav__link">
     <span class="md-ellipsis">
-      Gattlin
+      Libraries
     </span>
   </a>
   
@@ -1090,10 +1077,8 @@
     
     
     
-    
     <li class="md-nav__item md-nav__item--nested">
       
-        
         
         
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
@@ -1425,15 +1410,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#additional-libraries-ble" class="md-nav__link">
-    <span class="md-ellipsis">
-      Additional Libraries (BLE)
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#build-and-update" class="md-nav__link">
     <span class="md-ellipsis">
       Build and update
@@ -1476,9 +1452,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#gattlin" class="md-nav__link">
+  <a href="#libraries" class="md-nav__link">
     <span class="md-ellipsis">
-      Gattlin
+      Libraries
     </span>
   </a>
   
@@ -1650,18 +1626,6 @@ apt install libegl1-mesa-dev
 # For some ARM boards, (RPi3 for example), you may need
 apt install gstreamer1.0-gtk3
 </code></pre></div>
-<h3 id="additional-libraries-ble">Additional Libraries (BLE)<a class="headerlink" href="#additional-libraries-ble" title="Permanent link">#</a></h3>
-<p>In order to support Bluetooth Low Energy (BLE) devices, a third party library, <a href="https://github.com/labapart/gattlib">gattlib</a> is required. This library is not included in most (any) distributions, <a href="https://github.com/stronnag/mwptools">mwp</a> includes  <a href="https://github.com/labapart/gattlib">gattlib</a> as a submodule.</p>
-<p>In theory, this should be transparent.</p>
-<p>If the build fails to build gattlib, then it can be recovered as follows:</p>
-<pre><code>$ ninja -C _build
-## fails here in gattlib submodule build
-
-# to recover / continue
-$ ninja -C _build/subprojects/gattlib/__CMake_build
-$ ninja -C _build
-</code></pre>
-<p>Then build normally. When built with <a href="https://github.com/labapart/gattlib">gattlib</a>, <a href="https://github.com/stronnag/mwptools">mwp</a> supports BLE devices in the same way as legacy BT devices.</p>
 <h3 id="build-and-update">Build and update<a class="headerlink" href="#build-and-update" title="Permanent link">#</a></h3>
 <pre><code>ninja -C _build
 ninja -C _build install
@@ -1675,7 +1639,16 @@ sudo ninja -C _build install
 <ul>
 <li>Arch Linux: <code>sudo usermod -aG uucp $USER</code></li>
 <li>Debian / Fedora (and derivatives): <code>sudo usermod -aG dialout $USER</code></li>
-<li>FreeBSD: <code>sudo pw group mod dialer -m $USER</code></li>
+<li>
+<p>All Linux with <code>systemd</code>: In you log in via <code>systemd</code>'s <code>loginctl</code>, then you can create a <code>udev</code> rule that does not rquire the user being a member of a particular group:</p>
+<pre><code>#less /etc/udev/rules.d/45-stm32.rules
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="5740", MODE="0660", TAG+="uaccess", ENV{ID_MM_DEVICE_IGNORE}="1", ENV{ID_MM_CANDIDATE}="0"
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="df11", MODE="0660", TAG+="uaccess"
+</code></pre>
+</li>
+<li>
+<p>FreeBSD: <code>sudo pw group mod dialer -m $USER</code></p>
+</li>
 <li>Windows/WSL: Not needed, no serial pass-through. Use the <a href="../mwp-in-Windows-11---WSL-G/#serial-device">ser2udp</a> bridge instead.</li>
 </ul>
 <h2 id="files-built-installed">Files built / installed<a class="headerlink" href="#files-built-installed" title="Permanent link">#</a></h2>
@@ -1730,8 +1703,11 @@ sudo ninja -C _build install
 </tr>
 </tbody>
 </table>
-<h3 id="gattlin">Gattlin<a class="headerlink" href="#gattlin" title="Permanent link">#</a></h3>
-<pre><code>$prefix/lib/mwp/lib/libgattlib.so
+<h3 id="libraries">Libraries<a class="headerlink" href="#libraries" title="Permanent link">#</a></h3>
+<pre><code>$prefix/lib/libmwpclib.so
+$prefix/lib/libmwpclib.a
+$prefix/lib/libmwpvlib.so
+$prefix/lib/libmwpclib.a
 </code></pre>
 <div class="admonition note">
 <p class="admonition-title">Notes:</p>
@@ -1958,7 +1934,7 @@ ninja install
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    2023-11-16
+    2024-04-17
   </span>
 
     
@@ -2009,10 +1985,10 @@ ninja install
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7c377c4.min.js"></script>
+      <script src="../assets/javascripts/bundle.1e8ae164.min.js"></script>
       
     
   </body>
