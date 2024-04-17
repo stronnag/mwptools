@@ -52,7 +52,7 @@ The icons along the top are:
 * "<" : Move to previous zone
 * ">" : Move to next zone
 * "-" : Delete current zone
-* Refresh : Refresh display / Start editing **new** zone
+* "🗘" : Refresh : Refresh display / Start editing **new** zone
 
 If there is no Geozone loaded, the editor is as shown at the "new zone" state: the "Shape" item is enabled and a note explains how to proceed. Note that to create a circular zone, the radius must be non-zero. If the "Shape" item is set to "Polygon", then no radius is required to proceed.
 

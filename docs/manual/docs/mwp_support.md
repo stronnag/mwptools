@@ -47,7 +47,7 @@ If your issue concerns telemetry, include a sample of data that causes the issue
 
 If you're having a problem playing a blackbox log (or other flight log), include the problematic log.
 
-Issues that do not meet these information requirements will be closed without explanation.
+Issues that do not meet these information requirements will be ignored / closed without explanation.
 
 ### Unsupported
 
