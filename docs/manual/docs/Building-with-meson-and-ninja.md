@@ -65,23 +65,6 @@ apt install libegl1-mesa-dev
 apt install gstreamer1.0-gtk3
 ```
 
-### Additional Libraries (BLE)
-
-In order to support Bluetooth Low Energy (BLE) devices, a third party library, [gattlib](https://github.com/labapart/gattlib) is required. This library is not included in most (any) distributions, {{ mwp }} includes  [gattlib](https://github.com/labapart/gattlib) as a submodule.
-
-In theory, this should be transparent.
-
-If the build fails to build gattlib, then it can be recovered as follows:
-
-    $ ninja -C _build
-    ## fails here in gattlib submodule build
-
-    # to recover / continue
-    $ ninja -C _build/subprojects/gattlib/__CMake_build
-    $ ninja -C _build
-
-Then build normally. When built with [gattlib](https://github.com/labapart/gattlib), {{ mwp }} supports BLE devices in the same way as legacy BT devices.
-
 ### Build and update
 
 	ninja -C _build
@@ -97,6 +80,12 @@ The user needs to have read / write permissions on the serial port in order to c
 
 * Arch Linux: `sudo usermod -aG uucp $USER`
 * Debian / Fedora (and derivatives): `sudo usermod -aG dialout $USER`
+* All Linux with `systemd`: In you log in via `systemd`'s `loginctl`, then you can create a `udev` rule that does not rquire the user being a member of a particular group:
+
+		#less /etc/udev/rules.d/45-stm32.rules
+		SUBSYSTEMS=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="5740", MODE="0660", TAG+="uaccess", ENV{ID_MM_DEVICE_IGNORE}="1", ENV{ID_MM_CANDIDATE}="0"
+		SUBSYSTEMS=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="df11", MODE="0660", TAG+="uaccess"
+
 * FreeBSD: `sudo pw group mod dialer -m $USER`
 * Windows/WSL: Not needed, no serial pass-through. Use the [ser2udp](mwp-in-Windows-11---WSL-G.md#serial-device) bridge instead.
 
@@ -117,9 +106,13 @@ The user needs to have read / write permissions on the serial port in order to c
 | `flashgo` | Tools to examine, download logs and erase from dataflash |
 | `bproxy` | Black maps tiles, for those covert operations |
 
-### Gattlin
+### Libraries
 
-    $prefix/lib/mwp/lib/libgattlib.so
+    $prefix/lib/libmwpclib.so
+	$prefix/lib/libmwpclib.a
+    $prefix/lib/libmwpvlib.so
+    $prefix/lib/libmwpclib.a
+
 
 !!! note "Notes:"
     <a name="note1">1.</a> This may either be the new Go executable or the legacy, less functional Ruby script.

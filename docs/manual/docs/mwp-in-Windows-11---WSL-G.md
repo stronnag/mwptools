@@ -4,7 +4,7 @@
 
 As a result of user interest in running {{ mwp }} on Windows 11 / WSL-G, here's an experiment to see if it's possible. By a Windows neophyte, so if I can install mwp on WSL, anyone can.
 
-There is also an excellent [you-tube video tutorial](https://www.youtube.com/watch?v=VvnBzQR7aE8) from Marc Hoffmann (in English and German).
+There is also an excellent, but sadly obsolete, [you-tube video tutorial](https://www.youtube.com/watch?v=VvnBzQR7aE8) from Marc Hoffmann (in English and German).
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/VvnBzQR7aE8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
@@ -45,7 +45,7 @@ Where `x.y.z` represents the build tag.
 
 For the initial installation, there is a unified / simplified install / build / install script: [Instructions](https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja/#easy-first-time-install-on-debian-and-ubuntu)
 
-This installs mwptools and blackbox-tools-inav to `$HOME/.local/bin`.
+This installs mwptools to `$HOME/.local/bin`.
 
 #### (c) Traditional build process (build and install from source)
 
@@ -67,7 +67,6 @@ Then build and install mwp and optionally the blackbox tools (as `mwptools/docs/
 For blackbox replay, install the [flightlog2x](https://github.com/stronnag/bbl2kml) tools; build from source in Linux/WSL or install the release binaries.
 
 Note that the normative build reference is the `INSTALL` file in the source tree.
-
 
 ## Running mwp
 
