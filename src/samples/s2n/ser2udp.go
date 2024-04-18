@@ -124,15 +124,6 @@ func main() {
 	}
 	defer conn.Close()
 
-	uconn := &UConn{conn, nil}
-
-	if remnam != "" {
-		if !strings.Contains(remnam, ":") {
-			remnam = fmt.Sprintf("%s%s", remnam, udpnam)
-		}
-		uconn.addr, err = net.ResolveUDPAddr("udp", remnam)
-	}
-
 	if verbose > 0 {
 		log.Printf("Listening on %s\n", udpnam)
 	}
@@ -141,6 +132,14 @@ func main() {
 	uc0 := make(chan SChan)
 	cc := make(chan os.Signal, 1)
 	signal.Notify(cc, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
+	uconn := &UConn{conn, nil}
+	if remnam != "" {
+		if !strings.Contains(remnam, ":") {
+			remnam = fmt.Sprintf("%s%s", remnam, udpnam)
+		}
+		uconn.addr, err = net.ResolveUDPAddr("udp", remnam)
+	}
 
 	go func() {
 		go read_UDP(uconn, uc0)
