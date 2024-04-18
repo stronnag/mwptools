@@ -1,12 +1,16 @@
 # ser2udp - simple serial to IP (UDP) bridge
 
-`ser2udp` is a simple serial to UDP bridge. It is intended to be used for accessing a serial USB flight controller using Windows 11 / WSLg and mwp; however there is almost nothing either Windows or mwp specific. It can be used as a generic bridge, for cases where the serial side "speaks" first.
+`ser2udp` is a simple serial to UDP bridge. It is intended to be used for accessing a serial USB flight controller using Windows 11 / WSLg and mwp; however there is almost nothing either Windows or mwp specific. It can be used as a generic bridge, for cases where the UDP side "speaks" first, unless `-remote` is set.
 
 ## Usage
 
 ```
 $ ser2udp --help
 Usage of ser2udp [options] device [:port]
+  -baudrate int
+    	set baud rate (default 115200)
+  -remote string
+    	remote name
   -verbose int
     	verbosity (0:none, 1:open/close, >1:I/O)
 ```

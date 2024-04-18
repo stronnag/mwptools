@@ -1,5 +1,5 @@
 EXE = ser2udp
-prefix ?= /usr/local
+prefix ?= $$HOME/.local
 
 all: $(EXE)
 

@@ -74,7 +74,7 @@ func read_UDP(uc *UConn, c0 chan SChan) {
 
 func main() {
 	var err error
-	var udpnam, devnam string
+	var udpnam, devnam, remnam string
 	serok := false
 
 	baudrate = 115200
@@ -86,6 +86,7 @@ func main() {
 
 	flag.IntVar(&verbose, "verbose", 0, "verbosity (0:none, 1:open/close, >1:I/O)")
 	flag.IntVar(&baudrate, "baudrate", baudrate, "set baud rate")
+	flag.StringVar(&remnam, "remote", remnam, "remote name")
 
 	flag.Parse()
 	rest := flag.Args()
@@ -124,6 +125,13 @@ func main() {
 	defer conn.Close()
 
 	uconn := &UConn{conn, nil}
+
+	if remnam != "" {
+		if !strings.Contains(remnam, ":") {
+			remnam = fmt.Sprintf("%s%s", remnam, udpnam)
+		}
+		uconn.addr, err = net.ResolveUDPAddr("udp", remnam)
+	}
 
 	if verbose > 0 {
 		log.Printf("Listening on %s\n", udpnam)
@@ -167,7 +175,12 @@ func main() {
 						} else {
 							if len(s.data) > 0 {
 								if verbose > 1 {
-									log.Printf("Write to udp %d: <%s>\n", len(s.data), string(s.data))
+									var sb strings.Builder
+									fmt.Fprintf(&sb, "Write to udp %d: <%s>", len(s.data), string(s.data))
+									if verbose > 2 {
+										fmt.Fprintf(&sb, " (<%+v>)", uconn.addr)
+									}
+									log.Printf("%s\n", sb.String())
 								}
 								uconn.conn.WriteTo(s.data, uconn.addr)
 							}
