@@ -185,11 +185,17 @@ Thus:
 * Create a shortcut anywhere on your PC or in `C:\Users\<username>\AppData\Roaming\Microsoft\Windows\Start Menu\Programs` to pin it to your Start Menu
 * Replace the shortcut symbol with the MWP icon [from here](https://github.com/stronnag/mwptools/wiki/images/mwp_icon.ico)
 
+### Using ser2udp with push telemetry only
+
+`ser2udp` expects that the UDP side (mwp, Linux/WSL) "speaks" first; this enables `ser2udp` to evince the remote UDP address to which data received from the serial side (Windows) is sent.
+
+If you are only receiving unsolicited telemetry on the serial / Windows side (e.g. CRSF, Smartport, LTM), then it is necessary to tell `ser2udp` the address of the remote, using the `-remote` option.
+
 ## Other packages for additional functionality.
 
-* To replay blackbox logs, you need
-    * [INAV blackbox tools](https://github.com/iNavFlight/blackbox-tools), mandatory
-    * [flightlog2x / bbl2kml](https://github.com/stronnag/bbl2kml). Provides a much better blackbox replayer than the default shipped with mwp (and you can generate really pretty Google Earth files from blackbox / opentx / bulletgcss logs).
+* To replay blackbox logs, you need (mandatory):
+    * [INAV blackbox tools](https://github.com/iNavFlight/blackbox-tools), and
+    * [flightlog2x / bbl2kml](https://github.com/stronnag/bbl2kml). Provides a much better blackbox replayer than the old ruby script shipped with mwp (and you can generate really pretty Google Earth files from blackbox / EdgeTX/OpenTX / bulletgcss logs).
 * Terrain Analysis
     * Gnuplot. Check the installer script that it's enabled.
 
