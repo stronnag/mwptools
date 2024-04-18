@@ -6,6 +6,7 @@
 
 `mwp-mavlink-traffic-sim` is a simulator for the  MAVLink TRAFFIC REPORT protocol. It behaves in a similar fashion.
 
+`sbs-player.rb` is a ruby script that replays CSV files in the SBS `dump1090` format.
 
 ## Building
 
@@ -68,6 +69,8 @@ Application Options:
 
 ## Sample usage
 
+### mwp-inav-radar-sim
+
 Start mwp:
 
 ```
@@ -86,6 +89,8 @@ Then start the simulator:
 $ mwp-inav-radar-sim -d udp://localhost:3000
 ```
 
+### mwp-mavlink-traffic-sim
+
 Similarly:
 
 ``` vala
@@ -102,3 +107,18 @@ Application Options:
   -c, --centre=lat,long     Centre position
   -m, --max-radar=256       number of radar slots
 ```
+
+### sbs-player.rb
+
+``` bash
+$ sbs-player.rb  --help
+Usage: sbs-player.rb [options] file
+    -p, --port PORT                  30003
+    -1, --once
+    -?, --help                       Show this message
+```
+
+The player for SBS format CSV files runs a server on `localhost`, port `30003` (unless changed).
+
+* Start the player `sbs-player.rb sbs-file.csv`
+* Start mwp as `mwp --radar-device sbs://` to use the server on `localhost:30003`.
