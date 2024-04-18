@@ -90,6 +90,7 @@ ls = false
 delta = 0.1
 svgf = nil
 pngf = nil
+decl = nil
 
 ARGV.options do |opt|
   opt.banner = "#{File.basename($0)} [options] [file]"
@@ -101,6 +102,7 @@ ARGV.options do |opt|
   opt.on('-t','--min-throttle=THROTTLE',Integer,'Min Throttle for comparison (1000)'){|o|minthrottle=o}
   opt.on('-s','--states=a,b,c', Array, 'Nav states to consider [all]'){|o|states=o ; allstates=false}
   opt.on('-d', '--delta=SECS', Float, "Down sample interval (default 0.1s)") {|o| delta = o}
+  opt.on('--declination=XX.X', Float, "Declination (implies --simulate-imu") {|o| decl = o}
   opt.on('-?', "--help", "Show this message") {puts opt.to_s; exit}
   begin
     opt.parse!
@@ -127,6 +129,10 @@ cmd << " --index #{idx}"
 cmd << " --merge-gps"
 cmd << " --unit-frame-time s"
 cmd << " --stdout"
+unless decl.nil?
+  cmd << " --simulate-imu --declination-dec #{decl}"
+end
+
 cmd << " " << bbox
 
 if outf.nil? && plotfile.nil?
@@ -156,6 +162,9 @@ IO.popen(cmd,'r') do |p|
     st = nil
     lt = 0
     ostr = %w/time(s) navstate gps_speed_ms gps_course attitude2 calc/.join(",")
+    if !decl.nil?
+      ostr << ",heading"
+    end
     if thr
       ostr << ",throttle"
     end
@@ -180,6 +189,9 @@ IO.popen(cmd,'r') do |p|
 	    cse = nil
           end
           ostr = [ts, c[:navstate].to_i, c[:gps_speed_ms].to_f, c[:gps_ground_course].to_i, mag1,cse].join(",")
+          if !decl.nil?
+            ostr << ",#{c[:heading].to_f}"
+          end
           if thr
             ostr << ",#{c[:rccommand3].to_i}"
           end
@@ -194,11 +206,20 @@ IO.popen(cmd,'r') do |p|
 end
 if plotfile
   fn = File.basename bbox
-  pltfile = DATA.read % {bbox: "#{fn} / ##{idx}", svgfile: svgf, pngfile: pngf}
+  pltfile = DATA.read % {bbox: "#{fn} / ##{idx}", svgfile: svgf}
+  fn=7
+  if !decl.nil?
+    pltfile.chomp!
+    pltfile << ", filename using 1:#{fn} t \"Mag\" w lines lt -1 lw 3  lc rgb \"#807fd0e0\"\n"
+    fn += 1
+  end
   if thr
     pltfile.chomp!
-    pltfile << ', filename using 1:7 t "Throttle" w lines lt -1 lw 3  lc rgb "#807fd0e0"'
+    pltfile << ", filename using 1:#{fn} t \"Throttle\" w lines lt -1 lw 3  lc rgb \"brown\"\n"
   end
+
+  pltfile << "set terminal pngcairo background rgb  'white' font 'Droid Sans,9' rounded\nset output \"#{pngf}\"\nreplot\n"
+
   File.open(".inav_gps_dirn.plt","w") {|plt| plt.puts pltfile}
   system "gnuplot -e 'filename=\"#{outf}\"' .inav_gps_dirn.plt"
   STDERR.puts "Graph in #{svgf}"
@@ -223,8 +244,4 @@ set datafile separator ","
 set terminal svg background rgb 'white' font "Droid Sans,9" rounded
 set output "%{svgfile}"
 
-plot filename using 1:3 t "GPS Speed" w lines lt -1 lw 2  lc rgb "red", filename using 1:4 t "GPS Course" w lines lt -1 lw 2  lc rgb "purple" , filename using 1:5 t "Heading" w lines lt -1 lw 2  lc rgb "green", filename using 1:6 t "Calc" w lines lt -1 lw 2 dt 2 lc rgb "orange"
-
-set terminal pngcairo background rgb 'white' font "Droid Sans,9" rounded
-set output "%{pngfile}"
-replot
+plot filename using 1:3 t "GPS Speed" w lines lt -1 lw 2  lc rgb "red", filename using 1:4 t "GPS Course" w lines lt -1 lw 2  lc rgb "purple" , filename using 1:5 t "Attitude2" w lines lt -1 lw 2  lc rgb "green", filename using 1:6 t "Calc" w lines lt -1 lw 2 dt 2 lc rgb "orange"
