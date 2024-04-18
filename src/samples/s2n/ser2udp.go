@@ -139,6 +139,9 @@ func main() {
 			remnam = fmt.Sprintf("%s%s", remnam, udpnam)
 		}
 		uconn.addr, err = net.ResolveUDPAddr("udp", remnam)
+		if verbose > 1 {
+			log.Printf("Using remote %+v\n", uconn.addr)
+		}
 	}
 
 	go func() {

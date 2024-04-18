@@ -189,7 +189,7 @@ Thus:
 
 `ser2udp` expects that the UDP side (mwp, Linux/WSL) "speaks" first; this enables `ser2udp` to evince the remote UDP address to which data received from the serial side (Windows) is sent.
 
-If you are only receiving unsolicited telemetry on the serial / Windows side (e.g. CRSF, Smartport, LTM), then it is necessary to tell `ser2udp` the address of the remote, using the `-remote` option.
+If you are only receiving unsolicited telemetry on the serial / Windows side (e.g. CRSF, Smartport, LTM), then it is necessary to tell `ser2udp` the address of the remote, using the `-remote` option. In this case, you can set the device name in mwp to `udp://:17071` (for port 17071) to listen unconditionally.
 
 ## Other packages for additional functionality.
 
@@ -209,6 +209,8 @@ You see in the console:
 ```
 
 This is a known WSL "feature". See the [Official WSL Issue](https://github.com/microsoft/WSL/issues/10947). Most likely, adding `export $(dbus-launch)` to `~/.bashrc` will fix it.
+
+Note also that enabling `systemd` in WSL may also break `dconf` (or not).
 
 ## Summary
 
