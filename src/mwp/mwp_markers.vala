@@ -269,17 +269,41 @@ public class MWPMarkers : GLib.Object {
                     var _r = rp.rplot;
                     var _ta = rp.extras[Extra.Q_0] as Actor;
                     var _tx = _ta.last_child as Clutter.Text;
-                    _tx.text = "  %s / %s \n  %s %s \n  %.0f %s %0.f %s %.0f°".printf(
+					string ga_alt;
+					string ga_speed;
+					if((_r.source & RadarSource.M_ADSB) != 0) {
+						ga_alt = Units.ga_alt(_r.altitude);
+						ga_speed = Units.ga_speed(_r.speed);
+					} else {
+						ga_alt = "%.0f %s".printf(Units.distance(_r.altitude), Units.distance_units());
+						ga_speed = "%.0f %s".printf(Units.speed(_r.speed), Units.speed_units());
+					}
+
+					_tx.text = "  %s / %s \n  %s %s \n  %s %s %.0f°".printf(
                         _r.name, RadarView.status[_r.state],
                         PosFormat.lat(_r.latitude, MWP.conf.dms),
                         PosFormat.lon(_r.longitude, MWP.conf.dms),
-                        Units.distance(_r.altitude), Units.distance_units(),
-                        Units.speed(_r.speed), Units.speed_units(),
-                        _r.heading);
+						ga_alt, ga_speed, _r.heading);
                     _tx.set_position(ce.x, ce.y);
                     _v.add_child (_ta);
                     return true; /**/
                 });
+
+			/*
+			  	if((r.source & RadarSource.M_ADSB) != 0) {
+			ga_alt = Units.ga_alt(r.altitude);
+			ga_speed = Units.ga_speed(r.speed);
+			if (idm != TOTHEMOON) {
+				ga_range = Units.ga_range(idm);
+			}
+		} else {
+			ga_alt = "%.0f %s".printf(Units.distance(r.altitude), Units.distance_units());
+			ga_speed = "%.0f %s".printf(Units.speed(r.speed), Units.speed_units());
+			if (idm != TOTHEMOON) {
+				ga_range = "%.0f %s".printf(Units.distance(idm), Units.distance_units());
+			}
+		}
+			*/
 
             rp.leave_event.connect((ce) => {
                     var _ta = rp.extras[Extra.Q_0] as Clutter.Actor;
