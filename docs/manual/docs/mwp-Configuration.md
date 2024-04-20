@@ -231,6 +231,9 @@ This *may* not be installed by default, but should be available via the OS packa
 | flash-warn | Flash storage warning | If a dataflash is configured for black box, and this key is non-zero, a warning in generated if the data flash is greater than "flash-warn" percent full. | 0 |
 | flite-voice-file | Default flite voice file | Default flite voice file (full path, *.flitevox), see flite documentation) | "" |
 | forward | Types of message to forward | Types of message to forward (none, LTM, minLTM, minMAV, all) | "minLTM" |
+| ga-alt | Units for GA Altiude | 0=m, 1=ft, 2=FL | 0 |
+| ga-range | Units for GA Range | 0=m, 1=km, 2=miles, 3=nautical miles | 0 |
+| ga-speed | Units for GA Speed | 0=m/s, 1=kph, 2=mph, 3=knots | 0 |
 | geouser | User account on geonames.org | A user account to query geonames.org for blackbox log timezone info. A default account of 'mwptools' is provided; however users are requested to create their own account. | "mwptools" |
 | gpsd-host | gpsd provider | Provider for GCS location via gpsd. Default is "localhost", can be set to other host name or IP address. Setting blank ("") disables. | "localhost" |
 | gpsintvl | gps sanity time (m/s) | gps sanity time (m/s), check for current fix | 2000 |

@@ -71,6 +71,9 @@ The following `dconf` setting affect the radar function:
 | `radar-list-max-altitude` | Maximum altitude (metres) to show targets in the radar list view; targets higher than this value will show only in the map view. Setting to 0 disables. Note that ADS-B altitudes are AMSL (or geoid) and SBS-1 altitudes are "Flight Level" (standard atmosphere). |
 | `radar-alert-altitude` | Target altitude (metres) below which ADS-B / SBS-1 proximity alerts may be generated. Requires that 'radar-alert-range' is also set (none zero). Setting to 0 disables. Note that the above altitude datum. |
 | `radar-alert-range` | Target range (metres) below which ADS-B / SBS-1 proximity alerts may be generated. Requires that 'radar-alert-altitude' is also set (none zero). Setting to 0 disables. |
+| `ga-alt` | Units for GA Altiude, enumerated as 0=m, 1=ft, 2=FL |
+| `ga-range` | Units for GA Range, enumerated as 0=m, 1=km, 2=miles, 3=nautical miles |
+| `ga-speed` | Units for GA Speed, enumerated as  0=m/s, 1=kph, 2=mph, 3=knots |
 
 Note that proximity alerts require that both the `radar-alert-altitude` and `radar-alert-range` values are set, and that there is a planned or actual home location.
 
