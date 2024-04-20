@@ -656,6 +656,24 @@
       <description>Margin(m) for LOS Analysis</description>
     </key>
 
+    <key name="ga-alt" type="i">
+      <default>0</default>
+      <summary>Units for GA Altiude</summary>
+      <description>0=m, 1=ft, 2=FL</description>
+    </key>
+
+    <key name="ga-range" type="i">
+      <default>0</default>
+      <summary>Units for GA Range</summary>
+      <description>0=m, 1=km, 2=miles, 3=nautical miles</description>
+    </key>
+
+    <key name="ga-speed" type="i">
+      <default>0</default>
+      <summary>Units for GA Speed</summary>
+      <description>0=m/s, 1=kph, 2=mph, 3=knots</description>
+    </key>
+
     <key type="b" name="bluez-disco">
       <default>false</default>
       <summary>Use Bluetooth discovery</summary>

@@ -56,9 +56,97 @@ public class Units :  GLib.Object {
         return d;
     }
 
-    public static double va_speed (double d) {
+	/*
+      <summary>Units for GA Speed</summary>
+      <description>0=m/s, 1=kph, 2=mph, 3=knots</description>
+	*/
+
+	public static string ga_speed(double d) {
+		string du = "m/s";
+
+        switch(MWP.conf.ga_speed) {
+		case 0:
+			break;
+		case 2:
+			d *= 2.2369363;
+			du = "mph";
+			break;
+		case 3:
+			d *= 1.9438445;
+			du = "kt";
+			break;
+		default :
+			du = "kph";
+			d *= 3.6;
+			break;
+
+        }
+		return "%.0f %s".printf(d, du);
+	}
+
+	/*
+      <summary>Units for GA Range</summary>
+      <description>0=m, 1=km, 2=miles, 3=nautical miles</description>
+	*/
+
+	public static string ga_range(double d) {
+		string du = "m";
+		string fmt = "%.0f %s";
+
+        switch(MWP.conf.ga_range) {
+		case 0:
+			break;
+		case 2:
+			d /= 1609.344;
+			du = "mi";
+			break;
+		case 3:
+			d /= 1852.0;
+			du = "nm";
+			break;
+		default:
+			d /= 1000.0;
+			du = "km";
+			break;
+		}
+
+		if (d < 1.0) {
+			fmt = "%.3f %s";
+		} else if (d < 10.0) {
+			fmt = "%.1f %s";
+		}
+		return fmt.printf(d,du);
+	}
+
+	/*
+      <summary>Units for GA Altiude</summary>
+      <description>0=m, 1=ft, 2=FL</description>
+	*/
+
+	public static string ga_alt(double d) {
+		string du = "m";
+		string fmt = "%.0f %s";
+
+        switch(MWP.conf.ga_alt) {
+		case 1:
+			d *= 3.2808399;
+			du = "ft";
+			break;
+		case 2:
+			d *= 0.032808399;
+			du = "";
+			fmt="FL%.0f%s";
+			break;
+		default:
+			du = "m";
+			break;
+		}
+		return fmt.printf(d,du);
+	}
+
+	public static double va_speed (double d) {
         if (MWP.conf.p_speed > 1)
-                d *= 3.2808399; // ft/sec
+			d *= 3.2808399; // ft/sec
         return d;
     }
 

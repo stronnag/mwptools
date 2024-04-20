@@ -2947,6 +2947,10 @@ public class MWP : Gtk.Application {
 
         if(llstr != null) {
 			LLparse.llparse(llstr, ref clat, ref clon, ref zm);
+			if(chome) {
+                FakeHome.usedby |= FakeHome.USERS.Editor;
+				ls.set_fake_home(clat, clon);
+			}
 		}
 
         map_centre_on(clat, clon);

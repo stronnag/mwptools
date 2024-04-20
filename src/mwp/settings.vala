@@ -109,6 +109,10 @@ public class MWPSettings : GLib.Object {
     public double maxdive {get; set; default=0;}
     public uint max_wps { get; set; default=60; }
 
+    public int ga_speed {get; set; default=0;}
+    public int ga_alt {get; set; default=0;}
+    public int ga_range {get; set; default=0;}
+
     public uint max_radar_altitude {get; set; default=0;}
     public uint radar_alert_altitude {get; set; default=0;}
     public uint radar_alert_range {get; set; default=0;}
@@ -118,6 +122,7 @@ public class MWPSettings : GLib.Object {
 	public int los_margin {get; set; default=0;}
 	public bool bluez_disco {get; set; default=false;}
 	public bool autoload_geozones {get; set; default=true;}
+
 
     public signal void settings_update (string s);
 
@@ -232,6 +237,22 @@ public class MWPSettings : GLib.Object {
             if(p_speed > 3)
                 p_distance = 0;
         }
+
+        if(s == null || s == "ga-range") {
+            ga_range = settings.get_int("ga-range");
+        }
+
+        if(s == null || s == "ga-speed") {
+            ga_speed = settings.get_int("ga-speed");
+        }
+
+        if(s == null || s == "ga-alt") {
+            ga_alt = settings.get_int("ga-alt");
+        }
+
+		if(s == null || s == "los-margin") {
+            los_margin = settings.get_int("los-margin");
+		}
 
         if(s == null || s == "mavph")
             mavph = settings.get_string ("mavph");
@@ -413,8 +434,6 @@ public class MWPSettings : GLib.Object {
 
 		if(s == null || s == "show-sticks")
             show_sticks = settings.get_enum("show-sticks");
-		if(s == null || s == "los-margin")
-            los_margin = settings.get_int("los-margin");
         if(s == null || s == "bluez-disco")
             bluez_disco = settings.get_boolean ("bluez-disco");
         if(s == null || s == "autoload-geozones")

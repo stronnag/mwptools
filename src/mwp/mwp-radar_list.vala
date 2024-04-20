@@ -56,7 +56,7 @@ public class RadarView : Object {
         SBS = 5
     }
 
-	const uint TOTHEMOON = 0xfffffff;
+	const double TOTHEMOON = -9999.0;
 
 	public static string[] status = {"Undefined", "Armed", "Hidden", "Stale", "ADS-B", "SBS"};
     public signal void vis_change(bool hidden);
@@ -232,16 +232,20 @@ public class RadarView : Object {
 
 	public void update (ref unowned RadarPlot r, bool verbose = false) {
 		var dt = new DateTime.now_local ();
-		uint idm = TOTHEMOON;
+		double idm = TOTHEMOON;
 		uint cse =0;
 		uint8 htype;
 		double hlat, hlon;
 		var alert = r.alert;
+		string ga_range;
+		string ga_bearing;
+		string ga_alt;
+		string ga_speed;
 
 		if(MWP.any_home(out htype, out hlat, out hlon)) {
 			double c,d;
 			Geo.csedist(hlat, hlon, r.latitude, r.longitude, out d, out c);
-			idm = (uint)(d*1852); // nm to m
+			idm = d*1852.0; // nm to m
 			cse = (uint)c;
 			if((r.source & RadarSource.M_ADSB) != 0) {
 				if(MWP.conf.radar_alert_altitude > 0 && MWP.conf.radar_alert_range > 0 &&
@@ -278,39 +282,60 @@ public class RadarView : Object {
         if(r.state >= RadarView.status.length)
             r.state = Status.UNDEF;
         var stsstr = "%s / %u".printf(RadarView.status[r.state], r.lq);
+		ga_range = "";
+		if (idm == TOTHEMOON) {
+			ga_bearing = "";
+		} else {
+			ga_bearing = "%u°".printf(cse);
+		}
 
-        listmodel.set (iter,
+		if((r.source & RadarSource.M_ADSB) != 0) {
+			ga_alt = Units.ga_alt(r.altitude);
+			ga_speed = Units.ga_speed(r.speed);
+			if (idm != TOTHEMOON) {
+				ga_range = Units.ga_range(idm);
+			}
+		} else {
+			ga_alt = "%.0f %s".printf(Units.distance(r.altitude), Units.distance_units());
+			ga_speed = "%.0f %s".printf(Units.speed(r.speed), Units.speed_units());
+			if (idm != TOTHEMOON) {
+				ga_range = "%.0f %s".printf(Units.distance(idm), Units.distance_units());
+			}
+		}
+
+
+		listmodel.set (iter,
                        Column.SID, source_id(r.source),
                        Column.NAME,r.name,
-                       Column.LAT, r.latitude,
-                       Column.LON, r.longitude,
-                       Column.ALT, "%.0f %s".printf(Units.distance(r.altitude), Units.distance_units()),
+                       Column.LAT, PosFormat.lat(r.latitude, MWP.conf.dms),
+                       Column.LON, PosFormat.lon(r.longitude, MWP.conf.dms),
+                       Column.ALT, ga_alt,
                        Column.COURSE, "%d °".printf(r.heading),
-                       Column.SPEED, "%.0f %s".printf(Units.speed(r.speed), Units.speed_units()),
+                       Column.SPEED, ga_speed,
                        Column.STATUS, stsstr);
 
 		if(r.state == Status.ARMED || r.state == Status.ADSB || r.state == Status.SBS) {
 			listmodel.set (iter, Column.LAST, dt.format("%T"));
         }
-
-		listmodel.set (iter, Column.RANGE, idm, Column.BEARING, cse, Column.ALERT, alert);
+		listmodel.set (iter, Column.RANGE, ga_range,
+					   Column.BEARING, ga_bearing,
+					   Column.ALERT, alert);
 		show_number();
     }
 
     private void setup_treeview (Gtk.TreeView view) {
-
         listmodel = new Gtk.ListStore (Column.NO_COLS,
                                        typeof (string),
                                        typeof (string),
-                                       typeof (double),
-                                       typeof (double),
                                        typeof (string),
                                        typeof (string),
                                        typeof (string),
                                        typeof (string),
                                        typeof (string),
-                                       typeof (uint),
-                                       typeof (uint),
+                                       typeof (string),
+                                       typeof (string),
+                                       typeof (string),
+                                       typeof (string),
                                        typeof (uint),
 									   typeof (uint));
 
@@ -341,104 +366,31 @@ public class RadarView : Object {
 			});
 
 		cell = new Gtk.CellRendererText ();
-        view.insert_column_with_attributes (-1, "Latitude",
-                                            cell, "text", Column.LAT);
-        col = view.get_column(Column.LAT);
-        col.set_cell_data_func(cell, (col,_cell, model, iter) => {
-                Value v;
-                model.get_value(iter, Column.LAT, out v);
-                double val = (double)v;
-                string s = PosFormat.lat(val, MWP.conf.dms);
-				set_cell_text_bg(model, iter, _cell, s);
-            });
-
+        view.insert_column_with_attributes (-1, "Latitude", cell, "text", Column.LAT);
 
         cell = new Gtk.CellRendererText ();
         view.insert_column_with_attributes (-1, "Longitude", cell, "text", Column.LON);
-        col = view.get_column(Column.LON);
-        col.set_cell_data_func(cell, (col,_cell,model,iter) => {
-                Value v;
-                model.get_value(iter, Column.LON, out v);
-                double val = (double)v;
-                string s = PosFormat.lon(val,MWP.conf.dms);
-				set_cell_text_bg(model, iter, _cell, s);
-            });
 
 		cell = new Gtk.CellRendererText ();
         view.insert_column_with_attributes (-1, "Altitude", cell, "text", Column.ALT);
-        col = view.get_column(Column.ALT);
-        col.set_cell_data_func(cell, (col,_cell, model, iter) => {
-                Value v;
-                model.get_value(iter, Column.ALT, out v);
-				set_cell_text_bg(model, iter, _cell, (string)v);
-			});
-
 
         cell = new Gtk.CellRendererText ();
 		view.insert_column_with_attributes (-1, "Course", cell, "text", Column.COURSE);
-        col = view.get_column(Column.COURSE);
-        col.set_cell_data_func(cell, (col,_cell, model, iter) => {
-                Value v;
-                model.get_value(iter, Column.COURSE, out v);
-				set_cell_text_bg(model, iter, _cell, (string)v);
-			});
 
         cell = new Gtk.CellRendererText ();
         view.insert_column_with_attributes (-1, "Speed", cell, "text", Column.SPEED);
-        col = view.get_column(Column.SPEED);
-        col.set_cell_data_func(cell, (col,_cell, model, iter) => {
-                Value v;
-                model.get_value(iter, Column.SPEED, out v);
-				set_cell_text_bg(model, iter, _cell, (string)v);
-			});
 
         cell = new Gtk.CellRendererText ();
 		view.insert_column_with_attributes (-1, "Status", cell, "text", Column.STATUS);
-        col = view.get_column(Column.STATUS);
-        col.set_cell_data_func(cell, (col,_cell, model, iter) => {
-                Value v;
-                model.get_value(iter, Column.STATUS, out v);
-				set_cell_text_bg(model, iter, _cell, (string)v);
-			});
 
         cell = new Gtk.CellRendererText ();
         view.insert_column_with_attributes (-1, "Last", cell, "text", Column.LAST);
-        col = view.get_column(Column.LAST);
-        col.set_cell_data_func(cell, (col,_cell, model, iter) => {
-                Value v;
-                model.get_value(iter, Column.LAST, out v);
-				set_cell_text_bg(model, iter, _cell, (string)v);
-			});
 
         cell = new Gtk.CellRendererText ();
 		view.insert_column_with_attributes (-1, "Range", cell, "text", Column.RANGE);
-        col = view.get_column(Column.RANGE);
-        col.set_cell_data_func(cell, (col, _cell, model, iter) => {
-                Value v;
-                model.get_value(iter, Column.RANGE, out v);
-                uint val = (uint)v;
-				string s = "";
-				if (val != TOTHEMOON) {
-					s = "%.0f %s".printf(Units.distance(val), Units.distance_units());
-				}
-				set_cell_text_bg(model, iter, _cell, s);
-            });
 
         cell = new Gtk.CellRendererText ();
 		view.insert_column_with_attributes (-1, "Bearing", cell, "text", Column.BEARING);
-        col = view.get_column(Column.BEARING);
-        col.set_cell_data_func(cell, (col, _cell, model, iter) => {
-                Value v;
-                model.get_value(iter, Column.RANGE, out v);
-                uint val = (uint)v;
-				string s = "";
-				if (val != TOTHEMOON) {
-					model.get_value(iter, Column.BEARING, out v);
-					val = (uint)v;
-					s = "%u°".printf(val);
-				}
-				set_cell_text_bg(model, iter, _cell, s);
-            });
 
         int [] widths = {2,12, 16, 16, 10, 10, 10, 12, 12, 12, 6, 6};
         for (int j = Column.SID; j <= Column.BEARING; j++) {
