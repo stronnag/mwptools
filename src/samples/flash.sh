@@ -58,6 +58,7 @@ BIN=
 RM=
 FERASE=
 SWITCH=
+CLIBOOT=
 
 for P
 do
@@ -70,6 +71,7 @@ do
     erase) FERASE=1 ;;
     noerase) FERASE= ;;
     [123456789]*) SPEED=$P ;;
+    forcecli) CLIBOOT=1 ;;
   esac
 done
 
@@ -101,13 +103,19 @@ fi
 if [ -z "$RESCUE" ]
 then
   stty -F $DEV0 raw speed $SPEED -crtscts cs8 -parenb -cstopb -ixon || { echo "stty failed to set speed, doomed" ; exit 1 ; }
-  echo -n 'R' >$DEV0
-  sleep 2
-  if [ $SPEED -ne 115200 ]
-  then
-    SPEED=115200
-    stty -F $DEV0 raw speed $SPEED -crtscts cs8 -parenb -cstopb -ixon
+  if [ -z $CLIBOOT ] ; then
+    echo -n 'R' >$DEV0
+  else
+    echo -n "#" >$DEV0
+    sleep 1
+    echo -e "\n\ndfu\n" >$DEV0
   fi
+  sleep 2
+  #if [ $SPEED -ne 115200 ]
+  #then
+  #  SPEED=115200
+  #  stty -F $DEV0 raw speed $SPEED -crtscts cs8 -parenb -cstopb -ixon
+  #fi
 fi
 
 if [ -n "$HEX" ]
