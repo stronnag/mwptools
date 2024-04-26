@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/mwp_icon.ico">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.17">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.17">
     
     
       
@@ -1179,7 +1179,7 @@
         
   
   <span class="md-ellipsis">
-    Troubleshooting and Support
+    Help and Support
   </span>
   
 
@@ -1419,15 +1419,15 @@
 <p><img alt="main" src="../images/main-window.png" width="100%" /></p>
 <p>The <a href="https://github.com/stronnag/mwptools">mwp</a> main window and the main user interface elements are:</p>
 <ol>
-<li><a href="#menu-bar">Menu bar</a>. The menu options are described later.</li>
-<li><a href="#map-and-mission-settings">Map and Mission</a> settings</li>
-<li><a href="#communications-and-telemetry-settings">Communications and telemetry settings</a></li>
-<li><a href="#map-area">Map window</a></li>
-<li><a href="#dock-bar">Dock Bar</a></li>
-<li><a href="#docklets">Dock Items (Docklets)</a></li>
-<li><a href="#location">Mouse location</a> (user preference units, cursor or map centre location)</li>
-<li><a href="#fc-Information">Flight controller</a> information</li>
-<li><a href="#sensors-and-flight-status">Sensor status and flight timer</a></li>
+<li><a href="#menu-bar-1">Menu bar</a>. The menu options are described later.</li>
+<li><a href="#map-and-mission-settings-2">Map and Mission</a> settings</li>
+<li><a href="#communications-and-telemetry-settings-3">Communications and telemetry settings</a></li>
+<li><a href="#map-area-4">Map window</a></li>
+<li><a href="#dock-bar-5">Dock Bar</a></li>
+<li><a href="#docklets-6">Dock Items (Docklets)</a></li>
+<li><a href="#location-7">Mouse location</a> (user preference units, cursor or map centre location)</li>
+<li><a href="#fc-information-8">Flight controller</a> information</li>
+<li><a href="#sensors-and-flight-status-9">Sensor status and flight timer</a></li>
 </ol>
 <p>In the sections that follow, there will be a brief summary of each part; more detail will then provided in subsequent sections.</p>
 <h2 id="menu-bar-1">Menu Bar (1)<a class="headerlink" href="#menu-bar-1" title="Permanent link">#</a></h2>
@@ -1447,7 +1447,7 @@
 </tr>
 <tr>
 <td>Append Mission file</td>
-<td><a href="../inav-4.0-multi-missions/#apppend-mission-file">Appends a mission</a> to the current mission set (creates a multi-mission element)</td>
+<td><a href="../inav-4.0-multi-missions/#append-mission-file">Appends a mission</a> to the current mission set (creates a multi-mission element)</td>
 </tr>
 <tr>
 <td>Save Mission</td>
@@ -1689,7 +1689,7 @@
 </tbody>
 </table>
 <h2 id="map-and-mission-settings-2">Map and Mission Settings (2)<a class="headerlink" href="#map-and-mission-settings-2" title="Permanent link">#</a></h2>
-<p>A number of different map provides are available. <a href="https://github.com/stronnag/mwptools">mwp</a> offers the mapping library (<code>libchamplain</code>) defaults, Bing Maps (Bing Proxy) using a bespoke <a href="https://github.com/stronnag/mwptools">mwp</a> API key, and <a href="../mwp-Configuration/#sources-json">user defined options</a>, for example <a href="../Black-Ops/">anonymous maps</a>.</p>
+<p>A number of different map provides are available. <a href="https://github.com/stronnag/mwptools">mwp</a> offers the mapping library (<code>libchamplain</code>) defaults, Bing Maps (Bing Proxy) using a bespoke <a href="https://github.com/stronnag/mwptools">mwp</a> API key, and <a href="../mwp-Configuration/#sourcesjson">user defined options</a>, for example <a href="../Black-Ops/">anonymous maps</a>.</p>
 <p>The zoom level may be selected from the control here, or by zooming the map with the mouse wheel.</p>
 <p>The <strong>+Edit WPs</strong> button enables mission edit mode (click on the map to create a WP, drag to move, right mouse button for properties). Graphical WP editing may be augmented by the table orientated <a href="../mission-editor/">mission table view</a>, which allows additional control (altitude, speed, special functions, for example <a href="../Fly-By-Home-waypoints-%28inav-4-new-feature%29/">fly-by-home</a> waypoints).</p>
 <p>The "Active Mission" drop down supports <a href="https://github.com/iNavFlight/inav">INAV</a> 4.0+ <a href="../inav-4.0-multi-missions/">multi-mission</a>. There is also a <strong>multi-mission manager</strong> under the <strong>Edit</strong> menu.</p>
@@ -1707,7 +1707,7 @@
 <p>The map API used my <a href="https://github.com/stronnag/mwptools">mwp</a> requires OpenGL / 3D accelerated graphics. Performance with software rendering may disappointing and / or CPU intensive.</p>
 </div>
 <h2 id="dock-bar-5">Dock Bar (5)<a class="headerlink" href="#dock-bar-5" title="Permanent link">#</a></h2>
-<p>The <strong>Dock Bar</strong> contains essentially minimised <a href="#docklets"><strong>Docklets</strong></a>, selected from the <strong>View</strong> menu. In the illustration, these are the <strong>Vario</strong> view, <strong>Telemetry</strong> statistics, and <strong>Mission Editor</strong>. Hovering the mouse over the icon will reveal its function:</p>
+<p>The <strong>Dock Bar</strong> contains essentially minimised <a href="#docklets-6"><strong>Docklets</strong></a>, selected from the <strong>View</strong> menu. In the illustration, these are the <strong>Vario</strong> view, <strong>Telemetry</strong> statistics, and <strong>Mission Editor</strong>. Hovering the mouse over the icon will reveal its function:</p>
 <p><img alt="dockfunc" src="../images/dockavail.png" width="20%" /></p>
 <h2 id="docklets-6">Docklets (6)<a class="headerlink" href="#docklets-6" title="Permanent link">#</a></h2>
 <p><strong>Docklets</strong> are display items that can be docked, iconised, hidden or displayed in floating windows. See <a href="../dock/">Dock Management</a>. In the <strong>main window screen shot</strong> (left to right, top to bottom) we have:</p>
@@ -1724,10 +1724,15 @@
 <p>Displays the firmware, version and build with API information, profile and flight mode.</p>
 <h2 id="sensors-and-flight-status-9">Sensors and flight status (9)<a class="headerlink" href="#sensors-and-flight-status-9" title="Permanent link">#</a></h2>
 <ul>
-<li>Follow : <a href="../mwp-Configuration/#dconf-gsettings">user setting</a> <code>auto-follow</code>. whether the map always displays the aircraft icon (requires GPS).</li>
-<li>In View : Scrolls the map to keep the aircraft in view; otherwise the map is centred on the aircraft (requires GPS).</li>
-<li>Logger : Generate mwp logs (JSON format).</li>
-<li>Audio : <a href="../mwp-Configuration/#dconf-gsettings">user setting</a> <code>audio-on-arm</code>. Whether to "speak" status information.</li>
+<li><strong>Follow</strong> : <a href="../mwp-Configuration/#dconf-gsettings">user setting</a> <code>auto-follow</code>. whether the map always displays the aircraft icon and tracks (requires GPS).</li>
+<li><strong>In View</strong> : Scrolls the map to keep the aircraft in view. The behaviour is defined by the
+<a href="../mwp-Configuration/#dconf-gsettings">user setting</a> <code>use-legacy-centre-on</code><ul>
+<li><code>use-legacy-centre-on</code> = <code>false</code> (default): The map is only panned when the vehicle would otherwise be off-screen.</li>
+<li><code>use-legacy-centre-on</code> = <code>true</code> : The vehicle is always centre of the screen and the map pans as required.</li>
+</ul>
+</li>
+<li><strong>Logger</strong> : Generate mwp logs (JSON format).</li>
+<li><strong>Audio</strong> : <a href="../mwp-Configuration/#dconf-gsettings">user setting</a> <code>audio-on-arm</code>. Whether to "speak" status information.</li>
 </ul>
 <p>The green / red bars show gyro / acc / baro / mag / gps / sonar sensor status. If a required sensor fails, a map annotation will be displayed, together with an audible alarm.</p>
 <p><img alt="sensorfail" src="../images/sensorfail.png" width="40% " /></p>
@@ -1738,27 +1743,6 @@
 
 
 
-  
-    
-  
-  
-
-
-  <aside class="md-source-file">
-    
-      
-  <span class="md-source-file__fact">
-    <span class="md-icon" title="Last update">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
-    </span>
-    2023-08-12
-  </span>
-
-    
-    
-    
-    
-  </aside>
 
 
 

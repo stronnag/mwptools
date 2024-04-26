@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/mwp_icon.ico">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.17">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.17">
     
     
       
@@ -1260,7 +1260,7 @@
         
   
   <span class="md-ellipsis">
-    Troubleshooting and Support
+    Help and Support
   </span>
   
 
@@ -1583,7 +1583,7 @@
 <p>Otherwise, if you're using a different (not Debian based) distribution, just curious about building mwptools, you want to explore other tools and scripts in the repository or you're using a different architecture (ia32, Arm7, aarch64, riscV, ppc etc.), then you can build from source.</p>
 <p>The <strong>mwptools</strong> suite is built using the <a href="https://mesonbuild.com/SimpleStart.html">meson</a> and <a href="https://ninja-build.org/">ninja</a> toolchain. For most users these will be automatically provided by a <code>build-essentials</code> type of package transparently to the user.</p>
 <p>Prior to late May 2021, the build system used a convoluted <code>Makefile</code>.</p>
-<p>For Debian and derivatives there is a <a href="#easy-first-time-install-on-debian-and-ubuntu">"one stop" installation script</a>, as well as a x86_64 "Release" <code>.deb</code> archive.</p>
+<p>For Debian and derivatives there is a <a href="#easy-first-time-install-on-debian-and-derivatives">"one stop" installation script</a>, as well as a x86_64 "Release" <code>.deb</code> archive.</p>
 <h2 id="rationale">Rationale<a class="headerlink" href="#rationale" title="Permanent link">#</a></h2>
 <p>In its early days, <code>make</code> was a suitable build tool. As <strong>mwptools</strong> has gained in features and functionality, this has become un-maintainable.
 The migration to <code>meson</code> and <code>ninja</code> solves this problem and allows the project structure to be rationalised.</p>
@@ -1649,7 +1649,7 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="df11", MODE="0660
 <li>
 <p>FreeBSD: <code>sudo pw group mod dialer -m $USER</code></p>
 </li>
-<li>Windows/WSL: Not needed, no serial pass-through. Use the <a href="../mwp-in-Windows-11---WSL-G/#serial-device">ser2udp</a> bridge instead.</li>
+<li>Windows/WSL: Not needed, no serial pass-through. Use the <a href="../mwp-in-Windows-11---WSL-G/#serial-devices">ser2udp</a> bridge instead.</li>
 </ul>
 <h2 id="files-built-installed">Files built / installed<a class="headerlink" href="#files-built-installed" title="Permanent link">#</a></h2>
 <h3 id="default">Default<a class="headerlink" href="#default" title="Permanent link">#</a></h3>
@@ -1921,27 +1921,6 @@ ninja install
 
 
 
-  
-    
-  
-  
-
-
-  <aside class="md-source-file">
-    
-      
-  <span class="md-source-file__fact">
-    <span class="md-icon" title="Last update">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
-    </span>
-    2024-04-17
-  </span>
-
-    
-    
-    
-    
-  </aside>
 
 
 
