@@ -173,6 +173,12 @@
             </child>
             <child>
               <object class="GtkShortcutsShortcut">
+                <property name="accelerator">&lt;ctrl&gt;m</property>
+                <property name="title" translatable="yes">Toggle "In View" / "Centre On" behaviour</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkShortcutsShortcut">
                 <property name="accelerator">&lt;ctrl&gt;s</property>
                 <property name="title" translatable="yes">Dump Serial Statistics</property>
               </object>

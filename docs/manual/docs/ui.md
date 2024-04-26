@@ -154,10 +154,10 @@ Displays the firmware, version and build with API information, profile and fligh
 ## Sensors and flight status (9)
 
 * **Follow** : [user setting](mwp-Configuration.md#dconf-gsettings) `auto-follow`. whether the map always displays the aircraft icon and tracks (requires GPS).
-* **In View** : Scrolls the map to keep the aircraft in view. The behaviour is defined by the
+* **Centre On / In View** : Scrolls the map to keep the aircraft in view. The behaviour is defined by the
 [user setting](mwp-Configuration.md#dconf-gsettings) `use-legacy-centre-on`
-    * `use-legacy-centre-on` = `false` (default): The map is only panned when the vehicle would otherwise be off-screen.
-	* `use-legacy-centre-on` = `true` : The vehicle is always centre of the screen and the map pans as required.
+    * **In View** `use-legacy-centre-on` = `false` (default): The map is only panned when the vehicle would otherwise be off-screen.
+	* **Centre On** `use-legacy-centre-on` = `true` : The vehicle is always centre of the screen and the map pans as required.
 * **Logger** : Generate mwp logs (JSON format).
 * **Audio** : [user setting](mwp-Configuration.md#dconf-gsettings) `audio-on-arm`. Whether to "speak" status information.
 

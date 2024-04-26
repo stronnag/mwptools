@@ -141,10 +141,6 @@ public class MWPSettings : GLib.Object {
         else
             settings =  new Settings (sname);
 
-        settings.changed.connect ((s) => {
-                read_settings(s);
-                settings_update(s);
-            });
     }
 
     public void read_settings(string? s=null) {

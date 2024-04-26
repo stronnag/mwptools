@@ -40,7 +40,6 @@ public class MWP : Gtk.Application {
     private Gtk.SpinButton zoomer;
     private Gtk.ComboBoxText actmission;
     private Gtk.Label poslabel;
-    private bool pos_is_centre = true;
     public Gtk.Label stslabel;
     public Gtk.Label pointerpos;
     private Gtk.Statusbar statusbar;
@@ -1468,8 +1467,6 @@ public class MWP : Gtk.Application {
 			XmlIO.ugly = true;
 		}
 
-        pos_is_centre = conf.pos_is_centre;
-
         has_bing_key = (Environment.get_variable("MWP_BING_KEY") != null);
 		demdir = GLib.Path.build_filename(Environment.get_user_cache_dir(), "mwp", "DEMs");
 		var file = File.new_for_path(demdir);
@@ -2585,7 +2582,7 @@ public class MWP : Gtk.Application {
           });
 
         ag.connect('?', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
-                pos_is_centre = !pos_is_centre;
+                conf.pos_is_centre = !conf.pos_is_centre;
                 return true;
             });
 
@@ -2803,6 +2800,29 @@ public class MWP : Gtk.Application {
         var centreonb = builder.get_object ("checkbutton1") as Gtk.CheckButton;
         if(conf.use_legacy_centre_on)
             centreonb.set_label("Centre On");
+
+        ag.connect('m', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
+				conf.use_legacy_centre_on = !conf.use_legacy_centre_on;
+				if(conf.use_legacy_centre_on)
+					centreonb.set_label("Centre On");
+				else
+					centreonb.set_label("In View");
+				return true;
+            });
+
+        conf.settings.changed.connect ((s) => {
+                conf.read_settings(s);
+				switch(s) {
+				case "use-legacy-centre-on":
+					if(conf.use_legacy_centre_on)
+						centreonb.set_label("Centre On");
+					else
+						centreonb.set_label("In View");
+					break;
+				default:
+					break;
+				}
+			});
 
         centreonb.active = centreon = conf.centreon;
         centreonb.toggled.connect (() => {
@@ -5006,7 +5026,7 @@ public class MWP : Gtk.Application {
             });
 
         view.motion_event.connect ((evt) => {
-                if (!pos_is_centre) {
+                if (!conf.pos_is_centre) {
                     var lon = view.x_to_longitude (evt.x);
                     var lat = view.y_to_latitude (evt.y);
 					update_pointer_pos(lat, lon);
@@ -5028,7 +5048,7 @@ public class MWP : Gtk.Application {
 	}
 
     public void update_pointer_pos(double lat, double lon) {
-        if (!pos_is_centre) {
+        if (!conf.pos_is_centre) {
 			var e = demmgr.lookup(lat, lon);
 			var sb = new StringBuilder(PosFormat.pos(lat,lon,conf.dms));
 			if (e != HGT.NODATA)  {
@@ -9564,7 +9584,7 @@ Error: <i>%s</i>
 
 
 	private void anim_cb(bool forced=false) {
-        if(pos_is_centre) {
+        if(conf.pos_is_centre) {
             poslabel.set_text(PosFormat.pos(ly,lx,conf.dms));
             if (map_moved() || forced) {
                 if (follow == false && craft != null) {
