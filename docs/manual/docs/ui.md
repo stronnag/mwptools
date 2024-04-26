@@ -6,15 +6,15 @@
 
 The {{ mwp }} main window and the main user interface elements are:
 
-1. [Menu bar](#menu-bar). The menu options are described later.
-2. [Map and Mission](#map-and-mission-settings) settings
-3. [Communications and telemetry settings](#communications-and-telemetry-settings)
-4. [Map window](#map-area)
-5. [Dock Bar](#dock-bar)
-6. [Dock Items (Docklets)](#docklets)
-7. [Mouse location](#location) (user preference units, cursor or map centre location)
-8. [Flight controller](#fc-Information) information
-9. [Sensor status and flight timer](#sensors-and-flight-status)
+1. [Menu bar](#menu-bar-1). The menu options are described later.
+2. [Map and Mission](#map-and-mission-settings-2) settings
+3. [Communications and telemetry settings](#communications-and-telemetry-settings-3)
+4. [Map window](#map-area-4)
+5. [Dock Bar](#dock-bar-5)
+6. [Dock Items (Docklets)](#docklets-6)
+7. [Mouse location](#location-7) (user preference units, cursor or map centre location)
+8. [Flight controller](#fc-information-8) information
+9. [Sensor status and flight timer](#sensors-and-flight-status-9)
 
 In the sections that follow, there will be a brief summary of each part; more detail will then provided in subsequent sections.
 
@@ -27,7 +27,7 @@ The following tables summarise the available menu options. Where usage is not ob
 | Item                                         | Usage                                                                                                                                                         |
 | ----                                         | -----                                                                                                                                                         |
 | Open Mission                                 | Offers a dialog to [open a mission file](inav-4.0-multi-missions.md#open-mission-file)                                                                           |
-| Append Mission file                          | [Appends a mission](inav-4.0-multi-missions.md#apppend-mission-file) to the current mission set (creates a multi-mission element)                                                                                    |
+| Append Mission file                          | [Appends a mission](inav-4.0-multi-missions.md#append-mission-file) to the current mission set (creates a multi-mission element)                                                                                    |
 | Save Mission                                 | Saves the mission to the current mission file, overwriting any extant content                                                                                 |
 | Save Mission As                              | Saves the mission to a user selected file. For a [multi-mission](inav-4.0-multi-missions.md#save-as-mission-file) the user can choose not to save specified mission segments.                                                                                                                     |
 | Download Mission from FC                     | [Downs a (multi-) mission](inav-4.0-multi-missions.md#upload-download-menu-options) from the flight controller                                                                                                           |
@@ -97,7 +97,7 @@ The following tables summarise the available menu options. Where usage is not ob
 
 ## Map and Mission Settings (2)
 
-A number of different map provides are available. {{ mwp }} offers the mapping library (`libchamplain`) defaults, Bing Maps (Bing Proxy) using a bespoke {{ mwp }} API key, and [user defined options](mwp-Configuration.md#sources-json), for example [anonymous maps](Black-Ops.md).
+A number of different map provides are available. {{ mwp }} offers the mapping library (`libchamplain`) defaults, Bing Maps (Bing Proxy) using a bespoke {{ mwp }} API key, and [user defined options](mwp-Configuration.md#sourcesjson), for example [anonymous maps](Black-Ops.md).
 
 The zoom level may be selected from the control here, or by zooming the map with the mouse wheel.
 
@@ -129,7 +129,7 @@ The map area displays the currently selected map at the desired zoom level. The 
 
 ## Dock Bar (5)
 
-The **Dock Bar** contains essentially minimised [**Docklets**](#docklets), selected from the **View** menu. In the illustration, these are the **Vario** view, **Telemetry** statistics, and **Mission Editor**. Hovering the mouse over the icon will reveal its function:
+The **Dock Bar** contains essentially minimised [**Docklets**](#docklets-6), selected from the **View** menu. In the illustration, these are the **Vario** view, **Telemetry** statistics, and **Mission Editor**. Hovering the mouse over the icon will reveal its function:
 
 ![dockfunc](images/dockavail.png){: width="20%" }
 
@@ -153,10 +153,13 @@ Displays the firmware, version and build with API information, profile and fligh
 
 ## Sensors and flight status (9)
 
-* Follow : [user setting](mwp-Configuration.md#dconf-gsettings) `auto-follow`. whether the map always displays the aircraft icon (requires GPS).
-* In View : Scrolls the map to keep the aircraft in view; otherwise the map is centred on the aircraft (requires GPS).
-* Logger : Generate mwp logs (JSON format).
-* Audio : [user setting](mwp-Configuration.md#dconf-gsettings) `audio-on-arm`. Whether to "speak" status information.
+* **Follow** : [user setting](mwp-Configuration.md#dconf-gsettings) `auto-follow`. whether the map always displays the aircraft icon and tracks (requires GPS).
+* **In View** : Scrolls the map to keep the aircraft in view. The behaviour is defined by the
+[user setting](mwp-Configuration.md#dconf-gsettings) `use-legacy-centre-on`
+    * `use-legacy-centre-on` = `false` (default): The map is only panned when the vehicle would otherwise be off-screen.
+	* `use-legacy-centre-on` = `true` : The vehicle is always centre of the screen and the map pans as required.
+* **Logger** : Generate mwp logs (JSON format).
+* **Audio** : [user setting](mwp-Configuration.md#dconf-gsettings) `audio-on-arm`. Whether to "speak" status information.
 
 The green / red bars show gyro / acc / baro / mag / gps / sonar sensor status. If a required sensor fails, a map annotation will be displayed, together with an audible alarm.
 

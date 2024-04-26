@@ -22,7 +22,7 @@ And, if not installed:
 * Other distro -- consult the package manager
 
 !!! info "One off actions"
-    These are documented for new installs (and provided by the ['easy' script](Building-with-meson-and-ninja.md#easy-first-time-install-on-debian-and-ubuntu)).
+    These are documented for new installs (and provided by the ['easy' script](Building-with-meson-and-ninja.md#easy-first-time-install-on-debian-and-derivatives)).
 
 !!! info "FreeBSD"
     Strictly, {{ mwp }} requires `gstreamer1.0-plugins-gtk` which _should_ be included in `gstreamer1.0-plugins-good`; on FreeBSD it is necessary to install `gstreamer1-plugins-gtk` explicitly.

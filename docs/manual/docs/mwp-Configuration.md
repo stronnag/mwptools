@@ -283,7 +283,7 @@ This *may* not be installed by default, but should be available via the OS packa
 | tote-float-p | Do Mission tote float | (private setting) | true |
 | uc-mission-tags | Upper case mission XML tags | If true, MISSION, VERSION and MISSIONITEM tags are upper case (for interoperability with legacy Android applications) | false |
 | uilang | Language Handling | "en" do everything as English (UI numeric decimal points, voice), "ev" do voice as English (so say 'point' for decimals even when shown as 'comma') | "" |
-| use-legacy-centre-on | If true, uses legacy centre-on | If true, uses legacy centre-on mode rather than the new "In View" mode. | false |
+| use-legacy-centre-on | If true, uses legacy centre-on | If true, uses legacy centre-on mode (aka moving map with vehicle in centre) rather than the new "In View" mode. | false |
 | vlevels | Voltage levels | Semi-colon(;) separated list of *cell* voltages values for transition between voltage label colours | "" |
 | wp-dist-size | Font size (points) for OSD WP distance display | Font size (points) for OSD WP distance display | 56.0 |
 | wp-spotlight | Style for the 'next waypoint' highlight | Defines RGBA colour for 'next way point' highlight | "#ffffff60" |

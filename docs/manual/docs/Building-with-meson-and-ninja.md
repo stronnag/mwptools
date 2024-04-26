@@ -12,7 +12,7 @@ The **mwptools** suite is built using the [meson](https://mesonbuild.com/SimpleS
 
 Prior to late May 2021, the build system used a convoluted `Makefile`.
 
-For Debian and derivatives there is a ["one stop" installation script](#easy-first-time-install-on-debian-and-ubuntu), as well as a x86_64 "Release" `.deb` archive.
+For Debian and derivatives there is a ["one stop" installation script](#easy-first-time-install-on-debian-and-derivatives), as well as a x86_64 "Release" `.deb` archive.
 
 ## Rationale
 
@@ -87,7 +87,7 @@ The user needs to have read / write permissions on the serial port in order to c
 		SUBSYSTEMS=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="df11", MODE="0660", TAG+="uaccess"
 
 * FreeBSD: `sudo pw group mod dialer -m $USER`
-* Windows/WSL: Not needed, no serial pass-through. Use the [ser2udp](mwp-in-Windows-11---WSL-G.md#serial-device) bridge instead.
+* Windows/WSL: Not needed, no serial pass-through. Use the [ser2udp](mwp-in-Windows-11---WSL-G.md#serial-devices) bridge instead.
 
 ## Files built / installed
 

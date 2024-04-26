@@ -31,9 +31,9 @@ markdown_extensions:
   - toc:
         permalink: "#"
 
+#  - git-revision-date
 plugins:
   - search
-  - git-revision-date
   - macros
   - with-pdf:
       cover_subtitle: Mission Planner, GCS, Log replay for inav

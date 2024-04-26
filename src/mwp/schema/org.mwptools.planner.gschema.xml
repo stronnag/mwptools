@@ -444,10 +444,9 @@
       <default>false</default>
       <summary>If true, uses legacy centre-on</summary>
       <description>
-	If true, uses legacy centre-on mode rather than the new "In View" mode.
+	 If true, uses legacy centre-on mode (aka moving map with vehicle in centre) rather than the new "In View" mode.
       </description>
     </key>
-
     <key name="dbox-is-horizontal" type="b">
       <default>false</default>
       <summary>Geometry of the DirectionView box</summary>

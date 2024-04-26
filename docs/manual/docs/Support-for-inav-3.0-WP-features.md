@@ -99,4 +99,4 @@ Of course, it's not necessary to use the new dialogues to set or change the new 
 
 The [INAV wiki](https://github.com/iNavFlight/inav/wiki/MSP-Navigation-Messages) describes WP mission parameters in some detail.
 
-Discussion of the meaning of ["sea level"](Mission-Elevation-Plot-and-Terrain-Analysis.md#datums). It's confusing.
+Discussion of the meaning of ["sea level"](Mission-Elevation-Plot-and-Terrain-Analysis.md#datum). It's confusing.
