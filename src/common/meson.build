@@ -61,7 +61,7 @@ libargs = {
   'install': true,
 }
 
-if meson.version().version_compare('>= 1.2.0')
+if meson.version().version_compare('>= 1.2.2')
   libargs += { 'install_dir': [ get_option('prefix') / 'lib', true, true] }
 else
   libargs += { 'install_dir': get_option('prefix') / 'lib', }
