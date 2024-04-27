@@ -582,10 +582,10 @@ public class MWSerial : Object {
 
 	public int randomUDP(int[] res) {
         int result = -1;
-        setup_ip(null,0);
+		commode = 0;
+		setup_ip(null,0);
         if (fd > -1) {
             try {
-                commode = 0;
                 var xsa = skt.get_local_address();
                 var outp = ((InetSocketAddress)xsa).get_port();
                 res[0] = fd;
@@ -594,7 +594,9 @@ public class MWSerial : Object {
                 available = true;
                 devname = "udp #%d".printf(outp);
                 setup_reader();
-            } catch {}
+            } catch (Error e) {
+				MWPLog.message("randomIP: %s\n", e.message);
+			}
         }
         return result;
     }
@@ -1030,7 +1032,8 @@ public class MWSerial : Object {
                 sockaddr=null;
 			}
             fd = -1;
-        }
+			commode = 0;
+		}
     }
 
 	public async bool close_async() {
