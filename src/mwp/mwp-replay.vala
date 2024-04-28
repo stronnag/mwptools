@@ -340,26 +340,20 @@ public class ReplayThread : GLib.Object {
                                             send_rec(msp,MSP.Cmds.BUILD_INFO, 32, buf);
                                         }
 
-                                        string bx;
                                         if(obj.has_member("boxnames")) {
-                                            bx = obj.get_string_member("boxnames");
-                                        } else {
-                                            if (fctype == 3) {
-                                                if(fcvar == "INAV") {
-                                                        // hackety hack time
-                                                    if (utime < 1449360000)
-                                                        bx = "ARM;ANGLE;HORIZON;MAG;HEADFREE;HEADADJ;NAV ALTHOLD;NAV POSHOLD;NAV RTH;NAV WP;BEEPER;OSD SW;BLACKBOX;FAILSAFE;";
-                                                    else
-                                                        bx = "ARM;ANGLE;HORIZON;AIR MODE;MAG;HEADFREE;HEADADJ;NAV ALTHOLD;NAV POSHOLD;NAV RTH;NAV WP;BEEPER;OSD SW;BLACKBOX;FAILSAFE;";
-                                                } else {
-                                                    bx= "ARM;ANGLE;HORIZON;BARO;MAG;HEADFREE;HEADADJ;GPS HOME;GPS HOLD;BEEPER;OSD SW;AUTOTUNE;";
-                                                }
-                                            } else {
-                                                bx = "ARM;ANGLE;HORIZON;BARO;MAG;GPS HOME;GPS HOLD;BEEPER;MISSION;LAND;";
-                                            }
+                                            var bx = obj.get_string_member("boxnames");
+											send_rec(msp,MSP.Cmds.BOXNAMES, bx.length, bx.data);
                                         }
 
-                                        send_rec(msp,MSP.Cmds.BOXNAMES, bx.length, bx.data);
+                                        if(obj.has_member("boxids")) {
+											uint8 []boxids = {};
+											var blist = obj.get_array_member ("boxids");
+											blist.foreach_element ((a,i,n) => {
+													boxids += (uint8)n.get_int();
+												});
+											send_rec(msp,MSP.Cmds.BOXIDS, boxids.length, boxids);
+										}
+
                                         MSP_MISC a = MSP_MISC();
                                         a.conf_minthrottle=1064;
                                         a.maxthrottle=1864;

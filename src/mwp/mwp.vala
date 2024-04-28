@@ -301,21 +301,21 @@ public class MWP : Gtk.Application {
     }
 
     public enum FCVERS {
-        hasMoreWP = 0x010400,
-        hasEEPROM = 0x010600,
-        hasTZ = 0x010704,
-        hasRCDATA = 0x010800,
+        hasMoreWP =   0x010400,
+        hasEEPROM =   0x010600,
+        hasTZ =       0x010704,
+        hasRCDATA =   0x010800,
         hasV2STATUS = 0x010801,
-        hasJUMP = 0x020500,
-        hasPOI = 0x020600,
-        hasPHTIME = 0x020500,
-        hasLAND = 0x020500,
-        hasSAFEAPI = 0x020700,
-        hasMONORTH = 0x020600,
-        hasABSALT = 0x030000,
-        hasWP_V4 = 0x040000,
-        hasWP1m = 0x060000,
-		hasFWApp = 0x070100,
+        hasJUMP =     0x020500,
+        hasPOI =      0x020600,
+        hasPHTIME =   0x020500,
+        hasLAND =     0x020500,
+        hasSAFEAPI =  0x020700,
+        hasMONORTH =  0x020600,
+        hasABSALT =   0x030000,
+        hasWP_V4 =    0x040000,
+        hasWP1m =     0x060000,
+		hasFWApp =    0x070100,
 		hasActiveWP = 0x070100,
 		hasGeoZones = 0x080000,
     }
@@ -6827,14 +6827,7 @@ public class MWP : Gtk.Application {
 			}
 			break;
 
-		case MSP.Cmds.BOXIDS:
-			if (xflags == '<') {
-				handle_radar(msp, cmd, raw, len, xflags, errs);
-				return;
-			}
-			break;
-
-            case MSP.Cmds.INAV_MIXER:
+		case MSP.Cmds.INAV_MIXER:
                 uint16 hx;
                 hx = raw[6]<<8|raw[5];
                 MWPLog.message("V2 mixer %u %u\n", raw[5], raw[3]);
@@ -7093,7 +7086,11 @@ public class MWP : Gtk.Application {
 													  vi.name, vi.fc_git);
 			verlab.label = verlab.tooltip_text = vers;
 			MWPLog.message("%s\n", vers);
-			queue_cmd(MSP.Cmds.BOXNAMES,null,0);
+			if(vi.fc_vers >= FCVERS.hasMoreWP) {
+				queue_cmd(MSP.Cmds.BOXIDS,null,0);
+			} else {
+				queue_cmd(MSP.Cmds.BOXNAMES,null,0);
+			}
 			break;
 
 		case MSP.Cmds.IDENT:
@@ -7151,6 +7148,11 @@ public class MWP : Gtk.Application {
 			break;
 
 		case MSP.Cmds.BOXNAMES:
+		case MSP.Cmds.BOXIDS:
+			if (cmd == MSP.Cmds.BOXIDS && xflags == '<') {
+				handle_radar(msp, cmd, raw, len, xflags, errs);
+				return;
+			}
 			if(replayer == Player.NONE) {
 				var ncbits = (navcap & (NAVCAPS.NAVCONFIG|NAVCAPS.INAV_MR|NAVCAPS.INAV_FW));
 				if(navcap != NAVCAPS.NONE) {
@@ -7185,42 +7187,79 @@ public class MWP : Gtk.Application {
 							});
 				}
 			}
-			raw[len] = 0;
-			boxnames = (string)raw;
-			MWPLog.message("BOXNAMES: %s\n", boxnames);
-			string []bsx = boxnames.split(";");
-			uint i = 0;
-			foreach(var bs in bsx) {
-				switch(bs) {
-				case "ARM":
-					arm_mask = (1 << i);
-					break;
-				case "ANGLE":
-					angle_mask = (1 << i);
-					break;
-				case "HORIZON":
-					horz_mask = (1 << i);
-					break;
-				case "GPS HOME":
-				case "NAV RTH":
-					rth_mask = (1 << i);
-					break;
-				case "GPS HOLD":
-				case "NAV POSHOLD":
-					ph_mask = (1 << i);
-					break;
-				case "NAV WP":
+			if (cmd == MSP.Cmds.BOXNAMES) {
+				raw[len] = 0;
+				boxnames = (string)raw;
+				MWPLog.message("BOXNAMES: %s\n", boxnames);
+				string []bsx = boxnames.split(";");
+				uint i = 0;
+				foreach(var bs in bsx) {
+					switch(bs) {
+					case "ARM":
+						arm_mask = (1 << i);
+						break;
+					case "ANGLE":
+						angle_mask = (1 << i);
+						break;
+					case "HORIZON":
+						horz_mask = (1 << i);
+						break;
+					case "GPS HOME":
+					case "NAV RTH":
+						rth_mask = (1 << i);
+						break;
+					case "GPS HOLD":
+					case "NAV POSHOLD":
+						ph_mask = (1 << i);
+						break;
+					case "NAV WP":
 				case "MISSION":
 					wp_mask = (1 << i);
 					break;
-				case "NAV CRUISE":
-					cr_mask = (1 << i);
-					break;
-				case "FAILSAFE":
-					fs_mask = (1 << i);
-					break;
+					case "NAV CRUISE":
+						cr_mask = (1 << i);
+						break;
+					case "FAILSAFE":
+						fs_mask = (1 << i);
+						break;
+					}
+					i++;
 				}
-				i++;
+			} else {
+				var sb = new StringBuilder();
+				sb.append_c('[');
+				for (var j = 0; j < len; j++) {
+					var i = raw[j];
+                    sb.append_printf(" %d", i);
+					switch(i) {
+					case Perm.ID.PERM_ARM:
+						arm_mask = (1 << j);
+						break;
+					case Perm.ID.PERM_ANGLE:
+						angle_mask = (1 << j);
+						break;
+					case Perm.ID.PERM_HORIZON:
+						horz_mask = (1 << j);
+						break;
+					case Perm.ID.PERM_NAV_RTH:
+						rth_mask = (1 << j);
+						break;
+					case Perm.ID.PERM_NAV_POSHOLD:
+						ph_mask = (1 << j);
+						break;
+					case Perm.ID.PERM_NAV_WP:
+						wp_mask = (1 << j);
+						break;
+					case Perm.ID.PERM_NAV_COURSE_HOLD:
+						cr_mask = (1 << j);
+						break;
+					case Perm.ID.PERM_FAILSAFE:
+						fs_mask = (1 << j);
+						break;
+					}
+				}
+				sb.append_c(']');
+				MWPLog.message("Boxids: %s\n", sb.str);
 			}
 			MWPLog.message("Masks arm=%x angle=%x horz=%x ph=%x rth=%x wp=%x crz=%x fs=%x\n",
 						   arm_mask, angle_mask, horz_mask, ph_mask,
@@ -7235,12 +7274,8 @@ public class MWP : Gtk.Application {
 				string devnam = null;
 				if(msp.available)
 					devnam = dev_entry.get_active_text();
-				Logger.fcinfo(last_file,vi,capability,profile,
-							  boxnames,vname,devnam);
+				Logger.fcinfo(last_file, vi, capability, profile, boxnames, vname, devnam, raw[0:len]);
 			}
-				//                queue_cmd(MSP.Cmds.MISC,null,0);
-				//		 case MSP.Cmds.MISC:
-				//have_misc = true;
 			need_mission = false;
 			if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
 				queue_cmd(MSP.Cmds.STATUS,null,0);
@@ -7252,6 +7287,7 @@ public class MWP : Gtk.Application {
 				queue_cmd(MSP.Cmds.ACTIVEBOXES,null,0);
 			}
 			break;
+
 
 		case MSP.Cmds.GPSSTATISTICS:
 			LTM_XFRAME xf = LTM_XFRAME();

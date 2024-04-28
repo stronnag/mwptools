@@ -106,7 +106,8 @@ public class Logger : GLib.Object {
 
 	public static void fcinfo(string? title, VersInfo vi,uint32 capability,
                               uint8 profile, string? boxnames = null,
-                              string? vname = null, string? device = null)  {
+                              string? vname = null, string? device = null,
+							  uint8[] boxids = {})  {
         gen = new Json.Generator ();
         var builder = init("init");
         if(title != null) {
@@ -138,6 +139,15 @@ public class Logger : GLib.Object {
             builder.set_member_name ("boxnames");
             builder.add_string_value (boxnames);
         }
+
+		if (boxids.length != 0) {
+            builder.set_member_name ("boxids");
+			builder.begin_array();
+			for(var i = 0; i < boxids.length; i++) {
+				builder.add_int_value(boxids[i]);
+			}
+			builder.end_array();
+		}
 
         if(vi.fc_var != null) {
             builder.set_member_name ("fc_var");
