@@ -5149,7 +5149,7 @@ public class MWP : Gtk.Application {
             mq.clear();
         } else if(msp.available && !mq.is_empty()) {
             lastmsg = mq.pop_head();
-//            MWPLog.message("send %s\n", lastmsg.cmd.to_string());
+			//            MWPLog.message("send %s\n", lastmsg.cmd.to_string());
             msp.send_command((uint16)lastmsg.cmd, lastmsg.data, lastmsg.len);
         }
     }

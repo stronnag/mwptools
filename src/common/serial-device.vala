@@ -466,7 +466,8 @@ public class MWSerial : Object {
         STREAM=2,
         FD=4,
         BT=8,
-		BLE=16
+		BLE=16,
+		WEAK=32,
     }
 
     public enum Mode {
@@ -866,7 +867,7 @@ public class MWSerial : Object {
 				bool bleok = false;
 				if ((dd.type & DevMask.BTLE) == DevMask.BTLE) {
 					gs = new BleSerial(dd.gid);
-					commode = ComMode.FD|ComMode.STREAM|ComMode.BLE;
+					commode = ComMode.FD|ComMode.STREAM|ComMode.BLE|ComMode.BT;
 					if(DevManager.btmgr.set_device_connected(dd.id, true)) {
 						var tc = 0;
 						while (!DevManager.btmgr.get_device(dd.id).is_connected) {
@@ -893,6 +894,9 @@ public class MWSerial : Object {
 						}
 						MWPLog.message("BLE chipset %s, mtu %d%s\n", cset, mtu, xstr);
 						bleok = (mtu > 0);
+						if (mtu < 128) {
+							commode |= ComMode.WEAK;
+						}
 					}
 					if(!bleok){
 						fd = -1;
@@ -1693,12 +1697,15 @@ public class MWSerial : Object {
 			if((commode & ComMode.BLE) == ComMode.BLE) { // allegedly, 20 byte write buffer
 				for(int n = (int)count; n > 0; ) {
 					var nc = (n > 20) ? 20 : n;
-					size += Posix.send(fd, buf, nc, 0);
+					size += Posix.send(wrfd, buf, nc, 0);
 					n -= nc;
 					buf = (void*)((uint8*)buf + nc);
+					if (n > 0 && ((commode & ComMode.WEAK) == ComMode.WEAK)) {
+						Thread.usleep(1000*20);
+					}
 				}
 			} else {
-				size = Posix.send(fd, buf, count, 0);
+				size = Posix.send(wrfd, buf, count, 0);
 			}
 		} else if((commode & ComMode.STREAM) == ComMode.STREAM) {
 			size = Posix.write(wrfd, buf, count);
