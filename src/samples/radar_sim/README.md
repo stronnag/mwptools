@@ -6,7 +6,9 @@
 
 `mwp-mavlink-traffic-sim` is a simulator for the  MAVLink TRAFFIC REPORT protocol. It behaves in a similar fashion.
 
-`sbs-player.rb` is a ruby script that replays CSV files in the SBS `dump1090` format.
+`sbs-player.rb` is a ruby script that replays CSV files in the SBS / `dump1090` format as a TCP server.
+
+`sbs-msp.rb` is a ruby script that replays CSV files in the SBS / `dump1090` format as `MSP_ADSB_VEHICLE_LIST` messages, over a serial device or UDP.
 
 ## Building
 
@@ -118,7 +120,22 @@ Usage: sbs-player.rb [options] file
     -?, --help                       Show this message
 ```
 
-The player for SBS format CSV files runs a server on `localhost`, port `30003` (unless changed).
+The player for SBS format CSV files runs a TCP on `[::]`, port `30003` (unless changed).
 
 * Start the player `sbs-player.rb sbs-file.csv`
 * Start mwp as `mwp --radar-device sbs://` to use the server on `localhost:30003`.
+
+### sbs-msp.rb
+
+``` bash
+$ sbs-msp.rb --help
+Usage: sbs-player.rb [options] file
+    -d, --device DEV
+    -1, --once
+    -?, --help                       Show this message
+```
+
+The player for SBS format CSV files as `MSP2_ADSB_VEHICLE_LIST` messages  directed to a UDP or serial device.
+
+* Start mwp as `mwp --radar-device udp://:31001`
+* Start the player `sbs-msp.rb -d udp://localhost:31001  sbs-file.csv`
