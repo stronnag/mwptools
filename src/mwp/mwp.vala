@@ -317,6 +317,7 @@ public class MWP : Gtk.Application {
         hasWP1m =     0x060000,
 		hasFWApp =    0x070100,
 		hasActiveWP = 0x070100,
+		hasAdsbList = 0x070101,
 		hasGeoZones = 0x080000,
     }
 
@@ -5411,10 +5412,9 @@ public class MWP : Gtk.Application {
         } else
             missing |= MSP.Sensors.BARO;
 
-		var rapoll = Environment.get_variable("MSP_ADSB_POLL");
-		if(rapoll != null) {
+		if(vi.fc_vers >= FCVERS.hasAdsbList) {
             requests +=  MSP.Cmds.ADSB_VEHICLE_LIST;
-            reqsize += 152;
+            reqsize += 2; // or more ...
 		}
 
         if(missing != 0) {
@@ -6697,6 +6697,14 @@ public class MWP : Gtk.Application {
             MWPLog.message("MSP Error: %s[%d,%dn] %s\n", cmd.to_string(), cmd, len,
                            (cmd == MSP.Cmds.COMMON_SETTING) ? (string)lastmsg.data : "");
             switch(cmd) {
+			case MSP.Cmds.ADSB_VEHICLE_LIST:
+				for (var ll = 0; ll < requests.length; ll++) {
+					if (requests[ll] ==  MSP.Cmds.ADSB_VEHICLE_LIST) {
+						requests[ll] = MSP.Cmds.NOOP;
+					}
+				}
+				break;
+
 			case MSP.Cmds.NAME:
 				if (xflags == '<') {
                         handle_radar(msp, cmd, raw, len, xflags, errs);
@@ -9616,15 +9624,6 @@ public class MWP : Gtk.Application {
 						MWPLog.message("start radar reader %s\n", r.name);
 						if(rawlog)
 							r.dev.raw_logging(true);
-						/*
-						var rapoll = Environment.get_variable("MSP_ADSB_POLL");
-						if(rapoll != null && rapoll == r.name) {
-							Timeout.add_seconds(10, () => {
-									var ns = r.dev.send_command(MSP.Cmds.ADSB_VEHICLE_LIST, null, 0);
-									return (ns > 0);
-								});
-						}
-						*/
 					} else {
 						string fstr;
 						r.dev.get_error_message(out fstr);
