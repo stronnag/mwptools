@@ -145,6 +145,8 @@ public class MSP : Object {
 		PRIV_TEXT_EOM = 0x2ffd,
 		PRIV_TEXT_SAFEH = 0x2ffc,
 
+		ADSB_VEHICLE_LIST = 0x2090,
+
         LTM_BASE  = 0x10000,
         TS_FRAME = (LTM_BASE + 'S'),
         TA_FRAME = (LTM_BASE + 'A'),

@@ -5316,7 +5316,8 @@ public class MWP : Gtk.Application {
         if(serstate == SERSTATE.POLLER) {
             var req=requests[tcycle];
             lastm = nticks;
-            if (req == MSP.Cmds.ANALOG || req == MSP.Cmds.ANALOG2) {
+            if (req == MSP.Cmds.ANALOG || req == MSP.Cmds.ANALOG2 ||
+				req == MSP.Cmds.ADSB_VEHICLE_LIST) {
                 if (lastm - last_an > MAVINTVL) {
                     last_an = lastm;
                     mavc = 0;
@@ -5409,6 +5410,12 @@ public class MWP : Gtk.Application {
             reqsize += MSize.MSP_ALTITUDE;
         } else
             missing |= MSP.Sensors.BARO;
+
+		var rapoll = Environment.get_variable("MSP_ADSB_POLL");
+		if(rapoll != null) {
+            requests +=  MSP.Cmds.ADSB_VEHICLE_LIST;
+            reqsize += 152;
+		}
 
         if(missing != 0) {
             if(gpscnt < 5) {
@@ -6433,82 +6440,87 @@ public class MWP : Gtk.Application {
 		}
 
 		switch(cmd) {
-            case MSP.Cmds.NAME:
-                var node = "MWP Fake Node";
-                s.send_command(cmd, node, node.length, true);
-                break;
-            case MSP.Cmds.RAW_GPS:
-                   uint8 oraw[18]={0};
-                   uint8 *p = &oraw[0];
+		case MSP.Cmds.NAME:
+			var node = "MWP Fake Node";
+			s.send_command(cmd, node, node.length, true);
+			break;
+		case MSP.Cmds.RAW_GPS:
+			uint8 oraw[18]={0};
+			uint8 *p = &oraw[0];
 
-                    *p++ = 2;
-                    *p++ = 42;
+			*p++ = 2;
+			*p++ = 42;
 
-					if (GCSIcon.get_location(out rlat, out rlon) == false) {
-						if(have_home) {
-							rlat = home_pos.lat;
-							rlon = home_pos.lon;
-						} else {
-							rlat = view.get_center_latitude();
-							rlon = view.get_center_longitude();
-						}
-					}
-                    p = SEDE.serialise_i32(p, (int)(rlat*1e7));
-                    p = SEDE.serialise_i32(p, (int)(rlon*1e7));
-                    p = SEDE.serialise_i16(p, 0);
-                    p = SEDE.serialise_u16(p, 0);
-                    p = SEDE.serialise_u16(p, 0);
-                    SEDE.serialise_u16(p, 99);
-                    if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE) {
-                        MWPLog.message("RDR-rgps: Lat, Lon %f %f\n", rlat, rlon);
-                        StringBuilder sb = new StringBuilder("RDR-rgps:");
-                        foreach(var r in oraw)
-                            sb.append_printf(" %02x", r);
-                        sb.append_c('\n');
-                        MWPLog.message(sb.str);
-                    }
-                    s.send_command(cmd, oraw, 18, true);
-                break;
-            case MSP.Cmds.FC_VARIANT:
-				uint8 []oraw;
-				if (GCSIcon.get_location(out rlat, out rlon)) {
-					oraw = "INAV".data;
+			if (GCSIcon.get_location(out rlat, out rlon) == false) {
+				if(have_home) {
+					rlat = home_pos.lat;
+					rlon = home_pos.lon;
 				} else {
-					oraw = "GCS".data; //{0x47, 0x43, 0x53}; // 'GCS'
+					rlat = view.get_center_latitude();
+					rlon = view.get_center_longitude();
 				}
-				s.send_command(cmd, oraw, oraw.length, true);
-                break;
-            case MSP.Cmds.FC_VERSION:
-				uint8 oraw[3] = {6,6,6};
-				s.send_command(cmd, oraw, oraw.length,true);
-				break;
-            case MSP.Cmds.ANALOG:
-				uint8 []oraw = {0x76, 0x4, 0x0, 0x0, 0x0, 0x0, 0x0};
-				s.send_command(cmd, oraw, oraw.length,true);
-                break;
-            case MSP.Cmds.STATUS:
-				uint8 []oraw = {0xe8, 0x3, 0x0, 0x0, 0x83, 0x0, 0x0, 0x10, 0x10, 0x0, 0x0};
-				s.send_command(cmd, oraw, oraw.length,true);
-                break;
-            case MSP.Cmds.BOXIDS:
-				uint8 []oraw = {0x0, 0x33, 0x1, 0x2, 0x23, 0x5, 0x6, 0x7, 0x20, 0x8, 0x3, 0x21, 0xc, 0x24, 0x25, 0x15, 0xd, 0x13, 0x1a, 0x26, 0x1b, 0x27, 0x28, 0x29, 0x2a, 0x2b, 0x2c};
-                    s.send_command(cmd, oraw, oraw.length,true);
-                break;
+					}
+			p = SEDE.serialise_i32(p, (int)(rlat*1e7));
+			p = SEDE.serialise_i32(p, (int)(rlon*1e7));
+			p = SEDE.serialise_i16(p, 0);
+			p = SEDE.serialise_u16(p, 0);
+			p = SEDE.serialise_u16(p, 0);
+			SEDE.serialise_u16(p, 99);
+			if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE) {
+				MWPLog.message("RDR-rgps: Lat, Lon %f %f\n", rlat, rlon);
+				StringBuilder sb = new StringBuilder("RDR-rgps:");
+				foreach(var r in oraw)
+					sb.append_printf(" %02x", r);
+				sb.append_c('\n');
+				MWPLog.message(sb.str);
+			}
+			s.send_command(cmd, oraw, 18, true);
+			break;
+		case MSP.Cmds.FC_VARIANT:
+			uint8 []oraw;
+			if (GCSIcon.get_location(out rlat, out rlon)) {
+				oraw = "INAV".data;
+			} else {
+				oraw = "GCS".data; //{0x47, 0x43, 0x53}; // 'GCS'
+			}
+			s.send_command(cmd, oraw, oraw.length, true);
+			break;
+		case MSP.Cmds.FC_VERSION:
+			uint8 oraw[3] = {6,6,6};
+			s.send_command(cmd, oraw, oraw.length,true);
+			break;
+		case MSP.Cmds.ANALOG:
+			uint8 []oraw = {0x76, 0x4, 0x0, 0x0, 0x0, 0x0, 0x0};
+			s.send_command(cmd, oraw, oraw.length,true);
+			break;
+		case MSP.Cmds.STATUS:
+			uint8 []oraw = {0xe8, 0x3, 0x0, 0x0, 0x83, 0x0, 0x0, 0x10, 0x10, 0x0, 0x0};
+			s.send_command(cmd, oraw, oraw.length,true);
+			break;
+		case MSP.Cmds.BOXIDS:
+			uint8 []oraw = {0x0, 0x33, 0x1, 0x2, 0x23, 0x5, 0x6, 0x7, 0x20, 0x8, 0x3, 0x21, 0xc, 0x24, 0x25, 0x15, 0xd, 0x13, 0x1a, 0x26, 0x1b, 0x27, 0x28, 0x29, 0x2a, 0x2b, 0x2c};
+			s.send_command(cmd, oraw, oraw.length,true);
+			break;
 
-            case MSP.Cmds.COMMON_SET_RADAR_POS:
-                process_inav_radar_pos(raw,len);
-                break;
-            case MSP.Cmds.MAVLINK_MSG_ID_TRAFFIC_REPORT:
-                process_mavlink_radar(raw);
-                break;
-            case MSP.Cmds.MAVLINK_MSG_ID_OWNSHIP:
-//                dump_mav_os_msg(raw);
-                break;
-            default:
-				if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE) {
-					MWPLog.message("RADAR: %s %d (%u)\n", cmd.to_string(), cmd, len);
-				}
-                break;
+		case MSP.Cmds.COMMON_SET_RADAR_POS:
+			process_inav_radar_pos(raw,len);
+			break;
+		case MSP.Cmds.MAVLINK_MSG_ID_TRAFFIC_REPORT:
+			process_mavlink_radar(raw);
+			break;
+		case MSP.Cmds.MAVLINK_MSG_ID_OWNSHIP:
+			//                dump_mav_os_msg(raw);
+			break;
+
+		case MSP.Cmds.ADSB_VEHICLE_LIST:
+			process_msp2_adsb(raw, len);
+			break;
+
+		default:
+			if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE) {
+				MWPLog.message("RADAR: %s %d (%u)\n", cmd.to_string(), cmd, len);
+			}
+			break;
         }
     }
 
@@ -6682,7 +6694,7 @@ public class MWP : Gtk.Application {
 
         if(errs == true) {
             lastrx = lastok = nticks;
-            MWPLog.message("MSP Error: %s[%d] %s\n", cmd.to_string(), cmd,
+            MWPLog.message("MSP Error: %s[%d,%dn] %s\n", cmd.to_string(), cmd, len,
                            (cmd == MSP.Cmds.COMMON_SETTING) ? (string)lastmsg.data : "");
             switch(cmd) {
 			case MSP.Cmds.NAME:
@@ -8451,90 +8463,94 @@ public class MWP : Gtk.Application {
                 queue_cmd(MSP.Cmds.FW_CONFIG, null,0);
                 break;
 
-            case MSP.Cmds.WP_MISSION_LOAD:
-				wpmgr.wp_flag = WPDL.DOWNLOAD;
-                queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
-                break;
+		case MSP.Cmds.WP_MISSION_LOAD:
+			wpmgr.wp_flag = WPDL.DOWNLOAD;
+			queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
+			break;
 
-            case MSP.Cmds.SET_RTC:
-                MWPLog.message("Set RTC ack\n");
-                break;
+		case MSP.Cmds.SET_RTC:
+			MWPLog.message("Set RTC ack\n");
+			break;
 
-            case MSP.Cmds.DEBUGMSG:
-				var dstr = ((string)raw).chomp();
-				MWPLog.message("DEBUG:%s\n", dstr);
-                break;
+		case MSP.Cmds.DEBUGMSG:
+			var dstr = ((string)raw).chomp();
+			MWPLog.message("DEBUG:%s\n", dstr);
+			break;
 
-            case MSP.Cmds.RADAR_POS:
-            case MSP.Cmds.COMMON_SET_RADAR_POS:
-                process_inav_radar_pos(raw, len);
-                break;
+		case MSP.Cmds.ADSB_VEHICLE_LIST:
+			process_msp2_adsb(raw, len);
+			break;
 
-            case MSP.Cmds.MAVLINK_MSG_ID_OWNSHIP:
-//                dump_mav_os_msg(raw);
-                break;
+		case MSP.Cmds.RADAR_POS:
+		case MSP.Cmds.COMMON_SET_RADAR_POS:
+			process_inav_radar_pos(raw, len);
+			break;
 
-            case MSP.Cmds.MAVLINK_MSG_ID_TRAFFIC_REPORT:
-                process_mavlink_radar(raw);
-                break;
+		case MSP.Cmds.MAVLINK_MSG_ID_OWNSHIP:
+			//                dump_mav_os_msg(raw);
+			break;
 
-            case MSP.Cmds.MAVLINK_MSG_ID_DATA_REQUEST:
-            case MSP.Cmds.MAVLINK_MSG_ID_STATUS:
-                break;
+		case MSP.Cmds.MAVLINK_MSG_ID_TRAFFIC_REPORT:
+			process_mavlink_radar(raw);
+			break;
 
-            case MSP.Cmds.MAVLINK_MSG_SCALED_PRESSURE:
-                break;
+		case MSP.Cmds.MAVLINK_MSG_ID_DATA_REQUEST:
+		case MSP.Cmds.MAVLINK_MSG_ID_STATUS:
+			break;
 
-            case MSP.Cmds.MAVLINK_MSG_BATTERY_STATUS:
-                int32 mavmah;
-                int16 mavamps;
+		case MSP.Cmds.MAVLINK_MSG_SCALED_PRESSURE:
+			break;
 
-                SEDE.deserialise_i32(raw, out mavmah);
-                SEDE.deserialise_i16(&raw[30], out mavamps);
-                curr.centiA = mavamps;
-                curr.mah = mavmah;
-                if(curr.centiA != 0 || curr.mah != 0) {
-                    curr.ampsok = true;
-                    navstatus.current(curr, 2);
-                    if (curr.centiA > odo.amps)
-                        odo.amps = curr.centiA;
-                }
-                break;
+		case MSP.Cmds.MAVLINK_MSG_BATTERY_STATUS:
+			int32 mavmah;
+			int16 mavamps;
 
-            case MSP.Cmds.MAVLINK_MSG_STATUSTEXT:
-				uint8 sev = raw[0];
-				raw[51] = 0;
-				string text = (string)raw[1:50];
-				var stext = text.strip();
-				MWPLog.message("mavstatus (%d) %s\n", sev, stext);
-                break;
+			SEDE.deserialise_i32(raw, out mavmah);
+			SEDE.deserialise_i16(&raw[30], out mavamps);
+			curr.centiA = mavamps;
+			curr.mah = mavmah;
+			if(curr.centiA != 0 || curr.mah != 0) {
+				curr.ampsok = true;
+				navstatus.current(curr, 2);
+				if (curr.centiA > odo.amps)
+					odo.amps = curr.centiA;
+			}
+			break;
 
-            default:
-                uint mcmd;
-                string mtxt;
-                if (cmd < MSP.Cmds.LTM_BASE) {
-                    mcmd = cmd;
-                    mtxt = "MSP";
-                }
-                else if (cmd >= MSP.Cmds.LTM_BASE && cmd < MSP.Cmds.MAV_BASE) {
-                    mcmd = cmd - MSP.Cmds.LTM_BASE;
-                    mtxt = "LTM";
-                } else {
-                    mcmd = cmd - MSP.Cmds.MAV_BASE;
-                    mtxt = "MAVLink";
-                }
+		case MSP.Cmds.MAVLINK_MSG_STATUSTEXT:
+			uint8 sev = raw[0];
+			raw[51] = 0;
+			string text = (string)raw[1:50];
+			var stext = text.strip();
+			MWPLog.message("mavstatus (%d) %s\n", sev, stext);
+			break;
 
-                StringBuilder sb = new StringBuilder("** Unknown ");
-                sb.printf("%s : %u / 0x%x (%ubytes)", mtxt, mcmd, mcmd, len);
-                if(len > 0 && conf.dump_unknown) {
-                    sb.append(" [");
-                    foreach(var r in raw[0:len])
-                        sb.append_printf(" %02x", r);
-                    sb.append(" ]");
-                }
-                sb.append_c('\n');
-                MWPLog.message (sb.str);
-                break;
+		default:
+			uint mcmd;
+			string mtxt;
+			if (cmd < MSP.Cmds.LTM_BASE) {
+				mcmd = cmd;
+				mtxt = "MSP";
+			}
+			else if (cmd >= MSP.Cmds.LTM_BASE && cmd < MSP.Cmds.MAV_BASE) {
+				mcmd = cmd - MSP.Cmds.LTM_BASE;
+				mtxt = "LTM";
+			} else {
+				mcmd = cmd - MSP.Cmds.MAV_BASE;
+				mtxt = "MAVLink";
+			}
+
+			StringBuilder sb = new StringBuilder("** Unknown ");
+			sb.printf("%s : %u / 0x%x (%ubytes)", mtxt, mcmd, mcmd, len);
+			if(len > 0 && conf.dump_unknown) {
+				sb.append(" [");
+				foreach(var r in raw[0:len])
+					sb.append_printf(" %02x", r);
+				sb.append(" ]");
+			}
+			sb.append_c('\n');
+			MWPLog.message (sb.str);
+			break;
         }
 
         if(mq.is_empty() && serstate == SERSTATE.POLLER) {
@@ -8614,6 +8630,12 @@ public class MWP : Gtk.Application {
 			ri.altitude = int.parse(p[11])*0.3048;
 			ri.lasttick = nticks;
 			if (isvalid) {
+				if (ri.dt != null) {
+					var td = currdt.difference(ri.dt);
+					td /= 1000000;
+					if (td < 255)
+						ri.lq = (uint8)(td&0xff);
+				}
 				ri.dt = currdt;
 			}
 		} else if (p[1] == "4") {
@@ -8654,7 +8676,110 @@ public class MWP : Gtk.Application {
 #endif
 	}
 
-    void process_mavlink_radar(uint8 *rp) {
+	void process_msp2_adsb(uint8 *rp, uint mlen) {
+        var sb = new StringBuilder("MSP2 ADSB:");
+        uint32 v;
+        int32 i;
+
+		var maxvl = *rp++;
+		var maxcs = *rp++;
+		var now = new DateTime.now_local();
+
+		var maxml = (mlen-2)/30;
+		if (maxvl > maxml)
+			maxvl = (uint8)maxml;
+
+		for(var k = 0; k < maxvl; k++) {
+            uint8 cs[10];
+            uint8 *csp = cs;
+			string callsign = "";
+
+			for(var j = 0; j < maxcs; j++) {
+				*csp++ = *rp++;
+			}
+			callsign = ((string)cs).strip();
+			rp = SEDE.deserialise_u32(rp, out v);
+			if(v != 0) {
+				sb.append_printf("ICAO %u ", v);
+				if(callsign.length == 0) {
+					callsign = "[%u]".printf(v);
+				}
+				sb.append_printf("callsign <%s> ", callsign);
+				unowned RadarPlot? ri = find_radar_data(v);
+				if (ri == null) {
+					var r0 = RadarPlot();
+					r0.id =  v;
+					radar_plot.append(r0);
+					ri = find_radar_data(v);
+					ri.name = callsign;
+					ri.source = RadarSource.MAVLINK;
+					ri.posvalid = true;
+					sb.append(" * ");
+				} else {
+					ri.name = callsign;
+				}
+
+				double lat = 0;
+				double lon = 0;
+
+				rp = SEDE.deserialise_i32(rp, out i);
+				lat = i / 1e7;
+				sb.append_printf("lat %.6f ", lat);
+
+				rp = SEDE.deserialise_i32(rp, out i);
+				lon = i / 1e7;
+				sb.append_printf("lon %.6f ", lon);
+
+				ri.state = 4;
+				ri.lasttick = nticks;
+
+				rp = SEDE.deserialise_i32(rp, out i);
+				var l = i / 1000.0;
+				sb.append_printf("alt %.1f ", l);
+				ri.altitude = l;
+
+				uint16 h;
+				rp = SEDE.deserialise_u16(rp, out h);
+				sb.append_printf("heading %u ", h);
+
+				/*
+				if(ri.posvalid && ri.latitude != 0.0 && ri.longitude != 0.0) {
+					double c,d;
+					Geo.csedist(ri.latitude, ri.longitude, lat, lon, out d, out c);
+					ri.heading = (uint16)c;
+					var tdiff = now.difference(ri.dt);
+					if (tdiff > 0) {
+						ri.speed = d*1852.0 / (tdiff / 1e6) ;
+					}
+				}
+				*/
+				ri.latitude = lat;
+				ri.longitude = lon;
+				if (h != 0xffff) {
+					ri.heading = h;
+				}
+				ri.lq = *rp++;
+				ri.etype = *rp++;
+				rp++; // ttl
+				ri.dt = now;
+
+				sb.append_printf("emitter %u tslc %u ", ri.etype, ri.lq);
+				sb.append_printf("ticks %u ", ri.lasttick);
+				radarv.update(ref ri, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
+				ri.posvalid = true;
+
+				markers.update_radar(ref ri);
+				sb.append_printf("size %u\n", radar_plot.length());
+				if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE)
+					MWPLog.message(sb.str);
+			} else {
+				// We've read 13 already ...
+				rp += 17; // FIXME
+			}
+		}
+	}
+
+	void process_mavlink_radar(uint8 *rp) {
         var sb = new StringBuilder("MAV radar:");
         uint32 v;
         int32 i;
@@ -8733,8 +8858,10 @@ public class MWP : Gtk.Application {
                 ri.speed = hv/100.0;
                 sb.append_printf("speed %u ", hv);
             }
-            sb.append_printf("tslc %u ", *(rp+37));
+
+			ri.etype = *(rp+36);
             ri.lq = *(rp+37);
+			sb.append_printf("emitter %u tslc %u ", ri.etype, ri.lq);
 
             sb.append_printf("ticks %u ", ri.lasttick);
 			radarv.update(ref ri, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
@@ -9489,6 +9616,15 @@ public class MWP : Gtk.Application {
 						MWPLog.message("start radar reader %s\n", r.name);
 						if(rawlog)
 							r.dev.raw_logging(true);
+						/*
+						var rapoll = Environment.get_variable("MSP_ADSB_POLL");
+						if(rapoll != null && rapoll == r.name) {
+							Timeout.add_seconds(10, () => {
+									var ns = r.dev.send_command(MSP.Cmds.ADSB_VEHICLE_LIST, null, 0);
+									return (ns > 0);
+								});
+						}
+						*/
 					} else {
 						string fstr;
 						r.dev.get_error_message(out fstr);

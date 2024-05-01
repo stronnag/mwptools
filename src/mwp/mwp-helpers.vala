@@ -51,11 +51,12 @@ public struct RadarPlot {
     public double speed;
     public uint lasttick;
     public uint8 state;
-    public uint8 lq;
+    public uint8 lq; // tslc for ADSB
     public uint8 source;
     public bool posvalid;
 	public uint8 alert;
 	public DateTime dt;
+	public uint8 etype;
 }
 
 public enum RadarAlert {

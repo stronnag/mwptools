@@ -1833,7 +1833,7 @@ public class MWSerial : Object {
 		return len+9;
 	}
 
-	public void send_command(uint16 cmd, void *data, size_t len, bool sim=false) {
+	public size_t send_command(uint16 cmd, void *data, size_t len, bool sim=false) {
 		if(available == true && !ro) {
 			char tmp = writedirn;
 			if (sim) // forces SIM mode (inav-radar)
@@ -1844,7 +1844,9 @@ public class MWSerial : Object {
 			else
 				mlen  = generate_v1((uint8)cmd, data, len);
 			writedirn = tmp;
-			write(txbuf, mlen);
+			return write(txbuf, mlen);
+		} else {
+			return -1;
 		}
 	}
 
