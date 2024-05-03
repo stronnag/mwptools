@@ -36,6 +36,7 @@ public class RadarView : Object {
         LAST,
 		RANGE,
 		BEARING,
+		CATEGORY,
 		ALERT,
 		ID,
         NO_COLS
@@ -303,7 +304,6 @@ public class RadarView : Object {
 			}
 		}
 
-
 		listmodel.set (iter,
                        Column.SID, source_id(r.source),
                        Column.NAME,r.name,
@@ -315,16 +315,21 @@ public class RadarView : Object {
                        Column.STATUS, stsstr);
 
 		if(r.state == Status.ARMED || r.state == Status.ADSB || r.state == Status.SBS) {
-			listmodel.set (iter, Column.LAST, dt.format("%T"));
+			listmodel.set (iter, Column.LAST, r.dt.format("%T"));
         }
-		listmodel.set (iter, Column.RANGE, ga_range,
+
+		var scat = CatMap.to_category(r.etype);
+		listmodel.set (iter,
+					   Column.RANGE, ga_range,
 					   Column.BEARING, ga_bearing,
+					   Column.CATEGORY, scat,
 					   Column.ALERT, alert);
 		show_number();
     }
 
     private void setup_treeview (Gtk.TreeView view) {
         listmodel = new Gtk.ListStore (Column.NO_COLS,
+                                       typeof (string),
                                        typeof (string),
                                        typeof (string),
                                        typeof (string),
@@ -390,10 +395,13 @@ public class RadarView : Object {
 		view.insert_column_with_attributes (-1, "Range", cell, "text", Column.RANGE);
 
         cell = new Gtk.CellRendererText ();
-		view.insert_column_with_attributes (-1, "Bearing", cell, "text", Column.BEARING);
+		view.insert_column_with_attributes (-1, "Brg.", cell, "text", Column.BEARING);
 
-        int [] widths = {2,12, 16, 16, 10, 10, 10, 12, 12, 12, 6, 6};
-        for (int j = Column.SID; j <= Column.BEARING; j++) {
+        cell = new Gtk.CellRendererText ();
+		view.insert_column_with_attributes (-1, "Cat.", cell, "text", Column.CATEGORY);
+
+        int [] widths = {2,12, 16, 16, 10, 10, 10, 12, 12, 12, 6, 4, 4};
+        for (int j = Column.SID; j <= Column.CATEGORY; j++) {
             var scol =  view.get_column(j);
             if(scol!=null) {
                 scol.set_min_width(7*widths[j]);

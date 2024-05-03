@@ -749,3 +749,54 @@ namespace LLparse {
 		return llok;
 	}
 }
+
+namespace CatMap {
+	public string name_for_category(uint8 etype) {
+		string?[] name_for_type = {
+			"A0",		    // A0
+			"A1", // "cessna",       // A1
+			"A2", // "jet_nonswept", // A2
+			"A3", // "airliner", 	// A3
+			"A4", // "heavy_2e",		// A4
+			"A5", // "heavy_4e",		// A5
+			"A6", // "hi_perf",		// A6
+			"A7", // "helicopter",	// A7
+			"A0",			// B0
+			"A1", // "cessna",		// B1
+			"B2", //balloon",		// B2
+			"A0",			// B3
+			"A1", //"cessna",		// B4
+			"A0",			// B5
+			"A0",			// B6
+			"A6", // "hi_perf",		// B7
+			"C0", // "ground_unknown",   // C0
+			"C1", // "ground_emergency", // C1
+			"C2", // "ground_service",   // C2
+			"C3", // "ground_fixed",     // C3
+			"C3", // "ground_fixed",     // C4
+			"C3", // "ground_fixed",		// C5
+			"C0", // "ground_unknown",   // C6
+			"C0", // "ground_unknown",   // C7
+		};
+		string s;
+		if(etype < name_for_type.length) {
+			s = name_for_type[etype];
+		} else {
+			s = "A0"; // unknown";
+		}
+		return s;
+	}
+
+	uint8 from_category(string s) {
+		uint8 et;
+		et = 8*(s.data[0]-'A') + (s.data[1]-'0');
+		return et;
+	}
+
+	string to_category(uint8 et) {
+		uint8 s[2];
+		s[0] = 'A'+et/8;
+		s[1] = '0'+et%8;
+		return (string)s;
+	}
+}

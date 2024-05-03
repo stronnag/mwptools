@@ -91,8 +91,10 @@ public class MWPMarkers : GLib.Object {
     private Clutter.Color grayish;
     private Clutter.Color white;
 
-	private Clutter.Image yplane;
-	private Clutter.Image rplane;
+	//	private Clutter.Image yplane;
+	//private Clutter.Image rplane;
+	private Clutter.Image [] yplanes;
+	private Clutter.Image [] rplanes;
 	private Clutter.Image inavradar;
 	private Clutter.Image inavtelem;
 
@@ -170,8 +172,16 @@ public class MWPMarkers : GLib.Object {
 		try {
 			inavradar = load_image_from_file("inav-radar.svg", MWP.conf.misciconsize,MWP.conf.misciconsize);
 			inavtelem = load_image_from_file("inav-telem.svg", MWP.conf.misciconsize,MWP.conf.misciconsize);
-			yplane = load_image_from_file("plane100.svg",MWP.conf.misciconsize, MWP.conf.misciconsize);
-			rplane = load_image_from_file("plane100red.svg", MWP.conf.misciconsize, MWP.conf.misciconsize);
+			//			yplane = load_image_from_file("plane100.svg",MWP.conf.misciconsize, MWP.conf.misciconsize);
+			//			rplane = load_image_from_file("plane100red.svg", MWP.conf.misciconsize, MWP.conf.misciconsize);
+
+			for(var i=0; i < 24; i++) {
+				var bn = CatMap.name_for_category(i);
+				var ys = "adsb/%s.svg".printf(bn);
+				var rs = "adsb/%s_red.svg".printf(bn);
+				yplanes += load_image_from_file(ys, -1, -1);
+				rplanes += load_image_from_file(rs, -1, -1);
+			}
 		} catch {
 			stderr.puts("Failed to load icons\n");
 			Posix.exit(127);
@@ -243,13 +253,15 @@ public class MWPMarkers : GLib.Object {
             } else if (r.source == RadarSource.TELEM) {
 				img = inavtelem;
 			} else if ((r.alert & RadarAlert.ALERT) == RadarAlert.ALERT) {
-				img = rplane;
+				img = rplanes[r.etype];
 			} else {
-				img =yplane;
+				img =yplanes[r.etype];
 			}
 			float w,h;
 			img.get_preferred_size(out w, out h);
-			actor.set_size((int)w, (int)h);
+
+			float rscale = 1.3f;
+			actor.set_size((int)(w*rscale), (int)(h*rscale));
 			actor.content = img;
 
 			rp  = new MWPLabel.with_image(actor);
@@ -279,8 +291,8 @@ public class MWPMarkers : GLib.Object {
 						ga_speed = "%.0f %s".printf(Units.speed(_r.speed), Units.speed_units());
 					}
 
-					_tx.text = "  %s / %s \n  %s %s \n  %s %s %.0f°".printf(
-                        _r.name, RadarView.status[_r.state],
+					_tx.text = "  %s / %s (%s) \n  %s %s \n  %s %s %.0f°".printf(
+                        _r.name, RadarView.status[_r.state], CatMap.to_category(_r.etype),
                         PosFormat.lat(_r.latitude, MWP.conf.dms),
                         PosFormat.lon(_r.longitude, MWP.conf.dms),
 						ga_alt, ga_speed, _r.heading);
@@ -340,9 +352,9 @@ public class MWPMarkers : GLib.Object {
 			var act = rp.get_image();
 			if((r.alert & RadarAlert.SET) == RadarAlert.SET) {
 				if((r.alert & RadarAlert.ALERT) == RadarAlert.ALERT) {
-					act.content = rplane;
+					act.content = rplanes[r.etype];
 				} else if (r.alert == RadarAlert.SET) {
-					act.content = yplane;
+					act.content = yplanes[r.etype];
 				}
 				r.alert &= ~RadarAlert.SET;
 			}
@@ -354,7 +366,8 @@ public class MWPMarkers : GLib.Object {
                 _t.set_location (r.latitude,r.longitude);
             }
         }
-        rp.set_rotation_angle(Clutter.RotateAxis.Z_AXIS, r.heading);
+		if(r.etype != 10)
+			rp.set_rotation_angle(Clutter.RotateAxis.Z_AXIS, r.heading);
     }
 
     public void set_rth_icon(bool iland) {

@@ -2865,7 +2865,6 @@ public class MWP : Gtk.Application {
 
         radar_plot = new SList<RadarPlot?>();
 
-
 		foreach (var rd in radar_device) {
 			var parts = rd.split(",");
 			foreach(var p in parts) {
@@ -2873,17 +2872,30 @@ public class MWP : Gtk.Application {
 				if (pn.has_prefix("sbs://")) {
 					var sbs = new SbsReader(pn);
 					sbs.read_sbs.begin();
-					sbs.sbs_result.connect((s) => {
+					sbs.result.connect((s) => {
 							if (s == null) {
 								Timeout.add_seconds(60, () => {
 										sbs.read_sbs.begin();
 										return false;
 									});
 							} else {
-								var px = sbs.parse_sbs_message(s);
+								var px = sbs.parse_message(s);
 								if (px != null) {
 									decode_sbs(px);
 								}
+							}
+						});
+				} else if (pn.has_prefix("jsa://")) {
+					var jsa = new JSACReader(pn);
+					jsa.read_jsa.begin();
+					jsa.result.connect((s) => {
+							if (s == null) {
+								Timeout.add_seconds(60, () => {
+										jsa.read_jsa.begin();
+										return false;
+									});
+							} else {
+								decode_jsa(s);
 							}
 						});
 				} else {
@@ -5268,34 +5280,44 @@ public class MWP : Gtk.Application {
 					//                    radar_plot.@foreach ((r) => {
 					for(unowned SList<RadarPlot?> lp = radar_plot; lp != null; lp = lp.next) {
 						unowned RadarPlot r = lp.data;
-						var staled = 120*10 ; //(r.source == 2) ? 120*10 : 50;
-                            uint delta = nticks - r.lasttick;
-                            if (delta > 600*10) {
-                                if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE)
-                                    MWPLog.message("TRAF-DEL %s %u\n", r.name, r.state);
-                                if((r.source & RadarSource.M_ADSB) != 0) {
-                                    radarv.remove(r);
-                                    markers.remove_radar(r);
-                                    radar_plot.remove_all(r);
-                                }
-                            }
-                            else if(delta > 300*10) {
-                                if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE)
-                                    MWPLog.message("TRAF-HID %s %u\n", r.name, r.state);
-                                if((r.source & RadarSource.M_ADSB) != 0) {
-                                    r.state = 2; // hidden
-									r.alert = RadarAlert.SET;
-									radarv.update(ref r, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
-									markers.set_radar_hidden(r);
-                                }
-                            } else if(delta > staled && r.state != 0 && r.state != 3) {
-                                if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE)
-                                    MWPLog.message("TRAF-STALE %s %u\n", r.name, r.state);
-                                r.state = 3; // stale
+
+						var is_adsb = ((r.source & RadarSource.M_ADSB) != 0);
+						// FIXME set differences for soures INAV. TELEM, ADSB
+						var staled = 120;
+						var deled = 600;
+						var hided = 300;
+						if (!is_adsb) {
+							staled *= 10;
+							deled *= 10;
+							hided *= 10;
+						}
+						uint delta = nticks - r.lasttick;
+						if (delta > deled) {
+							if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE)
+								MWPLog.message("TRAF-DEL %s %u\n", r.name, r.state);
+							if(is_adsb) {
+								radarv.remove(r);
+								markers.remove_radar(r);
+								radar_plot.remove_all(r);
+							}
+						}
+						else if(delta > hided) {
+							if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE)
+								MWPLog.message("TRAF-HID %s %u\n", r.name, r.state);
+							if(is_adsb) {
+								r.state = 2; // hidden
 								r.alert = RadarAlert.SET;
 								radarv.update(ref r, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
-                                markers.set_radar_stale(r);
-                            }
+								markers.set_radar_hidden(r);
+							}
+						} else if(delta > staled && r.state != 0 && r.state != 3) {
+							if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE)
+								MWPLog.message("TRAF-STALE %s %u\n", r.name, r.state);
+							r.state = 3; // stale
+							r.alert = RadarAlert.SET;
+							radarv.update(ref r, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
+							markers.set_radar_stale(r);
+						}
                     }
                 }
                 return Source.CONTINUE;
@@ -8670,6 +8692,89 @@ public class MWP : Gtk.Application {
 		}
 	}
 
+	public void decode_jsa(string js) {
+		var parser = new Json.Parser();
+		var now = new DateTime.now_local();
+		var rdebug = ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE);
+		try {
+			parser.load_from_data (js);
+			var root = parser.get_root().get_object();
+			var acarry = root.get_array_member ("aircraft");
+			foreach (var acnode in acarry.get_elements ()) {
+				var obj = acnode.get_object ();
+				var hex  = obj.get_string_member ("hex");
+				var icao = (uint)uint64.parse(hex,16);
+				unowned RadarPlot? ri  = find_radar_data(icao);
+				if(obj.has_member("lat")) {
+					var sb = new StringBuilder("JSAC");
+					sb.append_printf(" I:%X", icao);
+					if(ri == null) {
+						var r0 = RadarPlot();
+						r0.id =  icao;
+						radar_plot.append(r0);
+						ri = find_radar_data(icao);
+						ri.source = RadarSource.SBS;
+					}
+					ri.posvalid = true;
+					ri.latitude = obj.get_double_member("lat");
+					if(obj.has_member("lon")) {
+						ri.longitude = obj.get_double_member("lon");
+					}
+					sb.append_printf(" pos: %.6f %.6f", ri.latitude,  ri.longitude);
+					if(obj.has_member("category")) {
+						var s = obj.get_string_member("category");
+						var et = CatMap.from_category(s);
+						if (et != ri.etype) {
+							ri.alert |= RadarAlert.SET;
+						}
+						ri.etype = et;
+						sb.append_printf(" typ: %s,%u", s, ri.etype);
+					}
+					if(obj.has_member("flight")) {
+						var s = obj.get_string_member("flight");
+						ri.name = s;
+					} else if(ri.name == null || ri.name.length == 0) {
+						ri.name = "[%u]".printf(icao);
+					}
+					sb.append_printf(" name: %s", ri.name);
+					if(obj.has_member("mag_heading")) {
+						ri.heading = (uint16)obj.get_double_member("mag_heading");
+						sb.append_printf(" hdr: %u", ri.heading);
+					}
+					if(obj.has_member("alt_baro")) {
+						ri.altitude = 0.3048*(double)obj.get_int_member ("alt_baro");
+						sb.append_printf(" hdr: %.0f", ri.altitude);
+					}
+					if(obj.has_member("gs")) {
+						ri.speed = obj.get_double_member ("gs") * 1852.0 / 3600;
+						sb.append_printf(" spd: %.0f", ri.speed);
+					}
+					if(obj.has_member("seen")) {
+						var seen = (uint)obj.get_double_member ("seen");
+						TimeSpan ts = (int64)(seen*-1e6);
+						ri.dt = now.add(ts);
+						ri.lq = (seen < 256) ? (uint8)seen : 255;
+						sb.append_printf(" seen: %.1f", seen);
+					} else {
+						ri.dt = now;
+						ri.lq = 255;
+					}
+					sb.append_printf(" ts: %s, lq: %u\n", ri.dt.format("%T"), ri.lq);
+					ri.lasttick = nticks;
+					ri.state = 5;
+
+					radarv.update(ref ri, rdebug);
+					markers.update_radar(ref ri);
+					if (rdebug) {
+						MWPLog.message(sb.str);
+					}
+				}
+			}
+		} catch (Error e) {
+			print("parser: %s\n%s\n", e.message, js);
+		}
+	}
+
 	private DateTime make_sbs_time(string d, string t) {
 		var p = d.split("/");
 #if USE_TV1
@@ -8750,32 +8855,26 @@ public class MWP : Gtk.Application {
 				rp = SEDE.deserialise_u16(rp, out h);
 				sb.append_printf("heading %u ", h);
 
-				/*
-				if(ri.posvalid && ri.latitude != 0.0 && ri.longitude != 0.0) {
-					double c,d;
-					Geo.csedist(ri.latitude, ri.longitude, lat, lon, out d, out c);
-					ri.heading = (uint16)c;
-					var tdiff = now.difference(ri.dt);
-					if (tdiff > 0) {
-						ri.speed = d*1852.0 / (tdiff / 1e6) ;
-					}
-				}
-				*/
 				ri.latitude = lat;
 				ri.longitude = lon;
 				if (h != 0xffff) {
 					ri.heading = h;
 				}
 				ri.lq = *rp++;
-				ri.etype = *rp++;
+				var et  = *rp++;
+				if (et != ri.etype) {
+					ri.alert |= RadarAlert.SET;
+				}
+				ri.etype = et;
 				rp++; // ttl
-				ri.dt = now;
+
+				TimeSpan ts = -1000000*((int64)(ri.lq));
+				ri.dt = now.add(ts);
 
 				sb.append_printf("emitter %u tslc %u ", ri.etype, ri.lq);
 				sb.append_printf("ticks %u ", ri.lasttick);
 				radarv.update(ref ri, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
 				ri.posvalid = true;
-
 				markers.update_radar(ref ri);
 				sb.append_printf("size %u\n", radar_plot.length());
 				if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE)
@@ -8792,6 +8891,7 @@ public class MWP : Gtk.Application {
         uint32 v;
         int32 i;
         uint16 valid;
+		var now = new DateTime.now_local();
 
         SEDE.deserialise_u16(rp+22, out valid);
         SEDE.deserialise_u32(rp, out v);
@@ -8867,9 +8967,16 @@ public class MWP : Gtk.Application {
                 sb.append_printf("speed %u ", hv);
             }
 
-			ri.etype = *(rp+36);
-            ri.lq = *(rp+37);
+			var et = *(rp+36);
+			if (et != ri.etype) {
+				ri.alert |= RadarAlert.SET;
+			}
+			ri.etype = et;
+			ri.lq = *(rp+37);
 			sb.append_printf("emitter %u tslc %u ", ri.etype, ri.lq);
+
+			TimeSpan ts = -1000000*((int64)(ri.lq));
+			ri.dt = now.add(ts);
 
             sb.append_printf("ticks %u ", ri.lasttick);
 			radarv.update(ref ri, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
