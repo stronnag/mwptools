@@ -118,6 +118,7 @@ public class MWPMarkers : GLib.Object {
     public MWPMarkers(ListBox lb, Champlain.View view, string mkcol ="#ffffff60") {
         _v = view;
 
+		CatMap.init();
         can_interact = true;
         Clutter.Color orange = {0xff, 0xa0, 0x0, 0x80};
         Clutter.Color rcol = {0xff, 0x0, 0x0, 0x80};
@@ -172,11 +173,9 @@ public class MWPMarkers : GLib.Object {
 		try {
 			inavradar = load_image_from_file("inav-radar.svg", MWP.conf.misciconsize,MWP.conf.misciconsize);
 			inavtelem = load_image_from_file("inav-telem.svg", MWP.conf.misciconsize,MWP.conf.misciconsize);
-			//			yplane = load_image_from_file("plane100.svg",MWP.conf.misciconsize, MWP.conf.misciconsize);
-			//			rplane = load_image_from_file("plane100red.svg", MWP.conf.misciconsize, MWP.conf.misciconsize);
 
-			for(var i=0; i < 24; i++) {
-				var bn = CatMap.name_for_category(i);
+			for(var i = 0; i < CatMap.MAXICONS; i++) {
+				var bn = CatMap.name_for_index(i);
 				var ys = "adsb/%s.svg".printf(bn);
 				var rs = "adsb/%s_red.svg".printf(bn);
 				yplanes += load_image_from_file(ys, -1, -1);
@@ -259,9 +258,7 @@ public class MWPMarkers : GLib.Object {
 			}
 			float w,h;
 			img.get_preferred_size(out w, out h);
-
-			float rscale = 1.3f;
-			actor.set_size((int)(w*rscale), (int)(h*rscale));
+			actor.set_size(w, h);
 			actor.content = img;
 
 			rp  = new MWPLabel.with_image(actor);
@@ -349,14 +346,17 @@ public class MWPMarkers : GLib.Object {
         rp.set_color (white);
         rp.set_location (r.latitude,r.longitude);
 		if ((r.source & RadarSource.M_ADSB) != 0) {
-			var act = rp.get_image();
 			if((r.alert & RadarAlert.SET) == RadarAlert.SET) {
+				var act = rp.get_image();
 				if((r.alert & RadarAlert.ALERT) == RadarAlert.ALERT) {
 					act.content = rplanes[r.etype];
 				} else if (r.alert == RadarAlert.SET) {
 					act.content = yplanes[r.etype];
 				}
 				r.alert &= ~RadarAlert.SET;
+				float w,h;
+				act.content.get_preferred_size(out w, out h);
+				act.set_size(w, h);
 			}
 		}
 

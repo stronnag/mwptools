@@ -1,4 +1,4 @@
-project('mwptools', 'c', 'vala', version : '7.120.448', meson_version : '>= 0.60')
+project('mwptools', 'c', 'vala', version : '7.124.749', meson_version : '>= 0.60')
 
 # vala / clang16 workaround
 
