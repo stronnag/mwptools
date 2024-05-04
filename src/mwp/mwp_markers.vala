@@ -91,8 +91,6 @@ public class MWPMarkers : GLib.Object {
     private Clutter.Color grayish;
     private Clutter.Color white;
 
-	//	private Clutter.Image yplane;
-	//private Clutter.Image rplane;
 	private Clutter.Image [] yplanes;
 	private Clutter.Image [] rplanes;
 	private Clutter.Image inavradar;
@@ -251,10 +249,13 @@ public class MWPMarkers : GLib.Object {
 				img = inavradar;
             } else if (r.source == RadarSource.TELEM) {
 				img = inavtelem;
-			} else if ((r.alert & RadarAlert.ALERT) == RadarAlert.ALERT) {
-				img = rplanes[r.etype];
 			} else {
-				img =yplanes[r.etype];
+				var cdsc = CatMap.name_for_category(r.etype);
+				if ((r.alert & RadarAlert.ALERT) == RadarAlert.ALERT) {
+					img = rplanes[cdsc.idx];
+				} else {
+					img = yplanes[cdsc.idx];
+				}
 			}
 			float w,h;
 			img.get_preferred_size(out w, out h);
@@ -298,22 +299,6 @@ public class MWPMarkers : GLib.Object {
                     return true; /**/
                 });
 
-			/*
-			  	if((r.source & RadarSource.M_ADSB) != 0) {
-			ga_alt = Units.ga_alt(r.altitude);
-			ga_speed = Units.ga_speed(r.speed);
-			if (idm != TOTHEMOON) {
-				ga_range = Units.ga_range(idm);
-			}
-		} else {
-			ga_alt = "%.0f %s".printf(Units.distance(r.altitude), Units.distance_units());
-			ga_speed = "%.0f %s".printf(Units.speed(r.speed), Units.speed_units());
-			if (idm != TOTHEMOON) {
-				ga_range = "%.0f %s".printf(Units.distance(idm), Units.distance_units());
-			}
-		}
-			*/
-
             rp.leave_event.connect((ce) => {
                     var _ta = rp.extras[Extra.Q_0] as Clutter.Actor;
                     _v.remove_child(_ta);
@@ -331,7 +316,7 @@ public class MWPMarkers : GLib.Object {
             }
             rdrmarkers.add_marker (rp);
         }
-        rp.opacity = 200;
+        rp.opacity = 224;
         rp.rplot = r;
         if(rp.name != r.name) {
             rp.name = r.name;
@@ -348,10 +333,11 @@ public class MWPMarkers : GLib.Object {
 		if ((r.source & RadarSource.M_ADSB) != 0) {
 			if((r.alert & RadarAlert.SET) == RadarAlert.SET) {
 				var act = rp.get_image();
+				var cdsc = CatMap.name_for_category(r.etype);
 				if((r.alert & RadarAlert.ALERT) == RadarAlert.ALERT) {
-					act.content = rplanes[r.etype];
+					act.content = rplanes[cdsc.idx];
 				} else if (r.alert == RadarAlert.SET) {
-					act.content = yplanes[r.etype];
+					act.content = yplanes[cdsc.idx];
 				}
 				r.alert &= ~RadarAlert.SET;
 				float w,h;
