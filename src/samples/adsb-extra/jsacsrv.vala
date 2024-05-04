@@ -33,18 +33,30 @@ public static int main (string[] args) {
 		monitor.changed.connect ((src, dest, event) => {
 				if(event == FileMonitorEvent.CHANGES_DONE_HINT) {
 					if(slist.length() != 0) {
-						string json;
-						try {
-							FileUtils.get_contents(fpath, out json);
-							slist.@foreach((skt) => {
-									try {
-										skt.send(json.data);
-									} catch (Error e) {
-										stderr.printf("send %s\n", e.message);
-									}
-								});
-						} catch (Error e){
-							stderr.printf("Read %s\n", e.message);
+						Posix.Stat st;
+						if(Posix.stat(fpath, out st) == 0) {
+							char* buf = try_malloc (st.st_size);
+							if (buf != null) {
+								FileStream stream = FileStream.open (fpath, "r");
+								string line;
+								int nn = 0;
+								while ((line = stream.read_line()) != null) {
+									var n = line.length;
+									Memory.copy((buf+nn), line.data, n);
+									nn += n;
+								}
+								*(buf+nn)='\n';
+								unowned uint8[] sbuf = (uint8[]) buf;
+								sbuf.length = nn+1;
+								slist.@foreach((skt) => {
+										try {
+											skt.send(sbuf);
+										} catch (Error e) {
+											stderr.printf("send %s\n", e.message);
+										}
+									});
+								free(buf);
+							}
 						}
 					}
 				}

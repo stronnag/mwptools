@@ -2,9 +2,9 @@
 
 ## Overview
 
-mwp can accept ADS-B data in the [dump1090-fa](https://github.com/flightaware/dump1090) JSON format.
+mwp can accept ADS-B data in the [dump1090](https://github.com/flightaware/dump1090) JSON format.
 
-As `dump1090` does not export this by default, it is necessary to run a small daemon on the `dump1090` server. This daemon `jsacsrv` is small and uses few resources.
+As some versions of `dump1090` do not export this by default, it may be necessary to run a small daemon on the `dump1090` server. This daemon `jsacsrv` is small and uses few resources.
 
 ## `jsacsrv` daemon
 
@@ -31,6 +31,8 @@ Application Options:
   -p, --port       TCP Port
   -f, --acfile     File path
 ```
+
+If you are using some versions of `readsb` (the wiedehopf readsb fork) or some versions of `dump1090`, they *may* supply the JSON data without requiring an external server.
 
 ## mwp setting
 

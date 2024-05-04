@@ -3,7 +3,6 @@ public class JSACReader : Object {
 	private SocketConnection conn;
 	private string host;
 	private uint16 port;
-	private StringBuilder sb;
 	private const uint JSACCOND=IOCondition.IN|IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL;
 
 	public JSACReader(string pn) {
@@ -34,7 +33,6 @@ public class JSACReader : Object {
 		var io_read = new IOChannel.unix_new(fd);
 		if(io_read.set_encoding(null) != IOStatus.NORMAL)
 			error("Failed to set encoding");
-		sb = new StringBuilder();
 		io_read.add_watch(JSACCOND, (chan, cond) => {
 				string buf;
 				size_t length = -1;
@@ -48,11 +46,7 @@ public class JSACReader : Object {
 						result(null);
 						return false;
 					}
-					sb.append(buf);
-					if (length == 2 && buf[0] == '}'&& buf[1] == '\n') {
-						result(sb.str);
-						sb.erase();
-					}
+					result(buf);
 					return true;
 				} catch (IOChannelError e) {
 					return false;

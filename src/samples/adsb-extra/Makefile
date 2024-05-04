@@ -3,7 +3,7 @@ include vala.mk
 VALAC = valac
 
 OPTS += -X -O2 -X -s
-PKGS= --pkg gio-2.0
+PKGS=--pkg gio-2.0 --pkg posix
 
 all: jsacsrv
 
