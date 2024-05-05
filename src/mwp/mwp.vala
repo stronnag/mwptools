@@ -2898,6 +2898,19 @@ public class MWP : Gtk.Application {
 								decode_jsa((string)s);
 							}
 						});
+				} else if (pn.has_prefix("pba://")) {
+					var jsa = new ADSBReader(pn, 38008);
+					jsa.packet_reader.begin();
+					jsa.result.connect((s) => {
+							if (s == null) {
+								Timeout.add_seconds(60, () => {
+										jsa.packet_reader.begin();
+										return false;
+									});
+							} else {
+								decode_psa(s);
+							}
+						});
 				} else {
 					RadarDev r = {};
 					r.name = pn;
@@ -8692,6 +8705,51 @@ public class MWP : Gtk.Application {
 		}
 	}
 
+	public void decode_psa(uint8[] buf) {
+		ReadSB.Pbuf[] acs;
+		var rdebug = ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE);
+		ReadSB.decode_ac_pb(buf, out acs);
+		//print("seen %d valid / asc.length %d\n", na, acs.length);
+		foreach(var a in acs) {
+			unowned RadarPlot? ri  = find_radar_data(a.addr);
+			if(ri == null) {
+				var r0 = RadarPlot();
+				r0.id =  a.addr;
+				radar_plot.append(r0);
+				ri = find_radar_data(a.addr);
+				ri.source = RadarSource.SBS;
+			}
+			ri.posvalid = true;
+			ri.latitude = a.lat;
+			ri.longitude = a.lon;
+			uint8 et = (a.catx&0xf) | (a.catx>>4)/0xa;
+			if (et != ri.etype) {
+				ri.alert |= RadarAlert.SET;
+			}
+			ri.etype = et;
+			if (a.name[0] == ' ') {
+				ri.name = "[%u]".printf(a.addr);
+			} else {
+				ri.name = a.name;
+			}
+			ri.heading = (uint16)a.hdg;
+			ri.altitude = 0.3048*((double)a.alt);
+			ri.speed = ((double)a.speed) * 1852.0 / 3600;
+			ri.dt = new DateTime.from_unix_local ((int64)(a.seen_tm/1000));
+			ri.lq = (a.seen_pos < 256) ? (uint8)a.seen_pos : 255;
+			ri.lasttick = nticks;
+			ri.state = 5;
+
+			radarv.update(ref ri, rdebug);
+			markers.update_radar(ref ri);
+			if (rdebug) {
+				MWPLog.message("AM %X [%s] (%X %d) %f %f alt:%d gspd:%u hdg:%u seen: %s pos_seen: %u\n",
+				  a.addr, (string)a.name, a.catx, et, a.lat, a.lon,
+				  a.alt, a.speed, a.hdg, ri.dt.format("%T"), a.seen_pos);
+			}
+		}
+	}
+
 	public void decode_jsa(string js) {
 		var parser = new Json.Parser();
 		var now = new DateTime.now_local();
@@ -8743,7 +8801,7 @@ public class MWP : Gtk.Application {
 					}
 					if(obj.has_member("alt_baro")) {
 						ri.altitude = 0.3048*(double)obj.get_int_member ("alt_baro");
-						sb.append_printf(" hdr: %.0f", ri.altitude);
+						sb.append_printf(" alt: %.0f", ri.altitude);
 					}
 					if(obj.has_member("gs")) {
 						ri.speed = obj.get_double_member ("gs") * 1852.0 / 3600;
