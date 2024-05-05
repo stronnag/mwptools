@@ -1,13 +1,13 @@
-public class JSACReader : Object {
-	public signal void result(string? d);
+
+public class ADSBReader :Object {
+	public signal void result(uint8[]? d);
 	private SocketConnection conn;
 	private string host;
 	private uint16 port;
-	private const uint JSACCOND=IOCondition.IN|IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL;
 
-	public JSACReader(string pn) {
+	public ADSBReader(string pn, uint16 _port=30003) {
 		var p = pn[6:pn.length].split(":");
-		port = 37007;
+		port = _port;
 		host = "localhost";
 		if (p.length > 1) {
 			port = (uint16)int.parse(p[1]);
@@ -18,7 +18,7 @@ public class JSACReader : Object {
 		}
 	}
 
-	public async bool read_jsa()  throws Error {
+	public async bool line_reader()  throws Error {
 		try {
 			var resolver = Resolver.get_default ();
 			var addresses = yield resolver.lookup_by_name_async (host, null);
@@ -29,55 +29,24 @@ public class JSACReader : Object {
 			result(null);
 			return false;
 		}
-		var fd = conn.socket.fd;
-		var io_read = new IOChannel.unix_new(fd);
-		if(io_read.set_encoding(null) != IOStatus.NORMAL)
-			error("Failed to set encoding");
-		io_read.add_watch(JSACCOND, (chan, cond) => {
-				string buf;
-				size_t length = -1;
-				if (cond == IOCondition.HUP) {
+		var inp = new DataInputStream(conn.input_stream);
+		for(;;) {
+			try {
+				var line = yield inp.read_line_async();
+				if (line == null) {
 					result(null);
 					return false;
+				} else {
+					result(line.data);
 				}
-				try {
-					IOStatus status = chan.read_line(out buf, out length, null);
-					if (status == IOStatus.EOF) {
-						result(null);
-						return false;
-					}
-					result(buf);
-					return true;
-				} catch (IOChannelError e) {
+			} catch (Error e) {
+					result(null);
 					return false;
-				} catch (ConvertError e) {
-					return false;
-				}
-			});
-		return true;
-	}
-}
-
-public class SbsReader :Object {
-	public signal void result(string? d);
-	private SocketConnection conn;
-	private string host;
-	private uint16 port;
-
-	public SbsReader(string pn) {
-		var p = pn[6:pn.length].split(":");
-		port = 30003;
-		host = "localhost";
-		if (p.length > 1) {
-			port = (uint16)int.parse(p[1]);
-		}
-		if (p.length > 0) {
-			if(p[0].length > 0)
-				host = p[0];
+			}
 		}
 	}
 
-	public async bool read_sbs()  throws Error {
+	public async bool packet_reader()  throws Error {
 		try {
 			var resolver = Resolver.get_default ();
 			var addresses = yield resolver.lookup_by_name_async (host, null);
@@ -88,37 +57,31 @@ public class SbsReader :Object {
 			result(null);
 			return false;
 		}
-		var fd = conn.socket.fd;
-		var io_read = new IOChannel.unix_new(fd);
-		if(io_read.set_encoding(null) != IOStatus.NORMAL)
-			error("Failed to set encoding");
-		io_read.add_watch(IOCondition.IN|IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL,
-						  (chan, cond) => {
-				string str = null;
-				size_t length = -1;
-				size_t pos = 0;
-				if (cond == IOCondition.HUP) {
-					result(null);
-					return false;
-				}
-				try {
-					IOStatus status = chan.read_line (out str, out length, out pos);
-					if (status == IOStatus.EOF) {
+		var inp = conn.input_stream;
+		for(;;) {
+			uint8 sz[4];
+			try {
+				var isz  = yield inp.read_async(sz);
+				if(isz == 4) {
+					uint32 msize;
+					SEDE.deserialise_u32(sz, out msize);
+					uint8[]pbuf = new uint8[msize];
+					try {
+						yield inp.read_async(pbuf);
+						result(pbuf);
+					} catch (Error e) {
 						result(null);
 						return false;
 					}
-					result(str);
-					return true;
-				} catch (IOChannelError e) {
-					return false;
-				} catch (ConvertError e) {
-					return false;
 				}
-			});
-		return true;
+			} catch (Error e) {
+				result(null);
+				return false;
+			}
+		}
 	}
 
-	public string[]? parse_message(string s) {
+	public string[]? parse_csv_message(string s) {
 		var p = s.split(",");
 		if (p.length > 8) {
 			switch(p[0]) {

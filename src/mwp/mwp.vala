@@ -2870,32 +2870,32 @@ public class MWP : Gtk.Application {
 			foreach(var p in parts) {
 				var pn = p.strip();
 				if (pn.has_prefix("sbs://")) {
-					var sbs = new SbsReader(pn);
-					sbs.read_sbs.begin();
+					var sbs = new ADSBReader(pn);
+					sbs.line_reader.begin();
 					sbs.result.connect((s) => {
 							if (s == null) {
 								Timeout.add_seconds(60, () => {
-										sbs.read_sbs.begin();
+										sbs.line_reader.begin();
 										return false;
 									});
 							} else {
-								var px = sbs.parse_message(s);
+								var px = sbs.parse_csv_message((string)s);
 								if (px != null) {
 									decode_sbs(px);
 								}
 							}
 						});
 				} else if (pn.has_prefix("jsa://")) {
-					var jsa = new JSACReader(pn);
-					jsa.read_jsa.begin();
+					var jsa = new ADSBReader(pn, 37007);
+					jsa.line_reader.begin();
 					jsa.result.connect((s) => {
 							if (s == null) {
 								Timeout.add_seconds(60, () => {
-										jsa.read_jsa.begin();
+										jsa.line_reader.begin();
 										return false;
 									});
 							} else {
-								decode_jsa(s);
+								decode_jsa((string)s);
 							}
 						});
 				} else {
