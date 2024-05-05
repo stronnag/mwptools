@@ -59,7 +59,7 @@ public class RadarView : Object {
 
 	const double TOTHEMOON = -9999.0;
 
-	public static string[] status = {"Undefined", "Armed", "Hidden", "Stale", "ADS-B", "SBS"};
+	public static string[] status = {"Undefined", "Armed", "Hidden", "Stale", "ADS-B", "SDR"};
     public signal void vis_change(bool hidden);
     public signal void zoom_to_swarm(double lat, double lon);
 

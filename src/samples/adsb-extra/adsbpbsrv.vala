@@ -1,5 +1,13 @@
 
-const string AFILE="/run/dump1090/aircraft.json";
+const string AFILE="/run/readsb/aircraft.pb";
+
+public uint8 * serialise_u32(uint8* rp, uint32 v) {
+	*rp++ = v & 0xff;
+	*rp++ = ((v >> 8) & 0xff);
+	*rp++ = ((v >> 16) & 0xff);
+	*rp++ = ((v >> 24) & 0xff);
+	return rp;
+}
 
 public static int main (string[] args) {
 	SList<Socket> slist = new SList<Socket>();
@@ -13,7 +21,7 @@ public static int main (string[] args) {
 		};
 
 	try {
-		var opt = new OptionContext(" - dump1090 JSON server");
+		var opt = new OptionContext(" - readsb protobuf server");
 		opt.set_help_enabled(true);
 		opt.add_main_entries(options, null);
 		opt.parse(ref args);
@@ -35,27 +43,20 @@ public static int main (string[] args) {
 					if(slist.length() != 0) {
 						Posix.Stat st;
 						if(Posix.stat(fpath, out st) == 0) {
-							char* buf = try_malloc (st.st_size);
+							uint8[] buf = new uint8[st.st_size];
 							if (buf != null) {
-								FileStream stream = FileStream.open (fpath, "r");
-								string line;
-								int nn = 0;
-								while ((line = stream.read_line()) != null) {
-									var n = line.length;
-									Memory.copy((buf+nn), line.data, n);
-									nn += n;
-								}
-								*(buf+nn)='\n';
-								unowned uint8[] sbuf = (uint8[]) buf;
-								sbuf.length = nn+1;
+								FileStream fs= FileStream.open (fpath, "r");
+								fs.read(buf, st.st_size);
 								slist.@foreach((skt) => {
 										try {
-											skt.send(sbuf);
+											uint8 sz[4];
+											serialise_u32(sz, (uint)st.st_size);
+											skt.send(sz);
+											skt.send(buf);
 										} catch (Error e) {
 											stderr.printf("send %s\n", e.message);
 										}
 									});
-								free(buf);
 							}
 						}
 					}

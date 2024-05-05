@@ -31,8 +31,7 @@ mwpsrcs = files('mwp.vala', 'liststore.vala', 'mwp_markers.vala',
                 'mwp_telem-tracker.vala', 'mwp-forwarder.vala',
                 'mwp-los-analysis.vala', 'dem-reader.vala', 'mwp-async-dem-dl.vala',
                 'geozonemgr.vala', 'genoverlay.vala', 'geozedit.vala', 'kmlwriter.vala',
-                'mwp-fwaplot.vala', 'permids.vala'
-               )
+                'mwp-fwaplot.vala', 'permids.vala')
 
 ublxguisrc = files('settings.vala',  'mapsources.vala')
 
@@ -59,6 +58,14 @@ mwpdeps = [deps,
            meson.get_compiler('vala').find_library('linux'),
           ]
 
+
+protoc = meson.get_compiler('c').find_library('protobuf-c', dirs: ldirs, required: false)
+if protoc.found()
+       mwpsrcs += files('readsb.pb-c.c', 'decode_readsb.c', 'decode_readsb.c')
+       mwpdeps += protoc
+       mwp_v_args += ['--vapidir', meson.current_source_dir(), '--pkg', 'decode_readsb', '--define=PROTOC' ]
+endif
+
 # for BSD etc.
 mwp_c_args = []
 
@@ -72,7 +79,7 @@ else
   if mosquitto.found()
     mwp_v_args += '--define=MQTT'
     mwp_v_args += '--define=MQTT_MOSQUITTO'
-    mwp_v_args += ['--vapidir', meson.current_source_dir(), '--pkg', 'libmosquitto']
+    mwp_v_args += ['--pkg', 'libmosquitto']
     mwpdeps +=  mosquitto
     mwpsrcs += files('mwp_mqtt_common.vala')
   endif
