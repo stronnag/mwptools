@@ -7,7 +7,7 @@ public static int main (string[] args) {
 	string fpath = AFILE;
 
 	var options = new OptionEntry[] {
-		{"port", 'p', 0, OptionArg.INT, out port, "TCP Port", null},
+		{"port", 'p', 0, OptionArg.INT, &port, "TCP Port", null},
 		{"acfile", 'f', 0, OptionArg.STRING, out fpath, "File path", null},
 		{null}
 		};
