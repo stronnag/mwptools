@@ -8635,8 +8635,9 @@ public class MWP : Gtk.Application {
 		unowned RadarPlot? ri = find_radar_data(v);
 		var name = p[10].strip();
 		if(ri == null) {
-			var r0 = RadarPlot();
+			RadarPlot r0 = {0};
 			r0.id =  v;
+			r0.etype = 0;
 			radar_plot.append(r0);
 			ri = find_radar_data(v);
 			ri.source = RadarSource.SBS;
@@ -8696,6 +8697,7 @@ public class MWP : Gtk.Application {
 				ri.heading = hdg;
 			}
 		}
+		ri.etype = 0;
 		var rdebug = ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE);
 		if(ri.posvalid) {
 			markers.update_radar(ref ri);
@@ -8718,7 +8720,7 @@ public class MWP : Gtk.Application {
 		foreach(var a in acs) {
 			unowned RadarPlot? ri  = find_radar_data(a.addr);
 			if(ri == null) {
-				var r0 = RadarPlot();
+				RadarPlot r0 = {0};
 				r0.id =  a.addr;
 				radar_plot.append(r0);
 				ri = find_radar_data(a.addr);
@@ -8773,7 +8775,7 @@ public class MWP : Gtk.Application {
 					var sb = new StringBuilder("JSAC");
 					sb.append_printf(" I:%X", icao);
 					if(ri == null) {
-						var r0 = RadarPlot();
+						RadarPlot r0 = {0};
 						r0.id =  icao;
 						radar_plot.append(r0);
 						ri = find_radar_data(icao);
@@ -8884,7 +8886,7 @@ public class MWP : Gtk.Application {
 				sb.append_printf("callsign <%s> ", callsign);
 				unowned RadarPlot? ri = find_radar_data(v);
 				if (ri == null) {
-					var r0 = RadarPlot();
+					RadarPlot r0 = {0};
 					r0.id =  v;
 					radar_plot.append(r0);
 					ri = find_radar_data(v);
@@ -8986,7 +8988,7 @@ public class MWP : Gtk.Application {
         if ((valid & 1)  == 1) {
             unowned RadarPlot? ri = find_radar_data(v);
             if (ri == null) {
-                var r0 = RadarPlot();
+				RadarPlot r0 = {0};
                 r0.id =  v;
                 radar_plot.append(r0);
                 ri = find_radar_data(v);
@@ -9065,7 +9067,7 @@ public class MWP : Gtk.Application {
 
         unowned RadarPlot? ri = find_radar_data((uint)id);
         if (ri == null) {
-            var r0 = RadarPlot();
+			RadarPlot r0 = {0};
             r0.id =  (uint)id;
             radar_plot.append(r0);
             ri = find_radar_data((uint)id);
