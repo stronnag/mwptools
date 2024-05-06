@@ -813,9 +813,10 @@ namespace CatMap {
 	}
 
 	string to_category(uint8 et) {
-		uint8 s[2];
+		uint8 s[3];
 		s[0] = 'A'+et/8;
 		s[1] = '0'+et%8;
+		s[2] = 0;
 		return (string)s;
 	}
 }
