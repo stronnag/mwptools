@@ -5,7 +5,8 @@ dnf install gtk3-devel gstreamer1-devel clutter-devel \
   libgda-devel gobject-introspection-devel vala vala-devel vala-doc \
   libchamplain-devel libgdl-devel libgudev-devel espeak-devel vte291-devel \
   ncurses-devel gstreamer1-plugins-base gstreamer1-plugins-good \
-  gstreamer1-plugins-base-devel ninja-build meson vala desktop-file-utils
+  gstreamer1-plugins-base-devel ninja-build meson vala desktop-file-utils \
+  protobuf-c-devel protobuf-c
 
 # To build mwp-plot-elevation and other tools, golang
 dnf install golang

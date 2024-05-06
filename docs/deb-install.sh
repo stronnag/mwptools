@@ -51,8 +51,8 @@ sudo apt update && sudo apt full-upgrade && \
     ruby ruby-json \
     desktop-file-utils \
     libspeechd-dev flite flite1-dev libmosquitto-dev \
+    libprotobuf-c-dev \
     gnuplot ruby-nokogiri unzip
-
 
 [ -n "$DEPSONLY" ] && exit
 

@@ -61,14 +61,19 @@ public class ADSBReader :Object {
 		for(;;) {
 			uint8 sz[4];
 			try {
-				var isz  = yield inp.read_async(sz);
-				if(isz == 4) {
+				size_t nb = 0;
+				yield inp.read_all_async(sz, Priority.DEFAULT, null, out nb);
+				if(nb == 4) {
 					uint32 msize;
 					SEDE.deserialise_u32(sz, out msize);
 					uint8[]pbuf = new uint8[msize];
 					try {
-						yield inp.read_async(pbuf);
-						result(pbuf);
+						yield inp.read_all_async(pbuf, Priority.DEFAULT, null, out nb);
+						if (nb == msize)
+							result(pbuf);
+						else
+							MWPLog.message("PB read %d %d\n", (int)msize, (int)nb);
+
 					} catch (Error e) {
 						result(null);
 						return false;

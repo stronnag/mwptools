@@ -2898,19 +2898,24 @@ public class MWP : Gtk.Application {
 								decode_jsa((string)s);
 							}
 						});
+
 				} else if (pn.has_prefix("pba://")) {
-					var jsa = new ADSBReader(pn, 38008);
-					jsa.packet_reader.begin();
-					jsa.result.connect((s) => {
+#if PROTOC
+					var psa = new ADSBReader(pn, 38008);
+					psa.packet_reader.begin();
+					psa.result.connect((s) => {
 							if (s == null) {
 								Timeout.add_seconds(60, () => {
-										jsa.packet_reader.begin();
+										psa.packet_reader.begin();
 										return false;
 									});
 							} else {
 								decode_psa(s);
 							}
 						});
+#else
+					MWPLog.message("mwp not compiled protobuf-c\n");
+#endif
 				} else {
 					RadarDev r = {};
 					r.name = pn;
@@ -8704,7 +8709,7 @@ public class MWP : Gtk.Application {
 			radar_plot.remove_all(ri);
 		}
 	}
-
+#if PROTOC
 	public void decode_psa(uint8[] buf) {
 		ReadSB.Pbuf[] acs;
 		var rdebug = ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE);
@@ -8749,6 +8754,7 @@ public class MWP : Gtk.Application {
 			}
 		}
 	}
+#endif
 
 	public void decode_jsa(string js) {
 		var parser = new Json.Parser();

@@ -31,8 +31,7 @@ mwpsrcs = files('mwp.vala', 'liststore.vala', 'mwp_markers.vala',
                 'mwp_telem-tracker.vala', 'mwp-forwarder.vala',
                 'mwp-los-analysis.vala', 'dem-reader.vala', 'mwp-async-dem-dl.vala',
                 'geozonemgr.vala', 'genoverlay.vala', 'geozedit.vala', 'kmlwriter.vala',
-                'mwp-fwaplot.vala', 'permids.vala',
-                'readsb.pb-c.c', 'decode_readsb.c', 'decode_readsb.c')
+                'mwp-fwaplot.vala', 'permids.vala')
 
 ublxguisrc = files('settings.vala',  'mapsources.vala')
 
@@ -57,8 +56,15 @@ mwpdeps = [deps,
            dependency('vte-2.91'),
            meson.get_compiler('vala').find_library('posix'),
            meson.get_compiler('vala').find_library('linux'),
-           meson.get_compiler('c').find_library('protobuf-c'),
           ]
+
+
+protoc = meson.get_compiler('c').find_library('protobuf-c', dirs: ldirs, required: false)
+if protoc.found()
+       mwpsrcs += files('readsb.pb-c.c', 'decode_readsb.c', 'decode_readsb.c')
+       mwpdeps += protoc
+       mwp_v_args += ['--vapidir', meson.current_source_dir(), '--pkg', 'decode_readsb', '--define=PROTOC' ]
+endif
 
 # for BSD etc.
 mwp_c_args = []
@@ -95,9 +101,6 @@ if paho.found()
   mwp_v_args += ['--pkg', 'paho_wrapper']
 endif
 
-
-mwp_v_args += ['--vapidir', meson.current_source_dir()]
-mwp_v_args += ['--pkg', 'decode_readsb']
 common_inc_dir += include_directories('.')
 
 bcd =  dependency('bash-completion', required: false)
