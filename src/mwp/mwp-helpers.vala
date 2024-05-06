@@ -760,6 +760,33 @@ namespace CatMap {
 
 	public void init() {
 		name_for_type = {
+			CatIconDesc(){name="A0", idx=0},
+			CatIconDesc(){name="A1", idx=1},  // "cessna",       // A1
+			CatIconDesc(){name="A2", idx=2},  // "jet_nonswept", // A2
+			CatIconDesc(){name="A3", idx=3},  // "airliner", 	// A3
+			CatIconDesc(){name="A4", idx=4},  // "heavy_2e",		// A4
+			CatIconDesc(){name="A5", idx=5},  // "heavy_4e",		// A5
+			CatIconDesc(){name="A6", idx=6},  // "hi_perf",		// A6
+			CatIconDesc(){name="A7", idx=7},  // "helicopter",	// A7
+			CatIconDesc(){name="A0", idx=0},			// B0
+			CatIconDesc(){name="A1", idx=1},  // "cessna",		// B1
+			CatIconDesc(){name="B2", idx=8},  //balloon",		// B2
+			CatIconDesc(){name="A0", idx=0},			// B3
+			CatIconDesc(){name="A1", idx=1},  //"cessna",		// B4
+			CatIconDesc(){name="A0", idx=0},			// B5
+			CatIconDesc(){name="A0", idx=0},			// B6
+			CatIconDesc(){name="A6", idx=6},  // "hi_perf",		// B7
+			CatIconDesc(){name="C0", idx=9},  // "ground_unknown",   // C0
+			CatIconDesc(){name="C1", idx=10}, // "ground_emergency", // C1
+			CatIconDesc(){name="C2", idx=11}, // "ground_service",   // C2
+			CatIconDesc(){name="C3", idx=12}, // "ground_fixed",     // C3
+			CatIconDesc(){name="C3", idx=12},// "ground_fixed",     // C4
+			CatIconDesc(){name="C3", idx=12}, // "ground_fixed",		// C5
+			CatIconDesc(){name="C0", idx=9}, // "ground_unknown",   // C6
+			CatIconDesc(){name="C0", idx=9},// "ground_unknown",   // C7
+		};
+		/***
+		name_for_type = {
 			{"A0", 0},		    // A0
 			{"A1", 1},  // "cessna",       // A1
 			{"A2", 2},  // "jet_nonswept", // A2
@@ -785,6 +812,7 @@ namespace CatMap {
 			{"C0", 9}, // "ground_unknown",   // C6
 			{"C0", 9},// "ground_unknown",   // C7
 		};
+		**/
 	}
 
 	public CatIconDesc name_for_category(uint8 etype) {

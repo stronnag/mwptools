@@ -8769,7 +8769,7 @@ public class MWP : Gtk.Application {
 			foreach (var acnode in acarry.get_elements ()) {
 				var obj = acnode.get_object ();
 				var hex  = obj.get_string_member ("hex");
-				var icao = (uint)uint64.parse(hex,16);
+				var icao = (uint)  MwpLibC.strtoul(hex, null, 16);  //uint64.parse(hex,16);
 				unowned RadarPlot? ri  = find_radar_data(icao);
 				if(obj.has_member("lat")) {
 					var sb = new StringBuilder("JSAC");
