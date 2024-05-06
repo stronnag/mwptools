@@ -2914,7 +2914,7 @@ public class MWP : Gtk.Application {
 							}
 						});
 #else
-					MWPLog.message("mwp not compiled protobuf-c\n");
+					MWPLog.message("mwp not compiled with protobuf-c\n");
 #endif
 				} else {
 					RadarDev r = {};
