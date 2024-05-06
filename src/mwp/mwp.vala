@@ -2901,16 +2901,16 @@ public class MWP : Gtk.Application {
 
 				} else if (pn.has_prefix("pba://")) {
 #if PROTOC
-					var psa = new ADSBReader(pn, 38008);
-					psa.packet_reader.begin();
-					psa.result.connect((s) => {
+					var pba = new ADSBReader(pn, 38008);
+					pba.packet_reader.begin();
+					pba.result.connect((s) => {
 							if (s == null) {
 								Timeout.add_seconds(60, () => {
-										psa.packet_reader.begin();
+										pba.packet_reader.begin();
 										return false;
 									});
 							} else {
-								decode_psa(s);
+								decode_pba(s);
 							}
 						});
 #else
@@ -8712,11 +8712,11 @@ public class MWP : Gtk.Application {
 		}
 	}
 #if PROTOC
-	public void decode_psa(uint8[] buf) {
+	public void decode_pba(uint8[] buf) {
 		ReadSB.Pbuf[] acs;
 		var rdebug = ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE);
+		var now = new DateTime.now_local();
 		ReadSB.decode_ac_pb(buf, out acs);
-		//print("seen %d valid / asc.length %d\n", na, acs.length);
 		foreach(var a in acs) {
 			unowned RadarPlot? ri  = find_radar_data(a.addr);
 			if(ri == null) {
@@ -8743,6 +8743,10 @@ public class MWP : Gtk.Application {
 			ri.altitude = 0.3048*((double)a.alt);
 			ri.speed = ((double)a.speed) * 1852.0 / 3600;
 			ri.dt = new DateTime.from_unix_local ((int64)(a.seen_tm/1000));
+			if (ri.dt ==  null) { // can't happen ... unless it's cygwin, when it does
+				TimeSpan ts = (int64)(a.seen_pos*-1e6);
+				ri.dt = now.add(ts);
+			}
 			ri.lq = (a.seen_pos < 256) ? (uint8)a.seen_pos : 255;
 			ri.lasttick = nticks;
 			ri.state = 5;
@@ -8750,7 +8754,7 @@ public class MWP : Gtk.Application {
 			radarv.update(ref ri, rdebug);
 			markers.update_radar(ref ri);
 			if (rdebug) {
-				MWPLog.message("AM %X [%s] (%X %d) %f %f alt:%d gspd:%u hdg:%u seen: %s pos_seen: %u\n",
+				MWPLog.message("PBA %X [%s] (%X %d) %f %f alt:%d gspd:%u hdg:%u seen: %s pos_seen: %u\n",
 				  a.addr, (string)a.name, a.catx, et, a.lat, a.lon,
 				  a.alt, a.speed, a.hdg, ri.dt.format("%T"), a.seen_pos);
 			}
