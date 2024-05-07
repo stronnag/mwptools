@@ -8734,7 +8734,7 @@ public class MWP : Gtk.Application {
 				ri.alert |= RadarAlert.SET;
 			}
 			ri.etype = et;
-			if (a.name[0] == ' ') {
+			if (a.name[0] == 0 || a.name[0] == ' ') {
 				ri.name = "[%u]".printf(a.addr);
 			} else {
 				ri.name = a.name;
