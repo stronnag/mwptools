@@ -12,9 +12,9 @@
 
 int decode_ac_pb(uint8_t *buf, size_t len, readsb_pb_t **acs, int* nac) {
   AircraftsUpdate *au = aircrafts_update__unpack(NULL, len, buf);
+  *nac = 0;
   if(au == NULL || au->n_aircraft == 0) {
     *acs = NULL;
-    *nac = 0;
     return 0;
   }
   int anac = au->n_aircraft;

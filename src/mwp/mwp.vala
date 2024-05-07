@@ -8713,7 +8713,7 @@ public class MWP : Gtk.Application {
 	}
 #if PROTOC
 	public void decode_pba(uint8[] buf) {
-		ReadSB.Pbuf[] acs;
+		ReadSB.Pbuf[] acs={};
 		var rdebug = ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE);
 		var now = new DateTime.now_local();
 		ReadSB.decode_ac_pb(buf, out acs);
