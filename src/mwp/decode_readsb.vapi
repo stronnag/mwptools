@@ -7,6 +7,7 @@ namespace ReadSB {
 		uint32 hdg;
 		uint32 speed;
 		uint32 seen_pos;
+		uint32 srange;
 		double lat;
 		double lon;
 		uint8 catx;

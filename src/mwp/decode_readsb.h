@@ -6,6 +6,7 @@ typedef struct {
   uint32_t hdg;
   uint32_t speed;
   uint32_t seen_pos;
+  uint32_t srange;
   double lat;
   double lon;
   uint8_t catx;

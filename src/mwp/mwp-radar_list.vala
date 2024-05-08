@@ -262,6 +262,7 @@ public class RadarView : Object {
 				}
 			}
 		}
+
 		if (alert != r.alert) {
 			r.alert |= RadarAlert.SET;
 		}
@@ -293,6 +294,9 @@ public class RadarView : Object {
 		if((r.source & RadarSource.M_ADSB) != 0) {
 			ga_alt = Units.ga_alt(r.altitude);
 			ga_speed = Units.ga_speed(r.speed);
+			if (idm == TOTHEMOON && r.srange != 0xffffffff) {
+				idm = (double)(r.srange);
+			}
 			if (idm != TOTHEMOON) {
 				ga_range = Units.ga_range(idm);
 			}

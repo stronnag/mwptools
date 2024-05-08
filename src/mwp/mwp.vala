@@ -352,6 +352,7 @@ public class MWP : Gtk.Application {
 		VIDEO = (1 << 7),
 		GCSLOC = (1 << 8),
 		LOSANA = (1 << 9),
+		RDRLIST = (1 << 10),
     }
 
     private enum SAT_FLAGS {
@@ -5295,12 +5296,13 @@ public class MWP : Gtk.Application {
                 }
 
                 if((nticks % RADARINTVL) == 0) {
-					//                    radar_plot.@foreach ((r) => {
-					for(unowned SList<RadarPlot?> lp = radar_plot; lp != null; lp = lp.next) {
-						unowned RadarPlot r = lp.data;
+					bool dumpit = false;
+					for(unowned SList<RadarPlot?> lp = radar_plot; lp != null; ) {
+						unowned var xlp = lp;
+						lp = lp.next;
+						unowned RadarPlot r = xlp.data;
 
 						var is_adsb = ((r.source & RadarSource.M_ADSB) != 0);
-						// FIXME set differences for soures INAV. TELEM, ADSB
 						var staled = 120;
 						var deled = 600;
 						var hided = 300;
@@ -5310,18 +5312,23 @@ public class MWP : Gtk.Application {
 							hided *= 10;
 						}
 						uint delta = nticks - r.lasttick;
+						bool rdebug = ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE);
 						if (delta > deled) {
-							if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE)
-								MWPLog.message("TRAF-DEL %s %u\n", r.name, r.state);
+							if (rdebug) {
+								MWPLog.message("TRAF-DEL %p %X %u %s len=%u\n",
+											   r, r.id, r.state,
+											   is_adsb.to_string(), radar_plot.length());
+							}
 							if(is_adsb) {
 								radarv.remove(r);
 								markers.remove_radar(r);
-								radar_plot.remove_all(r);
+								delete_radar_by_id(r.id);
+								dumpit = true;
 							}
-						}
-						else if(delta > hided) {
-							if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE)
-								MWPLog.message("TRAF-HID %s %u\n", r.name, r.state);
+						} else if(delta > hided) {
+							if(rdebug)
+								MWPLog.message("TRAF-HID %X %s %u %u\n",
+											   r.id, r.name, r.state, radar_plot.length());
 							if(is_adsb) {
 								r.state = 2; // hidden
 								r.alert = RadarAlert.SET;
@@ -5329,14 +5336,18 @@ public class MWP : Gtk.Application {
 								markers.set_radar_hidden(r);
 							}
 						} else if(delta > staled && r.state != 0 && r.state != 3) {
-							if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE)
-								MWPLog.message("TRAF-STALE %s %u\n", r.name, r.state);
+							if(rdebug)
+								MWPLog.message("TRAF-STALE %X %s %u %u\n",
+											   r.id, r.name, r.state, radar_plot.length());
 							r.state = 3; // stale
 							r.alert = RadarAlert.SET;
 							radarv.update(ref r, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
 							markers.set_radar_stale(r);
 						}
                     }
+					if(dumpit && ((debug_flags & DEBUG_FLAGS.RDRLIST) != DEBUG_FLAGS.NONE)) {
+						dump_radar_list("Delete");
+					}
                 }
                 return Source.CONTINUE;
             });
@@ -8628,26 +8639,59 @@ public class MWP : Gtk.Application {
         return null;
     }
 
+
+	public void delete_radar_by_id(uint v) {
+		for( unowned var lp = radar_plot; lp != null; ) {
+			unowned var xlp = lp;
+			lp = lp.next;
+			if(((RadarPlot)xlp.data).id == v) {
+				radar_plot.remove_link(xlp);
+			}
+		}
+	}
+
+	public unowned RadarPlot new_radar_item(uint id, uint8 source=0) {
+		RadarPlot r0 = RadarPlot();
+		r0.id = id;
+		r0.source = source;
+		r0.srange = (uint32)0xffffffff;
+		radar_plot.append(r0);
+		if((debug_flags & DEBUG_FLAGS.RDRLIST) != DEBUG_FLAGS.NONE) {
+			dump_radar_list("Add");
+		}
+		return radar_plot.last().nth_data(0);
+	}
+
+	private void dump_radar_list(string act) {
+		var j = 0;
+		var sb = new StringBuilder();
+		sb.append_printf("TRAF-INFO dump_radar_list(%s)\n", act);
+		for(unowned SList<RadarPlot?> lp = radar_plot; lp != null; lp = lp.next) {
+			unowned RadarPlot r = lp.data;
+			sb.append_printf("\t\t%d: %X %u\n", j, r.id, r.state);
+			j++;
+		}
+		sb.append_printf("\tlist length=%u\n", radar_plot.length());
+		MWPLog.message(sb.str);
+	}
+
 	void decode_sbs(string[] p) {
+		var rdebug = ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE);
 		bool posrep = (p[1] == "2" || p[1] == "3");
 		string s4 = "0x%s".printf(p[4]);
 		uint v = (uint)uint64.parse(s4);
 		unowned RadarPlot? ri = find_radar_data(v);
 		var name = p[10].strip();
 		if(ri == null) {
-			RadarPlot r0 = {0};
-			r0.id =  v;
-			r0.etype = 0;
-			radar_plot.append(r0);
-			ri = find_radar_data(v);
-			ri.source = RadarSource.SBS;
-			ri.posvalid = false;
-			ri.state = 5;
+			ri = new_radar_item(v, RadarSource.SBS);
 			ri.name = name;
-		} else {
-			if (name.length > 0)
-				ri.name = name;
+			if(rdebug) {
+				MWPLog.message("SBS INIT %X %p %u\n", ri.id, ri, radar_plot.length());
+			}
 		}
+		if (name.length > 0)
+			ri.name = name;
+
 		if (ri.name == null || ri.name == "")
 			ri.name = "[%s]".printf(p[4]);
 
@@ -8698,17 +8742,20 @@ public class MWP : Gtk.Application {
 			}
 		}
 		ri.etype = 0;
-		var rdebug = ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE);
+		ri.state = 5;
 		if(ri.posvalid) {
+			radarv.update(ref ri, rdebug);
 			markers.update_radar(ref ri);
 			if (rdebug) {
 				MWPLog.message("SBS p[1]=%s id=%x calls=%s lat=%f lon=%f alt=%.0f hdg=%u speed=%.1f last=%u\n", p[1], ri.id, ri.name, ri.latitude, ri.longitude, ri.altitude, ri.heading, ri.speed, ri.lasttick);
 			}
-			radarv.update(ref ri, rdebug);
 		} else {
 			radarv.remove(ri);
 			markers.remove_radar(ri);
-			radar_plot.remove_all(ri);
+			delete_radar_by_id(ri.id);
+			if((debug_flags & DEBUG_FLAGS.RDRLIST) != DEBUG_FLAGS.NONE) {
+				dump_radar_list("DelNopos");
+			}
 		}
 	}
 #if PROTOC
@@ -8720,11 +8767,7 @@ public class MWP : Gtk.Application {
 		foreach(var a in acs) {
 			unowned RadarPlot? ri  = find_radar_data(a.addr);
 			if(ri == null) {
-				RadarPlot r0 = {0};
-				r0.id =  a.addr;
-				radar_plot.append(r0);
-				ri = find_radar_data(a.addr);
-				ri.source = RadarSource.SBS;
+				ri  = new_radar_item(a.addr, RadarSource.SBS);
 			}
 			ri.posvalid = true;
 			ri.latitude = a.lat;
@@ -8734,8 +8777,8 @@ public class MWP : Gtk.Application {
 				ri.alert |= RadarAlert.SET;
 			}
 			ri.etype = et;
-			if (a.name[0] == 0 || a.name[0] == ' ') {
-				ri.name = "[%u]".printf(a.addr);
+			if (a.name == null || a.name[0] == 0 || a.name[0] == ' ') {
+				ri.name = "[%X]".printf(a.addr);
 			} else {
 				ri.name = a.name;
 			}
@@ -8750,14 +8793,15 @@ public class MWP : Gtk.Application {
 			ri.lq = (a.seen_pos < 256) ? (uint8)a.seen_pos : 255;
 			ri.lasttick = nticks;
 			ri.state = 5;
-
+			ri.srange = a.srange;
+			if (rdebug) {
+				MWPLog.message("PBA %X %s %f %f a:%.0f h:%u s:=%.0f %s %u (%u)\n",
+							   ri.id, ri.name, ri.latitude, ri.longitude, ri.altitude,
+							   ri.heading, ri.speed, ri.dt.format("%T"),
+							   ri.srange, ri.source);
+			}
 			radarv.update(ref ri, rdebug);
 			markers.update_radar(ref ri);
-			if (rdebug) {
-				MWPLog.message("PBA %X [%s] (%X %d) %f %f alt:%d gspd:%u hdg:%u seen: %s pos_seen: %u\n",
-				  a.addr, (string)a.name, a.catx, et, a.lat, a.lon,
-				  a.alt, a.speed, a.hdg, ri.dt.format("%T"), a.seen_pos);
-			}
 		}
 	}
 #endif
@@ -8774,17 +8818,13 @@ public class MWP : Gtk.Application {
 				var obj = acnode.get_object ();
 				var hex  = obj.get_string_member ("hex");
 				var icao = (uint)  MwpLibC.strtoul(hex, null, 16);  //uint64.parse(hex,16);
-				unowned RadarPlot? ri  = find_radar_data(icao);
 				if(obj.has_member("lat")) {
+					unowned RadarPlot? ri  = find_radar_data(icao);
+					if(ri == null) {
+						ri = new_radar_item(icao, RadarSource.SBS);
+					}
 					var sb = new StringBuilder("JSAC");
 					sb.append_printf(" I:%X", icao);
-					if(ri == null) {
-						RadarPlot r0 = {0};
-						r0.id =  icao;
-						radar_plot.append(r0);
-						ri = find_radar_data(icao);
-						ri.source = RadarSource.SBS;
-					}
 					ri.posvalid = true;
 					ri.latitude = obj.get_double_member("lat");
 					if(obj.has_member("lon")) {
@@ -8890,12 +8930,8 @@ public class MWP : Gtk.Application {
 				sb.append_printf("callsign <%s> ", callsign);
 				unowned RadarPlot? ri = find_radar_data(v);
 				if (ri == null) {
-					RadarPlot r0 = {0};
-					r0.id =  v;
-					radar_plot.append(r0);
-					ri = find_radar_data(v);
+					ri = new_radar_item(v, RadarSource.MAVLINK);
 					ri.name = callsign;
-					ri.source = RadarSource.MAVLINK;
 					ri.posvalid = true;
 					sb.append(" * ");
 				} else {
@@ -8992,18 +9028,10 @@ public class MWP : Gtk.Application {
         if ((valid & 1)  == 1) {
             unowned RadarPlot? ri = find_radar_data(v);
             if (ri == null) {
-				RadarPlot r0 = {0};
-                r0.id =  v;
-                radar_plot.append(r0);
-                ri = find_radar_data(v);
-                ri.name = callsign;
-                ri.source = RadarSource.MAVLINK;
-                ri.posvalid = false;
+				ri = new_radar_item(v, RadarSource.MAVLINK);
                 sb.append(" * ");
-            } else {
-                ri.name = callsign;
-            }
-
+			}
+			ri.name = callsign;
             SEDE.deserialise_i32(rp+4, out i);
             lat = i / 1e7;
             sb.append_printf("lat %.6f ", lat);
@@ -9071,12 +9099,8 @@ public class MWP : Gtk.Application {
 
         unowned RadarPlot? ri = find_radar_data((uint)id);
         if (ri == null) {
-			RadarPlot r0 = {0};
-            r0.id =  (uint)id;
-            radar_plot.append(r0);
-            ri = find_radar_data((uint)id);
+			ri = new_radar_item((uint)id, RadarSource.INAV);
             ri.name = "⚙ inav %c".printf(65+id);
-            ri.source = RadarSource.INAV;
         }
         ri.state = *rp++;
         rp = SEDE.deserialise_i32(rp, out ipos);
@@ -9090,6 +9114,7 @@ public class MWP : Gtk.Application {
         ri.speed = ispd/100.0;
         ri.lq = *rp;
         ri.lasttick = nticks;
+		ri.posvalid = true;
 
         radarv.update(ref ri);
         markers.update_radar(ref ri);

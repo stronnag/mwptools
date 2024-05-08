@@ -55,8 +55,9 @@ public struct RadarPlot {
     public uint8 source;
     public bool posvalid;
 	public uint8 alert;
-	public DateTime dt;
 	public uint8 etype;
+	public DateTime dt;
+	public uint32 srange;
 }
 
 public enum RadarAlert {
