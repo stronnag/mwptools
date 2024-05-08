@@ -342,17 +342,17 @@ public class MWP : Gtk.Application {
 
     public enum DEBUG_FLAGS {
         NONE=0,
-        WP = (1 << 0),
-        INIT = (1 << 1),
-        MSP = (1 << 2),
-        ADHOC = (1 << 3),
-        RADAR= (1 << 4),
-        OTXSTDERR = (1 << 5),
-		SERIAL = (1 << 6),
-		VIDEO = (1 << 7),
-		GCSLOC = (1 << 8),
-		LOSANA = (1 << 9),
-		RDRLIST = (1 << 10),
+        WP = (1 << 0),          // 1
+        INIT = (1 << 1),        // 2
+        MSP = (1 << 2),			// 4
+        ADHOC = (1 << 3),		// 8
+        RADAR= (1 << 4),		// 16
+        OTXSTDERR = (1 << 5),	// 32
+		SERIAL = (1 << 6),		// 64
+		VIDEO = (1 << 7),		// 128
+		GCSLOC = (1 << 8),		// 256
+		LOSANA = (1 << 9),		// 512
+		RDRLIST = (1 << 10),	// 1024
     }
 
     private enum SAT_FLAGS {
@@ -5332,8 +5332,10 @@ public class MWP : Gtk.Application {
 							if(is_adsb) {
 								r.state = 2; // hidden
 								r.alert = RadarAlert.SET;
-								radarv.update(ref r, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
-								markers.set_radar_hidden(r);
+								if (r.posvalid) {
+									radarv.update(ref r, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
+									markers.set_radar_hidden(r);
+								}
 							}
 						} else if(delta > staled && r.state != 0 && r.state != 3) {
 							if(rdebug)
@@ -5341,8 +5343,10 @@ public class MWP : Gtk.Application {
 											   r.id, r.name, r.state, radar_plot.length());
 							r.state = 3; // stale
 							r.alert = RadarAlert.SET;
-							radarv.update(ref r, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
-							markers.set_radar_stale(r);
+							if(r.posvalid) {
+								radarv.update(ref r, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
+								markers.set_radar_stale(r);
+							}
 						}
                     }
 					if(dumpit && ((debug_flags & DEBUG_FLAGS.RDRLIST) != DEBUG_FLAGS.NONE)) {
@@ -8678,10 +8682,11 @@ public class MWP : Gtk.Application {
 	void decode_sbs(string[] p) {
 		var rdebug = ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE);
 		bool posrep = (p[1] == "2" || p[1] == "3");
+		bool isvalid = false;
 		string s4 = "0x%s".printf(p[4]);
 		uint v = (uint)uint64.parse(s4);
-		unowned RadarPlot? ri = find_radar_data(v);
 		var name = p[10].strip();
+		unowned RadarPlot? ri = find_radar_data(v);
 		if(ri == null) {
 			ri = new_radar_item(v, RadarSource.SBS);
 			ri.name = name;
@@ -8700,7 +8705,7 @@ public class MWP : Gtk.Application {
 			double lng = double.parse(p[15]);
 			uint16 hdg = (uint16)int.parse(p[13]);
 			int spd = int.parse(p[12]);
-			var isvalid = (lat != 0 && lng != 0);
+			isvalid = (p[14].length > 0  && p[15].length > 0);
 			var currdt = make_sbs_time(p[6], p[7]);
 			if ( isvalid && hdg == 0 && spd == 0 && ri.posvalid && ri.dt != null) {
 				if (ri.speed == 0.0) {
@@ -8717,12 +8722,10 @@ public class MWP : Gtk.Application {
 				ri.speed = spd * (1852.0/3600.0);
 				ri.heading = hdg;
 			}
-			ri.latitude = lat;
-			ri.longitude = lng;
-			ri.posvalid = isvalid;
-			ri.altitude = int.parse(p[11])*0.3048;
-			ri.lasttick = nticks;
-			if (isvalid) {
+			if(isvalid) {
+				ri.latitude = lat;
+				ri.longitude = lng;
+				ri.posvalid = true;
 				if (ri.dt != null) {
 					var td = currdt.difference(ri.dt);
 					td /= 1000000;
@@ -8731,6 +8734,8 @@ public class MWP : Gtk.Application {
 				}
 				ri.dt = currdt;
 			}
+			ri.altitude = int.parse(p[11])*0.3048;
+			ri.lasttick = nticks;
 		} else if (p[1] == "4") {
 			uint16 hdg = (uint16)int.parse(p[13]);
 			int spd = int.parse(p[12]);
@@ -8743,20 +8748,20 @@ public class MWP : Gtk.Application {
 		}
 		ri.etype = 0;
 		ri.state = 5;
-		if(ri.posvalid) {
+		if(isvalid) {
 			radarv.update(ref ri, rdebug);
 			markers.update_radar(ref ri);
 			if (rdebug) {
 				MWPLog.message("SBS p[1]=%s id=%x calls=%s lat=%f lon=%f alt=%.0f hdg=%u speed=%.1f last=%u\n", p[1], ri.id, ri.name, ri.latitude, ri.longitude, ri.altitude, ri.heading, ri.speed, ri.lasttick);
 			}
-		} else {
+		} /*else {
 			radarv.remove(ri);
 			markers.remove_radar(ri);
 			delete_radar_by_id(ri.id);
 			if((debug_flags & DEBUG_FLAGS.RDRLIST) != DEBUG_FLAGS.NONE) {
 				dump_radar_list("DelNopos");
 			}
-		}
+			}*/
 	}
 #if PROTOC
 	public void decode_pba(uint8[] buf) {

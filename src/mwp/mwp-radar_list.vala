@@ -238,7 +238,6 @@ public class RadarView : Object {
 		uint8 htype;
 		double hlat, hlon;
 		var alert = r.alert;
-		string ga_range;
 		string ga_bearing;
 		string ga_alt;
 		string ga_speed;
@@ -284,7 +283,7 @@ public class RadarView : Object {
         if(r.state >= RadarView.status.length)
             r.state = Status.UNDEF;
         var stsstr = "%s / %u".printf(RadarView.status[r.state], r.lq);
-		ga_range = "";
+		//ga_range = "";
 		if (idm == TOTHEMOON) {
 			ga_bearing = "";
 		} else {
@@ -297,15 +296,15 @@ public class RadarView : Object {
 			if (idm == TOTHEMOON && r.srange != 0xffffffff) {
 				idm = (double)(r.srange);
 			}
-			if (idm != TOTHEMOON) {
-				ga_range = Units.ga_range(idm);
-			}
+			//			if (idm != TOTHEMOON) {
+			//	ga_range = Units.ga_range(idm);
+			//}
 		} else {
 			ga_alt = "%.0f %s".printf(Units.distance(r.altitude), Units.distance_units());
 			ga_speed = "%.0f %s".printf(Units.speed(r.speed), Units.speed_units());
-			if (idm != TOTHEMOON) {
-				ga_range = "%.0f %s".printf(Units.distance(idm), Units.distance_units());
-			}
+			//if (idm != TOTHEMOON) {
+			//	ga_range = "%.0f %s".printf(Units.distance(idm), Units.distance_units());
+			//}
 		}
 
 		listmodel.set (iter,
@@ -324,7 +323,7 @@ public class RadarView : Object {
 
 		var scat = CatMap.to_category(r.etype);
 		listmodel.set (iter,
-					   Column.RANGE, ga_range,
+					   Column.RANGE, idm,
 					   Column.BEARING, ga_bearing,
 					   Column.CATEGORY, scat,
 					   Column.ALERT, alert);
@@ -342,7 +341,7 @@ public class RadarView : Object {
                                        typeof (string),
                                        typeof (string),
                                        typeof (string),
-                                       typeof (string),
+                                       typeof (double),
                                        typeof (string),
                                        typeof (string),
                                        typeof (uint),
@@ -397,6 +396,42 @@ public class RadarView : Object {
 
         cell = new Gtk.CellRendererText ();
 		view.insert_column_with_attributes (-1, "Range", cell, "text", Column.RANGE);
+        col = view.get_column(Column.RANGE);
+        col.set_cell_data_func(cell, (col,_cell,model,iter) => {
+				string s="";
+                Value v;
+				model.get_value(iter, Column.RANGE, out v);
+				double rval = (double)v;
+				model.get_value(iter, Column.SID, out v);
+				string sid= (string)v;
+
+				if(sid == "S" || sid == "A") {
+					if (rval != TOTHEMOON) {
+						s = Units.ga_range(rval);
+					}
+				} else if (rval != TOTHEMOON) {
+					s = "%.0f %s".printf(Units.distance(rval), Units.distance_units());
+				}
+				_cell.set_property("text",s);
+            });
+
+
+		/**
+
+			ga_alt = Units.ga_alt(r.altitude);
+			ga_speed = Units.ga_speed(r.speed);
+			//			if (idm != TOTHEMOON) {
+			//	ga_range = Units.ga_range(idm);
+			//}
+		} else {
+			ga_alt = "%.0f %s".printf(Units.distance(r.altitude), Units.distance_units());
+			ga_speed = "%.0f %s".printf(Units.speed(r.speed), Units.speed_units());
+			//if (idm != TOTHEMOON) {
+			//	ga_range = "%.0f %s".printf(Units.distance(idm), Units.distance_units());
+			//}
+		}
+
+		 **/
 
         cell = new Gtk.CellRendererText ();
 		view.insert_column_with_attributes (-1, "Brg.", cell, "text", Column.BEARING);
