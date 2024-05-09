@@ -1,8 +1,9 @@
 
 public class ADSBSrv : Object {
 	const string AFILE="/run/readsb/aircraft.pb";
-    private static int port = 38008;
-    private static string fpath = AFILE;
+	const int DPORT = 38008;
+    private static int port;
+    private static string fpath;
 
     public static  uint8 * serialise_u32(uint8* rp, uint32 v) {
 		*rp++ = v & 0xff;
@@ -13,13 +14,16 @@ public class ADSBSrv : Object {
     }
 
     public static int main (string[] args) {
-        const OptionEntry[] options = {
+		const OptionEntry[] options = {
 			{"port", 'p', 0, OptionArg.INT, out port, "TCP Port", null},
 			{"acfile", 'f', 0, OptionArg.STRING, out fpath, "File path", null},
 			{null}
 		};
 
 		SList<Socket> slist = new SList<Socket>();
+		fpath = AFILE;
+		port = DPORT;
+
 		try {
 			var opt = new OptionContext(" - readsb protobuf server");
 			opt.set_help_enabled(true);

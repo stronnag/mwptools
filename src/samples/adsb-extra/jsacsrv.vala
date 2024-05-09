@@ -1,11 +1,15 @@
 
 public class JSACSrv : Object {
     const string AFILE="/run/dump1090/aircraft.json";
-    private static int port = 37007;
-    private static string fpath = AFILE;
+	const int DPORT = 37007;
+
+    private static int port;
+    private static string fpath;
 
     public static int main (string[] args) {
 		SList<Socket> slist = new SList<Socket>();
+		fpath = AFILE;
+		port = DPORT;
 
 		const OptionEntry[] options = {
 			{"port", 'p', 0, OptionArg.INT, out port, "TCP Port", null},
