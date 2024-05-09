@@ -30,7 +30,9 @@ def process_file(s, fnam, once)
         p = l.split(',')
         h={}
         h[:icao] = p[4].to_i(16)
-        h[:callsign] = (p[10]||"")
+        if !p[10].nil? && !p[10].empty?
+          h[:callsign] = p[10]
+        end
         h[:ttl]  = 10
         h[:typ] = 0
         h[:tslc] = 1

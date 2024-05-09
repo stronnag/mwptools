@@ -8748,20 +8748,13 @@ public class MWP : Gtk.Application {
 		}
 		ri.etype = 0;
 		ri.state = 5;
-		if(isvalid) {
+		if(ri.posvalid) {
 			radarv.update(ref ri, rdebug);
 			markers.update_radar(ref ri);
 			if (rdebug) {
 				MWPLog.message("SBS p[1]=%s id=%x calls=%s lat=%f lon=%f alt=%.0f hdg=%u speed=%.1f last=%u\n", p[1], ri.id, ri.name, ri.latitude, ri.longitude, ri.altitude, ri.heading, ri.speed, ri.lasttick);
 			}
-		} /*else {
-			radarv.remove(ri);
-			markers.remove_radar(ri);
-			delete_radar_by_id(ri.id);
-			if((debug_flags & DEBUG_FLAGS.RDRLIST) != DEBUG_FLAGS.NONE) {
-				dump_radar_list("DelNopos");
-			}
-			}*/
+		}
 	}
 #if PROTOC
 	public void decode_pba(uint8[] buf) {
@@ -8928,9 +8921,9 @@ public class MWP : Gtk.Application {
 			callsign = ((string)cs).strip();
 			rp = SEDE.deserialise_u32(rp, out v);
 			if(v != 0) {
-				sb.append_printf("ICAO %u ", v);
+				sb.append_printf("ICAO %X ", v);
 				if(callsign.length == 0) {
-					callsign = "[%u]".printf(v);
+					callsign = "[%X]".printf(v);
 				}
 				sb.append_printf("callsign <%s> ", callsign);
 				unowned RadarPlot? ri = find_radar_data(v);
