@@ -1,3 +1,4 @@
+
 namespace ReadSB {
 	[Compact]
 	[CCode (cheader_filename = "decode_readsb.h", cname="readsb_pb_t", has_type_id = false)]
@@ -16,4 +17,7 @@ namespace ReadSB {
 	}
 	[CCode (cheader_filename = "decode_readsb.h", cname = "decode_ac_pb")]
 	public int decode_ac_pb(uint8[]input_array, out ReadSB.Pbuf[] output_array);
+
+	[CCode (cheader_filename = "decode_readsb.h")]
+	public const uint32 DISTNDEF;
 }

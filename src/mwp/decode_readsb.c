@@ -43,7 +43,7 @@ int decode_ac_pb(uint8_t *buf, size_t len, readsb_pb_t **acs, int* nac) {
 	if (vs->mag_heading > 0) {
 	  ac->hdg = am->mag_heading;
 	}
-	ac->srange = am->distance;
+	ac->srange = (am->distance == 0) ? READ_SB_DISTNDEF : am->distance;
 	ac->seen_tm = am->seen;
 	ac->seen_pos = am->seen_pos;
 	(*nac)++;

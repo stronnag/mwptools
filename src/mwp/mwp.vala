@@ -8658,7 +8658,7 @@ public class MWP : Gtk.Application {
 		RadarPlot r0 = RadarPlot();
 		r0.id = id;
 		r0.source = source;
-		r0.srange = (uint32)0xffffffff;
+		r0.srange = (uint32)ReadSB.DISTNDEF;
 		radar_plot.append(r0);
 		if((debug_flags & DEBUG_FLAGS.RDRLIST) != DEBUG_FLAGS.NONE) {
 			dump_radar_list("Add");

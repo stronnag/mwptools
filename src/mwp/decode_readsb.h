@@ -1,5 +1,7 @@
 #include <stdint.h>
 
+#define READ_SB_DISTNDEF 0xffffffff
+
 typedef struct {
   uint32_t addr;
   int32_t alt;
