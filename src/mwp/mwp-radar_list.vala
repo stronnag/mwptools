@@ -196,13 +196,13 @@ public class RadarView : Object {
         label.set_text (sb.str);
     }
 
-    private bool find_entry(RadarPlot r, out Gtk.TreeIter iter) {
+    private bool find_entry(uint rid, out Gtk.TreeIter iter) {
         bool found = false;
         for(bool next=listmodel.get_iter_first(out iter); next; next=listmodel.iter_next(ref iter)) {
             GLib.Value cell;
             listmodel.get_value (iter, Column.ID, out cell);
             var id = (uint)cell;
-            if(id == r.id) {
+            if(id == rid) {
                 found = true;
                 break;
             }
@@ -210,12 +210,14 @@ public class RadarView : Object {
         return found;
     }
 
-    public void remove (RadarPlot r) {
+    public void remove (uint rid) {
         Gtk.TreeIter iter;
-        if (find_entry(r, out iter)) {
+		var found = find_entry(rid, out iter);
+		if (found) {
             listmodel.remove(ref iter);
             show_number();
         }
+		stderr.printf("lok: %s ", found.to_string());
     }
 
 	private void set_cell_text_bg(Gtk.TreeModel model, Gtk.TreeIter iter, Gtk.CellRenderer cell, string? s) {
@@ -231,16 +233,21 @@ public class RadarView : Object {
 		cell.set_property("text", s);
 	}
 
-	public void update (ref unowned RadarPlot r, bool verbose = false) {
+	public void update (uint rk, bool verbose = false) {
 		var dt = new DateTime.now_local ();
 		double idm = TOTHEMOON;
 		uint cse =0;
 		uint8 htype;
 		double hlat, hlon;
-		var alert = r.alert;
 		string ga_bearing;
 		string ga_alt;
 		string ga_speed;
+
+		var r = MWP.radar_cache.lookup(rk);
+		if (r == null)
+			return;
+
+		var alert = r.alert;
 
 		if(MWP.any_home(out htype, out hlat, out hlon)) {
 			double c,d;
@@ -274,10 +281,10 @@ public class RadarView : Object {
 		}
 
         Gtk.TreeIter iter;
-        var found = find_entry(r, out iter);
+        var found = find_entry(rk, out iter);
         if(!found) {
             listmodel.append (out iter);
-            listmodel.set (iter, Column.ID,r.id);
+            listmodel.set (iter, Column.ID, rk);
         }
 
         if(r.state >= RadarView.status.length)
@@ -302,9 +309,6 @@ public class RadarView : Object {
 		} else {
 			ga_alt = "%.0f %s".printf(Units.distance(r.altitude), Units.distance_units());
 			ga_speed = "%.0f %s".printf(Units.speed(r.speed), Units.speed_units());
-			//if (idm != TOTHEMOON) {
-			//	ga_range = "%.0f %s".printf(Units.distance(idm), Units.distance_units());
-			//}
 		}
 
 		listmodel.set (iter,
@@ -328,6 +332,7 @@ public class RadarView : Object {
 					   Column.CATEGORY, scat,
 					   Column.ALERT, alert);
 		show_number();
+		MWP.radar_cache.upsert(rk, r);
     }
 
     private void setup_treeview (Gtk.TreeView view) {

@@ -17,11 +17,9 @@ int decode_ac_pb(uint8_t *buf, size_t len, readsb_pb_t **acs, int* nac) {
     *acs = NULL;
     return 0;
   }
-  int anac = au->n_aircraft;
-  *acs = calloc( au->n_aircraft, sizeof(readsb_pb_t));
-  //  printf("AU at: %lu ", au->now);
-  // printf(" messages: %lu ", au->messages);
-  // printf(" aircraft: %ld\n", au->n_aircraft);
+  int anac = 0;
+  *nac = au->n_aircraft;
+  *acs = calloc(au->n_aircraft, sizeof(readsb_pb_t));
   if (acs != NULL) {
     readsb_pb_t *ac = *acs;
     for(int j = 0; j < au->n_aircraft; j++) {
@@ -31,7 +29,14 @@ int decode_ac_pb(uint8_t *buf, size_t len, readsb_pb_t **acs, int* nac) {
       if (vs->lat > 0) {
 	ac->addr = am->addr;
 	ac->catx = am->category;
-	strcpy(ac->name, am->flight);
+	for(int j = 0; j < 8; j++) {
+	  if (am->flight[j] > 31 && am->flight[j] < 128) {
+	    ac->name[j] = am->flight[j];
+	  } else {
+	    ac->name[j] = 0;
+	  }
+	}
+	ac->name[8] = 0;
 	ac->lat = am->lat;
 	ac->lon = am->lon;
 	if(vs->altitude > 0) {
@@ -46,7 +51,7 @@ int decode_ac_pb(uint8_t *buf, size_t len, readsb_pb_t **acs, int* nac) {
 	ac->srange = (am->distance == 0) ? READ_SB_DISTNDEF : am->distance;
 	ac->seen_tm = am->seen;
 	ac->seen_pos = am->seen_pos;
-	(*nac)++;
+	anac++;
 	ac++;
       }
     }
@@ -72,7 +77,7 @@ int main(int argc, char **argv) {
 	    printf("nac %d, anac %d\n", nac, anac);
 	    if (nac > 0) {
 	      readsb_pb_t *a = acs;
-	      for(int j = 0; j < nac; j++) {
+	      for(int j = 0; j < anac; j++) {
 		uint et = (a->catx&0xf) | (a->catx>>4)/0xa;
 		printf("AM %X [%s] (%X, %d)", a->addr, a->name, a->catx, et);
 		printf(" %f %f", a->lat, a->lon);

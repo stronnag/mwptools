@@ -12,7 +12,7 @@ namespace ReadSB {
 		double lat;
 		double lon;
 		uint8 catx;
-		unowned string name;
+		uint8 name[9];
 		uint64 seen_tm;
 	}
 	[CCode (cheader_filename = "decode_readsb.h", cname = "decode_ac_pb")]

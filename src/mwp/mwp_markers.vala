@@ -41,7 +41,7 @@ private static Clutter.Actor create_clutter_actor_from_file (string filename) {
 
 /*
  * Extra date stored:
- * rplot: reference to RadarPlot item
+ * rplot: radar_cache key
  * idx	: WP index
  * extras:
  *		RadarPlot:
@@ -53,7 +53,7 @@ private static Clutter.Actor create_clutter_actor_from_file (string filename) {
 
 public class MWPLabel : Champlain.Label {
 	public Object? extras[2];
-	public RadarPlot? rplot;
+	public uint rkey;
 	public int idx;
 	public MWPLabel.from_file(string filename) {
 		var actor = create_clutter_actor_from_file (filename);
@@ -185,20 +185,17 @@ public class MWPMarkers : GLib.Object {
 		}
 	}
 
-    private unowned MWPLabel find_radar_item(RadarPlot r) {
+    private unowned MWPLabel find_radar_item(uint rid) {
         unowned MWPLabel rd = null;
-		//        rdrmarkers.get_markers().foreach ((m) => {
 		var rdrl =  rdrmarkers.get_markers();
 		for (unowned GLib.List<weak Champlain.Marker> lp = rdrl.first(); lp != null; lp = lp.next) {
 			if(rd == null) {
 				unowned Champlain.Marker m = lp.data;
 				if (((MWPLabel)m).name != "irdr")  {
-					var a = ((MWPLabel)m).rplot;
-					if(a != null) {
-						if (r.id== a.id) {
-							rd = m as MWPLabel;
-							break;
-						}
+					var a = ((MWPLabel)m).rkey;
+					if (rid== a) {
+						rd = m as MWPLabel;
+						break;
 					}
 				}
 			}
@@ -206,28 +203,27 @@ public class MWPMarkers : GLib.Object {
         return rd;
     }
 
-	public void set_radar_stale(RadarPlot r) {
-        var rp = find_radar_item(r);
+	public void set_radar_stale(uint rid) {
+        var rp = find_radar_item(rid);
         if(rp != null) {
-            rp.rplot = r;
             rp.opacity = 100;
         }
     }
 
-    public void remove_radar(RadarPlot r) {
-        var rp = find_radar_item(r);
+    public void remove_radar(uint rid) {
+        var rp = find_radar_item(rid);
         if(rp != null) {
             unowned MWPLabel  _t = rp.extras[Extra.Q_1] as MWPLabel;
-            if (_t != null)
+            if (_t != null) {
                 rdrmarkers.remove_marker(_t);
+			}
             rdrmarkers.remove_marker(rp);
         }
     }
 
-    public void set_radar_hidden(RadarPlot r) {
-        var rp = find_radar_item(r) as MWPLabel;
+    public void set_radar_hidden(uint rid) {
+        var rp = find_radar_item(rid) as MWPLabel;
         if(rp != null) {
-            rp.rplot = r;
             rp.visible = false;
         }
     }
@@ -239,9 +235,14 @@ public class MWPMarkers : GLib.Object {
             rdrmarkers.hide();
     }
 
-    public void update_radar(ref unowned RadarPlot r) {
-        var rp = find_radar_item(r);
-        if(rp == null) {
+    public void update_radar(uint rk) {
+        var rp = find_radar_item(rk);
+		var r = MWP.radar_cache.lookup(rk);
+		if (r == null) {
+			stderr.printf(":DBG: update-radar NULL For  %X\n", rk);
+			return;
+		}
+		if(rp == null) {
 			Clutter.Actor actor = new Clutter.Actor ();
 			Clutter.Image img;
 
@@ -274,9 +275,10 @@ public class MWPMarkers : GLib.Object {
             rp.set_text_color(white);
             textb.add_child (text);
             rp.extras[Extra.Q_0] = textb;
+			rp.rkey = rk;
 
             rp.enter_event.connect((ce) => {
-                    var _r = rp.rplot;
+                    var _r = MWP.radar_cache.lookup(rp.rkey);
                     var _ta = rp.extras[Extra.Q_0] as Actor;
                     var _tx = _ta.last_child as Clutter.Text;
 					string ga_alt;
@@ -316,8 +318,9 @@ public class MWPMarkers : GLib.Object {
             }
             rdrmarkers.add_marker (rp);
         }
-        rp.opacity = 224;
-        rp.rplot = r;
+
+		rp.opacity = 224;
+
         if(rp.name != r.name) {
             rp.name = r.name;
             if((r.source & RadarSource.M_INAV) != 0) {
@@ -329,7 +332,7 @@ public class MWPMarkers : GLib.Object {
         }
 
         rp.set_color (white);
-        rp.set_location (r.latitude,r.longitude);
+        rp.set_location (r.latitude, r.longitude);
 		if ((r.source & RadarSource.M_ADSB) != 0) {
 			if((r.alert & RadarAlert.SET) == RadarAlert.SET) {
 				var act = rp.get_image();
@@ -343,6 +346,7 @@ public class MWPMarkers : GLib.Object {
 				float w,h;
 				act.content.get_preferred_size(out w, out h);
 				act.set_size(w, h);
+				MWP.radar_cache.upsert(rk, r);
 			}
 		}
 

@@ -244,8 +244,9 @@ public class TelemTracker {
     private void  process_ltm_mav(MWSerial s, MSP.Cmds cmd, uint8[] raw, uint len,
                                   uint8 xflags, bool errs, int n) {
         bool can_update = false;
-        unowned RadarPlot? ri = get_ri(n);
-        switch (cmd) {
+		uint rk = (uint)(n+256);
+		unowned RadarPlot? ri = get_ri(rk);
+		switch (cmd) {
         case MSP.Cmds.TG_FRAME:
             LTM_GFRAME gf = LTM_GFRAME();
             uint8* rp;
@@ -317,8 +318,8 @@ public class TelemTracker {
         }
         if(can_update && ri.posvalid) {
             ri.lasttick = mp.nticks;
-            mp.markers.update_radar(ref ri);
-            mp.radarv.update(ref ri, false);
+            //mp.markers.update_radar(rk);
+            //mp.radarv.update(rk, false);
         }
     }
 
@@ -327,8 +328,8 @@ public class TelemTracker {
          uint8 *ptr = &buffer[3];
          uint32 val32;
          uint16 val16;
-
-         unowned RadarPlot? ri = get_ri(n);
+		 uint rk = (uint)n+256;
+		 unowned RadarPlot? ri = get_ri(rk);
          switch(id) {
              case CRSF.GPS_ID:
                  ptr= SEDE.deserialise_u32(ptr, out val32);  // Latitude (deg * 1e7)
@@ -357,8 +358,8 @@ public class TelemTracker {
                  ri.state = RadarView.Status.ARMED;
                  if (ri.posvalid) {
                      ri.lasttick = mp.nticks;
-                     mp.markers.update_radar(ref ri);
-                     mp.radarv.update(ref ri, false);
+                     //mp.markers.update_radar(rk);
+                     //mp.radarv.update(rk, false);
                  }
                  break;
          case CRSF.FM_ID: // armed check
@@ -372,16 +373,16 @@ public class TelemTracker {
          }
     }
 
-    private  unowned RadarPlot? get_ri(int n) {
-        unowned RadarPlot? ri = mp.find_radar_data((uint)n);
-        if (ri == null) {
-            var r0 = RadarPlot();
-            r0.id =  (uint)n;
-            mp.radar_plot.append(r0);
-            ri = mp.find_radar_data((uint)n);
-            ri.name = secdevs[n].alias;
-            ri.source = RadarSource.TELEM;
-            ri.posvalid = false;
+    private  unowned RadarPlot? get_ri(uint rk) {
+		unowned var ri = MWP.radar_cache.lookup(rk);
+		if (ri == null) {
+			uint n = rk-256;
+			var r0 = RadarPlot();
+            r0.name = secdevs[n].alias;
+            r0.source = RadarSource.TELEM;
+            r0.posvalid = false;
+			MWP.radar_cache.upsert(rk, r0);
+			ri = MWP.radar_cache.lookup(rk);
         }
         return ri;
     }
@@ -389,7 +390,8 @@ public class TelemTracker {
     private void  process_flysky(uint8[] raw, int n) {
         FLYSKY.Telem t;
 		if(FLYSKY.decode(raw, out t)) {
-            unowned RadarPlot? ri = get_ri(n);
+		 uint rk = (uint)n+256;
+		 unowned RadarPlot? ri = get_ri(rk);
             if ((t.mask & (1 << FLYSKY.Func.LAT0|FLYSKY.Func.LAT1|FLYSKY.Func.LON0|FLYSKY.Func.LON1|FLYSKY.Func.STATUS)) != 0) {
                 int nsat = (t.status / 1000);
                 int ifix = (t.status % 1000) / 100;
@@ -415,8 +417,8 @@ public class TelemTracker {
             ri.lq = (uint8)(t.rssi&0xff);
             if (ri.posvalid) {
                 ri.lasttick = mp.nticks;
-                mp.markers.update_radar(ref ri);
-                mp.radarv.update(ref ri, false);
+                //mp.markers.update_radar(rk);
+                //mp.radarv.update(rk, false);
             }
         }
     }
@@ -431,7 +433,8 @@ public class TelemTracker {
     }
 
     private void  process_sport(uint32 id, uint32 val, int n) {
-        unowned RadarPlot? ri = get_ri(n);
+		uint rk = (uint)n+256;
+        unowned RadarPlot? ri = get_ri(rk);
         switch(id) {
         case SportDev.FrID.GPS_LONG_LATI_ID:
             int32 ipos = 0;
@@ -476,8 +479,8 @@ public class TelemTracker {
                 ri.posvalid =  (nsats > 5);
                 if(ri.posvalid) {
                     ri.lasttick = mp.nticks;
-                    mp.markers.update_radar(ref ri);
-                    mp.radarv.update(ref ri, false);
+                    //mp.markers.update_radar(rk);
+                    //mp.radarv.update(rk, false);
                 }
             }
             break;

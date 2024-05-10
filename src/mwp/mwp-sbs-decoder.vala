@@ -4,7 +4,7 @@ public class ADSBReader :Object {
 	private SocketConnection conn;
 	private string host;
 	private uint16 port;
-
+	private Thread<int> thr;
 	public ADSBReader(string pn, uint16 _port=30003) {
 		var p = pn[6:pn.length].split(":");
 		port = _port;
@@ -29,21 +29,27 @@ public class ADSBReader :Object {
 			result(null);
 			return false;
 		}
-		var inp = new DataInputStream(conn.input_stream);
-		for(;;) {
-			try {
-				var line = yield inp.read_line_async();
-				if (line == null) {
-					result(null);
-					return false;
-				} else {
-					result(line.data);
+
+		thr = new Thread<int> ("sbs", () => {
+				var inp = new DataInputStream(conn.input_stream);
+				for(;;) {
+					try {
+						var line = inp.read_line();
+						if (line == null) {
+							result(null);
+							break;
+						} else {
+							result(line.data);
+						}
+					} catch (Error e) {
+						result(null);
+						break;
+					}
 				}
-			} catch (Error e) {
-					result(null);
-					return false;
-			}
-		}
+				thr.join();
+				return 0;
+			});
+		return true;
 	}
 
 	public async bool packet_reader()  throws Error {
@@ -57,33 +63,44 @@ public class ADSBReader :Object {
 			result(null);
 			return false;
 		}
-		var inp = conn.input_stream;
-		for(;;) {
-			uint8 sz[4];
-			try {
-				size_t nb = 0;
-				yield inp.read_all_async(sz, Priority.DEFAULT, null, out nb);
-				if(nb == 4) {
-					uint32 msize;
-					SEDE.deserialise_u32(sz, out msize);
-					uint8[]pbuf = new uint8[msize];
+		thr = new Thread<int> ("pba", () => {
+				var inp = conn.input_stream;
+				for(;;) {
+					uint8 sz[4];
 					try {
-						yield inp.read_all_async(pbuf, Priority.DEFAULT, null, out nb);
-						if (nb == msize)
-							result(pbuf);
-						else
-							MWPLog.message("PB read %d %d\n", (int)msize, (int)nb);
-
+						size_t nb = 0;
+						var ok = inp.read_all(sz, out nb, null);
+						if (ok) {
+							uint32 msize;
+							SEDE.deserialise_u32(sz, out msize);
+							uint8[]pbuf = new uint8[msize];
+							try {
+								ok = inp.read_all(pbuf, out nb, null);
+								if (ok && nb == msize) {
+									result(pbuf);
+								} else {
+									MWPLog.message("PB read data %d %d\n", (int)msize, (int)nb);
+									result(null);
+									break;
+								}
+							} catch (Error e) {
+								result(null);
+								break;
+							}
+						} else {
+							MWPLog.message("PB read size %d\n", (int)nb);
+							result(null);
+							break;
+						}
 					} catch (Error e) {
 						result(null);
-						return false;
+						break;
 					}
 				}
-			} catch (Error e) {
-				result(null);
-				return false;
-			}
-		}
+				thr.join();
+				return 0;
+			});
+		return true;
 	}
 
 	public string[]? parse_csv_message(string s) {

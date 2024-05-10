@@ -31,40 +31,6 @@ namespace MWPAlert {
     public const string SAT = "sat_alert.ogg";
 }
 
-public enum RadarSource {
-    NONE = 0,
-    INAV = 1,
-    TELEM = 2,
-    MAVLINK = 4,
-    SBS = 8,
-    M_INAV = (INAV|TELEM),
-    M_ADSB = (MAVLINK|SBS),
-}
-
-public struct RadarPlot {
-    public uint id;
-    public string name;
-    public double latitude;
-    public double longitude;
-    public double altitude;
-    public uint16 heading;
-    public double speed;
-    public uint lasttick;
-    public uint8 state;
-    public uint8 lq; // tslc for ADSB
-    public uint8 source;
-    public bool posvalid;
-	public uint8 alert;
-	public uint8 etype;
-	public DateTime dt;
-	public uint32 srange;
-}
-
-public enum RadarAlert {
-	NONE = 0,
-	ALERT = 1,
-	SET= 2
-}
 
 public struct CurrData {
     bool ampsok;
