@@ -384,6 +384,7 @@ public class TelemTracker {
 			MWP.radar_cache.upsert(rk, r0);
 			ri = MWP.radar_cache.lookup(rk);
         }
+		ri.dt = new DateTime.now_local();
         return ri;
     }
 

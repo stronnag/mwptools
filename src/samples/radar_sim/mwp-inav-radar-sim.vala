@@ -30,7 +30,7 @@ const OptionEntry[] options = {
 
 static MainLoop ml;
 
-public struct RadarPlot {
+public struct InavPlot {
     uint8 state;
     double latitude;
     double longitude;
@@ -42,7 +42,7 @@ public struct RadarPlot {
 }
 
 public class RadarSim : Object {
-    private RadarPlot []radar_plot;
+    private InavPlot []radar_plot;
     private uint8 id;
     private bool quit;
     private uint tid;
@@ -82,7 +82,7 @@ public class RadarSim : Object {
         if(maxradar > 255)
             maxradar = 255;
 
-        radar_plot = new RadarPlot[maxradar];
+        radar_plot = new InavPlot[maxradar];
 
         if(llstr != null) {
             string[] delims =  {" ",","};
@@ -273,7 +273,7 @@ public class RadarSim : Object {
 			});
     }
 
-    private void transmit_radar(RadarPlot r) {
+    private void transmit_radar(InavPlot r) {
         uint8 buf[128];
         uint8 *p = buf;
         *p++ = id;

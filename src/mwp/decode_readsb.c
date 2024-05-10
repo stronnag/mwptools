@@ -30,7 +30,7 @@ int decode_ac_pb(uint8_t *buf, size_t len, readsb_pb_t **acs, int* nac) {
 	ac->addr = am->addr;
 	ac->catx = am->category;
 	for(int j = 0; j < 8; j++) {
-	  if (am->flight[j] > 31 && am->flight[j] < 128) {
+	  if (am->flight[j] > 31) {
 	    ac->name[j] = am->flight[j];
 	  } else {
 	    ac->name[j] = 0;

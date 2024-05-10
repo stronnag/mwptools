@@ -5160,8 +5160,6 @@ public class MWP : Gtk.Application {
             }
         } else
             vpos = true;
-//        MWPLog.message("pv %s %s %f %f (%f %f)\n",
-//                       have_home.to_string(), vpos.to_string(), lat, lon, xlat, xlon);
         return vpos;
     }
 
@@ -5318,11 +5316,9 @@ public class MWP : Gtk.Application {
 													   is_adsb.to_string(), radar_cache.size());
 									}
 									if(is_adsb) {
-										stderr.printf(":DBG: Removing %X %s ", rk, r.name);
 										radarv.remove(rk);
 										markers.remove_radar(rk);
 										radar_cache.remove(rk);
-										stderr.printf(" Removed %X\n", rk);
 										dumpit = true;
 									}
 								} else if(delta > hided) {
@@ -8669,6 +8665,7 @@ public class MWP : Gtk.Application {
 		if (name.length > 0) {
 			ri.name = name;
 		}
+
 		if (ri.name == null || ri.name.length == 0) {
 			ri.name = "[%s]".printf(p[4]);
 		}
@@ -8696,16 +8693,18 @@ public class MWP : Gtk.Application {
 				ri.heading = hdg;
 			}
 			if(isvalid) {
-				ri.latitude = lat;
-				ri.longitude = lng;
-				ri.posvalid = true;
-				if (ri.dt != null) {
-					var td = currdt.difference(ri.dt);
-					td /= 1000000;
-					if (td < 255)
-						ri.lq = (uint8)(td&0xff);
+				if (lat != 0 && lng != 0) {
+					ri.latitude = lat;
+					ri.longitude = lng;
+					ri.posvalid = true;
+					if (ri.dt != null) {
+						var td = currdt.difference(ri.dt);
+						td /= 1000000;
+						if (td < 255)
+							ri.lq = (uint8)(td&0xff);
+					}
+					ri.dt = currdt;
 				}
-				ri.dt = currdt;
 			}
 			ri.altitude = int.parse(p[11])*0.3048;
 			ri.lasttick = nticks;
@@ -8718,11 +8717,12 @@ public class MWP : Gtk.Application {
 			if (hdg != 0) {
 				ri.heading = hdg;
 			}
+			isvalid = ri.posvalid;
 		}
 		ri.etype = 0;
 		ri.state = 5;
-		radar_cache.upsert(v, ri);
 		if(ri.posvalid) {
+			radar_cache.upsert(v, ri);
 			radarv.update(v, rdebug);
 			markers.update_radar(v);
 			if (rdebug) {
@@ -8775,7 +8775,7 @@ public class MWP : Gtk.Application {
 			if (rdebug) {
 				string ssm;
 				if(ri.srange == ReadSB.DISTNDEF) {
-					ssm = "unknown";
+					ssm = "undef";
 				} else {
 					ssm = "%um".printf(ri.srange);
 				}
@@ -9087,7 +9087,7 @@ public class MWP : Gtk.Application {
         int32 ipos;
         uint16 ispd;
         uint8 id = *rp++; // id
-
+		var now = new DateTime.now_local();
 
 		var ri = radar_cache.lookup((uint)id);
 		if (ri == null) {
@@ -9111,7 +9111,7 @@ public class MWP : Gtk.Application {
         ri.lq = *rp;
         ri.lasttick = nticks;
 		ri.posvalid = true;
-
+		ri.dt = now;
 		radar_cache.upsert(id, ri);
         radarv.update((uint)id);
         markers.update_radar((uint)id);

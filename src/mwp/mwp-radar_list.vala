@@ -216,8 +216,9 @@ public class RadarView : Object {
 		if (found) {
             listmodel.remove(ref iter);
             show_number();
-        }
-		stderr.printf("lok: %s ", found.to_string());
+        } else {
+			MWPLog.message("Radar view failed for %X\n", rid);
+		}
     }
 
 	private void set_cell_text_bg(Gtk.TreeModel model, Gtk.TreeIter iter, Gtk.CellRenderer cell, string? s) {

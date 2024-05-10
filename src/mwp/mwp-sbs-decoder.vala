@@ -4,7 +4,10 @@ public class ADSBReader :Object {
 	private SocketConnection conn;
 	private string host;
 	private uint16 port;
+#if SBSTHREADS
 	private Thread<int> thr;
+#endif
+
 	public ADSBReader(string pn, uint16 _port=30003) {
 		var p = pn[6:pn.length].split(":");
 		port = _port;
@@ -29,7 +32,8 @@ public class ADSBReader :Object {
 			result(null);
 			return false;
 		}
-
+#if SBSTHREADS
+		MWPLog.message("start %s %u async threaded reader\n", host, port);
 		thr = new Thread<int> ("sbs", () => {
 				var inp = new DataInputStream(conn.input_stream);
 				for(;;) {
@@ -50,6 +54,24 @@ public class ADSBReader :Object {
 				return 0;
 			});
 		return true;
+#else
+		MWPLog.message("start %s %u async line reader\n", host, port);
+		var inp = new DataInputStream(conn.input_stream);
+		for(;;) {
+			try {
+				var line = yield inp.read_line_async();
+				if (line == null) {
+					result(null);
+					return false;
+				} else {
+					result(line.data);
+				}
+			} catch (Error e) {
+				result(null);
+				return false;
+			}
+		}
+#endif
 	}
 
 	public async bool packet_reader()  throws Error {
@@ -63,6 +85,8 @@ public class ADSBReader :Object {
 			result(null);
 			return false;
 		}
+#if SBSTHREADS
+		MWPLog.message("start %s %u threader packet reader\n", host, port);
 		thr = new Thread<int> ("pba", () => {
 				var inp = conn.input_stream;
 				for(;;) {
@@ -101,6 +125,41 @@ public class ADSBReader :Object {
 				return 0;
 			});
 		return true;
+#else
+		MWPLog.message("start %s %u async packet reader\n", host, port);
+		var inp = conn.input_stream;
+		for(;;) {
+			uint8 sz[4];
+			try {
+				size_t nb = 0;
+				var ok = yield inp.read_all_async(sz, Priority.DEFAULT, null, out nb);
+				if(ok && nb == 4) {
+					uint32 msize;
+					SEDE.deserialise_u32(sz, out msize);
+					uint8[]pbuf = new uint8[msize];
+					try {
+						ok = yield inp.read_all_async(pbuf, Priority.DEFAULT, null, out nb);
+						if (ok && nb == msize) {
+							result(pbuf);
+						} else {
+							MWPLog.message("PB read %d %d\n", (int)msize, (int)nb);
+							result(null);
+							return false;
+						}
+					} catch (Error e) {
+						result(null);
+						return false;
+					}
+				} else {
+					result(null);
+					return false;
+				}
+			} catch (Error e) {
+				result(null);
+				return false;
+			}
+		}
+#endif
 	}
 
 	public string[]? parse_csv_message(string s) {
