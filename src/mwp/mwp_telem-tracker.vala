@@ -318,8 +318,8 @@ public class TelemTracker {
         }
         if(can_update && ri.posvalid) {
             ri.lasttick = mp.nticks;
-            //mp.markers.update_radar(rk);
-            //mp.radarv.update(rk, false);
+            mp.markers.update_radar(rk);
+            mp.radarv.update(rk, false);
         }
     }
 
@@ -358,8 +358,8 @@ public class TelemTracker {
                  ri.state = RadarView.Status.ARMED;
                  if (ri.posvalid) {
                      ri.lasttick = mp.nticks;
-                     //mp.markers.update_radar(rk);
-                     //mp.radarv.update(rk, false);
+                     mp.markers.update_radar(rk);
+                     mp.radarv.update(rk, false);
                  }
                  break;
          case CRSF.FM_ID: // armed check
@@ -418,8 +418,8 @@ public class TelemTracker {
             ri.lq = (uint8)(t.rssi&0xff);
             if (ri.posvalid) {
                 ri.lasttick = mp.nticks;
-                //mp.markers.update_radar(rk);
-                //mp.radarv.update(rk, false);
+                mp.markers.update_radar(rk);
+                mp.radarv.update(rk, false);
             }
         }
     }
@@ -480,8 +480,8 @@ public class TelemTracker {
                 ri.posvalid =  (nsats > 5);
                 if(ri.posvalid) {
                     ri.lasttick = mp.nticks;
-                    //mp.markers.update_radar(rk);
-                    //mp.radarv.update(rk, false);
+                    mp.markers.update_radar(rk);
+                    mp.radarv.update(rk, false);
                 }
             }
             break;
