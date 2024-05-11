@@ -374,7 +374,7 @@ public class TelemTracker {
     }
 
     private  unowned RadarPlot? get_ri(uint rk) {
-		unowned var ri = MWP.radar_cache.lookup(rk);
+		unowned RadarPlot? ri = MWP.radar_cache.lookup(rk);
 		if (ri == null) {
 			uint n = rk-256;
 			var r0 = RadarPlot();
