@@ -68,6 +68,8 @@ public class GMProxy : Soup.Server {
 		try {
 			var resp = yield session.send_async (message);
 			var mlen = msg.response_headers.get_content_length ();
+			if (mlen == 0)
+				mlen = (1 << 16) -1;
             var data = new uint8[mlen+1];
 			yield resp.read_all_async(data, GLib.Priority.DEFAULT, null, null);
 			data[mlen] = 0;

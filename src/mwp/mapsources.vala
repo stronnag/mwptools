@@ -258,6 +258,8 @@ public class BingMap : Object {
 		try {
 			var resp = yield session.send_async (message);
 			var mlen = message.response_headers.get_content_length ();
+			if (mlen == 0)
+				mlen = (1<<16) - 1;
 			var data = new uint8[mlen+1];
 			yield resp.read_all_async(data, GLib.Priority.DEFAULT, null, null);
 			data[mlen]=0;
@@ -408,12 +410,14 @@ public class BingMap : Object {
 				MWPLog.message("bing parser %s\n", e.message);
 			}
 			if(buri.length > 0) {
-				var parts = buri.split("/");
-				sb.assign(parts[4].substring(0,1));
-				sb.append("#Q#");
-				sb.append(parts[4].substring(2,-1));
-				parts[4] = sb.str;
-				buri = string.joinv("/",parts);
+				if (!buri.contains("#Q#")) {
+					var parts = buri.split("/");
+					sb.assign(parts[4].substring(0,1));
+					sb.append("#Q#");
+					sb.append(parts[4].substring(2,-1));
+					parts[4] = sb.str;
+					buri = string.joinv("/",parts);
+				}
 				save_cached_data();
 			}
 		}

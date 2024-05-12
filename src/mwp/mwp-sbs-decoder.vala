@@ -50,7 +50,9 @@ public class ADSBReader :Object {
             var resp = yield session.send_async(msg);
 			if( msg.status_code == 200) {
 				var mlen = msg.response_headers.get_content_length ();
-				var data = new uint8[mlen];
+				if (mlen == 0)
+					mlen = (1<<20) - 1;
+				var data = new uint8[mlen+1];
 				yield resp.read_all_async(data, GLib.Priority.DEFAULT, null, null);
 				result(data);
 				return true;
