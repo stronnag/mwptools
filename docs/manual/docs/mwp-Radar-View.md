@@ -21,6 +21,8 @@
 
 Note that the SDR protocols may also be used with network services that provide ADS-B reports (usually for a fee or for provided local data).
 
+If you wish to use  the [readsb](https://github.com/Mictronics/readsb-protobuf) "protobuf" or [dump1090-fa](https://github.com/flightaware/dump1090) JSON formats, it is currently necessary to install a small daemon on the SDR server (see the `src/samples/adsb-extra` directory). In future, it will be possible to poll this data using the SDR server's optional web server (where available).
+
 ## mwp Configuration
 
 {{ mwp }} can receive the 'radar' data over one or two connections, either or both may be active, and {{ mwp }} can receive and display 'own vehicle' telemetry (MSP, LTM or Smartpost), [Tracked Telemetry](mwp-telemetry-tracker.md), 'INAV-radar' and 'MAVlink Traffic' data simultaneously. Radar data may be received over:
@@ -88,7 +90,7 @@ The following `dconf` setting affect the radar function:
 | `ga-range` | Units for GA Range, enumerated as 0=m, 1=km, 2=miles, 3=nautical miles |
 | `ga-speed` | Units for GA Speed, enumerated as  0=m/s, 1=kph, 2=mph, 3=knots |
 
-Note that proximity alerts require that both the `radar-alert-altitude` and `radar-alert-range` values are set, and that there is a planned or actual home location.
+Note that proximity alerts require that both the `radar-alert-altitude` and `radar-alert-range` values are set, and that there is a planned or actual home location. For [readsb](https://github.com/Mictronics/readsb-protobuf) "protobuf" data, the range from the **SDR** is available and this will be shown as range (and used for alerts) where there is no home set (home will override).
 
 ## Usage
 
