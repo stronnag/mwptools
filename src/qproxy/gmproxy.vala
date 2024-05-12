@@ -67,8 +67,10 @@ public class GMProxy : Soup.Server {
 #if COLDSOUP
 		try {
 			var resp = yield session.send_async (message);
-			var data = new uint8[1024];
+			var mlen = msg.response_headers.get_content_length ();
+            var data = new uint8[mlen+1];
 			yield resp.read_all_async(data, GLib.Priority.DEFAULT, null, null);
+			data[mlen] = 0;
             var s = (string)data;
 			gvers = get_google_version(s);
 			stderr.printf("GVERS set %s\n", gvers);
