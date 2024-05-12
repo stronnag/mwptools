@@ -549,7 +549,7 @@ public class MWP : Gtk.Application {
         "Killswitch", "Failsafe", "Navigation", "Landing" };
 
     private const string[] failnames = {"WPNO","ACT","LAT","LON","ALT","P1","P2","P3","FLAG"};
-
+	private const uint32 ADSB_DISTNDEF = (uint32)0xffffffff;
     private const uint TIMINTVL=100;
     private const uint BEATINTVL=(60000/TIMINTVL);
     private const uint STATINTVL=(1000/TIMINTVL);
@@ -3323,6 +3323,7 @@ public class MWP : Gtk.Application {
 									if(htype == 1) {
 										decode_pba(s);
 									} else {
+										s[s.length-1] = 0;
 										decode_jsa((string)s);
 									}
 								}
@@ -8684,7 +8685,7 @@ public class MWP : Gtk.Application {
 		if (ri == null) {
 			ri = RadarPlot();
 			ri.source = RadarSource.SBS;
-			ri.srange = ReadSB.DISTNDEF;
+			ri.srange = ADSB_DISTNDEF;
 		}
 
 		if (name.length > 0) {
@@ -8768,7 +8769,7 @@ public class MWP : Gtk.Application {
 			if (ri == null) {
 				ri = RadarPlot();
 				ri.source = RadarSource.SBS;
-				ri.srange = ReadSB.DISTNDEF;
+				ri.srange = ADSB_DISTNDEF;
 			}
 			ri.posvalid = true;
 			ri.latitude = a.lat;
@@ -8799,7 +8800,7 @@ public class MWP : Gtk.Application {
 			ri.srange = a.srange;
 			if (rdebug) {
 				string ssm;
-				if(ri.srange == ReadSB.DISTNDEF) {
+				if(ri.srange == ADSB_DISTNDEF) {
 					ssm = "undef";
 				} else {
 					ssm = "%um".printf(ri.srange);
@@ -8833,7 +8834,7 @@ public class MWP : Gtk.Application {
 					if (ri == null) {
 						ri = RadarPlot();
 						ri.source = RadarSource.SBS;
-						ri.srange = ReadSB.DISTNDEF;
+						ri.srange = ADSB_DISTNDEF;
 					}
 					var sb = new StringBuilder("JSAC");
 					sb.append_printf(" I:%X", icao);
@@ -8945,7 +8946,7 @@ public class MWP : Gtk.Application {
 				if (ri == null) {
 					ri = RadarPlot();
 					ri.source = RadarSource.MAVLINK;
-					ri.srange = ReadSB.DISTNDEF;
+					ri.srange = ADSB_DISTNDEF;
 					ri.posvalid = true;
 					sb.append(" * ");
 				}
@@ -9044,7 +9045,7 @@ public class MWP : Gtk.Application {
 			if (ri == null) {
 				ri = RadarPlot();
 				ri.source = RadarSource.MAVLINK;
-				ri.srange = ReadSB.DISTNDEF;
+				ri.srange = ADSB_DISTNDEF;
 				ri.posvalid = true;
 				sb.append(" * ");
 			}
@@ -9119,7 +9120,7 @@ public class MWP : Gtk.Application {
 			ri = RadarPlot();
 			ri.source  = RadarSource.INAV;
             ri.name = "⚙ inav %c".printf(65+id);
-			ri.srange = ReadSB.DISTNDEF;
+			ri.srange = ADSB_DISTNDEF;
 			ri.posvalid = true;
 		}
 
