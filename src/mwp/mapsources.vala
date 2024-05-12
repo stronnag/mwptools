@@ -259,8 +259,8 @@ public class BingMap : Object {
 			var resp = yield session.send_async (message);
 			var mlen = message.response_headers.get_content_length ();
 			var data = new uint8[mlen+1];
-			data[mlen]=0;
 			yield resp.read_all_async(data, GLib.Priority.DEFAULT, null, null);
+			data[mlen]=0;
 			var s = (string)data;
 			parse_bing_json(s);
 			complete(true);
