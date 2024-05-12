@@ -549,7 +549,7 @@ public class MWP : Gtk.Application {
         "Killswitch", "Failsafe", "Navigation", "Landing" };
 
     private const string[] failnames = {"WPNO","ACT","LAT","LON","ALT","P1","P2","P3","FLAG"};
-
+	private const uint32 ADSB_DISTNDEF = (uint32)0xffffffff;
     private const uint TIMINTVL=100;
     private const uint BEATINTVL=(60000/TIMINTVL);
     private const uint STATINTVL=(1000/TIMINTVL);
@@ -3257,7 +3257,6 @@ public class MWP : Gtk.Application {
 				if (pn.has_prefix("sbs://")) {
 					MWPLog.message("Set up radar device %s\n", pn);
 					var sbs = new ADSBReader(pn);
-					sbs.line_reader.begin();
 					sbs.result.connect((s) => {
 							if (s == null) {
 								Timeout.add_seconds(60, () => {
@@ -3271,10 +3270,10 @@ public class MWP : Gtk.Application {
 								}
 							}
 						});
+					sbs.line_reader.begin();
 				} else if (pn.has_prefix("jsa://")) {
 					MWPLog.message("Set up radar device %s\n", pn);
 					var jsa = new ADSBReader(pn, 37007);
-					jsa.line_reader.begin();
 					jsa.result.connect((s) => {
 							if (s == null) {
 								Timeout.add_seconds(60, () => {
@@ -3285,12 +3284,11 @@ public class MWP : Gtk.Application {
 								decode_jsa((string)s);
 							}
 						});
-
+					jsa.line_reader.begin();
 				} else if (pn.has_prefix("pba://")) {
 #if PROTOC
 					MWPLog.message("Set up radar device %s\n", pn);
 					var pba = new ADSBReader(pn, 38008);
-					pba.packet_reader.begin();
 					pba.result.connect((s) => {
 							if (s == null) {
 								Timeout.add_seconds(60, () => {
@@ -3301,9 +3299,37 @@ public class MWP : Gtk.Application {
 								decode_pba(s);
 							}
 						});
+					pba.packet_reader.begin();
 #else
 					MWPLog.message("mwp not compiled with protobuf-c\n");
 #endif
+				} else if (pn.has_prefix("http://") || pn.has_prefix("https://")) {
+					uint8 htype = 0;
+					if(pn.has_suffix(".pb")) {
+						htype = 1;
+					} else if(pn.has_suffix(".json")) {
+						htype = 2;
+					}
+					if(htype != 0) {
+						MWPLog.message("Set up radar device %s\n", pn);
+						var httpa = new ADSBReader.web(pn);
+						httpa.result.connect((s) => {
+								if (s == null) {
+									Timeout.add_seconds(60, () => {
+											httpa.poll();
+											return false;
+										});
+								} else {
+									if(htype == 1) {
+										decode_pba(s);
+									} else {
+										s[s.length-1] = 0;
+										decode_jsa((string)s);
+									}
+								}
+							});
+						httpa.poll();
+					}
 				} else {
 					RadarDev r = {};
 					r.name = pn;
@@ -8659,7 +8685,7 @@ public class MWP : Gtk.Application {
 		if (ri == null) {
 			ri = RadarPlot();
 			ri.source = RadarSource.SBS;
-			ri.srange = ReadSB.DISTNDEF;
+			ri.srange = ADSB_DISTNDEF;
 		}
 
 		if (name.length > 0) {
@@ -8743,7 +8769,7 @@ public class MWP : Gtk.Application {
 			if (ri == null) {
 				ri = RadarPlot();
 				ri.source = RadarSource.SBS;
-				ri.srange = ReadSB.DISTNDEF;
+				ri.srange = ADSB_DISTNDEF;
 			}
 			ri.posvalid = true;
 			ri.latitude = a.lat;
@@ -8774,7 +8800,7 @@ public class MWP : Gtk.Application {
 			ri.srange = a.srange;
 			if (rdebug) {
 				string ssm;
-				if(ri.srange == ReadSB.DISTNDEF) {
+				if(ri.srange == ADSB_DISTNDEF) {
 					ssm = "undef";
 				} else {
 					ssm = "%um".printf(ri.srange);
@@ -8808,7 +8834,7 @@ public class MWP : Gtk.Application {
 					if (ri == null) {
 						ri = RadarPlot();
 						ri.source = RadarSource.SBS;
-						ri.srange = ReadSB.DISTNDEF;
+						ri.srange = ADSB_DISTNDEF;
 					}
 					var sb = new StringBuilder("JSAC");
 					sb.append_printf(" I:%X", icao);
@@ -8920,7 +8946,7 @@ public class MWP : Gtk.Application {
 				if (ri == null) {
 					ri = RadarPlot();
 					ri.source = RadarSource.MAVLINK;
-					ri.srange = ReadSB.DISTNDEF;
+					ri.srange = ADSB_DISTNDEF;
 					ri.posvalid = true;
 					sb.append(" * ");
 				}
@@ -9019,7 +9045,7 @@ public class MWP : Gtk.Application {
 			if (ri == null) {
 				ri = RadarPlot();
 				ri.source = RadarSource.MAVLINK;
-				ri.srange = ReadSB.DISTNDEF;
+				ri.srange = ADSB_DISTNDEF;
 				ri.posvalid = true;
 				sb.append(" * ");
 			}
@@ -9094,7 +9120,7 @@ public class MWP : Gtk.Application {
 			ri = RadarPlot();
 			ri.source  = RadarSource.INAV;
             ri.name = "⚙ inav %c".printf(65+id);
-			ri.srange = ReadSB.DISTNDEF;
+			ri.srange = ADSB_DISTNDEF;
 			ri.posvalid = true;
 		}
 
