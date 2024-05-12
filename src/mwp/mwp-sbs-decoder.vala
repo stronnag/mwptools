@@ -51,7 +51,7 @@ public class ADSBReader :Object {
 				result(m.response_body.data);
 				return true;
 			} else {
-				MWPLog.message("ADSB fetch: %u %s\n", msg.status_code, msg.reason_phrase);
+				MWPLog.message("ADSB fetch: %u %s\n", m.status_code, m.reason_phrase);
 				result(null);
 				return false;
 			}
