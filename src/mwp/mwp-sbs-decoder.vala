@@ -46,16 +46,17 @@ public class ADSBReader :Object {
 			return false;
 		}
 #else
-		session.queue_message(message, (s,m) => {
-			if (m.status_code == 200) {
-				result(m.response_body.data);
-				return true;
-			} else {
-				MWPLog.message("ADSB fetch: %u %s\n", m.status_code, m.reason_phrase);
-				result(null);
-				return false;
-			}
-			});
+		try {
+			session.queue_message(message, (s,m) => {
+					if (m.status_code == 200) {
+						result(m.response_body.data);
+						return true;
+					} else {
+						MWPLog.message("ADSB fetch: %u %s\n", m.status_code, m.reason_phrase);
+						result(null);
+						return false;
+					}
+				});
 		} catch (Error e) {
 			complete(false);
 		}
