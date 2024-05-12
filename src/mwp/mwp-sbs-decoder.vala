@@ -47,18 +47,22 @@ public class ADSBReader :Object {
 		}
 #else
 		try {
-			session.queue_message(message, (s,m) => {
-					if (m.status_code == 200) {
-						result(m.response_body.data);
-						return true;
-					} else {
-						MWPLog.message("ADSB fetch: %u %s\n", m.status_code, m.reason_phrase);
-						result(null);
-						return false;
-					}
-				});
+            var resp = yield session.send_async(msg);
+			if( msg.status_code == 200) {
+				var mlen = msg.response_headers.get_content_length ();
+				var data = new uint8[mlen];
+				yield resp.read_all_async(data, GLib.Priority.DEFAULT, null, null);
+				result(data);
+				return true;
+			} else {
+				MWPLog.message("ADSB fetch: %u\n", msg.status_code);
+				result(null);
+				return false;
+			}
 		} catch (Error e) {
-			complete(false);
+			MWPLog.message("ADSB fetch: %s\n", e.message);
+			result(null);
+			return false;
 		}
 #endif
 	}
