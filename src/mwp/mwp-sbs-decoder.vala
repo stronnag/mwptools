@@ -4,6 +4,7 @@ public class ADSBReader :Object {
 	private SocketConnection conn;
 	private string host;
 	private uint16 port;
+	private Soup.Session session;
 #if SBSTHREADS
 	private Thread<int> thr;
 #endif
@@ -19,6 +20,58 @@ public class ADSBReader :Object {
 			if(p[0].length > 0)
 				host = p[0];
 		}
+	}
+
+	public ADSBReader.web(string pn) {
+		session = new Soup.Session ();
+		host = pn;
+	}
+
+	private async bool fetch() {
+		var msg = new Soup.Message ("GET", host);
+#if !COLDSOUP
+		try {
+			var byt = yield session.send_and_read_async (msg, Priority.DEFAULT, null);
+			if (msg.status_code == 200) {
+				result(byt.get_data());
+				return true;
+			} else {
+				MWPLog.message("ADSB fetch: %u %s\n", msg.status_code, msg.reason_phrase);
+				result(null);
+				return false;
+			}
+		} catch (Error e) {
+			MWPLog.message("ADSB fetch: %s\n", e.message);
+			result(null);
+			return false;
+		}
+#else
+		session.queue_message(message, (s,m) => {
+			if (m.status_code == 200) {
+				result(m.response_body.data);
+				return true;
+			} else {
+				MWPLog.message("ADSB fetch: %u %s\n", msg.status_code, msg.reason_phrase);
+				result(null);
+				return false;
+			}
+			});
+		} catch (Error e) {
+			complete(false);
+		}
+#endif
+	}
+
+	public void poll(uint timeout=1) {
+		Timeout.add(timeout, () => {
+				fetch.begin((obj, res) => {
+						var ok = fetch.end(res);
+						if(ok) {
+							poll(1000);
+						}
+					});
+				return false;
+			});
 	}
 
 	public async bool line_reader()  throws Error {

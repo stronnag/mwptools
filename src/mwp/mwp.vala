@@ -3257,7 +3257,6 @@ public class MWP : Gtk.Application {
 				if (pn.has_prefix("sbs://")) {
 					MWPLog.message("Set up radar device %s\n", pn);
 					var sbs = new ADSBReader(pn);
-					sbs.line_reader.begin();
 					sbs.result.connect((s) => {
 							if (s == null) {
 								Timeout.add_seconds(60, () => {
@@ -3271,10 +3270,10 @@ public class MWP : Gtk.Application {
 								}
 							}
 						});
+					sbs.line_reader.begin();
 				} else if (pn.has_prefix("jsa://")) {
 					MWPLog.message("Set up radar device %s\n", pn);
 					var jsa = new ADSBReader(pn, 37007);
-					jsa.line_reader.begin();
 					jsa.result.connect((s) => {
 							if (s == null) {
 								Timeout.add_seconds(60, () => {
@@ -3285,12 +3284,11 @@ public class MWP : Gtk.Application {
 								decode_jsa((string)s);
 							}
 						});
-
+					jsa.line_reader.begin();
 				} else if (pn.has_prefix("pba://")) {
 #if PROTOC
 					MWPLog.message("Set up radar device %s\n", pn);
 					var pba = new ADSBReader(pn, 38008);
-					pba.packet_reader.begin();
 					pba.result.connect((s) => {
 							if (s == null) {
 								Timeout.add_seconds(60, () => {
@@ -3301,9 +3299,36 @@ public class MWP : Gtk.Application {
 								decode_pba(s);
 							}
 						});
+					pba.packet_reader.begin();
 #else
 					MWPLog.message("mwp not compiled with protobuf-c\n");
 #endif
+				} else if (pn.has_prefix("http://") || pn.has_prefix("https://")) {
+					uint8 htype = 0;
+					if(pn.has_suffix(".pb")) {
+						htype = 1;
+					} else if(pn.has_suffix(".json")) {
+						htype = 2;
+					}
+					if(htype != 0) {
+						MWPLog.message("Set up radar device %s\n", pn);
+						var httpa = new ADSBReader.web(pn);
+						httpa.result.connect((s) => {
+								if (s == null) {
+									Timeout.add_seconds(60, () => {
+											httpa.poll();
+											return false;
+										});
+								} else {
+									if(htype == 1) {
+										decode_pba(s);
+									} else {
+										decode_jsa((string)s);
+									}
+								}
+							});
+						httpa.poll();
+					}
 				} else {
 					RadarDev r = {};
 					r.name = pn;
