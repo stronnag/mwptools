@@ -2958,7 +2958,7 @@ public class MWP : Gtk.Application {
                 process_sport_message ((SportDev.FrID)id, val);
             });
 
-        if(serial != null) {
+		if(serial != null) {
             dev_entry.prepend_text(serial);
             dev_entry.active = 0;
         }
@@ -5221,6 +5221,10 @@ public class MWP : Gtk.Application {
 							lastmsg.cmd == MSP.Cmds.EEPROM_WRITE) {
 							tlimit *= 3;
 						}
+						if (msp.is_weak()) {
+							tlimit *= 4;
+						}
+
 						if((serstate == SERSTATE.POLLER ||
                             serstate == SERSTATE.TELEM) &&
                            (nticks - lastrx) > NODATAINTVL) {
@@ -5258,6 +5262,9 @@ public class MWP : Gtk.Application {
                                 if(nopoll == false)
                                     MWPLog.message("MSP Timeout %u %u %u (%s %s)\n",
 												   nticks, lastok, lastrx, res, serstate.to_string());
+								if (lastmsg.cmd == MSP.Cmds.ADSB_VEHICLE_LIST) {
+									clear_poller_item(MSP.Cmds.ADSB_VEHICLE_LIST);
+								}
                                 lastok = nticks;
                                 tcycle = 0;
                                 resend_last();
@@ -5493,8 +5500,10 @@ public class MWP : Gtk.Application {
             missing |= MSP.Sensors.BARO;
 
 		if(vi.fc_vers >= FCVERS.hasAdsbList) {
-            requests +=  MSP.Cmds.ADSB_VEHICLE_LIST;
-            reqsize += 2; // or more ...
+			if (!msp.is_weak()) {
+				requests +=  MSP.Cmds.ADSB_VEHICLE_LIST;
+				reqsize += 2; // or more ...
+			}
 		}
 
         if(missing != 0) {
@@ -5517,6 +5526,14 @@ public class MWP : Gtk.Application {
         }
         return reqsize;
     }
+
+	private void clear_poller_item(MSP.Cmds cmd) {
+		for (var ll = 0; ll < requests.length; ll++) {
+			if (requests[ll] ==  cmd) {
+				requests[ll] = MSP.Cmds.NOOP;
+			}
+		}
+	}
 
     private void map_warn_set_text(bool init = false) {
         if(clutextg != null) {
@@ -6778,11 +6795,7 @@ public class MWP : Gtk.Application {
                            (cmd == MSP.Cmds.COMMON_SETTING) ? (string)lastmsg.data : "");
             switch(cmd) {
 			case MSP.Cmds.ADSB_VEHICLE_LIST:
-				for (var ll = 0; ll < requests.length; ll++) {
-					if (requests[ll] ==  MSP.Cmds.ADSB_VEHICLE_LIST) {
-						requests[ll] = MSP.Cmds.NOOP;
-					}
-				}
+				clear_poller_item(MSP.Cmds.ADSB_VEHICLE_LIST);
 				break;
 
 			case MSP.Cmds.NAME:
@@ -7252,6 +7265,16 @@ public class MWP : Gtk.Application {
 			if (cmd == MSP.Cmds.BOXIDS && xflags == '<') {
 				handle_radar(msp, cmd, raw, len, xflags, errs);
 				return;
+			}
+			if(vi.fc_vers >= FCVERS.hasMoreWP) {
+				gen_serial_stats();
+				var nbyte = telstats.s.rxbytes + telstats.s.txbytes;
+				var rcyt = nbyte/telstats.s.elapsed;
+				if(telstats.s.elapsed > 0.5) {
+					msp.set_weak();
+				}
+				MWPLog.message("Initial cycle timer %f (b=%u r=%.1f, bir=%.1f) %s\n",
+							   telstats.s.elapsed, nbyte, rcyt, 8*rcyt, (msp.is_weak()) ? "*" : "");
 			}
 			if(replayer == Player.NONE) {
 				var ncbits = (navcap & (NAVCAPS.NAVCONFIG|NAVCAPS.INAV_MR|NAVCAPS.INAV_FW));
@@ -7893,8 +7916,8 @@ public class MWP : Gtk.Application {
 							wpmgr.wp_flag = (WPDL.GETINFO|WPDL.RESET_POLLER|WPDL.SET_ACTIVE|WPDL.SAVE_ACTIVE);
 							queue_cmd(MSP.Cmds.WP_MISSION_SAVE, &zb, 1);
 						} else if ((wpmgr.wp_flag & WPDL.GETINFO) != 0) {
+							MWPLog.message("mission uploaded for %d points\n", wpmgr.npts);
 							wpmgr.wp_flag |= WPDL.SET_ACTIVE|WPDL.RESET_POLLER;
-
 							if(inav)
                                 queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
                             else {
@@ -9487,6 +9510,7 @@ public class MWP : Gtk.Application {
         var timeo = 1500+(wps.length*1000);
         uint8 wtmp[32];
         var nb = serialise_wp(wpmgr.wps[wpmgr.wpidx], wtmp);
+		MWPLog.message("Start mission upload for %u points\n", wps.length);
         queue_cmd(MSP.Cmds.SET_WP, wtmp, nb);
         start_wp_timer(timeo);
 	}
@@ -9650,7 +9674,7 @@ public class MWP : Gtk.Application {
 
     private void show_serial_stats() {
         gen_serial_stats();
-        MWPLog.message("%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %d wait %d, avg poll loop %lu ms messages %d msg/s %.1f\n",
+        MWPLog.message("%.3fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %d wait %d, avg poll loop %lu ms messages %d msg/s %.1f\n",
                        telstats.s.elapsed, telstats.s.rxbytes, telstats.s.txbytes,
                        telstats.s.rxrate, telstats.s.txrate,
                        telstats.toc, telstats.tot, telstats.avg ,
@@ -9955,7 +9979,8 @@ public class MWP : Gtk.Application {
 				var pmask = (MWSerial.PMask)(int.parse(dev_protoc.active_id));
 				set_pmask_poller(pmask);
 				msp.setup_reader();
-				MWPLog.message("Serial %s ready %s\n", serdev, nopoll.to_string());
+				var cmode = msp.get_commode();
+				MWPLog.message("Serial %s (%x) ready %s\n", serdev, cmode, nopoll.to_string());
 				if(nopoll == false && !mqtt_available ) {
 					serstate = SERSTATE.NORMAL;
 					queue_cmd(MSP.Cmds.IDENT,null,0);

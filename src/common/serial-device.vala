@@ -455,6 +455,9 @@ public class MWSerial : Object {
 #if LINUX
 	private BleSerial gs;
 #endif
+
+	private const int WEAKSIZE = 1;
+
 	public enum MemAlloc {
         RX=1024,
         TX=256,
@@ -466,8 +469,9 @@ public class MWSerial : Object {
         STREAM=2,
         FD=4,
         BT=8,
-		BLE=16,
-		WEAK=32,
+		BLE=0x10,
+		WEAK=0x20,
+		WEAKBLE=0x40,
     }
 
     public enum Mode {
@@ -631,6 +635,18 @@ public class MWSerial : Object {
 		pmask = PMask.AUTO ;
     }
 
+	public bool is_weak() {
+		return ((commode & ComMode.WEAK) == ComMode.WEAK);
+	}
+
+	public void set_weak() {
+		commode |= ComMode.WEAK;
+	}
+
+	public int get_commode() {
+		return commode;
+	}
+
 	public void set_pmask(PMask _pm) {
 		pmask = _pm;
 	}
@@ -664,10 +680,13 @@ public class MWSerial : Object {
     private void setup_fd (uint rate) {
         if((commode & ComMode.TTY) == ComMode.TTY) {
             baudrate = rate;
+			if (rate > 0 && rate < 19200) {
+				commode |= ComMode.WEAK;
+			}
             MwpSerial.set_speed(fd, (int)rate, null);
         }
         available = true;
-        setup_reader();
+		setup_reader();
     }
 
     public void setup_reader() {
@@ -894,8 +913,8 @@ public class MWSerial : Object {
 						}
 						MWPLog.message("BLE chipset %s, mtu %d%s\n", cset, mtu, xstr);
 						bleok = (mtu > 0);
-						if (mtu < 128) {
-							commode |= ComMode.WEAK;
+						if (mtu < 64) {
+							commode |= (ComMode.WEAK|ComMode.WEAKBLE);
 						}
 					}
 					if(!bleok){
@@ -1694,28 +1713,39 @@ public class MWSerial : Object {
 		stats.txbytes += count;
 
 		if((commode & ComMode.BT) == ComMode.BT) {
-			if((commode & ComMode.BLE) == ComMode.BLE) { // allegedly, 20 byte write buffer
+			if((commode & ComMode.WEAKBLE) == ComMode.WEAKBLE) {
 				for(int n = (int)count; n > 0; ) {
-					var nc = (n > 20) ? 20 : n;
+					var nc = (n > WEAKSIZE) ? WEAKSIZE : n;
 					size += Posix.send(wrfd, buf, nc, 0);
 					n -= nc;
 					buf = (void*)((uint8*)buf + nc);
 					if (n > 0 && ((commode & ComMode.WEAK) == ComMode.WEAK)) {
-						Thread.usleep(1000*20);
+						Thread.usleep(1000*WEAKSIZE);
 					}
 				}
 			} else {
 				size = Posix.send(wrfd, buf, count, 0);
 			}
 		} else if((commode & ComMode.STREAM) == ComMode.STREAM) {
+			if((commode & ComMode.WEAK) == ComMode.WEAK) {
+				for(int n = (int)count; n > 0; ) {
+					var nc = (n > WEAKSIZE) ? WEAKSIZE : n;
+					size += Posix.write(wrfd, buf, nc);
+					n -= nc;
+					buf = (void*)((uint8*)buf + nc);
+					if (n > 0) {
+						Thread.usleep(1000);
+					}
+				}
+			} else {
 			size = Posix.write(wrfd, buf, count);
+			}
 		} else {
 			unowned uint8[] sbuf = (uint8[]) buf;
 			sbuf.length = (int)count;
 			try {
 				size = skt.send_to (sockaddr, sbuf);
 			} catch(Error e) {
-//                stderr.printf("err::send: %s", e.message);
 				size = 0;
 			}
 		}
