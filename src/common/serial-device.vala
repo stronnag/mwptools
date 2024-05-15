@@ -906,7 +906,7 @@ public class MWSerial : Object {
 						}
 						var cset = gs.get_chipset();
 						Thread.usleep(10000); // 10ms
-						var mtu = gs.get_bridge_fds(DevManager.btmgr, out fd, out wrfd);
+						var mtu = gs.get_bridge_fds(DevManager.btmgr, dd.id, out fd, out wrfd);
 						var xstr = "";
 						if (mtu < 200) {
 							xstr = " (unlikely to end well)";

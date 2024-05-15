@@ -5218,11 +5218,9 @@ public class MWP : Gtk.Application {
                     if(serstate != SERSTATE.NONE) {
                         var tlimit = conf.polltimeout / TIMINTVL;
 						if ((lastmsg.cmd == MSP.Cmds.WP_MISSION_SAVE) ||
-							lastmsg.cmd == MSP.Cmds.EEPROM_WRITE) {
-							tlimit *= 3;
-						}
-						if (msp.is_weak()) {
-							tlimit *= 4;
+							lastmsg.cmd == MSP.Cmds.EEPROM_WRITE ||
+							msp.is_weak() ) {
+							tlimit *= 5;
 						}
 
 						if((serstate == SERSTATE.POLLER ||
@@ -7273,7 +7271,7 @@ public class MWP : Gtk.Application {
 				if(telstats.s.elapsed > 0.5) {
 					msp.set_weak();
 				}
-				MWPLog.message("Initial cycle timer %f (b=%u r=%.1f, bir=%.1f) %s\n",
+				MWPLog.message("Initial cycle %f (b=%u r=%.1f, bi=%.1f) %s\n",
 							   telstats.s.elapsed, nbyte, rcyt, 8*rcyt, (msp.is_weak()) ? "*" : "");
 			}
 			if(replayer == Player.NONE) {

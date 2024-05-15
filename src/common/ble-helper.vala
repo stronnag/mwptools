@@ -38,11 +38,11 @@ public class BleSerial : Object {
 		return BLEKnownUUids.get(gid).name;
 	}
 
-	public int get_bridge_fds(Bluez bt, out int rxfd, out int txfd) {
+	public int get_bridge_fds(Bluez bt, uint id, out int rxfd, out int txfd) {
 		uint16 rxmtu = 0;
 		uint16 txmtu = 0;
-		var	txpath = bt.find_gatt_characteristic_path(BLEKnownUUids.get(gid).txuuid);
-		var rxpath = bt.find_gatt_characteristic_path(BLEKnownUUids.get(gid).rxuuid);
+		var	txpath = bt.find_gatt_characteristic_path(id, BLEKnownUUids.get(gid).txuuid);
+		var rxpath = bt.find_gatt_characteristic_path(id, BLEKnownUUids.get(gid).rxuuid);
 		rxfd = get_fd_for_characteristic(rxpath, "AcquireNotify", out rxmtu);
 		if (txpath != rxpath) {
 			txfd = get_fd_for_characteristic(txpath, "AcquireWrite",  out txmtu);

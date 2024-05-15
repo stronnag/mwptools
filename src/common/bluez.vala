@@ -210,21 +210,24 @@ public class Bluez: Bluetooth, Object {
  	  return resp;
   }
 
-  public ObjectPath? find_gatt_characteristic_path(string uuid) {
+  public ObjectPath? find_gatt_characteristic_path(uint id, string uuid) {
 	  try {
+		  var mpath = id_to_path.lookup (id);
 		  var objects = manager.get_managed_objects ();
 		  var object_iter = HashTableIter<ObjectPath, HashTable<string, HashTable<string, Variant>>> (objects);
 		  ObjectPath object_path;
 		  HashTable<string, HashTable<string, Variant>> interfaces_and_properties;
 		  while (object_iter.next (out object_path, out interfaces_and_properties)) {
-			  var iter = HashTableIter<string, HashTable<string, Variant>> (interfaces_and_properties);
-			  string name;
-			  HashTable<string, Variant> iface;
-			  while (iter.next (out name, out iface)) {
-				  if(name == "org.bluez.GattCharacteristic1") {
-					  var cuuid = iface.get("UUID").get_string();
-					  if(cuuid == uuid) {
-						  return object_path;
+			  if ( ((string)object_path).has_prefix(mpath)) {
+				  var iter = HashTableIter<string, HashTable<string, Variant>> (interfaces_and_properties);
+				  string name;
+				  HashTable<string, Variant> iface;
+				  while (iter.next (out name, out iface)) {
+					  if(name == "org.bluez.GattCharacteristic1") {
+						  var cuuid = iface.get("UUID").get_string();
+						  if(cuuid == uuid) {
+							  return object_path;
+						  }
 					  }
 				  }
 			  }

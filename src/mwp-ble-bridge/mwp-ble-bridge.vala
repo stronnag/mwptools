@@ -117,7 +117,7 @@ public class GattTest : Application {
 		open_async.begin((obj, res) =>  {
 				var ok = open_async.end(res);
 				if (ok == 0) {
-					mtu = gs.get_bridge_fds(bt, out rdfd, out wrfd);
+					mtu = gs.get_bridge_fds(bt, id, out rdfd, out wrfd);
 					var sb = new StringBuilder();
 					sb.append_printf("BLE chipset %s, mtu %d", gs.get_chipset(), mtu);
 					if(mtu < 256) {
