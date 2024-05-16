@@ -6792,7 +6792,7 @@ public class MWP : Gtk.Application {
 
         if(errs == true) {
             lastrx = lastok = nticks;
-            MWPLog.message("MSP Error: %s[%d,%dn] %s\n", cmd.to_string(), cmd, len,
+            MWPLog.message("MSP Error: %s[%d,%db] %s\n", cmd.to_string(), cmd, len,
                            (cmd == MSP.Cmds.COMMON_SETTING) ? (string)lastmsg.data : "");
             switch(cmd) {
 			case MSP.Cmds.ADSB_VEHICLE_LIST:
@@ -6814,10 +6814,18 @@ public class MWP : Gtk.Application {
 			case MSP.Cmds.NAV_CONFIG:
 				navcap = NAVCAPS.NONE;
 				break;
+
+			case MSP.Cmds.COMMON_SERIAL_CONFIG:
+				queue_cmd(MSP.Cmds.BOXIDS, null,0);
+				run_queue();
+				break;
+
 			case MSP.Cmds.API_VERSION:
+			case MSP.Cmds.BOXIDS:
 				queue_cmd(MSP.Cmds.BOXNAMES, null,0);
 				run_queue();
 				break;
+
 			case MSP.Cmds.IDENT:
 				queue_cmd(MSP.Cmds.API_VERSION, null,0);
 				run_queue();
@@ -7215,7 +7223,6 @@ public class MWP : Gtk.Application {
 													  vi.name, vi.fc_git);
 			verlab.label = verlab.tooltip_text = vers;
 			MWPLog.message("%s\n", vers);
-
 			queue_cmd(MSP.Cmds.COMMON_SERIAL_CONFIG,null,0);
 			break;
 
@@ -7231,8 +7238,6 @@ public class MWP : Gtk.Application {
 				vi = {0};
 				vi.mvers = raw[0];
 				vi.mrtype = raw[1];
-				//                    if(dmrtype != 0)
-				//                        vi.mrtype = (uint8)dmrtype;
 				craft = null;
 				prlabel = false;
 				SEDE.deserialise_u32(raw+3, out capability);
