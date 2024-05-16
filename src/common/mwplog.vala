@@ -85,7 +85,7 @@ public class MWPLog : GLib.Object {
         sb.append_vprintf(format, args);
         fs.puts(sb.str);
 		fs.flush();
-        if(echo) {
+        /*if(echo)*/ {
 			if(addcr) {
 				var sout = sb.str.replace("\n", "\r\n");
 				stderr.puts(sout);

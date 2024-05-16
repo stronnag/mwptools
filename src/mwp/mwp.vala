@@ -168,6 +168,7 @@ public class MWP : Gtk.Application {
     private bool have_nc;
     private bool have_fcv;
     private bool have_fcvv;
+	private bool have_mavlink;
     private bool vinit;
     private bool need_preview;
     private bool xfailsafe = false;
@@ -5479,8 +5480,7 @@ public class MWP : Gtk.Application {
                 reqsize += MSize.MSP_GPSSTATISTICS;
             }
             requests += MSP.Cmds.WP;
-
-            reqsize += (MSize.MSP_RAW_GPS + MSize.MSP_COMP_GPS+1);
+            reqsize += (MSize.MSP_RAW_GPS + MSize.MSP_COMP_GPS+MSize.MSP_WP);
             init_craft_icon();
         } else
             missing |= MSP.Sensors.GPS;
@@ -5497,11 +5497,9 @@ public class MWP : Gtk.Application {
         } else
             missing |= MSP.Sensors.BARO;
 
-		if(vi.fc_vers >= FCVERS.hasAdsbList) {
-			if (!msp.is_weak()) {
-				requests +=  MSP.Cmds.ADSB_VEHICLE_LIST;
-				reqsize += 2; // or more ...
-			}
+		if(have_mavlink && (vi.fc_vers >= FCVERS.hasAdsbList) && !msp.is_weak()) {
+			requests +=  MSP.Cmds.ADSB_VEHICLE_LIST;
+			reqsize += 152; // or more ...
 		}
 
         if(missing != 0) {
@@ -6168,14 +6166,19 @@ public class MWP : Gtk.Application {
                 var reqsize = build_pollreqs();
                 var nreqs = requests.length;
                     // data we send, response is structs + this
-                var qsize = nreqs * 6;
-                reqsize += qsize;
-                if(naze32)
-                    qsize += 1; // for WP no
+                var qsize = nreqs * ((msp.use_v2) ? 9 : 6);
+                reqsize += qsize + 1;
 
-                MWPLog.message("Timer cycle for %d items, %lu => %lu bytes\n",
-                               nreqs,qsize,reqsize);
-
+				var sb = new StringBuilder("Poller cycle for ");
+				sb.append_printf(" %d items, %lu / %lu bytes (", nreqs,qsize,reqsize);
+				foreach(var r in requests) {
+					var srq = r.to_string();
+					srq = srq[9:srq.length];
+					sb.append(srq);
+					sb.append(",");
+				}
+				sb.overwrite(sb.len-1, ")\n");
+				MWPLog.message(sb.str);
                 if(nopoll == false && nreqs > 0) {
                     if  (replayer == Player.NONE) {
                         MWPLog.message("Start poller\n");
@@ -6939,28 +6942,42 @@ public class MWP : Gtk.Application {
 			break;
 
 		case MSP.Cmds.INAV_MIXER:
-                uint16 hx;
-                hx = raw[6]<<8|raw[5];
-                MWPLog.message("V2 mixer %u %u\n", raw[5], raw[3]);
-                if(hx != 0 && hx < 0xff)
-                    vi.mrtype = raw[5]; // legacy types only
-                else {
-                    switch(raw[3]) {
-					case 0:
-						vi.mrtype = 3;
-						break;
-					case 1:
-						vi.mrtype = 8;
-						break;
-					case 3:
-						vi.mrtype = 1;
-						break;
-					default:
-						break;
-                    }
+			uint16 hx;
+			hx = raw[6]<<8|raw[5];
+			MWPLog.message("V2 mixer %u %u\n", raw[5], raw[3]);
+			if(hx != 0 && hx < 0xff)
+				vi.mrtype = raw[5]; // legacy types only
+			else {
+				switch(raw[3]) {
+				case 0:
+					vi.mrtype = 3;
+					break;
+				case 1:
+					vi.mrtype = 8;
+					break;
+				case 3:
+					vi.mrtype = 1;
+					break;
+				default:
+					break;
 				}
-				queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
-				break;
+			}
+			queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
+			break;
+
+		case MSP.Cmds.COMMON_SERIAL_CONFIG:
+			have_mavlink = false;
+			for(var j = 1; j < len; j+= 9) {
+				if ((raw[j]&0x10) == 0x10) {
+					have_mavlink = true;
+				}
+			}
+			if(vi.fc_vers >= FCVERS.hasMoreWP) {
+				queue_cmd(MSP.Cmds.BOXIDS,null,0);
+			} else {
+				queue_cmd(MSP.Cmds.BOXNAMES,null,0);
+			}
+			break;
 
 		case MSP.Cmds.COMMON_SET_TZ:
 			rtcsecs = 0;
@@ -7006,8 +7023,9 @@ public class MWP : Gtk.Application {
 			if(len > 8) {
 				raw[len] = 0;
                     vi.name = (string)raw[9:len];
-			} else
+			} else {
 				vi.name = null;
+			}
 			queue_cmd(MSP.Cmds.FC_VARIANT,null,0);
 			break;
 
@@ -7197,11 +7215,8 @@ public class MWP : Gtk.Application {
 													  vi.name, vi.fc_git);
 			verlab.label = verlab.tooltip_text = vers;
 			MWPLog.message("%s\n", vers);
-			if(vi.fc_vers >= FCVERS.hasMoreWP) {
-				queue_cmd(MSP.Cmds.BOXIDS,null,0);
-			} else {
-				queue_cmd(MSP.Cmds.BOXNAMES,null,0);
-			}
+
+			queue_cmd(MSP.Cmds.COMMON_SERIAL_CONFIG,null,0);
 			break;
 
 		case MSP.Cmds.IDENT:
