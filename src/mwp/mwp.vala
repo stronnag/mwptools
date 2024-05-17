@@ -5497,9 +5497,12 @@ public class MWP : Gtk.Application {
         } else
             missing |= MSP.Sensors.BARO;
 
-		if(have_mavlink && (vi.fc_vers >= FCVERS.hasAdsbList) && !msp.is_weak()) {
-			requests +=  MSP.Cmds.ADSB_VEHICLE_LIST;
-			reqsize += 152; // or more ...
+		if((vi.fc_vers >= FCVERS.hasAdsbList) && conf.msp2_adsb != 0) {
+			if((conf.msp2_adsb == 1) || // "on"
+			   (conf.msp2_adsb == 2 && have_mavlink && !msp.is_weak())) {
+				requests +=  MSP.Cmds.ADSB_VEHICLE_LIST;
+				reqsize += 152; // or more ...
+			}
 		}
 
         if(missing != 0) {

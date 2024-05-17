@@ -119,6 +119,7 @@ public class MWPSettings : GLib.Object {
     public string gpsdhost {get; set; default="localhost";}
     public int misciconsize {get; set; default=32;}
     public int show_sticks {get; set; default=0;}
+    public int msp2_adsb {get; set; default=0;}
 	public int los_margin {get; set; default=0;}
 	public bool bluez_disco {get; set; default=false;}
 	public bool autoload_geozones {get; set; default=true;}
@@ -430,10 +431,15 @@ public class MWPSettings : GLib.Object {
 
 		if(s == null || s == "show-sticks")
             show_sticks = settings.get_enum("show-sticks");
+
         if(s == null || s == "bluez-disco")
             bluez_disco = settings.get_boolean ("bluez-disco");
+
         if(s == null || s == "autoload-geozones")
             autoload_geozones = settings.get_boolean ("autoload-geozones");
+
+		if(s == null || s == "msp2-adsb")
+            msp2_adsb = settings.get_enum("msp2-adsb");
 	}
 
     public void save_pane() {
