@@ -261,6 +261,7 @@ This *may* not be installed by default, but should be available via the OS packa
 | mission-file-type | Preferred mission file type | m for XML (.mission), j for json (change at your peril) | "m" |
 | mission-meta-tag | use meta vice mwp in mission file | If true, the legacy 'mwp' tag is named 'meta' | false |
 | mission-path | Directory for mission files | Directory for mission files, default = current directory | "" |
+| msp2-adsb | MSP2_ADSB_VEHICLE_LIST usage | Options for requesting MSP2_ADSB_VEHICLE_LIST. "off": never request, "on:" always request, "auto:" heuristic based on serial settings / bandwidth | "off" |
 | osd-mode | Data items overlaid on the map | 0 = none, 1 = current WP/Max WP, 2 = next WP distance and course. This is a mask, so 3 means both OSD items. | 3 |
 | poll-timeout | Poll messages timeout (ms) | Timeout in milliseconds for telemetry poll messages. Note that timer loop has a resolution of 100ms. | 900 |
 | pos-is-centre | Determines position label content | Whether the position label is the centre or pointer location | false |
