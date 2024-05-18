@@ -4,7 +4,7 @@
 
 `mwp-inav-radar-sim` is a simulator for the MSP based inav-radar protocol. It simulates 4 aircraft, flying from central location, staying withing a defined range, with specified speed and altitude. The values for heading, speed and altitude have random perturbations applied during the simulation and 'fly' within a specified range of defined start point.
 
-`mwp-mavlink-traffic-sim` is a simulator for the  MAVLink TRAFFIC REPORT protocol. It behaves in a similar fashion.
+`mwp-mavlink-traffic-sim` is a simulator for the  MAVLink TRAFFIC REPORT protocol. It behaves in a similar fashion. It may be used with an FC or the SITL to facilitate the generation of `MSP2_ADL_VEHICLE_LIST` messages.
 
 `sbs-player.rb` is a ruby script that replays CSV files in the SBS / `dump1090` format as a TCP server.
 
@@ -12,7 +12,7 @@
 
 ## Building
 
-Niether simulator is built by default, it is necessary to:
+Neither simulator is built by default, it is necessary to:
 
 ```
 cd mwptools/src/samples/mwp-radar-sim

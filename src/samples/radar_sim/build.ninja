@@ -12,7 +12,7 @@ rule valac
     command = valac $opts -o $out $pkgs $in $cf
 
 rule install
-     command = install $in $${PREFIX:-$$HOME/.local}/bin/
+     command = install $in $${prefix:-$$HOME/.local}/bin/
 
 build mwp-inav-radar-sim: valac mwp-inav-radar-sim.vala
 
