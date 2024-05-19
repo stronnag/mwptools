@@ -75,7 +75,7 @@ public class RadarSim : Object {
             string t = "TEST%05d".printf(i);
             tr[i].callsign = t.data;
             tr[i].emtype = i % 20;
-            tr[i].tslc = 0;
+            tr[i].tslc = 1;
         }
         open_serial();
     }
