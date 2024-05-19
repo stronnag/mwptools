@@ -285,6 +285,7 @@ public class MWP : Gtk.Application {
 	private bool sticks_ok = false;
 	private bool bblosd_ok = false;
 	private Queue<string> csdq;
+	private MSP_WP_GETINFO wpi;
 
 	public struct MQI {
         MSP.Cmds cmd;
@@ -7642,12 +7643,12 @@ public class MWP : Gtk.Application {
 				 break;
 
 		case MSP.Cmds.WP_GETINFO:
-			 var wpi = MSP_WP_GETINFO();
-			 uint8* rp = raw;
-			 rp++;
-			 wp_max = wpi.max_wp = *rp++;
-			 wpi.wps_valid = *rp++;
-			 wpi.wp_count = *rp;
+			wpi = MSP_WP_GETINFO();
+			uint8* rp = raw;
+			rp++;
+			wp_max = wpi.max_wp = *rp++;
+			wpi.wps_valid = *rp++;
+			wpi.wp_count = *rp;
 			 NavStatus.nm_pts = last_wp_pts = wpi.wp_count;
 			 MWPLog.message("WP_GETINFO: %u/%u/%u\n",
 							wpi.max_wp, wpi.wp_count, wpi.wps_valid);
@@ -9540,7 +9541,7 @@ public class MWP : Gtk.Application {
         upltid = Timeout.add(timeo, () => {
                 MWPCursor.set_normal_cursor(window);
                 MWPLog.message("%s operation probably failed\n", reason);
-                string wmsg = "%s operation timeout.\nThe upload has probably failed".printf(reason);
+                string wmsg = "%s operation timeout.\nThe transfer has probably failed".printf(reason);
                 Utils.warning_box(wmsg, Gtk.MessageType.ERROR);
 
                 if((wpmgr.wp_flag & WPDL.CALLBACK) != 0)
@@ -10986,7 +10987,13 @@ Error: <i>%s</i>
 	private void start_download() {
 		serstate = SERSTATE.NORMAL;
 		mq.clear();
-		start_wp_timer(30*1000);
+		int timeo;
+		int rwp;
+		//		wpi.max_wp, wpi.wp_count
+		rwp = (wpi.wp_count > 0) ? wpi.wp_count : wp_max;
+		timeo = 1500+(rwp*1000);
+		start_wp_timer(timeo);
+		MWPLog.message("Start download for %d WP\n", rwp);
 		request_wp(1);
 	}
 
