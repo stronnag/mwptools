@@ -153,8 +153,9 @@ public class MWP : Gtk.Application {
     private MwpMQTT mqtt;
 #endif
     private bool mqtt_available = false;
-    private uint64 acycle;
-    private uint64 anvals;
+	private uint64 acycle;
+	private uint64 anvals;
+	private double ptdiff = 0.0;
     private uint64 xbits = 0;
     private uint8 api_cnt;
     private uint8 icount = 0;
@@ -5168,7 +5169,9 @@ public class MWP : Gtk.Application {
     private void msg_poller() {
         if(serstate == SERSTATE.POLLER) {
             lastp.start();
+			ptdiff = 0.0;
             send_poll();
+			run_queue();
         }
     }
 
@@ -5252,22 +5255,20 @@ public class MWP : Gtk.Application {
                                 }
                                 run_queue();
                             } else if ((nticks - lastok) > tlimit ) {
-                                telstats.toc++;
-                                string res;
-                                if(lastmsg.cmd != MSP.Cmds.INVALID) {
+								if (lastmsg.cmd != MSP.Cmds.INVALID) {
+									telstats.toc++;
+									string res;
                                     res = lastmsg.cmd.to_string();
-                                } else {
-                                    res = "%d".printf(tcycle);
+									if(nopoll == false)
+										MWPLog.message("MSP Timeout %u %u %u (%s %s)\n",
+													   nticks, lastok, lastrx, res, serstate.to_string());
+									if (lastmsg.cmd == MSP.Cmds.ADSB_VEHICLE_LIST) {
+										clear_poller_item(MSP.Cmds.ADSB_VEHICLE_LIST);
+									}
+									lastok = nticks;
+									tcycle = 0;
+									resend_last();
 								}
-                                if(nopoll == false)
-                                    MWPLog.message("MSP Timeout %u %u %u (%s %s)\n",
-												   nticks, lastok, lastrx, res, serstate.to_string());
-								if (lastmsg.cmd == MSP.Cmds.ADSB_VEHICLE_LIST) {
-									clear_poller_item(MSP.Cmds.ADSB_VEHICLE_LIST);
-								}
-                                lastok = nticks;
-                                tcycle = 0;
-                                resend_last();
                             }
                         } else {
                             if(armed != 0 && msp.available &&
@@ -5291,7 +5292,6 @@ public class MWP : Gtk.Application {
                                 xbits = icount = api_cnt = 0;
                                 init_sstats();
                                 last_tm = 0;
-                                lastp.start();
                                 serstate = SERSTATE.NORMAL;
                                 queue_cmd(msp_get_status,null,0);
                                 run_queue();
@@ -5421,9 +5421,8 @@ public class MWP : Gtk.Application {
             }
             if(req == MSP.Cmds.WP)
                 request_wp(0);
-            else
-                if (req != MSP.Cmds.NOOP)
-                    queue_cmd(req, null, 0);
+            else if (req != MSP.Cmds.NOOP)
+				queue_cmd(req, null, 0);
         }
     }
 
@@ -6185,11 +6184,15 @@ public class MWP : Gtk.Application {
 				MWPLog.message(sb.str);
                 if(nopoll == false && nreqs > 0) {
                     if  (replayer == Player.NONE) {
-                        MWPLog.message("Start poller\n");
-                        tcycle = 0;
-                        lastm = nticks;
-                        serstate = SERSTATE.POLLER;
-                        start_audio();
+						Timeout.add(500, () => {
+								MWPLog.message("Start poller\n");
+								tcycle = 0;
+								lastm = nticks;
+								serstate = SERSTATE.POLLER;
+								start_audio();
+								msg_poller();
+								return false;
+							});
                     }
                 }
                 report_bits(bxflag);
@@ -6908,6 +6911,7 @@ public class MWP : Gtk.Application {
                 rxerr=false;
             }
         }
+		lastmsg.cmd = MSP.Cmds.INVALID;
         switch(cmd) {
 		case MSP.Cmds.API_VERSION:
 			have_api = true;
@@ -8687,20 +8691,27 @@ public class MWP : Gtk.Application {
         }
 
         if(mq.is_empty() && serstate == SERSTATE.POLLER) {
-            if (requests.length > 0)
-                tcycle = (tcycle + 1) % requests.length;
-            if(tcycle == 0) {
-                lastp.stop();
-                var et = lastp.elapsed();
-                telstats.tot = 0;
-                acycle += (uint64)(et*1000);
-                anvals++;
-                msg_poller();
-            } else {
-                send_poll();
-            }
-        }
-		run_queue();
+            if (requests.length > 0) {
+				var et = lastp.elapsed();
+				var twait = (uint)(1000*(et-ptdiff));
+				acycle += twait;
+				anvals++;
+				if (twait < 12) {
+					twait = 12 - twait;
+				} else {
+					twait = 0;
+				}
+				Timeout.add(twait, () => {
+						tcycle = (tcycle + 1) % requests.length;
+						send_poll();
+						run_queue();
+						return false;
+					});
+				ptdiff = et;
+			}
+		} else {
+			run_queue();
+		}
     }
 
 
@@ -9848,7 +9859,7 @@ public class MWP : Gtk.Application {
     private void init_sstats() {
         if(telstats.s.msgs != 0)
             gen_serial_stats();
-        anvals = acycle = 0;
+		anvals = acycle = 0;
         telstats = {};
         telemstatus.annul();
         radstatus.annul();
