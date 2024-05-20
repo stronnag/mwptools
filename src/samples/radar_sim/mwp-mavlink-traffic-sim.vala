@@ -72,10 +72,10 @@ public class RadarSim : Object {
             tr[i].squawk = 0xffff;
             tr[i].valid = mask;
             tr[i].atype  = 0;
-            string t = "TEST%05d".printf(i);
+            string t = "TEST%04d".printf(i);
             tr[i].callsign = t.data;
             tr[i].emtype = i % 20;
-            tr[i].tslc = 1;
+            tr[i].tslc = i%16;
         }
         open_serial();
     }
