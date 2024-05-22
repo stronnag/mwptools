@@ -554,15 +554,15 @@ public class MWP : Gtk.Application {
     private const string[] failnames = {"WPNO","ACT","LAT","LON","ALT","P1","P2","P3","FLAG"};
 	private const uint32 ADSB_DISTNDEF = (uint32)0xffffffff;
     private const uint TIMINTVL=100;
-    private const uint BEATINTVL=(60000/TIMINTVL);
-    private const uint STATINTVL=(1000/TIMINTVL);
-    private const uint NODATAINTVL=(5000/TIMINTVL);
-    private const uint SATINTVL=(10000/TIMINTVL);
-    private const uint USATINTVL=(2000/TIMINTVL);
-    private const uint UUSATINTVL=(4000/TIMINTVL);
-    private const uint RESTARTINTVL=(30000/TIMINTVL);
-    private const uint MAVINTVL=(2000/TIMINTVL);
-    private const uint CRITINTVL=(3000/TIMINTVL);
+
+    private const uint STATINTVL=(1000/TIMINTVL); // 1 Sec
+    private const uint NODATAINTVL=(5000/TIMINTVL); // 5 sec
+    private const uint SATINTVL=(10000/TIMINTVL); // 10 sec
+    private const uint USATINTVL=(2000/TIMINTVL);  // 2 sec
+    private const uint UUSATINTVL=(4000/TIMINTVL); // 4 sec
+    private const uint RESTARTINTVL=(30000/TIMINTVL); // 30 sec
+    private const uint MAVINTVL=(2000/TIMINTVL); // 2 sec
+    private const uint CRITINTVL=(3000/TIMINTVL); // 3 sec
     private const uint RADARINTVL=(10000/TIMINTVL);
 
 	private const uint MAXMULTI = 9;
@@ -2992,7 +2992,6 @@ public class MWP : Gtk.Application {
 
 		sticks = new Sticks.StickWindow(window, conf.show_sticks);
 
-//        Timeout.add_seconds(5, () => { return try_connect(); });
         if(set_fs)
             window.fullscreen();
         else if (no_max == false)
@@ -5214,9 +5213,69 @@ public class MWP : Gtk.Application {
         }
     }
 
-    private void start_poll_timer() {
-        var lmin = 0;
+	private void radar_periodic() {
+		bool dumpit = false;
+		var rkeys = radar_cache.get_keys();
+		rkeys.foreach((rk) => {
+				var r = radar_cache.lookup(rk);
+				if (r != null) {
+					var is_adsb = ((r.source & RadarSource.M_ADSB) != 0);
+					var staled = 120;
+					var deled = 600;
+					var hided = 300;
+					if (!is_adsb) {
+						staled *= 10;
+						deled *= 10;
+						hided *= 10;
+					}
+					uint delta = nticks - r.lasttick;
+					bool rdebug = ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE);
+					if (delta > deled) {
+						if (rdebug) {
+							MWPLog.message("TRAF-DEL %X %u %s len=%u\n",
+										   rk, r.state,
+										   is_adsb.to_string(), radar_cache.size());
+						}
+						if(is_adsb) {
+							radarv.remove(rk);
+							markers.remove_radar(rk);
+							radar_cache.remove(rk);
+							dumpit = true;
+						}
+					} else if(delta > hided) {
+						if(rdebug)
+							MWPLog.message("TRAF-HID %X %s %u %u\n",
+										   rk, r.name, r.state, radar_cache.size());
+						if(is_adsb) {
+							r.state = 2; // hidden
+							r.alert = RadarAlert.SET;
+							radar_cache.upsert(rk, r);
+							radarv.update(rk, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
+							if (r.posvalid) {
+								markers.set_radar_hidden(rk);
+							}
+						}
+					} else if(delta > staled && r.state != 0 && r.state != 3) {
+						if(rdebug)
+							MWPLog.message("TRAF-STALE %X %s %u %u\n",
+										   rk, r.name, r.state, radar_cache.size());
+						r.state = 3; // stale
+						r.alert = RadarAlert.SET;
+						radar_cache.upsert(rk, r);
+						radarv.update(rk, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
+						if(r.posvalid) {
+							markers.set_radar_stale(rk);
+						}
+					}
+				}
+			});
+		if(dumpit && ((debug_flags & DEBUG_FLAGS.RDRLIST) != DEBUG_FLAGS.NONE)) {
+			dump_radar_list("Delete");
+		}
+	}
 
+	private void start_poll_timer() {
+        var lmin = 0;
         Timeout.add(TIMINTVL, () => {
                 nticks++;
                 if(msp.available) {
@@ -5228,8 +5287,7 @@ public class MWP : Gtk.Application {
 							tlimit *= 5;
 						}
 
-						if((serstate == SERSTATE.POLLER ||
-                            serstate == SERSTATE.TELEM) &&
+						if((serstate == SERSTATE.POLLER || serstate == SERSTATE.TELEM) &&
                            (nticks - lastrx) > NODATAINTVL) {
                             if(rxerr == false) {
                                 set_error_status("No data for 5s");
@@ -5238,7 +5296,7 @@ public class MWP : Gtk.Application {
                         }
 
                         if(serstate != SERSTATE.TELEM) {
-// Probably takes a minute to change the LIPO
+							// Long timeout e.g. change the LIPO
                             if(serstate == SERSTATE.POLLER && nticks - lastrx > RESTARTINTVL) {
                                 serstate = SERSTATE.NONE;
                                 MWPLog.message("Restart poll loop\n");
@@ -5271,8 +5329,7 @@ public class MWP : Gtk.Application {
 								}
                             }
                         } else {
-                            if(armed != 0 && msp.available &&
-                               gpsintvl != 0 && last_gps != 0) {
+                            if(armed != 0 && msp.available && gpsintvl != 0 && last_gps != 0) {
                                 if (nticks - last_gps > gpsintvl) {
                                     if(replayer == Player.NONE)
                                         play_alarm_sound(MWPAlert.SAT);
@@ -5324,67 +5381,9 @@ public class MWP : Gtk.Application {
                     elapsedlab.set_text("%02d:%02d".printf(mins,secs));
                     last_dura = duration;
                 }
-
-                if((nticks % RADARINTVL) == 0) {
-					bool dumpit = false;
-					var rkeys = radar_cache.get_keys();
-					rkeys.foreach((rk) => {
-							var r = radar_cache.lookup(rk);
-							if (r != null) {
-								var is_adsb = ((r.source & RadarSource.M_ADSB) != 0);
-								var staled = 120;
-								var deled = 600;
-								var hided = 300;
-								if (!is_adsb) {
-									staled *= 10;
-									deled *= 10;
-									hided *= 10;
-								}
-								uint delta = nticks - r.lasttick;
-								bool rdebug = ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE);
-								if (delta > deled) {
-									if (rdebug) {
-										MWPLog.message("TRAF-DEL %X %u %s len=%u\n",
-													   rk, r.state,
-													   is_adsb.to_string(), radar_cache.size());
-									}
-									if(is_adsb) {
-										radarv.remove(rk);
-										markers.remove_radar(rk);
-										radar_cache.remove(rk);
-										dumpit = true;
-									}
-								} else if(delta > hided) {
-									if(rdebug)
-										MWPLog.message("TRAF-HID %X %s %u %u\n",
-													   rk, r.name, r.state, radar_cache.size());
-									if(is_adsb) {
-										r.state = 2; // hidden
-										r.alert = RadarAlert.SET;
-										radar_cache.upsert(rk, r);
-										radarv.update(rk, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
-										if (r.posvalid) {
-											markers.set_radar_hidden(rk);
-										}
-									}
-								} else if(delta > staled && r.state != 0 && r.state != 3) {
-									if(rdebug)
-										MWPLog.message("TRAF-STALE %X %s %u %u\n",
-													   rk, r.name, r.state, radar_cache.size());
-									r.state = 3; // stale
-									r.alert = RadarAlert.SET;
-									radar_cache.upsert(rk, r);
-									radarv.update(rk, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
-									if(r.posvalid) {
-										markers.set_radar_stale(rk);
-									}
-								}
-							}
-						});
-					if(dumpit && ((debug_flags & DEBUG_FLAGS.RDRLIST) != DEBUG_FLAGS.NONE)) {
-						dump_radar_list("Delete");
-					}
-                }
+				if((nticks % RADARINTVL) == 0) {
+					radar_periodic();
+				}
                 return Source.CONTINUE;
             });
     }
