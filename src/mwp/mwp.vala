@@ -553,17 +553,25 @@ public class MWP : Gtk.Application {
 
     private const string[] failnames = {"WPNO","ACT","LAT","LON","ALT","P1","P2","P3","FLAG"};
 	private const uint32 ADSB_DISTNDEF = (uint32)0xffffffff;
-    private const uint TIMINTVL=100;
 
-    private const uint STATINTVL=(1000/TIMINTVL); // 1 Sec
-    private const uint NODATAINTVL=(5000/TIMINTVL); // 5 sec
-    private const uint SATINTVL=(10000/TIMINTVL); // 10 sec
-    private const uint USATINTVL=(2000/TIMINTVL);  // 2 sec
-    private const uint UUSATINTVL=(4000/TIMINTVL); // 4 sec
-    private const uint RESTARTINTVL=(30000/TIMINTVL); // 30 sec
-    private const uint MAVINTVL=(2000/TIMINTVL); // 2 sec
-    private const uint CRITINTVL=(3000/TIMINTVL); // 3 sec
-    private const uint RADARINTVL=(10000/TIMINTVL);
+	/* There is a single timer that monitors message state
+	   This runs at 100ms (TIMINTVL). Other monitoring times are defined in terms of this
+	   timer.
+	   Two other monitoring intervals are defined by configuration.
+	   poll-timeout : messging poll timeout (default 900ms)
+	   gpsintvl     : gps-data timeout (default 150ms)
+	 */
+
+	private const uint TIMINTVL     = 100;              // 100 milliseconds
+    private const uint STATINTVL    = ( 1000/TIMINTVL); //  1 sec, status update
+	private const uint MAVINTVL     = ( 2000/TIMINTVL); //  2 sec, push telemetry t/o
+    private const uint USATINTVL    = ( 2000/TIMINTVL); //  2 sec, change in sats message
+    private const uint CRITINTVL    = ( 3000/TIMINTVL); //  3 sec, GPS critical message
+    private const uint UUSATINTVL   = ( 4000/TIMINTVL); //  4 sec, change in sats message
+	private const uint NODATAINTVL  = ( 5000/TIMINTVL); //  5 sec, no data warning
+    private const uint RADARINTVL   = (10000/TIMINTVL); // 10 sec, radar status check
+    private const uint SATINTVL     = (10000/TIMINTVL); // 10 sec, sats change
+    private const uint RESTARTINTVL = (30000/TIMINTVL); // 30 sec, poller inactivity
 
 	private const uint MAXMULTI = 9;
 
@@ -5281,10 +5289,13 @@ public class MWP : Gtk.Application {
                 if(msp.available) {
                     if(serstate != SERSTATE.NONE) {
                         var tlimit = conf.polltimeout / TIMINTVL;
-						if ((lastmsg.cmd == MSP.Cmds.WP_MISSION_SAVE) ||
+						if (lastmsg.cmd == MSP.Cmds.WP_MISSION_SAVE ||
 							lastmsg.cmd == MSP.Cmds.EEPROM_WRITE ||
-							msp.is_weak() ) {
-							tlimit *= 5;
+							lastmsg.cmd == MSP.Cmds.ADSB_VEHICLE_LIST) {
+							tlimit += MAVINTVL;
+						}
+						if(msp.is_weak() ) {
+							tlimit *= 4;
 						}
 
 						if((serstate == SERSTATE.POLLER || serstate == SERSTATE.TELEM) &&
