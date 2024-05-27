@@ -52,7 +52,10 @@ public class ADSBReader :Object {
 				var mlen = msg.response_headers.get_content_length ();
 				if (mlen == 0)
 					mlen = (1<<20) - 1;
-				var data = new uint8[mlen+1];
+
+				if(!host.has_suffix(".pb"))
+				   mlen++;
+				var data = new uint8[mlen];
 				yield resp.read_all_async(data, GLib.Priority.DEFAULT, null, null);
 				result(data);
 				return true;
