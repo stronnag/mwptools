@@ -106,6 +106,10 @@ public class SoupProxy : Soup.Server {
         return sb.str;
     }
 
+	private int getservernum(int ix, int iy, int pmax) {
+        return (ix + (2 * iy)) % pmax;
+    }
+
     private string rewrite_path(string p) {
         var parts = p.split("/");
         var np = parts.length-3;
@@ -114,7 +118,9 @@ public class SoupProxy : Soup.Server {
         var ix = int.parse(parts[np+1]);
         var iy = int.parse(fn[0]);
         var q = quadkey(iz, ix, iy);
-        StringBuilder sb = new StringBuilder(basename);
+		var svr = getservernum(ix, iy, 4);
+		var bn = basename.printf(svr);
+		StringBuilder sb = new StringBuilder(bn);
         sb.append(q);
         sb.append(extname);
         return sb.str;
@@ -217,8 +223,6 @@ public class SoupProxy : Soup.Server {
 }
 
 public class BingMap : Object {
-	public const string BURI="https://dev.virtualearth.net/REST/V1/Imagery/Metadata/Aerial/0,0?zl=1&include=ImageryProviders&key=";
-    public const string KENC="QWwxYnFHYU5vZGVOQTcxYmxlSldmakZ2VzdmQXBqSk9vaE1TWjJfSjBIcGd0NE1HZExJWURiZ3BnQ1piWjF4QQ==";
 	private string buri;
 	private MapSource ms;
 	private string savefile;
@@ -237,50 +241,6 @@ public class BingMap : Object {
 	public MapSource get_ms() {
 		return ms;
 	}
-
-	private string validate_key() {
-		var bk0 = Environment.get_variable("MWP_BING_KEY");
-		var bk1 = (string)Base64.decode(BingMap.KENC);
-		if (bk0 != null) {
-			return bk0;
-		} else {
-			return bk1;
-		}
-	}
-
-	public async void get_source() {
-        StringBuilder sb = new StringBuilder(BingMap.BURI);
-		var bk = validate_key();
-		sb.append(bk);
-        var session = new Soup.Session ();
-        var message = new Soup.Message ("GET", sb.str);
-#if COLDSOUP
-		try {
-			var resp = yield session.send_async (message);
-			var mlen = message.response_headers.get_content_length ();
-			if (mlen == 0)
-				mlen = (1<<16) - 1;
-			var data = new uint8[mlen+1];
-			yield resp.read_all_async(data, GLib.Priority.DEFAULT, null, null);
-			data[mlen]=0;
-			var s = (string)data;
-			parse_bing_json(s);
-			complete(true);
-		} catch (Error e) {
-			complete(false);
-		}
-#else
-		session.send_and_read_async.begin(message, 0, null, (obj,res) => {
-				try {
-                    var b = session.send_and_read_async.end(res);
-					parse_bing_json((string)b.get_data());
-					complete(true);
-                } catch (Error e) {
-					complete(false);
-				}
-			});
-#endif
-    }
 
 	public void save_cached_data() {
 		var fp = FileStream.open (savefile, "w");
@@ -303,7 +263,8 @@ public class BingMap : Object {
 		ms.uri_format = "";
 		ms.licence = "(c) Microsoft Corporation and friends";
 		ms.licence_uri = "http://www.bing.com/maps/";
-		buri="http://ecn.t3.tiles.virtualearth.net/tiles/a#Q#.jpeg?g=13902";
+		// buri="http://ecn.t3.tiles.virtualearth.net/tiles/a#Q#.jpeg?g=13902";
+		buri = "http://ecn.t%d.tiles.virtualearth.net/tiles/a#Q#.jpeg?g=563&mkt=en";
 		var fp = FileStream.open (savefile, "r");
 		if(fp != null) {
 			var n = 0;
@@ -311,7 +272,7 @@ public class BingMap : Object {
 			while ((line = fp.read_line()) != null) {
 				switch(n) {
 				case 0:
-					buri = line;
+					//					buri = line;
 					break;
 				case 1:
 					ms.min_zoom = int.parse(line);
@@ -329,96 +290,6 @@ public class BingMap : Object {
 					break;
 				}
 				n += 1;
-			}
-		}
-	}
-	private void parse_bing_json(string s) {
-		if(s.length > 0) {
-			StringBuilder sb = new StringBuilder();
-			try {
-				var parser = new Json.Parser ();
-				parser.load_from_data (s);
-				int gmin = 999;
-				int gmax = -1;
-				double xmin,ymin;
-				double xmax,ymax;
-				int zmin = 999;
-				int zmax = -1;
-				int imgh =0, imgw = 0;
-
-				var root_object = parser.get_root ().get_object ();
-				foreach (var rsnode in
-						 root_object.get_array_member ("resourceSets").get_elements ()) {
-					var rsitem = rsnode.get_object ();
-					foreach (var rxnode in
-							 rsitem.get_array_member ("resources").get_elements ()) {
-						var rxitem = rxnode.get_object ();
-						buri = rxitem.get_string_member ("imageUrl");
-						imgh = (int)rxitem.get_int_member("imageHeight");
-						imgw = (int)rxitem.get_int_member("imageWidth");
-
-						foreach (var pvnode in
-								 rxitem.get_array_member ("imageryProviders").get_elements ()) {
-							xmin = ymin = 999.0;
-							xmax = ymax = -999;
-							var pvitem = pvnode.get_object();
-							foreach (var cvnode in
-									 pvitem.get_array_member ("coverageAreas").get_elements ()) {
-								var cvitem = cvnode.get_object();
-								var _zmin = (int)cvitem.get_int_member("zoomMin");
-								var _zmax = (int)cvitem.get_int_member("zoomMax");
-								if(_zmin < zmin)
-									zmin = _zmin;
-								if(_zmax > zmax)
-									zmax = _zmax;
-								var bbarry = cvitem.get_array_member("bbox");
-								var d = bbarry.get_double_element(0);
-								if(d < ymin)
-									ymin = d;
-								d = bbarry.get_double_element(1);
-								if(d < xmin)
-									xmin = d;
-								d = bbarry.get_double_element(2);
-								if(d > ymax)
-									ymax = d;
-								d = bbarry.get_double_element(3);
-								if(d > xmax)
-									xmax = d;
-							}
-							if (zmin < gmin)
-								gmin = zmin;
-							if (zmax >  gmax)
-								gmax = zmax;
-
-							if(xmax-xmin > 359 && ymax-ymin > 179) {
-								var pattr = pvitem.get_string_member("attribution");
-								sb.append(pattr);
-								sb.append(", ");
-							}
-						}
-					}
-				}
-				sb.truncate(sb.len-2);
-				ms.licence =  sb.str;
-				ms.min_zoom = gmin-1;
-				ms.max_zoom = gmax-1;
-                     // notwithstanding what is advertised, this is the working max here, alas
-				if(ms.max_zoom > 19)
-					ms.max_zoom = 19;
-				ms.tile_size = imgw;
-			} catch (Error e) {
-				MWPLog.message("bing parser %s\n", e.message);
-			}
-			if(buri.length > 0) {
-				if (!buri.contains("#Q#")) {
-					var parts = buri.split("/");
-					sb.assign(parts[4].substring(0,1));
-					sb.append("#Q#");
-					sb.append(parts[4].substring(2,-1));
-					parts[4] = sb.str;
-					buri = string.joinv("/",parts);
-				}
-				save_cached_data();
 			}
 		}
 	}
@@ -453,19 +324,8 @@ public class JsonMapDef : Object {
 		}
 		sources += ms;
 
-		bg.complete.connect((ok) => {
-				if(ok) {
-					sp.set_uri(bg.get_buri());
-				}
-			});
-
-		if(offline) {
-			sp.set_uri(bg.get_buri());
-		} else {
-			bg.get_source.begin();
-		}
-
-        if(fn != null) {
+		sp.set_uri(bg.get_buri());
+		if(fn != null) {
             try {
                 var parser = new Json.Parser ();
                 parser.load_from_file (fn);
