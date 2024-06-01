@@ -1305,7 +1305,6 @@
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> (originally "multi-wii planner") is a mission planner, ground control station and flight logger for MSP (Multiwiii Serial Protocol) compatible flight controller firmware (<a href="https://github.com/iNavFlight/inav">INAV</a> and Multiwii at least).</p>
 <p>From its MultiWii origins mwp has evolved to support navigation capabilities in <a href="https://github.com/iNavFlight/inav">INAV</a>.</p>
 <p><a href="https://github.com/iNavFlight/inav">INAV</a> is now the main development target, however MultiWii mission planning and ground control remains a supported function.</p>
-<p>You can also <a href="pdf/mwptools.pdf">download this manual as PDF</a> for offline reference.</p>
 <h2 id="features">Features<a class="headerlink" href="#features" title="Permanent link">#</a></h2>
 <ul>
 <li><a href="mission-editor/"><strong>Mission Planner</strong></a> : Supports all <a href="https://github.com/iNavFlight/inav">INAV</a> and MultiWii mission planning functions, including all INAV extensions.</li>
@@ -1314,7 +1313,7 @@
 <li><a href="replay-tools/"><strong>Flight log replay</strong></a>  (Blackbox, OTX/ETX logs, BulletGCSS)</li>
 <li><a href="mwp_video_player/"><strong>Embedded video</strong></a> (live and replay)</li>
 <li><strong>Support</strong> functions<ul>
-<li><a href="https://github.com/iNavFlight/inav">INAV</a> <a href="mwp-safehomes-editor/">Safehome editor</a></li>
+<li><a href="https://github.com/iNavFlight/inav">INAV</a> <a href="mwp-safehomes-editor/">Safehome editor</a> and <a href="mwp-safehomes-editor/">FW Auto-Land plans</a>.</li>
 <li><a href="mission-editor/#add-shape">Automatic mission shape</a> generation, block moves, animated mission preview.</li>
 <li><a href="Mission-Elevation-Plot-and-Terrain-Analysis/">Terrain Analysis</a> with WP mission rewrite to safe elevation margins</li>
 <li><a href="mwp-los-tool/">Line of sight Analysis</a> along a WP mission file.</li>
@@ -1328,7 +1327,7 @@
 <ul>
 <li>MSP (MultiWii Serial Protocol)</li>
 <li>LTM (Lightweight Telemetry)</li>
-<li>MAVLink (INAV subset)</li>
+<li>MAVLink (INAV telemetry subset)</li>
 <li>Smartport (direct /  via inverter / or from Multi-protocol Module)</li>
 <li>Crossfire (CRSF)</li>
 <li>Flysky AA (via Multi-protocol Module)</li>
@@ -1338,8 +1337,8 @@
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> also supports the <a href="mwp-Radar-View/">real-time display of adjacent aircraft</a> using:</p>
 <ul>
 <li><a href="https://github.com/OlivierC-FR/ESP32-INAV-Radar/">INAV-radar</a> (INAV UAS)</li>
-<li>dump1090 / SBS-1 Basestation (SDR ADS-B), streaming TCP, for general aviation</li>
-<li>MAVlink Traffic Report (e.g. general aviation, typically ADS-B via a device such as uAvionix PingRX)</li>
+<li>SDR ADS-B (dump1090 / readsb / SBS1) live reports for general aviation</li>
+<li>MAVlink Traffic Report / ADSB Vehicle (e.g. general aviation, typically ADS-B via a device such as uAvionix PingRX or Aerobits TT-SC1)</li>
 </ul>
 <h3 id="log-replay-formats">Log replay formats<a class="headerlink" href="#log-replay-formats" title="Permanent link">#</a></h3>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> supports <a href="replay-tools/">replay</a> of:</p>
@@ -1352,12 +1351,12 @@
 </ul>
 <p>Log replay requires tools from the <a href="https://github.com/stronnag/bbl2kml">flightlog2x</a> project.</p>
 <h2 id="platforms-and-os">Platforms and OS<a class="headerlink" href="#platforms-and-os" title="Permanent link">#</a></h2>
-<p>The tools are designed to be portable and as far as possible platform and architecture agnostic. The suite is developed on Arch Linux and is tested on Debian (Bullseye, Sid), Ubuntu (latest and most recent LTS), Fedora (current)  and FreeBSD (current release). <a href="https://github.com/stronnag/mwptools">mwp</a> also runs on MS Windows; Windows 11 / WSL-g is almost on feature parity with Linux / FreeBSD. Other (older) OS are unsupported, but may work (i.e. Debian 10 is used for the "release" builds).</p>
+<p>The tools are designed to be portable and as far as possible platform and architecture agnostic. The suite is developed on Arch Linux and is tested on Debian (Bullseye, Sid), Ubuntu (latest and most recent LTS), Fedora (current)  and FreeBSD (current release). <a href="https://github.com/stronnag/mwptools">mwp</a> also runs on MS Windows; Cygwin and Windows 11 / WSL-g are almost on feature parity with Linux / FreeBSD. Other (older) OS are unsupported, but also work (i.e. Debian 10 is used for the "release" builds).</p>
 <h2 id="build-and-installation">Build and installation<a class="headerlink" href="#build-and-installation" title="Permanent link">#</a></h2>
 <p>Build and installation is described in the following sections:</p>
 <ul>
 <li><a href="Building-with-meson-and-ninja/">Generic build and installation</a> Linux, FreeBSD, Windows / WSL<ul>
-<li>Windows additional information (<a href="mwp-in-Windows-11---WSL-G/">Win11</a>, <a href="https://github.com/stronnag/mwptools/wiki/mwp-in-WSL">Win10</a> and <a href="https://github.com/stronnag/mwptools/wiki/mwp-on-cygwin">earlier</a>)</li>
+<li>Windows additional information (<a href="mwp-in-Windows-11---WSL-G/">Win11</a>, <a href="https://github.com/stronnag/mwptools/wiki/mwp-in-WSL">Win10</a> and <a href="https://github.com/stronnag/mwptools/wiki/mwp-on-cygwin">Cygwin</a>)</li>
 </ul>
 </li>
 </ul>
