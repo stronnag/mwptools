@@ -14,8 +14,6 @@ From its MultiWii origins mwp has evolved to support navigation capabilities in 
 
 {{ inav }} is now the main development target, however MultiWii mission planning and ground control remains a supported function.
 
-You can also [download this manual as PDF](pdf/mwptools.pdf) for offline reference.
-
 ## Features
 
 * [**Mission Planner**](mission-editor.md) : Supports all {{ inav }} and MultiWii mission planning functions, including all INAV extensions.
@@ -24,7 +22,7 @@ You can also [download this manual as PDF](pdf/mwptools.pdf) for offline referen
 * [**Flight log replay**](replay-tools.md)  (Blackbox, OTX/ETX logs, BulletGCSS)
 * [**Embedded video**](mwp_video_player.md) (live and replay)
 * **Support** functions
-    * {{ inav }} [Safehome editor](mwp-safehomes-editor.md)
+    * {{ inav }} [Safehome editor](mwp-safehomes-editor.md) and [FW Auto-Land plans](mwp-safehomes-editor.md).
     * [Automatic mission shape](mission-editor.md#add-shape) generation, block moves, animated mission preview.
     * [Terrain Analysis](Mission-Elevation-Plot-and-Terrain-Analysis.md) with WP mission rewrite to safe elevation margins
     * [Line of sight Analysis](mwp-los-tool.md) along a WP mission file.
@@ -37,7 +35,7 @@ You can also [download this manual as PDF](pdf/mwptools.pdf) for offline referen
 
 * MSP (MultiWii Serial Protocol)
 * LTM (Lightweight Telemetry)
-* MAVLink (INAV subset)
+* MAVLink (INAV telemetry subset)
 * Smartport (direct /  via inverter / or from Multi-protocol Module)
 * Crossfire (CRSF)
 * Flysky AA (via Multi-protocol Module)
@@ -48,8 +46,8 @@ You can also [download this manual as PDF](pdf/mwptools.pdf) for offline referen
 {{ mwp }} also supports the [real-time display of adjacent aircraft](mwp-Radar-View.md) using:
 
 * [INAV-radar](https://github.com/OlivierC-FR/ESP32-INAV-Radar/) (INAV UAS)
-* dump1090 / SBS-1 Basestation (SDR ADS-B), streaming TCP, for general aviation
-* MAVlink Traffic Report (e.g. general aviation, typically ADS-B via a device such as uAvionix PingRX)
+* SDR ADS-B (dump1090 / readsb / SBS1) live reports for general aviation
+* MAVlink Traffic Report / ADSB Vehicle (e.g. general aviation, typically ADS-B via a device such as uAvionix PingRX or Aerobits TT-SC1)
 
 ### Log replay formats
 
@@ -65,14 +63,14 @@ Log replay requires tools from the [flightlog2x](https://github.com/stronnag/bbl
 
 ## Platforms and OS
 
-The tools are designed to be portable and as far as possible platform and architecture agnostic. The suite is developed on Arch Linux and is tested on Debian (Bullseye, Sid), Ubuntu (latest and most recent LTS), Fedora (current)  and FreeBSD (current release). {{ mwp }} also runs on MS Windows; Windows 11 / WSL-g is almost on feature parity with Linux / FreeBSD. Other (older) OS are unsupported, but may work (i.e. Debian 10 is used for the "release" builds).
+The tools are designed to be portable and as far as possible platform and architecture agnostic. The suite is developed on Arch Linux and is tested on Debian (Bullseye, Sid), Ubuntu (latest and most recent LTS), Fedora (current)  and FreeBSD (current release). {{ mwp }} also runs on MS Windows; Cygwin and Windows 11 / WSL-g are almost on feature parity with Linux / FreeBSD. Other (older) OS are unsupported, but also work (i.e. Debian 10 is used for the "release" builds).
 
 ## Build and installation
 
 Build and installation is described in the following sections:
 
 * [Generic build and installation](Building-with-meson-and-ninja.md) Linux, FreeBSD, Windows / WSL
-    * Windows additional information ([Win11](mwp-in-Windows-11---WSL-G.md), [Win10](https://github.com/stronnag/mwptools/wiki/mwp-in-WSL) and [earlier](https://github.com/stronnag/mwptools/wiki/mwp-on-cygwin))
+    * Windows additional information ([Win11](mwp-in-Windows-11---WSL-G.md), [Win10](https://github.com/stronnag/mwptools/wiki/mwp-in-WSL) and [Cygwin](https://github.com/stronnag/mwptools/wiki/mwp-on-cygwin))
 
 ### Installation Tutorial
 
