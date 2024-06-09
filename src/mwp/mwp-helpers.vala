@@ -484,7 +484,14 @@ namespace Utils {
 		} catch {}
 	}
 
-
+    public string mstempname(bool xlate = true) {
+        var t = Environment.get_tmp_dir();
+        var ir = new Rand().int_range (0, 0xffffff);
+        var s = Path.build_filename (t, ".mi-%d-%08x.xml".printf(Posix.getpid(), ir));
+        if (xlate && MwpMisc.is_cygwin())
+            s = MwpMisc.get_native_path(s);
+        return s;
+    }
 }
 
 public enum FType {

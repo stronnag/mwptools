@@ -2299,15 +2299,6 @@ public class ListBox : GLib.Object {
         return ret;
     }
 
-    private string mstempname() {
-        var t = Environment.get_tmp_dir();
-        var ir = new Rand().int_range (0, 0xffffff);
-        var s = Path.build_filename (t, ".mi-%d-%08x.xml".printf(Posix.getpid(), ir));
-        if (MwpMisc.is_cygwin())
-            s = MwpMisc.get_native_path(s);
-        return s;
-    }
-
     private void set_land_option() {
         var iland = false;
         Gtk.TreeIter iter;
@@ -2411,7 +2402,7 @@ public class ListBox : GLib.Object {
 
     private void run_elevation_tool() {
         double lat,lon;
-        var outfn = mstempname();
+        var outfn = Utils.mstempname();
         string replname = null;
         string[] spawn_args = {"mwp-plot-elevations"};
 
@@ -2433,7 +2424,7 @@ public class ListBox : GLib.Object {
 
         var repl = fhome.fhd.get_replace();
         if (repl) {
-            replname = mstempname();
+            replname = Utils.mstempname();
             spawn_args += "--output=%s".printf(replname);
         }
         var land = fhome.fhd.get_land();

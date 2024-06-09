@@ -10876,8 +10876,25 @@ Error: <i>%s</i>
         }
     }
 
+	private string? check_mission_format(string lfn) {
+		var tfile = lfn;
+		string _fu;
+		var res = MWPFileType.guess_content_type(lfn, out _fu);
+		if (res != FType.MISSION) {
+			var m = ls.to_mission();
+            if(m.npoints > 0) {
+				tfile=Utils.mstempname(false);
+				XmlIO.to_xml_file(tfile, {m});
+			} else {
+				tfile = null;
+			}
+		}
+		return tfile;
+	}
+
     private void spawn_otx_task(string fn, bool delay, int idx, int typ=0, uint dura=0) {
         var dstr = "udp://localhost:%d".printf(playfd[1]);
+		string tfile=null;
         string [] args={};
         if ((replayer & Player.RAW) == Player.RAW) {
             args += "mwp-log-replay";
@@ -10892,8 +10909,11 @@ Error: <i>%s</i>
             if (x_fl2ltm) {
                 args += "fl2ltm";
                 if (last_file != null) {
-                    args += "-mission";
-                    args += (MwpMisc.is_cygwin()==false) ? last_file : MwpMisc.get_native_path(last_file);
+					tfile = check_mission_format(last_file);
+					if (tfile != null) {
+						args += "-mission";
+						args += (MwpMisc.is_cygwin()==false) ? tfile : MwpMisc.get_native_path(tfile);
+					}
                 }
                 args += "-device";
             } else {
@@ -10948,6 +10968,9 @@ Error: <i>%s</i>
 		MWPLog.message("%s # pid=%u\n", sargs, child_pid);
 		ChildWatch.add (child_pid, (pid, status) => {
 				Process.close_pid (pid);
+				if(tfile != null && tfile != last_file) {
+                    FileUtils.unlink(tfile);
+				}
 				cleanup_replay();
 				try {
 #if OLDTVI
