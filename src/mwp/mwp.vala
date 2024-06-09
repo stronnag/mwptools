@@ -488,6 +488,7 @@ public class MWP : Gtk.Application {
         ALTH = 16,
         CRUISE = 32,
 		UNDEF = 64, // emergency maybe
+		LAND = 128,
     }
 
         // ./src/main/fc/runtime_config.h
@@ -1215,6 +1216,31 @@ public class MWP : Gtk.Application {
 
     private void parse_cli_options() {
 		Idle.add(() => {
+				if(sh_load != null && sh_load != "-FC-") {
+					var vfn = validate_cli_file(sh_load);
+					sh_load = null;
+					if (vfn != null) {
+						safehomed.load_homes(vfn, sh_disp);
+						if(frob.is_valid()) {
+							relocate_safehomes();
+						}
+					}
+				}
+
+				if(gz_load != null) {
+					var vfn = validate_cli_file(gz_load);
+					gz_load = null;
+					if (vfn != null) {
+						gzr.from_file(vfn);
+						if(gzone != null) {
+							gzone.remove();
+						}
+						gzone = gzr.generate_overlay(view);
+						gzone.display();
+						set_gzsave_state(true);
+					}
+				}
+
 				if (mission != null) {
 					var fn = mission;
 					mission = null;
@@ -1262,31 +1288,6 @@ public class MWP : Gtk.Application {
 						replay_otx(vfn);
 					}
 				}
-
-				if(sh_load != null && sh_load != "-FC-") {
-					var vfn = validate_cli_file(sh_load);
-					sh_load = null;
-					if (vfn != null) {
-						safehomed.load_homes(vfn, sh_disp);
-						if(frob.is_valid()) {
-							relocate_safehomes();
-						}
-					}
-				}
-				if(gz_load != null) {
-					var vfn = validate_cli_file(gz_load);
-					gz_load = null;
-					if (vfn != null) {
-						gzr.from_file(vfn);
-						if(gzone != null) {
-							gzone.remove();
-						}
-						gzone = gzr.generate_overlay(view);
-						gzone.display();
-						set_gzsave_state(true);
-					}
-				}
-
 				return false;
 			});
 	}
@@ -8332,6 +8333,8 @@ public class MWP : Gtk.Application {
                         want_special |= POSMODE.ALTH;
                     else if(ltmflags == MSP.LTM.cruise)
                         want_special |= POSMODE.CRUISE;
+                    else if(ltmflags == MSP.LTM.land)
+                        want_special |= POSMODE.LAND;
 					else if (ltmflags == MSP.LTM.undefined)
 						want_special |= POSMODE.UNDEF;
                     else if(ltmflags != MSP.LTM.land) {
@@ -9363,6 +9366,13 @@ public class MWP : Gtk.Application {
             init_craft_icon();
             if(craft != null)
                 craft.special_wp(Craft.Special.WP, lat, lon);
+            markers.update_ipos(ls, lat, lon);
+        }
+        if((want_special & POSMODE.LAND) != 0) {
+            want_special &= ~POSMODE.LAND;
+            init_craft_icon();
+            if(craft != null)
+                craft.special_wp(Craft.Special.LAND, lat, lon);
             markers.update_ipos(ls, lat, lon);
         }
         if((want_special & POSMODE.UNDEF) != 0) {

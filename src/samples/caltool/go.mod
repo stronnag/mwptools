@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/mattn/go-tty v0.0.5
 	go.bug.st/serial v1.6.2
-	golang.org/x/sys v0.20.0
+	golang.org/x/sys v0.21.0
 )
 
 require (

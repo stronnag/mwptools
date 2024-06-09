@@ -47,6 +47,7 @@ public class Craft : GLib.Object {
     private static Clutter.Color trk_altblue = { 0x03, 0xc0, 0xfa, 0xa0 };
     private static Clutter.Color trk_purple = { 0xbf, 0x88, 0xf7, 0xa0 };
 	private static Clutter.Color trk_orange = { 0xff, 0x80, 0x00, 0xa0 };
+	private static Clutter.Color trk_pink = { 0xff, 0x92, 0xf0, 0xa0 };
 
     private Clutter.Color path_colour;
 
@@ -128,6 +129,7 @@ public class Craft : GLib.Object {
         ALTH = -5,
         CRUISE = -6,
         UNDEF = -7,
+		LAND = -8,
     }
 
     public enum RMIcon {
@@ -376,12 +378,19 @@ public class Craft : GLib.Object {
                 break;
             case Special.ALTH:
                 path_colour = trk_altblue;
+				rmflags = RMIcon.PH|RMIcon.RTH|RMIcon.WP;
                 break;
             case Special.CRUISE:
                 path_colour = trk_purple;
+				rmflags = RMIcon.PH|RMIcon.RTH|RMIcon.WP;
+                break;
+            case Special.LAND:
+                path_colour = trk_pink;
+				rmflags = RMIcon.PH|RMIcon.RTH|RMIcon.WP;
                 break;
             case Special.UNDEF:
                 path_colour = trk_orange;
+                rmflags = RMIcon.PH|RMIcon.RTH|RMIcon.WP;
                 break;
             default:
                 path_colour = trk_cyan;

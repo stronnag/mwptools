@@ -819,37 +819,60 @@ public class  SafeHomeDialog : Window {
 					hs[idx].lat = double.parse(parts[3]) /10000000.0;
 					hs[idx].lon = double.parse(parts[4]) /10000000.0;
 				}
-			} else {
-				if(s.has_prefix("fwapproach ")) {
-					var parts = s.split_set(" ");
-					var idx = int.parse(parts[1]);
-					if (idx >= 0 && idx < FWAPPROACH.maxapproach) {
-						FWApproach.approach l={};
-						if(parts.length == 8) {
-							l.appalt = double.parse(parts[2]) /100.0;
-							l.landalt = double.parse(parts[3]) /100.0;
-							l.dref = (parts[4] == "1") ? true : false;
-							l.dirn1 = (int16)int.parse(parts[5]);
-							if(l.dirn1 < 0) {
-								l.dirn1 = -l.dirn1;
-								l.ex1 = true;
-							}
-							l.dirn2 = (int16)int.parse(parts[6]);
-							if(l.dirn2 < 0) {
-								l.dirn2 = -l.dirn2;
-								l.ex2 = true;
-							}
-							l.aref = (parts[7] == "1") ? true : false;
-							FWApproach.set(idx, l);
+			} else if(s.has_prefix("fwapproach ")) {
+				var parts = s.split_set(" ");
+				var idx = int.parse(parts[1]);
+				if (idx >= 0 && idx < FWAPPROACH.maxapproach) {
+					FWApproach.approach l={};
+					if(parts.length == 8) {
+						l.appalt = double.parse(parts[2]) /100.0;
+						l.landalt = double.parse(parts[3]) /100.0;
+						l.dref = (parts[4] == "1") ? true : false;
+						l.dirn1 = (int16)int.parse(parts[5]);
+						if(l.dirn1 < 0) {
+							l.dirn1 = -l.dirn1;
+							l.ex1 = true;
 						}
+						l.dirn2 = (int16)int.parse(parts[6]);
+						if(l.dirn2 < 0) {
+							l.dirn2 = -l.dirn2;
+							l.ex2 = true;
+						}
+						l.aref = (parts[7] == "1") ? true : false;
+						FWApproach.set(idx, l);
 					}
 				}
-            }
+            } else if(s.has_prefix("set ")) {
+				int val;
+				if (s.contains("nav_fw_land_approach_length")) {
+					if (get_set_val(s, out val)) {
+						FWPlot.nav_fw_land_approach_length = val/100;
+					}
+				} else if (s.contains("nav_fw_loiter_radius")) {
+					if (get_set_val(s, out val)) {
+						FWPlot.nav_fw_loiter_radius = val/100;
+					}
+				}
+			}
         }
 		for(var j = 0; j < SAFEHOMES.maxhomes; j++) {
 			refresh_home(j, hs[j], true);
 		}
     }
+
+	private bool get_set_val(string s, out int val) {
+		val=0;
+		var n = s.index_of("=");
+		if (n != -1) {
+			n++;
+			if (s[n] == ' ')
+				n++;
+			val = int.parse(s[n:s.length]);
+			return true;
+		} else {
+			return false;
+		}
+	}
 
     private void refresh_home(int idx, SafeHome h, bool forced = false) {
         homes[idx] = h;

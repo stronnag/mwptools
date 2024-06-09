@@ -501,7 +501,7 @@ public enum FType {
 	OTXLOG = 3,
 	MWPLOG = 4,
 	KMLZ = 5,
-	INAV_CLI=6,
+	INAV_CLI = 6,
 	INAV_CLI_M = 7,
 }
 
@@ -545,10 +545,13 @@ namespace MWPFileType {
 					if(ftyp == FType.UNKNOWN) {
 						if(Regex.match_simple ("^(geozone|safehome) ", (string)buf, RegexCompileFlags.MULTILINE|RegexCompileFlags.RAW)) {
 							ftyp = FType.INAV_CLI;
-							if (Regex.match_simple("^#wp \\d+ valid", (string)buf, RegexCompileFlags.MULTILINE|RegexCompileFlags.RAW)) {
+						}
+						if (Regex.match_simple("^#wp \\d+ valid", (string)buf, RegexCompileFlags.MULTILINE|RegexCompileFlags.RAW)) {
 							ftyp = FType.INAV_CLI_M;
-							}
-						} else if(((string)buf).contains("<mission>") || ((string)buf).contains("<MISSION>")) {
+						}
+					}
+					if(ftyp == FType.UNKNOWN) {
+						if(((string)buf).contains("<mission>") || ((string)buf).contains("<MISSION>")) {
 							ftyp = FType.MISSION;
 						} else if (((string)buf).has_prefix("H Product:Blackbox flight data recorder")) {						ftyp = FType.BBL;
 						} else if (((string)buf).has_prefix("{\"type\":\"environment\"")) {
