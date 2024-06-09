@@ -136,7 +136,7 @@ public class Craft : GLib.Object {
         PH = 1,
         RTH = 2,
         WP = 4,
-        ALL = 7
+        ALL = 0xff
     }
 
 /*
