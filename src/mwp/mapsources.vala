@@ -73,8 +73,22 @@ public class SoupProxy : Soup.Server {
     private Soup.Session session;
     private string? basename = null;
     private string? extname = null;
+    private const string UASTR = "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:%d1.0) Gecko/%d%d%d Firefox/%d.0.%d";
 
-    public SoupProxy(bool _offline) {
+    private string make_ua() {
+        int yr = new DateTime.now_local ().get_year();
+        var r = new Rand();
+        string ua = UASTR.printf(
+            r.int_range(3,14),
+            r.int_range(yr-4,yr),
+            r.int_range(11,12),
+            r.int_range(10,30),
+            r.int_range(3,14),
+            r.int_range(1,10));
+        return ua;
+    }
+
+	public SoupProxy(bool _offline) {
 		offline = _offline;
 		this.add_handler (null, default_handler);
 		session = new Soup.Session ();
@@ -192,6 +206,7 @@ public class SoupProxy : Soup.Server {
             var xpath = rewrite_path(path);
             var message = new Soup.Message ("GET", xpath);
 #if COLDSOUP
+            message.request_headers.append("User-Agent",make_ua());
             session.send_message (message);
             if(message.status_code == 200) {
                 msg.set_response ("image/png", Soup.MemoryUse.COPY,
@@ -199,6 +214,7 @@ public class SoupProxy : Soup.Server {
             }
             msg.set_status(message.status_code);
 #else
+            message.get_request_headers().append("User-Agent",make_ua());
             try {
                 var b = session.send_and_read (message);
                 msg.set_response ("image/png", Soup.MemoryUse.COPY, b.get_data());
