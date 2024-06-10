@@ -3899,11 +3899,14 @@ public class MWP : Gtk.Application {
 				ltmflags = MSP.LTM.manual; // RTH
 				break;
 
+            case "LAND":
+				ltmflags = MSP.LTM.land;
+				break;
+
 			case "RTH":
 // Ardupilot WTF ...
             case "RTL":
             case "QRTL":
-            case "LAND":
             case "QLAND":
             case "AUTORTL":
             case "SMRTRTL":
