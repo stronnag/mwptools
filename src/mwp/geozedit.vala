@@ -249,6 +249,7 @@ public class GZEdit :Gtk.Window {
 								id++;
 							});
 						mk.drag_finish.connect(on_poly_finish);
+						mk.touch_event.connect(on_poly_touch);
 						mk.captured_event.connect(on_poly_capture);
 						var nv = gzmgr.nvertices(nitem);
 						validate(nv);
@@ -266,6 +267,8 @@ public class GZEdit :Gtk.Window {
 						if(i == popno) {
 							((Champlain.Marker)e).drag_finish.disconnect(on_poly_finish);
 							((Champlain.Marker)e).captured_event.disconnect(on_poly_capture);
+							((Champlain.Marker)e).touch_event.disconnect(on_poly_touch);
+
 							el.pl.remove_node(e);
 							ml.remove_marker((Champlain.Marker)e);
 						} else if (i > popno) {
@@ -448,8 +451,11 @@ public class GZEdit :Gtk.Window {
 			if(ml != null) {
 				ovl.get_mlayer().get_markers().foreach((mk) => {
 						mk.drag_finish.disconnect(on_poly_finish);
+						mk.touch_event.disconnect(on_poly_touch);
 						mk.drag_finish.disconnect(on_circ_finish);
-						mk.drag_motion.disconnect(on_circ_motion);														});
+						mk.drag_motion.disconnect(on_circ_motion);
+						mk.touch_event.disconnect(on_circ_touch);
+					});
 				if(am)
 					ovl.remove_all_markers();
 			}
@@ -563,7 +569,7 @@ public class GZEdit :Gtk.Window {
 		return false;
 	}
 
-	private void update_circle(Champlain.Marker mk) {
+	public void update_circle(Champlain.Marker mk) {
 		unowned OverlayItem el = ovl.get_elements().nth_data(nitem);
 		var pts = el.pl.get_nodes();
 		var j = 0;
@@ -593,6 +599,48 @@ public class GZEdit :Gtk.Window {
 		}
 	}
 
+	uint32 pztime=0;
+	public bool on_poly_touch(Clutter.Actor mk, Clutter.Event e) {
+		if (e.type == Clutter.EventType.TOUCH_BEGIN) {
+			var parts = ((Champlain.Label)mk).text.split("/");
+			if (parts.length == 2) {
+				popid = int.parse(parts[1]);
+				popmk = (Champlain.Label)mk;
+				var nv = gzmgr.nvertices(nitem);
+				if(nv > 3) {
+					ditem.sensitive = true;
+				} else {
+					ditem.sensitive = false;
+				}
+				Gbl.source = Gbl.Source.GEOZONEP;
+				Gbl.action = Gbl.Action.DRAG;
+				Gbl.actor = mk;
+				Gbl.funcid = popid;
+				var et = e.get_time();
+				var el = et-pztime;
+				if (el > 50 && el < 400) {
+					Gbl.action = Gbl.Action.MENU;
+				}
+				pztime = et;
+			}
+		} else if (e.type == Clutter.EventType.TOUCH_END) {
+			Gbl.actor = null;
+		}
+		return true;
+	}
+
+	public bool on_circ_touch(Clutter.Actor mk, Clutter.Event e) {
+		if (e.type == Clutter.EventType.TOUCH_BEGIN) {
+			Gbl.source = Gbl.Source.GEOZONEC;
+			Gbl.action = Gbl.Action.DRAG;
+			Gbl.actor = mk;
+			Gbl.funcid = 0xff;
+		} else if (e.type == Clutter.EventType.TOUCH_END) {
+			Gbl.actor = null;
+		}
+		return true;
+	}
+
 	public bool on_poly_capture(Clutter.Actor mk, Clutter.Event e) {
 		if(e.get_type() == Clutter.EventType.BUTTON_PRESS) {
 			if(e.button.button == 3) {
@@ -606,7 +654,8 @@ public class GZEdit :Gtk.Window {
 					} else {
 						ditem.sensitive = false;
 					}
-					Gbl.action = Gbl.POPSOURCE.Geozone;
+					Gbl.source = Gbl.Source.GEOZONEP;
+					Gbl.action = Gbl.Action.MENU;
 					Gbl.actor = mk;
 					Gbl.funcid = popid;
 					return true;
@@ -624,6 +673,8 @@ public class GZEdit :Gtk.Window {
 		ovl.add_marker(mk);
 		mk.drag_finish.connect(on_poly_finish);
 		mk.captured_event.connect(on_poly_capture);
+		mk.touch_event.connect(on_poly_touch);
+
 	}
 
 	public bool popup(Gdk.Event e) {
@@ -661,6 +712,7 @@ public class GZEdit :Gtk.Window {
 					ovl.add_marker((Champlain.Label)mk);
 					((Champlain.Label)mk).drag_finish.connect(on_poly_finish);
 					((Champlain.Label)mk).captured_event.connect(on_poly_capture);
+					((Champlain.Label)mk).touch_event.connect(on_poly_touch);
 					nz++;
 				});
 		} else {
@@ -678,6 +730,7 @@ public class GZEdit :Gtk.Window {
 			ovl.add_marker(mk);
 			mk.drag_motion.connect(on_circ_motion);
 			mk.drag_finish.connect(on_circ_finish);
+			mk.touch_event.connect(on_circ_touch);
 		}
 	}
 

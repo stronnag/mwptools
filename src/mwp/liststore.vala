@@ -995,7 +995,11 @@ public class ListBox : GLib.Object {
         }
     }
 
-    public void create_view(MWP _mp) {
+	public void homep_motion() {
+		fhome.homep_motion();
+	}
+
+	public void create_view(MWP _mp) {
         mp = _mp;
         fhome = new FakeHome(mp.view);
         MWP.SERSTATE ss = MWP.SERSTATE.NONE;

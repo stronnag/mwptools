@@ -87,17 +87,33 @@ public class FakeHome : GLib.Object {
             });
 
         homep.drag_motion.connect((dx,dy,evt) => {
-                if(homept != null) {
-                    homep.remove_child(homept);
-                    homept = null;
-                }
-                xlat = homep.get_latitude();
-                xlon = homep.get_longitude();
-                fake_move(xlat, xlon);
+				homep_motion();
             });
 
-        view.add_layer (hmlayer);
+		homep.touch_event.connect((e) => {
+				if (e.type == Clutter.EventType.TOUCH_BEGIN) {
+					Gbl.source = Gbl.Source.HOMEP;
+					Gbl.action = Gbl.Action.DRAG;
+					Gbl.actor = homep;
+					Gbl.funcid = 0xff;
+				} else if (e.type == Clutter.EventType.TOUCH_END) {
+					Gbl.actor = null;
+				}
+				return true;
+			});
+
+		view.add_layer (hmlayer);
     }
+
+	public void homep_motion() {
+		if(homept != null) {
+			homep.remove_child(homept);
+			homept = null;
+		}
+		xlat = homep.get_latitude();
+		xlon = homep.get_longitude();
+		fake_move(xlat, xlon);
+	}
 
     public void create_dialog(Gtk.Builder b, Gtk.Window? w) {
         fhd = new FakeHomeDialog(b, w);

@@ -25,21 +25,36 @@ using GtkChamplain;
 public delegate void ActionFunc ();
 
 namespace Gbl {
-	public enum POPSOURCE {
-		None = 0,
-		Mission =1,
-		Safehome = 2,
-		Geozone = 3,
+	public enum Source {
+		NONE = 0,
+		MISSION =1,
+		SAFEHOME = 2,
+		GEOZONEC = 3,
+		GEOZONEP = 4,
+		MEASURE = 5,
+		HOMEP = 6
+	}
+
+	public enum Action {
+		NONE = 0,
+		MENU = 1,
+		DRAG = 2
 	}
 
 	public int funcid;
 	private Clutter.Actor actor;
-	private int action;
+	private Action action;
+	private Source source;
 
 	public void reset() {
 		funcid = -1;
 		actor = null;
-		action = 0;
+		action = Gbl.Action.NONE;
+		source = Gbl.Source.NONE;
+	}
+
+	public string to_string() {
+		return "s=%s a=%s id=%d (%p)".printf(source.to_string(), action.to_string(), funcid, actor);
 	}
 }
 
@@ -306,6 +321,8 @@ public class MWP : Gtk.Application {
 	private bool bblosd_ok = false;
 	private Queue<string> csdq;
 	private MSP_WP_GETINFO wpi;
+
+	private Measure measure;
 
 	public struct MQI {
         MSP.Cmds cmd;
@@ -2585,7 +2602,7 @@ public class MWP : Gtk.Application {
 
         add_source_combo(conf.defmap,msources);
 
-		var measure =  new Measure(window, view);
+		measure =  new Measure(window, view);
         var ag = new Gtk.AccelGroup();
         ag.connect('d', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
 			  if(!Measure.active) {
@@ -5066,32 +5083,88 @@ public class MWP : Gtk.Application {
         return  res;
     }
 
+	private bool action_popup_menu(Gdk.Event evt) {
+		var ret = false;
+		switch (Gbl.source) {
+		case Gbl.Source.MISSION:
+			ls.pop_marker_menu(evt);
+			ret = true;
+			break;
+		case Gbl.Source.GEOZONEP:
+			gzedit.popup(evt);
+			ret = true;
+			break;
+		case Gbl.Source.SAFEHOME:
+			safehomed.pop_menu(evt);
+			ret = true;
+			break;
+		default:
+			break;
+		}
+		return ret;
+	}
+
     private void setup_buttons() {
         embed.button_release_event.connect((evt) => {
 				var ret = false;
-                if(evt.button == 3) {
-					switch (Gbl.action) {
-					case Gbl.POPSOURCE.Mission:
-					ls.pop_marker_menu(evt);
-					ret = true;
-					break;
-					case Gbl.POPSOURCE.Geozone:
-					gzedit.popup(evt);
-					ret = true;
-					break;
-					case Gbl.POPSOURCE.Safehome:
-					safehomed.pop_menu(evt);
-					ret = true;
-					break;
-					default:
-					break;
-					}
+				if (evt.button !=2 && Gbl.action == Gbl.Action.MENU) {
+					ret= action_popup_menu(evt);
+					Gbl.reset();
 				}
-				Gbl.reset();
                 return ret;
             });
 
-        view.button_release_event.connect((evt) => {
+		view.touch_event.connect((evt) => {
+				bool ret = false;
+				float x,y;
+				evt. get_coords (out x, out y);
+
+				if (evt.type == Clutter.EventType.TOUCH_END) {
+					if (wp_edit && !Measure.active && Gbl.source != Gbl.Source.HOMEP) {
+						if(!map_moved()) {
+							insert_new_wp(x, y);
+							ret = true;
+						}
+					} else {
+						Gbl.reset();
+					}
+				} else if (evt.type == Clutter.EventType.TOUCH_UPDATE) {
+					if(Gbl.actor != null) {
+						double lat, lon;
+						lat = view.y_to_latitude (y);
+						lon = view.x_to_longitude (x);
+						if(Gbl.source == Gbl.Source.MISSION)  {
+							((Champlain.Marker)Gbl.actor).set_location (lat, lon);
+							return true;
+						} else if(Gbl.source == Gbl.Source.MEASURE)  {
+							((Champlain.Marker)Gbl.actor).set_location (lat, lon);
+							measure.calc_distance();
+							return true;
+						} else if(Gbl.source == Gbl.Source.SAFEHOME)  {
+							((Champlain.Marker)Gbl.actor).set_location (lat, lon);
+							safehomed.drag_action(Gbl.funcid, lat, lon);
+							return true;
+						} else if(Gbl.source == Gbl.Source.GEOZONEC)  {
+							((Champlain.Marker)Gbl.actor).set_location (lat, lon);
+							gzedit.update_circle((Champlain.Marker)Gbl.actor);
+							return true;
+						} else if(Gbl.source == Gbl.Source.GEOZONEP)  {
+							((Champlain.Marker)Gbl.actor).set_location (lat, lon);
+							gzedit.on_poly_finish((Champlain.Marker)Gbl.actor, evt);
+							return true;
+						} else if(Gbl.source == Gbl.Source.HOMEP)  {
+							((Champlain.Marker)Gbl.actor).set_location (lat, lon);
+							ls.homep_motion();
+							return true;
+						}
+					} else {
+						Gbl.reset();
+					}
+				}
+				return ret;
+			});
+
+		view.button_release_event.connect((evt) => {
                 bool ret = false;
                 if (evt.button == 1 && wp_edit && !Measure.active) {
                     if(!map_moved()) {

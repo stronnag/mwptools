@@ -18,7 +18,33 @@ public class Measure : Gtk.Window {
 		pl.remove_all();
 		view.button_release_event.disconnect (on_button_release);
 		view.button_press_event.disconnect (on_button_press);
+		view.touch_event.disconnect (on_touch);
 	}
+
+    private bool on_touch (Clutter.Actor a, Clutter.Event evt) {
+		bool ret = false;
+		if (evt.type == Clutter.EventType.TOUCH_BEGIN) {
+			clat = view.get_center_latitude();
+			clon = view.get_center_longitude();
+			//			MWPLog.message(":DBG: Touch start DIST\n");
+			ret = true;
+		} else if  (evt.type == Clutter.EventType.TOUCH_END) {
+			var lat = view.get_center_latitude();
+			var lon = view.get_center_longitude();
+			var zoom = view.zoom_level;
+			if((!delta_diff(clon,lon,zoom) && !delta_diff(clat,lat,zoom))) {
+				float x,y;
+				evt. get_coords (out x, out y);
+				lat = view.y_to_latitude (y);
+				lon = view.x_to_longitude (x);
+				add_point(lat, lon);
+				Gbl.reset();
+				//				MWPLog.message(":DBG: Touch end DIST\n");
+				ret = true;
+			}
+		}
+		return ret;
+    }
 
 	private bool on_button_press (Clutter.Actor a, Clutter.ButtonEvent event) {
 		if (event.button == 1) {
@@ -92,6 +118,7 @@ public class Measure : Gtk.Window {
 		active = true;
 		view.button_press_event.connect(on_button_press);
 		view.button_release_event.connect (on_button_release);
+		view.touch_event.connect(on_touch);
 		tdist = 0.0;
 		label.label = format_distance();
 		show_all();
@@ -121,8 +148,21 @@ public class Measure : Gtk.Window {
         l.set_draggable(true);
         pl.add_node(l);
         ml.add_marker(l);
+		//		MWPLog.message(":DBG: Add point %p\n", l);
 		l.drag_motion.connect(() => {
 				calc_distance();
+			});
+
+		l.touch_event.connect((evt) => {
+				if (evt.type == Clutter.EventType.TOUCH_BEGIN) {
+					Gbl.actor = l;
+					Gbl.funcid = 0xff;
+					Gbl.source = Gbl.Source.MEASURE;
+					Gbl.action = Gbl.Action.DRAG;
+				} else if (evt.type == Clutter.EventType.TOUCH_END) {
+					Gbl.actor = null;
+				}
+				return true;
 			});
 		calc_distance();
     }
@@ -135,7 +175,7 @@ public class Measure : Gtk.Window {
 		return "%s%s".printf(ds, du);
 	}
 
-	private void calc_distance() {
+	public void calc_distance() {
 		tdist = 0.0;
         double llat = 0;
         double llon = 0;

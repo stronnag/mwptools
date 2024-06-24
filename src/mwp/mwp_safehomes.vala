@@ -25,9 +25,16 @@ public enum SAFEHOMES {
 	maxhomes = 8,
 }
 
+public class SHLabel : Champlain.Label {
+	public uint32 time;
+	public SHLabel.with_text(string text, string? font, Color? text_color, Color? label_color) {
+		Object(text: text, font_name: font, text_color: text_color, color: label_color);
+	}
+}
+
 public class SafeHomeMarkers : GLib.Object {
 	private Champlain.MarkerLayer safelayer;
-	private Champlain.Label []safept;
+	private SHLabel []safept;
 	private Champlain.PathLayer []safed;
 	private Champlain.PathLayer []safel;
 	private bool []onscreen;
@@ -42,7 +49,7 @@ public class SafeHomeMarkers : GLib.Object {
 		scolour.init(0xfb, 0xea, 0x04, 0x68);
 		white.init(0xff,0xff,0xff, 0xff);
 		onscreen = new bool[SAFEHOMES.maxhomes];
-		safept = new  Champlain.Label[SAFEHOMES.maxhomes];
+		safept = new  SHLabel[SAFEHOMES.maxhomes];
 		safed = {};
 		safel = {};
 		safelayer = new Champlain.MarkerLayer();
@@ -55,7 +62,7 @@ public class SafeHomeMarkers : GLib.Object {
 		llist.append(5);
 
 		for(var idx = 0; idx < SAFEHOMES.maxhomes; idx++) {
-			safept[idx] = new Champlain.Label.with_text ("⏏#%d".printf(idx), "Sans 10",null,null);
+			safept[idx] = new SHLabel.with_text ("⏏#%d".printf(idx), "Sans 10",null,null);
 			safept[idx].set_alignment (Pango.Alignment.RIGHT);
 			safept[idx].set_color (scolour);
 			safept[idx].set_text_color(white);
@@ -80,10 +87,9 @@ public class SafeHomeMarkers : GLib.Object {
 		maxd = d;
 	}
 
-	public Champlain.Label get_marker(int j) {
+	public SHLabel get_marker(int j) {
 		return safept[j];
 	}
-
 
 	public void show_safe_home(int idx, SafeHome h) {
 		if(onscreen[idx] == false) {
@@ -92,11 +98,33 @@ public class SafeHomeMarkers : GLib.Object {
 			safept[idx].drag_motion.connect((dx,dy,evt) => {
 					safept_move(idx, safept[idx].get_latitude(), safept[idx].get_longitude());
 				});
+
+			safept[idx].touch_event.connect((evt) => {
+				if (evt.type == Clutter.EventType.TOUCH_BEGIN) {
+					if (safept[idx].draggable) {
+						Gbl.actor = safept[idx];
+						Gbl.action = Gbl.Action.DRAG;
+					}
+					Gbl.funcid = idx;
+					Gbl.source = Gbl.Source.SAFEHOME;
+					var et = evt.get_time();
+					var el = et-safept[idx].time;
+					if (el > 50 && el < 400) {
+						Gbl.action = Gbl.Action.MENU;
+					}
+					safept[idx].time = et;
+				} else if (evt.type == Clutter.EventType.TOUCH_END) {
+					Gbl.actor = null;
+				}
+				return true;
+			});
+
 			safept[idx].button_press_event.connect((e) => {
 					if(e.button == 3) {
 						if (safept[idx].draggable) {
-							Gbl.action = Gbl.POPSOURCE.Safehome;
-							Gbl.actor = null;
+							Gbl.action = Gbl.Action.MENU;
+							Gbl.source = Gbl.Source.SAFEHOME;
+							Gbl.actor = safept[idx];
 							Gbl.funcid = idx;
 						}
 						return true;
@@ -733,7 +761,19 @@ public class  SafeHomeDialog : Window {
 						  Column.AREF, aref_name(false),
 						  Column.DREF, dref_name(false)
 						  );
+		sh_liststore.set (iter, Column.ID, idx);
 		shmarkers.hide_safe_home(idx);
+	}
+
+	public void drag_action(int idx, double la, double lo) {
+		homes[idx].lat = la;
+		homes[idx].lon = lo;
+		FWPlot.update_laylines(idx, shmarkers.get_marker(idx), homes[idx].enabled);
+		shmarkers.update_distance(idx, homes[idx]);
+		Gtk.TreeIter iter;
+		if(sh_liststore.iter_nth_child (out iter, null, idx)) {
+			sh_liststore.set (iter, Column.LAT, homes[idx].lat, Column.LON, homes[idx].lon);
+		}
 	}
 
 	public void set_view(Champlain.View v) {
@@ -741,15 +781,7 @@ public class  SafeHomeDialog : Window {
 		FWPlot.init(view);
 		shmarkers = new SafeHomeMarkers(v);
 		shmarkers.safept_move.connect((idx,la,lo) => {
-				homes[idx].lat = la;
-				homes[idx].lon = lo;
-				FWPlot.update_laylines(idx, shmarkers.get_marker(idx), homes[idx].enabled);
-				shmarkers.update_distance(idx, homes[idx]);
-				Gtk.TreeIter iter;
-				if(sh_liststore.iter_nth_child (out iter, null, idx))
-					sh_liststore.set (iter,
-									  Column.LAT, homes[idx].lat,
-									  Column.LON, homes[idx].lon);
+				drag_action(idx, la, lo);
 			});
 		//		shmarkers.safept_need_menu.connect((idx) => {
 		//		pop_idx = idx;

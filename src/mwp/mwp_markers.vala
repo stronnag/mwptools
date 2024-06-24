@@ -55,6 +55,8 @@ public class MWPLabel : Champlain.Label {
 	public Object? extras[2];
 	public uint rkey;
 	public int idx;
+	public uint32 time;
+
 	public MWPLabel.from_file(string filename) {
 		var actor = create_clutter_actor_from_file (filename);
 		Object(image: actor);
@@ -664,7 +666,8 @@ public class MWPMarkers : GLib.Object {
                         if (_t1 != null)
                             marker.remove_child(_t1);
 
-						Gbl.action = Gbl.POPSOURCE.Mission;
+						Gbl.action = Gbl.Action.MENU;
+						Gbl.source = Gbl.Source.MISSION;
 						Gbl.actor = null;
 						Gbl.funcid = ino;
 						return true;
@@ -672,6 +675,28 @@ public class MWPMarkers : GLib.Object {
                 }
                 return false;
             });
+
+		marker.touch_event.connect((evt) => {
+				if (evt.type == Clutter.EventType.TOUCH_BEGIN) {
+					Gbl.actor = marker;
+					Gbl.funcid = marker.idx;
+					Gbl.source = Gbl.Source.MISSION;
+					var et = evt.get_time();
+					var el = et-marker.time;
+					if (el > 50 && el < 400) {
+						Gbl.action = Gbl.Action.MENU;
+					}
+					marker.time = et;
+				} else if (evt.type == Clutter.EventType.TOUCH_END) {
+					Gbl.actor = null;
+				} else if (evt.type == Clutter.EventType.TOUCH_UPDATE) {
+				}
+
+          //                    MWPLog.message("MarkerTouch: %s s=%u u=%u\n", evt.type.to_string(),
+          //             evt.get_state(), mx.update);
+
+				return true;
+			});
 
         marker.enter_event.connect((ce) => {
                 var _t1 = marker.extras[Extra.Q_0] as MWPLabel;
