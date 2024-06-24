@@ -95,11 +95,9 @@ public class SafeHomeMarkers : GLib.Object {
 			safept[idx].button_press_event.connect((e) => {
 					if(e.button == 3) {
 						if (safept[idx].draggable) {
-							var p = MWP.ViewPop();
-							p.id = MWP.POPSOURCE.Safehome;
-							p.mk = null;
-							p.funcid = idx;
-							MWP.popqueue.push(p);
+							Gbl.action = Gbl.POPSOURCE.Safehome;
+							Gbl.actor = null;
+							Gbl.funcid = idx;
 						}
 						return true;
 					}
@@ -762,9 +760,9 @@ public class  SafeHomeDialog : Window {
 		shmarkers.set_distance(d);
 	}
 
-	public bool pop_menu(Gdk.EventButton e, MWP.ViewPop vp) {
+	public bool pop_menu(Gdk.Event e) {
 		//		if(pop_idx != -1) {
-		var idx = vp.funcid;
+		var idx = Gbl.funcid;
 		var marker_menu = new Gtk.Menu ();
 		var item = new Gtk.MenuItem.with_label ("Toggle State");
 		item.activate.connect (() => {

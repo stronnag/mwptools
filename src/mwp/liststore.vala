@@ -512,8 +512,8 @@ public class ListBox : GLib.Object {
         return s;
     }
 
-    public bool pop_marker_menu(Gdk.EventButton e, MWP.ViewPop vp) {
-		mpop_no = vp.funcid;
+    public bool pop_marker_menu(Gdk.Event e) {
+		mpop_no = Gbl.funcid;
         //if(miter_ok) {
 		Gtk.TreeIter miter;
 		if(list_model.iter_nth_child(out miter, null, mpop_no-1)) {

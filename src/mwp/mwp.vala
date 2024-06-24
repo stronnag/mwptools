@@ -24,6 +24,25 @@ using GtkChamplain;
 
 public delegate void ActionFunc ();
 
+namespace Gbl {
+	public enum POPSOURCE {
+		None = 0,
+		Mission =1,
+		Safehome = 2,
+		Geozone = 3,
+	}
+
+	public int funcid;
+	private Clutter.Actor actor;
+	private int action;
+
+	public void reset() {
+		funcid = -1;
+		actor = null;
+		action = 0;
+	}
+}
+
 public class MWP : Gtk.Application {
     private const uint MAXVSAMPLE=12;
     private const uint8 MAV_BEAT_MASK=7; // mask, some power of 2 - 1
@@ -689,19 +708,6 @@ public class MWP : Gtk.Application {
     public static AsyncDL? asyncdl = null;
 	public static RadarCache? radar_cache;
 
-	public enum POPSOURCE {
-		Mission =1,
-		Safehome = 2,
-		Geozone = 3,
-	}
-
-	public struct ViewPop {
-		int id;
-		Champlain.Label? mk;
-		int funcid;
-	}
-
-	public static AsyncQueue<ViewPop?> popqueue;
 
 	public enum HomeType {
 		NONE,
@@ -5062,25 +5068,27 @@ public class MWP : Gtk.Application {
 
     private void setup_buttons() {
         embed.button_release_event.connect((evt) => {
+				var ret = false;
                 if(evt.button == 3) {
-					var popreq = popqueue.try_pop();
-					if(popreq != null) {
-						switch (popreq.id) {
-						case POPSOURCE.Mission:
-							ls.pop_marker_menu(evt, popreq);
-							return true;
-						case POPSOURCE.Geozone:
-							gzedit.popup(evt, popreq);
-							return true;
-						case POPSOURCE.Safehome:
-							safehomed.pop_menu(evt, popreq);
-							return true;
-						default:
-							break;
-						}
+					switch (Gbl.action) {
+					case Gbl.POPSOURCE.Mission:
+					ls.pop_marker_menu(evt);
+					ret = true;
+					break;
+					case Gbl.POPSOURCE.Geozone:
+					gzedit.popup(evt);
+					ret = true;
+					break;
+					case Gbl.POPSOURCE.Safehome:
+					safehomed.pop_menu(evt);
+					ret = true;
+					break;
+					default:
+					break;
 					}
 				}
-                return false;
+				Gbl.reset();
+                return ret;
             });
 
         view.button_release_event.connect((evt) => {
@@ -11335,7 +11343,6 @@ Error: <i>%s</i>
 		}
         Gst.init (ref args);
 		MWP.user_args = sb.str;
-		MWP.popqueue = new AsyncQueue<MWP.ViewPop?>();
         var app = new MWP(s);
 		return app.run (args);
     }

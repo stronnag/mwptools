@@ -606,11 +606,9 @@ public class GZEdit :Gtk.Window {
 					} else {
 						ditem.sensitive = false;
 					}
-					var p = MWP.ViewPop();
-					p.id = MWP.POPSOURCE.Geozone;
-					p.mk = (Champlain.Label?)mk;
-					p.funcid = popid;
-					MWP.popqueue.push(p);
+					Gbl.action = Gbl.POPSOURCE.Geozone;
+					Gbl.actor = mk;
+					Gbl.funcid = popid;
 					return true;
 				}
 			}
@@ -628,12 +626,12 @@ public class GZEdit :Gtk.Window {
 		mk.captured_event.connect(on_poly_capture);
 	}
 
-	public bool popup(Gdk.Event e, MWP.ViewPop p) {
+	public bool popup(Gdk.Event e) {
 		if(popid < 0) {
 			return false;
 		} else {
-			popno = p.funcid;
-			popmk = p.mk;
+			popno = Gbl.funcid;
+			popmk = (Champlain.Label?)Gbl.actor;
 			popid = -2;
 			pop_menu.popup_at_pointer(e);
 			return true;
