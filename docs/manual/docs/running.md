@@ -41,6 +41,13 @@ The install process installs an desktop icon and `mwp.desktop` application file 
 
     This is fixed in mwp later than 5.251.652 (2022-09-08); the solution being to ensure all dialogs are non-modal. **Please upgrade.**
 
+## Touch Screen
+
+From {{ mwp }} 7.178.767, the mwp map and map symbols are 'touch-aware'.
+
+* You can drag map symbols using touch
+* You can invoke "right mouse button" actions by a double tap
+
 ## Command line options
 
 {{ mwp }}'s command line options may be displayed with the `--help` option:
@@ -99,7 +106,7 @@ The install process installs an desktop icon and `mwp.desktop` application file 
 
 ### Bash completion
 
-{{ mwp }} installation also installs a 'bash completion' script (and also a `blackbox_decode` completion script).
+{{ mwp }} installation also installs a 'bash completion' script.
 Note this is only available after you log in, so on first install, it's only available after the *next* login.
 
 This facilitates automatic command completion, so you don't have to remember all the options or be always typing `mwp --help`.

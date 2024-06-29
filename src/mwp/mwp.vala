@@ -41,7 +41,7 @@ namespace Gbl {
 		DRAG = 2
 	}
 
-	public int funcid;
+	private int funcid;
 	private Clutter.Actor actor;
 	private Action action;
 	private Source source;
@@ -724,7 +724,6 @@ public class MWP : Gtk.Application {
 	public static DEMMgr? demmgr = null;
     public static AsyncDL? asyncdl = null;
 	public static RadarCache? radar_cache;
-
 
 	public enum HomeType {
 		NONE,
