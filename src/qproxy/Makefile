@@ -1,9 +1,9 @@
 include ../common.mk
 include ../valaopts.mk
 
-all: gmproxy
+all: gmproxy bproxy
 
-prefix ?= $(HOME)/.local
+prefix ?= $$(HOME)/.local
 OPTS ?= -X -O3 -X -s
 
 gmproxy: gmproxy.vala
@@ -23,7 +23,7 @@ bproxy2: bproxy.vala
 clean:
 	rm -f gmproxy qproxy gmproxy2 qproxy2 bproxy bproxy2 *~ *.vala.c
 
-install: $(APP)
+install: gmproxy bproxy
 	install -d $(prefix)/bin
 	install -s gmproxy $(prefix)/bin/gmproxy
 	install -s bproxy $(prefix)/bin/bproxy

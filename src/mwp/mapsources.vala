@@ -370,7 +370,7 @@ public class JsonMapDef : Object {
                         var spawncmd = item.get_string_member("spawn");
                         var iport = spawn_proxy(spawncmd);
                         if(iport > 0)
-                            s.uri_format="http://localhost:%u/p/#Z#/#X#/#Y#.png".printf(iport);
+                            s.uri_format="http://localhost:%u/%s/#Z#/#X#/#Y#.png".printf(iport, s.id);
                         if(iport != -1)
                             sources += s;
                     }
