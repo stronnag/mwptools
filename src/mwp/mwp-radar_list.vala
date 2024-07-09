@@ -151,20 +151,19 @@ public class RadarView : Object {
         for(bool next=listmodel.get_iter_first(out iter); next;
             next=listmodel.iter_next(ref iter)) {
             GLib.Value cell;
-            listmodel.get_value (iter, Column.LAT, out cell);
-            var dpos = (double)cell;
-            alat += dpos;
-            listmodel.get_value (iter, Column.LON, out cell);
-            dpos = (double)cell;
-            alon += dpos;
-            n++;
-        }
-        if(n != 0) {
-            alat /= n;
-            alon /= n;
-            zoom_to_swarm(alat, alon);
-        }
-    }
+            listmodel.get_value (iter, Column.ID, out cell);
+			var rk = (uint)cell;
+			var r = MWP.radar_cache.lookup(rk);
+			alat += r.latitude;
+			alon += r.longitude;
+			n++;
+		}
+		if(n != 0) {
+			alat /= n;
+			alon /= n;
+			zoom_to_swarm(alat, alon);
+		}
+	}
 
     private void show_number() {
         int n_rows = listmodel.iter_n_children(null);
