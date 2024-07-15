@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"go.bug.st/serial"
 	"log"
+	"net"
 	"os"
 	"os/signal"
+	"regexp"
 	"strconv"
 	"strings"
 	"syscall"
@@ -47,7 +49,19 @@ var (
 	_device = flag.String("d", "", "Serial Device")
 	nometa  = flag.Bool("nometa", false, "No metadata")
 	jstream = flag.Bool("js", false, "JSON stream")
+	askvers = flag.Bool("fcvers", false, "request FC version first")
 )
+
+const (
+	DevClass_TCP = 0
+	DevClass_UDP = 1
+)
+
+type IPDev struct {
+	proto byte
+	name  string
+	port  int
+}
 
 func check_device() (string, int) {
 	var baud int
@@ -58,6 +72,7 @@ func check_device() (string, int) {
 	} else {
 		baud = *_baud
 	}
+
 	if name == "" {
 		for _, v := range []string{"/dev/ttyACM0", "/dev/ttyUSB0"} {
 			if _, err := os.Stat(v); err == nil {
@@ -67,11 +82,11 @@ func check_device() (string, int) {
 			}
 		}
 	}
-	if name == "" {
-		log.Fatalln("No device given")
-	} else {
+
+	if name != "" {
 		log.Printf("Using device %s\n", name)
 	}
+
 	return name, baud
 }
 
@@ -113,21 +128,68 @@ func main() {
 
 	var sd SerDev
 
-	if len(name) == 17 && name[2] == ':' && name[8] == ':' && name[14] == ':' {
-		sd = NewBT(name)
+	r := regexp.MustCompile(`^(tcp|udp)://(__MWP_SERIAL_HOST|[\[\]:A-Za-z\-\.0-9]*):(\d+)`)
+	m := r.FindAllStringSubmatch(name, -1)
+	if len(m) > 0 {
+		dd := IPDev{}
+		if m[0][1] == "tcp" {
+			dd.proto = DevClass_TCP
+		} else {
+			dd.proto = DevClass_UDP
+		}
+		dd.name = m[0][2]
+		dd.port, _ = strconv.Atoi(m[0][3])
+		switch dd.proto {
+		case DevClass_TCP:
+			var conn net.Conn
+			remote := fmt.Sprintf("%s:%d", dd.name, dd.port)
+			addr, err := net.ResolveTCPAddr("tcp", remote)
+			if err == nil {
+				conn, err = net.DialTCP("tcp", nil, addr)
+			}
+			if err != nil {
+				log.Fatal(err)
+			}
+			sd = conn
+		case DevClass_UDP:
+			var laddr, raddr *net.UDPAddr
+			var conn net.Conn
+			if dd.name == "" {
+				laddr, err = net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", dd.name, dd.port))
+			} else {
+				raddr, err = net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", dd.name, dd.port))
+			}
+			if err == nil {
+				conn, err = net.DialUDP("udp", laddr, raddr)
+			}
+			if err != nil {
+				log.Fatal(err)
+			}
+			sd = conn
+		}
 	} else {
-		mode := &serial.Mode{BaudRate: baud}
-
-		s, err := serial.Open(name, mode)
-		if err != nil {
-			log.Fatal(err)
+		if len(name) == 17 && name[2] == ':' && name[8] == ':' && name[14] == ':' {
+			sd = NewBT(name)
+		} else {
+			mode := &serial.Mode{BaudRate: baud}
+			sd, err = serial.Open(name, mode)
+			if err != nil {
+				sd, err = os.OpenFile(name, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0777)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+			if strings.Contains(name, "rfcomm") {
+				time.Sleep(2 * time.Second)
+			}
 		}
-		sd = s
-		if strings.Contains(name, "rfcomm") {
-			time.Sleep(2 * time.Second)
-		}
-		defer sd.Close()
 	}
+	if *askvers {
+		fcv := []byte{0x24, 0x58, 0x3c, 0x00, 0x03, 0x00, 0x00, 0x00, 0xcf}
+		sd.Write(fcv)
+	}
+
+	defer sd.Close()
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
