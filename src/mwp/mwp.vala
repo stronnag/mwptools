@@ -2237,7 +2237,7 @@ public class MWP : Gtk.Application {
 
         saq = new GLib.SimpleAction("load-otx",null);
         saq.activate.connect(() => {
-				bbl_delay = true;
+				bbl_delay = false;
 				replay_otx();
             });
         window.add_action(saq);
