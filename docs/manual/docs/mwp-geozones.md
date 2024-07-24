@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Since mwp 7.32.?, mwp provides a UI for the Geozones function that may appear in INAV 8.0.0 (or later). As the technical details for this feature has not yet been made publicly available, the implementation described below should be considered experimental; at least the user can generate colourful shapes ...
+Since mwp 7.32.?, {{ mwp }} provides a UI for the Geozones function that may appear in INAV 8.0.0 (or later). As the technical details for this feature has not yet been made publicly available, the implementation described below should be considered experimental; at least the user can generate colourful shapes ...
 
 Geozones provides (in theory at least) a set of geographical shapes that the FC can navigate around, characterised by:
 
@@ -32,7 +32,7 @@ The effect these parameters have on FC behaviour will, presumably, be made avail
 
 Note that the Save, Export, Clear, Download and Upload  options are not sensitive if no geozone is loaded. Once a geozone is loaded, some or all of these options will be enabled. The MSP options are only enabled if the FC offers `feature GEOZONE`.
 
-Note that if `feature GEOZONE` is present, nwp will attempt to load Geozones from the FC unless the setting `autoload-geozones` is false, e.g.:
+Note that if `feature GEOZONE` is present, {{ mwp }} will attempt to load Geozones from the FC unless the setting `autoload-geozones` is false, e.g.:
 
     gsettings set org.mwptools.planner autoload-geozones false
 
@@ -93,7 +93,7 @@ The default values are set as:
 
 The values after the line colour are line width and optional dash width.
 
-The default colours are those suggested by the user who requested that mwp support GeoZones.
+The default colours are those suggested by the user who requested that {{ mwp }} support GeoZones.
 
 The default "red" and "green" colours have some opacity set:
 

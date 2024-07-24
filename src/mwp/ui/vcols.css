@@ -1,18 +1,19 @@
 
-/*
- * These are the colours / styles used by mwp for voltages
- * You can override these styles by placing a modified copy of
- * this file (vcols.css) in either ~/.config/mwp/ or ~/.local/share/mwp/
- * e.g
- * force contrasting text colour as well
- * .volthigh { background-color: green ; color: white }
- * .voltmedium { background-color: yellow ; color: black }
- * .voltlow { background-color: orange ; color: black }
- * .voltcritical { background-color:  red ; color: white }
- */
+/* These are the colours / styles used by mwp for voltages */
 
-.volthigh { background-color: green }
-.voltmedium { background-color: yellow }
-.voltlow { background-color: orange }
-.voltcritical { background-color:  red }
-.voltundef { background-color: transparent}
+.volthigh { background-color: green ; color: white ;}
+.voltmedium { background-color: yellow ; color: slategrey ;}
+.voltlow { background-color: orange ; color: slategrey ;}
+.voltcritical { background-color:  red ; color: white ; }
+.voltundef { height: 100%; width: 100%; background: conic-gradient(
+					    green 90deg,
+					    darkgreen 90deg 180deg,
+					    green 180deg 270deg,
+					    darkgreen 270deg
+					);
+	     background-repeat: repeat ;
+	     background-size: 40px 40px;
+	     background-position: top left;
+	     color: slategray;
+	   }
+.voltsundef { background-color: darkgreen ; color: slategray;}
