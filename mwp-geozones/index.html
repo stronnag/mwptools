@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/mwp_icon.ico">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.21">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.28">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.66ac8b77.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.6543a935.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -151,7 +151,7 @@
       
     </form>
     <div class="md-search__output">
-      <div class="md-search__scrollwrap" data-md-scrollfix>
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
             Initializing search
@@ -1368,7 +1368,7 @@
 
 <h1 id="mwp-and-geozones">mwp and Geozones<a class="headerlink" href="#mwp-and-geozones" title="Permanent link">#</a></h1>
 <h2 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permanent link">#</a></h2>
-<p>Since mwp 7.32.?, mwp provides a UI for the Geozones function that may appear in INAV 8.0.0 (or later). As the technical details for this feature has not yet been made publicly available, the implementation described below should be considered experimental; at least the user can generate colourful shapes ...</p>
+<p>Since mwp 7.32.?, <a href="https://github.com/stronnag/mwptools">mwp</a> provides a UI for the Geozones function that may appear in INAV 8.0.0 (or later). As the technical details for this feature has not yet been made publicly available, the implementation described below should be considered experimental; at least the user can generate colourful shapes ...</p>
 <p>Geozones provides (in theory at least) a set of geographical shapes that the FC can navigate around, characterised by:</p>
 <ul>
 <li>
@@ -1401,7 +1401,7 @@
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> adds a Geozones menu option, with suboptions:</p>
 <p><img alt="mwp geozones" src="../images/geozones_00.png" width="50%" /></p>
 <p>Note that the Save, Export, Clear, Download and Upload  options are not sensitive if no geozone is loaded. Once a geozone is loaded, some or all of these options will be enabled. The MSP options are only enabled if the FC offers <code>feature GEOZONE</code>.</p>
-<p>Note that if <code>feature GEOZONE</code> is present, nwp will attempt to load Geozones from the FC unless the setting <code>autoload-geozones</code> is false, e.g.:</p>
+<p>Note that if <code>feature GEOZONE</code> is present, <a href="https://github.com/stronnag/mwptools">mwp</a> will attempt to load Geozones from the FC unless the setting <code>autoload-geozones</code> is false, e.g.:</p>
 <pre><code>gsettings set org.mwptools.planner autoload-geozones false
 </code></pre>
 <h2 id="user-interface">User Interface<a class="headerlink" href="#user-interface" title="Permanent link">#</a></h2>
@@ -1493,7 +1493,7 @@
 </tbody>
 </table>
 <p>The values after the line colour are line width and optional dash width.</p>
-<p>The default colours are those suggested by the user who requested that mwp support GeoZones.</p>
+<p>The default colours are those suggested by the user who requested that <a href="https://github.com/stronnag/mwptools">mwp</a> support GeoZones.</p>
 <p>The default "red" and "green" colours have some opacity set:</p>
 <table>
 <thead>
@@ -1615,7 +1615,7 @@ Blank lines and comment lines (starting with <code>#</code> or <code>;</code>) a
     <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.a7c05c9e.min.js"></script>
+      <script src="../assets/javascripts/bundle.fe8b6f2b.min.js"></script>
       
     
   </body>
