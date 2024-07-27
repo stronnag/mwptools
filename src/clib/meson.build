@@ -23,6 +23,8 @@ libargs = {
   'c_args':  clib_cargs,
   'install': true,
   'install_dir': get_option('prefix') / 'lib',
+  'version': '1.0.0',
+  'soversion': '1',
 }
 
 if dynalib

@@ -59,6 +59,8 @@ libargs = {
   'c_args': [dev_args, vcargs],
   'link_with': mwpclib,
   'install': true,
+  'version': '1.0.0',
+  'soversion': '1',
 }
 
 if meson.version().version_compare('>= 1.2.2')
