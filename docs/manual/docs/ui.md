@@ -97,7 +97,7 @@ The following tables summarise the available menu options. Where usage is not ob
 
 ## Map and Mission Settings (2)
 
-A number of different map provides are available. {{ mwp }} offers the mapping library (`libchamplain`) defaults, Bing Maps (Bing Proxy) using a bespoke {{ mwp }} API key, and [user defined options](mwp-Configuration.md#sourcesjson), for example [anonymous maps](Black-Ops.md).
+A number of different map provides are available. {{ mwp }} offers the mapping library (`libchamplain`) defaults, Bing Maps (Bing Proxy) and [user defined options](mwp-Configuration.md#sourcesjson), for example [anonymous maps](Black-Ops.md).
 
 The zoom level may be selected from the control here, or by zooming the map with the mouse wheel.
 

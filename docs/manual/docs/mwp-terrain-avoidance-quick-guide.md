@@ -10,7 +10,7 @@ First load (or create) the mission in mwp. Here, the pilot chooses to take a cru
 
 ## 2. Set your avoidance parameters
 
-By right clicking on any waypoint, we can select **Terrain Analysis**. As this will use Bing Maps, we need to have an internet connection. We set the analysis parameters:
+By right clicking on any waypoint, we can select **Terrain Analysis**. No internet connection is required if you already have cached imagery and DEM tiles.
 
 * Home is taken from the planned home location
 * The pilot elects for 30m clearance above terrain

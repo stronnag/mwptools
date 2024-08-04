@@ -12,8 +12,6 @@
 There are a number of issues to take into consideration.
 
 * Online DEMs (Digital Elevation Model) vary [significantly](Mission-Elevation-Plot-and-Terrain-Analysis.md/#datum), with implications for accuracy.
-* Bing Elevations (BE) limits a single query to 1024 points, the data is 30m grid (best case), more likely 90m for most users.
-* For Bing Elevations, mwp uses the lesser of (mission length / 30) (metres) or 1024 points.
 
 From {{ mwp }} 6.319.703, mwp uses  [Mapzen DEM](https://registry.opendata.aws/terrain-tiles/) data, which improves accuracy (more users  get 30m data) with better accuracy, as well as a significant performance boost and offline usage after the initial data download.
 
@@ -83,24 +81,7 @@ There is also a You Tube video (uses a slightly earlier UI iteration).
 
 ## Local DEMs
 
-Prior to mwp 6.319.703, mwp required a personal Bing API key in order to perform Area LOS calculations.
-
-mwp now uses [Mapzen DEM](https://registry.opendata.aws/terrain-tiles/) SRTM (Shuttle Radar Telemetry Mission) HGT files for all mwp elevation requirements. These are downloaded on demand.
-
-### User Bing API Key
-
-In the same way that the INAV Configurator requires the user to have their own Bing API key, mwp also encourages use of personal Bing API key. Details on now to obtain a key can be found in the [INAV Configurator README](https://github.com/iNavFlight/inav-configurator#how-to-get-the-bing-maps-api-key).
-
-The user's Bing API key should be added to the user's `$HOME/.config/mwp/cmdopts` [file](mwp-Configuration.md#cmdopts), for example:
-
-    #--debug-flags 20
-    --dont-maximise
-
-    MWP_BLACK_TILE=/home/jrh/.config/mwp/mars.png
-    MWP_TIME_FMT=%T.%f
-    MWP_BING_KEY=Axxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-This requirement is to help prevent the generic application API key exceeding usage limits. Using your own key will help ensure the availability of Bing map products for all users.
+mwp uses [Mapzen DEM](https://registry.opendata.aws/terrain-tiles/) SRTM (Shuttle Radar Telemetry Mission) HGT files for all mwp elevation requirements. These are downloaded on demand. No user access key is required.
 
 ## Miscellaneous notes
 
