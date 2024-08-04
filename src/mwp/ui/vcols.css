@@ -5,15 +5,5 @@
 .voltmedium { background-color: yellow ; color: slategrey ;}
 .voltlow { background-color: orange ; color: slategrey ;}
 .voltcritical { background-color:  red ; color: white ; }
-.voltundef { height: 100%; width: 100%; background: conic-gradient(
-					    green 90deg,
-					    darkgreen 90deg 180deg,
-					    green 180deg 270deg,
-					    darkgreen 270deg
-					);
-	     background-repeat: repeat ;
-	     background-size: 40px 40px;
-	     background-position: top left;
-	     color: slategray;
-	   }
 .voltsundef { background-color: darkgreen ; color: slategray;}
+.voltundef { background-color: darkgreen ; color: slategray;}
