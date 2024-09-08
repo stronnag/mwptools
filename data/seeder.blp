@@ -1,0 +1,116 @@
+using Gtk 4.0;
+using Adw 1;
+
+Adjustment adjustment3 {
+  upper: 365;
+  step-increment: 1;
+  page-increment: 10;
+}
+
+Adjustment adjustment4 {
+  upper: 19;
+  step-increment: 1;
+  page-increment: 10;
+}
+
+Adjustment adjustment5 {
+  upper: 19;
+  step-increment: 1;
+  page-increment: 10;
+}
+
+template $TileUtilsDialog: Adw.Window {
+  title: _('mwp map seeder');
+  icon-name: "mwp_icon";
+
+  Box vbox {
+    orientation: vertical;
+    spacing: 8;
+
+    [start]
+    Adw.HeaderBar {}
+
+    [End]
+    Box box4 {
+      spacing: 4;
+      orientation: vertical;
+
+      Label label {
+        halign: start;
+        margin-top: 2;
+        margin-bottom: 2;
+        hexpand: false;
+        label: _('The tile seeder will pre-seed the tile cache for the currently selected map source, where tiles are missing or older than the stale time (days).\n\nAll tiles within the area currently displayed will be downloaded at the max zoom level. Tiles for a larger area will be downloaded for each lesser zoom level.\n\nUse the min and max zoom to select the zoom levels and then click "Apply". Statistics showing the status of the download will be displayed. Clicking "Stop" or closing the dialogue will terminate the seeding.  ');
+        wrap: true;
+        wrap-mode: word_char;
+        max-width-chars: 80;
+      }
+
+      Box {
+        hexpand: true;
+        homogeneous: true;
+
+        Box box5 {
+          margin-top: 2;
+          margin-bottom: 2;
+          halign: start;
+
+          Label label6 {
+            visible: true;
+            can-focus: false;
+            label: _('Min Zoom');
+          }
+
+          SpinButton tile_minzoom {
+            adjustment: adjustment4;
+          }
+        }
+
+        Box box6 {
+          halign: center;
+
+          Label label7 {
+            label: _('Max Zoom');
+          }
+
+          SpinButton tile_maxzoom {
+            text: _('0');
+            adjustment: adjustment5;
+          }
+        }
+
+        Box {
+          halign: end;
+
+          Label label8 {
+            label: _('Stale Days');
+          }
+
+          SpinButton tile_age {
+            adjustment: adjustment3;
+          }
+        }
+      }
+
+      Label tile_stats {
+        margin-top: 2;
+        margin-bottom: 2;
+        label: _('0/0/0');
+      }
+    }
+
+    Box seederbb {
+      hexpand: false;
+      halign: end;
+      spacing: 8;
+
+      Button tile_stop {
+        label: 'Close';
+      }
+
+      Button tile_start {
+        label: 'Apply';
+      }
+    }
+  }
+}

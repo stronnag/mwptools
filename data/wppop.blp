@@ -1,0 +1,73 @@
+using Gtk 4.0;
+
+menu wp-pop-menu {
+  section {
+    item {
+      custom: 'label';
+    }
+  }
+
+  section {
+    item {
+      label: 'Edit WP';
+      action: 'win.wedit';
+    }
+
+    item {
+      label: 'Delete WP';
+      action: 'win.wdelete';
+    }
+
+    item {
+      label: 'Move before';
+      action: 'win.wmove-before';
+    }
+
+    item {
+      label: 'Move after';
+      action: 'win.wmove-after';
+    }
+
+    item {
+      label: 'Insert before';
+      action: 'win.winsert-before';
+    }
+
+    item {
+      label: 'Insert after';
+      action: 'win.winsert-after';
+    }
+  }
+
+  section {
+    item {
+      label: 'Run Preview';
+      action: 'win.mpreview';
+    }
+
+    item {
+      label: 'Stop preview';
+      action: 'win.mxpreview';
+    }
+
+    item {
+      label: 'Terrain Analysis';
+      action: 'win.mta';
+    }
+
+    item {
+      label: 'LOS Analysis';
+      action: 'win.mlosa';
+    }
+
+    item {
+      label: 'Mission WP List';
+      action: 'win.mtote';
+    }
+
+    item {
+      label: 'Clear Mission';
+      action: 'win.mclear';
+    }
+  }
+}

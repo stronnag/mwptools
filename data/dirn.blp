@@ -1,0 +1,31 @@
+using Gtk 4.0;
+
+template $DirectionView : Gtk.Box {
+  orientation: vertical;
+  // Row
+  [Start]
+  Label {
+    use-markup: true;
+    halign: end;
+    vexpand: false;
+    label: '<span size="125%">Heading</span>';
+  }
+  Label heading {
+    use-markup: true;
+    halign: end;
+    vexpand: false;
+    label: '<span size="200%" font="monospace">000°</span>';
+  }
+  Label {
+    use-markup: true;
+    halign: end;
+    vexpand: false;
+    label: '<span size="125%">GPS Cog</span>';
+  }
+  Label cog {
+    use-markup: true;
+    halign: end;
+    vexpand: false;
+    label: '<span size="200%" font="monospace">000°</span>';
+  }
+}

@@ -1,0 +1,47 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $AltDialog: Adw.Window {
+  icon-name: "mwp_icon";
+  title: "Delta Altitude";
+
+  Box {
+    orientation: vertical;
+
+    [start]
+    Adw.HeaderBar {}
+
+    [end]
+    Box {
+      orientation: vertical;
+      spacing: 8;
+
+      Grid {
+        column-spacing: 8;
+        row-spacing: 8;
+
+        Label {
+          label: _('Altitude');
+        }
+
+        Entry deltaalt {
+          hexpand: true;
+          input-purpose: number;
+        }
+      }
+
+      Box {
+        halign: end;
+        hexpand: false;
+
+        Button apply {
+          label: _('Apply');
+        }
+
+        Button cancel {
+          label: _('Cancel');
+        }
+      }
+    }
+  }
+}

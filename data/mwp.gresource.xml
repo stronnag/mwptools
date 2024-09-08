@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/org/stronnag/mwp">
+    <file preprocess="xml-stripblanks" compressed="true">mwpmain.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">mwpmenu.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">mwpsc.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">goto_dialog.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">kmlremover.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">wppop.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">tadialog.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">safehmenu.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">totemenu.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">shapedialog.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">deltadialog.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">altdialog.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">speeddialog.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">seeder.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">bb_dialog.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">fb.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">rssi.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">dirn.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">etx_dialog.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">raw_dialog.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">odoview.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">voltage.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">mwpjs.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">gzmenu.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">fm-dialog.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">prefs.ui</file>
+  </gresource>
+</gresources>

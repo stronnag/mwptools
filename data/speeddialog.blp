@@ -1,0 +1,47 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $SpeedDialog: Adw.Window {
+  icon-name: "mwp_icon";
+  title: "Delta Speed";
+
+  Box {
+    orientation: vertical;
+
+    [start]
+    Adw.HeaderBar {}
+
+    [end]
+    Box {
+      orientation: vertical;
+      spacing: 8;
+
+      Grid {
+        column-spacing: 8;
+        row-spacing: 8;
+
+        Label {
+          label: _('Speed (m/s)');
+        }
+
+        Entry deltaspeed {
+          hexpand: true;
+          input-purpose: number;
+        }
+      }
+
+      Box {
+        hexpand: false;
+        halign: end;
+
+        Button apply {
+          label: _('Apply');
+        }
+
+        Button cancel {
+          label: _('Cancel');
+        }
+      }
+    }
+  }
+}

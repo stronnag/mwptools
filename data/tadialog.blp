@@ -1,0 +1,217 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $TADialog: Adw.Window {
+  icon-name: "mwp_icon";
+  title: _('Terrain Analysis');
+
+  Box {
+    spacing: 4;
+    orientation: vertical;
+
+    [start]
+    Adw.HeaderBar {}
+
+    [end]
+    Box {
+      spacing: 4;
+      orientation: vertical;
+
+      Grid {
+        row-spacing: 2;
+        column-spacing: 4;
+
+        Label {
+          halign: end;
+          label: _('Nominal Home');
+          justify: right;
+
+          layout {
+            column: '0';
+            row: '0';
+          }
+        }
+
+        Label {
+          halign: end;
+          label: _('Margin Elevation (m)');
+          justify: right;
+
+          layout {
+            column: '0';
+            row: '1';
+          }
+        }
+
+        Label pe_home_text {
+          hexpand: true;
+
+          layout {
+            column: '1';
+            row: '0';
+          }
+        }
+
+        Label {
+          halign: end;
+          label: _('Replace Mission');
+          justify: right;
+
+          layout {
+            column: '0';
+            row: '4';
+          }
+        }
+
+        Entry pe_clearance {
+          focusable: true;
+          placeholder-text: _('Clearance (m) optional');
+          input-purpose: digits;
+
+          layout {
+            column: '1';
+            row: '1';
+          }
+        }
+
+        CheckButton pe_replace {
+          focusable: true;
+
+          layout {
+            column: '1';
+            row: '4';
+          }
+        }
+
+        CheckButton pe_land {
+          focusable: true;
+
+          layout {
+            column: '1';
+            row: '5';
+          }
+        }
+
+        Label {
+          label: _('Update Land Offset');
+
+          layout {
+            column: '0';
+            row: '5';
+          }
+        }
+
+        Label {
+          halign: end;
+          label: _('RTH Altitude (m)');
+          justify: right;
+
+          layout {
+            column: '0';
+            row: '2';
+          }
+        }
+
+        Entry pe_rthalt {
+          focusable: true;
+          placeholder-text: _('RTH Alttude (m)');
+          input-purpose: digits;
+
+          layout {
+            column: '1';
+            row: '2';
+          }
+        }
+
+        Label {
+          halign: end;
+          label: _('Altitude Mode');
+          justify: right;
+
+          layout {
+            column: '0';
+            row: '3';
+          }
+        }
+
+        DropDown pe_altmode {
+          model: StringList {
+            strings [
+              "Mission",
+              "Relative",
+              "Absolute"
+            ]
+          };
+
+          layout {
+            column: '1';
+            row: '3';
+          }
+        }
+
+        Label {
+          halign: end;
+          label: _('Max. Climb Angle (°)');
+
+          layout {
+            column: '0';
+            row: '6';
+          }
+        }
+
+        Label {
+          halign: end;
+          label: _('Max. Dive Angle (°)');
+
+          layout {
+            column: '0';
+            row: '7';
+          }
+        }
+
+        Entry pe_climb {
+          focusable: true;
+          placeholder-text: _('Max climb angle (°)');
+          input-purpose: number;
+
+          layout {
+            column: '1';
+            row: '6';
+          }
+        }
+
+        Entry pe_dive {
+          focusable: true;
+          placeholder-text: _('Max dive angle (°)');
+          input-purpose: number;
+
+          layout {
+            column: '1';
+            row: '7';
+          }
+        }
+      }
+
+      Box {
+        valign: center;
+        can-focus: false;
+        spacing: 8;
+        orientation: horizontal;
+        halign: fill;
+        hexpand: true;
+
+        Button pe_ok {
+          hexpand: true;
+          label: _('Apply');
+          // 	  sensitive: false;
+        }
+
+        Button pe_close {
+          label: _('Close');
+          hexpand: true;
+          receives-default: true;
+        }
+      }
+    }
+  }
+}

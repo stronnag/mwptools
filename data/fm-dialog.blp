@@ -1,0 +1,71 @@
+using Gtk 4.0;
+using Adw 1;
+
+Adjustment adjustment {
+  lower: -1000;
+  upper: 1000;
+  step-increment: 1;
+  page-increment: 10;
+}
+
+template $FollowWindow : Adw.Window {
+  icon-name: "mwp_icon";
+  title: _('mwp Follow Me');
+  default-width: 480;
+
+  Box vbox {
+    orientation: vertical;
+    spacing: 8;
+
+    [start]
+    Adw.HeaderBar {}
+
+    [End]
+    Box {
+      orientation: vertical;
+      hexpand: false;
+
+      Label {
+        label: _('Drag the <span weight="bold" background="green" >Green Location Icon (⨁)</span> to the desired location\n• Ensure that the vehicle is in <b>POSHOLD</b>\n• Ensure that <b>GCS NAV</b> mode is asserted\n• Ensure that there is an active MSP channel\n\nClicking OK will result in the FollowMe location being sent to the vehicle\n<i>if the above three conditions are satisfiled</i>.\nClicking Toggle will toggle the display of the FollowMe Icon and centre it if off-screen when toggled for display.\nIf you have a GPS connected to the GCS and want to use GPSd for follow me location, check the box below. With GPSd, the follow me location will send automatically.\n');
+        use-markup: true;
+	wrap: true;
+      }
+
+      Gtk.CheckButton use_gpsd {
+	hexpand: true;
+	halign: end;
+        label: "use GPSd for location";
+      }
+
+      Box {
+        Label {
+          label: _('Relative Altitude (m)');
+        }
+
+        SpinButton fm_spin_alt {
+          text: _('0');
+          adjustment: adjustment;
+          climb-rate: 1;
+        }
+      }
+
+      Label fm_label {
+        label: _('00:00:00N 000:00:00W');
+	use-markup: true;
+      }
+
+      Box {
+        hexpand: false;
+        halign: end;
+
+        Button fm_toggle {
+          label: _('Toggle');
+        }
+
+        Button fm_ok {
+          label: _('OK');
+        }
+      }
+    }
+  }
+}

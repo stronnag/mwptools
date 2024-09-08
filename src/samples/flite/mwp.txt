@@ -1,0 +1,17 @@
+MWP audio test, version 1.136.383
+Warning: Home position changed
+Pilot has control
+Navigating to home position
+Infinite position hold
+Navigating to way point 1
+Navigating to way point 2
+Navigating to way point 55
+Navigating to home position
+Starting to land
+Landing in progress
+Range 100 and 2, bearing 200 and 73
+Altitude 8.3
+Heading 300 and 21
+Voltage 10.9
+18 Satellites
+FAIL SAFE

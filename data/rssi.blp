@@ -1,0 +1,47 @@
+using Gtk 4.0;
+
+template $RSSIView : Gtk.Box {
+  orientation: vertical;
+  hexpand: true;
+
+  // Row
+  [Start]
+  Label title {
+    label: "RSSI";
+  //  hexpand: true;
+    vexpand: false;
+    justify: center;
+    styles [ 'small' ]
+  }
+/**
+  Label rssi {
+    use-markup: true;
+    label: '<span size="250%" font="monospace">0</span>';
+    halign: end;
+//    hexpand: true;
+    justify: right;
+  }
+  **/
+/**
+  Label {
+    label: "%";
+    hexpand: true;
+    vexpand: false;
+    justify: center;
+    styles [ 'small' ]
+  }
+  **/
+  Label rssi_pct {
+    use-markup: true;
+    label: '<span size="250%" font="monospace">0%</span>';
+    halign: end;
+    hexpand: true;
+    vexpand: true;
+    justify: right;
+  }
+  ProgressBar pbar {
+//    hexpand: true;
+    vexpand: false;
+
+  }
+}

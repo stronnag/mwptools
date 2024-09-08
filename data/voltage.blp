@@ -1,0 +1,32 @@
+using Gtk 4.0;
+
+template $VoltageView : Gtk.Box {
+  orientation: vertical;
+  // Row
+  [Start]
+  Label voltlabel {
+    use-markup: true;
+    label: "";
+    hexpand: true;
+    vexpand: true;
+    justify: center;
+  }
+  [End]
+  Gtk.Box {
+    orientation: horizontal;
+    Label ampslabel {
+      use-markup: true;
+      label: "";
+      hexpand: true;
+      vexpand: true;
+      justify: center;
+    }
+    Label mahlabel {
+      use-markup: true;
+      label: "";
+      hexpand: true;
+      vexpand: true;
+      justify: center;
+    }
+  }
+}

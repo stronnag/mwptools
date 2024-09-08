@@ -1,0 +1,61 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $RawWindow : Adw.Window {
+  title: "mwp Raw Log selector";
+  icon-name: "mwp_icon";
+
+  Box vbox {
+    orientation: vertical;
+    [start]
+    Adw.HeaderBar {}
+    [End]
+    // Row 1
+    Box {
+      orientation: horizontal;
+      Label {
+	label: "Raw: ";
+      }
+      Button log_btn {
+	Box {
+	  spacing: 4;
+
+          Label log_name {
+            label: "(none)";
+            halign: fill;
+            hexpand: true;
+            tooltip-text: "Raw log file";
+          }
+	  [End]
+          Image {
+            icon-name: "document-open-symbolic";
+          }
+	}
+      }
+    }
+    // Row 2
+    Box {
+      spacing: 8;
+      Label {
+	label: "Inter packet delay (ms):";
+      }
+      Entry rawdelay {
+	  hexpand: true;
+          input-purpose: number;
+	  tooltip-text: "Only used for non-instrumented logs";
+	  placeholder-text: "100";
+	}
+    }
+    // Row 4
+    Box  {
+      hexpand: false;
+      halign: end;
+      Button cancel {
+        label: _('Cancel');
+      }
+      Button apply {
+        label: _('OK');
+      }
+    }
+  }
+}

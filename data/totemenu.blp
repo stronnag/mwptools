@@ -1,0 +1,49 @@
+using Gtk 4.0;
+
+menu ms-menu {
+  section {
+    item {
+      label: 'Add shape';
+      action: 'mtote.addshape';
+    }
+
+    item {
+      label: 'Delete (selection)';
+      action: 'mtote.delete';
+    }
+
+    //  }
+    //  section {
+    item {
+      label: 'Set altitudes (selection)';
+      action: 'mtote.setalts';
+    }
+
+    item {
+      label: 'Set leg speeds  (selection)';
+      action: 'mtote.setspeeds';
+    }
+
+    item {
+      label: 'Set zero leg speeds (selection)';
+      action: 'mtote.setzerospeeds';
+    }
+
+    item {
+      label: 'Delta location updates (selection)';
+      action: 'mtote.deltaloc';
+    }
+
+    //  }
+    //  section {
+    item {
+      label: 'LOS Analysis';
+      action: 'mtote.losana';
+    }
+
+    item {
+      label: 'Terrain Analysis';
+      action: 'mtote.tersana';
+    }
+  }
+}

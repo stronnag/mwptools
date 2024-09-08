@@ -1,0 +1,328 @@
+using Gtk 4.0;
+
+menu menubar {
+  submenu {
+    label: '_File';
+
+    section {
+      item {
+        label: 'Open Mission';
+        action: 'win.mission-open';
+        icon: "document-new-symbolic";
+        accel: '<Primary>m';
+      }
+
+      item {
+        label: 'Append Mission file';
+        action: 'win.mission-append';
+      }
+
+      item {
+        label: 'Save Mission';
+        action: 'win.mission-save';
+      }
+
+      item {
+        label: 'Save Mission As';
+        action: 'win.mission-save-as';
+      }
+    }
+
+    section {
+      item {
+        label: 'Download Mission from FC';
+        action: 'win.download-mission';
+      }
+
+      submenu {
+        label: 'Upload Mission to FC';
+
+        section {
+          item {
+            label: 'Upload Active Mission';
+            action: 'win.upload-mission';
+            accel: '<Primary>u';
+          }
+
+          item {
+            label: 'Upload All Missions';
+            action: 'win.upload-missions';
+            accel: '<Primary><Shift>u';
+          }
+        }
+      }
+    }
+
+    section {
+      item {
+        label: 'Restore Mission from EEPROM';
+        action: 'win.restore-mission';
+        accel: '<Primary>r';
+      }
+
+      item {
+        label: 'Save Mission to EEPROM';
+        action: 'win.store-mission';
+        accel: '<Primary>e';
+      }
+    }
+
+    section {
+      item {
+        label: 'Replay mwp (JSON) log';
+        action: 'win.replay-mwp-log';
+      }
+
+      item {
+        label: 'Replay blackbox log';
+        action: 'win.replay-bb-log';
+      }
+
+      item {
+        label: 'Replay OTX etc. log';
+        action: 'win.replay-etx-log';
+      }
+
+      item {
+        label: 'Replay mwp RAW log';
+        action: 'win.replay-raw-log';
+      }
+
+      item {
+        label: 'Stop Replay';
+        action: 'win.stop-replay';
+      }
+    }
+
+    section {
+      submenu {
+        label: 'Static Overlays';
+
+        section {
+          item {
+            label: 'Load';
+            action: 'win.kml-load';
+          }
+
+          item {
+            label: 'Remove';
+            action: 'win.kml-remove';
+          }
+        }
+      }
+    }
+
+    section {
+      submenu {
+        label: 'Geo Zones';
+
+        section {
+          item {
+            label: 'Open File';
+            action: 'win.gz-load';
+          }
+
+          item {
+            label: 'Edit';
+            action: 'win.gz-edit';
+          }
+
+          item {
+            label: 'Save file';
+            action: 'win.gz-save';
+          }
+
+          item {
+            label: 'Export as KML';
+            action: 'win.gz-kml';
+          }
+
+          item {
+            label: 'Clear';
+            action: 'win.gz-clear';
+          }
+
+          item {
+            label: 'Download';
+            action: 'win.gz-dl';
+          }
+
+          item {
+            label: 'Upload';
+            action: 'win.gz-ul';
+          }
+        }
+      }
+    }
+
+    section {
+      item {
+        label: 'Safe Homes';
+        action: 'win.safe-homes';
+      }
+    }
+
+    section {
+      item {
+        label: 'Quit';
+        accel: '<Primary>q';
+        action: 'win.quit';
+      }
+    }
+  }
+
+  submenu {
+    label: '_Edit';
+
+    section {
+      item {
+        label: 'Set FollowMe Point';
+        action: 'win.followme';
+      }
+    }
+
+    section {
+      item {
+        label: 'Preferences';
+        action: 'win.prefs';
+        accel: '<Primary>p';
+      }
+
+      item {
+        label: 'Mission Manager';
+        action: 'win.mman';
+        accel: '<Primary><Shift>mu';
+      }
+
+      item {
+        label: 'CLI serial terminal';
+        action: 'win.terminal';
+        accel: '<Shift>t';
+      }
+
+      item {
+        label: 'Get FC Mission Info';
+        action: 'win.mission-info';
+      }
+
+      item {
+        label: 'Seed current map';
+        action: 'win.seed-map';
+      }
+
+      item {
+        label: 'Reboot FC';
+        action: 'win.reboot';
+        accel: '<Primary>!';
+      }
+
+      item {
+        label: 'Audio Test';
+        action: 'win.audio-test';
+      }
+    }
+  }
+
+  submenu {
+    label: '_View';
+
+    section {
+      item {
+        label: 'Zoom to Mission';
+        action: 'win.recentre';
+      }
+
+      item {
+        label: 'Set location as default';
+        action: 'win.defloc';
+      }
+
+      item {
+        label: 'Centre on position ...';
+        action: 'win.centre-on';
+      }
+
+      /*
+      item {
+        label: 'Map Source';
+        action: 'win.map-source';
+      }
+      */
+    }
+
+    section {
+      item {
+        label: 'GPS Statistics';
+        action: 'win.gps-stats';
+        accel: '<Primary>g';
+      }
+    }
+
+    section {
+      item {
+        label: 'Radar View';
+        action: 'win.radar-view';
+      }
+
+      item {
+        label: 'Telemetry Tracker';
+        action: 'win.ttrack-view';
+        accel: '<Primary><Shift>t';
+      }
+    }
+
+    section {
+      item {
+        label: 'Flight Statistics';
+        action: 'win.flight-stats';
+        accel: '<Primary>a';
+      }
+    }
+
+    section {
+      item {
+        label: 'Video Stream';
+        action: 'win.vstream';
+      }
+    }
+
+    section {
+      item {
+        label: 'GCS Location';
+        action: 'win.locicon';
+      }
+    }
+  }
+
+  submenu {
+    label: 'Help';
+
+    section {
+      item {
+        label: 'Online Manual';
+        action: 'win.manual';
+      }
+
+      item {
+        label: 'Shortcut keys list';
+        action: 'win.keys';
+      }
+
+      item {
+        label: 'About';
+        action: 'win.about';
+        accel: '<Primary>a';
+      }
+    }
+  }
+}
+
+menu appmenu {
+  section {
+    item {
+      label: 'Quit';
+      action: 'app.quit';
+      accel: '<Primary>q';
+    }
+  }
+}
