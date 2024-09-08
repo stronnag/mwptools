@@ -273,7 +273,7 @@ namespace Mwp {
 			int fw,fh;
 			check_pango_size(this, "Monospace", "_00:00:00.0N 000.00.00.0W_", out fw, out fh);
 			// Must match 150% scaling in flight_view
-			fw = (150*(fw+2))/100;
+			fw = 2+(150*fw)/100;
 			split_view.min_sidebar_width = fw;
 			split_view.content = Gis.overlay;
 			Gis.setup_map_sources(mapdrop);
