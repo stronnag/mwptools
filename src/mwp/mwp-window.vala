@@ -205,9 +205,9 @@ namespace Mwp {
 			} else {
 				Gdk.Rectangle r;
 				if(Misc.get_primary_size(out r)) {
-                                    int w = (r.width*800)/1000;
-                                    int h = (r.height*800)/1000;
-                                    set_default_size(w, h);
+					int w = (r.width*conf.window_scale)/100;
+					int h = (r.height*conf.window_scale)/100;
+					set_default_size(w, h);
 				}
 			}
 			DemManager.init();
