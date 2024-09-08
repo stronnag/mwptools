@@ -105,6 +105,8 @@ mwp (Gtk4) and legacy (Gtk+-3.0) versions can coexist.
 * Rename the executable (e.g. to mwp3)
 * Install mwp (Gtk4).
 
+If you use any of the map proxies (`bproxy`, `gmproxy`), you must use the mwp4 version.
+
 ## Optional
 
 If you use a map sources file in `~/.config/mwp`, optionally convert the `#X#` elements (for X, Y, Z) replacing with more standard `{x}` etc.
