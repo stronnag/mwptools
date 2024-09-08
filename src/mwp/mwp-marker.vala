@@ -135,7 +135,7 @@ public class MWPMarker : Shumate.Marker {
 	public void set_image (Gdk.Pixbuf pix) {
 		this.pix = pix;
 		var tex = Gdk.Texture.for_pixbuf(pix);
-		((Gtk.Image)get_child()).paintable = tex;
+		((Gtk.Picture)get_child()).paintable = tex;
 		double a = _lastang;
 		_lastang = -2;
 		rotate(a);
