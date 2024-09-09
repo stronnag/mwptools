@@ -537,6 +537,10 @@ namespace Mwp {
 				{"followme", Follow.run},
 				{"audio-test", test_audio},
 				{"prefs", run_prefs},
+				{"toggle-fs", toggle_fs},
+				{"go-home", go_home},
+				{"handle-connect", Msp.handle_connect},
+				{"show-serial-stats", show_serial_stats},
 			};
 
             add_action_entries (winacts, this);
@@ -560,7 +564,25 @@ namespace Mwp {
 			app.set_accels_for_action ("win.hardreset", { "<primary>i" });
 			app.set_accels_for_action ("win.clearmission", { "<primary>z" });
 			app.set_accels_for_action ("win.pausemission", { "space" });
+
+			app.set_accels_for_action ("win.go-home", { "<primary>h" });
+			app.set_accels_for_action ("win.toggle-fs", { "F11" });
+			app.set_accels_for_action ("win.handle-connect", { "<primary><shift>c" });
+			app.set_accels_for_action ("win.show-serial-stats", { "<primary>s" });
+
 			MwpMenu.set_menu_state(Mwp.window, "followme", false);
+		}
+	}
+
+	private void go_home() {
+		Gis.map.center_on(Mwp.conf.latitude, Mwp.conf.longitude);
+	}
+
+	private void toggle_fs() {
+		if(window.maximized) {
+			window.unmaximize();
+		} else {
+			window.maximize();
 		}
 	}
 

@@ -705,7 +705,7 @@ namespace Mwp {
         telstats.avg = (anvals > 0) ? (ulong)(acycle/anvals) : 0;
     }
 
-    private void show_serial_stats() {
+    public void show_serial_stats() {
         gen_serial_stats();
         MWPLog.message("%.3fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %d wait %d, avg poll loop %lu ms messages %d msg/s %.1f\n",
                        telstats.s.elapsed, telstats.s.rxbytes, telstats.s.txbytes,
