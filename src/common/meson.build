@@ -59,8 +59,6 @@ libargs = {
   'c_args': [dev_args, vcargs],
   'link_with': mwpclib,
   'install': true,
-  'version': '1.0.0',
-  'soversion': '1',
 }
 
 if meson.version().version_compare('>= 1.2.2')
@@ -71,6 +69,9 @@ else
 endif
 
 if dynalib
+   if host_machine.system() == 'linux'
+    libargs += {  'version': '1.0.0', 'soversion': '1', }
+  endif
   libargs += { 'install_rpath': '$ORIGIN/../lib', }
   mwpvlib = both_libraries('mwpvlib', kwargs: libargs)
 else

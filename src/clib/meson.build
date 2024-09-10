@@ -23,11 +23,12 @@ libargs = {
   'c_args':  clib_cargs,
   'install': true,
   'install_dir': get_option('prefix') / 'lib',
-  'version': '1.0.0',
-  'soversion': '1',
 }
 
 if dynalib
+ if host_machine.system() == 'linux'
+    libargs += {  'version': '1.0.0', 'soversion': '1', }
+  endif
   mwpclib = both_libraries('mwpclib', kwargs: libargs)
 else
   mwpclib = static_library('mwpclib', kwargs: libargs)
