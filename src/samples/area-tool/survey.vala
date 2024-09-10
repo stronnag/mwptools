@@ -75,11 +75,6 @@ public class PosFormat : GLib.Object {
     }
 }
 
-[DBus (name = "org.mwptools.mwp")]
-interface MwpIF : Object {
-    public abstract int set_mission (string msg) throws GLib.Error;
-}
-
 public class AreaPlanner : GLib.Object {
     public Builder builder;
     public Gtk.ApplicationWindow window;
@@ -113,7 +108,7 @@ public class AreaPlanner : GLib.Object {
     private uint nmpts = 0;
     private Mission ms;
     private uint32 move_time;
-    private MwpIF? proxy = null;
+    private DBusProxy? proxy = null;
 
     private enum MS_Column {
         ID,
@@ -133,28 +128,33 @@ public class AreaPlanner : GLib.Object {
     private void acquire() {
         Bus.watch_name(BusType.SESSION, "org.mwptools.mwp",
                        BusNameWatcherFlags.NONE,
-                       has_bus, lost_bus);
+                       has_legacy_bus, lost_bus);
+        Bus.watch_name(BusType.SESSION, "org.stronnag.mwp",
+                       BusNameWatcherFlags.NONE,
+                       has_mwp_bus, lost_bus);
     }
 
-    private void has_bus() {
-        if (proxy == null)
-            Bus.get_proxy.begin<MwpIF>(BusType.SESSION,
-                                       "org.mwptools.mwp",
-                                       "/org/mwptools/mwp",
-                                       0, null, on_bus_get);
-    }
+    private void has_legacy_bus() {
+		magic_bus("org.mwptools.mwp", "/org/mwptools/mwp");
+	}
 
-    private void on_bus_get(Object? o, AsyncResult? res) {
-        try {
-            proxy = Bus.get_proxy.end(res);
-        } catch (Error e) {
-            stderr.printf ("%s\n", e.message);
-            proxy = null;
-        }
-        update_publish_state();
-    }
+    private void has_mwp_bus() {
+		magic_bus("org.stronnag.mwp", "/org/stronnag/mwp");
+	}
 
-    private void lost_bus() {
+	private void magic_bus(string name, string path) {
+		if (proxy == null) {
+			try {
+                proxy =  new DBusProxy.for_bus_sync (BusType.SESSION, DBusProxyFlags.NONE,
+                                                     null, name, path, name);
+			} catch (Error e) {
+
+			}
+			update_publish_state();
+		}
+	}
+
+	private void lost_bus() {
         proxy = null;
         update_publish_state();
     }
@@ -305,7 +305,9 @@ public class AreaPlanner : GLib.Object {
         s_publish.clicked.connect(() => {
                 var s = XmlIO.to_xml_string({ms}, false);
                 try {
-                    proxy.set_mission(s);
+					var vs = new Variant.string(s);
+                    var v = new Variant.tuple({vs});
+                    proxy.call_sync("SetMission", v, DBusCallFlags.NONE, -1, null);
                 } catch (Error e) {
 					stderr.printf("set_mission : %s\n", e.message);
 				}
@@ -476,6 +478,7 @@ public class AreaPlanner : GLib.Object {
         ms.cy = (ms.maxy + ms.miny) /2.0;
         ms.cx = (ms.maxx + ms.minx) /2.0;
         ms.maxalt = alt;
+		ms.zoom = view.zoom_level;
 
         if(ms.calculate_distance(out ms.dist, out ms.lt)) {
             if(conf.nav_speed != 0)
