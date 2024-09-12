@@ -55,6 +55,7 @@ public class MWPMarker : Shumate.Marker {
 
 		var gestl = new Gtk.GestureLongPress();
 		gestl.touch_only = true;
+		gestl.delay_factor *= 1.5;
 		add_controller(gestl);
 		gestl.pressed.connect((x,y) => {
 				popup_request( 1, x, y);
@@ -81,9 +82,13 @@ public class MWPMarker : Shumate.Marker {
 				var seq = gestd.get_last_updated_sequence();
 				if(gestd.get_sequence_state(seq) == Gtk.EventSequenceState.CLAIMED) {
 					double lat,lon;
-					Gis.map.viewport.widget_coords_to_location (Gis.map, _sx+x, _sy+y, out lat, out lon);
+					if(gestd.get_device().source ==  Gdk.InputSource.TOUCHSCREEN) {
+						x = x/2;
+						y = y/2;
+					}
 					_sx +=x;
 					_sy +=y;
+					Gis.map.viewport.widget_coords_to_location (Gis.map, _sx, _sy, out lat, out lon);
 					this.set_location (lat, lon);
 					drag_motion(lat, lon);
 				}
