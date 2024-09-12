@@ -556,16 +556,16 @@ namespace MsnTools {
 					}
 					m.points[idx].lat = la;
 					m.points[idx].lon = lo;
-					mk.set_tooltip_text(set_tip(mk,m,false));
+					mk.set_tooltip_markup(set_tip(mk,m,false));
 				});
 
 			mk.drag_begin.connect(() => {
-					mk.set_tooltip_text(set_tip(mk,m,false));
+					mk.set_tooltip_markup(set_tip(mk,m,false));
 				});
 
 			mk.drag_end.connect(() => {
 					m.calc_mission_distance();
-					mk.set_tooltip_text(set_tip(mk,m,true));
+					mk.set_tooltip_markup(set_tip(mk,m,true));
 				});
 
 			mk.popup_request.connect(() => {

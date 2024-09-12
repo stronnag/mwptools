@@ -48,12 +48,13 @@ public class MWPMarker : Shumate.Marker {
 		gestc.set_button(0);
 		gestc.released.connect((n,x,y) => {
 				var bn = gestc.get_current_button();
-				  if(bn == 3 || n == 2) {
+				  if(bn == 3) {
 					  popup_request( n, x, y);
 				  }
 			});
 
 		var gestl = new Gtk.GestureLongPress();
+		gestl.touch_only = true;
 		add_controller(gestl);
 		gestl.pressed.connect((x,y) => {
 				popup_request( 1, x, y);
@@ -202,7 +203,7 @@ public class MWPLabel : MWPMarker {
 
 	public MWPLabel(string txt="")  {
 		provider = new Gtk.CssProvider ();
-		label = new Gtk.Label(null);
+		label = new Gtk.Label(txt);
 		label.use_markup = true;
         var stylec = label.get_style_context();
 		stylec.add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
@@ -215,7 +216,6 @@ public class MWPLabel : MWPMarker {
 		label.margin_bottom = 2;
 		label.margin_start = 2;
 		label.margin_end = 2;
-		label.label = txt;
 		set_child(label);
 		bcol = "white";
 		fcol = "black";
@@ -223,7 +223,7 @@ public class MWPLabel : MWPMarker {
     }
 
 	public void set_text(string txt) {
-		label.set_markup(txt);
+		label.label = txt;
 	}
 
 	public void set_font_scale(double ps = Pango.Scale.MEDIUM) {
