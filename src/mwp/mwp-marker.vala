@@ -86,9 +86,15 @@ public class MWPMarker : Shumate.Marker {
 						x = x/2;
 						y = y/2;
 					}
+					/***
 					_sx +=x;
 					_sy +=y;
 					Gis.map.viewport.widget_coords_to_location (Gis.map, _sx, _sy, out lat, out lon);
+					****/
+					Gis.map.viewport.location_to_widget_coords(this, this.latitude, this.longitude, out _sx, out _sy);
+					_sx += x;
+					_sy += y;
+					Gis.map.viewport.widget_coords_to_location (this, _sx, _sy, out lat, out lon);
 					this.set_location (lat, lon);
 					drag_motion(lat, lon);
 				}
