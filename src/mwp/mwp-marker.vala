@@ -109,6 +109,7 @@ public class MWPMarker : Shumate.Marker {
 		draggable = onoff;
 		if(onoff) {
 			gestd.propagation_phase  = Gtk.PropagationPhase.BUBBLE;
+			gestd.propagation_limit =  Gtk.PropagationLimit.SAME_NATIVE;
 		} else {
 			gestd.propagation_phase  = Gtk.PropagationPhase.NONE;
 		}
