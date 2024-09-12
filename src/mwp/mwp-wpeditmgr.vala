@@ -85,12 +85,11 @@ namespace EditWP {
 			ms.points[wanted].param1 = ei.heading;
 		}
 
-		/// set sethead value
 		wanted = -1;
 		emask = (ei.optional & WPEditMask.JUMP);
 		omask = (orig.optional & WPEditMask.JUMP);
 		if (emask != omask) {
-			if(emask != 0) { // added SETHEAD
+			if(emask != 0) { // added JUMP
 				wanted = insert_element(idx, Msp.Action.JUMP);
 			} else { // removed JUMP
 				remove_element(idx, Msp.Action.JUMP);
@@ -107,9 +106,9 @@ namespace EditWP {
 		emask = (ei.optional & WPEditMask.RTH);
 		omask = (orig.optional & WPEditMask.RTH);
 		if (emask != omask) {
-			if(emask != 0) { // added SETHEAD
-				wanted = insert_element(idx, Msp.Action.JUMP);
-			} else { // removed SH
+			if(emask != 0) { // added RTH
+				wanted = insert_element(idx, Msp.Action.RTH);
+			} else { // removed RTH
 				remove_element(idx, Msp.Action.RTH);
 			}
 		} else {

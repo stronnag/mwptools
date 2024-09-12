@@ -463,6 +463,7 @@ namespace MissionManager {
 		saq.activate.connect(() =>	{
 				MsnTools.move_before(MT._m, MT._mk.no);
 			});
+
 		Mwp.window.add_action(saq);
 		saq = new GLib.SimpleAction("winsert-before",null);
 		saq.activate.connect(() =>	{

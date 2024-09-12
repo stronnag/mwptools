@@ -145,7 +145,7 @@ libxml2 (>= 2.7.4),
 Example packages:
 
 ```
-sudo apt install -y libvte-2.91-gtk4-dev blueprint-compiler libprotobuf-c-dev \
+sudo apt install -y blueprint-compiler libprotobuf-c-dev \
   libvte-2.91-gtk4-dev libshumate-dev libpaho-mqtt-dev libgtk-4-dev \
   libadwaita-1-dev libepoxy-dev
 ```
@@ -258,3 +258,7 @@ sudo dnf5 install -y libshumate-devel vte291-gtk4-devel protobuf-c-devel \
 | wp-spotlight | Style for the 'next waypoint' highlight | Defines RGBA colour for 'next way point' highlight | "#ffffff60" |
 | wp-text-style | Style of text used for next WP display | Defines the way the WP numbers are displayed. Font, size and RGBA description (or well known name, with alpha) | "Sans 72/#ff000060" |
 | zone-detect | Application to return timezone from location | If supplied, the application will be used to return the timezone (in preference to geonames.org). The application should take latitude and longitude as parameters. See samples/tzget.sh | "" |
+
+## DBus
+
+The DBus name / path are changed to map the application Id; e.g. `org.stronnag.mwp` and  `/org/stronnag/mwp`. A few of the DBus interfaces have been enhanced; you can introspect the bus to determine this pending new documentation.

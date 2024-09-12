@@ -251,6 +251,7 @@ public class LOSSlider : Adw.Window {
 		for (unowned GLib.List<weak Shumate.Marker> lp = mklist.first(); lp != null; lp = lp.next) {
 			unowned MWPMarker m = lp.data as MWPMarker;
 			m.set_draggable(state);
+			m.sensitive = state;
 		}
 		//Gis.mm_layer.sensitive = state; // dims the markers, not wanted
 	}
@@ -378,6 +379,7 @@ public class LOSSlider : Adw.Window {
 	public void run(Mission ms, int wpno, bool auto) {
 		_auto = auto;
 		set_marker_state(false);
+		Mwp.window.wpeditbutton.active = false;
 		mt = new MissionPreviewer();
 		mt.is_mr = true; // otherwise, gets confused by POSHOLD
 		plist =  mt.check_mission(MissionManager.current(), false);

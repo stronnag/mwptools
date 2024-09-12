@@ -202,7 +202,8 @@ public class MWPLabel : MWPMarker {
 
 	public MWPLabel(string txt="")  {
 		provider = new Gtk.CssProvider ();
-		label = new Gtk.Label(txt);
+		label = new Gtk.Label(null);
+		label.use_markup = true;
         var stylec = label.get_style_context();
 		stylec.add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
 		set_font_scale(Mwp.conf.symbol_scale);
@@ -214,7 +215,7 @@ public class MWPLabel : MWPMarker {
 		label.margin_bottom = 2;
 		label.margin_start = 2;
 		label.margin_end = 2;
-		label.use_markup = true;
+		label.label = txt;
 		set_child(label);
 		bcol = "white";
 		fcol = "black";

@@ -558,6 +558,9 @@ namespace MsnTools {
 					var plab = new Gtk.Label("WP %d".printf(mk.no));
 					pop.add_child(plab, "label");
 					pop.set_parent(mk);
+					MwpMenu.set_menu_state(Mwp.window, "wmove-before", (mk.no != 1));
+					bool eom = (mk.no == m.npoints || (mk.no == m.npoints-1 && m.points[m.npoints-1].action == Msp.Action.RTH));
+					MwpMenu.set_menu_state(Mwp.window, "wmove-after", !eom);
 					pop.popup();
 				});
 		}
