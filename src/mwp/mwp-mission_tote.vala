@@ -339,28 +339,12 @@ namespace MissionManager {
 			saq = new GLib.SimpleAction("addshape",null);
 			saq.activate.connect(() =>	{
 					var ms = MissionManager.current();
+					var sp = new Shape.Dialog();
 					int idx = ms.get_index(MT.mtno);
-					bool ok = false;
-					if(ms.points[idx].action == Msp.Action.SET_POI) {
-						ok = true;
-					} else {
-						for(var j = 0; j < ms.npoints; j++) {
-							if(ms.points[j].action == Msp.Action.SET_POI) {
-								idx = j;
-								ok = true;
-								break;
-							}
-						}
-					}
-					if(ok) {
-						var sp = new Shape.Dialog();
-						sp.get_values.connect((pts) => {
-								MsnTools.add_shape(ms, MT.mtno, pts);
-							});
-						sp.get_points(ms.points[idx].lat, ms.points[idx].lon);
-					} else {
-						Mwp.add_toast_text("No SET_POI to add shape");
-					}
+					sp.get_values.connect((pts) => {
+							MsnTools.add_shape(ms, MT.mtno, pts);
+						});
+					sp.get_points(ms.points[idx].lat, ms.points[idx].lon);
 				});
 			dg.add_action(saq);
 
@@ -429,6 +413,16 @@ namespace MissionManager {
 				});
 			dg.add_action(saq);
 
+			saq = new GLib.SimpleAction("fbh",null);
+			saq.activate.connect(() =>	{
+					var bs = model.get_selection_in_range (0, ms.npoints);
+					if(!bs.is_empty()) {
+						MsnTools.fbh_toggle(ms, bs);
+					}
+				});
+			dg.add_action(saq);
+
+
 			saq = new GLib.SimpleAction("tersana",null);
 			saq.activate.connect(() =>	{
 					tadialog.run();
@@ -442,7 +436,6 @@ namespace MissionManager {
 			dg.add_action(saq);
 
 			this.insert_action_group("mtote", dg);
-            MwpMenu.set_menu_state(dg, "addshape", false);
 		}
 
 		private int get_row_at(Gtk.Widget w, double x,  double y) {

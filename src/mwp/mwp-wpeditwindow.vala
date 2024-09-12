@@ -20,7 +20,8 @@ using Gtk;
 public enum WPEditMask {
     SETHEAD = 1,
     JUMP = 2,
-    RTH = 4
+    RTH = 4,
+	ATHOME = 8
 }
 
 public struct EditItem {
@@ -77,6 +78,7 @@ public class WPPopEdit : Adw.Window {
     private QEntry loiterent;
     private QEntry landent;
     private Gtk.CheckButton headcb;
+    private Gtk.CheckButton athomecb;
     private QEntry headent;
     private Gtk.CheckButton jumpcb;
     private QEntry jump1ent;
@@ -236,7 +238,11 @@ public class WPPopEdit : Adw.Window {
         case Msp.Action.LAND:
             extract_basic(nv, ref wpt);
             break;
-        default:
+
+		case Msp.Action.SET_POI:
+			wpt.optional = (athomecb.active) ? WPEditMask.ATHOME : 0;
+			break;
+		default:
             break;
         }
 		nstr = wp_combo.get_active_id();
@@ -425,7 +431,12 @@ public class WPPopEdit : Adw.Window {
                 grid.attach (wpaction[k], k, j);
                 wpaction[k].active = ((wpt.p3 & (1<<k+1)) != 0);
             }
-        }
+        } else {
+			j++;
+			athomecb = new Gtk.CheckButton.with_label("At home");
+			athomecb.active = false;
+			grid.attach (athomecb, 0, j);
+		}
     }
 
 	public FWApproach.approach extract_land() {

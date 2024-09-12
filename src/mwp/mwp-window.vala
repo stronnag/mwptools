@@ -412,7 +412,6 @@ namespace Mwp {
 		}
 
 		private void stop_replay() {
-			MWPLog.message(":DBG: Stop replay %d\n", child_pid);
 			Mwp.stop_replayer();
 		}
 
@@ -421,7 +420,6 @@ namespace Mwp {
 		}
 
 		private void do_mission_clear() {
-			MWPLog.message(":DBG: do clear\n");
 			hard_mission_clear();
 		}
 
@@ -479,7 +477,6 @@ namespace Mwp {
 		}
 
 		private void test_audio() {
-			MWPLog.message(":DBG: Call audio test\n");
 			TTS.say(TTS.Vox.AUDIO_TEST);
 		}
 

@@ -262,6 +262,25 @@ namespace MsnTools {
 		}
 	}
 
+	public void fbh_toggle(Mission m, Gtk.Bitset bs) {
+		MissionItem []nmis = {};
+		double hlat, hlon;
+		HomePoint.get_location(out hlat, out hlon);
+		for(var i = 0; i < m.npoints; i++) {
+			if (bs.contains(i)) {
+				if(m.points[i].flag == 0x48) {
+					m.points[i].flag =0;
+				} else if(m.points[i].flag == 0) {
+					m.points[i].flag =0x48;
+					m.points[i].lat = hlat;
+					m.points[i].lon = hlon;
+				}
+			}
+		}
+		renumber_mission(m);
+		draw_mission(m);
+	}
+
 	public void swap(Mission m, int a, int b) {
 		var ai =  m.get_index(a);
 		var bi =  m.get_index(b);
@@ -561,6 +580,9 @@ namespace MsnTools {
 					MwpMenu.set_menu_state(Mwp.window, "wmove-before", (mk.no != 1));
 					bool eom = (mk.no == m.npoints || (mk.no == m.npoints-1 && m.points[m.npoints-1].action == Msp.Action.RTH));
 					MwpMenu.set_menu_state(Mwp.window, "wmove-after", !eom);
+					int idx = m.get_index(mk.no);
+					bool ok = (m.points[idx].action == Msp.Action.SET_POI);
+					MwpMenu.set_menu_state(Mwp.window, "addshape", ok);
 					pop.popup();
 				});
 		}

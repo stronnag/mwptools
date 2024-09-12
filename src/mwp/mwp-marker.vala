@@ -223,7 +223,7 @@ public class MWPLabel : MWPMarker {
     }
 
 	public void set_text(string txt) {
-		label.set_label(txt);
+		label.set_markup(txt);
 	}
 
 	public void set_font_scale(double ps = Pango.Scale.MEDIUM) {

@@ -152,7 +152,7 @@ namespace TTS {
     }
 
 	public void say(Vox c, bool urgent=false) {
-		if(Mwp.window.audio_cb.active) {
+		if(Mwp.window.audio_cb.active || c == Vox.AUDIO_TEST) {
 			if(mt != null) {
 				mt.message(c, urgent);
 			} else {

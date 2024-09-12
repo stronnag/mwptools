@@ -28,8 +28,7 @@ namespace BBL {
 				Gis.map.viewport.zoom_level = z;
 				Gis.map.center_on(b.get_centre_latitude(), b.get_centre_longitude());
 				if(videofile != null && videofile != "") {
-					MWPLog.message(":DBG: BBL videofile %s\n", videofile);
-					MWPLog.message(":DBG: Timer %s %jd\n", vactive.to_string(), nsecs);
+					MWPLog.message("BBL videofile %s offset\n", videofile, nsecs);
 				}
 				if(speedup) {
 					videofile = null;

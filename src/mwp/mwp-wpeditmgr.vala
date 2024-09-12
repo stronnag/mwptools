@@ -69,6 +69,15 @@ namespace EditWP {
 			mi.param2 = (int)ei.p2;
 		}
 
+        if(mi.action == Msp.Action.SET_POI) {
+			if ((ei.optional & WPEditMask.ATHOME) != 0) {
+				double hlat, hlon;
+				HomePoint.get_location(out hlat, out hlon);
+				ms.points[idx].lat = hlat;
+				ms.points[idx].lon = hlon;
+			}
+		}
+
 		var wanted = -1;
 		var emask = (ei.optional & WPEditMask.SETHEAD);
 		var omask = (orig.optional & WPEditMask.SETHEAD);
@@ -130,6 +139,7 @@ namespace EditWP {
 			});
 
 		dlg.completed.connect((s) => {
+				MWPLog.message("Completed %s\n", s.to_string());
 				int chg = 0;
 				bool ll = false;
 				if(s) {

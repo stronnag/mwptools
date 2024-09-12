@@ -205,7 +205,7 @@ namespace TA {
 							}
 						} else {
 							var errstr="Plot Error: %s".printf(lastline);
-							MWPLog.message(":DBG: %s\n", errstr);
+							MWPLog.message("Conspire: %s\n", errstr);
 						}
 						FileUtils.unlink(outfn);
 						if(replname != null)

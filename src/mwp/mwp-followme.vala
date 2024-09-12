@@ -87,7 +87,7 @@ namespace Follow {
 		uint8 buf[32];
 		double dist=0,cse = 0;
 			Geo.csedist(Mwp.xlat, Mwp.xlon, lat, lon, out dist, out cse);
-			MWPLog.message(":DBG: Follow Me: Set lat=%.6f lon=%.6f %.0fm %.0f°\n", lat, lon, dist*1852.0, cse);
+			//MWPLog.message(":DBG: Follow Me: Set lat=%.6f lon=%.6f %.0fm %.0f°\n", lat, lon, dist*1852.0, cse);
 			MSP_WP [] wps={};
 			MSP_WP wp = MSP_WP();
 			wp.wp_no = 255;
