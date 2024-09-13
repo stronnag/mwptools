@@ -624,9 +624,19 @@
       <default>1.0</default>
       <summary>Symbol scale</summary>
       <description>
-	Symbol scale factor.
+	Symbol scale factor, scales map symbols as multiplier.
       </description>
     </key>
+
+    <key name="touch-factor" type="d">
+      <default>0.0</default>
+      <summary>Touch (Hi)DPI scaling</summary>
+      <description>
+        Adjustment factor for HiDpi touch screens (0 disable, often 1.5 or 2.0).
+      </description>
+    </key>
+
+
 
   </schema>
 </schemalist>

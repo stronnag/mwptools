@@ -105,7 +105,9 @@ public class MWPSettings : GLib.Object {
 	public string mapbox_apikey {get; set; default="";}
 	public double symbol_scale {get; set; default=1.0;}
 	public int window_scale {get; set; default=80;}
-    public signal void settings_update (string s);
+	public double touch_factor {get; set; default=0.0;}
+
+	public signal void settings_update (string s);
 
 	construct {
         var uc = Environment.get_user_data_dir();
@@ -188,6 +190,7 @@ public class MWPSettings : GLib.Object {
 		settings.bind("speechd-voice", this, "svoice", SettingsBindFlags.DEFAULT);
 		settings.bind("stats-timeout", this, "stats-timeout", SettingsBindFlags.DEFAULT);
 		settings.bind("symbol-scale", this, "symbol-scale", SettingsBindFlags.DEFAULT);
+		settings.bind("touch-factor", this, "touch-factor", SettingsBindFlags.DEFAULT);
 		settings.bind("uc-mission-tags", this, "ucmissiontags", SettingsBindFlags.DEFAULT);
 		settings.bind("uilang", this, "uilang", SettingsBindFlags.DEFAULT);
 		settings.bind("vlevels", this, "vlevels", SettingsBindFlags.DEFAULT);
