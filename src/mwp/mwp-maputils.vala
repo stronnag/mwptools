@@ -25,7 +25,7 @@ namespace MapIdCache {
 	public string normalise(string s) {
 		uint8[] chars = s.data;
 		for(var j = 0; j < chars.length; j++) {
-			if (chars[j] == '.' ||  chars[j] == ':' || chars[j] == '{' || chars[j] == '}' || chars[j] == '/') {
+			if(((char)chars[j]).ispunct()) {
 				chars[j] = '_';
 			}
 		}

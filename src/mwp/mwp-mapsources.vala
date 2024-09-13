@@ -222,8 +222,6 @@ namespace MapManager {
 		MwpMapDesc[] sources = {};
 		proxypids = {};
 
-		MapIdCache.init();
-
 		if(Mwp.conf.mapbox_apikey != "") {
 			var mb = MwpMapDesc();
 			mb.id = "mbox";
@@ -252,7 +250,6 @@ namespace MapManager {
 			ms.url_template = "http://localhost:%u/%s/{z}/{x}/{y}.png".printf(port,ms.id);
 			var cdir = "http___localhost_%u_%s__z___x___y__png".printf(port, ms.id);
 			sp.set_cdir(cdir);
-			MapIdCache.cache.insert(ms.id, {cdir, ms.url_template});
 		}
 
 		sources += ms;
@@ -297,15 +294,21 @@ namespace MapManager {
 							sources += s;
 						}
 					}
-					var cname = MapIdCache.normalise(s.url_template);
-					MapIdCache.cache.insert(s.id, {cname, s.url_template});
                 }
             }
             catch (Error e) {
                 MWPLog.message ("mapsources : %s\n", e.message);
             }
         }
-        return sources;
+
+		/*
+		  MapIdCache.init();
+		foreach (var s in sources) {
+			var cname = MapIdCache.normalise(s.url_template);
+			MapIdCache.cache.insert(s.id, {cname, s.url_template});
+		}
+		*/
+		return sources;
     }
 
     private int spawn_proxy(string cmd) {

@@ -96,11 +96,14 @@ namespace Gis {
             msfn = MWPUtils.find_conf_file(Mwp.conf.map_sources);
 		}
 
+		MapIdCache.init();
 		var mr = new Shumate.MapSourceRegistry.with_defaults ();
 		var mss = MapManager.read_json_sources(msfn);
 		foreach(var d in mss) {
 			var ds = add_source(d);
 			mr.add(ds);
+			var cname = MapIdCache.normalise(d.url_template);
+			MapIdCache.cache.insert(d.id, {cname, d.url_template});
 		}
 		return mr;
 	}
