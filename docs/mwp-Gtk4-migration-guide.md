@@ -105,7 +105,7 @@ mwp (Gtk4) and legacy (Gtk+-3.0) versions can coexist.
 * Rename the executable (e.g. to mwp3)
 * Install mwp (Gtk4).
 
-If you use any of the map proxies (`bproxy`, `gmproxy`), you must use the mwp4 version.
+If you use any of the map proxies (`bproxy`, `gmproxy`), you must use the latest version.
 
 ## Optional
 
@@ -171,6 +171,8 @@ sudo dnf5 install -y libshumate-devel vte291-gtk4-devel protobuf-c-devel \
 ```
 
 ## Gsetting keys
+
+### List of mwp settings
 
 | Name | Summary | Description | Default |
 | ---- | ------- | ----------- | ------ |
@@ -249,11 +251,13 @@ sudo dnf5 install -y libshumate-devel vte291-gtk4-devel protobuf-c-devel \
 | speech-api | API for speech synthesis | espeak, speechd, flite. Only change this if you know you have the required development files at build time | "espeak" |
 | speechd-voice | Default speechd voice | Default speechd voice (see speechd documentation) | "male1" |
 | stats-timeout | timeout for flight statistics display (s) | Timeout before the flight statistics popup automatically closes. A value of 0 means no timeout. | 30 |
-| symbol-scale | Symbol scale | Symbol scale factor. | 1.0 |
+| symbol-scale | Symbol scale | Symbol scale factor, scales map symbols as multiplier. | 1.0 |
+| touch-factor | Touch (Hi)DPI scaling | Adjustment factor for HiDpi touch screens (0 disable, often 1.5 or 2.0). | 0.0 |
 | uc-mission-tags | Upper case mission XML tags | If true, MISSION, VERSION and MISSIONITEM tags are upper case (for interoperability with legacy Android applications) | false |
 | uilang | Language Handling | "en" do everything as English (UI numeric decimal points, voice), "ev" do voice as English (so say 'point' for decimals even when shown as 'comma') | "" |
 | view-mode | UAV view mode | Options for model view | "inview" |
 | vlevels | Voltage levels | Semi-colon(;) separated list of *cell* voltages values for transition between voltage label colours | "" |
+| window-scale | Window size as percent of monitor | Default window size size as percent of monitor size for non-full screen invocation. | 80 |
 | wp-dist-size | Font size (points) for OSD WP distance display | Font size (points) for OSD WP distance display | 56.0 |
 | wp-spotlight | Style for the 'next waypoint' highlight | Defines RGBA colour for 'next way point' highlight | "#ffffff60" |
 | wp-text-style | Style of text used for next WP display | Defines the way the WP numbers are displayed. Font, size and RGBA description (or well known name, with alpha) | "Sans 72/#ff000060" |
