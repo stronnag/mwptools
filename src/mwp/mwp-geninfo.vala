@@ -48,8 +48,21 @@ namespace Mwp {
 		MWPLog.message("version: %s\n", verstr);
 		string os=null;
 		MWPLog.message("%s\n", Logger.get_host_info(out os));
-		MWPLog.message("WM: %s / %s\n", dmstr, sesstype);
-		//		get_gl_info();
+		sb.erase();
+		sb.append("WM: ");
+		sb.append(dmstr);
+		sb.append(" / ");
+		sb.append(sesstype);
+		string []evars = {"GDK_BACKEND", "GSK_RENDERER"};
+		foreach (var ev in evars) {
+			var e = Environment.get_variable(ev);
+			if (e != null) {
+				sb.append_printf(" %s=%s", ev, e);
+			}
+		}
+		sb.append_c('\n');
+		MWPLog.message(sb.str);
+
 		var vstr = check_virtual(os);
 		if(vstr == null || vstr.length == 0)
 			vstr = "none";
