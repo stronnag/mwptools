@@ -34,18 +34,6 @@ namespace MapIdCache {
 	}
 	public void init() {
 		MapIdCache.cache = new HashTable<string, MapIdCache.Item?>(str_hash,str_equal);
-		MapIdCache.cache.insert("osm-mapnik", {
-				"https___tile_openstreetmap_org__z___x___y__png",
-					"https://tile.openstreetmap.org/{z}/{x}/{y}.png"});
-		MapIdCache.cache.insert("osm-cyclemap", {
-				"http___tile_opencyclemap_org_cycle__z___x___y__png",
-					"http://tile.opencyclemap.org/cycle/{z}/{x}/{y}.png"});
-		MapIdCache.cache.insert("mff-relief", {
-				"http___maps_for_free_com_layer_relief_z_z__row_y___z___x___y__jpg",
-					"http://maps-for-free.com/layer/relief/z{z}/row{y}/{z}_{x}-{y}.jpg"});
-		MapIdCache.cache.insert("osm-transportmap", {
-				"http___tile_xn__pnvkarte_m4a_de_tilegen__z___x___y__png",
-					"http://tile.xn--pnvkarte-m4a.de/tilegen/{z}/{x}/{y}.png"});
 	}
 }
 

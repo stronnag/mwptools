@@ -98,6 +98,13 @@ namespace Gis {
 
 		MapIdCache.init();
 		var mr = new Shumate.MapSourceRegistry.with_defaults ();
+		for(var j = 0; j < mr.get_n_items(); j++) {
+			var ds = mr.get_item(j) as Shumate.RasterRenderer;
+			var tdl = ds.data_source as Shumate.TileDownloader;
+			var sch = MapIdCache.normalise(tdl.url_template);
+			MapIdCache.cache.insert(ds.id, {sch, tdl.url_template});
+		}
+
 		var mss = MapManager.read_json_sources(msfn);
 		foreach(var d in mss) {
 			var ds = add_source(d);
