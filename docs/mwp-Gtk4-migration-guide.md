@@ -141,24 +141,26 @@ For the Debian package runtime dependencies:
 
 ```
 libadwaita-1-0 (>= 1.4~beta)
-libc6 (>= 2.38),
-libcairo2 (>= 1.2.4),
-libgdk-pixbuf-2.0-0 (>= 2.22.0),
-libglib2.0-0t64 (>= 2.80.0),
-libgraphene-1.0-0 (>= 1.5.4),
-libgstreamer1.0-0 (>= 1.6.0),
-libgtk-4-1 (>= 4.13.5),
-libgudev-1.0-0 (>= 146),
-libjson-glib-1.0-0 (>= 1.5.2),
-libpaho-mqtt1.3 (>= 1.3.0),
-libpango-1.0-0 (>= 1.14.0),
-libprotobuf-c1 (>= 1.0.1),
-libshumate-1.0-1 (>= 1.0.0~alpha.1+20220818),
-libsoup-3.0-0 (>= 3.3.1),
-libvte-2.91-gtk4-0,
+libc6 (>= 2.38)
+libcairo2 (>= 1.2.4)
+libepoxy0 (>= 1.0)
+libgdk-pixbuf-2.0-0 (>= 2.22.0)
+libglib2.0-0t64 (>= 2.80.0)
+libgraphene-1.0-0 (>= 1.5.4)
+libgstreamer1.0-0 (>= 1.6.0)
+libgtk-4-1 (>= 4.13.5)
+libgudev-1.0-0 (>= 146)
+libjson-glib-1.0-0 (>= 1.5.2)
+libpaho-mqtt1.3 (>= 1.3.0)
+libpango-1.0-0 (>= 1.14.0)
+libprotobuf-c1 (>= 1.0.1)
+libsecret-1-0 (>= 0.7)
+libshumate-1.0-1 (>= 1.0.0~alpha.1+20220818)
+libsoup-3.0-0 (>= 3.3.1)
+libtinfo6 (>= 6)
+libvte-2.91-gtk4-0
 libxml2 (>= 2.7.4),
 ```
-
 Example packages:
 
 ```
