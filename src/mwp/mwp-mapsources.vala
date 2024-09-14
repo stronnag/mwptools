@@ -222,7 +222,7 @@ namespace MapManager {
 		MwpMapDesc[] sources = {};
 		proxypids = {};
 
-		if(Mwp.conf.mapbox_apikey != "") {
+		if(Gis.mapbox_key != null) {
 			var mb = MwpMapDesc();
 			mb.id = "mbox";
 			mb.name = "MapBox";
@@ -231,7 +231,7 @@ namespace MapManager {
 			mb.projection = Shumate.MapProjection.MERCATOR;
 			mb.tile_size = 256;
 			mb.license_uri = "https://mapbox.com/";
-			mb.url_template = "https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=%s".printf(Mwp.conf.mapbox_apikey);
+			mb.url_template = "https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=%s".printf(Gis.mapbox_key);
 			mb.license = "(c) Mapbox & partners";
 			sources += mb;
 		}

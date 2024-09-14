@@ -46,7 +46,7 @@ namespace Gis {
 	internal Queue<Shumate.MapLayer?> qml;
 	private Gtk.Label warnlab;
 	private Gtk.Label osdlab;
-
+	private string mapbox_key = null;
 
 	public void init () {
 		Gis.simple = new Shumate.SimpleMap();
@@ -67,6 +67,35 @@ namespace Gis {
 		osdlab.valign = Gtk.Align.START;
 		Gis.overlay.add_overlay(warnlab);
 		Gis.overlay.add_overlay(osdlab);
+		if(Mwp.conf.mapbox_apikey != "") {
+			Gis.mapbox_key = Mwp.conf.mapbox_apikey;
+		} else {
+			Secret.Schema generic_schema =
+				new Secret.Schema(
+								  "org.freedesktop.Secret.Generic",
+								  Secret.SchemaFlags.NONE,
+								  "name", Secret.SchemaAttributeType.STRING,
+								  "domain", Secret.SchemaAttributeType.STRING,
+								  null
+								  );
+			var attributes = new GLib.HashTable<string,string> (str_hash, str_equal);
+			attributes["name"] = "mapbox-api-key";
+			attributes["domain"] = "org.stronnag.mwp";
+			/*
+			Secret.password_lookupv.begin (generic_schema, attributes,  null, (o,r) => {
+					try {
+						Gis.mapbox_key = Secret.password_lookup.end (r);
+					} catch (Error e) {
+						MWPLog.message("libsecret: %s\n", e.message);
+					}
+				});
+			*/
+			try {
+				Gis.mapbox_key = Secret.password_lookupv_sync(generic_schema, attributes,  null);
+			} catch (Error e) {
+				MWPLog.message("libsecret: %s\n", e.message);
+			}
+		}
 	}
 
 	public void  map_show_warning(string msg) {

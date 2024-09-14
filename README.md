@@ -57,17 +57,7 @@ There is am [online user guide](https://stronnag.github.io/mwptools/) for the ol
 
 The tools are designed to be portable and as far as possible platform and architecture agnostic. The suite is developed on Arch Linux and is tested on Debian (Trixie/ Sid), Ubuntu (latest), Fedora (current)  and FreeBSD (current release).
 
-mwp should  build and run on any platform that supports (recent versions of):
-
- * Gtk4 (4.12)
- * libsoup3 (3.2)
- * libshumate (1.3)
- * meson (1.40)
- * blueprint-compiler (0.12.0)
- * libvte4
- * libadwaita-1 1.4
- * POSIX API
- * Go (golang) > 1.17. Please install the latest vendor release on older Linux distros.
+mwp should  build and run on any platform that provides a modern Gtk API.
 
 mwptools is tested on x86_64, ia32, aarch64 and riscv64 architectures (Linux / FreeBSD).
 

@@ -37,6 +37,7 @@ sudo apt update && sudo apt full-upgrade && \
     libgtk-4-dev \
     libadwaita-1-dev \
     libepoxy-dev \
+    libsecret-1-dev \
     valac \
     pkg-config \
     git build-essential \

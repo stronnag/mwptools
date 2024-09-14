@@ -26,6 +26,7 @@ The following are minimum versions.
 * libvte4
 * libadwaita-1 1.4
 * libepoxy
+* libsecret-1
 
 For replaying blackbox log, [bbl2kml](https://github.com/stronnag/bbl2kml) 1.0.24 or later is rquired.
 
@@ -41,12 +42,28 @@ Full list of settings is at the end of this document.
 
 ## Map Sources
 
-In preparation for the announced removal of the Bing Maps service, `mwp` adds a `MapBox` entry where the user has acquired a [Mapbox API key](https://mapbox.com/). This key should be added to the `mwp` `gsettings` database:
+In preparation for the announced removal of the Bing Maps service, `mwp` adds a `MapBox` entry where the user has acquired a [Mapbox API key](https://mapbox.com/).
 
+This key may be either stored in the Desktop keyring (managed by `libsecret`) or as a plain text string in the `gsettings` database.
+
+### Keyring
+
+Add to the keyring using `secret-tool` with the following attributes:
+
+```
+secret-tool store --label="Mapbox API" name mapbox-api-key domain org.stronnag.mwp
+Password: *************************************************
+```
+
+### Gsettings
+
+The key should be added to the `gsettings` database:
 ```
  gsettings set org.stronnag.mwp mapbox-apikey 'pk.xxxxxxx'
  # where 'pk.xxxxxxx' is your MapBox API Key
 ```
+
+Note that sadly `libshumate` creates a cache directory name from which the MapBox access token may be recovered, so there is little security / privacy gain by using the secret key-ring, alas. See [Gitlab issue](https://gitlab.gnome.org/GNOME/libshumate/-/issues/84).
 
 ## Side Panel
 
@@ -147,12 +164,12 @@ Example packages:
 ```
 sudo apt install -y blueprint-compiler libprotobuf-c-dev \
   libvte-2.91-gtk4-dev libshumate-dev libpaho-mqtt-dev libgtk-4-dev \
-  libadwaita-1-dev libepoxy-dev
+  libadwaita-1-dev libepoxy-dev libsecret-1-dev
 ```
 
 ### Ubuntu
 
-The 24.04 version of `meson` is too old. A more update version may be installed locally using `pipx`.
+The Ubuntu 24.04 version of `meson` is too old. A more update version may be installed locally using `pipx`.
 
 ```
 sudo apt install pipx
@@ -167,7 +184,7 @@ Example package list:
 
 ```
 sudo dnf5 install -y libshumate-devel vte291-gtk4-devel protobuf-c-devel \
-	paho-c-devel blueprint-compiler gtk4-devel libepoxy-devel
+	paho-c-devel blueprint-compiler gtk4-devel libepoxy-devel libsecret-devel
 ```
 
 ## Gsetting keys
