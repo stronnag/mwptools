@@ -42,6 +42,9 @@ namespace Mwp {
 		}
 
 		var sesstype = Environment.get_variable("XDG_SESSION_TYPE");
+		if (sesstype == null) {
+			sesstype = "null session";
+		}
 
 		MWPLog.message("buildinfo: %s\n", MwpVers.get_build_host());
 		MWPLog.message("toolinfo: %s\n", MwpVers.get_build_compiler());
