@@ -17,7 +17,7 @@ interface MwpIF : DBusProxy {
     public signal void quit();
 
     public abstract void get_state(out int state, out int mode) throws DBusError,IOError;
-    public abstract int get_state_names(out string[]names) throws DBusError,IOError;
+    public abstract int get_modes_names(out string[]names) throws DBusError,IOError;
     public abstract void get_sats(out uint8 nsats, out uint8 fix) throws DBusError,IOError;
     public abstract void get_home(out double latitude, out double longitude,
                                   out int32 altitude) throws DBusError,IOError;
@@ -87,7 +87,7 @@ public class App : Object {
             } else
                 message("Intvl %u\n", mwpif.dbus_pos_interval);
             StringBuilder sb = new StringBuilder("State Names:");
-            mwpif.get_state_names (out states);
+            mwpif.get_mode_names (out states);
             foreach(var s in states) {
                 sb.append_c(' ');
                 sb.append(s);

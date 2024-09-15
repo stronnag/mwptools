@@ -117,7 +117,7 @@ namespace MBus {
 
 		internal SourceFunc callback;
 
-		public int get_state_names(out string[]names) throws GLib.Error {
+		public int get_mode_names(out string[]names) throws GLib.Error {
 			string[] _names = {};
 			for (var e = Msp.Ltm.MANUAL; e <= Msp.Ltm.AUTOTUNE; e = e+1) {
 				var s = e.to_string();

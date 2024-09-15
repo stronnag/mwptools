@@ -30,7 +30,7 @@ puts mwp.introspect
 props = mwp["org.freedesktop.DBus.Properties"]
 puts props.GetAll("org.stronnag.mwp")
 
-state_name = mwp.GetStateNames[0]
+state_name = mwp.GetModeNames[0]
 puts "Available states #{state_name.inspect}\n"
 
 state = mwp.GetState[0]
