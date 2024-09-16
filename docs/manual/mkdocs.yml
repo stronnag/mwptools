@@ -1,0 +1,114 @@
+site_name: mwptools
+site_description: Mission Planner, Ground Control Station, Log Replay
+site_author: Jonathan Hudson
+copyright: Copyright &copy; 2014 - 2024 <a href="https://github.com/stronnag/mwptools">Jonathan Hudson</a>
+repo_name: Github
+repo_url: https://github.com/stronnag/mwptools/
+edit_uri: edit/master/docs/manual/docs/
+
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: indigo
+    accent: indigo
+  font:
+    text: Roboto
+    code: Roboto Mono
+  favicon: images/mwp_icon.ico
+
+#custom_dir: docs/overrides
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.keys
+  - pymdownx.critic
+  - footnotes
+  - attr_list
+  - md_in_html
+  - toc:
+        permalink: "#"
+
+#  - git-revision-date
+plugins:
+  - search
+  - macros
+  - with-pdf:
+      cover_subtitle: Mission Planner, GCS, Log replay for INAV
+      toc_level: 3
+      output_path: ../mwptools.pdf
+      cover_logo: images/mwp_icon.svg
+      enabled_if_env: ENABLE_PDF_EXPORT
+      copyright: (c) Jonathan Hudson 2014-2024
+      convert_iframe:
+        - src: https://player.vimeo.com/video/268036585?h=e81256c10e
+          text: Watch on Vimeo
+        - src: https://www.youtube.com/embed/w6M-v4qM5Yg
+          text: Watch on Youtube
+          img: https://i9.ytimg.com/vi/w6M-v4qM5Yg/mq2.jpg?sqp=CLiLiI4G&rs=AOn4CLDW1AdLYxuqrS_Mq6MuPvFKl1_Aeg
+        - src: https://www.youtube.com/embed/RO5N9tbzNg8
+          img: https://i9.ytimg.com/vi/RO5N9tbzNg8/mq2.jpg?sqp=CIyJiI4G&rs=AOn4CLDGRlgze193RhoeKhGmQhUesKs7eQ
+          text: Youtube video
+        - src: https://www.youtube.com/embed/MTA42WUOjUY
+          text: Watch on Youtube
+          img: https://i9.ytimg.com/vi/MTA42WUOjUY/mq2.jpg?sqp=CIyJiI4G&rs=AOn4CLC4Qe6-8_9i80MQ-S4wLNdajSuynw
+        - src: https://www.youtube.com/embed/oE3t5Asqhio
+          text: Watch on Youtube
+          img: https://i9.ytimg.com/vi_webp/oE3t5Asqhio/mqdefault.webp?v=5c082ba5&sqp=CIyJiI4G&rs=AOn4CLCY_ZfofE7BJi64-cJu0A9Eih4_-Q
+        - src: https://www.youtube.com/embed/VvnBzQR7aE8
+          text: Watch on Youtube
+        - src: https://player.vimeo.com/video/267437907?h=015ed1fdc6
+          text: Watch on Vimeo
+        - src: https://player.vimeo.com/video/256052320?h=83d47b048d
+          text: Watch on Vimeo
+        - src: https://www.youtube.com/embed/EIm8vksK1Pg
+          text: Watch on Youtube
+extra_css:
+  - assets/extra.css
+  - assets/pdf.css
+
+nav:
+  - Home:
+      - index.md
+      - 'Help and Support': mwp_support.md
+      - running.md
+      - ui.md
+      - dock.md
+      - mission-editor.md
+      - gcs-features.md
+      - replay-tools.md
+      - misc-ui-elements.md
+      - mwp-terrain-avoidance-quick-guide.md
+      - Mission-Elevation-Plot-and-Terrain-Analysis.md
+      - mwp-los-tool.md
+      - mwp-multi-procotol.md
+      - mwp-Configuration.md
+      - mwp-safehomes-editor.md
+      - mwp-geozones.md
+      - mwp-Radar-View.md
+      - mwp-telemetry-tracker.md
+      - mwp_video_player.md
+      - Fly-By-Home-waypoints-(inav-4-new-feature).md
+      - Black-Ops.md
+      - mwp-follow-me.md
+  - 'Build and Install':
+      - Building-with-meson-and-ninja.md
+  - Miscellaneous:
+      - mwp-Power-and-screen-management.md
+      - inav-4.0-multi-missions.md
+      - mqtt---bulletgcss-telemetry.md
+      - Support-for-inav-3.0-WP-features.md
+      - Replaying-Ardupilot-logs.md
+      - Flite-text-to-speech.md
+      - mwp-Dbus-API.md
+      - mwp_support.md
+      - mwp-miscellaneous-tools.md
+      - licence-misc-info.md
+
+extra:
+    inav: "[INAV](https://github.com/iNavFlight/inav)"
+    mwp: "[mwp](https://github.com/stronnag/mwptools)"
+    bbl2kml: "[bbl2kml](https://github.com/stronnag/bbl2kml)"
+    impload: "[impload](https://github.com/stronnag/impload)"
