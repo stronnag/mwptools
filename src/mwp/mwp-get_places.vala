@@ -214,6 +214,7 @@ class PlaceEdit : Adw.Window {
 		var headerBar = new Adw.HeaderBar();
 		box.append(headerBar);
 		setup_cv();
+		lv.sort_by_column(c0, Gtk.SortType.DESCENDING);
         lv.vexpand = true;
         lv.hexpand = true;
         scrolled.set_child(lv);
@@ -255,7 +256,7 @@ class PlaceEdit : Adw.Window {
 				double clat,clon;
 				MapUtils.get_centre_location(out clat, out clon);
 				var pi = new Places.PosItem();
-				pi.name = "";
+				pi.name = "new col";
 				pi.lat = clat;
 				pi.lon = clon;
 				pi.zoom = (int)Gis.map.viewport.get_zoom_level();
