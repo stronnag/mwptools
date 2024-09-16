@@ -16,11 +16,11 @@
  */
 
 namespace Places {
-    public struct PosItem {
-        string name;
-        double lat;
-        double lon;
-        int zoom;
+    public class PosItem  : Object {
+        public string name {get; construct set;}
+        public double lat {get; construct set;}
+        public double lon {get; construct set;}
+        public int zoom {get; construct set;}
     }
 
     private PosItem[]pls;
@@ -48,7 +48,7 @@ namespace Places {
                     }
 
                     if(parts.length > 2) {
-                        var p = PosItem();
+                        var p = new PosItem();
                         p.lat = DStr.strtod(parts[1],null);
                         p.lon = DStr.strtod(parts[2],null);
                         p.name = parts[0];
@@ -109,26 +109,102 @@ namespace Places {
 }
 
 class PlaceEdit : Adw.Window {
-    Gtk.TreeView view;
-    Gtk.ListStore listmodel;
+	GLib.ListStore lstore;
+    Gtk.SingleSelection lmodel;
+    Gtk.ColumnViewColumn c0;
+    Gtk.ColumnViewColumn c1;
+    Gtk.ColumnViewColumn c2;
+    Gtk.ColumnViewColumn c3;
     Gtk.Button[] buttons;
-    Gtk.TreeIter miter;
 	Gtk.PopoverMenu pop;
+	Gtk.ColumnView lv;
+	int poprow = 0;
 
     public signal void places_changed();
-
-    enum Column {
-        NAME,
-        LAT,
-        LON,
-        ZOOM,
-        NO_COLS
-    }
 
     enum Buttons {
         ADD,
         OK
     }
+
+	private void setup_cv() {
+		lv = new Gtk.ColumnView(null);
+		lstore = new GLib.ListStore(typeof(Places.PosItem));
+		lmodel = new Gtk.SingleSelection(lstore);
+		lv.set_model(lmodel);
+		lv.show_column_separators = true;
+		lv.show_row_separators = true;
+		var f0 = new Gtk.SignalListItemFactory();
+		c0 = new Gtk.ColumnViewColumn("Name", f0);
+		lv.append_column(c0);
+		f0.setup.connect((f,o) => {
+				Gtk.ListItem list_item = (Gtk.ListItem)o;
+				var label=new Gtk.Label("");
+				list_item.set_child(label);
+			});
+		f0.bind.connect((f,o) => {
+				Gtk.ListItem list_item =  (Gtk.ListItem)o;
+				Places.PosItem pi = list_item.get_item() as Places.PosItem;
+				var label = list_item.get_child() as Gtk.Label;
+				label.set_text(pi.name.to_string());
+				pi.bind_property("name", label, "label", BindingFlags.SYNC_CREATE);
+			});
+
+
+		var f1 = new Gtk.SignalListItemFactory();
+		c1 = new Gtk.ColumnViewColumn("Latitude", f1);
+		lv.append_column(c1);
+		f1.setup.connect((f,o) => {
+          Gtk.ListItem list_item = (Gtk.ListItem)o;
+          var label=new Gtk.Label("");
+          list_item.set_child(label);
+        });
+		f1.bind.connect((f,o) => {
+				Gtk.ListItem list_item =  (Gtk.ListItem)o;
+				Places.PosItem pi = list_item.get_item() as Places.PosItem;
+				var label = list_item.get_child() as Gtk.Label;
+				label.set_text(PosFormat.lat(pi.lat, Mwp.conf.dms));
+				pi.notify["lat"].connect((s,p) => {
+						label.set_text(PosFormat.lat(((Places.PosItem)s).lat, Mwp.conf.dms));
+					});
+			});
+
+		var f2 = new Gtk.SignalListItemFactory();
+		c2 = new Gtk.ColumnViewColumn("Longitude", f2);
+		lv.append_column(c2);
+		f2.setup.connect((f,o) => {
+          Gtk.ListItem list_item = (Gtk.ListItem)o;
+          var label=new Gtk.Label("");
+          list_item.set_child(label);
+        });
+		f2.bind.connect((f,o) => {
+				Gtk.ListItem list_item =  (Gtk.ListItem)o;
+				Places.PosItem pi = list_item.get_item() as Places.PosItem;
+				var label = list_item.get_child() as Gtk.Label;
+				label.set_text(PosFormat.lon(pi.lon, Mwp.conf.dms));
+				pi.notify["lon"].connect((s,p) => {
+						label.set_text(PosFormat.lon(((Places.PosItem)s).lon, Mwp.conf.dms));
+					});
+			});
+
+		var f3 = new Gtk.SignalListItemFactory();
+		c3 = new Gtk.ColumnViewColumn("Zoom", f3);
+		lv.append_column(c3);
+		f3.setup.connect((f,o) => {
+          Gtk.ListItem list_item = (Gtk.ListItem)o;
+          var label=new Gtk.Label("");
+          list_item.set_child(label);
+        });
+		f3.bind.connect((f,o) => {
+				Gtk.ListItem list_item =  (Gtk.ListItem)o;
+				Places.PosItem pi = list_item.get_item() as Places.PosItem;
+				var label = list_item.get_child() as Gtk.Label;
+				label.set_text(pi.zoom.to_string());
+				pi.notify["zoom"].connect((s,p) => {
+						label.set_text(((Places.PosItem)s).zoom.to_string());
+					});
+			});
+	}
 
     public PlaceEdit () {
         var scrolled = new Gtk.ScrolledWindow ();
@@ -137,11 +213,10 @@ class PlaceEdit : Adw.Window {
         Gtk.Box box = new Gtk.Box (Gtk.Orientation.VERTICAL, 2);
 		var headerBar = new Adw.HeaderBar();
 		box.append(headerBar);
-        view = new Gtk.TreeView ();
-        setup_treeview ();
-        view.vexpand = true;
-        view.hexpand = true;
-        scrolled.set_child(view);
+		setup_cv();
+        lv.vexpand = true;
+        lv.hexpand = true;
+        scrolled.set_child(lv);
         buttons = {
             new Gtk.Button.from_icon_name ("gtk-add"),
             new Gtk.Button.with_label ("OK"),
@@ -155,16 +230,14 @@ class PlaceEdit : Adw.Window {
 		bbox.hexpand = true;
 		build_mm();
 		var gestc = new Gtk.GestureClick();
-		box.add_controller(gestc);
+		((Gtk.Widget)lv).add_controller(gestc);
 		gestc.set_button(3);
 		gestc.released.connect((n,x,y) => {
-				if (get_selected_iter(out miter)) {
-					GLib.Value _cell;
-					listmodel.get_value (miter, Column.NAME, out _cell);
-					Gdk.Rectangle rect = { (int)x, (int)y, 1, 1};
-					pop.set_pointing_to(rect);
-					pop.popup();
-				}
+				poprow = Utils.get_row_at(lv, x, y);
+				Gdk.Rectangle rect = { (int)x, (int)y, 1, 1};
+				pop.has_arrow = false;
+				pop.set_pointing_to(rect);
+				pop.popup();
             });
 
 
@@ -179,117 +252,32 @@ class PlaceEdit : Adw.Window {
             });
 
         buttons[Buttons.ADD].clicked.connect (() => {
-                Gtk.TreeIter iter;
-                listmodel.append (out iter);
 				double clat,clon;
 				MapUtils.get_centre_location(out clat, out clon);
-                listmodel.set (iter,
-                               Column.NAME, "",
-                               Column.LAT, clat,
-                               Column.LON, clon,
-                               Column.ZOOM, Gis.map.viewport.get_zoom_level());
-            });
+				var pi = new Places.PosItem();
+				pi.name = "";
+				pi.lat = clat;
+				pi.lon = clon;
+				pi.zoom = (int)Gis.map.viewport.get_zoom_level();
+				Places.pls += pi;
+				insert(pi);
+			});
 
         buttons[Buttons.OK].clicked.connect (() => {
-                Gtk.TreeIter iter;
                 Places.PosItem[]ps={};
-
-                for(bool next=listmodel.get_iter_first(out iter); next;
-                    next=listmodel.iter_next(ref iter)) {
-                    string s;
-                    double la,lo;
-                    int zoom;
-                    GLib.Value cell;
-                    listmodel.get_value (iter, Column.NAME, out cell);
-                    s = (string)cell;
-                    s = s.strip();
-                    if (s.length > 0) {
-                        listmodel.get_value (iter, Column.LAT, out cell);
-                        la = (double)cell;
-                        listmodel.get_value (iter, Column.LON, out cell);
-                        lo = (double)cell;
-                        listmodel.get_value (iter, Column.ZOOM, out cell);
-                        zoom = (int)cell;
-                        var p = Places.PosItem(){name = s,lat = la, lon = lo, zoom = zoom};
-                        ps += p;
-                    }
-                }
+				for(var j = 0; j < lstore.get_n_items(); j++) {
+					var pi = lstore.get_item(j) as Places.PosItem;
+					var name = pi.name.strip();
+					if (name != "") {
+						ps += pi;
+					}
+				}
                 Places.replace(ps);
                 places_changed();
-                hide();
+				hide();
             });
     }
 
-    private void setup_treeview () {
-        listmodel = new Gtk.ListStore (Column.NO_COLS,
-                                       typeof (string),
-                                       typeof (double),
-                                       typeof (double),
-                                       typeof (int));
-
-        view.set_model (listmodel);
-        var cell = new Gtk.CellRendererText ();
-        cell.set_property ("editable", true);
-        view.insert_column_with_attributes (-1, "Name",
-                                            cell, "text",
-                                            Column.NAME);
-
-        ((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
-                Gtk.TreeIter iter_val;
-                listmodel.get_iter (out iter_val, new Gtk.TreePath.from_string (path));
-                listmodel.set_value (iter_val, Column.NAME, new_text);
-            });
-
-
-        var col = view.get_column(Column.NAME);
-        col.set_cell_data_func(cell, (col,_cell,model,iter) => {
-                Value v;
-                model.get_value(iter, Column.NAME, out v);
-                _cell.set_property("text",(string)v);
-            });
-
-        col.set_sort_column_id(Column.NAME);
-
-        cell = new Gtk.CellRendererText ();
-		cell.set_property ("editable", true);
-        view.insert_column_with_attributes (-1, "Latitude",
-                                            cell, "text", Column.LAT);
-        col = view.get_column(Column.LAT);
-        col.set_cell_data_func(cell, (col,_cell,model,iter) => {
-                Value v;
-                model.get_value(iter, Column.LAT, out v);
-                double val = (double)v;
-                string s = PosFormat.lat(val,Mwp.conf.dms);
-                _cell.set_property("text",s);
-            });
-
-
-        cell = new Gtk.CellRendererText ();
-		cell.set_property ("editable", true);
-        view.insert_column_with_attributes (-1, "Longitude",
-                                            cell, "text", Column.LON);
-        col = view.get_column(Column.LON);
-        col.set_cell_data_func(cell, (col,_cell,model,iter) => {
-                Value v;
-                model.get_value(iter, Column.LON, out v);
-                double val = (double)v;
-                string s = PosFormat.lon(val,Mwp.conf.dms);
-                _cell.set_property("text",s);
-            });
-
-
-        var zcell = new Gtk.CellRendererText ();
-		zcell.set_property ("editable", true);
-        view.insert_column_with_attributes (-1, "Zoom", zcell, "text", Column.ZOOM);
-        ((Gtk.CellRendererText)zcell).edited.connect((path,new_text) => {
-                Gtk.TreeIter iter;
-                listmodel.get_iter (out iter, new Gtk.TreePath.from_string (path));
-                listmodel.set_value (iter, Column.ZOOM, int.parse(new_text));
-            });
-
-        view.unselect_all();
-        view.hover_selection = true;
-    }
 
     private void build_mm() {
 		var xml = """
@@ -320,63 +308,42 @@ class PlaceEdit : Adw.Window {
 		pop = new Gtk.PopoverMenu.from_model(menu);
 		var aq = new GLib.SimpleAction("zoom",null);
 		aq.activate.connect(() => {
-                Value v;
-                listmodel.get_value(miter, Column.LAT, out v);
-                double la = (double)v;
-                listmodel.get_value(miter, Column.LON, out v);
-                double lo = (double)v;
-                listmodel.get_value(miter, Column.ZOOM, out v);
-                int zoom = (int)v;
-                Gis.map.center_on(la,lo);
-                if (zoom > 0) {
-					Mwp.set_zoom_sanely(zoom);
+				if(poprow != -1) {
+					var pi = lstore.get_item((uint)poprow) as Places.PosItem;
+					Gis.map.center_on(pi.lat, pi.lon);
+					if (pi.zoom > 0) {
+						Mwp.set_zoom_sanely(pi.zoom);
+					}
+					Mwp.set_pos_label(Mwp.clat, Mwp.clon);
 				}
-				Mwp.set_pos_label(Mwp.clat, Mwp.clon);
-
             });
 		dg.add_action(aq);
 
 		aq = new GLib.SimpleAction("setloc",null);
 		aq.activate.connect(() => {
-				double clat,clon;
-				MapUtils.get_centre_location(out clat, out clon);
-				listmodel.set (miter,
-                               Column.LAT, clat,
-                               Column.LON, clon,
-                               Column.ZOOM, Gis.map.viewport.get_zoom_level());
+				if(poprow != -1) {
+					double clat, clon;
+					MapUtils.get_centre_location(out clat, out clon);
+					var pi = lstore.get_item((uint)poprow) as Places.PosItem;
+					pi.lat = clat;
+					pi.lon = clon;
+					pi.zoom = (int)Gis.map.viewport.get_zoom_level();
+				}
 			});
 		dg.add_action(aq);
 
 		aq = new GLib.SimpleAction("delloc",null);
 		aq.activate.connect(() => {
-                listmodel.remove(ref miter);
+				lstore.remove(poprow);
 			});
 		dg.add_action(aq);
 		this.insert_action_group("view", dg);
 		pop.set_parent(this);
     }
 
-    private bool  get_selected_iter(out Gtk.TreeIter iter) {
-        iter={};
-        var sel = view.get_selection ();
-        if(sel.count_selected_rows () == 1) {
-            var rows = sel.get_selected_rows(null);
-            listmodel.get_iter (out iter, rows.nth_data(0));
-            return true;
-        }
-        return false;
-    }
-
     public void insert(Places.PosItem r)  {
-        Gtk.TreeIter iter;
-        listmodel.append (out iter);
-        listmodel.set (iter,
-                       Column.NAME,r.name,
-                       Column.LAT, r.lat,
-                       Column.LON, r.lon,
-                       Column.ZOOM, r.zoom);
+		lstore.append(r);
     }
-
 
 	public new void show() {
 		load_places();
@@ -388,9 +355,10 @@ class PlaceEdit : Adw.Window {
 		  }
 	*/
     public void load_places() {
-        listmodel.clear();
-        foreach(var pl in Places.points()) {
-            insert(pl);
-        }
+		lstore.remove_all();
+		//lstore.splice(0, lstore.n_items, Places.pls);
+		for(var j = 0; j < Places.pls.length; j++) {
+			insert(Places.pls[j]);
+		}
     }
 }

@@ -83,7 +83,7 @@ namespace Mwp {
 
 		public void load_places() {
 			pls = {};
-			pls +=  Places.PosItem(){name="Default", lat=Mwp.conf.latitude, lon=Mwp.conf.longitude};
+			pls +=  new Places.PosItem(){name="Default", lat=Mwp.conf.latitude, lon=Mwp.conf.longitude};
 			foreach(var pl in Places.points()) {
 				pls += pl;
 			}

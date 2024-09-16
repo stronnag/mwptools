@@ -268,7 +268,7 @@ namespace MissionManager {
 			bc.set_propagation_phase(Gtk.PropagationPhase.CAPTURE);
 			bc.set_button(3);
 			bc.pressed.connect((n,x,y) => {
-					int rn = get_row_at(lv, x, y);
+					int rn = Utils.get_row_at(lv, x, y);
 					MT.mtno = rn+1;
 					popmenuat(lv, x, y);
 				});
@@ -436,44 +436,6 @@ namespace MissionManager {
 			dg.add_action(saq);
 
 			this.insert_action_group("mtote", dg);
-		}
-
-		private int get_row_at(Gtk.Widget w, double x,  double y) {
-		// from  https://discourse.gnome.org/t/gtk4-finding-a-row-data-on-gtkcolumnview/8465
-			var  child = w.get_first_child();
-			Gtk.Allocation alloc = { 0, 0, 0, 0 };
-			var line_no = -1;
-			var reading_header = true;
-			var curr_y = 0;
-			var header_height  = 0;
-
-			while (child != null) {
-				if (reading_header) {
-					if (child.get_type().name() == "GtkColumnViewRowWidget") {
-						child.get_allocation(out alloc);
-					}
-					if (child.get_type().name() != "GtkColumnListView") {
-						child = child.get_next_sibling();
-						continue;
-					}
-					child = child.get_first_child();
-					header_height = alloc.y + alloc.height;
-					curr_y = header_height;
-					reading_header = false;
-				}
-				if (child.get_type().name() != "GtkColumnViewRowWidget") {
-					child = child.get_next_sibling();
-					continue;
-				}
-				line_no++;
-				child.get_allocation(out alloc);
-				if (y > curr_y && y <= header_height + alloc.height + alloc.y ) {
-				return line_no;
-				}
-				curr_y = header_height + alloc.height + alloc.y;
-				child = child.get_next_sibling();
-			}
-			return -1;
 		}
 	}
 }
