@@ -15,6 +15,52 @@
  * (c) Jonathan Hudson <jh+mwptools@daria.co.uk>
  */
 
+namespace NewPos {
+	internal string pname;
+	public double lat;
+	double lon;
+	int zoom;
+	bool ok;
+
+	[GtkTemplate (ui = "/org/stronnag/mwp/newpos.ui")]
+	public class Window : Adw.Window {
+		[GtkChild]
+		private unowned Gtk.Entry golat;
+		[GtkChild]
+		private unowned Gtk.Entry golon;
+		[GtkChild]
+		private unowned Gtk.Entry gozoom;
+		[GtkChild]
+		private unowned Gtk.Entry goname;
+		[GtkChild]
+		private unowned Gtk.Button goapp;
+		[GtkChild]
+		private unowned Gtk.Button gocan;
+
+		public Window(Places.PosItem pi) {
+			transient_for = Mwp.window;
+			goname.text = pi.name;
+			golat.text = PosFormat.lat(pi.lat, Mwp.conf.dms);
+			golon.text = PosFormat.lon(pi.lon, Mwp.conf.dms);
+			gozoom.text = pi.zoom.to_string();
+			ok = false;
+			goapp.clicked.connect(() => {
+					pname = strdup(goname.text);
+					lat = InputParser.get_latitude(golat.text);
+					lon = InputParser.get_longitude(golon.text);
+					zoom = int.parse(gozoom.text);
+					ok = true;
+					close();
+				});
+
+			goapp.clicked.connect(() => {
+					ok = false;
+					close();
+				});
+		}
+	}
+}
+
 namespace Places {
     public class PosItem  : Object {
         public string name {get; construct set;}
@@ -260,9 +306,20 @@ class PlaceEdit : Adw.Window {
 				pi.lat = clat;
 				pi.lon = clon;
 				pi.zoom = (int)Gis.map.viewport.get_zoom_level();
-				lstore.insert_sorted(pi, (a,b) => {
-						return strcmp(((Places.PosItem)a).name, ((Places.PosItem)b).name);
-					});
+				var w = new NewPos.Window(pi);
+				w.close_request.connect (() => {
+						if(NewPos.ok) {
+							pi.name = NewPos.pname;
+							pi.lat = NewPos.lat;
+							pi.lon = NewPos.lon;
+							pi.zoom = NewPos.zoom;
+							lstore.insert_sorted(pi, (a,b) => {
+									return strcmp(((Places.PosItem)a).name, ((Places.PosItem)b).name);
+								});
+						}
+						return false;
+				});
+				w.present();
 			});
 
         buttons[Buttons.OK].clicked.connect (() => {
