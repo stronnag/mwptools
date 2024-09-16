@@ -406,10 +406,18 @@ class PlaceEdit : Adw.Window {
 				var w = new NewPos.Window(pi);
 				w.close_request.connect (() => {
 						if(NewPos.ok) {
-							pi.name = NewPos.pname;
+							bool sortme = (pi.name != NewPos.pname);
+							if (sortme) {
+								pi.name = NewPos.pname;
+							}
 							pi.lat = NewPos.lat;
 							pi.lon = NewPos.lon;
 							pi.zoom = NewPos.zoom;
+							if(sortme) {
+								lstore.sort((a,b) => {
+										return strcmp(((Places.PosItem)a).name, ((Places.PosItem)b).name);
+									});
+							}
 						}
 						return false;
 				});
