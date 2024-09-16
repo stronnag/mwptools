@@ -25,6 +25,7 @@ blpfiles = files(
   'gzmenu.blp',
   'fm-dialog.blp',
   'prefs.blp',
+  'newpos.blp',
 )
 
 blueprints = custom_target('blueprints',

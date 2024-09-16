@@ -206,7 +206,7 @@ class PlaceEdit : Adw.Window {
 			});
 	}
 
-    public PlaceEdit () {
+	public PlaceEdit () {
         var scrolled = new Gtk.ScrolledWindow ();
         set_default_size (360, 360);
         title = "Edit Stored Places";
@@ -279,7 +279,6 @@ class PlaceEdit : Adw.Window {
 				hide();
             });
     }
-
 
     private void build_mm() {
 		var xml = """
