@@ -256,12 +256,13 @@ class PlaceEdit : Adw.Window {
 				double clat,clon;
 				MapUtils.get_centre_location(out clat, out clon);
 				var pi = new Places.PosItem();
-				pi.name = "new col";
+				pi.name = "New Item";
 				pi.lat = clat;
 				pi.lon = clon;
 				pi.zoom = (int)Gis.map.viewport.get_zoom_level();
-				Places.pls += pi;
-				insert(pi);
+				lstore.insert_sorted(pi, (a,b) => {
+						return strcmp(((Places.PosItem)a).name, ((Places.PosItem)b).name);
+					});
 			});
 
         buttons[Buttons.OK].clicked.connect (() => {
@@ -342,10 +343,6 @@ class PlaceEdit : Adw.Window {
 		pop.set_parent(this);
     }
 
-    public void insert(Places.PosItem r)  {
-		lstore.append(r);
-    }
-
 	public new void show() {
 		load_places();
         base.present();
@@ -359,7 +356,9 @@ class PlaceEdit : Adw.Window {
 		lstore.remove_all();
 		//lstore.splice(0, lstore.n_items, Places.pls);
 		for(var j = 0; j < Places.pls.length; j++) {
-			insert(Places.pls[j]);
+			lstore.insert_sorted(Places.pls[j], (a,b) => {
+					return strcmp(((Places.PosItem)a).name, ((Places.PosItem)b).name);
+				});
 		}
     }
 }
