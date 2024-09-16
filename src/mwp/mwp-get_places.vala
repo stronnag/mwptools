@@ -352,6 +352,10 @@ class PlaceEdit : Adw.Window {
 			<attribute name="action">view.setloc</attribute>
 			</item>
 			<item>
+			<attribute name="label">Edit entry</attribute>
+			<attribute name="action">view.edit</attribute>
+			</item>
+			<item>
 			<attribute name="label">Delete location</attribute>
 			<attribute name="action">view.delloc</attribute>
 			</item>
@@ -395,6 +399,26 @@ class PlaceEdit : Adw.Window {
 				lstore.remove(poprow);
 			});
 		dg.add_action(aq);
+
+		aq = new GLib.SimpleAction("edit",null);
+		aq.activate.connect(() => {
+				var pi = lstore.get_item((uint)poprow) as Places.PosItem;
+				var w = new NewPos.Window(pi);
+				w.close_request.connect (() => {
+						if(NewPos.ok) {
+							pi.name = NewPos.pname;
+							pi.lat = NewPos.lat;
+							pi.lon = NewPos.lon;
+							pi.zoom = NewPos.zoom;
+						}
+						return false;
+				});
+				w.present();
+			});
+		dg.add_action(aq);
+
+
+
 		this.insert_action_group("view", dg);
 		pop.set_parent(this);
     }
