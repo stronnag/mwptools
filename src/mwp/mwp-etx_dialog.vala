@@ -252,7 +252,6 @@ namespace ETX {
 							if (parts.length == 7) {
 								int flags = int.parse(parts[5]);
 								if (flags != 0) {
-									Gtk.TreeIter iter;
 									int idx = int.parse(parts[0]);
 									int istart = int.parse(parts[3]);
 									int iend= int.parse(parts[4]);
