@@ -52,7 +52,7 @@ subdir('src/qproxy')
 subdir('data')
 subdir('src/samples/')
 subdir('src/mwp-ble-bridge')
-#subdir('docs')
+subdir('docs')
 
 exargs = {
   'sources': [mwpsrcs, mwpcommon, mwpvers_h, mresources],
