@@ -197,10 +197,10 @@ class PlaceEdit : Adw.Window {
 				pi.bind_property("name", label, "label", BindingFlags.SYNC_CREATE);
 			});
 
-		var pe = new Gtk.PropertyExpression(typeof(Places.PosItem), null, "name");
-		var sorter = new Gtk.StringSorter(pe);
-        c0.set_sorter(sorter);
-		//		cv.sort_by_column(c0, Gtk.SortType.ASCENDING);
+		var txtsorter = new Gtk.CustomSorter((a,b) => {
+				return strcmp(((Places.PosItem)a).name,((Places.PosItem)b).name);
+			});
+		c0.set_sorter(txtsorter);
 
 		var f1 = new Gtk.SignalListItemFactory();
 		c1 = new Gtk.ColumnViewColumn("Latitude", f1);
