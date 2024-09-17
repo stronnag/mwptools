@@ -173,6 +173,10 @@ class PlaceEdit : Adw.Window {
         OK
     }
 
+	//	private string get_pi_name(Places.PosItem pi) {
+	//	return pi.name;
+	//}
+
 	private void setup_cv() {
 		lv = new Gtk.ColumnView(null);
 		lstore = new GLib.ListStore(typeof(Places.PosItem));
@@ -182,6 +186,9 @@ class PlaceEdit : Adw.Window {
 		lv.show_row_separators = true;
 		var f0 = new Gtk.SignalListItemFactory();
 		c0 = new Gtk.ColumnViewColumn("Name", f0);
+		//		Gtk.Expression expression;
+        //expression = new Gtk.CClosureExpression (typeof (string), null, null, (Callback) get_pi_name, null, null);
+		//c0.sorter = new Gtk.StringSorter(expression);
 		lv.append_column(c0);
 		f0.setup.connect((f,o) => {
 				Gtk.ListItem list_item = (Gtk.ListItem)o;
