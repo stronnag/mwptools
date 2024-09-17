@@ -163,17 +163,16 @@ namespace BBL {
 			cb.set_factory(f3);
 			f3.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
-					var cb = new Gtk.CheckButton();
-					cb.sensitive = false;
-					list_item.set_child(cb);
+					var cbb = new Gtk.Label("");
+					list_item.set_child(cbb);
 				});
 			f3.bind.connect((f,o) => {
 					Gtk.ListItem list_item =  (Gtk.ListItem)o;
 					var mi = list_item.get_item() as BBLEntry;
-					var ccb = list_item.get_child() as Gtk.CheckButton;
-					ccb.active = mi.issel;
+					var ccb = list_item.get_child() as Gtk.Label;
+					ccb.label = (mi.issel) ? "✔" : "";
 					mi.notify["issel"].connect((s,p) => {
-							ccb.active = ((BBLEntry)s).issel;
+							ccb.label = (((BBLEntry)s).issel) ? "✔" : "";
 						});
 				});
 
