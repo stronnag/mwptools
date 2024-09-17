@@ -53,7 +53,7 @@ namespace NewPos {
 					close();
 				});
 
-			goapp.clicked.connect(() => {
+			gocan.clicked.connect(() => {
 					ok = false;
 					close();
 				});
