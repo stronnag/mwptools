@@ -156,14 +156,14 @@ namespace Places {
 
 class PlaceEdit : Adw.Window {
 	GLib.ListStore lstore;
-    Gtk.SingleSelection lmodel;
+    Gtk.SingleSelection ssel;
     Gtk.ColumnViewColumn c0;
     Gtk.ColumnViewColumn c1;
     Gtk.ColumnViewColumn c2;
     Gtk.ColumnViewColumn c3;
     Gtk.Button[] buttons;
 	Gtk.PopoverMenu pop;
-	Gtk.ColumnView lv;
+	Gtk.ColumnView cv;
 	int poprow = 0;
 
     public signal void places_changed();
@@ -173,23 +173,17 @@ class PlaceEdit : Adw.Window {
         OK
     }
 
-	//	private string get_pi_name(Places.PosItem pi) {
-	//	return pi.name;
-	//}
-
 	private void setup_cv() {
-		lv = new Gtk.ColumnView(null);
+		cv = new Gtk.ColumnView(null);
 		lstore = new GLib.ListStore(typeof(Places.PosItem));
-		lmodel = new Gtk.SingleSelection(lstore);
-		lv.set_model(lmodel);
-		lv.show_column_separators = true;
-		lv.show_row_separators = true;
+		var sm = new Gtk.SortListModel(lstore, cv.sorter);
+		ssel = new Gtk.SingleSelection(sm);
+		cv.set_model(ssel);
+		cv.show_column_separators = true;
+		cv.show_row_separators = true;
 		var f0 = new Gtk.SignalListItemFactory();
 		c0 = new Gtk.ColumnViewColumn("Name", f0);
-		//		Gtk.Expression expression;
-        //expression = new Gtk.CClosureExpression (typeof (string), null, null, (Callback) get_pi_name, null, null);
-		//c0.sorter = new Gtk.StringSorter(expression);
-		lv.append_column(c0);
+		cv.append_column(c0);
 		f0.setup.connect((f,o) => {
 				Gtk.ListItem list_item = (Gtk.ListItem)o;
 				var label=new Gtk.Label("");
@@ -203,10 +197,14 @@ class PlaceEdit : Adw.Window {
 				pi.bind_property("name", label, "label", BindingFlags.SYNC_CREATE);
 			});
 
+		var pe = new Gtk.PropertyExpression(typeof(Places.PosItem), null, "name");
+		var sorter = new Gtk.StringSorter(pe);
+        c0.set_sorter(sorter);
+		//		cv.sort_by_column(c0, Gtk.SortType.ASCENDING);
 
 		var f1 = new Gtk.SignalListItemFactory();
 		c1 = new Gtk.ColumnViewColumn("Latitude", f1);
-		lv.append_column(c1);
+		cv.append_column(c1);
 		f1.setup.connect((f,o) => {
           Gtk.ListItem list_item = (Gtk.ListItem)o;
           var label=new Gtk.Label("");
@@ -224,7 +222,7 @@ class PlaceEdit : Adw.Window {
 
 		var f2 = new Gtk.SignalListItemFactory();
 		c2 = new Gtk.ColumnViewColumn("Longitude", f2);
-		lv.append_column(c2);
+		cv.append_column(c2);
 		f2.setup.connect((f,o) => {
           Gtk.ListItem list_item = (Gtk.ListItem)o;
           var label=new Gtk.Label("");
@@ -242,7 +240,7 @@ class PlaceEdit : Adw.Window {
 
 		var f3 = new Gtk.SignalListItemFactory();
 		c3 = new Gtk.ColumnViewColumn("Zoom", f3);
-		lv.append_column(c3);
+		cv.append_column(c3);
 		f3.setup.connect((f,o) => {
           Gtk.ListItem list_item = (Gtk.ListItem)o;
           var label=new Gtk.Label("");
@@ -267,10 +265,9 @@ class PlaceEdit : Adw.Window {
 		var headerBar = new Adw.HeaderBar();
 		box.append(headerBar);
 		setup_cv();
-		lv.sort_by_column(c0, Gtk.SortType.DESCENDING);
-        lv.vexpand = true;
-        lv.hexpand = true;
-        scrolled.set_child(lv);
+        cv.vexpand = true;
+        cv.hexpand = true;
+        scrolled.set_child(cv);
         buttons = {
             new Gtk.Button.from_icon_name ("gtk-add"),
             new Gtk.Button.with_label ("OK"),
@@ -284,10 +281,10 @@ class PlaceEdit : Adw.Window {
 		bbox.hexpand = true;
 		build_mm();
 		var gestc = new Gtk.GestureClick();
-		((Gtk.Widget)lv).add_controller(gestc);
+		((Gtk.Widget)cv).add_controller(gestc);
 		gestc.set_button(3);
 		gestc.released.connect((n,x,y) => {
-				poprow = Utils.get_row_at(lv, x, y);
+				poprow = Utils.get_row_at(cv, x, y);
 				Gdk.Rectangle rect = { (int)x, (int)y, 1, 1};
 				pop.has_arrow = false;
 				pop.set_pointing_to(rect);
@@ -431,9 +428,6 @@ class PlaceEdit : Adw.Window {
 				w.present();
 			});
 		dg.add_action(aq);
-
-
-
 		this.insert_action_group("view", dg);
 		pop.set_parent(this);
     }
@@ -442,18 +436,13 @@ class PlaceEdit : Adw.Window {
 		load_places();
         base.present();
     }
-	/*
-		  public new void hide() {
-		  base.hide();
-		  }
-	*/
-    public void load_places() {
+
+	public void load_places() {
 		lstore.remove_all();
-		//lstore.splice(0, lstore.n_items, Places.pls);
 		for(var j = 0; j < Places.pls.length; j++) {
 			lstore.insert_sorted(Places.pls[j], (a,b) => {
 					return strcmp(((Places.PosItem)a).name, ((Places.PosItem)b).name);
 				});
 		}
-    }
+	}
 }
