@@ -579,6 +579,22 @@ public class MWSerial : Object {
         }
     }
 
+    public static uint pmask_to_index(PMask pmask) {
+        switch(pmask) {
+        case PMask.AUTO:
+            return 0;
+        case PMask.INAV:
+            return 1;
+        case PMask.SPORT:
+            return 2;
+        case PMask.CRSF:
+            return 3;
+        case PMask.MPM:
+            return 4;
+        default:
+            return 0;
+        }
+	}
 
 	public void set_dmask(DevMask dm) {
 		dtype = dm;

@@ -19,15 +19,7 @@
 
 namespace TelemTracker {
 	TelemTracker.Window ttrk;
-
-	enum Column {
-		NAME,
-		ALIAS,
-		STATUS,
-		PMASK,
-		ID,
-		NO_COLS
-	}
+	Gtk.StringList masksl;
 
 	public enum Status {
 		UNDEF = 0,
@@ -50,6 +42,20 @@ namespace TelemTracker {
 
 	public void init() {
 		ttrk = new TelemTracker.Window();
+		masksl = new Gtk.StringList ({"Auto", "INAV", "S.Port", "CRSF", "MPM"});
+	}
+
+	public class SecDev : Object {
+		public string name {get; construct set;}
+		public string devalias {get; construct set;}
+		public string alias {get; construct set;}
+		public uint8 status {get; construct set;}
+		public bool userdef {get; construct set;}
+		public uint8 ready {get; construct set;}
+		public uint8 pmask {get; construct set;}
+		public uint id;
+		public MWSerial dev;
+		public SecDev() {}
 	}
 
 	public class Window {
@@ -57,17 +63,6 @@ namespace TelemTracker {
 
 		public signal void changed();
 		public signal void pending(bool val);
-
-		public struct SecDev {
-			MWSerial dev;
-			string name;
-			string devalias;
-			string alias;
-			Status status;
-			bool userdef;
-			uint8 ready;
-			MWSerial.PMask pmask;
-		}
 
 		internal SecDev[] secdevs;
 
@@ -102,13 +97,15 @@ namespace TelemTracker {
 			}
 		}
 
-		public void save_data() {
+		public void save_data(GLib.ListStore ls) {
 			var uc =  Environment.get_user_config_dir();
 			var cfile = GLib.Path.build_filename(uc,"mwp","secdevs");
 			var fp = FileStream.open (cfile, "w");
 			if (fp != null) {
 				fp.write("# name, hint, alias\n".data);
-				foreach (var sd in secdevs) {
+				var ni = ls.get_n_items();
+				for (var j = 0; j < ni; j++) {
+					var sd = ls.get_item(j) as SecDev;
 					if (sd.userdef && sd.name != "" && sd.status != TelemTracker.Status.UNDEF) {
 						fp.write("%s,%s,%s\n".printf(sd.name, MWSerial.pmask_to_name(sd.pmask), sd.alias).data);
 					}
@@ -117,27 +114,14 @@ namespace TelemTracker {
 		}
 
 		public void show_dialog() {
-			Status []xstat={};
-			foreach (var s in secdevs) {
-				xstat += s.status;
-			}
-			var s = new SecDevDialog();
-			s.close_request.connect(() => {
-					save_data();
+			var sdlg = new SecDevDialog();
+			sdlg.close_request.connect(() => {
+					save_data(sdlg.lstore);
 					return false;
 				});
-			s.run();
+			sdlg.run();
 		}
 
-		public bool is_used(string sname) {
-			var parts = sname.split(" ", 2);
-			foreach (var s in secdevs) {
-				if (s.name == parts[0] && s.status == Status.USED) {
-					return true;
-				}
-			}
-			return false;
-		}
 
 
 		public void add(string? sname) {
@@ -145,7 +129,7 @@ namespace TelemTracker {
 			string devname = "";
 			string devalias = "";
 			string[] parts={};
-			MWSerial.PMask pmask = MWSerial.PMask.AUTO;
+			uint8 pmask = MWSerial.PMask.AUTO;
 			if (sname != null) {
 				parts = sname.split(",", 3);
 				var sparts = parts[0].split(" ",2);
@@ -153,11 +137,11 @@ namespace TelemTracker {
 					devname = sparts[0];
 					if (sparts.length > 1) {
 						devalias = sparts[1];
-						if (parts.length > 1 ) {
-							if (parts[1].strip().length > 0) {
-								pmask = MWSerial.name_to_pmask(parts[1]);
-							}
-						}
+					}
+				}
+				if (parts.length > 1 ) {
+					if (parts[1].strip().length > 0) {
+						pmask = MWSerial.name_to_pmask(parts[1]);
 					}
 				}
 
@@ -171,7 +155,7 @@ namespace TelemTracker {
 			}
 
 			if(!found) {
-				var s = SecDev();
+				var s = new SecDev();
 				s.userdef = (parts.length > 1);
 				s.status = Status.PRESENT;
 				s.name = devname;
@@ -197,6 +181,17 @@ namespace TelemTracker {
 				secdevs += s;
 				changed();
 			}
+		}
+
+		// FIXME sync secdevs / liststore
+		public bool is_used(string sname) {
+			var parts = sname.split(" ", 2);
+			foreach (var s in secdevs) {
+				if (s.name == parts[0] && s.status == Status.USED) {
+					return true;
+				}
+			}
+			return false;
 		}
 
 		public void remove(string sname) {
@@ -226,59 +221,59 @@ namespace TelemTracker {
 			changed();
 		}
 
-		public void start_reader(int n) {
-			if (secdevs[n].dev == null) {
-				secdevs[n].dev = new MWSerial();
-				secdevs[n].dev.td = new TrackData(0xff);
-				secdevs[n].ready = 0;
+		public void start_reader(SecDev sd) {
+			if (sd.dev == null) {
+				sd.dev = new MWSerial();
+				sd.dev.td = new TrackData(0xff);
+				sd.ready = 0;
 
-				secdevs[n].dev.td.gps.notify["lat"].connect((s,p) => {
-						uint rk = (uint)(n+256);
+				sd.dev.td.gps.notify["lat"].connect((s,p) => {
+						uint rk = (uint)(sd.id+256);
 						var ri = get_ri(rk);
 						ri.latitude = ((GPSData)s).lat;
 						Radar.upsert(rk, ri);
-						secdevs[n].ready |= Fields.LAT;
+						sd.ready |= Fields.LAT;
 				});
 
-				secdevs[n].dev.td.gps.notify["lon"].connect((s,p) => {
-					uint rk = (uint)(n+256);
+				sd.dev.td.gps.notify["lon"].connect((s,p) => {
+					uint rk = (uint)(sd.id+256);
 					var ri = get_ri(rk);
 					ri.longitude = ((GPSData)s).lon;
 					Radar.upsert(rk, ri);
-					secdevs[n].ready |= Fields.LON;
+					sd.ready |= Fields.LON;
 				});
 
-				secdevs[n].dev.td.gps.notify["gspeed"].connect((s,p) => {
-					uint rk = (uint)(n+256);
+				sd.dev.td.gps.notify["gspeed"].connect((s,p) => {
+					uint rk = (uint)(sd.id+256);
 					var ri = get_ri(rk);
 					ri.speed = ((GPSData)s).gspeed;
 					Radar.upsert(rk, ri);
 				});
 
-				secdevs[n].dev.td.gps.notify["cog"].connect((s,p) => {
-					uint rk = (uint)(n+256);
+				sd.dev.td.gps.notify["cog"].connect((s,p) => {
+					uint rk = (uint)(sd.id+256);
 					var ri = get_ri(rk);
 					ri.heading = (uint16)((GPSData)s).cog;
 					Radar.upsert(rk, ri);
 				});
 
-				secdevs[n].dev.td.alt.notify["alt"].connect((s,p) => {
-					uint rk = (uint)(n+256);
+				sd.dev.td.alt.notify["alt"].connect((s,p) => {
+					uint rk = (uint)(sd.id+256);
 					var ri = get_ri(rk);
 					ri.altitude = ((AltData)s).alt;
 					Radar.upsert(rk, ri);
 				});
 
-				secdevs[n].dev.td.rssi.notify["rssi"].connect((s,p) => {
-					uint rk = (uint)(n+256);
+				sd.dev.td.rssi.notify["rssi"].connect((s,p) => {
+					uint rk = (uint)(sd.id+256);
 					var ri = get_ri(rk);
 					ri.lq = (uint8)(((RSSIData)s).rssi)*100/1023;
 					Radar.upsert(rk, ri);
 				});
 
 
-				secdevs[n].dev.td.state.notify["state"].connect((s,p) => {
-					uint rk = (uint)(n+256);
+				sd.dev.td.state.notify["state"].connect((s,p) => {
+					uint rk = (uint)(sd.id+256);
 					var ri = get_ri(rk);
 					var sts = ((StateData)s).state;
 					ri.state = (sts == 0) ? Radar.RadarView.Status.UNDEF : Radar.RadarView.Status.ARMED;
@@ -286,20 +281,20 @@ namespace TelemTracker {
 				});
 
 
-				secdevs[n].dev.td.gps.notify["nsats"].connect((s,p) => {
-						uint rk = (uint)(n+256);
+				sd.dev.td.gps.notify["nsats"].connect((s,p) => {
+						uint rk = (uint)(sd.id+256);
 						var ri = get_ri(rk);
 						var nsats = ((GPSData)s).nsats;
 						ri.posvalid = (nsats > 5);
-						secdevs[n].ready |= Fields.SAT;
+						sd.ready |= Fields.SAT;
 						ri.lasttick = Mwp.nticks;
 						ri.dt = new DateTime.now_local();
 						Radar.upsert(rk, ri);
-						update_ri(ri, rk);
+						update_ri(ri, sd);
 					});
 			}
 
-			secdevs[n].dev.serial_event.connect((s,cmd,raw,len,xflags,errs) => {
+			sd.dev.serial_event.connect((s,cmd,raw,len,xflags,errs) => {
 					if(cmd >= Msp.Cmds.LTM_BASE && cmd < Msp.Cmds.MAV_BASE) {
 						Mwp.handle_ltm(s, cmd, raw, len);
 					} else if (cmd >= Msp.Cmds.MAV_BASE && cmd < Msp.Cmds.MAV_BASE+256) {
@@ -307,68 +302,67 @@ namespace TelemTracker {
 					}
 				});
 
-			secdevs[n].dev.crsf_event.connect((raw) => {
-					CRSF.ProcessCRSF(secdevs[n].dev, raw);
+			sd.dev.crsf_event.connect((raw) => {
+					CRSF.ProcessCRSF(sd.dev, raw);
 				});
 
-			secdevs[n].dev.flysky_event.connect((raw) => {
-					// Flysky.ProcessFlysky(secdevs[n].dev, raw);
+			sd.dev.flysky_event.connect((raw) => {
+					Flysky.ProcessFlysky(sd.dev, raw);
 				});
 
-			secdevs[n].dev.sport_event.connect((id,val) => {
-					Frsky.process_sport_message (secdevs[n].dev, (SportDev.FrID)id, val);
+			sd.dev.sport_event.connect((id,val) => {
+					Frsky.process_sport_message (sd.dev, (SportDev.FrID)id, val);
 				});
 
-			secdevs[n].dev.serial_lost.connect(() => {
-					stop_reader(n);
+			sd.dev.serial_lost.connect(() => {
+					stop_reader(sd);
 				});
 
-			if(! secdevs[n].dev.available) {
+			if(! sd.dev.available) {
 				pending(true);
-				secdevs[n].dev.open_async.begin(secdevs[n].name, 0,  (obj,res) => {
-						var ok = secdevs[n].dev.open_async.end(res);
+				sd.dev.open_async.begin(sd.name, 0,  (obj,res) => {
+						var ok = sd.dev.open_async.end(res);
 						pending(false);
 						if (ok) {
-							secdevs[n].dev.setup_reader();
-							MWPLog.message("start secondary reader %s\n", secdevs[n].name);
+							sd.dev.setup_reader();
+							MWPLog.message("start secondary reader %s\n", sd.name);
 							if(Mwp.rawlog)
-								secdevs[n].dev.raw_logging(true);
-							secdevs[n].dev.set_pmask(secdevs[n].pmask);
-							secdevs[n].dev.set_auto_mpm(secdevs[n].pmask == MWSerial.PMask.AUTO);
+								sd.dev.raw_logging(true);
+							sd.dev.set_pmask(sd.pmask);
+							sd.dev.set_auto_mpm(sd.pmask == MWSerial.PMask.AUTO);
 						} else {
 							string fstr = null;
-							secdevs[n].dev.get_error_message(out fstr);
+							sd.dev.get_error_message(out fstr);
 							MWPLog.message("Secondary reader %s\n", fstr);
-							secdevs[n].status = TelemTracker.Status.PRESENT;
+							sd.status = TelemTracker.Status.PRESENT;
 							changed();
 						}
 					});
 			}
 		}
 
-		public void update_ri(Radar.RadarPlot ri, uint rk)  {
-			var n = (int)rk-256;
+		public void update_ri(Radar.RadarPlot ri, SecDev s)  {
+			uint rk = (uint)(s.id+256);
 			Radar.update(rk, false);
-			if (ri.posvalid && ((secdevs[n].ready & (Fields.LAT|Fields.LON|Fields.SAT)) !=0)) {
-				secdevs[n].ready &= ~(Fields.SAT);
+			if (ri.posvalid && ((s.ready & (Fields.LAT|Fields.LON|Fields.SAT)) !=0)) {
+				s.ready &= ~(Fields.SAT);
 				Radar.update_marker(rk);
 			}
 		}
 
-		public void stop_reader(int n) {
-			if (secdevs[n].dev.available) {
-				MWPLog.message("stopping secondary reader %s\n", secdevs[n].name);
+		public void stop_reader(SecDev s) {
+			if (s.dev.available) {
+				MWPLog.message("stopping secondary reader %s\n", s.name);
 				pending(true);
-				secdevs[n].dev.close_async.begin((obj,res) => {
-						secdevs[n].dev.close_async.end(res);
-						secdevs[n].status = TelemTracker.Status.PRESENT;
-						secdevs[n].dev = null;
+				s.dev.close_async.begin((obj,res) => {
+						s.dev.close_async.end(res);
+						s.status = TelemTracker.Status.PRESENT;
+						s.dev = null;
 						pending(false);
 						changed();
 					});
 			}
 		}
-
 		private  unowned Radar.RadarPlot? get_ri(uint rk) {
 			unowned Radar.RadarPlot? ri = Radar.radar_cache.lookup(rk);
 			if (ri == null) {
@@ -385,46 +379,110 @@ namespace TelemTracker {
 		}
 	}
 
-	public class  SecDevDialog : Gtk.Window {
-		private Gtk.TreeView tview;
-		private Gtk.ListStore sd_liststore;
-		private Gtk.ListStore combo_model;
+	public class SecItemWindow : Adw.Window {
+		internal Gtk.Entry dn;
+		internal Gtk.Entry an;
+		private Gtk.Button ok;
+		public static bool apply;
+		public SecItemWindow(SecDev s) {
+			vexpand = false;
+			title = "Tracked Device";
+			apply = false;
+			var g = new Gtk.Grid();
+			dn = new Gtk.Entry();
+			dn.placeholder_text = "Device Name";
+			if (s.name != null) {
+				dn.text = s.name;
+			}
+			an = new Gtk.Entry();
+			an.placeholder_text = "Device Alias";
+			if (s.alias != null) {
+				an.text = s.alias;
+			}
+			ok = new Gtk.Button.with_label("Apply");
+
+			g.attach (new Gtk.Label("Name"), 0, 0);
+			g.attach (dn, 1, 0);
+			g.attach (new Gtk.Label("Alias"), 0, 1);
+			g.attach (an, 1, 1);
+
+
+			var box = new Gtk.Box(Gtk.Orientation.VERTICAL, 2);
+			var headerBar = new Adw.HeaderBar();
+			box.append(headerBar);
+			box.append(g);
+			ok.hexpand = false;
+			ok.halign = Gtk.Align.END;
+			box.append(ok);
+			set_content(box);
+			ok.clicked.connect(() => {
+					apply = true;
+					close();
+				});
+		}
+	}
+
+	public class  SecDevDialog : Adw.Window {
 		private Gtk.Grid grid;
+		Gtk.ColumnView cv;
+		internal GLib.ListStore lstore;
+		Gtk.MultiSelection lsel;
+		Gtk.ColumnViewColumn c0;
+		Gtk.ColumnViewColumn c1;
+		Gtk.ColumnViewColumn c2;
+		Gtk.ColumnViewColumn c3;
+		Gtk.ColumnViewColumn c4;
 
 		public SecDevDialog() {
 			this.title = "Telemetry Tracker";
-
 			var radd = new Gtk.Button.from_icon_name("list-add");
 			radd.clicked.connect(() => {
-					ttrk.add(null);
+					var sd = new SecDev();
+					var w = new  SecItemWindow(sd);
+					w.transient_for = this;
+					w.close_request.connect(() => {
+							if ( SecItemWindow.apply) {
+								sd.name = w.dn.text;
+								sd.alias = w.an.text;
+								sd.pmask = 0xff;
+								sd.userdef = true;
+								sd.status = TelemTracker.Status.PRESENT;
+								sd.id = lstore.get_n_items();
+								print(":DBG: append %s %u\n", sd.name, sd.id);
+								lstore.append(sd);
+							}
+							return false;
+						});
+					w.present();
 				});
 			var rdel = new Gtk.Button.from_icon_name("list-remove");
 			rdel.clicked.connect(() => {
-					Gtk.TreeIter iter;
-					foreach (var t in list_selected_refs()) {
-						var path = t.get_path ();
-						sd_liststore.get_iter (out iter, path);
-						/* FIXME Stop first */
-						int idx = 0;
-						sd_liststore.get (iter, Column.ID, &idx);
-						if (ttrk.secdevs[idx].status == TelemTracker.Status.USED) {
-							ttrk.stop_reader(idx);
+					var np = lsel.get_n_items();
+					var bs = lsel.get_selection_in_range (0, np);
+					if(!bs.is_empty()) {
+						for(var i = bs.get_minimum(); i <= bs.get_maximum(); i++) {
+							if (bs.contains(i)) {
+								lstore.remove(i);
+							}
 						}
-						ttrk.secdevs[idx].status = TelemTracker.Status.UNDEF;
-						sd_liststore.remove(ref iter);
 					}
 				});
 
 			create_view();
 			Gtk.Box bbox = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 2);
-			radd.set_halign(Gtk.Align.START);
-			rdel.set_halign(Gtk.Align.START);
+			radd.set_halign(Gtk.Align.END);
+			rdel.set_halign(Gtk.Align.END);
 			radd.set_tooltip_text("Append a row");
 			rdel.set_tooltip_text("Delete selected row(s)");
 			bbox.append(radd);
 			bbox.append(rdel);
-			grid.attach (bbox, 0, 1, 1, 1);
-			this.set_child(grid);
+			bbox.halign=Gtk.Align.END;
+			Gtk.Box box = new Gtk.Box (Gtk.Orientation.VERTICAL, 2);
+			var headerBar = new Adw.HeaderBar();
+			box.append(headerBar);
+			box.append(grid);
+			box.append (bbox);
+			set_content(box);
 			ttrk.changed.connect(() => {
 					redraw();
 				});
@@ -436,146 +494,156 @@ namespace TelemTracker {
 		private void create_view() {
 			grid = new Gtk.Grid ();
 			grid.set_vexpand (true);
-			sd_liststore = new Gtk.ListStore (Column.NO_COLS,
-											  typeof (string),
-											  typeof (string),
-											  typeof (bool),
-											  typeof (string),
-											  typeof(int)
-											  );
+			cv = new Gtk.ColumnView(null);
+			lstore = new GLib.ListStore(typeof(SecDev));
+			var sm = new Gtk.SortListModel(lstore, cv.sorter);
+			lsel = new Gtk.MultiSelection(sm);
+			cv.set_model(lsel);
+			cv.show_column_separators = true;
+			cv.show_row_separators = true;
 
-			tview = new Gtk.TreeView.with_model (sd_liststore);
-			tview.get_selection().set_mode(Gtk.SelectionMode.MULTIPLE);
-
-			tview.set_hexpand(true);
-			tview.set_vexpand (true);
-			tview.set_fixed_height_mode (true);
-			//            tview.set_model (sd_liststore);
-			var cell = new Gtk.CellRendererText ();
-			tview.insert_column_with_attributes (-1, "Device", cell, "text", Column.NAME);
-			cell.set_property ("editable", true);
-			((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
-					Gtk.TreeIter iter;
-					int idx=0;
-					sd_liststore.get_iter(out iter, new Gtk.TreePath.from_string(path));
-					sd_liststore.get (iter, Column.ID, &idx);
-					ttrk.secdevs[idx].name = new_text;
-					sd_liststore.set (iter, Column.NAME,new_text);
+			var f0 = new Gtk.SignalListItemFactory();
+			c0 = new Gtk.ColumnViewColumn("Device", f0);
+			c0.expand = true;
+			cv.append_column(c0);
+			f0.setup.connect((f,o) => {
+					Gtk.ListItem list_item = (Gtk.ListItem)o;
+					var label=new Gtk.Label("");
+					list_item.set_child(label);
+				});
+			f0.bind.connect((f,o) => {
+					Gtk.ListItem list_item =  (Gtk.ListItem)o;
+					SecDev sd = list_item.get_item() as SecDev;
+					var label = list_item.get_child() as Gtk.Label;
+					label.set_text(sd.name);
+					sd.bind_property("name", label, "label", BindingFlags.SYNC_CREATE);
 				});
 
-			cell = new Gtk.CellRendererText ();
-			tview.insert_column_with_attributes (-1, "Alias", cell, "text", Column.ALIAS);
-			cell.set_property ("editable", true);
-			((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
-					Gtk.TreeIter iter;
-					int idx=0;
-					sd_liststore.get_iter(out iter, new Gtk.TreePath.from_string(path));
-					sd_liststore.get (iter, Column.ID, &idx);
-					ttrk.secdevs[idx].alias = new_text;
-					sd_liststore.set (iter, Column.ALIAS,new_text);
-					ttrk.secdevs[idx].userdef = true;
+			var f1 = new Gtk.SignalListItemFactory();
+			c1 = new Gtk.ColumnViewColumn("Alias", f1);
+			c1.expand = true;
+			cv.append_column(c1);
+			f1.setup.connect((f,o) => {
+					Gtk.ListItem list_item = (Gtk.ListItem)o;
+					var label=new Gtk.Label("");
+					list_item.set_child(label);
+				});
+			f1.bind.connect((f,o) => {
+					Gtk.ListItem list_item =  (Gtk.ListItem)o;
+					SecDev sd = list_item.get_item() as SecDev;
+					var label = list_item.get_child() as Gtk.Label;
+					label.set_text(sd.alias);
+					sd.bind_property("alias", label, "label", BindingFlags.SYNC_CREATE);
 				});
 
-			var tcell = new Gtk.CellRendererToggle();
-			tview.insert_column_with_attributes (-1, "Enable",
-												 tcell, "active", Column.STATUS);
-			tcell.toggled.connect((p) => {
-					Gtk.TreeIter iter;
-					int idx = 0;
-					sd_liststore.get_iter(out iter, new Gtk.TreePath.from_string(p));
-					sd_liststore.get (iter, Column.ID, &idx);
-					ttrk.secdevs[idx].status = (ttrk.secdevs[idx].status == TelemTracker.Status.USED) ? TelemTracker.Status.PRESENT : TelemTracker.Status.USED;
-					sd_liststore.set (iter, Column.STATUS, (ttrk.secdevs[idx].status == TelemTracker.Status.USED));
-					if (ttrk.secdevs[idx].status == TelemTracker.Status.USED) {
-						ttrk.start_reader(idx);
-					} else {
-						ttrk.stop_reader(idx);
-					}
-					//					tt.secdevs[idx].userdef = true;
+			var f2 = new Gtk.SignalListItemFactory();
+			c2 = new Gtk.ColumnViewColumn("Enabled", f2);
+			c2.expand = true;
+			cv.append_column(c2);
+			f2.setup.connect((f,o) => {
+					Gtk.ListItem list_item = (Gtk.ListItem)o;
+					var cbtn = new Gtk.CheckButton();
+					cbtn.sensitive = true;
+					list_item.set_child(cbtn);
+					cbtn.toggled.connect(() => {
+							SecDev sd = list_item.get_item() as SecDev;
+							if(sd != null) {
+								sd.status =  (sd.status == TelemTracker.Status.USED) ? TelemTracker.Status.PRESENT : TelemTracker.Status.USED;
+							}
+						});
+
+				});
+			f2.bind.connect((f,o) => {
+					Gtk.ListItem list_item =  (Gtk.ListItem)o;
+					SecDev sd = list_item.get_item() as SecDev;
+					sd.notify["status"].connect((s,p) => {
+							if (((SecDev)s).status == TelemTracker.Status.USED) {
+								ttrk.start_reader((SecDev)s);
+							} else {
+								ttrk.stop_reader((SecDev)s);
+							}
+						});
 				});
 
-			Gtk.TreeIter iter;
-			combo_model = new Gtk.ListStore (2, typeof (string), typeof(MWSerial.PMask));
-			combo_model.append (out iter);
-			combo_model.set (iter, 0, "Auto", 1, MWSerial.PMask.AUTO);
-			combo_model.append (out iter);
-			combo_model.set (iter, 0, "INAV", 1, MWSerial.PMask.INAV);
-			combo_model.append (out iter);
-			combo_model.set (iter, 0, "SPort", 1, MWSerial.PMask.SPORT);
-			combo_model.append (out iter);
-			combo_model.set (iter, 0, "CRSF", 1, MWSerial.PMask.CRSF);
-			combo_model.append (out iter);
-			combo_model.set (iter, 0, "MPM", 1, MWSerial.PMask.MPM);
-
-			Gtk.CellRendererCombo combo = new Gtk.CellRendererCombo ();
-			combo.set_property ("editable", true);
-			combo.set_property ("model", combo_model);
-			combo.set_property ("text-column", 0);
-			combo.set_property ("has-entry", false);
-			tview.insert_column_with_attributes (-1, "Hint", combo, "text", Column.PMASK);
-
-			combo.changed.connect((path, iter_new) => {
-					int idx=0;
-					Gtk.TreeIter iter_val;
-					sd_liststore.get_iter (out iter_val, new Gtk.TreePath.from_string (path));
-					sd_liststore.get (iter_val, Column.ID, &idx);
-					Value val;
-					MWSerial.PMask pmask;
-					combo_model.get_value (iter_new, 0, out val);
-					string hint = (string)val;
-					combo_model.get_value (iter_new, 1, out val);
-					pmask = (MWSerial.PMask)val;
-					sd_liststore.set (iter_val, Column.PMASK, hint);
-					ttrk.secdevs[idx].pmask = pmask;
-					ttrk.secdevs[idx].userdef = true;
+			var f3 = new Gtk.SignalListItemFactory();
+			c3 = new Gtk.ColumnViewColumn("Mask", f3);
+			c3.expand = true;
+			cv.append_column(c3);
+			f3.setup.connect((f,o) => {
+					Gtk.ListItem list_item = (Gtk.ListItem)o;
+					var dd = new Gtk.DropDown(masksl, null);
+					 dd.notify["selected"].connect(() => {
+							 SecDev sd = list_item.get_item() as SecDev;
+							 if (sd != null) {
+								 var i =  dd.get_selected();
+								 var c = ((Gtk.StringList)dd.model).get_string(i);
+								 sd.pmask = MWSerial.name_to_pmask(c);
+							 }
+						 });
+					list_item.set_child(dd);
+				});
+			f3.bind.connect((f,o) => {
+					Gtk.ListItem list_item =  (Gtk.ListItem)o;
+					SecDev sd = list_item.get_item() as SecDev;
+					var dd = list_item.get_child() as Gtk.DropDown;
+					var n = MWSerial.pmask_to_index(sd.pmask);
+					dd.selected = n;
 				});
 
-			int [] widths = {30, 40, 8, 10};
-			for (int j = Column.NAME; j < Column.ID; j++) {
-				var scol =  tview.get_column(j);
-				if(scol!=null) {
-					scol.set_min_width(7*widths[j]);
-					scol.resizable = true;
-					scol.set_sort_column_id(j);
-				}
-			}
+			var f4 = new Gtk.SignalListItemFactory();
+			c4 = new Gtk.ColumnViewColumn("", f4);
+			cv.append_column(c4);
+
+			f4.setup.connect((f,o) => {
+					Gtk.ListItem list_item = (Gtk.ListItem)o;
+					var btn = new Gtk.Button.from_icon_name("document-edit");
+					btn.sensitive = true;
+					list_item.set_child(btn);
+					btn.clicked.connect(() => {
+							SecDev sd = list_item.get_item() as SecDev;
+							if (sd != null) {
+								var w = new  SecItemWindow(sd);
+								w.transient_for = this;
+								w.close_request.connect(() => {
+										if ( SecItemWindow.apply) {
+											sd.name = w.dn.text;
+											sd.alias = w.an.text;
+										}
+										return false;
+									});
+								w.present();
+							}
+						});
+				});
+
+			var t0sorter = new Gtk.CustomSorter((a,b) => {
+					return strcmp(((SecDev)a).name,((SecDev)b).name);
+				});
+			var t1sorter = new Gtk.CustomSorter((a,b) => {
+					return strcmp(((SecDev)a).alias,((SecDev)b).alias);
+				});
+
+			c0.set_sorter(t0sorter);
+			c1.set_sorter(t1sorter);
 
 			var n =populate_view();
 			var scrolled = new Gtk.ScrolledWindow ();
 			scrolled.set_policy (Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC);
 			scrolled.min_content_height = (2+n)*30;
 			//scrolled.min_content_width = 320;
-			scrolled.set_child(tview);
+			scrolled.set_child(cv);
 			scrolled.propagate_natural_height = true;
 			scrolled.propagate_natural_width = true;
 			grid.attach (scrolled, 0, 0, 1, 1);
-		}
-
-		private List<Gtk.TreeRowReference> list_selected_refs() {
-			List<Gtk.TreeRowReference> list = new List<Gtk.TreeRowReference> ();
-			Gtk.TreeModel m;
-			var sel = tview.get_selection();
-			var rows = sel.get_selected_rows(out m);
-
-			foreach (var r in rows) {
-				var rr = new Gtk.TreeRowReference (m, r);
-				list.append(rr);
-			}
-			return list;
+			grid.vexpand = true;
 		}
 
 		private int populate_view() {
-			Gtk.TreeIter iter;
 			int n = 0;
 			foreach(var s in ttrk.secdevs) {
 				if (s.status != 0) {
-					sd_liststore.append (out iter);
-					sd_liststore.set (iter,
-									  Column.STATUS, (s.status == TelemTracker.Status.USED),
-									  Column.NAME, s.name,
-									  Column.ALIAS, s.alias,
-									  Column.PMASK, MWSerial.pmask_to_name(s.pmask),
-									  Column.ID,n);
+					s.id = n;
+					lstore.append(s);
 				}
 				n++;
 			}
@@ -583,7 +651,7 @@ namespace TelemTracker {
 		}
 
 		public void redraw() {
-			sd_liststore.clear();
+			lstore.remove_all();
 			populate_view();
 		}
 
