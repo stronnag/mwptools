@@ -549,6 +549,7 @@ public class MWSerial : Object {
         case "1":
             return PMask.INAV;
         case "sport":
+        case "s.port":
         case "2":
             return PMask.SPORT;
         case "crsf":

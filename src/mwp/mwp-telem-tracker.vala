@@ -20,11 +20,12 @@
 namespace TelemTracker {
 	TelemTracker.Window ttrk;
 	Gtk.StringList masksl;
+	GLib.ListStore lstore;
 
 	public enum Status {
-		UNDEF = 0,
-		PRESENT = 1,
-		USED  = 2,
+		UNAVAIL = 0,	// used as main device
+		AVAILABLE = 1,  // available for use
+		ACTIVE  = 2,   // in active use
 	}
 
 	[Flags]
@@ -41,8 +42,9 @@ namespace TelemTracker {
 	}
 
 	public void init() {
-		ttrk = new TelemTracker.Window();
+		lstore = new GLib.ListStore(typeof(SecDev));
 		masksl = new Gtk.StringList ({"Auto", "INAV", "S.Port", "CRSF", "MPM"});
+		ttrk = new TelemTracker.Window();
 	}
 
 	public class SecDev : Object {
@@ -60,11 +62,7 @@ namespace TelemTracker {
 
 	public class Window {
 		private const double RAD2DEG = 57.29578;
-
-		public signal void changed();
 		public signal void pending(bool val);
-
-		internal SecDev[] secdevs;
 
 		private  string? find_conf_file(string fn) {
 			var uc =  Environment.get_user_config_dir();
@@ -77,7 +75,7 @@ namespace TelemTracker {
 		}
 
 		public Window() {
-			secdevs = {};
+			lstore.remove_all();
 			string fn;
 			if((fn = find_conf_file("secdevs")) != null) {
 				var file = File.new_for_path(fn);
@@ -97,16 +95,16 @@ namespace TelemTracker {
 			}
 		}
 
-		public void save_data(GLib.ListStore ls) {
+		public void save_data() {
 			var uc =  Environment.get_user_config_dir();
 			var cfile = GLib.Path.build_filename(uc,"mwp","secdevs");
 			var fp = FileStream.open (cfile, "w");
 			if (fp != null) {
 				fp.write("# name, hint, alias\n".data);
-				var ni = ls.get_n_items();
+				var ni = lstore.get_n_items();
 				for (var j = 0; j < ni; j++) {
-					var sd = ls.get_item(j) as SecDev;
-					if (sd.userdef && sd.name != "" && sd.status != TelemTracker.Status.UNDEF) {
+					var sd = lstore.get_item(j) as SecDev;
+					if (sd.name != "" ) {
 						fp.write("%s,%s,%s\n".printf(sd.name, MWSerial.pmask_to_name(sd.pmask), sd.alias).data);
 					}
 				}
@@ -116,13 +114,11 @@ namespace TelemTracker {
 		public void show_dialog() {
 			var sdlg = new SecDevDialog();
 			sdlg.close_request.connect(() => {
-					save_data(sdlg.lstore);
+					save_data();
 					return false;
 				});
 			sdlg.run();
 		}
-
-
 
 		public void add(string? sname) {
 			bool found = false;
@@ -145,10 +141,11 @@ namespace TelemTracker {
 					}
 				}
 
-				for(int n = 0; n < secdevs.length; n++) {
-					if (secdevs[n].name == devname || secdevs[n].name == devalias) {
-						secdevs[n].status = Status.PRESENT;
+				for(uint n = 0; n < lstore.get_n_items(); n++) {
+					var sd = lstore.get_item(n) as SecDev;
+					if (sd.name == devname || sd.name == devalias) {
 						found = true;
+						sd.status = Status.AVAILABLE;
 						break;
 					}
 				}
@@ -156,9 +153,8 @@ namespace TelemTracker {
 
 			if(!found) {
 				var s = new SecDev();
-				s.userdef = (parts.length > 1);
-				s.status = Status.PRESENT;
 				s.name = devname;
+				s.status = Status.AVAILABLE;
 				if (parts.length == 3) {
 					s.alias = parts[2];
 				} else {
@@ -178,16 +174,16 @@ namespace TelemTracker {
 				}
 				s.dev = null;
 				s.pmask = pmask;
-				secdevs += s;
-				changed();
+				lstore.append(s);
 			}
 		}
 
-		// FIXME sync secdevs / liststore
 		public bool is_used(string sname) {
 			var parts = sname.split(" ", 2);
-			foreach (var s in secdevs) {
-				if (s.name == parts[0] && s.status == Status.USED) {
+			var ni = lstore.get_n_items();
+			for(var j = 0; j < ni; j++) {
+				var s = lstore.get_item(j) as SecDev;
+				if (s.name == parts[0] && s.status == Status.ACTIVE) {
 					return true;
 				}
 			}
@@ -195,30 +191,31 @@ namespace TelemTracker {
 		}
 
 		public void remove(string sname) {
-			disable(sname);
-			changed();
+			var parts = sname.split(" ", 2);
+			var ni = lstore.get_n_items();
+			for(var j = 0; j < ni; j++) {
+				var s = lstore.get_item(j) as SecDev;
+				if (s.name == parts[0]) {
+					s.status = Status.UNAVAIL;
+					break;
+				}
+			}
 		}
 
 		public void enable(string sname) {
 			var parts = sname.split(" ", 2);
-			for(int n = 0; n < secdevs.length; n++) {
-				if (secdevs[n].name == parts[0]) {
-					secdevs[n].status = Status.PRESENT;
+			var ni = lstore.get_n_items();
+			for(var j = 0; j < ni; j++) {
+				var s = lstore.get_item(j) as SecDev;
+				if (s.name == parts[0]) {
+					s.status = Status.AVAILABLE;
 					break;
 				}
 			}
-			changed();
 		}
 
 		public void disable(string sname) {
-			var parts = sname.split(" ", 2);
-			for(int n = 0; n < secdevs.length; n++) {
-				if (secdevs[n].name == parts[0]) {
-					secdevs[n].status = Status.UNDEF;
-					break;
-				}
-			}
-			changed();
+			remove(sname);
 		}
 
 		public void start_reader(SecDev sd) {
@@ -334,8 +331,7 @@ namespace TelemTracker {
 							string fstr = null;
 							sd.dev.get_error_message(out fstr);
 							MWPLog.message("Secondary reader %s\n", fstr);
-							sd.status = TelemTracker.Status.PRESENT;
-							changed();
+							sd.status = TelemTracker.Status.AVAILABLE;
 						}
 					});
 			}
@@ -351,15 +347,14 @@ namespace TelemTracker {
 		}
 
 		public void stop_reader(SecDev s) {
-			if (s.dev.available) {
+			if (s.dev!= null && s.dev.available) {
 				MWPLog.message("stopping secondary reader %s\n", s.name);
 				pending(true);
 				s.dev.close_async.begin((obj,res) => {
 						s.dev.close_async.end(res);
-						s.status = TelemTracker.Status.PRESENT;
+						s.status = TelemTracker.Status.AVAILABLE;
 						s.dev = null;
 						pending(false);
-						changed();
 					});
 			}
 		}
@@ -368,7 +363,8 @@ namespace TelemTracker {
 			if (ri == null) {
 				uint n = rk-256;
 				var r0 = Radar.RadarPlot();
-				r0.name = secdevs[n].alias;
+				var s = lstore.get_item(n) as SecDev;
+				r0.name = s.alias;
 				r0.source = Radar.RadarSource.TELEM;
 				r0.posvalid = false;
 				Radar.radar_cache.upsert(rk, r0);
@@ -425,7 +421,6 @@ namespace TelemTracker {
 	public class  SecDevDialog : Adw.Window {
 		private Gtk.Grid grid;
 		Gtk.ColumnView cv;
-		internal GLib.ListStore lstore;
 		Gtk.MultiSelection lsel;
 		Gtk.ColumnViewColumn c0;
 		Gtk.ColumnViewColumn c1;
@@ -434,6 +429,7 @@ namespace TelemTracker {
 		Gtk.ColumnViewColumn c4;
 
 		public SecDevDialog() {
+			transient_for = Mwp.window;
 			this.title = "Telemetry Tracker";
 			var radd = new Gtk.Button.from_icon_name("list-add");
 			radd.clicked.connect(() => {
@@ -446,9 +442,8 @@ namespace TelemTracker {
 								sd.alias = w.an.text;
 								sd.pmask = 0xff;
 								sd.userdef = true;
-								sd.status = TelemTracker.Status.PRESENT;
+								sd.status = TelemTracker.Status.AVAILABLE;
 								sd.id = lstore.get_n_items();
-								print(":DBG: append %s %u\n", sd.name, sd.id);
 								lstore.append(sd);
 							}
 							return false;
@@ -483,9 +478,6 @@ namespace TelemTracker {
 			box.append(grid);
 			box.append (bbox);
 			set_content(box);
-			ttrk.changed.connect(() => {
-					redraw();
-				});
 			ttrk.pending.connect((v) => {
 					this.sensitive = !v;
 				});
@@ -495,7 +487,6 @@ namespace TelemTracker {
 			grid = new Gtk.Grid ();
 			grid.set_vexpand (true);
 			cv = new Gtk.ColumnView(null);
-			lstore = new GLib.ListStore(typeof(SecDev));
 			var sm = new Gtk.SortListModel(lstore, cv.sorter);
 			lsel = new Gtk.MultiSelection(sm);
 			cv.set_model(lsel);
@@ -548,7 +539,7 @@ namespace TelemTracker {
 					cbtn.toggled.connect(() => {
 							SecDev sd = list_item.get_item() as SecDev;
 							if(sd != null) {
-								sd.status =  (sd.status == TelemTracker.Status.USED) ? TelemTracker.Status.PRESENT : TelemTracker.Status.USED;
+								sd.status =  (sd.status == TelemTracker.Status.ACTIVE) ? TelemTracker.Status.AVAILABLE : TelemTracker.Status.ACTIVE;
 							}
 						});
 
@@ -557,7 +548,9 @@ namespace TelemTracker {
 					Gtk.ListItem list_item =  (Gtk.ListItem)o;
 					SecDev sd = list_item.get_item() as SecDev;
 					sd.notify["status"].connect((s,p) => {
-							if (((SecDev)s).status == TelemTracker.Status.USED) {
+							var cbtn = list_item.get_child() as Gtk.Widget;
+							cbtn.sensitive = (((SecDev)s).status != TelemTracker.Status.UNAVAIL);
+							if (((SecDev)s).status == TelemTracker.Status.ACTIVE) {
 								ttrk.start_reader((SecDev)s);
 							} else {
 								ttrk.stop_reader((SecDev)s);
@@ -572,7 +565,7 @@ namespace TelemTracker {
 			f3.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
 					var dd = new Gtk.DropDown(masksl, null);
-					 dd.notify["selected"].connect(() => {
+					dd.notify["selected"].connect(() => {
 							 SecDev sd = list_item.get_item() as SecDev;
 							 if (sd != null) {
 								 var i =  dd.get_selected();
@@ -586,6 +579,10 @@ namespace TelemTracker {
 					Gtk.ListItem list_item =  (Gtk.ListItem)o;
 					SecDev sd = list_item.get_item() as SecDev;
 					var dd = list_item.get_child() as Gtk.DropDown;
+					sd.notify["status"].connect((s,p) => {
+							dd.sensitive = (((SecDev)s).status != TelemTracker.Status.UNAVAIL);
+						});
+
 					var n = MWSerial.pmask_to_index(sd.pmask);
 					dd.selected = n;
 				});
@@ -616,6 +613,16 @@ namespace TelemTracker {
 						});
 				});
 
+
+			f4.bind.connect((f,o) => {
+					Gtk.ListItem list_item =  (Gtk.ListItem)o;
+					SecDev sd = list_item.get_item() as SecDev;
+					var w = list_item.get_child();
+					sd.notify["status"].connect((s,p) => {
+							w.sensitive = (((SecDev)s).status != TelemTracker.Status.UNAVAIL);
+						});
+				});
+
 			var t0sorter = new Gtk.CustomSorter((a,b) => {
 					return strcmp(((SecDev)a).name,((SecDev)b).name);
 				});
@@ -626,33 +633,15 @@ namespace TelemTracker {
 			c0.set_sorter(t0sorter);
 			c1.set_sorter(t1sorter);
 
-			var n =populate_view();
 			var scrolled = new Gtk.ScrolledWindow ();
 			scrolled.set_policy (Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC);
-			scrolled.min_content_height = (2+n)*30;
+			//scrolled.min_content_height = (2+n)*30;
 			//scrolled.min_content_width = 320;
 			scrolled.set_child(cv);
 			scrolled.propagate_natural_height = true;
 			scrolled.propagate_natural_width = true;
 			grid.attach (scrolled, 0, 0, 1, 1);
 			grid.vexpand = true;
-		}
-
-		private int populate_view() {
-			int n = 0;
-			foreach(var s in ttrk.secdevs) {
-				if (s.status != 0) {
-					s.id = n;
-					lstore.append(s);
-				}
-				n++;
-			}
-			return n;
-		}
-
-		public void redraw() {
-			lstore.remove_all();
-			populate_view();
 		}
 
 		public void run() {

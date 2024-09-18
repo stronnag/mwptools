@@ -90,8 +90,8 @@ namespace Mwp {
 	}
 
 	private int append_combo(Gtk.ComboBoxText cbtx, string s) {
-		//if(lookup_radar(s))
-		//	return -1;
+		if(Radar.lookup_radar(s))
+			return -1;
 
 		if(s == forward_device)
 			return -1;
@@ -107,13 +107,13 @@ namespace Mwp {
 		if(cbtx.active == -1)
 			cbtx.active = 0;
 
-		//ttrk.add(s);
+		TelemTracker.ttrk.add(s);
 		return n;
 	}
 
 	private void prepend_combo(Gtk.ComboBoxText cbtx, string s) {
-		//			if(lookup_radar(s))
-		//	return;
+		if(Radar.lookup_radar(s))
+			return;
 
 		if(s == forward_device)
 			return;
@@ -125,11 +125,11 @@ namespace Mwp {
 		} else {
 			cbtx.active = n;
 		}
-		// ttrk.add(s);
+		TelemTracker.ttrk.add(s);
 	}
 
 	private void remove_combo(Gtk.ComboBoxText cbtx,string s) {
-		//ttrk.remove(s);
+		TelemTracker.ttrk.remove(s);
 		foreach(string a in conf.devices) {
 			if (a == s)
 				return;
