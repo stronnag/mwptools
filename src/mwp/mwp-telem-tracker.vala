@@ -117,7 +117,7 @@ namespace TelemTracker {
 					save_data();
 					return false;
 				});
-			sdlg.run();
+			sdlg.present();
 		}
 
 		public void add(string? sname) {
@@ -539,22 +539,26 @@ namespace TelemTracker {
 					cbtn.toggled.connect(() => {
 							SecDev sd = list_item.get_item() as SecDev;
 							if(sd != null) {
-								sd.status =  (sd.status == TelemTracker.Status.ACTIVE) ? TelemTracker.Status.AVAILABLE : TelemTracker.Status.ACTIVE;
+								if(cbtn.active) {
+									if (sd.status != TelemTracker.Status.ACTIVE) {
+										sd.status = TelemTracker.Status.ACTIVE;
+									}
+								} else {
+									if (sd.status == TelemTracker.Status.ACTIVE) {
+										sd.status = TelemTracker.Status.AVAILABLE;
+									}
+								}
 							}
 						});
 
 				});
 			f2.bind.connect((f,o) => {
 					Gtk.ListItem list_item =  (Gtk.ListItem)o;
+					var cbtn = list_item.get_child() as Gtk.CheckButton;
 					SecDev sd = list_item.get_item() as SecDev;
+					check_status(sd, cbtn);
 					sd.notify["status"].connect((s,p) => {
-							var cbtn = list_item.get_child() as Gtk.Widget;
-							cbtn.sensitive = (((SecDev)s).status != TelemTracker.Status.UNAVAIL);
-							if (((SecDev)s).status == TelemTracker.Status.ACTIVE) {
-								ttrk.start_reader((SecDev)s);
-							} else {
-								ttrk.stop_reader((SecDev)s);
-							}
+							check_status(sd, cbtn);
 						});
 				});
 
@@ -644,8 +648,19 @@ namespace TelemTracker {
 			grid.vexpand = true;
 		}
 
-		public void run() {
-			present();
+		private void check_status(SecDev sd, Gtk.CheckButton cbtn) {
+			cbtn.sensitive = (sd.status != TelemTracker.Status.UNAVAIL);
+			if (sd.status == TelemTracker.Status.ACTIVE) {
+				if(!cbtn.active) {
+					cbtn.active = true;
+				}
+				ttrk.start_reader(sd);
+			} else {
+				if(cbtn.active) {
+					cbtn.active = false;
+				}
+				ttrk.stop_reader(sd);
+			}
 		}
 	}
 }
