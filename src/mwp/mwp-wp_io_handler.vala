@@ -65,7 +65,7 @@ namespace Mwp {
 		j = mission_has_land(j);
 		if(j != -1) {
 			lastm = nticks;
-			uint8 k = (uint8)(j+SAFEHOMES.maxhomes);
+			uint8 k = (uint8)(j+Safehome.MAXHOMES);
 			last_safehome = k+1;
 			queue_cmd(Msp.Cmds.FW_APPROACH, &k, 1);
 		} else {
@@ -81,8 +81,8 @@ namespace Mwp {
 		} else {
 			serstate = SERSTATE.EXTRA_WP;
 			lastm = nticks;
-			safeindex = SAFEHOMES.maxhomes+j;
-			last_safehome = SAFEHOMES.maxhomes+j+1;
+			safeindex = Safehome.MAXHOMES+j;
+			last_safehome = Safehome.MAXHOMES+j+1;
 			var b = FWApproach.serialise(safeindex);
 			queue_cmd(Msp.Cmds.SET_FW_APPROACH, b, b.length);
 		}

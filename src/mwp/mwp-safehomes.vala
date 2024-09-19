@@ -17,11 +17,8 @@
 
 using Gtk;
 
-public enum SAFEHOMES {
-	maxhomes = 8,
-}
-
 namespace Safehome {
+	const int MAXHOMES=8;
 	public SafeHomeDialog manager;
 	//	GLib.ListStore lstore;
 }
@@ -46,8 +43,8 @@ public class SafeHomeMarkers : GLib.Object {
 	public SafeHomeMarkers() {
 		scolour.parse("rgba(0xfb, 0xea, 0x04, 0.4)");
 		white.parse("white");
-		onscreen = new bool[SAFEHOMES.maxhomes];
-		safept = new  MWPLabel[SAFEHOMES.maxhomes];
+		onscreen = new bool[Safehome.MAXHOMES];
+		safept = new  MWPLabel[Safehome.MAXHOMES];
 		safed = {};
 		safel = {};
 		safelayer = new Shumate.MarkerLayer(Gis.map.viewport);
@@ -58,7 +55,7 @@ public class SafeHomeMarkers : GLib.Object {
 		llist.append(5);
 		llist.append(5);
 
-		for(var idx = 0; idx < SAFEHOMES.maxhomes; idx++) {
+		for(var idx = 0; idx < Safehome.MAXHOMES; idx++) {
 			safept[idx] = new MWPLabel("⏏#%d".printf(idx));
 			safept[idx].set_colour (scolour.to_string());
 			safept[idx].set_text_colour("black");
@@ -159,7 +156,7 @@ public class SafeHomeMarkers : GLib.Object {
 	}
 
 	public void set_interactive(bool state) {
-		for(var i = 0; i < SAFEHOMES.maxhomes; i++) {
+		for(var i = 0; i < Safehome.MAXHOMES; i++) {
 			safept[i].set_draggable(state);
 		}
 	}
@@ -233,7 +230,7 @@ public class  SafeHomeDialog : Adw.Window {
 	}
 
 	public void relocate_safehomes() {
-		for(var j = 0; j < SAFEHOMES.maxhomes; j++) {
+		for(var j = 0; j < Safehome.MAXHOMES; j++) {
 			var sh = lstore.get_item(j) as SafeHome;
 			if (sh.enabled) {
 				var lat = sh.lat;
@@ -281,7 +278,7 @@ public class  SafeHomeDialog : Adw.Window {
 
 		aq_fcl = new GLib.SimpleAction("loadfc",null);
 		aq_fcl.activate.connect(() => {
-				request_safehomes(0, SAFEHOMES.maxhomes);
+				request_safehomes(0, (uint8)Safehome.MAXHOMES);
 			});
 		aq_fcl.set_enabled(false);
 		dg.add_action(aq_fcl);
@@ -324,7 +321,7 @@ public class  SafeHomeDialog : Adw.Window {
 			});
 
 		create_cv();
-        for(var i = 0; i < SAFEHOMES.maxhomes; i++) {
+        for(var i = 0; i < Safehome.MAXHOMES; i++) {
             var sh = new SafeHome();
             lstore.insert(i, sh);
 			var idx = i;
@@ -640,7 +637,7 @@ public class  SafeHomeDialog : Adw.Window {
 	}
 
 	private void mclear_allitems() {
-		for(var j = 0; j < SAFEHOMES.maxhomes; j++) {
+		for(var j = 0; j < Safehome.MAXHOMES; j++) {
 			clear_item(j);
 		}
 	}
@@ -702,7 +699,7 @@ public class  SafeHomeDialog : Adw.Window {
                 var sh = new SafeHome();
                 var parts = s.split_set(" ");
 				var idx = int.parse(parts[1]);
-				if (idx >= 0 && idx < SAFEHOMES.maxhomes) {
+				if (idx >= 0 && idx < Safehome.MAXHOMES) {
 					sh.enabled = (parts[2] == "1") ? true : false;
 					sh.lat = double.parse(parts[3]) /10000000.0;
 					sh.lon = double.parse(parts[4]) /10000000.0;
@@ -729,7 +726,7 @@ public class  SafeHomeDialog : Adw.Window {
 						}
 						l.aref = (parts[7] == "1") ? true : false;
 						FWApproach.set(idx, l);
-						if (idx < SAFEHOMES.maxhomes) {
+						if (idx < Safehome.MAXHOMES) {
 							var sh = lstore.get_item(idx) as SafeHome;
 							if(sh != null) {
 								sh.appalt = l.appalt;
@@ -759,7 +756,7 @@ public class  SafeHomeDialog : Adw.Window {
 				}
 			}
         }
-		for(var j = 0; j < SAFEHOMES.maxhomes; j++) {
+		for(var j = 0; j < Safehome.MAXHOMES; j++) {
 			var sh = lstore.get_item(j) as SafeHome;
 			redraw_home(j, sh);
 		}
@@ -795,7 +792,7 @@ public class  SafeHomeDialog : Adw.Window {
 	}
 
     private void display_homes(bool state) {
-        for (var idx = 0; idx < SAFEHOMES.maxhomes; idx++) {
+        for (var idx = 0; idx < Safehome.MAXHOMES; idx++) {
             if(state) {
                 var sh = lstore.get_item(idx) as SafeHome;
                 if(sh.lat != 0 && sh.lon != 0) {
@@ -821,7 +818,7 @@ public class  SafeHomeDialog : Adw.Window {
 
     private void save_file() {
 		StringBuilder sb = new StringBuilder();
-        for(var idx = 0; idx < SAFEHOMES.maxhomes; idx++) {
+        for(var idx = 0; idx < Safehome.MAXHOMES; idx++) {
             var sh = lstore.get_item(idx) as SafeHome;
 			var ena = (sh.enabled) ? 1 : 0;
 			sb.append_printf("safehome %d %d %d %d\n", idx, ena,

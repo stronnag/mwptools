@@ -33,7 +33,7 @@ namespace Mwp {
 
 
     private void msp_publish_home(uint8 id) {
-        if(id < SAFEHOMES.maxhomes) {
+        if(id < Safehome.MAXHOMES) {
             var h = Safehome.manager.get_home(id);
             uint8 tbuf[10];
             tbuf[0] = id;
@@ -46,7 +46,7 @@ namespace Mwp {
         } else {
 			if (vi.fc_vers >= FCVERS.hasFWApp) {
 				safeindex = 0;
-				last_safehome = SAFEHOMES.maxhomes;
+				last_safehome = Safehome.MAXHOMES;
 				var b = FWApproach.serialise(0);
 				queue_cmd(Msp.Cmds.SET_FW_APPROACH, b, b.length);
 			} else {
@@ -700,7 +700,7 @@ namespace Mwp {
 			queue_cmd(msp_get_status,null,0);
 			if(sh_load == "-FC-") {
 				Timeout.add(1200, () => {
-						last_safehome = SAFEHOMES.maxhomes;
+						last_safehome = Safehome.MAXHOMES;
 						uint8 shid = 0;
 						MWPLog.message("Load FC safehomes\n");
 						queue_cmd(Msp.Cmds.SAFEHOME,&shid,1);
@@ -1105,10 +1105,10 @@ namespace Mwp {
 		case Msp.Cmds.FW_APPROACH:
 			var id = FWApproach.deserialise(raw, len);
 			if(id == last_safehome-1) {
-				if(id ==SAFEHOMES.maxhomes-1) {
+				if(id ==Safehome.MAXHOMES-1) {
 					Safehome.manager.set_status(sh_disp);
 				} else {
-					wp_get_approaches(id+1-SAFEHOMES.maxhomes);
+					wp_get_approaches(id+1-Safehome.MAXHOMES);
 				}
 			} else {
 				id++;
@@ -1129,7 +1129,7 @@ namespace Mwp {
 			shm.lon = ll / 10000000.0;
 			Safehome.manager.receive_safehome(id, shm);
 			id += 1;
-			if (id < SAFEHOMES.maxhomes && id < last_safehome) {
+			if (id < Safehome.MAXHOMES && id < last_safehome) {
 				queue_cmd(Msp.Cmds.SAFEHOME,&id,1);
 			} else {
 				if(Rebase.is_valid()) {
@@ -1137,7 +1137,7 @@ namespace Mwp {
 				}
 				Safehome.manager.set_status(sh_disp);
 				id = 0;
-				last_safehome = SAFEHOMES.maxhomes;
+				last_safehome = Safehome.MAXHOMES;
 				queue_cmd(Msp.Cmds.FW_APPROACH,&id,1);
 			}
 			break;
@@ -1150,10 +1150,10 @@ namespace Mwp {
 		case Msp.Cmds.SET_FW_APPROACH:
 			safeindex++;
 			if(safeindex == last_safehome) {
-				if(safeindex <= SAFEHOMES.maxhomes) {
+				if(safeindex <= Safehome.MAXHOMES) {
 					queue_cmd(Msp.Cmds.EEPROM_WRITE,null, 0);
 				} else {
-					wp_set_approaches(safeindex-SAFEHOMES.maxhomes);
+					wp_set_approaches(safeindex-Safehome.MAXHOMES);
 				}
 			} else {
 				if(safeindex < FWAPPROACH.maxapproach) {

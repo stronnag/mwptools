@@ -4,6 +4,9 @@ public enum FWAPPROACH {
 }
 
 namespace FWApproach {
+	const int MAXAPPROACH=17;
+	const int MSPLENGTH=15;
+
 	public struct approach {
 		double appalt;
 		double landalt;
