@@ -435,7 +435,7 @@ public class  SafeHomeDialog : Adw.Window {
 				Gtk.ListItem list_item =  (Gtk.ListItem)o;
 				var sh = list_item.get_item() as SafeHome;
 				var label = list_item.get_child() as Gtk.Label;
-				label.set_text("%2.f".printf(sh.landalt));
+				label.set_text("%.2f".printf(sh.landalt));
 				sh.notify["landalt"].connect((s,p) => {
 						label.set_text("%.2f".printf(((SafeHome)s).landalt));
 					});
@@ -453,7 +453,7 @@ public class  SafeHomeDialog : Adw.Window {
 				Gtk.ListItem list_item =  (Gtk.ListItem)o;
 				var sh = list_item.get_item() as SafeHome;
 				var label = list_item.get_child() as Gtk.Label;
-				label.set_text("%2.f".printf(sh.appalt));
+				label.set_text("%.2f".printf(sh.appalt));
 				sh.notify["appalt"].connect((s,p) => {
 						label.set_text("%.2f".printf(((SafeHome)s).appalt));
 					});
@@ -582,21 +582,22 @@ public class  SafeHomeDialog : Adw.Window {
 				btn.sensitive = true;
 				list_item.set_child(btn);
 				btn.clicked.connect(() => {
-				  /*
-				  SecDev sd = list_item.get_item() as SecDev;
-				  if (sd != null) {
-				  var w = new  SecItemWindow(sd);
-				  w.transient_for = this;
-				  w.close_request.connect(() => {
-				  if ( SecItemWindow.apply) {
-				  sd.name = w.dn.text;
-				  sd.alias = w.an.text;
-				  }
-				  return false;
-                  });
-				  w.present();
-				  }
-				  */
+						var idx = list_item.position;
+						var  sh = lstore.get_item(idx) as SafeHome;
+						if (sh != null) {
+							var w = new  Safehome.Editor();
+							w.transient_for = this;
+							w.setup((int)idx, sh);
+							w.ready.connect(() => {
+									MWPLog.message(":DBG: SH Edit Ready\n");
+								});
+							this.sensitive = false;
+							w.close_request.connect(() => {
+									this.sensitive = true;
+									return false;
+								});
+							w.present();
+						}
 					});
 			});
 	}

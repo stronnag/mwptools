@@ -26,6 +26,7 @@ blpfiles = files(
   'fm-dialog.blp',
   'prefs.blp',
   'newpos.blp',
+  'shedit.blp',
 )
 
 blueprints = custom_target('blueprints',

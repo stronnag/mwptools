@@ -28,5 +28,6 @@
     <file preprocess="xml-stripblanks" compressed="true">fm-dialog.ui</file>
     <file preprocess="xml-stripblanks" compressed="true">prefs.ui</file>
     <file preprocess="xml-stripblanks" compressed="true">newpos.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">shedit.ui</file>
   </gresource>
 </gresources>

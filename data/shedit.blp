@@ -1,0 +1,210 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $SafehomeEditor: Adw.Window {
+  icon-name: "mwp_icon";
+  title: "Edit Safehome";
+  Box {
+    orientation: vertical;
+    [start]
+    Adw.HeaderBar {}
+    [end]
+    Box {
+      spacing: 8;
+      orientation: vertical;
+
+      [start]
+      Grid {
+        row-spacing: 8;
+	column-spacing: 8;
+        Label {
+          label: _('Latitude');
+          layout {
+            column: '0';
+            row: '0';
+          }
+        }
+        Label shlat {
+          hexpand: true;
+          layout {
+            column: '1';
+            row: '0';
+          }
+        }
+
+        Label {
+          label: _('Longitude');
+          layout {
+            column: '0';
+            row: '1';
+          }
+        }
+	Label shlon {
+          hexpand: true;
+          layout {
+            column: '1';
+            row: '1';
+          }
+        }
+
+        Label {
+          label: _('Landing Altitude');
+          layout {
+            column: '0';
+            row: '2';
+          }
+        }
+
+	Entry shlandalt {
+          hexpand: true;
+//          input-purpose: number;
+          layout {
+            column: '1';
+            row: '2';
+          }
+        }
+
+        Label {
+          label: _('Approach Altitude');
+          layout {
+            column: '0';
+            row: '3';
+          }
+        }
+
+	Entry shappalt {
+          hexpand: true;
+//          input-purpose: number;
+          layout {
+            column: '1';
+            row: '3';
+          }
+        }
+
+        Label {
+          label: _('Direction 1');
+          layout {
+            column: '0';
+            row: '4';
+          }
+        }
+
+	Entry shdirn1 {
+          hexpand: true;
+//          input-purpose: number;
+          layout {
+            column: '1';
+            row: '4';
+          }
+        }
+
+        Label {
+          label: _('Exclusive');
+          layout {
+            column: '2';
+            row: '4';
+          }
+        }
+
+	Switch shex1 {
+          hexpand: false;
+          vexpand: false;
+          layout {
+            column: '3';
+            row: '4';
+          }
+        }
+
+        Label {
+          label: _('Direction 2');
+          layout {
+            column: '0';
+            row: '5';
+          }
+        }
+
+	Entry shdirn2 {
+          hexpand: true;
+	  //          input-purpose: number;
+          layout {
+            column: '1';
+            row: '5';
+          }
+        }
+
+        Label {
+          label: _('Exclusive');
+          layout {
+            column: '2';
+            row: '5';
+          }
+        }
+
+	Switch shex2 {
+          hexpand: false;
+          vexpand: false;
+          layout {
+            column: '3';
+            row: '5';
+          }
+        }
+
+        Label {
+          label: _('Altitude Reference');
+          layout {
+            column: '0';
+            row: '6';
+          }
+        }
+
+	DropDown sharef {
+	  model: StringList {
+            strings [
+              "Relative",
+              "AMSL"
+            ]
+	  };
+	  layout {
+            column: '1';
+            row: '6';
+          }
+        }
+
+        Label {
+          label: _('Approach Direction');
+          layout {
+            column: '0';
+            row: '7';
+          }
+        }
+
+	DropDown shdref {
+	  model: StringList {
+            strings [
+              "Left",
+              "Right"
+            ]
+	  };
+          layout {
+            column: '1';
+            row: '7';
+          }
+        }
+      }
+
+      [end]
+      Box {
+        orientation: horizontal;
+        halign: end;
+        hexpand: true;
+        spacing: 8;
+
+        Button shapp {
+          halign: end;
+          label: 'Apply';
+          receives-default: true;
+        }
+      }
+    }
+  }
+}
