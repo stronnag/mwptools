@@ -102,8 +102,6 @@ namespace Mwp {
 			n = 0;
 		}
 
-		//check_pref_dev();
-
 		if(cbtx.active == -1)
 			cbtx.active = 0;
 

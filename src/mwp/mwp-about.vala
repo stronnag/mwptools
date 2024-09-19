@@ -18,13 +18,13 @@
 namespace About {
 	public void show_about () {
 		string[] developers = { "Jonathan Hudson" };
-		string release_notes = "<p>P-release adds the following features:</p>\n<ul><li>GTK4 UI</li>\n  <li>Shumate Map layer.</li>\n  <li>Bug fixes and performance improvements.</li>\n</ul>\n";
+		string release_notes = "<p>This release adds the following features:</p>\n<ul><li>GTK4 UI</li>\n  <li>Shumate Map layer.</li>\n  <li>Bug fixes and performance improvements.</li>\n</ul>\n";
 		var copyright = "© 2014-%d Jonathan Hudson".printf(new DateTime.now_local().get_year());
 
 		var details = "\"A mission planner for the rest of us\"\n\nCommit: %s\n".printf(MwpVers.get_build());
 		var about = new Adw.AboutWindow () {
 				transient_for = Mwp.window,
-					application_name = "mwp4",
+					application_name = "mwp",
 					application_icon = "mwp_icon",
 					developer_name = "Jonathan Hudson",
 					version = MwpVers.get_id(),
