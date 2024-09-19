@@ -23,6 +23,7 @@ public enum SAFEHOMES {
 
 namespace Safehome {
 	public SafeHomeDialog manager;
+	//	GLib.ListStore lstore;
 }
 
 namespace SHPop {
@@ -41,7 +42,6 @@ public class SafeHomeMarkers : GLib.Object {
 	private Gdk.RGBA scolour;
 	private Gdk.RGBA white;
 	public signal void safept_move(int idx, double lat, double lon);
-	//	public signal void safept_need_menu(int idx);
 
 	public SafeHomeMarkers() {
 		scolour.parse("rgba(0xfb, 0xea, 0x04, 0.4)");
@@ -184,7 +184,6 @@ public class SafeHomeMarkers : GLib.Object {
 }
 
 public class SafeHome : Object {
-	public int id {get; construct set;}
 	public bool enabled  {get; construct set;}
 	public double lat {get; construct set;}
 	public double lon {get; construct set;}
@@ -198,29 +197,12 @@ public class SafeHome : Object {
     public bool dref {get; construct set;}
 }
 
-internal enum Column {
-	ID,
-	STATUS,
-	LAT,
-	LON,
-	LANDALT,
-	APPALT,
-	DIRN1,
-	EX1,
-	DIRN2,
-	EX2,
-	AREF,
-	DREF,
-	NO_COLS
-}
-
 public class  SafeHomeDialog : Adw.Window {
 	private bool _available = false;
 	private string filename;
 	private GLib.ListStore lstore;
 	private Gtk.ColumnView cv;
 	Gtk.SingleSelection lsel;
-    Gtk.ColumnViewColumn cols[Colums.NO_COLS];
 
 	private Gtk.Switch switcher;
 	private GLib.SimpleAction aq_fcl;
@@ -229,23 +211,39 @@ public class  SafeHomeDialog : Adw.Window {
 	public signal void request_safehomes(uint8 first, uint8 last);
 	public signal void notify_publish_request();
 
-	enum Column {
-		ID,
-		STATUS,
-		LAT,
-		LON,
-		LANDALT,
-		APPALT,
-		DIRN1,
-		EX1,
-		DIRN2,
-		EX2,
-		AREF,
-		DREF,
-		NO_COLS
+	private SafeHomeMarkers shmarkers;
+
+	private void upsert(uint idx, SafeHome _sh) {
+		var sh = lstore.get_item(idx) as SafeHome;
+		if (sh == null) {
+			lstore.insert(idx, _sh);
+		} else {
+			sh.enabled = _sh.enabled;
+			sh.lat = _sh.lat;
+			sh.lon = _sh.lon;
+			sh.appalt = _sh.appalt;
+			sh.landalt =  _sh.landalt;
+			sh.dref = _sh.dref;
+			sh.aref = _sh.aref;
+			sh.dirn1 = _sh.dirn1;
+			sh.ex1 = _sh.ex1;
+			sh.dirn2 = _sh.dirn2;
+			sh.ex2 = _sh.ex2;
+		}
 	}
 
-	private SafeHomeMarkers shmarkers;
+	public void relocate_safehomes() {
+		for(var j = 0; j < SAFEHOMES.maxhomes; j++) {
+			var sh = lstore.get_item(j) as SafeHome;
+			if (sh.enabled) {
+				var lat = sh.lat;
+				var lon = sh.lon;
+				Rebase.relocate(ref lat, ref lon);
+				sh.lat = lat;
+				sh.lon = lon;
+			}
+		}
+	}
 
 	public SafeHomeDialog() {
 		filename = "None";
@@ -326,10 +324,25 @@ public class  SafeHomeDialog : Adw.Window {
 			});
 
 		create_cv();
+        for(var i = 0; i < SAFEHOMES.maxhomes; i++) {
+            var sh = new SafeHome();
+            lstore.insert(i, sh);
+			var idx = i;
+			sh.notify["enabled"].connect((s,p) => {
+					if (((SafeHome)s).enabled) {
+						if (((SafeHome)s).lat == 0 && ((SafeHome)s).lon == 0) {
+							set_default_loc(idx);
+						}
+						shmarkers.show_safe_home(idx, ((SafeHome)s));
+					} else {
+						shmarkers.set_safe_colour(idx, false);
+					}
+				});
+        }
 		sbox.margin_start = 8;
 		sbox.margin_end = 8;
 
-		sbox.append (tview);
+		sbox.append (cv);
 
 		shmarkers = new SafeHomeMarkers();
 		shmarkers.safept_move.connect((idx,la,lo) => {
@@ -339,6 +352,7 @@ public class  SafeHomeDialog : Adw.Window {
 	}
 
 	private void create_cv() {
+		cv = new Gtk.ColumnView(null);
 		lstore = new GLib.ListStore(typeof(SafeHome));
 		var sm = new Gtk.SortListModel(lstore, cv.sorter);
 		lsel = new Gtk.SingleSelection(sm);
@@ -347,8 +361,8 @@ public class  SafeHomeDialog : Adw.Window {
 		cv.show_row_separators = true;
 
         var f0 = new Gtk.SignalListItemFactory();
-		cols[Columns.ID] = new Gtk.ColumnViewColumn("Id", f0);
-		cv.append_column(cols[Columns.ID]);
+		var c0  = new Gtk.ColumnViewColumn("Id", f0);
+		cv.append_column(c0);
 		f0.setup.connect((f,o) => {
 				Gtk.ListItem list_item = (Gtk.ListItem)o;
 				var label=new Gtk.Label("");
@@ -358,60 +372,244 @@ public class  SafeHomeDialog : Adw.Window {
 				Gtk.ListItem list_item =  (Gtk.ListItem)o;
 				var sh = list_item.get_item() as SafeHome;
 				var label = list_item.get_child() as Gtk.Label;
-				label.set_text(sh.id.to_string());
-				sh.notify["id"].connect((s,p) => {
-						label.set_text(((SafeHome)s).id.to_string());
-					});
+                label.set_text(list_item.position.to_string());
 			});
 
-        var f1 = new Gtk.SignalListItemFactory();
-		cols[Columns.STATUS] = new Gtk.ColumnViewColumn("Enable", f1);
-		cv.append_column(cols[Columns.STATUS]);
-		f1.setup.connect((f,o) => {
+        f0 = new Gtk.SignalListItemFactory();
+		c0 = new Gtk.ColumnViewColumn("Enable", f0);
+		cv.append_column(c0);
+		f0.setup.connect((f,o) => {
 				Gtk.ListItem list_item = (Gtk.ListItem)o;
 				var cbtn=new Gtk.CheckButton();
 				list_item.set_child(cbtn);
 			});
-		f1.bind.connect((f,o) => {
+		f0.bind.connect((f,o) => {
 				Gtk.ListItem list_item =  (Gtk.ListItem)o;
 				var sh = list_item.get_item() as SafeHome;
 				var cbtn = list_item.get_child() as Gtk.CheckButton;
-				sh.bind_property("status", cbtn, "active", BindingFlags.SYNC_CREATE|BindingFlags.BIDIRECTIONAL);
+				sh.bind_property("enabled", cbtn, "active", BindingFlags.SYNC_CREATE|BindingFlags.BIDIRECTIONAL);
 			});
 
-        var f2 = new Gtk.SignalListItemFactory();
-		cols[Columns.LAT] = new Gtk.ColumnViewColumn("Latitude", f2);
-		cv.append_column(cols[Columns.LAT]);
-		f2.setup.connect((f,o) => {
+        f0 = new Gtk.SignalListItemFactory();
+        c0 = new Gtk.ColumnViewColumn("Latitude", f0);
+		cv.append_column(c0);
+		f0.setup.connect((f,o) => {
 				Gtk.ListItem list_item = (Gtk.ListItem)o;
 				var label = new Gtk.Label("");
-				list_item.set_child(cbtn);
+				list_item.set_child(label);
 			});
-		f2.bind.connect((f,o) => {
+		f0.bind.connect((f,o) => {
 				Gtk.ListItem list_item =  (Gtk.ListItem)o;
 				var sh = list_item.get_item() as SafeHome;
 				var label = list_item.get_child() as Gtk.Label;
-				sh.notify["lat"].connect((s,p) => {
-						label.set_text(PosFormat.lat(((SafeHome)s).lat, Mwp.conf.dms));
-					});
-			});
-        var f3 = new Gtk.SignalListItemFactory();
-		cols[Columns.LON] = new Gtk.ColumnViewColumn("Longitude", f3);
-		cv.append_column(cols[Columns.LAT]);
-		f2.setup.connect((f,o) => {
-				Gtk.ListItem list_item = (Gtk.ListItem)o;
-				var label = new Gtk.Label("");
-				list_item.set_child(cbtn);
-			});
-		f2.bind.connect((f,o) => {
-				Gtk.ListItem list_item =  (Gtk.ListItem)o;
-				var sh = list_item.get_item() as SafeHome;
-				var label = list_item.get_child() as Gtk.Label;
+				label.set_text(PosFormat.lat(sh.lat, Mwp.conf.dms));
 				sh.notify["lat"].connect((s,p) => {
 						label.set_text(PosFormat.lat(((SafeHome)s).lat, Mwp.conf.dms));
 					});
 			});
 
+        f0 = new Gtk.SignalListItemFactory();
+		c0 = new Gtk.ColumnViewColumn("Longitude", f0);
+		cv.append_column(c0);
+		f0.setup.connect((f,o) => {
+				Gtk.ListItem list_item = (Gtk.ListItem)o;
+				var label = new Gtk.Label("");
+				list_item.set_child(label);
+			});
+		f0.bind.connect((f,o) => {
+				Gtk.ListItem list_item =  (Gtk.ListItem)o;
+				var sh = list_item.get_item() as SafeHome;
+				var label = list_item.get_child() as Gtk.Label;
+				label.set_text(PosFormat.lon(sh.lon, Mwp.conf.dms));
+				sh.notify["lon"].connect((s,p) => {
+						label.set_text(PosFormat.lon(((SafeHome)s).lon, Mwp.conf.dms));
+					});
+			});
+
+        f0 = new Gtk.SignalListItemFactory();
+		c0 = new Gtk.ColumnViewColumn("Land Alt.", f0);
+		cv.append_column(c0);
+		f0.setup.connect((f,o) => {
+				Gtk.ListItem list_item = (Gtk.ListItem)o;
+				var label = new Gtk.Label("");
+				list_item.set_child(label);
+			});
+		f0.bind.connect((f,o) => {
+				Gtk.ListItem list_item =  (Gtk.ListItem)o;
+				var sh = list_item.get_item() as SafeHome;
+				var label = list_item.get_child() as Gtk.Label;
+				label.set_text("%2.f".printf(sh.landalt));
+				sh.notify["landalt"].connect((s,p) => {
+						label.set_text("%.2f".printf(((SafeHome)s).landalt));
+					});
+			});
+
+        f0 = new Gtk.SignalListItemFactory();
+		c0 = new Gtk.ColumnViewColumn("Approach Alt.", f0);
+		cv.append_column(c0);
+		f0.setup.connect((f,o) => {
+				Gtk.ListItem list_item = (Gtk.ListItem)o;
+				var label = new Gtk.Label("");
+				list_item.set_child(label);
+			});
+		f0.bind.connect((f,o) => {
+				Gtk.ListItem list_item =  (Gtk.ListItem)o;
+				var sh = list_item.get_item() as SafeHome;
+				var label = list_item.get_child() as Gtk.Label;
+				label.set_text("%2.f".printf(sh.appalt));
+				sh.notify["appalt"].connect((s,p) => {
+						label.set_text("%.2f".printf(((SafeHome)s).appalt));
+					});
+			});
+
+        f0 = new Gtk.SignalListItemFactory();
+		c0 = new Gtk.ColumnViewColumn("Direction1", f0);
+		cv.append_column(c0);
+		f0.setup.connect((f,o) => {
+				Gtk.ListItem list_item = (Gtk.ListItem)o;
+				var label = new Gtk.Label("");
+				list_item.set_child(label);
+			});
+		f0.bind.connect((f,o) => {
+				Gtk.ListItem list_item =  (Gtk.ListItem)o;
+				var sh = list_item.get_item() as SafeHome;
+				var label = list_item.get_child() as Gtk.Label;
+				label.set_text("%4d".printf(sh.dirn1));
+				sh.notify["dirn1"].connect((s,p) => {
+						label.set_text("%4d".printf(((SafeHome)s).dirn1));
+					});
+			});
+
+        f0 = new Gtk.SignalListItemFactory();
+		c0 = new Gtk.ColumnViewColumn("Exc-1", f0);
+		cv.append_column(c0);
+		f0.setup.connect((f,o) => {
+				Gtk.ListItem list_item = (Gtk.ListItem)o;
+				var label = new Gtk.Label("");
+				list_item.set_child(label);
+			});
+		f0.bind.connect((f,o) => {
+				Gtk.ListItem list_item =  (Gtk.ListItem)o;
+				var sh = list_item.get_item() as SafeHome;
+				var label = list_item.get_child() as Gtk.Label;
+				label.set_text((sh.ex1) ? "✔" : "");
+				sh.notify["ex1"].connect((s,p) => {
+						label.set_text((((SafeHome)s).ex1) ? "✔" : "");
+					});
+			});
+
+        f0 = new Gtk.SignalListItemFactory();
+		c0 = new Gtk.ColumnViewColumn("Direction2", f0);
+		cv.append_column(c0);
+		f0.setup.connect((f,o) => {
+				Gtk.ListItem list_item = (Gtk.ListItem)o;
+				var label = new Gtk.Label("");
+				list_item.set_child(label);
+			});
+		f0.bind.connect((f,o) => {
+				Gtk.ListItem list_item =  (Gtk.ListItem)o;
+				var sh = list_item.get_item() as SafeHome;
+				var label = list_item.get_child() as Gtk.Label;
+				label.set_text("%4d".printf(sh.dirn2));
+				sh.notify["dirn2"].connect((s,p) => {
+						label.set_text("%4d".printf(((SafeHome)s).dirn2));
+					});
+			});
+
+        f0 = new Gtk.SignalListItemFactory();
+		c0 = new Gtk.ColumnViewColumn("Exc-2", f0);
+		cv.append_column(c0);
+		f0.setup.connect((f,o) => {
+				Gtk.ListItem list_item = (Gtk.ListItem)o;
+				var label = new Gtk.Label("");
+				list_item.set_child(label);
+			});
+		f0.bind.connect((f,o) => {
+				Gtk.ListItem list_item =  (Gtk.ListItem)o;
+				var sh = list_item.get_item() as SafeHome;
+				var label = list_item.get_child() as Gtk.Label;
+				label.set_text((sh.ex2) ? "✔" : "");
+				sh.notify["ex21"].connect((s,p) => {
+						label.set_text((((SafeHome)s).ex2) ? "✔" : "");
+					});
+			});
+
+        f0 = new Gtk.SignalListItemFactory();
+		c0 = new Gtk.ColumnViewColumn("Alt.Mode", f0);
+		cv.append_column(c0);
+		f0.setup.connect((f,o) => {
+				Gtk.ListItem list_item = (Gtk.ListItem)o;
+				var label = new Gtk.Label("");
+				list_item.set_child(label);
+			});
+		f0.bind.connect((f,o) => {
+				Gtk.ListItem list_item =  (Gtk.ListItem)o;
+				var sh = list_item.get_item() as SafeHome;
+				var label = list_item.get_child() as Gtk.Label;
+				var txt = aref_name(sh.aref);
+				label.set_text(txt);
+				sh.notify["aref"].connect((s,p) => {
+						var atxt = aref_name(((SafeHome)s).aref);
+						label.set_text(atxt);
+					});
+			});
+
+        f0 = new Gtk.SignalListItemFactory();
+		c0 = new Gtk.ColumnViewColumn("From", f0);
+		cv.append_column(c0);
+		f0.setup.connect((f,o) => {
+				Gtk.ListItem list_item = (Gtk.ListItem)o;
+				var label = new Gtk.Label("");
+				list_item.set_child(label);
+			});
+		f0.bind.connect((f,o) => {
+				Gtk.ListItem list_item =  (Gtk.ListItem)o;
+				var sh = list_item.get_item() as SafeHome;
+				var label = list_item.get_child() as Gtk.Label;
+				var txt = dref_name(sh.dref);
+				label.set_text(txt);
+				sh.notify["dref"].connect((s,p) => {
+						var atxt = dref_name(((SafeHome)s).dref);
+						label.set_text(atxt);
+					});
+			});
+
+		// -----------  Line edit -----------
+		var fx = new Gtk.SignalListItemFactory();
+		var cx = new Gtk.ColumnViewColumn("", fx);
+		cv.append_column(cx);
+
+		fx.setup.connect((f,o) => {
+				Gtk.ListItem list_item = (Gtk.ListItem)o;
+				var btn = new Gtk.Button.from_icon_name("document-edit");
+				btn.sensitive = true;
+				list_item.set_child(btn);
+				btn.clicked.connect(() => {
+				  /*
+				  SecDev sd = list_item.get_item() as SecDev;
+				  if (sd != null) {
+				  var w = new  SecItemWindow(sd);
+				  w.transient_for = this;
+				  w.close_request.connect(() => {
+				  if ( SecItemWindow.apply) {
+				  sd.name = w.dn.text;
+				  sd.alias = w.an.text;
+				  }
+				  return false;
+                  });
+				  w.present();
+				  }
+				  */
+					});
+			});
+	}
+
+	private string aref_name(bool a)  {
+		return (a) ? "AMSL" : "Rel";
+	}
+
+	private string dref_name(bool d)  {
+		return (d) ? "Right" : "Left";
 	}
 
 	public void remove_homes() {
@@ -434,172 +632,63 @@ public class  SafeHomeDialog : Adw.Window {
 	}
 
 	public SafeHome get_home(uint8 idx) {
-		return homes[idx];
+		return lstore.get_item(idx) as SafeHome;
 	}
 
 	private void mclear_item() {
-		Gtk.TreeIter iter;
-		int i = 0;
-        for(bool next = sh_liststore.get_iter_first(out iter); next;
-			next = sh_liststore.iter_next(ref iter)) {
-            GLib.Value cell;
-            sh_liststore.get_value (iter, Column.ID, out cell);
-			if(SHPop.idx == -1 || (int)cell == i) {
-				clear_item(i, iter);
-			}
-			i++;
-		}
+		clear_item(SHPop.idx);
 	}
 
 	private void mclear_allitems() {
-		SHPop.idx = -1;
-		mclear_item();
+		for(var j = 0; j < SAFEHOMES.maxhomes; j++) {
+			clear_item(j);
+		}
 	}
 
 	private void mcentre_on() {
-		Gtk.TreeIter iter;
-        for(bool next = sh_liststore.get_iter_first(out iter); next;
-			next = sh_liststore.iter_next(ref iter)) {
-            GLib.Value cell;
-            sh_liststore.get_value (iter, Column.ID, out cell);
-			if((int)cell == SHPop.idx) {
-				double lat,lon;
-				sh_liststore.get (iter, Column.LAT, out lat);
-				sh_liststore.get (iter, Column.LON, out lon);
-				if(lat != 0 && lon != 0) {
-					Gis.map.center_on(lat, lon);
-				}
-				break;
-			}
+		var sh = lstore.get_item(SHPop.idx) as SafeHome;
+		if(sh.lat != 0 && sh.lon != 0) {
+			Gis.map.center_on(sh.lat, sh.lon);
 		}
-	}
+    }
 
 	private void mtoggle_item() {
-		Gtk.TreeIter iter;
-		homes[SHPop.idx].enabled = ! homes[SHPop.idx].enabled;
-        for(bool next = sh_liststore.get_iter_first(out iter); next;
-			next = sh_liststore.iter_next(ref iter)) {
-            GLib.Value cell;
-            sh_liststore.get_value (iter, Column.ID, out cell);
-			if((int)cell == SHPop.idx) {
-				sh_liststore.set (iter, Column.STATUS, homes[SHPop.idx].enabled);
-				shmarkers.set_safe_colour(SHPop.idx, homes[SHPop.idx].enabled);
-				break;
-			}
-		}
+		var sh = lstore.get_item(SHPop.idx) as SafeHome;
+		sh.enabled = ! sh.enabled ;
+		shmarkers.set_safe_colour(SHPop.idx, sh.enabled);
 	}
 
-
-	/**
-	private void row_menu(Gdk.EventButton e, Gtk.TreeIter iter) {
-		var idx = 0;
-		sh_liststore.get (iter, Column.ID, &idx);
-		var marker_menu = new Gtk.Menu ();
-		var item = new Gtk.MenuItem.with_label ("Centre On");
-		item.activate.connect (() => {
-				double lat,lon;
-				sh_liststore.get (iter, Column.LAT, out lat);
-				sh_liststore.get (iter, Column.LON, out lon);
-				if(lat != 0 && lon != 0)
-					view.center_on(lat, lon);
-			});
-		marker_menu.add (item);
-		item = new Gtk.MenuItem.with_label ("Clear Item");
-		item.activate.connect (() => {
-				clear_item(idx,iter);
-			});
-		marker_menu.add (item);
-		item = new Gtk.MenuItem.with_label ("Clear All");
-		item.activate.connect (() => {
-				for(var i = 0; i < SAFEHOMES.maxhomes; i++)
-					if(sh_liststore.iter_nth_child (out iter, null, i))
-						clear_item(i, iter);
-			});
-		marker_menu.add (item);
-		marker_menu.show_all();
-		marker_menu.popup_at_pointer(e);
-	}
-	private void set_menu_state(string action, bool state) {
-		var ac = window.lookup_action(action) as SimpleAction;
-		ac.set_enabled(state);
-	}
-	*/
 	public void receive_safehome(uint8 idx, SafeHome shm) {
 		refresh_home(idx,  shm);
 	}
 
-	private void clear_item(int idx, Gtk.TreeIter iter) {
-		homes[idx] = {};
+	private void clear_item(int idx) {
 		FWApproach.approach l = {};
 		FWApproach.set(idx,l);
-		sh_liststore.set (iter, Column.ID, idx);
-		sh_liststore.set (iter, Column.STATUS, false);
-		sh_liststore.set (iter, Column.LAT, 0.0);
-		sh_liststore.set (iter, Column.LON, 0.0);
-		sh_liststore.set (iter, Column.APPALT, 0.0);
-		sh_liststore.set (iter, Column.LANDALT, 0.0);
-		sh_liststore.set (iter, Column.DIRN1, 0);
-		sh_liststore.set (iter, Column.EX1, false);
-		sh_liststore.set (iter, Column.DIRN2, 0);
-		sh_liststore.set (iter, Column.EX2, false);
-		sh_liststore.set (iter, Column.AREF, aref_name(false));
-		sh_liststore.set (iter, Column.DREF, dref_name(false));
+		var sh = new SafeHome();
+		upsert(idx, sh);
 		shmarkers.hide_safe_home(idx);
-	}
+    }
 
 	public void drag_action(int idx, double la, double lo) {
-		homes[idx].lat = la;
-		homes[idx].lon = lo;
-		FWPlot.update_laylines(idx, shmarkers.get_marker(idx), homes[idx].enabled);
-		shmarkers.update_distance(idx, homes[idx]);
-		Gtk.TreeIter iter;
-		if(sh_liststore.iter_nth_child (out iter, null, idx)) {
-			sh_liststore.set (iter, Column.LAT, homes[idx].lat, Column.LON, homes[idx].lon);
-		}
+		var sh = lstore.get_item(idx) as SafeHome;
+		sh.lat = la;
+		sh.lon = lo;
+		FWPlot.update_laylines(idx, shmarkers.get_marker(idx), sh.enabled);
+		shmarkers.update_distance(idx, sh);
 	}
 
 	public void set_distance(uint16 d) {
 		shmarkers.set_distance(d);
 	}
 
-	/*
-	public bool pop_menu() {
-		//		if(pop_idx != -1) {
-		/*
-		var marker_menu = new Gtk.Menu ();
-		var item = new Gtk.MenuItem.with_label ("Toggle State");
-		item.activate.connect (() => {
-				homes[idx].enabled = ! homes[idx].enabled;
-				Gtk.TreeIter iter;
-				if(sh_liststore.iter_nth_child (out iter, null, idx))
-					sh_liststore.set (iter,
-									  Column.STATUS, homes[idx].enabled);
-				shmarkers.set_safe_colour(idx, homes[idx].enabled);
-			});
-		marker_menu.add (item);
-		item = new Gtk.MenuItem.with_label ("Clear Item");
-		item.activate.connect (() => {
-				homes[idx].enabled = false;
-				homes[idx].lat = 0;
-				homes[idx].lon = 0;
-				Gtk.TreeIter iter;
-				if(sh_liststore.iter_nth_child (out iter, null, idx))
-					sh_liststore.set (iter,
-									  Column.STATUS, homes[idx].enabled,
-									  Column.LAT, homes[idx].lat,
-									  Column.LON, homes[idx].lon);
-				shmarkers.hide_safe_home(idx);
-			});
-		marker_menu.add (item);
-		marker_menu.show_all();
-		marker_menu.popup_at_pointer(e);
-		//pop_idx = -1;
-		return true;
-	}
-		*/
-
     private void set_default_loc(int idx) {
-		MapUtils.get_centre_location(out homes[idx].lat, out homes[idx].lon);
+		double lat;
+		double lon;
+		MapUtils.get_centre_location(out lat, out lon);
+		var sh = lstore.get_item(idx) as SafeHome;
+		sh.lat = lat;
+		sh.lon = lon;
     }
 
     private void read_file() {
@@ -608,15 +697,16 @@ public class  SafeHomeDialog : Adw.Window {
             return;
         }
         string s;
-		SafeHome hs[8];
 		while((s = fs.read_line()) != null) {
             if(s.has_prefix("safehome ")) {
+                var sh = new SafeHome();
                 var parts = s.split_set(" ");
 				var idx = int.parse(parts[1]);
 				if (idx >= 0 && idx < SAFEHOMES.maxhomes) {
-					hs[idx].enabled = (parts[2] == "1") ? true : false;
-					hs[idx].lat = double.parse(parts[3]) /10000000.0;
-					hs[idx].lon = double.parse(parts[4]) /10000000.0;
+					sh.enabled = (parts[2] == "1") ? true : false;
+					sh.lat = double.parse(parts[3]) /10000000.0;
+					sh.lon = double.parse(parts[4]) /10000000.0;
+                    upsert(idx, sh);
 				}
 			} else if(s.has_prefix("fwapproach ")) {
 				var parts = s.split_set(" ");
@@ -639,6 +729,21 @@ public class  SafeHomeDialog : Adw.Window {
 						}
 						l.aref = (parts[7] == "1") ? true : false;
 						FWApproach.set(idx, l);
+						if (idx < SAFEHOMES.maxhomes) {
+							var sh = lstore.get_item(idx) as SafeHome;
+							if(sh != null) {
+								sh.appalt = l.appalt;
+								sh.landalt =  l.landalt;
+								sh.dref = l.dref;
+								sh.aref = l.aref;
+								sh.dirn1 = l.dirn1;
+								sh.ex1 = l.ex1;
+								sh.dirn2 = l.dirn2;
+								sh.ex2 = l.ex2;
+							} else {
+								MWPLog.message("Failed to find SH for FWA %d\n", idx);
+							}
+						}
 					}
 				}
 			} else if(s.has_prefix("set ")) {
@@ -655,51 +760,46 @@ public class  SafeHomeDialog : Adw.Window {
 			}
         }
 		for(var j = 0; j < SAFEHOMES.maxhomes; j++) {
-			refresh_home(j, hs[j], true);
+			var sh = lstore.get_item(j) as SafeHome;
+			redraw_home(j, sh);
 		}
+
     }
 
     private void refresh_home(int idx, SafeHome h, bool forced = false) {
-        homes[idx] = h;
+        var sh = lstore.get_item(idx) as SafeHome;
+        sh.enabled = h.enabled;
+        sh.lat = h.lat;
+        sh.lon = h.lon;
 		FWApproach.approach lnd = FWApproach.get(idx);
 
-		Gtk.TreeIter iter;
-        if(sh_liststore.iter_nth_child (out iter, null, idx))
-            sh_liststore.set (iter,
-                              Column.STATUS, homes[idx].enabled,
-                              Column.LAT, homes[idx].lat,
-                              Column.LON, homes[idx].lon,
-                              Column.APPALT, lnd.appalt,
-							  Column.LANDALT, lnd.landalt,
-                              Column.DIRN1, lnd.dirn1,
-							  Column.EX1, lnd.ex1,
-							  Column.DIRN2, lnd.dirn2,
-							  Column.EX2, lnd.ex2,
-                              Column.AREF, aref_name(lnd.aref),
-                              Column.DREF, dref_name(lnd.dref)
-							  );
-        if(switcher.active || forced) {
-            if(homes[idx].lat != 0 && homes[idx].lon != 0)
-                shmarkers.show_safe_home(idx, homes[idx]);
+        sh.appalt = lnd.appalt;
+        sh.landalt = lnd.landalt;
+        sh.dirn1 = lnd.dirn1;
+        sh.ex1 = lnd.ex1;
+        sh.dirn2 = lnd.dirn2;
+        sh.ex2 =  lnd.ex2;
+        sh.aref = lnd.aref;
+        sh.dref = lnd.dref;
+		redraw_home(idx, sh);
+    }
+
+
+	void redraw_home(int idx, SafeHome sh, bool forced = true) {
+		if(switcher.active || forced) {
+            if(sh.lat != 0 && sh.lon != 0)
+                shmarkers.show_safe_home(idx, sh);
             else
                 shmarkers.hide_safe_home(idx);
         }
-    }
-
-	private string aref_name(bool a)  {
-		return (a) ? "AMSL" : "Rel";
 	}
-
-	private string dref_name(bool b)  {
-		return (b) ? "Right" : "Left";
-	}
-
 
     private void display_homes(bool state) {
         for (var idx = 0; idx < SAFEHOMES.maxhomes; idx++) {
             if(state) {
-                if(homes[idx].lat != 0 && homes[idx].lon != 0) {
-                    shmarkers.show_safe_home(idx, homes[idx]);
+                var sh = lstore.get_item(idx) as SafeHome;
+                if(sh.lat != 0 && sh.lon != 0) {
+                    shmarkers.show_safe_home(idx, sh);
                 }
             } else
                 shmarkers.hide_safe_home(idx);
@@ -721,12 +821,11 @@ public class  SafeHomeDialog : Adw.Window {
 
     private void save_file() {
 		StringBuilder sb = new StringBuilder();
-        var idx = 0;
-        foreach (var h in homes) {
-			var ena = (h.enabled) ? 1 : 0;
+        for(var idx = 0; idx < SAFEHOMES.maxhomes; idx++) {
+            var sh = lstore.get_item(idx) as SafeHome;
+			var ena = (sh.enabled) ? 1 : 0;
 			sb.append_printf("safehome %d %d %d %d\n", idx, ena,
-							 (int)(h.lat*10000000), (int)(h.lon*10000000));
-            idx++;
+							 (int)(sh.lat*10000000), (int)(sh.lon*10000000));
         }
 
 		UpdateFile.save(filename, "safehome", sb.str);

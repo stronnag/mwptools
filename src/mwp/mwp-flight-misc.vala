@@ -325,16 +325,6 @@ namespace Mwp {
         return pv;
     }
 
-	private void relocate_safehomes() {
-		for(var j = 0; j < SAFEHOMES.maxhomes; j++) {
-			var sh = Safehome.manager.get_home(j);
-			if (sh.enabled) {
-				Rebase.relocate(ref sh.lat, ref sh.lon);
-				Safehome.manager.receive_safehome(j, sh);
-			}
-		}
-	}
-
 	private int get_heading_diff (int a, int b) {
         var d = int.max(a,b) - int.min(a,b);
         if(d > 180)

@@ -276,7 +276,7 @@ namespace Cli {
 				if (Mwp.sh_load != "-FC-") {
 					Safehome.manager.load_homes(Mwp.sh_load, Mwp.sh_disp);
 					if(Rebase.is_valid()) {
-						Mwp.relocate_safehomes();
+						Safehome.manager.relocate_safehomes();
 					}
 				}
 			}
@@ -344,7 +344,7 @@ namespace Cli {
 			if (vfn != null) {
 				Safehome.manager.load_homes(vfn, Mwp.sh_disp);
 				  if(Rebase.is_valid()) {
-					  Mwp.relocate_safehomes();
+					  Safehome.manager.relocate_safehomes();
 				  }
 			}
 		}

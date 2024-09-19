@@ -1119,7 +1119,7 @@ namespace Mwp {
 		case Msp.Cmds.SAFEHOME:
 			uint8* rp = raw;
 			uint8 id = *rp++;
-			SafeHome shm = SafeHome();
+			SafeHome shm = new SafeHome();
 			shm.enabled = (*rp == 1) ? true : false;
 			rp++;
 			int32 ll;
@@ -1133,7 +1133,7 @@ namespace Mwp {
 				queue_cmd(Msp.Cmds.SAFEHOME,&id,1);
 			} else {
 				if(Rebase.is_valid()) {
-					relocate_safehomes();
+					Safehome.manager.relocate_safehomes();
 				}
 				Safehome.manager.set_status(sh_disp);
 				id = 0;
