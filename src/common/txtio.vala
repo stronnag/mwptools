@@ -53,7 +53,7 @@ namespace TxtIO {
 				var parts = line.split(" ");
 				if (parts.length == 8) {
 					var idx = int.parse(parts[1]);
-					if (idx > 7 && idx < FWAPPROACH.maxapproach) {
+					if (idx > 7 && idx < FWApproach.MAXAPPROACH) {
 						FWApproach.approach l={};
 						l.appalt = double.parse(parts[2]) /100.0;
 						l.landalt = double.parse(parts[3]) /100.0;

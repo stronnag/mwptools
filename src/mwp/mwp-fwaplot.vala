@@ -35,7 +35,7 @@ namespace FWPlot {
 		llist.append(5);
 		llist.append(5);
 
-		for(var i = 0; i < 	FWAPPROACH.maxapproach; i++) {
+		for(var i = 0; i < 	FWApproach.MAXAPPROACH; i++) {
 			var l0 = new Shumate.PathLayer(Gis.map.viewport);
 			l0.set_stroke_width (4);
 			l0.set_stroke_color(landcol);

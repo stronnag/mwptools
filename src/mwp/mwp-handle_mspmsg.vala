@@ -1156,7 +1156,7 @@ namespace Mwp {
 					wp_set_approaches(safeindex-Safehome.MAXHOMES);
 				}
 			} else {
-				if(safeindex < FWAPPROACH.maxapproach) {
+				if(safeindex < FWApproach.MAXAPPROACH) {
 					var b = FWApproach.serialise(safeindex);
 					queue_cmd(Msp.Cmds.SET_FW_APPROACH, b, b.length);
 				} else {

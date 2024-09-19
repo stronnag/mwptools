@@ -1,7 +1,3 @@
-public enum FWAPPROACH {
-	maxapproach = 17,
-	msplength = 15,
-}
 
 namespace FWApproach {
 	const int MAXAPPROACH=17;
@@ -81,12 +77,12 @@ namespace FWApproach {
 	public int8 deserialise(uint8 []buf, uint len) {
 		int8 res = -1;
 		uint8* rp = buf;
-		if(len == FWAPPROACH.msplength  ) {
+		if(len == FWApproach.MSPLENGTH  ) {
 			uint8 idx = *rp++;
 			int32 i32;
 			int16 i16;
 			uint8 u8;
-			if (idx < FWAPPROACH.maxapproach) {
+			if (idx < FWApproach.MAXAPPROACH) {
 				approach l = {};
 				rp = SEDE.deserialise_i32(rp, out i32);
 				l.appalt = (double)i32/100.0;
@@ -116,7 +112,7 @@ namespace FWApproach {
 	}
 
 	public uint8 [] serialise(int idx) {
-		uint8 []buf = new uint8[FWAPPROACH.msplength];
+		uint8 []buf = new uint8[FWApproach.MSPLENGTH];
 		var l = approaches[idx];
 		uint8 *rp = buf;
 		*rp++ = idx;

@@ -708,7 +708,7 @@ public class  SafeHomeDialog : Adw.Window {
 			} else if(s.has_prefix("fwapproach ")) {
 				var parts = s.split_set(" ");
 				var idx = int.parse(parts[1]);
-				if (idx >= 0 && idx < FWAPPROACH.maxapproach) {
+				if (idx >= 0 && idx < FWApproach.MAXAPPROACH) {
 					FWApproach.approach l={};
 					if(parts.length == 8) {
 						l.appalt = double.parse(parts[2]) /100.0;
@@ -828,7 +828,7 @@ public class  SafeHomeDialog : Adw.Window {
 		UpdateFile.save(filename, "safehome", sb.str);
 
 		sb = new StringBuilder();
-		for(var j = 0; j < FWAPPROACH.maxapproach; j++) {
+		for(var j = 0; j < FWApproach.MAXAPPROACH; j++) {
 			var l = FWApproach.get(j);
 			if(l.dirn1 != 0 || l.dirn2 != 0) {
 				var aref = (l.aref) ? 1 : 0;
