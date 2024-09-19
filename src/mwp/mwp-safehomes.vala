@@ -591,9 +591,9 @@ public class  SafeHomeDialog : Adw.Window {
 							w.ready.connect(() => {
 									MWPLog.message(":DBG: SH Edit Ready\n");
 								});
-							this.sensitive = false;
+							this.visible = false;
 							w.close_request.connect(() => {
-									this.sensitive = true;
+									this.visible = true;
 									return false;
 								});
 							w.present();
@@ -603,7 +603,7 @@ public class  SafeHomeDialog : Adw.Window {
 	}
 
 	private string aref_name(bool a)  {
-		return (a) ? "AMSL" : "Rel";
+		return (a) ? "AMSL" : "Relative";
 	}
 
 	private string dref_name(bool d)  {
