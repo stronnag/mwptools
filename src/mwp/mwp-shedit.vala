@@ -40,6 +40,7 @@ namespace Safehome {
 					sh.dref = (bool)shdref.selected;
 					ready();
 				});
+			transient_for = Mwp.window;
 		}
 
 		public void set_location(double lat, double lon) {

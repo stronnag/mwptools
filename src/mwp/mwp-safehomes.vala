@@ -585,7 +585,6 @@ public class  SafeHomeDialog : Adw.Window {
 						var  sh = lstore.get_item(idx) as SafeHome;
 						if (sh != null) {
 							var w = new  Safehome.Editor();
-							w.transient_for = this;
 							w.setup((int)idx, sh);
 							w.ready.connect(() => {
 									var relaid = false;
@@ -631,13 +630,11 @@ public class  SafeHomeDialog : Adw.Window {
 										shmarkers.refresh_lay((int)idx, sh);
 									}
 								});
-							this.visible = false;
-							//this.sensitive = false;
 							w.close_request.connect(() => {
 									this.visible = true;
-									//this.sensitive = true;
 									return false;
 								});
+							this.visible = false;
 							w.present();
 						}
 					});
