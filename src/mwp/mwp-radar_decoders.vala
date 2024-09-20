@@ -28,7 +28,7 @@ namespace Radar {
 
 		var ri = radar_cache.lookup(v);
 		if (ri == null) {
-			ri = RadarPlot();
+			ri = new RadarPlot();
 			ri.source = RadarSource.SBS;
 			ri.srange = ADSB_DISTNDEF;
 		}
@@ -112,7 +112,7 @@ namespace Radar {
 			var a = acs[k];
 			var ri = Radar.radar_cache.lookup(a.addr);
 			if (ri == null) {
-				ri = RadarPlot();
+				ri = new RadarPlot();
 				ri.source = Radar.RadarSource.SBS;
 				ri.srange = ADSB_DISTNDEF;
 			}
@@ -178,7 +178,7 @@ namespace Radar {
 				if(obj.has_member("lat")) {
 					var ri = radar_cache.lookup(icao);
 					if (ri == null) {
-						ri = RadarPlot();
+						ri = new RadarPlot();
 						ri.source = Radar.RadarSource.SBS;
 						ri.srange = Radar.ADSB_DISTNDEF;
 					}

@@ -27,7 +27,8 @@ namespace Radar {
 		M_ADSB = (MAVLINK|SBS),
 	}
 
-	public struct RadarPlot {
+	public class RadarPlot : Object {
+		public uint id;
 		public string name;
 		public double latitude;
 		public double longitude;
@@ -52,37 +53,51 @@ namespace Radar {
 	}
 
 	public class RadarCache : Object {
-		HashTable<uint, RadarPlot?> table;
+		GLib.ListStore lstore;
 
 		public RadarCache() {
-			table = new HashTable<uint,RadarPlot?> (direct_hash, direct_equal);
+			lstore = new GLib.ListStore(typeof(RadarPlot));
+		}
+
+		public bool find(uint rid, out uint pos) {
+			var tmp = new RadarPlot();
+			tmp.id = rid;
+			return lstore.find_with_equal_func(tmp, (a,b) => {return ((RadarPlot)a).id == ((RadarPlot)b).id;}, out pos);
 		}
 
 		public bool remove(uint rid) {
-			return table.remove(rid);
+			uint pos;
+			if(find(rid, out pos)) {
+				lstore.remove(pos);
+				return true;
+			}
+			return false;
 		}
 
 		public bool upsert(uint k, RadarPlot v) {
-			bool found = table.contains(k);
-			if (found){
-				table.replace(k, v);
-			} else {
-				table.insert(k, v);
+			uint pos;
+			v.id = k;
+			bool found = find(k, out pos);
+			if (!found){
+				lstore.append(v);
 			}
 			return found;
 		}
 
 		public uint size() {
-			return table.size();
+			return lstore.get_n_items();
 		}
 
-		public unowned RadarPlot? lookup(uint k) {
-			return table.lookup(k);
+		public RadarPlot? get(uint pos) {
+			return lstore.get_item(pos) as RadarPlot;
 		}
 
-		public List<unowned uint> get_keys() {
-			return (List<unowned uint>)table.get_keys();
+		public RadarPlot? lookup(uint k) {
+			uint pos;
+			if(find(k, out pos)) {
+				return lstore.get_item(pos) as RadarPlot;
+			}
+			return null;
 		}
-
 	}
 }

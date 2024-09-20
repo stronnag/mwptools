@@ -368,11 +368,11 @@ namespace TelemTracker {
 					});
 			}
 		}
-		private  unowned Radar.RadarPlot? get_ri(uint rk) {
-			unowned Radar.RadarPlot? ri = Radar.radar_cache.lookup(rk);
+		private Radar.RadarPlot? get_ri(uint rk) {
+			Radar.RadarPlot? ri = Radar.radar_cache.lookup(rk);
 			if (ri == null) {
 				uint n = rk-256;
-				var r0 = Radar.RadarPlot();
+				var r0 = new Radar.RadarPlot();
 				var s = lstore.get_item(n) as SecDev;
 				r0.name = s.alias;
 				r0.source = Radar.RadarSource.TELEM;

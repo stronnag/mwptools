@@ -15,24 +15,6 @@
  * (c) Jonathan Hudson <jh+mwptools@daria.co.uk>
  */
 
-/*
- * Copyright (C) 2020 Jonathan Hudson <jh+mwptools@daria.co.uk>
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 3
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
-
 namespace Radar {
 	private struct RadarDev {
 		MWSerial dev;
@@ -184,61 +166,61 @@ namespace Radar {
 	}
 
 	private void radar_periodic() {
-		var rkeys = radar_cache.get_keys();
 		var now = new DateTime.now_local();
 
-		rkeys.foreach((rk) => {
-				var r = radar_cache.lookup(rk);
-				if (r != null) {
-					var is_adsb = ((r.source & RadarSource.M_ADSB) != 0);
-					var staled = 12*TimeSpan.SECOND;
-					var deled = 60*TimeSpan.SECOND;
-					var hided = 30*TimeSpan.SECOND;;
-					if (!is_adsb) {
-						staled *= 10;
-						deled *= 10;
-						hided *= 10;
+		for(var i = 0; i < radar_cache.size(); i++) {
+			var r = radar_cache.get(i);
+			if (r != null) {
+				uint rk = r.id;
+				var is_adsb = ((r.source & RadarSource.M_ADSB) != 0);
+				var staled = 12*TimeSpan.SECOND;
+				var deled = 60*TimeSpan.SECOND;
+				var hided = 30*TimeSpan.SECOND;;
+				if (!is_adsb) {
+					staled *= 10;
+					deled *= 10;
+					hided *= 10;
+				}
+				var delta = now.difference(r.dt);
+				bool rdebug = ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE);
+				if (delta > deled) {
+					if (rdebug) {
+						MWPLog.message("TRAF-DEL %X %u %s %s len=%u\n",
+									   rk, r.state, r.dt.format("%T"),
+									   is_adsb.to_string(), radar_cache.size());
 					}
-					var delta = now.difference(r.dt);
-					bool rdebug = ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE);
-					if (delta > deled) {
-						if (rdebug) {
-							MWPLog.message("TRAF-DEL %X %u %s %s len=%u\n",
-										   rk, r.state, r.dt.format("%T"),
-										   is_adsb.to_string(), radar_cache.size());
-						}
-						if(is_adsb) {
-							radarv.remove(rk);
-							Radar.remove_radar(rk);
-							radar_cache.remove(rk);
-						}
-					} else if(delta > hided) {
-						if(rdebug)
-							MWPLog.message("TRAF-HID %X %s %u %u\n",
-										   rk, r.name, r.state, radar_cache.size());
-						if(is_adsb) {
-							r.state = 2; // hidden
-							r.alert = RadarAlert.SET;
-							radar_cache.upsert(rk, r);
-							radarv.update(rk, ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE));
-							if (r.posvalid) {
-								Radar.set_radar_hidden(rk);
-							}
-						}
-					} else if(delta > staled && r.state != 0 && r.state != 3) {
-						if(rdebug)
-							MWPLog.message("TRAF-STALE %X %s %u %u\n",
-										   rk, r.name, r.state, radar_cache.size());
-						r.state = 3; // stale
+					if(is_adsb) {
+						radarv.remove(rk);
+						Radar.remove_radar(rk);
+						radar_cache.remove(rk);
+					}
+				} else if(delta > hided) {
+					if(rdebug)
+						MWPLog.message("TRAF-HID %X %s %u %u\n",
+									   rk, r.name, r.state, radar_cache.size());
+					if(is_adsb) {
+						r.state = 2; // hidden
 						r.alert = RadarAlert.SET;
 						radar_cache.upsert(rk, r);
 						radarv.update(rk, ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE));
-						if(r.posvalid) {
-							Radar.set_radar_stale(rk);
+						if (r.posvalid) {
+							Radar.set_radar_hidden(rk);
 						}
 					}
+				} else if(delta > staled && r.state != 0 && r.state != 3) {
+					if(rdebug)
+						MWPLog.message("TRAF-STALE %X %s %u %u\n",
+									   rk, r.name, r.state, radar_cache.size());
+					r.state = 3; // stale
+					r.alert = RadarAlert.SET;
+					radar_cache.upsert(rk, r);
+					radarv.update(rk, ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE));
+					if(r.posvalid) {
+						Radar.set_radar_stale(rk);
+					}
 				}
-			});
+			}
+		}
 	}
 
     private void try_radar_dev(RadarDev r) {

@@ -117,7 +117,7 @@ namespace MspRadar {
 
 		var ri = Radar.radar_cache.lookup((uint)id);
 		if (ri == null) {
-			ri = Radar.RadarPlot();
+			ri = new Radar.RadarPlot();
 			ri.source  = Radar.RadarSource.INAV;
             ri.name = "⚙ inav %c".printf(65+id);
 			ri.srange = Radar.ADSB_DISTNDEF;
@@ -183,7 +183,7 @@ namespace MspRadar {
 				sb.append_printf("callsign <%s> ", callsign);
 				var ri = Radar.radar_cache.lookup(v);
 				if (ri == null) {
-					ri = Radar.RadarPlot();
+					ri = new Radar.RadarPlot();
 					ri.source = Radar.RadarSource.MAVLINK;
 					ri.srange = Radar.ADSB_DISTNDEF;
 					ri.posvalid = true;
@@ -282,7 +282,7 @@ namespace MspRadar {
         if ((valid & 1)  == 1) {
 			var ri = Radar.radar_cache.lookup(v);
 			if (ri == null) {
-				ri = Radar.RadarPlot();
+				ri = new Radar.RadarPlot();
 				ri.source = Radar.RadarSource.MAVLINK;
 				ri.srange = Radar.ADSB_DISTNDEF;
 				ri.posvalid = true;
