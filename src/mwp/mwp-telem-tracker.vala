@@ -51,7 +51,8 @@ namespace TelemTracker {
 		public string name {get; construct set;}
 		public string devalias {get; construct set;}
 		public string alias {get; construct set;}
-		public uint8 status {get; construct set;}
+		public bool available {get; construct set;}
+		public bool inuse {get; construct set;}
 		public bool userdef {get; construct set;}
 		public uint8 ready {get; construct set;}
 		public uint8 pmask {get; construct set;}
@@ -126,6 +127,8 @@ namespace TelemTracker {
 			string devalias = "";
 			string[] parts={};
 			uint8 pmask = MWSerial.PMask.AUTO;
+			SecDev s = null;
+
 			if (sname != null) {
 				parts = sname.split(",", 3);
 				var sparts = parts[0].split(" ",2);
@@ -142,19 +145,19 @@ namespace TelemTracker {
 				}
 
 				for(uint n = 0; n < lstore.get_n_items(); n++) {
-					var sd = lstore.get_item(n) as SecDev;
-					if (sd.name == devname || sd.name == devalias) {
+					s = lstore.get_item(n) as SecDev;
+					if (s.name == devname || s.name == devalias) {
 						found = true;
-						sd.status = Status.AVAILABLE;
 						break;
 					}
 				}
 			}
 
 			if(!found) {
-				var s = new SecDev();
+				s = new SecDev();
 				s.name = devname;
-				s.status = Status.AVAILABLE;
+				s.available = true;
+				s.inuse = false;
 				if (parts.length == 3) {
 					s.alias = parts[2];
 				} else {
@@ -176,6 +179,11 @@ namespace TelemTracker {
 				s.pmask = pmask;
 				lstore.append(s);
 			}
+			if(s != null && Mwp.msp != null) {
+				if (s.name == Mwp.msp.get_devname()) {
+					s.available = false;
+				}
+			}
 		}
 
 		public bool is_used(string sname) {
@@ -183,7 +191,7 @@ namespace TelemTracker {
 			var ni = lstore.get_n_items();
 			for(var j = 0; j < ni; j++) {
 				var s = lstore.get_item(j) as SecDev;
-				if (s.name == parts[0] && s.status == Status.ACTIVE) {
+				if (s.name == parts[0] && s.inuse) {
 					return true;
 				}
 			}
@@ -196,7 +204,8 @@ namespace TelemTracker {
 			for(var j = 0; j < ni; j++) {
 				var s = lstore.get_item(j) as SecDev;
 				if (s.name == parts[0]) {
-					s.status = Status.UNAVAIL;
+					s.available = false;
+					s.inuse = false;
 					break;
 				}
 			}
@@ -208,7 +217,7 @@ namespace TelemTracker {
 			for(var j = 0; j < ni; j++) {
 				var s = lstore.get_item(j) as SecDev;
 				if (s.name == parts[0]) {
-					s.status = Status.AVAILABLE;
+					s.available = true;
 					break;
 				}
 			}
@@ -331,7 +340,7 @@ namespace TelemTracker {
 							string fstr = null;
 							sd.dev.get_error_message(out fstr);
 							MWPLog.message("Secondary reader %s\n", fstr);
-							sd.status = TelemTracker.Status.AVAILABLE;
+							sd.inuse = true;
 						}
 					});
 			}
@@ -352,7 +361,8 @@ namespace TelemTracker {
 				pending(true);
 				s.dev.close_async.begin((obj,res) => {
 						s.dev.close_async.end(res);
-						s.status = TelemTracker.Status.AVAILABLE;
+						s.inuse = false;
+						s.available = true;
 						s.dev = null;
 						pending(false);
 					});
@@ -402,7 +412,6 @@ namespace TelemTracker {
 			g.attach (new Gtk.Label("Alias"), 0, 1);
 			g.attach (an, 1, 1);
 
-
 			var box = new Gtk.Box(Gtk.Orientation.VERTICAL, 2);
 			var headerBar = new Adw.HeaderBar();
 			box.append(headerBar);
@@ -422,11 +431,6 @@ namespace TelemTracker {
 		private Gtk.Grid grid;
 		Gtk.ColumnView cv;
 		Gtk.MultiSelection lsel;
-		Gtk.ColumnViewColumn c0;
-		Gtk.ColumnViewColumn c1;
-		Gtk.ColumnViewColumn c2;
-		Gtk.ColumnViewColumn c3;
-		Gtk.ColumnViewColumn c4;
 
 		public SecDevDialog() {
 			transient_for = Mwp.window;
@@ -442,7 +446,7 @@ namespace TelemTracker {
 								sd.alias = w.an.text;
 								sd.pmask = 0xff;
 								sd.userdef = true;
-								sd.status = TelemTracker.Status.AVAILABLE;
+								sd.available = true;
 								sd.id = lstore.get_n_items();
 								lstore.append(sd);
 							}
@@ -494,7 +498,7 @@ namespace TelemTracker {
 			cv.show_row_separators = true;
 
 			var f0 = new Gtk.SignalListItemFactory();
-			c0 = new Gtk.ColumnViewColumn("Device", f0);
+			var c0 = new Gtk.ColumnViewColumn("Device", f0);
 			c0.expand = true;
 			cv.append_column(c0);
 			f0.setup.connect((f,o) => {
@@ -511,7 +515,7 @@ namespace TelemTracker {
 				});
 
 			var f1 = new Gtk.SignalListItemFactory();
-			c1 = new Gtk.ColumnViewColumn("Alias", f1);
+			var c1 = new Gtk.ColumnViewColumn("Alias", f1);
 			c1.expand = true;
 			cv.append_column(c1);
 			f1.setup.connect((f,o) => {
@@ -528,102 +532,83 @@ namespace TelemTracker {
 				});
 
 			var f2 = new Gtk.SignalListItemFactory();
-			c2 = new Gtk.ColumnViewColumn("Enabled", f2);
+			var c2 = new Gtk.ColumnViewColumn("Enabled", f2);
 			c2.expand = true;
 			cv.append_column(c2);
 			f2.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
 					var cbtn = new Gtk.CheckButton();
-					cbtn.sensitive = true;
 					list_item.set_child(cbtn);
-					cbtn.toggled.connect(() => {
-							SecDev sd = list_item.get_item() as SecDev;
-							if(sd != null) {
-								if(cbtn.active) {
-									if (sd.status != TelemTracker.Status.ACTIVE) {
-										sd.status = TelemTracker.Status.ACTIVE;
-									}
-								} else {
-									if (sd.status == TelemTracker.Status.ACTIVE) {
-										sd.status = TelemTracker.Status.AVAILABLE;
-									}
-								}
-							}
-						});
-
 				});
 			f2.bind.connect((f,o) => {
 					Gtk.ListItem list_item =  (Gtk.ListItem)o;
 					var cbtn = list_item.get_child() as Gtk.CheckButton;
 					SecDev sd = list_item.get_item() as SecDev;
-					check_status(sd, cbtn);
-					sd.notify["status"].connect((s,p) => {
-							check_status(sd, cbtn);
+					sd.bind_property("inuse", cbtn, "active", BindingFlags.SYNC_CREATE|BindingFlags.BIDIRECTIONAL);
+					cbtn.sensitive = sd.available;
+					sd.notify["available"].connect((s,p) => {
+							cbtn.sensitive = ((SecDev)s).available;
 						});
 				});
 
 			var f3 = new Gtk.SignalListItemFactory();
-			c3 = new Gtk.ColumnViewColumn("Mask", f3);
+			var c3 = new Gtk.ColumnViewColumn("Mask", f3);
 			c3.expand = true;
 			cv.append_column(c3);
 			f3.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
 					var dd = new Gtk.DropDown(masksl, null);
 					dd.notify["selected"].connect(() => {
-							 SecDev sd = list_item.get_item() as SecDev;
-							 if (sd != null) {
-								 var i =  dd.get_selected();
-								 var c = ((Gtk.StringList)dd.model).get_string(i);
-								 sd.pmask = MWSerial.name_to_pmask(c);
-							 }
-						 });
+							SecDev sd = list_item.get_item() as SecDev;
+							var i =  dd.get_selected();
+							var c = ((Gtk.StringList)dd.model).get_string(i);
+							sd.pmask = MWSerial.name_to_pmask(c);
+						});
 					list_item.set_child(dd);
 				});
 			f3.bind.connect((f,o) => {
 					Gtk.ListItem list_item =  (Gtk.ListItem)o;
 					SecDev sd = list_item.get_item() as SecDev;
 					var dd = list_item.get_child() as Gtk.DropDown;
-					sd.notify["status"].connect((s,p) => {
-							dd.sensitive = (((SecDev)s).status != TelemTracker.Status.UNAVAIL);
+					dd.sensitive = sd.available;
+					sd.notify["available"].connect((s,p) => {
+							dd.sensitive = ((SecDev)s).available;
 						});
-
 					var n = MWSerial.pmask_to_index(sd.pmask);
 					dd.selected = n;
 				});
 
 			var f4 = new Gtk.SignalListItemFactory();
-			c4 = new Gtk.ColumnViewColumn("", f4);
+			var c4 = new Gtk.ColumnViewColumn("", f4);
 			cv.append_column(c4);
 
 			f4.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
 					var btn = new Gtk.Button.from_icon_name("document-edit");
-					btn.sensitive = true;
 					list_item.set_child(btn);
 					btn.clicked.connect(() => {
-							SecDev sd = list_item.get_item() as SecDev;
-							if (sd != null) {
-								var w = new  SecItemWindow(sd);
-								w.transient_for = this;
-								w.close_request.connect(() => {
-										if ( SecItemWindow.apply) {
-											sd.name = w.dn.text;
-											sd.alias = w.an.text;
-										}
-										return false;
-									});
-								w.present();
-							}
+							var sd = list_item.get_item() as SecDev;
+							var w = new  SecItemWindow(sd);
+							w.transient_for = this;
+							w.close_request.connect(() => {
+									if ( SecItemWindow.apply) {
+										sd.name = w.dn.text;
+										sd.alias = w.an.text;
+									}
+									return false;
+								});
+							w.present();
 						});
 				});
 
 
 			f4.bind.connect((f,o) => {
 					Gtk.ListItem list_item =  (Gtk.ListItem)o;
-					SecDev sd = list_item.get_item() as SecDev;
+					var sd = list_item.get_item() as SecDev;
 					var w = list_item.get_child();
-					sd.notify["status"].connect((s,p) => {
-							w.sensitive = (((SecDev)s).status != TelemTracker.Status.UNAVAIL);
+					w.sensitive = sd.available;
+					sd.notify["available"].connect((s,p) => {
+							w.sensitive = ((SecDev)s).available;
 						});
 				});
 
@@ -646,21 +631,6 @@ namespace TelemTracker {
 			scrolled.propagate_natural_width = true;
 			grid.attach (scrolled, 0, 0, 1, 1);
 			grid.vexpand = true;
-		}
-
-		private void check_status(SecDev sd, Gtk.CheckButton cbtn) {
-			cbtn.sensitive = (sd.status != TelemTracker.Status.UNAVAIL);
-			if (sd.status == TelemTracker.Status.ACTIVE) {
-				if(!cbtn.active) {
-					cbtn.active = true;
-				}
-				ttrk.start_reader(sd);
-			} else {
-				if(cbtn.active) {
-					cbtn.active = false;
-				}
-				ttrk.stop_reader(sd);
-			}
 		}
 	}
 }
