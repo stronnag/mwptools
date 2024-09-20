@@ -53,7 +53,7 @@ namespace Radar {
 	}
 
 	public class RadarCache : Object {
-		GLib.ListStore lstore;
+		public GLib.ListStore lstore;
 
 		public RadarCache() {
 			lstore = new GLib.ListStore(typeof(RadarPlot));

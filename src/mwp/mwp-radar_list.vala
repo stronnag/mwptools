@@ -224,18 +224,12 @@ namespace Radar {
 	}
 
     private void try_radar_dev(RadarDev r) {
-		// FIXME 		if(is_shutdown) return;
 		if(!r.dev.available) {
 			r.dev.open_async.begin(r.name, 0, (obj,res) => {
 					var ok = r.dev.open_async.end(res);
 					if (ok) {
 						r.dev.setup_reader();
 						MWPLog.message("start radar reader %s\n", r.name);
-						// FIXME
-						/*
-						if(rawlog)
-							r.dev.raw_logging(true);
-						*/
 					} else {
 						string fstr;
 						r.dev.get_error_message(out fstr);
@@ -254,11 +248,11 @@ namespace Radar {
 	public class RadarView : Adw.Window {
 		internal bool vis;
 		private int64 last_sec;
-
 		Gtk.Label label;
-		Gtk.ListStore listmodel;
 		Gtk.Button[] buttons;
-		Gtk.TreeView view;
+
+		Gtk.ColumnView cv;
+		Gtk.SingleSelection lsel;
 
 		enum Column {
 			SID,
@@ -306,12 +300,62 @@ namespace Radar {
 		const double TOTHEMOON = -9999.0;
 
 		public static string[] status = {"Undefined", "Armed", "Hidden", "Stale", "ADS-B", "SDR"};
+
+		private void create_cv() {
+			cv = new Gtk.ColumnView(null);
+			var sm = new Gtk.SortListModel(radar_cache.lstore, cv.sorter);
+			lsel = new Gtk.SingleSelection(sm);
+			cv.set_model(lsel);
+			cv.show_column_separators = true;
+			cv.show_row_separators = true;
+
+			var f0 = new Gtk.SignalListItemFactory();
+			var c0 = new Gtk.ColumnViewColumn("*", f0);
+			cv.append_column(c0);
+			f0.setup.connect((f,o) => {
+					Gtk.ListItem list_item = (Gtk.ListItem)o;
+					var label=new Gtk.Label("");
+					list_item.set_child(label);
+				});
+			f0.bind.connect((f,o) => {
+					Gtk.ListItem list_item =  (Gtk.ListItem)o;
+					RadarPlot r = list_item.get_item() as RadarPlot;
+					var label = list_item.get_child() as Gtk.Label;
+					label.label = source_id(r.source);
+					r.notify["source"].connect((s,p) => {
+							label.label = source_id(((RadarPlot)s).source);
+						});
+				});
+			var expression = new Gtk.PropertyExpression(typeof(RadarPlot), null, "source");
+			c0.set_sorter(new Gtk.NumericSorter(expression));
+
+			f0 = new Gtk.SignalListItemFactory();
+			c0 = new Gtk.ColumnViewColumn("Name", f0);
+			cv.append_column(c0);
+			f0.setup.connect((f,o) => {
+					Gtk.ListItem list_item = (Gtk.ListItem)o;
+					var label=new Gtk.Label("");
+					list_item.set_child(label);
+				});
+
+			f0.bind.connect((f,o) => {
+					Gtk.ListItem list_item =  (Gtk.ListItem)o;
+					RadarPlot r = list_item.get_item() as RadarPlot;
+					var label = list_item.get_child() as Gtk.Label;
+					r.bind_property("name", label, "label", BindingFlags.SYNC_CREATE);
+				});
+
+			expression = new Gtk.PropertyExpression(typeof(RadarPlot), null, "name");
+			c0.set_sorter(new Gtk.StringSorter(expression));
+		}
+
+
 		public RadarView () {
 			set_transient_for(Mwp.window);
 			vis = false;
 			last_sec = 0;
 
-			view = new Gtk.TreeView ();
+
 			var sbox = new Gtk.Box(Gtk.Orientation.VERTICAL, 2);
 			var header_bar = new Adw.HeaderBar();
 			sbox.append(header_bar);
@@ -323,7 +367,8 @@ namespace Radar {
 			setup_treeview (view);
 			label = new Gtk.Label ("");
 			var grid = new Gtk.Grid ();
-			scrolled.set_child(view);
+			create_cv();
+			scrolled.set_child(cv);
 
 			buttons = {
 				new Gtk.Button.with_label ("Centre on swarm"),
