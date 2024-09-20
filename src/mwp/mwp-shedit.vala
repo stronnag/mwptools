@@ -49,6 +49,13 @@ namespace Safehome {
 
 		public void setup(int idx, SafeHome s) {
 			title = "Edit Safehome #%d".printf(idx);
+			s.notify["lat"].connect((s,p) => {
+					shlat.label = PosFormat.lat(((SafeHome)s).lat, Mwp.conf.dms);
+				});
+			s.notify["lon"].connect((s,p) => {
+					shlon.label = PosFormat.lon(((SafeHome)s).lon, Mwp.conf.dms);
+				});
+
 			set_location(s.lat, s.lon);
 			shappalt.set_text("%.2f".printf(s.appalt));
 			shlandalt.set_text("%.2f".printf(s.landalt));
@@ -60,7 +67,7 @@ namespace Safehome {
 			shdref.selected = (int)s.dref;
 		}
 
-		public SafeHome get_reault() {
+		public SafeHome get_result() {
 			return sh;
 		}
 	}

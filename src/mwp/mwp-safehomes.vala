@@ -575,7 +575,6 @@ public class  SafeHomeDialog : Adw.Window {
 		var fx = new Gtk.SignalListItemFactory();
 		var cx = new Gtk.ColumnViewColumn("", fx);
 		cv.append_column(cx);
-
 		fx.setup.connect((f,o) => {
 				Gtk.ListItem list_item = (Gtk.ListItem)o;
 				var btn = new Gtk.Button.from_icon_name("document-edit");
@@ -589,11 +588,54 @@ public class  SafeHomeDialog : Adw.Window {
 							w.transient_for = this;
 							w.setup((int)idx, sh);
 							w.ready.connect(() => {
-									MWPLog.message(":DBG: SH Edit Ready\n");
+									var relaid = false;
+									var sn = w.get_result();
+									if (sh.landalt != sn.landalt) {
+										sh.landalt = sn.landalt;
+										FWApproach.set_landalt((int)idx, sh.landalt);
+									}
+									if (sh.appalt != sn.appalt) {
+										sh.appalt = sn.appalt;
+										FWApproach.set_appalt((int)idx, sh.appalt);
+									}
+									if (sh.dirn1 != sn.dirn1) {
+										sh.dirn1 = sn.dirn1;
+										FWApproach.set_dirn1((int)idx, sh.dirn1);
+										relaid = true;
+									}
+									if (sh.dirn2 != sn.dirn2) {
+										sh.dirn2 = sn.dirn2;
+										FWApproach.set_dirn2((int)idx, sh.dirn2);
+										relaid = true;
+									}
+									if (sh.ex1 != sn.ex1) {
+										sh.ex1 = sn.ex1;
+										FWApproach.set_ex1((int)idx, sh.ex1);
+										relaid = true;
+									}
+									if (sh.ex2 != sn.ex2) {
+										sh.ex2 = sn.ex2;
+										FWApproach.set_ex2((int)idx, sh.ex2);
+										relaid = true;
+									}
+									if (sh.aref != sn.aref) {
+										sh.aref = sn.aref;
+										FWApproach.set_aref((int)idx, sh.aref);
+									}
+									if (sh.dref != sn.dref) {
+										sh.dref = sn.dref;
+										FWApproach.set_dref((int)idx, sh.dref);
+										relaid = true;
+									}
+									if(relaid && (sh.lat != 0.0 && sh.lon != 0.0)) {
+										shmarkers.refresh_lay((int)idx, sh);
+									}
 								});
 							this.visible = false;
+							//this.sensitive = false;
 							w.close_request.connect(() => {
 									this.visible = true;
+									//this.sensitive = true;
 									return false;
 								});
 							w.present();
