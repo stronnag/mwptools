@@ -258,9 +258,7 @@ namespace BBL {
 					fc.modal = true;
 					fc.open.begin (Mwp.window, null, (o,r) => {
 							try {
-								string s;
 								var file = fc.open.end(r);
-								var fn = file.get_path ();
 								bblname = file;
 								log_name.label = file.get_basename();
 								get_bbox_file_status();
@@ -281,7 +279,6 @@ namespace BBL {
 					fc.modal = true;
 					fc.open.begin (Mwp.window, null, (o,r) => {
 							try {
-								string s;
 								var file = fc.open.end(r);
 								videofile = file.get_path ();
 								video_name.label = file.get_basename();
@@ -745,7 +742,7 @@ namespace BBL {
 				}
 				if(str != null) {
 					MWPLog.message("%s %f %f : %s\n", Mwp.conf.zone_detect, lat, lon, str);
-					var n = add_if_missing(str, true);
+					add_if_missing(str, true);
 				}
 			} else if(Mwp.conf.geouser != null && Mwp.conf.geouser != "") {
 				string uri = GURI.printf((string)cbuflat, (string)cbuflon, Mwp.conf.geouser);
@@ -770,7 +767,7 @@ namespace BBL {
 
 							if(str != null) {
 								MWPLog.message("Geonames %f %f %s\n", lat, lon, str);
-								var n = add_if_missing(str, true);
+								add_if_missing(str, true);
 							} else {
 								MWPLog.message("Geonames: <%s>\n", uri);
 								var sb = new StringBuilder("Geonames TZ: ");

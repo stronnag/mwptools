@@ -76,10 +76,9 @@ namespace MissionManager {
 		fc.modal = true;
 		fc.open.begin (Mwp.window, null, (o,r) => {
 				try {
-					string s;
 					var file = fc.open.end(r);
 					var fn = file.get_path ();
-					var _ms = open_mission_file(fn, true);
+					open_mission_file(fn, true);
 				} catch (Error e) {
 					MWPLog.message("Failed to open mission file: %s\n", e.message);
 				}
@@ -97,10 +96,9 @@ namespace MissionManager {
 		fc.modal = true;
 		fc.open.begin (Mwp.window, null, (o,r) => {
 				try {
-					string s;
 					var file = fc.open.end(r);
 					var fn = file.get_path ();
-					var _ms = open_mission_file(fn, false);
+					open_mission_file(fn, false);
 				} catch (Error e) {
 					MWPLog.message("Failed to open mission file: %s\n", e.message);
 				}
@@ -130,7 +128,6 @@ namespace MissionManager {
 		fc.modal = true;
 		fc.save.begin (Mwp.window, null, (o,r) => {
 				try {
-					string s;
 					var fh = fc.save.end(r);
 					var fn = fh.get_path ();
 					last_file = fn;
@@ -493,7 +490,6 @@ namespace MissionManager {
 
 	public bool validate_elevations(Mission ms) {
 		bool res = true; // forever the optimist ...
-		int melev;
 		string? reason = null;
 
 		if (DemManager.lookup(ms.homey, ms.homex) == Hgt.NODATA) {

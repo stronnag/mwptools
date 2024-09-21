@@ -15,8 +15,6 @@
  * (c) Jonathan Hudson <jh+mwptools@daria.co.uk>
  */
 
-
-
 namespace Odo {
 	Window view;
     Odostats stats;
@@ -69,7 +67,7 @@ namespace Odo {
 
 		private uint to = 30;
 		private uint tid = 0;
-		private bool visible = false;
+		private bool odo_visible = false;
 		private string cname;
 		private time_t atime;
 
@@ -111,7 +109,7 @@ namespace Odo {
 			return lbl;
 		}
 
-		public void display(Odostats o, bool autohide=false) {
+		public void display_ui (Odostats o, bool autohide=false) {
 			odotime.label = " %u:%02u ".printf(o.time / 60, o.time % 60);
 			odospeed.label = "  %.1f ".printf(Units.speed(o.speed));
 			odospeed_u.label = Units.speed_units();
@@ -150,7 +148,7 @@ namespace Odo {
 		}
 
 		public void unhide() {
-			visible = true;
+			odo_visible = true;
 			present();
 		}
 
@@ -158,7 +156,7 @@ namespace Odo {
 			odotview.buffer.text = txt;
 		}
 
-		public void set_name(string v) {
+		public void set_cname(string v) {
 			cname = v;
 		}
 
@@ -181,8 +179,8 @@ namespace Odo {
 				MWPLog.message("User comment: %s\n", t);
 			}
 			odotview.buffer.text="";
-			visible=false;
-			hide();
+			odo_visible=false;
+			set_visible(false);
 		}
 
 		public void add_summary_event(string ev) {

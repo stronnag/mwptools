@@ -161,9 +161,4 @@ namespace MapUtils {
 	public void map_centre_on(double lat, double lon) {
 		Gis.map.center_on(lat, lon);
 	}
-
-	public void get_cache_dir() {
-		var source = Gis.map.viewport.get_reference_map_source ();
-		//			var uri = Gis.get_cache_dir ();
-	}
 }

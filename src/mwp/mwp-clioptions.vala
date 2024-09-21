@@ -187,7 +187,6 @@ namespace Cli {
 		Mwp.csdq = new Queue<string>();
 
         if(Mwp.exvox == null) {
-            StringBuilder vsb = new StringBuilder();
 			uint8 spapi_mask  = MwpSpeech.get_api_mask();
 			if (spapi_mask != 0) {
 				for(uint8 j = Mwp.SPEAKER_API.ESPEAK; j < Mwp.SPEAKER_API.COUNT; j++) {

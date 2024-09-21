@@ -27,7 +27,6 @@ namespace Mwp {
 	public StrIntStore amis;
 	double current_lat;
 	double current_lon;
-	double current_elev;
 	TileUtils.Dialog msd;
 	Measurer.Measure dmeasure;
 	MwpNotify dtnotify;
@@ -82,8 +81,6 @@ namespace Mwp {
 		internal unowned Gtk.Label elapsedlab;
 		[GtkChild]
 		internal unowned Gtk.Label validatelab;
-		[GtkChild]
-		internal unowned Gtk.Label missionlab;
 		[GtkChild]
 		internal unowned Gtk.Spinner armed_spinner;
 		[GtkChild]
@@ -168,6 +165,7 @@ namespace Mwp {
 			scwindow = new Mwp.SCWindow();
 			GstDev.init();
 			TelemTracker.init();
+
 			conbutton.clicked.connect(() => {
 					Msp.handle_connect();
 				});
@@ -341,7 +339,8 @@ namespace Mwp {
 		}
 
 		private void launch_manual() {
-			new Gtk.UriLauncher("https://stronnag.github.io/mwptools/").launch(null, null);
+			var ul = new Gtk.UriLauncher("https://stronnag.github.io/mwptools/");
+			ul.launch.begin(null, null);
 		}
 
 		private void launch_posdialog() {
@@ -353,7 +352,7 @@ namespace Mwp {
 		}
 
 		private void launch_safehomes() {
-			Safehome.manager.display();
+			Safehome.manager.display_ui();
 		}
 
 		private void launch_radar() {

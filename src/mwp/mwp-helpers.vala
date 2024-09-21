@@ -142,7 +142,8 @@ namespace MwpMenu {
 
 namespace Misc {
     public bool get_primary_size(out Gdk.Rectangle rect) {
-        bool ret = true;
+		rect={};
+		bool ret = true;
         Gdk.Display dp = Gdk.Display.get_default();
         var mons = dp.get_monitors();
         if(mons != null)

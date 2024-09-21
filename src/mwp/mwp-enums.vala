@@ -237,8 +237,6 @@ namespace Mwp {
 
     private struct Varios {
         uint idx;
-        int alts[2];
-        uint ticks[2];
     }
 
 	public struct MQI {

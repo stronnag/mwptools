@@ -900,8 +900,6 @@ namespace Mwp {
 		case Msp.Cmds.COMP_GPS:
 			MSP_COMP_GPS cg = MSP_COMP_GPS();
 			uint8* rp;
-			uint16 rng;
-			int16 brg;
 			rp = SEDE.deserialise_u16(raw, out cg.range);
 			rp = SEDE.deserialise_i16(rp, out cg.direction);
 			cg.update = *rp;
@@ -1504,7 +1502,6 @@ namespace Mwp {
 
                 // acro/horizon/angle changed
             uint8 ltmflags = 0;
-            var mchg = bxflag != xbits;
 
             if((bxflag & lmask) != (xbits & lmask)) {
                 report_bits(bxflag);

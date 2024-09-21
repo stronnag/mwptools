@@ -115,67 +115,6 @@ namespace Panel {
 			}
 		}
 
-		private Gtk.Widget? get_pane_at(int row, int col) {
-			Gtk.Widget? w = null;
-			switch(row) {
-			case 0:
-				switch (col) {
-				case 0,1:
-					w = v0h0h0;
-					break;
-				case 2:
-					w = v0h0;
-					break;
-				default:
-					break;
-				}
-				break;
-			case 1:
-				switch (col) {
-				case 0,1:
-					w = v0h1;
-					break;
-				default:
-					break;
-				}
-				break;
-			case 2:
-				switch (col) {
-				case 0,1:
-					w = v1h0;
-					break;
-				default:
-					break;
-				}
-				break;
-			case 3:
-				switch (col) {
-				case 0,1:
-					w = v1h1;
-					break;
-				default:
-					break;
-				}
-				break;
-			}
-			return w;
-		}
-
-		private int get_position(int row, int col) {
-			var p = get_pane_at(row, col) as Gtk.Paned?;
-			if (p != null) {
-				return p.position;
-			}
-			return -1;
-		}
-
-		private void set_position(int row, int col, int pos) {
-			var p = get_pane_at(row, col) as Gtk.Paned?;
-			if (p != null) {
-				p.position = pos;
-			}
-		}
-
 		private bool insert(Gtk.Widget w, int row, int col) {
 			bool ok = true;
 			switch(row) {

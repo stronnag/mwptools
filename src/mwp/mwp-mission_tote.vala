@@ -92,7 +92,7 @@ namespace MissionManager {
 					dt.drop.connect((tgt, val, x, y) => {
 							var dest_pos = mi.no;
 							var orig_pos = (int)val;
-							var h = tgt.get_widget().get_allocated_height();
+							var h = tgt.get_widget().get_height();
 							if( y > h/2) {
 								dest_pos += 1;
 								//print("Below\n");

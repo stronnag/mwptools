@@ -28,7 +28,7 @@ namespace GCS {
 		}
 	}
 
-	public MWPMarker create_icon () {
+	public MWPMarker? create_icon () {
 		try {
 			var img = Img.load_image_from_file("gcs.svg", Mwp.conf.misciconsize,Mwp.conf.misciconsize);
 			icon = new MWPMarker.from_image(img);

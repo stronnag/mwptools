@@ -23,8 +23,6 @@ namespace Measurer {
 		private Shumate.PathLayer pl;
 		private Shumate.MarkerLayer ml;
 		private double tdist;
-		private double clat;
-		private double clon;
 
 		public void clean_up() {
 			ml.remove_all();
@@ -135,12 +133,6 @@ namespace Measurer {
 					calc = true;
 				});
 			label.label = format_distance();
-		}
-		private bool delta_diff(double f0, double f1, uint zoom) {
-			var delta = 0.0000025 * Math.pow(2, (20-zoom));
-			var ddist = Math.fabs(f0-f1);
-			var res = (ddist > delta);
-			return res;
 		}
 	}
 }

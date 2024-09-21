@@ -367,7 +367,6 @@ public class  SafeHomeDialog : Adw.Window {
 			});
 		f0.bind.connect((f,o) => {
 				Gtk.ListItem list_item =  (Gtk.ListItem)o;
-				var sh = list_item.get_item() as SafeHome;
 				var label = list_item.get_child() as Gtk.Label;
                 label.set_text(list_item.position.to_string());
 			});
@@ -900,7 +899,6 @@ public class  SafeHomeDialog : Adw.Window {
 		if (action == Gtk.FileChooserAction.OPEN) { //FIXME enum
 			fc.open.begin (Mwp.window, null, (o,r) => {
 					try {
-						string s;
 						var file = fc.open.end(r);
 						var fn = file.get_path ();
 						load_homes(fn, switcher.active);
@@ -911,7 +909,6 @@ public class  SafeHomeDialog : Adw.Window {
 		} else {
 			fc.save.begin (Mwp.window, null, (o,r) => {
 					try {
-						string s;
 						var fh = fc.save.end(r);
 						filename = fh.get_path ();
                         save_file();
@@ -922,7 +919,7 @@ public class  SafeHomeDialog : Adw.Window {
 		}
     }
 
-    public void display() {
+    public void display_ui() {
         if(!_available) {
 			_available = true;
             present ();

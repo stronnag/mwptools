@@ -53,7 +53,6 @@ namespace TTS {
     private Pid epid;
 	private uint8 spkamp = 0;
 	private string arm_msg = null;
-	private uint8 lsats = 0;
 	private int lsat_t = 0;
 
 	public void start_audio(bool live = true) {

@@ -70,6 +70,7 @@ namespace Msp {
 
 #if MQTT
         Mwp.mqtt = newMwpMQTT();
+		MQTT.init();
         Mwp.mqtt.mqtt_mission.connect((w,n) => {
 				if(n > 0) {
 					Mwp.wpmgr = {};

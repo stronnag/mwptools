@@ -205,7 +205,7 @@ public class MWPPoint: MWPMarker {
 		var provider = new Gtk.CssProvider ();
 		var stylec = this.get_style_context();
 		stylec.add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
-		provider.load_from_data(cssstr.data);
+		provider.load_from_string(cssstr);
 		this.add_css_class("map-point");
 	}
 }
@@ -249,7 +249,7 @@ public class MWPLabel : MWPMarker {
 
 	private void set_css() {
 		string cssstr=".mycol {  padding: 0 0.6rem 0 0.6rem; background-color: %s; color: %s; border-radius: 5px;}".printf(bcol, fcol);
-		provider.load_from_data(cssstr.data);
+		provider.load_from_string(cssstr);
 	}
 
 	private string val_to_colour(Value v) {

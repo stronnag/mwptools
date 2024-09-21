@@ -175,7 +175,7 @@ namespace Radar {
 		var now = new DateTime.now_local();
 
 		for(var i = 0; i < radar_cache.size(); i++) {
-			var r = radar_cache.get(i);
+			var r = radar_cache.get_item(i);
 			if (r != null) {
 				uint rk = r.id;
 				var is_adsb = ((r.source & RadarSource.M_ADSB) != 0);
@@ -338,7 +338,7 @@ namespace Radar {
 					var label = list_item.get_child() as Gtk.Label;
 					r.bind_property("name", label, "label", BindingFlags.SYNC_CREATE);
 					r.notify["alert"].connect((s,p) => {
-							if(((s as RadarPlot).alert & RadarAlert.ALERT) != 0) {
+							if(((( RadarPlot)s).alert & RadarAlert.ALERT) != 0) {
 								label.add_css_class("error");
 							} else {
 								label.remove_css_class("error");
@@ -659,10 +659,10 @@ namespace Radar {
 			buttons[Buttons.HIDE].clicked.connect (() => {
 					if(!hidden) {
 						buttons[Buttons.HIDE].label = "Show symbols";
-						Gis.rm_layer.hide();
+						Gis.rm_layer.set_visible(false);
 					} else {
 						buttons[Buttons.HIDE].label = "Hide symbols";
-						Gis.rm_layer.show();
+						Gis.rm_layer.set_visible(true);
 					}
 					hidden = !hidden;
 				});
@@ -725,7 +725,7 @@ namespace Radar {
 			double alon = 0;
 
 			for(var j = 0; j < Radar.radar_cache.size(); j++) {
-				var r = Radar.radar_cache.get(j) as RadarPlot;
+				var r = Radar.radar_cache.get_item(j) as RadarPlot;
 				alat += r.latitude;
 				alon += r.longitude;
 				n++;
@@ -744,7 +744,7 @@ namespace Radar {
 			buttons[Buttons.CENTRE].sensitive = (n_rows != 0);
 
 			for(var j = 0; j < n_rows; j++) {
-				var r = Radar.radar_cache.get(j);
+				var r = Radar.radar_cache.get_item(j);
 				if(r.state == Radar.Status.STALE) {
 					stale++;
 				} else if(r.state == Radar.Status.HIDDEN)
@@ -775,8 +775,6 @@ namespace Radar {
 		public void update (uint rk, bool verbose = false) {
 			var dt = new DateTime.now_local ();
 			double idm = TOTHEMOON;
-			uint cse =0;
-			uint8 htype;
 			double hlat, hlon;
 
 			var r = Radar.radar_cache.lookup(rk);

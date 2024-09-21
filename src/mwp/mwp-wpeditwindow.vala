@@ -460,7 +460,7 @@ public class WPPopEdit : Adw.Window {
             css =  "entry { border-style: solid; border-color: orange; border-width: 1px;}";
         }
 		var provider = new CssProvider();
-		provider.load_from_data(css.data);
+		provider.load_from_string(css);
 		var stylec = w.get_style_context();
 		stylec.add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
     }

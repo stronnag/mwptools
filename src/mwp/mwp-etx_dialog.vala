@@ -189,9 +189,7 @@ namespace ETX {
 					fc.modal = true;
 					fc.open.begin (Mwp.window, null, (o,r) => {
 							try {
-								string s;
 								var file = fc.open.end(r);
-								var fn = file.get_path ();
 								etxfile = file;
 								log_name.label = file.get_basename();
 								get_etx_metas();

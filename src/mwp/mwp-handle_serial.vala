@@ -46,7 +46,6 @@ namespace Mwp {
     bool vinit;
     bool need_preview;
     bool xfailsafe;
-    bool failsafe;
 
     uint8 gpscnt;
     uint8 want_special;
@@ -58,7 +57,6 @@ namespace Mwp {
     uint16 sensor;
     uint16 xsensor;
     uint8 profile;
-    MavPOSDef[] mavposdef;
 
     /* for jump protection */
     double xlon;
@@ -77,7 +75,6 @@ namespace Mwp {
 	uint16 nav_rth_home_offset_distance;
 
 	bool need_mission;
-	bool map_clean;
 
 	uint8 last_nmode;
 	uint8 last_nwp;

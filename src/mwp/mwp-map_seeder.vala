@@ -203,19 +203,6 @@ namespace TileUtils {
 			return r;
 		}
 
-		private string quadkey() {
-			StringBuilder sb = new StringBuilder ();
-			for (var i = tl[in].z - 1; i >= 0; i--) {
-				char digit = '0';
-				if ((ix & (1 << i)) != 0)
-					digit += 1;
-				if ((iy & (1 << i)) != 0)
-					digit += 2;
-				sb.append_unichar(digit);
-			}
-			return sb.str;
-		}
-
 		private string uri_builder() {
 			var s = uri;
 			s = s.replace("{z}", "%d".printf(tl[in].z));

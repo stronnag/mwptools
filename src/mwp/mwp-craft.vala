@@ -69,7 +69,6 @@ public class Craft : Object {
 	private int stack_size = 0;
 	private int mod_points = 0;
 	private bool moving_map;
-	int lastang  = 0;
 
     public enum Special {
         HOME = -1,

@@ -33,7 +33,7 @@ namespace Mwp {
 			if(ser.is_main) {
 				armed = mavarmed;
 				sensor = mavsensors;
-				var achg = armed_processing(armed,"mav");
+				armed_processing(armed,"mav");
 				uint8 ltmflags = (vi.fc_vers >= FCVERS.hasPOI) ?
 					Mav.mav2inav(m.custom_mode, (m.type == Mav.TYPE.MAV_TYPE_FIXED_WING)) :
 					Mav.xmav2inav(m.custom_mode, (m.type == Mav.TYPE.MAV_TYPE_FIXED_WING));
@@ -111,7 +111,6 @@ namespace Mwp {
 			var cse = calc_cse_dist_delta(mlat, mlon, out ddm);
 			cse = (m.cog == 0xffff) ? cse : m.cog/100.0;
 			double dalt = m.alt/1000.0;
-			var elev = (int16)Math.lround(dalt);
 
 			ser.td.gps.lat = mlat;
 			ser.td.gps.lon = mlon;
@@ -119,6 +118,7 @@ namespace Mwp {
 			ser.td.gps.nsats = m.satellites_visible;
 			ser.td.gps.cog = cse;
 			ser.td.gps.fix = (uint8)fix;
+			ser.td.gps.gspeed = spd;
 
 			if(ser.is_main) {
 				if(gpsfix) {

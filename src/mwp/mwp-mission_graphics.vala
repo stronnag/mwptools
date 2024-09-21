@@ -263,7 +263,6 @@ namespace MsnTools {
 	}
 
 	public void fbh_toggle(Mission m, Gtk.Bitset bs) {
-		MissionItem []nmis = {};
 		double hlat, hlon;
 		HomePoint.get_location(out hlat, out hlon);
 		for(var i = 0; i < m.npoints; i++) {

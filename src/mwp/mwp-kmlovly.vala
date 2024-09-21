@@ -119,17 +119,6 @@ namespace Kml {
         kmls.remove_range(0,kmls.length);
     }
 
-	private bool is_kml_loaded(string name) {
-        var found = false;
-        for (int i = 0; i < kmls.length ; i++) {
-            if(name == kmls.index(i).get_name()) {
-				found = true;
-				break;
-			}
-		}
-		return found;
-	}
-
 	public class KmlOverlay : Object {
 		private string filename;
 		private string name;

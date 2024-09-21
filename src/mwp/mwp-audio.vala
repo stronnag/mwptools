@@ -23,13 +23,6 @@ namespace Audio {
             var fn = MWPUtils.find_conf_file(sfn);
             if(fn != null) {
 				var m = Gtk.MediaFile.for_filename(fn);
-				m.notify["ended"].connect(() => {
-					});
-				m.notify["prepared"].connect(() => {
-						var t = m.duration;
-						var s = t/1000000;
-						var ms = t % 1000000;
-					});
 				m.play();
 			}
 		}
@@ -55,28 +48,7 @@ namespace Audio {
 					voice = null;
 					break;
                 }
-                //navstatus.logspeak_init(voice, (conf.uilang == "ev"), exvox);
-                spktid = Timeout.add_seconds(Mwp.conf.speakint, () => {
-                        if(Mwp.replay_paused == false) {
-                            //navstatus.announce(sflags); // FIXME
-						}
-                        return Source.CONTINUE;
-                    });
-                if(live) {
-                    /* FIXME
-					   gps_alert(0);
-					   navstatus.announce(sflags);
-					*/
-                }
             }
-        }
-    }
-
-    private void stop_audio() {
-        if(spktid > 0) {
-			Source.remove(spktid);
-			spktid = 0;
-            //navstatus.logspeak_close(); // FIXME
         }
     }
 }

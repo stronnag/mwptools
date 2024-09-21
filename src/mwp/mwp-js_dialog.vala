@@ -68,7 +68,6 @@ namespace Mwpjs {
 					fc.open.begin (Mwp.window, null, (o,r) => {
 							try {
 								var file = fc.open.end(r);
-								var fn = file.get_path ();
 								jsfile = file;
 								log_name.label = jsfile.get_basename();
 								apply.sensitive = true;

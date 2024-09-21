@@ -216,8 +216,6 @@ namespace Mwp {
             rawfd = true;
         }
 
-        playfd = new int[2];
-
         if(msp.available) {
 			Msp.close_serial();
 		}

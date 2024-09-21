@@ -23,7 +23,6 @@ namespace Radar {
 	private Gdk.Pixbuf inavtelem;
 
 	private unowned MWPMarker? find_radar_item(uint rid) {
-		 unowned MWPMarker rd = null;
 		 var rdrlist =  Gis.rm_layer.get_markers();
 		 for (unowned GLib.List<weak Shumate.Marker> lp = rdrlist.first();
 			  lp != null; lp = lp.next) {

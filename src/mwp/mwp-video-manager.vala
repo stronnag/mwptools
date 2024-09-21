@@ -160,6 +160,7 @@ public class V4L2_dialog : Adw.Window {
 	}
 
 	public int result(out string uri) {
+		uri=null;
 		if (rb0.active) {
             return 0;
         } else {

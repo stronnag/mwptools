@@ -33,12 +33,9 @@ public class GZEdit : Adw.Window {
 	private Gtk.Label lradius;
 	private Gtk.Grid grid;
 	private Gtk.Label newlab;
-	private double llat=0;
-	private double llon=0;
 
 	private unowned MWPMarker? popmk;
 	private int popno;
-	private uint popid;
 	private Gtk.PopoverMenu pop;
 	private GLib.MenuModel menu;
 	private GLib.SimpleActionGroup dg;
@@ -671,23 +668,6 @@ public class GZEdit : Adw.Window {
 			pop.popup();
 		}
 	}
-
-	private void add_polypoint(double lat, double lon) {
-		var vlen = Mwp.gzr.nvertices(nitem);
-		Mwp.gzr.append_vertex(nitem, vlen, (int)(lat*1e7), (int)(lon*1e7));
-		unowned OverlayItem el = ovl.get_elements().nth_data(nitem);
-		MWPMarker mk = el.add_line_point(lat,lon, "%u/%u".printf(nitem, vlen));
-		ovl.add_marker(mk);
-		mk.drag_end.connect(on_poly_finish);
-		mk.popup_request.connect(on_poly_capture);
-	}
-
-    private bool view_delta_diff(double f0, double f1) {
-        double delta;
-        delta = 0.0000025 * Math.pow(2, (20-Gis.map.viewport.zoom_level));
-        var res = (Math.fabs(f0-f1) > delta);
-        return res;
-    }
 
 	public void clear() {
 		if (visible) {

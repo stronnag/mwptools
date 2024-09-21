@@ -52,16 +52,16 @@ namespace Follow {
 		fmdlg.ready.connect((s,a) => {
 				switch(s) {
 				case 1:
-				    fmpt.show_followme(!fmpt.is_visible);
-				    if (fmpt.is_visible) {
-					    validate_fm();
-				    }
-					break;
+				fmpt.show_followme(!FPoint.is_visible);
+				if (FPoint.is_visible) {
+					validate_fm();
+				}
+				break;
 				case 2:
 				followme_set_wp(flat, flon, a); // send to vehicle
-					break;
+				break;
 				default:
-				    break;
+				break;
 				}
 			});
 	}

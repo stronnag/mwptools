@@ -90,7 +90,7 @@ namespace Radar {
 			return lstore.get_n_items();
 		}
 
-		public RadarPlot? get(uint pos) {
+		public RadarPlot? get_item(uint pos) {
 			return lstore.get_item(pos) as RadarPlot;
 		}
 

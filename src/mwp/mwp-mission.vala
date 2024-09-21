@@ -413,8 +413,4 @@ public class Mission : GLib.Object {
 			}
 		}
 	}
-
-	void show_changed() {
-		changed();
-	}
 }

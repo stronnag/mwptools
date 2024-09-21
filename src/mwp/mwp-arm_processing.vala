@@ -92,7 +92,7 @@ namespace Mwp {
                 if(Odo.stats.time > 5) {
                     MWPLog.message("Distance = %.1f, max speed = %.1f time = %u\n",
                                    Odo.stats.distance, Odo.stats.speed, Odo.stats.time);
-                    Odo.view.display(Odo.stats, true);
+                    Odo.view.display_ui(Odo.stats, true);
                     //map_hide_wp(); // FIXME
                 }
 				if (Odo.stats.live) {

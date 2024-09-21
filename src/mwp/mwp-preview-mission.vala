@@ -42,7 +42,9 @@ public class Previewer : Object {
 		mprv.is_mr = false;
 		mprv.fd = fds[1];
 		chn = new IOChannel.unix_new (fds[0]);
-		chn.set_encoding(null);
+		try {
+			chn.set_encoding(null);
+		} catch {}
 
 		chn.add_watch(IOCondition.IN|IOCondition.HUP, (src, cond) => {
 				if(cond == IOCondition.HUP) {
