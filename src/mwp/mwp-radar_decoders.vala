@@ -91,7 +91,6 @@ namespace Radar {
 			isvalid = ri.posvalid;
 		}
 		ri.etype = 0;
-		ri.state = 5;
 		if(ri.posvalid) {
 			Radar.upsert(v, ri);
 			Radar.update(v, rdebug);
@@ -142,7 +141,6 @@ namespace Radar {
 			//}
 			ri.lq = (a.seen_pos < 256) ? (uint8)a.seen_pos : 255;
 			//			ri.lasttick = nticks;
-			ri.state = 5;
 			ri.srange = a.srange;
 			if (rdebug) {
 				string ssm;
@@ -230,7 +228,6 @@ namespace Radar {
 					}
 					sb.append_printf(" ts: %s, lq: %u\n", ri.dt.format("%T"), ri.lq);
 					//					ri.lasttick = nticks;
-					ri.state = 5;
 					Radar.upsert(icao, ri);
 					Radar.update(icao, rdebug);
 					Radar.update_marker(icao);

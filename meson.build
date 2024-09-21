@@ -1,4 +1,4 @@
-project('mwptools', 'vala', 'c', version : '24.09.20', meson_version : '>= 1.4.0')
+project('mwptools', 'vala', 'c', version : '24.09.21', meson_version : '>= 1.4.0')
 
 # For now, as some replacements are not  well defined.
 #show_deprecated = get_option('deprecations')

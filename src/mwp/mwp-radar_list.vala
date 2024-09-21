@@ -26,6 +26,12 @@ namespace Radar {
 	public RadarCache radar_cache;
 	public RadarView radarv;
 
+	public enum Status {
+		UNDEF = 0,
+		ARMED = 1,
+		HIDDEN = 2,
+		STALE = 3,
+	}
 
 	public bool lookup_radar(string s) {
 		foreach (var r in radardevs) {
@@ -173,9 +179,9 @@ namespace Radar {
 			if (r != null) {
 				uint rk = r.id;
 				var is_adsb = ((r.source & RadarSource.M_ADSB) != 0);
-				var staled = 12*TimeSpan.SECOND;
-				var deled = 60*TimeSpan.SECOND;
+				var staled = 15*TimeSpan.SECOND;
 				var hided = 30*TimeSpan.SECOND;;
+				var deled = 60*TimeSpan.SECOND;
 				if (!is_adsb) {
 					staled *= 10;
 					deled *= 10;
@@ -199,7 +205,7 @@ namespace Radar {
 						MWPLog.message("TRAF-HID %X %s %u %u\n",
 									   rk, r.name, r.state, radar_cache.size());
 					if(is_adsb) {
-						r.state = 2; // hidden
+						r.state = Radar.Status.HIDDEN; // hidden
 						r.alert = RadarAlert.SET;
 						radar_cache.upsert(rk, r);
 						radarv.update(rk, ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE));
@@ -207,16 +213,21 @@ namespace Radar {
 							Radar.set_radar_hidden(rk);
 						}
 					}
-				} else if(delta > staled && r.state != 0 && r.state != 3) {
+				} else if(delta > staled) {
 					if(rdebug)
-						MWPLog.message("TRAF-STALE %X %s %u %u\n",
-									   rk, r.name, r.state, radar_cache.size());
-					r.state = 3; // stale
+						MWPLog.message("TRAF-STALE %X %s %u %u\n", rk, r.name, r.state, radar_cache.size());
+					r.state = Radar.Status.STALE; // stale
 					r.alert = RadarAlert.SET;
 					radar_cache.upsert(rk, r);
 					radarv.update(rk, ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE));
 					if(r.posvalid) {
 						Radar.set_radar_stale(rk);
+					}
+				} else {
+					if(is_adsb) {
+						r.state = 0;
+						radar_cache.upsert(rk, r);
+						radarv.update(rk, ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE));
 					}
 				}
 			}
@@ -252,39 +263,12 @@ namespace Radar {
 		Gtk.Button[] buttons;
 
 		Gtk.ColumnView cv;
-		Gtk.SingleSelection lsel;
-
-		enum Column {
-			SID,
-			NAME,
-			LAT,
-			LON,
-			ALT,
-			COURSE,
-			SPEED,
-			STATUS,
-			LAST,
-			RANGE,
-			BEARING,
-			CATEGORY,
-			ALERT,
-			ID,
-			NO_COLS
-		}
+		Gtk.NoSelection lsel;
 
 		enum Buttons {
 			CENTRE,
 			HIDE,
 			CLOSE
-		}
-
-		public enum Status {
-			UNDEF = 0,
-			ARMED = 1,
-			HIDDEN =2,
-			STALE = 3,
-			ADSB = 4,
-			SBS = 5
 		}
 
 		~RadarView() {
@@ -299,12 +283,21 @@ namespace Radar {
 
 		const double TOTHEMOON = -9999.0;
 
-		public static string[] status = {"Undefined", "Armed", "Hidden", "Stale", "ADS-B", "SDR"};
+		public static string[] status = {"Undefined", "Armed", "Hidden", "Stale"};
 
 		private void create_cv() {
 			cv = new Gtk.ColumnView(null);
-			var sm = new Gtk.SortListModel(radar_cache.lstore, cv.sorter);
-			lsel = new Gtk.SingleSelection(sm);
+			var filterz = new Gtk.CustomFilter((o) => {
+					if(Mwp.conf.max_radar_altitude > 0 &&
+					   ((RadarPlot)o).altitude > Mwp.conf.max_radar_altitude) {
+						return false;
+					}
+					return true;
+				});
+
+			var fm = new Gtk.FilterListModel (radar_cache.lstore, filterz);
+			var sm = new Gtk.SortListModel(fm, cv.sorter);
+			lsel = new Gtk.NoSelection(sm);
 			cv.set_model(lsel);
 			cv.show_column_separators = true;
 			cv.show_row_separators = true;
@@ -331,6 +324,7 @@ namespace Radar {
 
 			f0 = new Gtk.SignalListItemFactory();
 			c0 = new Gtk.ColumnViewColumn("Name", f0);
+			c0.expand = true;
 			cv.append_column(c0);
 			f0.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
@@ -343,18 +337,301 @@ namespace Radar {
 					RadarPlot r = list_item.get_item() as RadarPlot;
 					var label = list_item.get_child() as Gtk.Label;
 					r.bind_property("name", label, "label", BindingFlags.SYNC_CREATE);
+					r.notify["alert"].connect((s,p) => {
+							if(((s as RadarPlot).alert & RadarAlert.ALERT) != 0) {
+								label.add_css_class("error");
+							} else {
+								label.remove_css_class("error");
+							}
+						});
 				});
 
 			expression = new Gtk.PropertyExpression(typeof(RadarPlot), null, "name");
 			c0.set_sorter(new Gtk.StringSorter(expression));
+
+			f0 = new Gtk.SignalListItemFactory();
+			c0 = new Gtk.ColumnViewColumn("Latitude", f0);
+			cv.append_column(c0);
+			c0.expand = true;
+			f0.setup.connect((f,o) => {
+					Gtk.ListItem list_item = (Gtk.ListItem)o;
+					var label=new Gtk.Label("");
+					list_item.set_child(label);
+				});
+			f0.bind.connect((f,o) => {
+					Gtk.ListItem list_item =  (Gtk.ListItem)o;
+					RadarPlot r = list_item.get_item() as RadarPlot;
+					var label = list_item.get_child() as Gtk.Label;
+					label.label = PosFormat.lat(r.latitude, Mwp.conf.dms);
+					r.notify["latitude"].connect((s,p) => {
+							label.label = PosFormat.lat(((RadarPlot)s).latitude, Mwp.conf.dms);
+						});
+				});
+			f0 = new Gtk.SignalListItemFactory();
+			c0 = new Gtk.ColumnViewColumn("Longitude", f0);
+			c0.expand = true;
+			cv.append_column(c0);
+			f0.setup.connect((f,o) => {
+					Gtk.ListItem list_item = (Gtk.ListItem)o;
+					var label=new Gtk.Label("");
+					list_item.set_child(label);
+				});
+			f0.bind.connect((f,o) => {
+					Gtk.ListItem list_item =  (Gtk.ListItem)o;
+					RadarPlot r = list_item.get_item() as RadarPlot;
+					var label = list_item.get_child() as Gtk.Label;
+					label.label = PosFormat.lon(r.longitude, Mwp.conf.dms);
+					r.notify["latitude"].connect((s,p) => {
+							label.label = PosFormat.lon(((RadarPlot)s).longitude, Mwp.conf.dms);
+						});
+				});
+			f0 = new Gtk.SignalListItemFactory();
+			c0 = new Gtk.ColumnViewColumn("Altitude", f0);
+			c0.expand = true;
+			cv.append_column(c0);
+			f0.setup.connect((f,o) => {
+					Gtk.ListItem list_item = (Gtk.ListItem)o;
+					var label=new Gtk.Label("");
+					list_item.set_child(label);
+				});
+			f0.bind.connect((f,o) => {
+					Gtk.ListItem list_item =  (Gtk.ListItem)o;
+					RadarPlot r = list_item.get_item() as RadarPlot;
+					var label = list_item.get_child() as Gtk.Label;
+					label.label = format_alt(r);
+					r.notify["altitude"].connect((s,p) => {
+							label.label = format_alt((RadarPlot)s);
+						});
+				});
+
+			f0 = new Gtk.SignalListItemFactory();
+			c0 = new Gtk.ColumnViewColumn("Course", f0);
+			c0.expand = true;
+			cv.append_column(c0);
+			f0.setup.connect((f,o) => {
+					Gtk.ListItem list_item = (Gtk.ListItem)o;
+					var label=new Gtk.Label("");
+					list_item.set_child(label);
+				});
+			f0.bind.connect((f,o) => {
+					Gtk.ListItem list_item =  (Gtk.ListItem)o;
+					RadarPlot r = list_item.get_item() as RadarPlot;
+					var label = list_item.get_child() as Gtk.Label;
+					label.label = format_course(r);
+					r.notify["heading"].connect((s,p) => {
+							label.label = format_course((RadarPlot)s);
+						});
+				});
+
+			f0 = new Gtk.SignalListItemFactory();
+			c0 = new Gtk.ColumnViewColumn("Speed", f0);
+			c0.expand = true;
+			cv.append_column(c0);
+			f0.setup.connect((f,o) => {
+					Gtk.ListItem list_item = (Gtk.ListItem)o;
+					var label=new Gtk.Label("");
+					list_item.set_child(label);
+				});
+			f0.bind.connect((f,o) => {
+					Gtk.ListItem list_item =  (Gtk.ListItem)o;
+					RadarPlot r = list_item.get_item() as RadarPlot;
+					var label = list_item.get_child() as Gtk.Label;
+					label.label = format_speed(r);
+					r.notify["speed"].connect((s,p) => {
+							label.label = format_speed((RadarPlot)s);
+						});
+				});
+
+			f0 = new Gtk.SignalListItemFactory();
+			c0 = new Gtk.ColumnViewColumn("Status", f0);
+			cv.append_column(c0);
+			f0.setup.connect((f,o) => {
+					Gtk.ListItem list_item = (Gtk.ListItem)o;
+					var label=new Gtk.Label("");
+					list_item.set_child(label);
+
+				});
+			f0.bind.connect((f,o) => {
+					Gtk.ListItem list_item =  (Gtk.ListItem)o;
+					RadarPlot r = list_item.get_item() as RadarPlot;
+					var label = list_item.get_child() as Gtk.Label;
+					label.label = format_status(r);
+					r.notify["state"].connect((s,p) => {
+							label.label = format_status((RadarPlot)s);
+						});
+					r.notify["lq"].connect((s,p) => {
+							label.label = format_status((RadarPlot)s);
+						});
+				});
+
+			f0 = new Gtk.SignalListItemFactory();
+			c0 = new Gtk.ColumnViewColumn("Last", f0);
+			c0.expand = true;
+			cv.append_column(c0);
+			f0.setup.connect((f,o) => {
+					Gtk.ListItem list_item = (Gtk.ListItem)o;
+					var label=new Gtk.Label("");
+					list_item.set_child(label);
+				});
+			f0.bind.connect((f,o) => {
+					Gtk.ListItem list_item =  (Gtk.ListItem)o;
+					RadarPlot r = list_item.get_item() as RadarPlot;
+					var label = list_item.get_child() as Gtk.Label;
+					label.label = format_last(r);
+					r.notify["dt"].connect((s,p) => {
+							label.label = format_last((RadarPlot)s);
+						});
+				});
+
+			f0 = new Gtk.SignalListItemFactory();
+			c0 = new Gtk.ColumnViewColumn("Range", f0);
+			c0.expand = true;
+			cv.append_column(c0);
+			f0.setup.connect((f,o) => {
+					Gtk.ListItem list_item = (Gtk.ListItem)o;
+					var label=new Gtk.Label("");
+					list_item.set_child(label);
+				});
+			f0.bind.connect((f,o) => {
+					Gtk.ListItem list_item =  (Gtk.ListItem)o;
+					RadarPlot r = list_item.get_item() as RadarPlot;
+					var label = list_item.get_child() as Gtk.Label;
+					label.label = format_range(r);
+					r.notify["range"].connect((s,p) => {
+							label.label = format_range((RadarPlot)s);
+						});
+				});
+
+			f0 = new Gtk.SignalListItemFactory();
+			c0 = new Gtk.ColumnViewColumn("Bearing", f0);
+			c0.expand = true;
+			cv.append_column(c0);
+			f0.setup.connect((f,o) => {
+					Gtk.ListItem list_item = (Gtk.ListItem)o;
+					var label=new Gtk.Label("");
+					list_item.set_child(label);
+				});
+			f0.bind.connect((f,o) => {
+					Gtk.ListItem list_item =  (Gtk.ListItem)o;
+					RadarPlot r = list_item.get_item() as RadarPlot;
+					var label = list_item.get_child() as Gtk.Label;
+					label.label = format_bearing(r);
+					r.notify["bearing"].connect((s,p) => {
+							label.label = format_bearing((RadarPlot)s);
+						});
+				});
+
+			f0 = new Gtk.SignalListItemFactory();
+			c0 = new Gtk.ColumnViewColumn("Cat", f0);
+			c0.expand = true;
+			cv.append_column(c0);
+			f0.setup.connect((f,o) => {
+					Gtk.ListItem list_item = (Gtk.ListItem)o;
+					var label=new Gtk.Label("");
+					list_item.set_child(label);
+				});
+			f0.bind.connect((f,o) => {
+					Gtk.ListItem list_item =  (Gtk.ListItem)o;
+					RadarPlot r = list_item.get_item() as RadarPlot;
+					var label = list_item.get_child() as Gtk.Label;
+					label.label = format_cat(r);
+					r.notify["cat"].connect((s,p) => {
+							label.label = format_cat((RadarPlot)s);
+						});
+				});
+
+			var clm = cv.get_columns();
+			//               0  1   2   3   4   5   6   7
+			int [] widths = {0 ,10, 15, 16, 10, 9, 10, 15, 12, 12, 6, 4, 4};
+			for (var j = 0; j < clm.get_n_items(); j++) {
+				if(widths[j] != 0) {
+					var cw = clm.get_item(j) as Gtk.ColumnViewColumn;
+					cw.set_fixed_width(7*widths[j]);
+					cw.resizable = true;
+				}
+			}
 		}
 
+		private string format_cat(RadarPlot r) {
+			return CatMap.to_category(r.etype);
+		}
+
+		private string format_bearing(RadarPlot r) {
+			string ga;
+			if (r.bearing == 0xffff) {
+				ga = "";
+			} else {
+				ga = "%u°".printf(r.bearing);
+			}
+			return ga;
+		}
+
+		private string format_range(RadarPlot r) {
+			string ga = "";
+			if (r.range != TOTHEMOON) {
+				if(r.source == RadarSource.SBS || r.source == RadarSource.MAVLINK) {
+					ga = Units.ga_range(r.range);
+				} else {
+					ga = "%.0f %s".printf(Units.distance(r.range), Units.distance_units());
+				}
+			}
+			return ga;
+		}
+
+		private string format_last(RadarPlot r) {
+			return r.dt.format("%T");
+		}
+
+		private string format_status(RadarPlot r) {
+			string sstr = "";
+			if(r.state == 0) {
+				if((r.source & RadarSource.MAVLINK) != 0) {
+					sstr = "ADSB";
+				} else if((r.source & RadarSource.SBS) != 0) {
+					sstr = "SDR";
+				} else {
+					sstr = "UnKnown";
+				}
+			} else {
+				sstr = RadarView.status[r.state];
+			}
+			return "%s / %u".printf(sstr, r.lq);
+		}
+
+		private string format_alt(RadarPlot r) {
+			string ga;
+			if((r.source & RadarSource.M_ADSB) != 0) {
+				ga = Units.ga_alt(r.altitude);
+			} else {
+				ga = "%.0f %s".printf(Units.distance(r.altitude), Units.distance_units());
+			}
+			return ga;
+		}
+
+		private string format_speed(RadarPlot r) {
+			string ga;
+			if((r.source & RadarSource.M_ADSB) != 0) {
+				ga = Units.ga_speed(r.speed);
+			} else {
+				ga = "%.0f %s".printf(Units.speed(r.speed), Units.speed_units());
+			}
+			return ga;
+		}
+
+		private string format_course(RadarPlot r) {
+			string ga;
+			if (r.heading ==  0xffff) {
+				ga = "";
+			} else {
+				ga = "%u°".printf(r.heading);
+			}
+			return ga;
+		}
 
 		public RadarView () {
 			set_transient_for(Mwp.window);
 			vis = false;
 			last_sec = 0;
-
 
 			var sbox = new Gtk.Box(Gtk.Orientation.VERTICAL, 2);
 			var header_bar = new Adw.HeaderBar();
@@ -362,12 +639,13 @@ namespace Radar {
 			var scrolled = new Gtk.ScrolledWindow ();
 			set_default_size (900, 400);
 			title = "Radar & Telemetry Tracking";
-			view.hexpand = true;
-			view.vexpand = true;
-			setup_treeview (view);
 			label = new Gtk.Label ("");
 			var grid = new Gtk.Grid ();
 			create_cv();
+			cv.hexpand = true;
+			cv.vexpand = true;
+			scrolled.propagate_natural_height = true;
+			scrolled.propagate_natural_width = true;
 			scrolled.set_child(cv);
 
 			buttons = {
@@ -445,14 +723,9 @@ namespace Radar {
 			int n = 0;
 			double alat = 0;
 			double alon = 0;
-			Gtk.TreeIter iter;
 
-			for(bool next=listmodel.get_iter_first(out iter); next;
-				next=listmodel.iter_next(ref iter)) {
-				GLib.Value cell;
-				listmodel.get_value (iter, Column.ID, out cell);
-				var rk = (uint)cell;
-				var r = Radar.radar_cache.lookup(rk);
+			for(var j = 0; j < Radar.radar_cache.size(); j++) {
+				var r = Radar.radar_cache.get(j) as RadarPlot;
 				alat += r.latitude;
 				alon += r.longitude;
 				n++;
@@ -463,73 +736,40 @@ namespace Radar {
 				Gis.map.center_on(alat, alon);
 			}
 		}
-
 		private void show_number() {
-			int n_rows = listmodel.iter_n_children(null);
-			int stale = 0;
-			int hidden = 0;
-			Gtk.TreeIter iter;
+			uint n_rows = Radar.radar_cache.size();
+			uint stale = 0;
+			uint hidden = 0;
 
 			buttons[Buttons.CENTRE].sensitive = (n_rows != 0);
 
-			for(bool next=listmodel.get_iter_first(out iter); next; next=listmodel.iter_next(ref iter)) {
-				GLib.Value cell;
-				listmodel.get_value (iter, Column.STATUS, out cell);
-				var status = (string)cell;
-				if(status.has_prefix("Stale"))
+			for(var j = 0; j < n_rows; j++) {
+				var r = Radar.radar_cache.get(j);
+				if(r.state == Radar.Status.STALE) {
 					stale++;
-				if(status.has_prefix("Hidden"))
+				} else if(r.state == Radar.Status.HIDDEN)
 					hidden++;
 			}
 			var sb = new StringBuilder("Targets: ");
-			int live = n_rows - stale - hidden;
-			sb.append_printf("%d", n_rows);
+			uint live = n_rows - stale - hidden;
+			sb.append_printf("%u", n_rows);
 			if (live > 0 && (stale+hidden) > 0)
-				sb.append_printf("\tLive: %d", live);
+				sb.append_printf("\tLive: %u", live);
 			if (stale > 0)
-				sb.append_printf("\tStale: %d", stale);
+				sb.append_printf("\tStale: %u", stale);
 			if (hidden > 0)
-				sb.append_printf("\tHidden: %d", hidden);
+				sb.append_printf("\tHidden: %u", hidden);
 
 			label.set_text (sb.str);
 		}
 
-		private bool find_entry(uint rid, out Gtk.TreeIter iter) {
-			bool found = false;
-			for(bool next=listmodel.get_iter_first(out iter); next; next=listmodel.iter_next(ref iter)) {
-				GLib.Value cell;
-				listmodel.get_value (iter, Column.ID, out cell);
-				var id = (uint)cell;
-				if(id == rid) {
-					found = true;
-					break;
-				}
-			}
-			return found;
-		}
-
 		public void remove (uint rid) {
-			Gtk.TreeIter iter;
-			var found = find_entry(rid, out iter);
+			var found = Radar.radar_cache.remove (rid);
 			if (found) {
-				listmodel.remove(ref iter);
 				show_number();
 			} else {
 				MWPLog.message("Radar view failed for %X\n", rid);
 			}
-		}
-
-		private void set_cell_text_bg(Gtk.TreeModel model, Gtk.TreeIter iter, Gtk.CellRenderer cell, string? s) {
-			Value v;
-			model.get_value(iter, Column.ALERT, out v);
-			var val = (uint)v;
-			if ((val & RadarAlert.ALERT) == RadarAlert.ALERT) {
-				cell.cell_background = "red";
-				cell.cell_background_set = true;
-			} else {
-				cell.cell_background_set = false;
-			}
-			cell.set_property("text", s);
 		}
 
 		public void update (uint rk, bool verbose = false) {
@@ -538,222 +778,56 @@ namespace Radar {
 			uint cse =0;
 			uint8 htype;
 			double hlat, hlon;
-			string ga_bearing;
-			string ga_alt;
-			string ga_speed;
 
 			var r = Radar.radar_cache.lookup(rk);
 			if (r == null)
 				return;
 
 			var alert = r.alert;
-			// FIXME
-			/*
-			if(Mwp.any_home(out htype, out hlat, out hlon)) {
-				double c,d;
-				Geo.csedist(hlat, hlon, r.latitude, r.longitude, out d, out c);
-				idm = d*1852.0; // nm to m
-				cse = (uint)c;
-				if((r.source & RadarSource.M_ADSB) != 0) {
-					if(Mwp.conf.radar_alert_altitude > 0 && Mwp.conf.radar_alert_range > 0 &&
-					   r.altitude < Mwp.conf.radar_alert_altitude && idm < Mwp.conf.radar_alert_range) {
-						r.alert = RadarAlert.ALERT;
-						var this_sec = dt.to_unix();
-						if(r.state > Status.STALE && this_sec >= last_sec + 2) {
-						Mwp.play_alarm_sound(MWPAlert.GENERAL);
-							last_sec =  this_sec;
-						}
-					} else {
-						r.alert = RadarAlert.NONE;
+			var xalert = r.alert;
+			if(r.srange == 0xffffffff) {
+				bool havehome = false;
+				havehome =  GCS.get_location(out hlat, out hlon);
+				if (!havehome) {
+					if(HomePoint.is_valid()) {
+						havehome = HomePoint.get_location(out hlat, out hlon);
 					}
 				}
-			}
-			*/
-			if (alert != r.alert) {
-				r.alert |= RadarAlert.SET;
-			}
-
-			if(Mwp.conf.max_radar_altitude > 0 && r.altitude > Mwp.conf.max_radar_altitude) {
-				if(verbose) {
-					MWPLog.message("RADAR: Not listing %s at %.lf m\n", r.name, r.altitude);
+				if(havehome) {
+					double c,d;
+					Geo.csedist(hlat, hlon, r.latitude, r.longitude, out d, out c);
+					idm = d*1852.0; // nm to m
+					r.range = idm;
+					r.bearing = (uint16)c;
+				} else {
+					r.bearing = 0xffff;
 				}
-				return;
-			}
-
-			Gtk.TreeIter iter;
-			var found = find_entry(rk, out iter);
-			if(!found) {
-				listmodel.append (out iter);
-				listmodel.set (iter, Column.ID, rk);
-			}
-
-			if(r.state >= RadarView.status.length)
-				r.state = Status.UNDEF;
-			var stsstr = "%s / %u".printf(RadarView.status[r.state], r.lq);
-			//ga_range = "";
-			if (idm == TOTHEMOON) {
-				ga_bearing = "";
 			} else {
-				ga_bearing = "%u°".printf(cse);
+				r.range = (double)(r.srange);
+				r.bearing = 0xffff;
 			}
 
 			if((r.source & RadarSource.M_ADSB) != 0) {
-				ga_alt = Units.ga_alt(r.altitude);
-				ga_speed = Units.ga_speed(r.speed);
-				if (idm == TOTHEMOON && r.srange != 0xffffffff) {
-					idm = (double)(r.srange);
-				}
-				//			if (idm != TOTHEMOON) {
-				//	ga_range = Units.ga_range(idm);
-				//}
-			} else {
-				ga_alt = "%.0f %s".printf(Units.distance(r.altitude), Units.distance_units());
-				ga_speed = "%.0f %s".printf(Units.speed(r.speed), Units.speed_units());
-			}
-
-			listmodel.set (iter,
-						   Column.SID, source_id(r.source),
-						   Column.NAME,r.name,
-						   Column.LAT, PosFormat.lat(r.latitude, Mwp.conf.dms),
-						   Column.LON, PosFormat.lon(r.longitude, Mwp.conf.dms),
-						   Column.ALT, ga_alt,
-						   Column.COURSE, "%d °".printf(r.heading),
-						   Column.SPEED, ga_speed,
-						   Column.STATUS, stsstr);
-
-			if(r.state == Status.ARMED || r.state == Status.ADSB || r.state == Status.SBS) {
-				listmodel.set (iter, Column.LAST, r.dt.format("%T"));
-			}
-
-			var scat = CatMap.to_category(r.etype);
-			listmodel.set (iter,
-						   Column.RANGE, idm,
-						   Column.BEARING, ga_bearing,
-						   Column.CATEGORY, scat,
-						   Column.ALERT, alert);
-			show_number();
-			Radar.radar_cache.upsert(rk, r);
-		}
-
-		private void setup_treeview (Gtk.TreeView view) {
-			listmodel = new Gtk.ListStore (Column.NO_COLS,
-										   typeof (string),
-										   typeof (string),
-										   typeof (string),
-										   typeof (string),
-										   typeof (string),
-										   typeof (string),
-										   typeof (string),
-										   typeof (string),
-										   typeof (string),
-										   typeof (double),
-										   typeof (string),
-										   typeof (string),
-										   typeof (uint),
-										   typeof (uint));
-
-			view.set_model (listmodel);
-			var cell = new Gtk.CellRendererText ();
-
-            /* 'weight' refers to font boldness.
-             *  400 is normal.
-             *  700 is bold.
-             */
-			//        cell.set ("weight_set", true);
-			//        cell.set ("weight", 700);
-
-            /*columns*/
-			view.insert_column_with_attributes (-1, "*",
-												cell, "text",
-												Column.SID);
-
-			view.insert_column_with_attributes (-1, "Id",
-												cell, "text",
-												Column.NAME);
-
-			var col = view.get_column(Column.NAME);
-			col.set_cell_data_func(cell, (col,_cell, model, iter) => {
-					Value v;
-					model.get_value(iter, Column.NAME, out v);
-					set_cell_text_bg(model, iter, _cell, (string)v);
-				});
-
-			cell = new Gtk.CellRendererText ();
-			view.insert_column_with_attributes (-1, "Latitude", cell, "text", Column.LAT);
-
-			cell = new Gtk.CellRendererText ();
-			view.insert_column_with_attributes (-1, "Longitude", cell, "text", Column.LON);
-
-			cell = new Gtk.CellRendererText ();
-			view.insert_column_with_attributes (-1, "Altitude", cell, "text", Column.ALT);
-
-			cell = new Gtk.CellRendererText ();
-			view.insert_column_with_attributes (-1, "Course", cell, "text", Column.COURSE);
-
-			cell = new Gtk.CellRendererText ();
-			view.insert_column_with_attributes (-1, "Speed", cell, "text", Column.SPEED);
-
-			cell = new Gtk.CellRendererText ();
-			view.insert_column_with_attributes (-1, "Status", cell, "text", Column.STATUS);
-
-			cell = new Gtk.CellRendererText ();
-			view.insert_column_with_attributes (-1, "Last", cell, "text", Column.LAST);
-
-			cell = new Gtk.CellRendererText ();
-			view.insert_column_with_attributes (-1, "Range", cell, "text", Column.RANGE);
-			col = view.get_column(Column.RANGE);
-			col.set_cell_data_func(cell, (col,_cell,model,iter) => {
-					string s="";
-					Value v;
-					model.get_value(iter, Column.RANGE, out v);
-					double rval = (double)v;
-					model.get_value(iter, Column.SID, out v);
-					string sid= (string)v;
-
-					if(sid == "S" || sid == "A") {
-						if (rval != TOTHEMOON) {
-							s = Units.ga_range(rval);
+					if(Mwp.conf.radar_alert_altitude > 0 && Mwp.conf.radar_alert_range > 0 &&
+					   r.altitude < Mwp.conf.radar_alert_altitude && idm < Mwp.conf.radar_alert_range) {
+						xalert = RadarAlert.ALERT;
+						var this_sec = dt.to_unix();
+						if(r.state < Radar.Status.STALE && this_sec >= last_sec + 2) {
+							Audio.play_alarm_sound(MWPAlert.GENERAL);
+							last_sec =  this_sec;
 						}
-					} else if (rval != TOTHEMOON) {
-						s = "%.0f %s".printf(Units.distance(rval), Units.distance_units());
+					} else {
+						xalert = RadarAlert.NONE;
 					}
-					_cell.set_property("text",s);
-				});
-
-
-			/**
-
-			   ga_alt = Units.ga_alt(r.altitude);
-			   ga_speed = Units.ga_speed(r.speed);
-			   //			if (idm != TOTHEMOON) {
-			   //	ga_range = Units.ga_range(idm);
-			   //}
-			   } else {
-			   ga_alt = "%.0f %s".printf(Units.distance(r.altitude), Units.distance_units());
-			   ga_speed = "%.0f %s".printf(Units.speed(r.speed), Units.speed_units());
-			   //if (idm != TOTHEMOON) {
-			   //	ga_range = "%.0f %s".printf(Units.distance(idm), Units.distance_units());
-			   //}
-			   }
-
-			**/
-
-			cell = new Gtk.CellRendererText ();
-			view.insert_column_with_attributes (-1, "Brg.", cell, "text", Column.BEARING);
-
-			cell = new Gtk.CellRendererText ();
-			view.insert_column_with_attributes (-1, "Cat.", cell, "text", Column.CATEGORY);
-
-			int [] widths = {2,12, 16, 16, 10, 10, 10, 12, 12, 12, 6, 4, 4};
-			for (int j = Column.SID; j <= Column.CATEGORY; j++) {
-				var scol =  view.get_column(j);
-				if(scol!=null) {
-					scol.set_min_width(7*widths[j]);
-					scol.resizable = true;
-					if (j == Column.SID || j == Column.NAME || j == Column.STATUS || j == Column.LAST || j == Column.RANGE)
-						scol.set_sort_column_id(j);
 				}
-			}
+				if (alert != xalert) {
+					xalert |= RadarAlert.SET;
+					r.alert = xalert;
+				}
+				if(r.state >= RadarView.status.length)
+					r.state = Status.UNDEF;
+
+			show_number();
 		}
 	}
 }

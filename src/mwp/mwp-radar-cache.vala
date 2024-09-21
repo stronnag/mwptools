@@ -29,21 +29,23 @@ namespace Radar {
 
 	public class RadarPlot : Object {
 		public uint id;
-		public string name;
-		public double latitude;
-		public double longitude;
-		public double altitude;
-		public uint16 heading;
-		public double speed;
+		public string name  {get; construct set;}
+		public double latitude {get; construct set;}
+		public double longitude  {get; construct set;}
+		public double altitude  {get; construct set;}
+		public double range  {get; construct set;}
+		public uint16 bearing  {get; construct set;}
+		public uint16 heading  {get; construct set;}
+		public double speed  {get; construct set;}
 		public uint lasttick;
-		public uint8 state;
-		public uint8 lq; // tslc for ADSB
-		public uint8 source;
-		public bool posvalid;
-		public uint8 alert;
-		public uint8 etype;
-		public DateTime dt;
+		public uint8 state  {get; construct set;}
+		public uint8 lq  {get; construct set;} // tslc for ADSB
+		public uint8 source  {get; construct set;}
+		public uint8 alert  {get; construct set;}
+		public uint8 etype  {get; construct set;}
 		public uint32 srange;
+		public bool posvalid;
+		public DateTime dt {get; construct set;}
 	}
 
 	public enum RadarAlert {

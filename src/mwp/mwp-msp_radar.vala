@@ -131,8 +131,10 @@ namespace MspRadar {
         ri.longitude = ((double)ipos)/1e7;
         rp = SEDE.deserialise_i32(rp, out ipos);
         ri.altitude = ipos/100.0;
-        rp = SEDE.deserialise_u16(rp, out ri.heading);
+		uint16 ihdr;
+        rp = SEDE.deserialise_u16(rp, out ihdr);
         rp = SEDE.deserialise_u16(rp, out ispd);
+		ri.heading = ihdr;
         ri.speed = ispd/100.0;
         ri.lq = *rp;
         ri.lasttick = Mwp.nticks;
@@ -202,7 +204,6 @@ namespace MspRadar {
 				lon = i / 1e7;
 				sb.append_printf("lon %.6f ", lon);
 
-				ri.state = 4;
 				ri.lasttick = Mwp.nticks;
 
 				rp = SEDE.deserialise_i32(rp, out i);
@@ -299,7 +300,6 @@ namespace MspRadar {
 
             ri.latitude = lat;
             ri.longitude = lon;
-            ri.state = 4;
             ri.lasttick = Mwp.nticks;
 
             if((valid & 2) == 2) {

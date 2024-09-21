@@ -282,7 +282,7 @@ namespace TelemTracker {
 					uint rk = (uint)(sd.id+256);
 					var ri = get_ri(rk);
 					var sts = ((StateData)s).state;
-					ri.state = (sts == 0) ? Radar.RadarView.Status.UNDEF : Radar.RadarView.Status.ARMED;
+					ri.state = (sts == 0) ? Radar.Status.UNDEF : Radar.Status.ARMED;
 					Radar.upsert(rk, ri);
 				});
 
