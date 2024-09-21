@@ -52,7 +52,13 @@ From here it is possible to:
 * Upload and Download `safehome` and `fwapproach` data to/from the flight controller.
 * Manage INAV 7.1.0+ Autoland data
 
+Clicking the "Edit" button at the end of row enables editing FWA parameters:
+
+![mwp safehome-edit](images/mwp-sh1.png){: width="50%" }
+
 Note that editing functions are only available when the `Safe Homes` window is active; if the windows is dismissed with icons displayed, then the icons remain on the map, but are not editable.
+
+
 
 ### Display safehomes at startup
 
