@@ -445,6 +445,8 @@ namespace Radar {
 			f0 = new Gtk.SignalListItemFactory();
 			c0 = new Gtk.ColumnViewColumn("Status", f0);
 			cv.append_column(c0);
+			expression = new Gtk.PropertyExpression(typeof(RadarPlot), null, "state");
+			c0.set_sorter(new Gtk.NumericSorter(expression));
 			f0.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
 					var label=new Gtk.Label("");
@@ -467,6 +469,10 @@ namespace Radar {
 			f0 = new Gtk.SignalListItemFactory();
 			c0 = new Gtk.ColumnViewColumn("Last", f0);
 			c0.expand = true;
+			var dtsorter = new Gtk.CustomSorter((a,b) => {
+					return (int)((RadarPlot)a).dt.difference(((RadarPlot)b).dt);
+				});
+			c0.set_sorter(dtsorter);
 			cv.append_column(c0);
 			f0.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
@@ -487,6 +493,9 @@ namespace Radar {
 			c0 = new Gtk.ColumnViewColumn("Range", f0);
 			c0.expand = true;
 			cv.append_column(c0);
+			expression = new Gtk.PropertyExpression(typeof(RadarPlot), null, "range");
+			c0.set_sorter(new Gtk.NumericSorter(expression));
+
 			f0.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
 					var label=new Gtk.Label("");
@@ -525,6 +534,8 @@ namespace Radar {
 			c0 = new Gtk.ColumnViewColumn("Cat", f0);
 			c0.expand = true;
 			cv.append_column(c0);
+			expression = new Gtk.PropertyExpression(typeof(RadarPlot), null, "etype");
+			c0.set_sorter(new Gtk.NumericSorter(expression));
 			f0.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
 					var label=new Gtk.Label("");
@@ -535,14 +546,15 @@ namespace Radar {
 					RadarPlot r = list_item.get_item() as RadarPlot;
 					var label = list_item.get_child() as Gtk.Label;
 					label.label = format_cat(r);
-					r.notify["cat"].connect((s,p) => {
+					r.notify["etype"].connect((s,p) => {
 							label.label = format_cat((RadarPlot)s);
 						});
 				});
 
 			var clm = cv.get_columns();
-			//               0  1   2   3   4   5   6   7
-			int [] widths = {0 ,10, 15, 16, 10, 9, 10, 15, 12, 12, 6, 4, 4};
+			//               * Nm  La  Lo  Al  Cse Spd Sts Lst Rng Brg Cat
+			//               0  1   2   3   4   5   6   7   8 , 9, 19, 11
+			int [] widths = {0 ,10, 14, 15, 10, 9, 10, 15, 11, 11,  9, 6};
 			for (var j = 0; j < clm.get_n_items(); j++) {
 				if(widths[j] != 0) {
 					var cw = clm.get_item(j) as Gtk.ColumnViewColumn;
@@ -568,7 +580,7 @@ namespace Radar {
 
 		private string format_range(RadarPlot r) {
 			string ga = "";
-			if (r.range != TOTHEMOON) {
+			if (r.range != TOTHEMOON && r.range != 0.0) {
 				if(r.source == RadarSource.SBS || r.source == RadarSource.MAVLINK) {
 					ga = Units.ga_range(r.range);
 				} else {
