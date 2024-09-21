@@ -139,7 +139,6 @@ namespace EditWP {
 			});
 
 		dlg.completed.connect((s) => {
-				MWPLog.message("Completed %s\n", s.to_string());
 				int chg = 0;
 				bool ll = false;
 				if(s) {
