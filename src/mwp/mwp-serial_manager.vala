@@ -63,7 +63,7 @@ namespace Msp {
 
 		if(Mwp.serial != null) {
             Mwp.prepend_combo(Mwp.dev_combox, Mwp.serial);
-            Mwp.dev_combox.active = 0;
+            Mwp.dev_combox.set_active(0);
         }
 
         Mwp.start_poll_timer();

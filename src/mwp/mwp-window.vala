@@ -19,7 +19,7 @@ using Gtk;
 
 namespace Mwp {
 	MWPSettings conf;
-	Gtk.ComboBoxText dev_combox;
+	MwpCombox dev_combox;
 	Gtk.Entry dev_entry;
 	DevManager devman;
 	public Mwp.Window window;
@@ -157,7 +157,7 @@ namespace Mwp {
 						prepend_combo(dev_combox, s);
 				});
 			devman.device_removed.connect((s) => {
-					remove_combo(dev_combox, s);
+					dev_combox.remove(s);
 				});
 			build_serial_combo();
 			Places.get_places();
@@ -324,10 +324,10 @@ namespace Mwp {
 			actmission.set_model(amis.model);
 			actmission.set_factory(amis.factory);
 
-			dev_combox = new Gtk.ComboBoxText.with_entry ();
+			dev_combox = new MwpCombox();
 			devbox.append(dev_combox);
 			dev_combox.hexpand = true;
-			dev_entry = dev_combox.get_child() as Gtk.Entry;
+			dev_entry = dev_combox.entry;
 			dev_entry.set_width_chars(16);
 
 			viewmode.notify["selected"].connect(() =>  {

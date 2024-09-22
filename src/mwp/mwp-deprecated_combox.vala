@@ -37,7 +37,7 @@ namespace Mwp {
 			});
 
 		foreach(string a in conf.devices) {
-			dev_combox.append_text(a);
+			dev_combox.append(a);
 		}
 
 		DevManager.serials.foreach((dd) => {
@@ -54,42 +54,16 @@ namespace Mwp {
 		}
 	}
 
-	public string?[] list_combo(Gtk.ComboBoxText cbtx, int id=0) {
-		string[] items={};
-		var m = cbtx.get_model();
-		Gtk.TreeIter iter;
-		bool next;
-
-		for(next = m.get_iter_first(out iter); next; next = m.iter_next(ref iter)) {
-			GLib.Value cell;
-			m.get_value (iter, id, out cell);
-			items += (string)cell;
-		}
+	public string?[] list_combo(MwpCombox cbtx, int id=0) {
+		string[] items=cbtx.get_list();
 		return items;
 	}
 
-	private int find_combo(Gtk.ComboBoxText cbtx, string s, int id=0) {
-		var m = cbtx.get_model();
-		Gtk.TreeIter iter;
-		int i,n = -1;
-		bool next;
-
-		for(i = 0, next = m.get_iter_first(out iter); next; next = m.iter_next(ref iter), i++) {
-			GLib.Value cell;
-			m.get_value (iter, id, out cell);
-			string cs = (string)cell;
-
-			bool has_s = cs.contains(" ");
-
-			if((has_s && ((string)cell).has_prefix(s)) || ((string)cell == s)) {
-				n = i;
-				break;
-			}
-		}
-		return n;
+	private int find_combo(MwpCombox cbtx, string s, int id=0) {
+		return cbtx.find_prefix(s);
 	}
 
-	private int append_combo(Gtk.ComboBoxText cbtx, string s) {
+	private int append_combo(MwpCombox cbtx, string s) {
 		if(Radar.lookup_radar(s))
 			return -1;
 
@@ -98,18 +72,18 @@ namespace Mwp {
 
 		var n = find_combo(cbtx, s);
 		if (n == -1) {
-			cbtx.append_text(s);
+			cbtx.append(s);
 			n = 0;
 		}
 
-		if(cbtx.active == -1)
-			cbtx.active = 0;
+		if(cbtx.get_active() == -1)
+			cbtx.set_active(0);
 
 		TelemTracker.ttrk.add(s);
 		return n;
 	}
 
-	private void prepend_combo(Gtk.ComboBoxText cbtx, string s) {
+	private void prepend_combo(MwpCombox cbtx, string s) {
 		if(Radar.lookup_radar(s))
 			return;
 
@@ -118,25 +92,24 @@ namespace Mwp {
 
 		var n = find_combo(cbtx, s);
 		if (n == -1) {
-			cbtx.prepend_text(s);
-			cbtx.active = 0;
+			cbtx.prepend(s);
+			cbtx.set_active(0);
 		} else {
-			cbtx.active = n;
+			cbtx.set_active(n);
 		}
 		TelemTracker.ttrk.add(s);
 	}
 
-	private void remove_combo(Gtk.ComboBoxText cbtx,string s) {
+	private void remove_combo(MwpCombox cbtx,string s) {
 		TelemTracker.ttrk.remove(s);
 		foreach(string a in conf.devices) {
 			if (a == s)
 				return;
 		}
-
 		var n = find_combo(cbtx, s);
 		if (n != -1) {
-			cbtx.remove(n);
-			cbtx.active = 0;
+			cbtx.remove_item(n);
+			cbtx.set_active(0);
 		}
 	}
 }

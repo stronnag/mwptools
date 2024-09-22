@@ -60,10 +60,6 @@ template $MwpWindow: Adw.ApplicationWindow {
           }
         }
 
-//        Gtk.Label {
-//          label: "Active:";
-//        }
-
         Gtk.DropDown actmission {
 	  tooltip-text: _('Active Mission');
           model: StringList {
@@ -90,14 +86,7 @@ template $MwpWindow: Adw.ApplicationWindow {
 
         Gtk.Box devbox {
           tooltip-text: _('Serial Device');
-	  //          Gtk.Label {
-//            label: "Device:";
-//          }
         }
-
-//        Gtk.Label {
-//          label: "~:";
-//        }
 
         Gtk.DropDown protodrop {
           tooltip-text: _('Telemetry Protocol');

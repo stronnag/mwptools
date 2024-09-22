@@ -259,7 +259,7 @@ namespace MBus {
 			int n = Mwp.append_combo(Mwp.dev_combox, device);
 			if(n == -1)
 				return false;
-			Mwp.dev_combox.active = n;
+			Mwp.dev_combox.set_active(n);
 			Msp.connect_serial();
 			return Mwp.msp.available;
 		}
