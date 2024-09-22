@@ -230,41 +230,35 @@ namespace SportDev {
     double volts;
 }
 
-
 namespace Utils {
-	public int get_row_at(Gtk.Widget w, double x,  double y) {
+	public int get_row_at(Gtk.Widget w, double y) {
 		// from  https://discourse.gnome.org/t/gtk4-finding-a-row-data-on-gtkcolumnview/8465
 		var  child = w.get_first_child();
-		Gtk.Allocation alloc = { 0, 0, 0, 0 };
 		var line_no = -1;
-		var reading_header = true;
-		var curr_y = 0;
-		var header_height  = 0;
+		Graphene.Rect rect = {};
+		/*
+		  GtkColumnViewRowWidget (Header)
+		  GtkColumnListView
+		    GtkColumnViewRowWidget (Rows)
+		    GtkColumnViewRowWidget (Rows)
+		    ...
+		*/
+		while (child != null) {
+			if (child.get_type().name() == "GtkColumnListView") {
+				child = child.get_first_child();
+				break;
+			}
+			child = child.get_next_sibling();
+		}
 
 		while (child != null) {
-			if (reading_header) {
-				if (child.get_type().name() == "GtkColumnViewRowWidget") {
-					child.get_allocation(out alloc);
+			if (child.get_type().name() == "GtkColumnViewRowWidget") {
+				line_no++;
+				child.compute_bounds(w, out rect);
+				if (y > rect.get_y() && y <= (rect.get_y() + rect.get_height())) {
+					return line_no;
 				}
-				if (child.get_type().name() != "GtkColumnListView") {
-					child = child.get_next_sibling();
-					continue;
-				}
-				child = child.get_first_child();
-				header_height = alloc.y + alloc.height;
-				curr_y = header_height;
-				reading_header = false;
 			}
-			if (child.get_type().name() != "GtkColumnViewRowWidget") {
-				child = child.get_next_sibling();
-				continue;
-			}
-			line_no++;
-			child.get_allocation(out alloc);
-			if (y > curr_y && y <= header_height + alloc.height + alloc.y ) {
-				return line_no;
-			}
-			curr_y = header_height + alloc.height + alloc.y;
 			child = child.get_next_sibling();
 		}
 		return -1;

@@ -268,7 +268,7 @@ namespace MissionManager {
 			bc.set_propagation_phase(Gtk.PropagationPhase.CAPTURE);
 			bc.set_button(3);
 			bc.pressed.connect((n,x,y) => {
-					int rn = Utils.get_row_at(lv, x, y);
+					int rn = Utils.get_row_at(lv, y);
 					MT.mtno = rn+1;
 					popmenuat(lv, x, y);
 				});

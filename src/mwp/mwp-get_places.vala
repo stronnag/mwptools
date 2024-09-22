@@ -157,10 +157,6 @@ namespace Places {
 class PlaceEdit : Adw.Window {
 	GLib.ListStore lstore;
     Gtk.SingleSelection ssel;
-    Gtk.ColumnViewColumn c0;
-    Gtk.ColumnViewColumn c1;
-    Gtk.ColumnViewColumn c2;
-    Gtk.ColumnViewColumn c3;
     Gtk.Button[] buttons;
 	Gtk.PopoverMenu pop;
 	Gtk.ColumnView cv;
@@ -182,8 +178,9 @@ class PlaceEdit : Adw.Window {
 		cv.show_column_separators = true;
 		cv.show_row_separators = true;
 		var f0 = new Gtk.SignalListItemFactory();
-		c0 = new Gtk.ColumnViewColumn("Name", f0);
+		var c0 = new Gtk.ColumnViewColumn("Name", f0);
 		cv.append_column(c0);
+		c0.expand = true;
 		f0.setup.connect((f,o) => {
 				Gtk.ListItem list_item = (Gtk.ListItem)o;
 				var label=new Gtk.Label("");
@@ -203,7 +200,7 @@ class PlaceEdit : Adw.Window {
 		c0.set_sorter(txtsorter);
 
 		var f1 = new Gtk.SignalListItemFactory();
-		c1 = new Gtk.ColumnViewColumn("Latitude", f1);
+		var c1 = new Gtk.ColumnViewColumn("Latitude", f1);
 		cv.append_column(c1);
 		f1.setup.connect((f,o) => {
           Gtk.ListItem list_item = (Gtk.ListItem)o;
@@ -221,7 +218,7 @@ class PlaceEdit : Adw.Window {
 			});
 
 		var f2 = new Gtk.SignalListItemFactory();
-		c2 = new Gtk.ColumnViewColumn("Longitude", f2);
+		var c2 = new Gtk.ColumnViewColumn("Longitude", f2);
 		cv.append_column(c2);
 		f2.setup.connect((f,o) => {
           Gtk.ListItem list_item = (Gtk.ListItem)o;
@@ -239,7 +236,7 @@ class PlaceEdit : Adw.Window {
 			});
 
 		var f3 = new Gtk.SignalListItemFactory();
-		c3 = new Gtk.ColumnViewColumn("Zoom", f3);
+		var c3 = new Gtk.ColumnViewColumn("Zoom", f3);
 		cv.append_column(c3);
 		f3.setup.connect((f,o) => {
           Gtk.ListItem list_item = (Gtk.ListItem)o;
@@ -255,11 +252,27 @@ class PlaceEdit : Adw.Window {
 						label.set_text(((Places.PosItem)s).zoom.to_string());
 					});
 			});
+		// -----------  Line edit -----------
+		var fx = new Gtk.SignalListItemFactory();
+		var cx = new Gtk.ColumnViewColumn("", fx);
+		cv.append_column(cx);
+		fx.setup.connect((f,o) => {
+				Gtk.ListItem list_item = (Gtk.ListItem)o;
+				var btn = new Gtk.Button.from_icon_name("document-edit");
+				btn.sensitive = true;
+				list_item.set_child(btn);
+				btn.clicked.connect(() => {
+						var idx = list_item.position;
+						var  pi = lstore.get_item(idx) as Places.PosItem;
+						if (pi != null) {
+							edit_position(pi, false);
+						}
+					});
+			});
 	}
 
 	public PlaceEdit () {
         var scrolled = new Gtk.ScrolledWindow ();
-        set_default_size (360, 360);
         title = "Edit Stored Places";
         Gtk.Box box = new Gtk.Box (Gtk.Orientation.VERTICAL, 2);
 		var headerBar = new Adw.HeaderBar();
@@ -268,6 +281,8 @@ class PlaceEdit : Adw.Window {
         cv.vexpand = true;
         cv.hexpand = true;
         scrolled.set_child(cv);
+		scrolled.propagate_natural_height = true;
+		scrolled.propagate_natural_width = true;
         buttons = {
             new Gtk.Button.from_icon_name ("gtk-add"),
             new Gtk.Button.with_label ("OK"),
@@ -284,13 +299,12 @@ class PlaceEdit : Adw.Window {
 		((Gtk.Widget)cv).add_controller(gestc);
 		gestc.set_button(3);
 		gestc.released.connect((n,x,y) => {
-				poprow = Utils.get_row_at(cv, x, y);
+				poprow = Utils.get_row_at(cv, y);
 				Gdk.Rectangle rect = { (int)x, (int)y, 1, 1};
 				pop.has_arrow = false;
 				pop.set_pointing_to(rect);
 				pop.popup();
             });
-
 
 		box.append(scrolled);
         box.append (bbox);
@@ -310,20 +324,7 @@ class PlaceEdit : Adw.Window {
 				pi.lat = clat;
 				pi.lon = clon;
 				pi.zoom = (int)Gis.map.viewport.get_zoom_level();
-				var w = new NewPos.Window(pi);
-				w.close_request.connect (() => {
-						if(NewPos.ok) {
-							pi.name = NewPos.pname;
-							pi.lat = NewPos.lat;
-							pi.lon = NewPos.lon;
-							pi.zoom = NewPos.zoom;
-							lstore.insert_sorted(pi, (a,b) => {
-									return strcmp(((Places.PosItem)a).name, ((Places.PosItem)b).name);
-								});
-						}
-						return false;
-				});
-				w.present();
+				edit_position(pi, true);
 			});
 
         buttons[Buttons.OK].clicked.connect (() => {
@@ -341,7 +342,34 @@ class PlaceEdit : Adw.Window {
             });
     }
 
-    private void build_mm() {
+
+	private void edit_position(Places.PosItem pi, bool insert) {
+		var w = new NewPos.Window(pi);
+		w.close_request.connect (() => {
+				if(NewPos.ok) {
+					bool sortme = (pi.name != NewPos.pname);
+					pi.name = NewPos.pname;
+					pi.lat = NewPos.lat;
+					pi.lon = NewPos.lon;
+					pi.zoom = NewPos.zoom;
+					if(insert) {
+						lstore.insert_sorted(pi, (a,b) => {
+								return strcmp(((Places.PosItem)a).name, ((Places.PosItem)b).name);
+							});
+					} else {
+						if(sortme) {
+							lstore.sort((a,b) => {
+									return strcmp(((Places.PosItem)a).name, ((Places.PosItem)b).name);
+								});
+						}
+					}
+				}
+				return false;
+			});
+		w.present();
+	}
+
+	private void build_mm() {
 		var xml = """
 			<?xml version="1.0" encoding="UTF-8"?>
 			<interface>
@@ -354,10 +382,6 @@ class PlaceEdit : Adw.Window {
 			<item>
 			<attribute name="label">Set location from current view</attribute>
 			<attribute name="action">view.setloc</attribute>
-			</item>
-			<item>
-			<attribute name="label">Edit entry</attribute>
-			<attribute name="action">view.edit</attribute>
 			</item>
 			<item>
 			<attribute name="label">Delete location</attribute>
@@ -404,30 +428,6 @@ class PlaceEdit : Adw.Window {
 			});
 		dg.add_action(aq);
 
-		aq = new GLib.SimpleAction("edit",null);
-		aq.activate.connect(() => {
-				var pi = lstore.get_item((uint)poprow) as Places.PosItem;
-				var w = new NewPos.Window(pi);
-				w.close_request.connect (() => {
-						if(NewPos.ok) {
-							bool sortme = (pi.name != NewPos.pname);
-							if (sortme) {
-								pi.name = NewPos.pname;
-							}
-							pi.lat = NewPos.lat;
-							pi.lon = NewPos.lon;
-							pi.zoom = NewPos.zoom;
-							if(sortme) {
-								lstore.sort((a,b) => {
-										return strcmp(((Places.PosItem)a).name, ((Places.PosItem)b).name);
-									});
-							}
-						}
-						return false;
-				});
-				w.present();
-			});
-		dg.add_action(aq);
 		this.insert_action_group("view", dg);
 		pop.set_parent(this);
     }

@@ -105,7 +105,6 @@ public class SafeHomeMarkers : GLib.Object {
 		set_safe_colour(idx, h.enabled);
 		safept[idx].latitude = h.lat;
 		safept[idx].longitude = h.lon;
-		// ** ICI **/
 		update_distance(idx, h);
 		FWPlot.update_laylines(idx, safept[idx], h.enabled);
 	}
