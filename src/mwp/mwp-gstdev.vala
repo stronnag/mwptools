@@ -17,14 +17,25 @@
 
 namespace GstDev {
 	List<GstMonitor.VideoDev?> viddevs;
-	Gtk.ComboBoxText viddev_c;
+	MwpCombox viddev_c;
+
+	public string? get_device(string m) {
+		var s = null;
+		for (unowned List<GstMonitor.VideoDev?>lp = viddevs.first(); lp != null; lp = lp.next)  {
+			var dv = lp.data;
+			if (dv.displayname == m) {
+				return dv.devicename;
+			}
+		}
+		return null;
+	}
 
 	public void init() {
 		viddevs = new List<GstMonitor.VideoDev?> ();
 		CompareFunc<GstMonitor.VideoDev?>  devname_comp = (a,b) =>  {
 			return strcmp(a.devicename, b.devicename);
 		};
-		viddev_c = new Gtk.ComboBoxText();
+		viddev_c = new MwpCombox();
 		GstMonitor gstdm;
 		gstdm = new GstMonitor();
 		gstdm.source_changed.connect((a,d) => {
@@ -34,8 +45,7 @@ namespace GstDev {
 				case "init":
 					if(viddevs.find_custom(d, devname_comp) == null) {
 						viddevs.append(d);
-						viddev_c.append(d.devicename, d.displayname);
-						viddev_c.active_id = d.devicename;
+						viddev_c.prepend(d.displayname);
 						act = true;
 					}
 					break;
@@ -43,13 +53,14 @@ namespace GstDev {
 					unowned List<GstMonitor.VideoDev?> da  = viddevs.find_custom(d, devname_comp);
 					if (da != null) {
 						viddevs.remove_link(da);
-						Mwp.remove_combo(viddev_c, d.displayname);
+						viddev_c.remove_item(d.displayname);
 						act = true;
 					}
 					break;
 				}
-				if(act)
+				if(act) {
 					MWPLog.message("GST: \"%s\" <%s> <%s>\n", a, d.displayname, d.devicename);
+				}
 				if((Mwp.debug_flags & Mwp.DEBUG_FLAGS.VIDEO) == Mwp.DEBUG_FLAGS.VIDEO) {
 					//					viddevs.@foreach((d) =>
 					for (unowned List<GstMonitor.VideoDev?>lp = viddevs.first(); lp != null; lp = lp.next)  {

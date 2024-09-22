@@ -25,8 +25,10 @@ namespace VideoMan {
 					res = vid_dialog.result(out uri);
 					switch(res) {
 					case 0:
-						if (GstDev.viddev_c.active_id != null) {
-							uri = "v4l2://%s".printf(GstDev.viddev_c.active_id);
+						var dname = GstDev.viddev_c.get_text();
+						if (dname != null) {
+							var devname = GstDev.get_device(dname);
+							uri = "v4l2://%s".printf(devname);
 						} else {
 							res = -1;
 						}
@@ -78,7 +80,7 @@ public class VideoPlayer : Adw.Window {
 		var f = File.new_for_uri(uri);
 		mf = Gtk.MediaFile.for_file(f);
 		var v = new Gtk.Video.for_media_stream(mf);
-
+		v.vexpand = true;
 		mf.notify["playing"].connect(() => {
 				play_state(mf.playing);
 			});
@@ -115,7 +117,7 @@ public class V4L2_dialog : Adw.Window {
 
 	public signal void response(int id);
 
-	public V4L2_dialog(Gtk.ComboBoxText viddev_c) {
+	public V4L2_dialog(MwpCombox viddev_c) {
 		transient_for = Mwp.window;
 		var box = new Gtk.Box(Gtk.Orientation.VERTICAL,2);
 		var header_bar = new Adw.HeaderBar();
@@ -135,6 +137,7 @@ public class V4L2_dialog : Adw.Window {
 		grid.attach(viddev_c, 1, 0);
 		grid.attach(rb1, 0, 1);
 		grid.attach(e, 1, 1);
+
 		var bbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 2);
 
 		var b0 = new Gtk.Button.with_label("Close");
@@ -155,6 +158,7 @@ public class V4L2_dialog : Adw.Window {
 			});
 
 		box.append(grid);
+		grid.vexpand = true;
 		box.append(bbox);
 		set_content(box);
 	}
