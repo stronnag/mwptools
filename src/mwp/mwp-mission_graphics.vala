@@ -280,29 +280,19 @@ namespace MsnTools {
 		draw_mission(m);
 	}
 
-
-	private void miclone(MissionItem s, MissionItem d) {
-		s.no = d.no;
-		s.action = d.action;
-		s.lat = d.lat;
-		s.lon = d.lon;
-		s.alt = d.alt;
-		s.param1 = d.param1;
-		s.param2 = d.param2;
-		s.param3 = d.param3;
-		s.flag = d.flag;
-	}
-
-	public void swap(Mission m, int a, int b) {
-		var ai =  m.get_index(a);
-		var bi =  m.get_index(b);
-		var tmp = new MissionItem();
-		miclone(tmp, m.points[ai]);
-		miclone (m.points[ai], m.points[bi]);
-		miclone (m.points[bi], tmp);;
-		m.points[ai].no = a;
-		m.points[bi].no = b;
-
+	public void move_to(Mission m, int src, int dest) {
+		MissionItem []nmis = {};
+		var si =  m.get_index(src);
+		var di =  m.get_index(dest);
+		for(var j = 0; j < m.npoints; j++) {
+			if(j == di) {
+				nmis += m.points[si];
+			}
+			if (j != si) {
+				nmis += m.points[j];
+			}
+		}
+		m.points = nmis;
 		renumber_mission(m);
 		draw_mission(m);
 

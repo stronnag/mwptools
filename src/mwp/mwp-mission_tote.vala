@@ -26,28 +26,19 @@ namespace MissionManager {
 		GLib.ListStore lstore;
 		Gtk.MultiSelection model;
         GLib.SimpleActionGroup dg;
-
-		Gtk.ColumnViewColumn c0;
-		Gtk.ColumnViewColumn c1;
-		Gtk.ColumnViewColumn c2;
-		Gtk.ColumnViewColumn c3;
-		Gtk.ColumnViewColumn c4;
+		Gtk.ColumnView cv;
 		Gtk.ColumnViewColumn c5;
 		Gtk.ColumnViewColumn c6;
-		Gtk.ColumnViewColumn c7;
-		Gtk.ColumnViewColumn c8;
-
 		Mission ms;
 
-		public Tote() {
-			ms = MissionManager.current();
+		private void build_cv() {
+			lstore = new GLib.ListStore(typeof(MissionItem));
+			model = new Gtk.MultiSelection(lstore);
+			cv.set_model(model);
 
-			var lv = new Gtk.ColumnView(null);
-			lv.show_column_separators = true;
-			lv.show_row_separators = true;
 			var f0 = new Gtk.SignalListItemFactory();
-			c0 = new Gtk.ColumnViewColumn("No", f0);
-			lv.append_column(c0);
+			var c0 = new Gtk.ColumnViewColumn("No", f0);
+			cv.append_column(c0);
 			f0.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
 					var label=new Gtk.Label("");
@@ -62,10 +53,10 @@ namespace MissionManager {
 				});
 
 			var f1 = new Gtk.SignalListItemFactory();
-			c1 =new  Gtk.ColumnViewColumn("Action", f1);
+			var c1 =new  Gtk.ColumnViewColumn("Action", f1);
 			// c1.expand = false;
 			// c1.fixed_width = 120;
-			lv.append_column(c1);
+			cv.append_column(c1);
 			f1.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
 					var label=new Gtk.Label("");
@@ -99,15 +90,15 @@ namespace MissionManager {
 							} else {
 								//print("Above\n");
 							}
-							MsnTools.swap(ms, orig_pos, dest_pos);
+							MsnTools.move_to(ms, orig_pos, dest_pos);
 							return true;
 						});
 					/// ------------
 				});
 
 			var f2 = new Gtk.SignalListItemFactory();
-			c2 = new Gtk.ColumnViewColumn("Latitude", f2);
-			lv.append_column(c2);
+			var c2 = new Gtk.ColumnViewColumn("Latitude", f2);
+			cv.append_column(c2);
 			f2.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
 					var label=new Gtk.Label("");
@@ -124,8 +115,8 @@ namespace MissionManager {
 				});
 
 			var f3 = new Gtk.SignalListItemFactory();
-			c3 = new Gtk.ColumnViewColumn("Longitude", f3);
-			lv.append_column(c3);
+			var c3 = new Gtk.ColumnViewColumn("Longitude", f3);
+			cv.append_column(c3);
 			f3.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
 					var label=new Gtk.Label("");
@@ -142,8 +133,8 @@ namespace MissionManager {
 				});
 
 			var f4 = new Gtk.SignalListItemFactory();
-			c4 = new Gtk.ColumnViewColumn("Altitude", f4);
-			lv.append_column(c4);
+			var c4 = new Gtk.ColumnViewColumn("Altitude", f4);
+			cv.append_column(c4);
 			f4.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
 					var label=new Gtk.Label("");
@@ -161,7 +152,7 @@ namespace MissionManager {
 
 			var f5 = new Gtk.SignalListItemFactory();
 			c5 = new Gtk.ColumnViewColumn("Param1", f5);
-			lv.append_column(c5);
+			cv.append_column(c5);
 			f5.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
 					var label=new Gtk.Label("");
@@ -179,7 +170,7 @@ namespace MissionManager {
 
 			var f6 = new Gtk.SignalListItemFactory();
 			c6 = new Gtk.ColumnViewColumn("Param2", f6);
-			lv.append_column(c6);
+			cv.append_column(c6);
 			f6.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
 					var label=new Gtk.Label("");
@@ -196,8 +187,8 @@ namespace MissionManager {
 				});
 
 			var f7 = new Gtk.SignalListItemFactory();
-			c7 = new Gtk.ColumnViewColumn("Param3", f7);
-			lv.append_column(c7);
+			var c7 = new Gtk.ColumnViewColumn("Param3", f7);
+			cv.append_column(c7);
 			f7.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
 					var label=new Gtk.Label("");
@@ -214,8 +205,8 @@ namespace MissionManager {
 				});
 
 			var f8 = new Gtk.SignalListItemFactory();
-			c8 = new Gtk.ColumnViewColumn("Flags", f8);
-			lv.append_column(c8);
+			var c8 = new Gtk.ColumnViewColumn("Flags", f8);
+			cv.append_column(c8);
 			f8.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
 					var label=new Gtk.Label("");
@@ -230,6 +221,11 @@ namespace MissionManager {
 							label.set_text(((MissionItem)s).format_flag());
 						});
 				});
+		}
+
+
+		public Tote() {
+			ms = MissionManager.current();
 
 			title = "Mission Items";
 			var sbuilder = new Gtk.Builder.from_resource ("/org/stronnag/mwp/totemenu.ui");
@@ -241,19 +237,23 @@ namespace MissionManager {
 			var header_bar = new Adw.HeaderBar();
 			box.append(header_bar);
 
-			lstore = new GLib.ListStore(typeof(MissionItem));
-			model = new Gtk.MultiSelection(lstore);
-			lv.set_model(model);
+			cv = new Gtk.ColumnView(null);
+			cv.show_column_separators = true;
+			cv.show_row_separators = true;
+
+			build_cv();
+
 			for(var i = 0; i < ms.npoints; i++) {
 				lstore.append(ms.points[i]);
 			}
 			ms.changed.connect(() => {
+					build_cv(); // (Experimental) to rebuild drop targets
 					reload();
 				});
 
-			sw.set_child(lv);
-			lv.hexpand = true;
-			lv.vexpand = true;
+			sw.set_child(cv);
+			cv.hexpand = true;
+			cv.vexpand = true;
 			sw.vexpand = true;
 			//box.hexpand = true;
 			box.vexpand = true;
@@ -264,13 +264,13 @@ namespace MissionManager {
 			set_tote_action();
 
 			var bc = new Gtk.GestureClick();
-			((Gtk.Widget)lv).add_controller(bc);
+			((Gtk.Widget)cv).add_controller(bc);
 			bc.set_propagation_phase(Gtk.PropagationPhase.CAPTURE);
 			bc.set_button(3);
 			bc.pressed.connect((n,x,y) => {
-					int rn = Utils.get_row_at(lv, y);
+					int rn = Utils.get_row_at(cv, y);
 					MT.mtno = rn+1;
-					popmenuat(lv, x, y);
+					popmenuat(cv, x, y);
 				});
 
 			model.selection_changed.connect((n,l) => {
