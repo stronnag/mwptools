@@ -52,7 +52,7 @@ mwpsrcs = files('mwp-about.vala', 'mwp-ah_widget.vala',
                 'mwp-upower.vala', 'mwp-vario.vala', 'mwp-video-manager.vala',
                 'mwp-voltage.vala', 'mwp-window.vala', 'mwp-wp_io_handler.vala',
                 'mwp-wpeditmgr.vala', 'mwp-wpeditwindow.vala', 'mwp-xdg_notify.vala',
-                'mwp-combox.vala',
+#                'mwp-combox.vala',
                 'mwp-epoxy.c', )
 
 mwpdeps = [deps,

@@ -25,14 +25,15 @@ namespace VideoMan {
 					res = vid_dialog.result(out uri);
 					switch(res) {
 					case 0:
-						var dname = GstDev.viddev_c.get_text();
-						if (dname != null) {
-							var devname = GstDev.get_device(dname);
-							uri = "v4l2://%s".printf(devname);
-						} else {
-							res = -1;
-						}
-						break;
+						 var i = GstDev.viddev_c.get_selected();
+						 var dname = ((Gtk.StringList)GstDev.viddev_c.model).get_string(i);
+						 if (dname != null) {
+							 var devname = GstDev.get_device(dname);
+							 uri = "v4l2://%s".printf(devname);
+						 } else {
+							 res = -1;
+						 }
+						 break;
 					case 1:
 						uri = uri.strip();
 						if (uri.length > 0) {
@@ -117,7 +118,7 @@ public class V4L2_dialog : Adw.Window {
 
 	public signal void response(int id);
 
-	public V4L2_dialog(MwpCombox viddev_c) {
+	public V4L2_dialog(Gtk.DropDown viddev_c) {
 		transient_for = Mwp.window;
 		var box = new Gtk.Box(Gtk.Orientation.VERTICAL,2);
 		var header_bar = new Adw.HeaderBar();

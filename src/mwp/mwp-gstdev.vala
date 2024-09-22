@@ -17,7 +17,8 @@
 
 namespace GstDev {
 	List<GstMonitor.VideoDev?> viddevs;
-	MwpCombox viddev_c;
+	Gtk.DropDown viddev_c;
+	Gtk.StringList sl;
 
 	public string? get_device(string m) {
 		var s = null;
@@ -31,11 +32,12 @@ namespace GstDev {
 	}
 
 	public void init() {
+		sl = new Gtk.StringList({});
 		viddevs = new List<GstMonitor.VideoDev?> ();
 		CompareFunc<GstMonitor.VideoDev?>  devname_comp = (a,b) =>  {
 			return strcmp(a.devicename, b.devicename);
 		};
-		viddev_c = new MwpCombox();
+		viddev_c = new Gtk.DropDown(sl, null);
 		GstMonitor gstdm;
 		gstdm = new GstMonitor();
 		gstdm.source_changed.connect((a,d) => {
@@ -45,16 +47,24 @@ namespace GstDev {
 				case "init":
 					if(viddevs.find_custom(d, devname_comp) == null) {
 						viddevs.append(d);
-						viddev_c.prepend(d.displayname);
+						sl.append(d.displayname);
 						act = true;
 					}
 					break;
 				case "remove":
-					unowned List<GstMonitor.VideoDev?> da  = viddevs.find_custom(d, devname_comp);
-					if (da != null) {
-						viddevs.remove_link(da);
-						viddev_c.remove_item(d.displayname);
+					unowned List<GstMonitor.VideoDev?> da  = viddevs.find_custom(d, devname_comp);					if (da != null) {
+						uint pos=-1;
+						for(var j = 0; j < sl.get_n_items(); j++) {
+							if (sl.get_string(j) == da.data.displayname) {
+								pos = j;
+								break;
+							}
+						}
+						if(pos != -1) {
+							sl.remove(pos);
+						}
 						act = true;
+						viddevs.remove_link(da);
 					}
 					break;
 				}

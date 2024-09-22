@@ -19,9 +19,9 @@ using Gtk;
 
 public class GZEdit : Adw.Window {
 	private Gtk.Label zidx;
-	private Gtk.ComboBoxText zshape;
-	private Gtk.ComboBoxText ztype;
-	private Gtk.ComboBoxText zaction;
+	private Gtk.DropDown zshape;
+	private Gtk.DropDown ztype;
+	private Gtk.DropDown zaction;
 	private Gtk.Entry zminalt;
 	private Gtk.Entry zmaxalt;
 	private Gtk.Entry zradius;
@@ -189,19 +189,9 @@ public class GZEdit : Adw.Window {
 
 		zidx = new Gtk.Label("-");
 
-		zshape = new Gtk.ComboBoxText ();
-		zshape.append_text("Circular");
-		zshape.append_text("Polygon");
-
-		ztype = new Gtk.ComboBoxText ();
-		ztype.append_text("Exclusive");
-		ztype.append_text("Inclusive");
-
-		zaction = new Gtk.ComboBoxText ();
-		zaction.append_text("None");
-		zaction.append_text("Avoid");
-		zaction.append_text("PosHold");
-		zaction.append_text("RTH");
+		zshape = new Gtk.DropDown.from_strings({"Circular", "Polygon"});
+		ztype = new Gtk.DropDown.from_strings({"Exclusive", "Inclusive"});
+		zaction = new Gtk.DropDown.from_strings({"None", "Avoid", "PosHold", "RTH"});
 
 		zminalt = new Gtk.Entry();
 		zminalt.set_text("0");
@@ -276,25 +266,25 @@ public class GZEdit : Adw.Window {
 					double clon = 0;
 					MapUtils.get_centre_location(out clat, out clon);
 					int k=-1;
-					if(zshape.active == 0) {
+					if(zshape.selected == 0) {
 						var rad = double.parse(zradius.text);
 						if (rad <= 0.0) {
 							return;
 						}
 						newlab.hide();
-						Mwp.gzr.append_zone(nitem, (GeoZoneManager.GZShape)zshape.active,
-										  (GeoZoneManager.GZType)ztype.active,
+						Mwp.gzr.append_zone(nitem, (GeoZoneManager.GZShape)zshape.selected,
+										  (GeoZoneManager.GZType)ztype.selected,
 										  minalt, maxalt,
-										  (GeoZoneManager.GZAction)zaction.active);
+										  (GeoZoneManager.GZAction)zaction.selected);
 						k = Mwp.gzr.append_vertex(nitem, 0, (int)(clat*1e7), (int)(clon*1e7));
 						k = Mwp.gzr.append_vertex(nitem, 1, (int)(rad*100), 0);
 					} else {
 						newlab.hide();
 						Mwp.gzr.append_zone(nitem,
-										  (GeoZoneManager.GZShape)zshape.active,
-										  (GeoZoneManager.GZType)ztype.active,
+										  (GeoZoneManager.GZShape)zshape.selected,
+										  (GeoZoneManager.GZType)ztype.selected,
 										  minalt, maxalt,
-										  (GeoZoneManager.GZAction)zaction.active);
+										  (GeoZoneManager.GZAction)zaction.selected);
 						var delta = 16*Math.pow(2, (20-Gis.map.viewport.zoom_level));
 						double nlat, nlon;
 						for(var i = 0; i < 3; i++) {
@@ -317,15 +307,15 @@ public class GZEdit : Adw.Window {
 				}
 			});
 
-		zshape.changed.connect(() => {
+		zshape.notify["selected"].connect(() => {
 				toggle_shape();
 			});
 
-		ztype.changed.connect(() => {
+		ztype.notify["selected"].connect(() => {
 				refresh_storage(Upd.TYPE, true);
 			});
 
-		zaction.changed.connect(() => {
+		zaction.notify["selected"].connect(() => {
 				refresh_storage(Upd.ACTION, true);
 			});
 
@@ -374,10 +364,10 @@ public class GZEdit : Adw.Window {
 
 	private void init_markers(bool rm = true) {
 		zidx.set_label("-");
-		ztype.active = 0;
-		zshape.active = 0;
+		ztype.selected = 0;
+		zshape.selected = 0;
 		zshape.sensitive = true;
-		zaction.active = 0;
+		zaction.selected = 0;
 		zminalt.set_text("0.0");
 		zmaxalt.set_text("0.0");
 		set_zradius();
@@ -397,10 +387,10 @@ public class GZEdit : Adw.Window {
 	private void show_markers() {
 		newlab.hide();
 		zidx.set_label(nitem.to_string());
-		ztype.active = (int)Mwp.gzr.get_ztype(nitem);
-		zshape.active = (int)Mwp.gzr.get_shape(nitem);
+		ztype.selected = (int)Mwp.gzr.get_ztype(nitem);
+		zshape.selected = (int)Mwp.gzr.get_shape(nitem);
 		zshape.sensitive = false;
-		zaction.active = (int)Mwp.gzr.get_action(nitem);
+		zaction.selected = (int)Mwp.gzr.get_action(nitem);
 		zminalt.set_text("%.2f".printf(Mwp.gzr.get_minalt(nitem)/100.0));
 		zmaxalt.set_text("%.2f".printf(Mwp.gzr.get_maxalt(nitem)/100.0));
 		toggle_shape();
@@ -432,7 +422,7 @@ public class GZEdit : Adw.Window {
 	}
 
 	private void toggle_shape() {
-		if (zshape.active == 0) {
+		if (zshape.selected == 0) {
 			set_zradius();
 			lradius.show();
 			zradius.show();
@@ -503,15 +493,15 @@ public class GZEdit : Adw.Window {
 		bool valid = (nitem < len);
 		if(valid) {
 			if((mask & Upd.TYPE) == Upd.TYPE) {
-				if ((GeoZoneManager.GZType)ztype.active != Mwp.gzr.get_ztype(nitem)) {
+				if ((GeoZoneManager.GZType)ztype.selected != Mwp.gzr.get_ztype(nitem)) {
 					upd |= Upd.TYPE;
-					Mwp.gzr.set_ztype(nitem, (GeoZoneManager.GZType)ztype.active);
+					Mwp.gzr.set_ztype(nitem, (GeoZoneManager.GZType)ztype.selected);
 				}
 			}
 			if((mask & Upd.ACTION) == Upd.ACTION) {
-				if ((GeoZoneManager.GZAction)zaction.active != Mwp.gzr.get_action(nitem)) {
+				if ((GeoZoneManager.GZAction)zaction.selected != Mwp.gzr.get_action(nitem)) {
 					upd |= Upd.ACTION;
-					Mwp.gzr.set_action(nitem, (GeoZoneManager.GZAction)zaction.active);
+					Mwp.gzr.set_action(nitem, (GeoZoneManager.GZAction)zaction.selected);
 				}
 			}
 

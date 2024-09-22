@@ -67,7 +67,7 @@ private class QEntry : Gtk.Entry {
 
 public class WPPopEdit : Adw.Window {
     private Gtk.Box vbox;
-    private Gtk.ComboBoxText wp_combo;
+    private Gtk.DropDown wp_combo;
     private Gtk.Grid  grid0;
     private Gtk.Grid  grid;
     private string pos;
@@ -91,7 +91,7 @@ public class WPPopEdit : Adw.Window {
 	private QEntry appalt;
 	private QEntry fwdirn1;
 	private QEntry fwdirn2;
-    private Gtk.ComboBoxText dref_combo;
+    private Gtk.DropDown dref_combo;
     private Gtk.CheckButton ex1;
     private Gtk.CheckButton ex2;
 
@@ -132,18 +132,9 @@ public class WPPopEdit : Adw.Window {
     private void build_box() {
         vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 5);
 		//        vbox.margin = 2;
-        wp_combo = new Gtk.ComboBoxText();
-		//        wp_combo.hexpand = true;
-        wp_combo.append("1", "WAYPOINT");
-        wp_combo.append("2", "POSHOLD UNLIM");
-        wp_combo.append("3", "POSHOLD TIME");
-        wp_combo.append("5", "SET_POI");
-        wp_combo.append("8", "LAND");
-
-		dref_combo = new Gtk.ComboBoxText();
-		dref_combo.append_text("Left");
-		dref_combo.append_text("Right");
-		dref_combo.active = 0;
+        wp_combo = new Gtk.DropDown.from_strings({
+				"WAYPOINT", "POSHOLD UNLIM", "POSHOLD TIME", "SET_POI", "LAND"});
+		dref_combo = new Gtk.DropDown.from_strings({"Left", "Right"});
 
         grid0 = new Gtk.Grid();
         grid0.column_homogeneous = false;
@@ -164,7 +155,7 @@ public class WPPopEdit : Adw.Window {
 
     private void add_grid(EditItem wpt) {
         bool isset = false;
-        wp_combo.changed.connect(() => {
+		wp_combo.notify["selected"].connect(() => {
                 if(isset) {
                     var no = wpt.no;
                     extract_data(wpt.action, ref wpt);
@@ -221,12 +212,36 @@ public class WPPopEdit : Adw.Window {
         }
     }
 
+	private Msp.Action get_action_from_combo() {
+		Msp.Action nv;
+		var nid = wp_combo.get_selected();
+		switch(nid) {
+		case 0:
+			nv = Msp.Action.WAYPOINT;
+			break;
+		case 1:
+			nv = Msp.Action.POSHOLD_UNLIM;
+			break;
+		case 2:
+			nv = Msp.Action.POSHOLD_TIME;
+			break;
+		case 3:
+			nv = Msp.Action.SET_POI;
+			break;
+		case 4:
+			nv = Msp.Action.LAND;
+			break;
+		default:
+			nv =  Msp.Action.UNKNOWN;
+			break;
+		}
+		return nv;
+	}
+
     public void extract_data(Msp.Action oldact, ref EditItem wpt) {
-        string nstr;
         Msp.Action nv;
         if (oldact == Msp.Action.UNKNOWN) {
-            nstr = wp_combo.get_active_id();
-            nv = (Msp.Action)(int.parse(nstr));
+			nv = get_action_from_combo();
         } else {
             nv = oldact;
         }
@@ -245,9 +260,7 @@ public class WPPopEdit : Adw.Window {
 		default:
             break;
         }
-		nstr = wp_combo.get_active_id();
-        nv = (Msp.Action)(int.parse(nstr));
-        wpt.action = nv;
+        wpt.action =  get_action_from_combo();
 		if(nv == Msp.Action.LAND) {
 		}
 	}
@@ -262,7 +275,7 @@ public class WPPopEdit : Adw.Window {
 				}
 			}
 		}
-        wp_combo.active_id = ((int)wpt.action).to_string();
+        wp_combo.selected = get_index_for_action(wpt.action);
         title = "WP Edit #%d".printf(wpt.no);
         switch(wpt.action) {
         case Msp.Action.WAYPOINT:
@@ -278,7 +291,32 @@ public class WPPopEdit : Adw.Window {
         grid.show();
     }
 
-    private void set_base_elements(EditItem wpt) {
+	private int get_index_for_action(Msp.Action act) {
+		int id;
+		switch (act) {
+		case Msp.Action.WAYPOINT:
+			id = 0;
+			break;
+        case Msp.Action.POSHOLD_UNLIM:
+			id = 1;
+			break;
+        case Msp.Action.POSHOLD_TIME:
+			id = 2;
+			break;
+        case Msp.Action.SET_POI:
+			id = 3;
+			break;
+        case Msp.Action.LAND:
+			id = 4;
+			break;
+		default:
+			id = 0;
+			break;
+		}
+		return id;
+	}
+
+	private void set_base_elements(EditItem wpt) {
         int j = 0;
         Gtk.Label posl;
         string txt;
@@ -334,7 +372,7 @@ public class WPPopEdit : Adw.Window {
                 grid.attach (appalt, 1, j);
 
 				grid.attach (qlabel("From"), 2, j);
-				dref_combo.active = (fwl.dref) ? 1 : 0;
+				dref_combo.selected = (fwl.dref) ? 1 : 0;
 				grid.attach (dref_combo, 3, j);
 				j++;
 				grid.attach (qlabel("Direction 1"), 0, j);
@@ -448,7 +486,7 @@ public class WPPopEdit : Adw.Window {
 		l.dirn2 = (int16) int.parse(fwdirn2.text);
 		l.ex2 = ex2.active;
 		l.aref = amslcb.active;
-		l.dref = (dref_combo.active == 1);
+		l.dref = (dref_combo.selected == 1);
 		return l;
 	}
 
