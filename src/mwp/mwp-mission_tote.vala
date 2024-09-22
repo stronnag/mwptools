@@ -310,6 +310,7 @@ namespace MissionManager {
 
 		void popmenuat(Gtk.Widget w, double x, double y) {
 			var pop = new Gtk.PopoverMenu.from_model(mmodel);
+            MwpMenu.set_menu_state(dg, "addshape", set_poi_ok());
 			Gdk.Rectangle rect = { (int)x, (int)y, 1, 1,};
 			pop.set_pointing_to(rect);
 			pop.set_parent(w);
