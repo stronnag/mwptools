@@ -148,6 +148,7 @@ namespace Mwp {
 			if(conf.uilang == "en") {
 				Intl.setlocale(LocaleCategory.NUMERIC, "C");
 			}
+			TelemTracker.init();
 			devman = new DevManager(conf.bluez_disco);
 			devman.device_added.connect((dd) => {
 					string s = devname_for_dd(dd);
@@ -157,14 +158,14 @@ namespace Mwp {
 						prepend_combo(dev_combox, s);
 				});
 			devman.device_removed.connect((s) => {
-					dev_combox.remove(s);
+					remove_combo(dev_combox,s);
 				});
 			build_serial_combo();
 			Places.get_places();
 			posdialog = new Mwp.GotoDialog();
 			scwindow = new Mwp.SCWindow();
 			GstDev.init();
-			TelemTracker.init();
+
 
 			conbutton.clicked.connect(() => {
 					Msp.handle_connect();
@@ -329,6 +330,15 @@ namespace Mwp {
 			dev_combox.hexpand = true;
 			dev_entry = dev_combox.entry;
 			dev_entry.set_width_chars(16);
+
+			var dg = new GLib.SimpleActionGroup();
+			var saq = new GLib.SimpleAction("item", VariantType.STRING);
+			saq.activate.connect((a) =>  {
+					var s = a.get_string();
+					dev_combox.set_text(s);
+				});
+			dg.add_action(saq);
+			this.insert_action_group("menu", dg);
 
 			viewmode.notify["selected"].connect(() =>  {
 					conf.view_mode =  viewmode.get_selected();
