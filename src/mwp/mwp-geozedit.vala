@@ -658,7 +658,7 @@ public class GZEdit : Adw.Window {
 			pop.set_parent(lab);
 			Gdk.Rectangle rect = { (int)x, (int)y, 1, 1};
 			pop.set_pointing_to(rect);
-			if(n == -1) {
+			if(true /*n == -1*/) {
 				pop.set_autohide(false);
 				var button = new Gtk.Button.from_icon_name("window-close");
 				button.halign = Gtk.Align.END;
