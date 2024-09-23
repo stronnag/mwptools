@@ -94,11 +94,26 @@ public class SafeHomeMarkers : GLib.Object {
 
 			safept[idx].popup_request.connect(( n, x, y) => {
 					SHPop.idx = idx;
-					var popup = new Gtk.PopoverMenu.from_model(SHPop.mmodel);
-					popup.set_has_arrow(true);
-					popup.set_autohide(true);
-					popup.set_parent(safept[idx]);
-					popup.popup();
+					var pop = new Gtk.PopoverMenu.from_model(SHPop.mmodel);
+					var box = new Gtk.Box(Gtk.Orientation.HORIZONTAL,1);
+					var plab = new Gtk.Label("# %d".printf(idx));
+					plab.hexpand = true;
+					box.append(plab);
+					if(n == -1) {
+						pop.set_autohide(false);
+						var button = new Gtk.Button.from_icon_name("window-close");
+						button.halign = Gtk.Align.END;
+						box.append(button);
+						button.clicked.connect(() => {
+								pop.popdown();
+							});
+					} else {
+						pop.set_autohide(true);
+					}
+					pop.add_child(box, "label");
+					pop.set_has_arrow(true);
+					pop.set_parent(safept[idx]);
+					pop.popup();
 				});
 			onscreen[idx] = true;
 		}
