@@ -151,7 +151,8 @@ If you use a map sources file in `~/.config/mwp`, optionally convert the `#X#` e
 For the Debian package runtime dependencies:
 
 ```
-libadwaita-1-0 (>= 1.4~beta)
+
+libadwaita-1-0 (>= 1.5~beta)
 libc6 (>= 2.38)
 libcairo2 (>= 1.2.4)
 libepoxy0 (>= 1.0)
@@ -170,7 +171,7 @@ libshumate-1.0-1 (>= 1.0.0~alpha.1+20220818)
 libsoup-3.0-0 (>= 3.3.1)
 libtinfo6 (>= 6)
 libvte-2.91-gtk4-0
-libxml2 (>= 2.7.4),
+libxml2 (>= 2.7.4)
 ```
 Example packages:
 
