@@ -655,10 +655,8 @@ public class GZEdit : Adw.Window {
 			MwpMenu.set_menu_state(Mwp.window, "gzdelete", (nv > 3));
 			MwpMenu.set_menu_state(Mwp.window, "gzinsert", true);
 			pop = new Gtk.PopoverMenu.from_model(menu);
-			pop.set_parent(lab);
 			Gdk.Rectangle rect = { (int)x, (int)y, 1, 1};
-			pop.set_pointing_to(rect);
-			if(true /*n == -1*/) {
+			if(n == -1) {
 				pop.set_autohide(false);
 				var button = new Gtk.Button.from_icon_name("window-close");
 				button.halign = Gtk.Align.END;
@@ -670,6 +668,8 @@ public class GZEdit : Adw.Window {
 				pop.set_autohide(true);
 			}
 			pop.add_child(box, "label");
+			pop.set_parent(lab);
+			pop.set_pointing_to(rect);
 			pop.popup();
 		}
 	}
