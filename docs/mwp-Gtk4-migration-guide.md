@@ -2,7 +2,7 @@
 
 This document describes the migration from legacy (Gtk+-3.0) mwp to contemporary (Gtk4) mwp.
 
-![mwp](assets/mwp4.png)
+![mwp](images/mwp4.png)
 
 ## System Requirements
 
@@ -24,7 +24,7 @@ The following are minimum versions.
 * meson (1.40)
 * blueprint-compiler (0.12.0)
 * libvte4
-* libadwaita-1 1.4
+* libadwaita-1 1.5
 * libepoxy
 * libsecret-1
 
@@ -57,7 +57,7 @@ Password: *************************************************
 
 ### Gsettings
 
-The key should be added to the `gsettings` database:
+Alternatively, the key can be added to the `gsettings` database:
 ```
  gsettings set org.stronnag.mwp mapbox-apikey 'pk.xxxxxxx'
  # where 'pk.xxxxxxx' is your MapBox API Key
@@ -85,7 +85,7 @@ volts, 3, 0
 ```
 
 Which appears as:
-![mwp4-panel-0](assets/mwp4-panel-0.png)
+![mwp4-panel-0](images/mwp4-panel-0.png)
 
 The available panel widgets are named as:
 
@@ -112,7 +112,7 @@ volts, 3, 0
 ```
 
 would appear as:
-![mwp4-panel-1](assets/mwp4-panel-1.png)
+![mwp4-panel-1](images/mwp4-panel-1.png)
 
 ## Coexistence
 
@@ -128,7 +128,7 @@ If you use any of the map proxies (`bproxy`, `gmproxy`), you must use the latest
 
 There are a couple of Gtk related environment variables that may affect the performance of mwp, particularly on older or less well supported GPUs:
 
-* `GSK_RENDERER` : Recently the Gtk default was changed from `gl` to `ngl` (new GL). At some stage the Gtk default will become `vulkan`. The `ngl` and `vulkan` renderers may be slower that `gl` on older GPUs, so setting this to `gl` may improve performance, particularly when dragging way point icons.
+* `GSK_RENDERER` : Recently the Gtk default was changed from `gl` to `ngl` (new GL) to `vulkan`. The `ngl` and `vulkan` renderers may be slower that `gl` on older GPUs, so setting `GSK_RENDERER` to `gl` may improve performance, particularly when dragging waypoint icons.
 
   On some less well supported GPUs (e.g. Imagination on riscv64) it may be necessary to use the `cairo` renderer;  it is also necessary on the author's touch screen tablet for touch screen operation.
 * `GDK_BACKEND` : In the event that your hardware / software stack is almost hopelessly broken such that mwp is aborted with a Gdk message like  "Error 71 (Protocol error) dispatching to Wayland display", then setting this variable to `x11` may help.
@@ -295,4 +295,4 @@ sudo dnf5 install -y libshumate-devel vte291-gtk4-devel protobuf-c-devel \
 
 ## DBus
 
-The DBus name / path are changed to map the application Id; e.g. `org.stronnag.mwp` and  `/org/stronnag/mwp`. A few of the DBus interfaces have been enhanced; you can introspect the bus to determine this pending new documentation.
+The DBus name / path are changed to map the application Id; e.g. `org.stronnag.mwp` and  `/org/stronnag/mwp`. A few of the DBus interfaces have been enhanced.

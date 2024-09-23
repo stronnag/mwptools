@@ -73,6 +73,7 @@ nav:
   - Home:
       - index.md
       - 'Help and Support': mwp_support.md
+      - 'Migration Guide' : mwp-Gtk4-migration-guide.md
       - running.md
       - ui.md
       - dock.md

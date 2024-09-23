@@ -1,4 +1,4 @@
-project('mwptools', 'vala', 'c', version : '24.09.22', meson_version : '>= 1.4.0')
+project('mwptools', 'vala', 'c', version : '24.09.23', meson_version : '>= 1.4.0')
 
 # For now, as some replacements are not  well defined.
 #show_deprecated = get_option('deprecations')
@@ -20,11 +20,7 @@ show_deprecated = get_option('deprecations')
 if show_deprecated  == false
   add_project_arguments('-Wno-deprecated-declarations', language : 'c')
   add_project_arguments('--enable-deprecated', language : 'vala')
-####################### TEMPORARY #####################
-  add_project_arguments('--disable-warnings', language : 'vala')
-####################### TEMPORARY #####################
 endif
-
 
 with_gatt = true
 if build_machine.system() != 'linux'
