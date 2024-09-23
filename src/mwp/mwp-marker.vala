@@ -58,7 +58,7 @@ public class MWPMarker : Shumate.Marker {
 		gestl.delay_factor *= 1.5;
 		add_controller(gestl);
 		gestl.pressed.connect((x,y) => {
-				popup_request( 1, x, y);
+				popup_request( -1, x, y);
 			});
 
 		var evtck = new Gtk.EventControllerMotion();

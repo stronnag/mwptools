@@ -575,14 +575,27 @@ namespace MsnTools {
 					mk.set_tooltip_markup(set_tip(mk,m,true));
 				});
 
-			mk.popup_request.connect(() => {
+			mk.popup_request.connect((n,x,y) => {
 					MT._m = m;
 					MT._mk = mk;
 					var pop = new Gtk.PopoverMenu.from_model(MT.wppopmenu);
 					pop.set_has_arrow(true);
-					pop.set_autohide(true);
+					var box = new Gtk.Box(Gtk.Orientation.HORIZONTAL,1);
 					var plab = new Gtk.Label("WP %d".printf(mk.no));
-					pop.add_child(plab, "label");
+					plab.hexpand = true;
+					box.append(plab);
+					if(n == -1) {
+						pop.set_autohide(false);
+						var button = new Gtk.Button.from_icon_name("window-close");
+						button.halign = Gtk.Align.END;
+						box.append(button);
+						button.clicked.connect(() => {
+								pop.popdown();
+							});
+					} else {
+						pop.set_autohide(true);
+					}
+					pop.add_child(box, "label");
 					pop.set_parent(mk);
 					MwpMenu.set_menu_state(Mwp.window, "wmove-before", (mk.no != 1));
 					bool eom = (mk.no == m.npoints || (mk.no == m.npoints-1 && m.points[m.npoints-1].action == Msp.Action.RTH));
