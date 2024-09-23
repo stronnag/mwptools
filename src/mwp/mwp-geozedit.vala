@@ -645,16 +645,31 @@ public class GZEdit : Adw.Window {
 		var lab = (Gtk.Label)((MWPMarker)mk).get_child();
 		var parts = lab.label.split("/");
 		if (parts.length == 2) {
+			var box = new Gtk.Box(Gtk.Orientation.HORIZONTAL,1);
+			var plab = new Gtk.Label("# %s".printf(lab.label));
+			plab.hexpand = true;
+			box.append(plab);
 			popno = int.parse(parts[1]);
 			popmk = mk;
 			var nv = Mwp.gzr.nvertices(nitem);
 			MwpMenu.set_menu_state(Mwp.window, "gzdelete", (nv > 3));
 			MwpMenu.set_menu_state(Mwp.window, "gzinsert", true);
 			pop = new Gtk.PopoverMenu.from_model(menu);
-
 			pop.set_parent(lab);
 			Gdk.Rectangle rect = { (int)x, (int)y, 1, 1};
 			pop.set_pointing_to(rect);
+			if(n == -1) {
+				pop.set_autohide(false);
+				var button = new Gtk.Button.from_icon_name("window-close");
+				button.halign = Gtk.Align.END;
+				box.append(button);
+				button.clicked.connect(() => {
+						pop.popdown();
+					});
+			} else {
+				pop.set_autohide(true);
+			}
+			pop.add_child(box, "label");
 			pop.popup();
 		}
 	}
