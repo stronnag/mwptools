@@ -27,14 +27,15 @@ For convenience, clicking the 'Editor ...' button will load the "Places Editor".
 ![placesedit](images/places-editor-menu.png){: width="30%" }
 
 * New items are added with the **+** button.
-* Locations can be edited in place
+* Locations can be edited clicking the "Document Edit" icon at the end of the row.
+  ![placesedit](images/places-editor-1.png){: width="30%" }
+
 * The context (right mouse button) menu:
     * Zoom to location : Zooms to the place
 	* Set location from current view : Sets the location to the centre of the current map view
 	* Delete location : Deletes the location without question.
 * **OK** Saves the locations to `~/.config/mwp/places`
 * Closing using the window manager **X** icon closes without saving.
-
 
 ## Useful Shortcuts
 
