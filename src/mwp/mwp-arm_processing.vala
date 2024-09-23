@@ -59,7 +59,7 @@ namespace Mwp {
                 init_have_home(); // FIXME
 				Mwp.craft.new_craft(!no_trail, stack_size, mod_points);
                 MWPLog.message("Craft is armed, special=%x\n", want_special);
-				Mwp.window.armed_spinner.show();
+				Mwp.window.armed_spinner.set_visible(true);
 				Mwp.window.armed_spinner.start();
                 check_mission_home();
 
@@ -100,20 +100,17 @@ namespace Mwp {
 				}
                 MWPLog.message("Disarmed %s\n", reason);
 				Mwp.window.armed_spinner.stop();
-				Mwp.window.armed_spinner.hide();
-				//markers.negate_ipos(); // FIXME
+				Mwp.window.armed_spinner.set_visible(false);
                 MwpMenu.set_menu_state(Mwp.window, "followme", false);
                 duration = -1;
                 armtime = 0;
                 want_special = 0;
-                //init_have_home(); // FIX<E
                 if (conf.audioarmed == true) {
                     Mwp.window.audio_cb.active = false;
                     TTS.say_state &= ~SAY_WHAT.Nav;
                     if((debug_flags & DEBUG_FLAGS.ADHOC) != 0) {
                         MWPLog.message("Disable nav speak\n");
 					}
-                    //navstatus.set_audio_status(say_state); // FIXME
                 }
                 if(conf.logarmed == true) {
                     if(Logger.is_logging) {
@@ -121,7 +118,6 @@ namespace Mwp {
 					}
                     Mwp.window.logger_cb.active=false;
                 }
-                //navstatus.reset_states(); // fixme
                 reboot_status();
             }
         }

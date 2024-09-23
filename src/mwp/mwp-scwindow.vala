@@ -25,7 +25,7 @@ namespace Mwp {
 			scsect.visible = true;
 			scview.transient_for = Mwp.window;
 			scview.close_request.connect (() => {
-					scview.hide();
+					scview.visible=false;
 					return true;
 				});
 		}

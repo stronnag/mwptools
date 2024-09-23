@@ -851,7 +851,7 @@ namespace Mwp {
 				hwstatus[i] = raw[i];
 			MWPLog.message("Sensor status %d\n", hwstatus[0]);
 			if(hwstatus[0] == 0) {
-				Mwp.window.arm_warn.show();
+				Mwp.window.arm_warn.visible=true;
 			}
 			break;
 
@@ -1414,9 +1414,9 @@ namespace Mwp {
                         // navstatus.arm_status(arming_msg); // FIXME
 					}
                     if((arm_flags & ~(ARMFLAGS.ARMED|ARMFLAGS.WAS_EVER_ARMED)) != 0) {
-						Mwp.window.arm_warn.show();
+						Mwp.window.arm_warn.visible=true;
                     } else {
-                        Mwp.window.arm_warn.hide();
+                        Mwp.window.arm_warn.visible=false;
                     }
                 }
             } else {

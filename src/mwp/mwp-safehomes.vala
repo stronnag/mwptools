@@ -657,7 +657,7 @@ public class  SafeHomeDialog : Adw.Window {
 		var state = switcher.get_active();
 		if(!state)
 			display_homes(false);
-		hide();
+		visible=false;
 	}
 
 	public void online_change(uint32 v) {

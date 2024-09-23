@@ -21,7 +21,6 @@ namespace GstDev {
 	Gtk.StringList sl;
 
 	public string? get_device(string m) {
-		var s = null;
 		for (unowned List<GstMonitor.VideoDev?>lp = viddevs.first(); lp != null; lp = lp.next)  {
 			var dv = lp.data;
 			if (dv.displayname == m) {

@@ -307,7 +307,7 @@ namespace Mwp {
             duration = -1;
             armtime = 0;
             Mwp.window.armed_spinner.stop();
-            Mwp.window.armed_spinner.hide();
+            Mwp.window.armed_spinner.visible=false;
             Mwp.window.conbutton.sensitive = true;
             armed = larmed = 0;
             replay_paused = false;

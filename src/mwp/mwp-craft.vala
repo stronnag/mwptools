@@ -27,20 +27,20 @@ namespace Posring {
 		pt = new MWPPoint.with_colour(Mwp.conf.wp_spotlight, 0);
 		pt.set_size_request(60, 60);
 		Gis.info_layer.add_marker (pt);
-		pt.hide();
+		pt.set_visible(false);
 	}
 	public void set_location (double lat, double lon) {
 		if(pt == null) {
 			init();
 		}
 		pt.set_location (lat,lon);
-		pt.show();
+		pt.set_visible(true);
 	}
 	public void hide() {
 		if(pt == null) {
 			init();
 		}
-		pt.hide();
+		pt.set_visible(false);
 	}
 }
 
@@ -113,7 +113,7 @@ public class Craft : Object {
         stack_size = _stack;
         mod_points = _modulop;
 		init_trail();
-		cricon.show();
+		cricon.set_visible(true);
 	}
 
     public void init_trail() {
@@ -137,7 +137,7 @@ public class Craft : Object {
     }
 
     public void park() {
-        cricon.hide();
+        cricon.visible = false;
     }
 
     public void get_pos(out double lat, out double lon) {
@@ -147,7 +147,7 @@ public class Craft : Object {
 
     public void set_lat_lon (double lat, double lon, double cse) {
 		if (!cricon.visible)
-			cricon.show();
+			cricon.visible = true;
 
 		if(trail) {
 			var marker = new MWPPoint.with_colour(path_colour, 0);

@@ -38,7 +38,7 @@ namespace Mwp {
 			transient_for = Mwp.window;;
 			var p = new PlaceEdit();
 			close_request.connect (() => {
-					this.hide();
+					visible=false;
 					return true;
 				});
 
@@ -53,7 +53,7 @@ namespace Mwp {
 				});
 
 			gotocan.clicked.connect (() => {
-					hide();
+					visible=false;
 				});
 
 			gotoapp.clicked.connect (() => {
@@ -76,7 +76,7 @@ namespace Mwp {
 					if (n > 0 && pls[n].zoom > 0) {
 						Gis.map.viewport.zoom_level = pls[n].zoom;
 					}
-					hide();
+					visible=false;
 				});
 			load_places();
 		}

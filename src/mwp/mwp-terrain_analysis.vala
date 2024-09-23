@@ -58,7 +58,7 @@ namespace TA {
 
 			pe_ok.clicked.connect(() => {
 					run_elevation_tool();
-					hide();
+					visible=false;
 				});
 
 			pe_close.clicked.connect(() => {
@@ -76,7 +76,7 @@ namespace TA {
 			if(altview != null) {
 				altview.close();
 			}
-			hide();
+			visible=false;
 		}
 
 		public void run() {

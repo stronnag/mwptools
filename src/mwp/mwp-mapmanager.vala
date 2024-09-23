@@ -100,22 +100,22 @@ namespace Gis {
 
 	public void  map_show_warning(string msg) {
 		warnlab.label = "<span size='300%%' color='#ff0000c0'>%s</span>".printf(msg);
-		warnlab.show();
+		warnlab.visible=true;
 	}
 
 	public void  map_hide_warning() {
-		warnlab.hide();
+		warnlab.visible=false;
 		warnlab.label="";
 	}
 
 	public void  map_show_osd(string msg) {
 		var parts = Mwp.conf.wp_text.split("/");
 		osdlab.label = "<span font='%s' color='%s'>%s</span>".printf(parts[0], parts[1], msg);
-		osdlab.show();
+		osdlab.visible=true;
 	}
 
 	public void  map_hide_osd() {
-		osdlab.hide();
+		osdlab.visible=false;
 		osdlab.label="";
 	}
 

@@ -133,7 +133,7 @@ namespace Msp {
 		//        map_hide_wp(); // FIXME
         if(Mwp.replayer == Mwp.Player.NONE) {
             Safehome.manager.online_change(0);
-            Mwp.window.arm_warn.hide();
+            Mwp.window.arm_warn.visible=false;
             Mwp.serstate = Mwp.SERSTATE.NONE;
             Mwp.sflags = 0;
             if (Mwp.conf.audioarmed == true) {

@@ -288,7 +288,7 @@ public class WPPopEdit : Adw.Window {
         default:
             break;
         }
-        grid.show();
+        grid.visible=true;
     }
 
 	private int get_index_for_action(Msp.Action act) {
@@ -323,7 +323,7 @@ public class WPPopEdit : Adw.Window {
 
         grid.attach (qlabel("Position"), 0, j);
         posl = new QLabel(pos).l;
-        posl.show();
+        posl.visible=true;
         grid.attach (posl, 1, j, 2);
 
         if (wpt.action != Msp.Action.SET_POI) {

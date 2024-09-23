@@ -147,7 +147,7 @@ public class GZEdit : Adw.Window {
 		this.close_request.connect (() => {
 				refresh_storage(Upd.ANY, false);
 				remove_edit_markers();
-				hide();
+				visible=false;
 				return true;
 			});
 
@@ -229,7 +229,7 @@ public class GZEdit : Adw.Window {
 		nitem = 0;
 		buttons[Buttons.PREV].clicked.connect(() => {
 				remove_edit_markers();
-				newlab.hide();
+				newlab.visible=false;
 				if (nitem == 0) {
 					if(Mwp.gzr.length() > 0)
 						nitem = Mwp.gzr.length()-1;
@@ -242,7 +242,7 @@ public class GZEdit : Adw.Window {
 
 		buttons[Buttons.NEXT].clicked.connect(() => {
 				remove_edit_markers();
-				newlab.hide();
+				newlab.visible=false;
 				nitem = (nitem + 1) % Mwp.gzr.length();
 				set_buttons_sensitive();
 				edit_markers();
@@ -271,7 +271,7 @@ public class GZEdit : Adw.Window {
 						if (rad <= 0.0) {
 							return;
 						}
-						newlab.hide();
+						newlab.visible=false;
 						Mwp.gzr.append_zone(nitem, (GeoZoneManager.GZShape)zshape.selected,
 										  (GeoZoneManager.GZType)ztype.selected,
 										  minalt, maxalt,
@@ -279,7 +279,7 @@ public class GZEdit : Adw.Window {
 						k = Mwp.gzr.append_vertex(nitem, 0, (int)(clat*1e7), (int)(clon*1e7));
 						k = Mwp.gzr.append_vertex(nitem, 1, (int)(rad*100), 0);
 					} else {
-						newlab.hide();
+						newlab.visible=false;
 						Mwp.gzr.append_zone(nitem,
 										  (GeoZoneManager.GZShape)zshape.selected,
 										  (GeoZoneManager.GZType)ztype.selected,
@@ -385,7 +385,7 @@ public class GZEdit : Adw.Window {
 
 
 	private void show_markers() {
-		newlab.hide();
+		newlab.visible=false;
 		zidx.set_label(nitem.to_string());
 		ztype.selected = (int)Mwp.gzr.get_ztype(nitem);
 		zshape.selected = (int)Mwp.gzr.get_shape(nitem);
@@ -424,11 +424,11 @@ public class GZEdit : Adw.Window {
 	private void toggle_shape() {
 		if (zshape.selected == 0) {
 			set_zradius();
-			lradius.show();
-			zradius.show();
+			lradius.visible=true;
+			zradius.visible=true;
 		} else {
-			lradius.hide();
-			zradius.hide();
+			lradius.visible=false;
+			zradius.visible=false;
 		}
 	}
 
@@ -574,7 +574,7 @@ public class GZEdit : Adw.Window {
 
 	private void new_zone(bool rm = true) {
 		remove_edit_markers(rm);
-		newlab.show();
+		newlab.visible=true;
 		nitem = Mwp.gzr.length();
 		toggle_shape();
 		zidx.set_label(nitem.to_string());

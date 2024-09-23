@@ -45,7 +45,7 @@ namespace Radar {
 
 	public void display() {
 		if(radarv.vis) {
-			radarv.hide();
+			radarv.visible=false;
 		} else {
 			radarv.present();
 		}
@@ -680,7 +680,7 @@ namespace Radar {
 				});
 
 			buttons[Buttons.CLOSE].clicked.connect (() => {
-					hide();
+					visible=false;
 					vis = false;
 				});
 
@@ -711,7 +711,7 @@ namespace Radar {
 			sbox.append(grid);
 			set_content (sbox);
 			close_request.connect (() => {
-					hide();
+					visible=false;
 					vis = false;
 					return true;
 				});

@@ -442,7 +442,7 @@ namespace Mwp {
             MWPLog.message("Init MSP %s (%u)\n", cmd.to_string(), cmd);
 
         if(replayer == Player.NONE) {
-            uint8 *dt = (buf == null) ? null : Memory.dup(buf, (uint)len);
+            uint8 *dt = (buf == null) ? null : Memory.dup2(buf, (size_t)len);
             if(msp.available == true) {
                 var mi = MQI() {cmd = cmd, len = len, data = dt};
                 mq.push_tail(mi);

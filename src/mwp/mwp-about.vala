@@ -22,8 +22,7 @@ namespace About {
 		var copyright = "© 2014-%d Jonathan Hudson".printf(new DateTime.now_local().get_year());
 
 		var details = "\"A mission planner for the rest of us\"\n\nCommit: %s\n".printf(MwpVers.get_build());
-		var about = new Adw.AboutWindow () {
-				transient_for = Mwp.window,
+		var about = new Adw.AboutDialog () {
 					application_name = "mwp",
 					application_icon = "mwp_icon",
 					developer_name = "Jonathan Hudson",
@@ -38,6 +37,6 @@ namespace About {
 					release_notes = release_notes,
 					release_notes_version = MwpVers.get_id()
 					};
-		about.present ();
+		about.present (Mwp.window);
 	}
 }

@@ -192,9 +192,9 @@ namespace Follow {
 
 		public void show_followme(bool state) {
 			if(state) {
-				fmpoint.show();
+				fmpoint.visible = true;
 			} else {
-				fmpoint.hide();
+				fmpoint.visible = false;
 			}
 			is_visible = state;
 		}

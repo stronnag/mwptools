@@ -69,8 +69,8 @@ namespace Voltage {
 				licol = icol;
 			}
 			if (icol == -1 || Battery.curr.ampsok == false) {
-				ampslabel.hide();
-				mahlabel.hide();
+				ampslabel.visible=false;
+				mahlabel.visible=false;
 				ampslabel.set_label("");
 				mahlabel.set_label("");
 			} else {
@@ -94,8 +94,8 @@ namespace Voltage {
 			var vs = "<span font='monospace' size='600%%'>%sv</span>".printf(vstr);
 			voltlabel.set_label(vs);
 			if(Battery.curr.ampsok) {
-				ampslabel.show();
-				mahlabel.show();
+				ampslabel.visible=true;
+				mahlabel.visible=true;
 			}
 		}
 	}

@@ -36,7 +36,7 @@ namespace HomePoint {
 	public void try_hide() {
 		if (MissionManager.mdx == -1) {
 			if(hp != null)
-				hp.hide();
+				hp.visible=false;
 		}
 	}
 
@@ -82,7 +82,7 @@ namespace HomePoint {
 					set_htt(la, lo);
 				});
 		}
-		hp.show();
+		hp.visible=true;
 		hp.set_location (lat, lon);
 		set_htt(lat, lon);
 	}

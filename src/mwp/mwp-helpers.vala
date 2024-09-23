@@ -295,7 +295,7 @@ namespace Utils {
 
 	public void warning_box(string warnmsg,	int timeout = 0) {
 		uint tid = 0;
-		var am = new Adw.MessageDialog(Mwp.window, "MWP Message",  warnmsg);
+		var am = new Adw.AlertDialog("MWP Message",  warnmsg);
 
 		am. set_body_use_markup (true);
 		am.add_response ("ok", "OK");
@@ -304,7 +304,7 @@ namespace Utils {
 					Source.remove(tid);
 				}
 			});
-		am.present();
+		am.present(Mwp.window);
 		if(timeout > 0) {
             tid = Timeout.add_seconds_once(timeout, () => {
 					tid = 0;

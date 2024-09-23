@@ -58,7 +58,7 @@ namespace Kml {
 				kmlitems.remove(b);
 			}
 			btns = {};
-			this.hide();
+			visible=false;
 		}
 
 		public void remove() {

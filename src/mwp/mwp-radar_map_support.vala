@@ -78,7 +78,7 @@ namespace Radar {
 			rp  = new MWPMarker.from_image(img);
 			rp.extra = new MWPLabel();
 			Gis.tt_layer.add_marker((MWPLabel)rp.extra);
-			rp.extra.hide();
+			rp.extra.visible=false;
 			uint tt_timer = 0;
 
 			rp.leave.connect(() => {
@@ -86,13 +86,13 @@ namespace Radar {
 						Source.remove(tt_timer);
 						tt_timer = 0;
 					}
-					rp.extra.hide();
+					rp.extra.visible=false;
 				});
 			rp.enter.connect((x,y) => {
-					rp.extra.show();
+					rp.extra.visible=true;
 					tt_timer = Timeout.add_seconds_once(30, () => {
 							tt_timer = 0;
-							rp.extra.hide();
+							rp.extra.visible=false;
 						});
 				});
             rp.set_selectable(false);
@@ -175,7 +175,7 @@ namespace Radar {
     public void set_radar_hidden(uint rid) {
         var rp = find_radar_item(rid) as MWPMarker;
         if(rp != null) {
-			rp.hide();
+			rp.visible=false;
         }
     }
 }

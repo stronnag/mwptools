@@ -368,9 +368,9 @@ namespace CRSF {
 				if(arm_flags != Mwp.xarm_flags) {
 					Mwp.xarm_flags = arm_flags;
 					if((arm_flags & ~(Mwp.ARMFLAGS.ARMED|Mwp.ARMFLAGS.WAS_EVER_ARMED)) != 0) {
-						Mwp.window.arm_warn.show();
+						Mwp.window.arm_warn.visible=true;
 					} else {
-						Mwp.window.arm_warn.hide();
+						Mwp.window.arm_warn.visible=false;
 					}
 				}
 

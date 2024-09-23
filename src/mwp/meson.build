@@ -57,7 +57,7 @@ mwpsrcs = files('mwp-about.vala', 'mwp-ah_widget.vala',
 
 mwpdeps = [deps,
 	   dependency('gtk4'),
-           dependency ('libadwaita-1', version: '>= 1.4'),
+           dependency ('libadwaita-1', version: '>= 1.5'),
 	   dependency('glib-2.0'),
            soupdep,
            dependency('libxml-2.0'),

@@ -312,7 +312,7 @@ class PlaceEdit : Adw.Window {
 
 		set_transient_for(Mwp.window);
         close_request.connect (() => {
-                this.hide();
+                visible=false;
                 return true;
             });
 
@@ -338,10 +338,9 @@ class PlaceEdit : Adw.Window {
 				}
                 Places.replace(ps);
                 places_changed();
-				hide();
+				visible=false;
             });
     }
-
 
 	private void edit_position(Places.PosItem pi, bool insert) {
 		var w = new NewPos.Window(pi);

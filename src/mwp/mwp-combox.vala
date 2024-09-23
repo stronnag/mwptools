@@ -1,4 +1,4 @@
-public class MwpCombox : Adw.Bin {
+public class MwpCombox : Gtk.Frame {
 	public Gtk.Entry entry;
 	private GLib.Menu menu;
 
