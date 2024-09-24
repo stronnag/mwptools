@@ -105,9 +105,43 @@ namespace Mwp {
 		internal unowned Gtk.Button arm_warn;
 
 		private StrIntStore pis;
-
 		private Mwp.GotoDialog posdialog;
 		private Mwp.SCWindow scwindow;
+
+		public async bool checker() {
+			bool ok = false;
+			var am = new Adw.AlertDialog("MWP Message",  "Mission has uncommitted changes");
+			am. set_body_use_markup (true);
+			am.add_response ("continue", "Cancel");
+			am.add_response ("ok", "Save");
+			am.add_response ("cancel", "Don't Save");
+			am.response.connect((s) => {
+					if(s == "cancel") {
+						ok = true;
+						checker.callback();
+					} else if (s == "continue") {
+						ok = false;
+						checker.callback();
+					} else {
+						var fc = MissionManager.setup_save_mission_file_as();
+						fc.save.begin (this, null, (o,r) => {
+								try {
+									var fh = fc.save.end(r);
+									var fn = fh.get_path ();
+									MissionManager.last_file = fn;
+									MissionManager.write_mission_file(fn, 0);
+									ok = true;
+								} catch (Error e) {
+									print("Failed to save file: %s\n", e.message);
+								}
+								checker.callback();
+							});
+					}
+				});
+			am.present(this);
+			yield;
+			return ok;
+		}
 
 		public Window (Adw.Application app) {
             Object (application: app);
@@ -131,9 +165,26 @@ namespace Mwp {
 #endif
 			setup_accels(app);
 			setup_misc_controls();
+			bool checked = false;
 			close_request.connect(() => {
 					MapManager.killall();
-					app.remove_window(this);
+					if(checked) {
+						return false;
+					} else {
+						var dirty = MissionManager.is_dirty();
+						if(!dirty) {
+							return false;
+						} else {
+							waiter.begin((o,res) => {
+									var ok = waiter.end(res);
+									if(ok) {
+										checked = true;
+										close();
+									}
+								});
+							return true;
+						}
+					}
 					return false;
 				});
 			init_basics();
@@ -141,6 +192,11 @@ namespace Mwp {
 			setup_terminal_reboot();
 			follow_button.active = conf.autofollow;
 			show_window();
+		}
+
+		public async bool waiter() {
+			var ok = yield checker ();
+			return ok;
 		}
 
 		private void init_basics() {
@@ -495,6 +551,20 @@ namespace Mwp {
 			prefs.run();
 		}
 
+		private void load_mission() {
+			var dirty = MissionManager.is_dirty();
+			if(!dirty) {
+				MissionManager.load_mission_file();
+			} else {
+				waiter.begin((o,res) => {
+						var ok = waiter.end(res);
+						if(ok) {
+							MissionManager.load_mission_file();
+						}
+					});
+			}
+		}
+
 		private void setup_accels(Adw.Application app) {
 			GLib.ActionEntry[] winacts = {
 				{"quit",  Mwp.window.close},
@@ -505,7 +575,7 @@ namespace Mwp {
 				{"kml-load", Kml.load_file},
 				{"kml-remove", Kml.remove_kml},
 				{"radar-view", launch_radar},
-				{"mission-open", MissionManager.load_mission_file},
+				{"mission-open", load_mission},
 				{"mission-append", MissionManager.append_mission_file},
 				{"mission-save", MissionManager.save_mission_file},
 				{"mission-save-as", MissionManager.save_mission_file_as},
@@ -575,7 +645,15 @@ namespace Mwp {
 			app.set_accels_for_action ("win.toggle-fs", { "F11" });
 			app.set_accels_for_action ("win.handle-connect", { "<primary><shift>c" });
 			app.set_accels_for_action ("win.show-serial-stats", { "<primary>s" });
-
+			app.set_accels_for_action ("win.upload-mission", { "<primary>u" });
+			app.set_accels_for_action ("win.upload-missions", { "<primary><shift>u" });
+			app.set_accels_for_action ("win.restore-mission", { "<primary>r" });
+			app.set_accels_for_action ("win.store-mission", { "<primary>e" });
+			app.set_accels_for_action ("win.prefs", { "<primary>p" });
+			app.set_accels_for_action ("win.terminal", { "<shift>t" });
+			app.set_accels_for_action ("win.reboot", { "<primary>exclam" });
+			app.set_accels_for_action ("win.flight-stats", { "<primary><shift>a" });
+			app.set_accels_for_action ("win.quit", { "<primary>q" });
 			MwpMenu.set_menu_state(Mwp.window, "followme", false);
 		}
 	}
@@ -687,7 +765,6 @@ namespace Mwp {
 		layout.get_pixel_size(out fw, out fh);
 	}
 
-
 	void show_arm_status() {
 		StringBuilder sb = new StringBuilder();
 		if((xarm_flags & ~(ARMFLAGS.ARMED|ARMFLAGS.WAS_EVER_ARMED)) != 0) {
@@ -695,7 +772,6 @@ namespace Mwp {
 			string arm_msg = get_arm_fail(xarm_flags,'\n');
 			sb.append(arm_msg);
 		}
-
 		if(hwstatus[0] == 0) {
 			sb.append("<b>Hardware Status</b>\n");
 			for(var i = 0; i < 8; i++) {
@@ -705,7 +781,6 @@ namespace Mwp {
 				sb.append_printf("%s : %s\n", sensor_names[i], shs);
 			}
 		}
-
 		var pop = new Gtk.Popover();
 		Gtk.Label label = new Gtk.Label(sb.str);
 		label.set_use_markup (true);
@@ -724,5 +799,4 @@ namespace Mwp {
 		MwpMenu.set_menu_state(Mwp.window, "gz-clear", val);
 		MwpMenu.set_menu_state(Mwp.window, "gz-edit", val);
 	}
-
 }

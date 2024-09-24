@@ -343,11 +343,6 @@ namespace Mwp {
 		}
 
 		construct {
-			ActionEntry[] action_entries = {
-				{ "quit", this.quit },
-			};
-			this.add_action_entries (action_entries, this);
-			this.set_accels_for_action ("app.quit", { "<primary>q" });
 			extra_files = new Array<string>();
 		}
 

@@ -26,7 +26,7 @@ namespace MissionManager {
 	public const uint MAXMULTI = 9;
 	public uint wp_max = 120;
 	public int mdx = -1; // current mission segment
-	public Mission? lastmission;
+	public Mission? []lastmsx;
 	public Mission []msx;
 	public string last_file = null;
 	public GLib.SimpleActionGroup dg;
@@ -37,7 +37,7 @@ namespace MissionManager {
 	public void init() {
 		tadialog = new TA.Dialog();
 		msx={};
-		lastmission=null;
+		lastmsx=null;
 		add_wp_actions();
 		wp_max = Mwp.conf.max_wps;
 		acthdlr = Mwp.window.actmission.notify["selected"].connect(() => {
@@ -117,15 +117,19 @@ namespace MissionManager {
 		return nwp;
 	}
 
-	public void save_mission_file_as() {
+	public Gtk.FileDialog setup_save_mission_file_as() {
 		IChooser.Filter []ifm = {
 			{"Mission XML", {"mission"}},
 			{"Mission JSON", {"json"}},
 		};
-
 		var fc = IChooser.chooser(Mwp.conf.missionpath, ifm);
 		fc.title = "Save Mission File";
 		fc.modal = true;
+		return fc;
+	}
+
+	public void save_mission_file_as() {
+		var fc = setup_save_mission_file_as();
 		fc.save.begin (Mwp.window, null, (o,r) => {
 				try {
 					var fh = fc.save.end(r);
@@ -136,7 +140,6 @@ namespace MissionManager {
 					MWPLog.message("Failed to save mission file: %s\n", e.message);
 				}
 			});
-
 	}
 
 	public void save_mission_file() {
@@ -195,6 +198,7 @@ namespace MissionManager {
 			Mwp.add_toast_text("Failed to load %s".printf(fn));
 		} else {
 			last_file = fn;
+			set_last();
 		}
 		return _ms;
 	}
@@ -242,6 +246,21 @@ namespace MissionManager {
 		return _ms;
 	}
 
+	public bool is_dirty() {
+		if(current() == null || lastmsx == null) {
+			return false;
+		}
+		if (msx.length != lastmsx.length) {
+			return true;
+		}
+		for(var j = 0; j < msx.length; j++) {
+			if(!msx[j].is_equal(lastmsx[j])) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public void visualise_mission() {
 		zoom_to_mission();
 		HomePoint.hp.opacity = 1.0;
@@ -264,7 +283,6 @@ namespace MissionManager {
 			Mwp.add_toast_text("No loaded mission");
 		}
 	}
-
 
 	public void check_mm_list() {
 		// FIXME not sure this is the correct solution
@@ -291,7 +309,6 @@ namespace MissionManager {
 		}
 		*/
 	}
-
 
 	public void update_mission_combo() {
 		// Don't fire signal handler while updating
@@ -395,6 +412,14 @@ namespace MissionManager {
 			return msx[mdx];
 		}
 		return null;
+	}
+
+	public void set_last() {
+		Mission? []_lm = {};
+		foreach (var m in msx) {
+			_lm +=  new Mission.clone(m);
+		}
+		lastmsx = _lm;
 	}
 
 	private void add_wp_actions() {

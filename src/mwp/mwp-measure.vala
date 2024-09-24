@@ -31,9 +31,14 @@ namespace Measurer {
 
 		public Measure() {
 			title="Measure";
+			tdist = 0.0;
 			var vbox = new Gtk.Box(Gtk.Orientation.VERTICAL, 4);
+			vbox.vexpand = true;
 			vbox.append(new Adw.HeaderBar());
-			label = new Gtk.Label("00000.0m");
+			label = new Gtk.Label("");
+			label.set_use_markup (true);
+			label.label = format_distance();
+			label.valign = Gtk.Align.CENTER;
 			vbox.append(label);
 
 			var hbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 2);
@@ -46,6 +51,7 @@ namespace Measurer {
 					pl.remove_all();
 					add_point(lat, lon);
 				});
+			rbutton.halign=Gtk.Align.END;
 			hbox.append(rbutton);
 			var cbutton = new Gtk.Button.with_label("Close");
 			cbutton.clicked.connect(() => {
@@ -53,9 +59,13 @@ namespace Measurer {
 					Measurer.active = false;
 					close();
 				});
+			cbutton.halign=Gtk.Align.END;
 			hbox.append(cbutton);
 			vbox.append(hbox);
 			set_content(vbox);
+			hbox.vexpand = true;
+			hbox.valign = Gtk.Align.END;
+			hbox.halign = Gtk.Align.END;
 			close_request.connect (() => {
 					Measurer.active = false;
 					clean_up();
@@ -109,7 +119,7 @@ namespace Measurer {
 			string ds;
 			string du;
 			Units.scaled_distance(md, out ds, out du);
-			return "%s%s".printf(ds, du);
+			return "<span size='250%%' font='monospace'>%s%s</span>".printf(ds, du);
 		}
 
 		public void calc_distance() {

@@ -49,11 +49,17 @@ template $RawWindow : Adw.Window {
     // Row 4
     Box  {
       hexpand: false;
+      vexpand: true;
       halign: end;
+      valign: end;
       Button cancel {
+	hexpand: false;
+	halign: end;
         label: _('Cancel');
       }
       Button apply {
+	hexpand: false;
+	halign: end;
         label: _('OK');
       }
     }

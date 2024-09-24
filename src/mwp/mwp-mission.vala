@@ -179,7 +179,9 @@ public class Mission : GLib.Object {
 	public Mission.clone(Mission m) {
 		MissionItem []npts = {};
 		foreach (var mi in m.points) {
-			npts += mi;
+			var mix = new MissionItem.full(mi.no, mi.action, mi.lat, mi.lon, mi.alt,
+									   mi.param1, mi.param2, mi.param3, mi.flag);
+			npts += mix;
 		}
 		npoints = m.npoints;
 		points = npts;
