@@ -17,6 +17,8 @@
 
 using Gtk;
 
+public delegate void ActionFunc ();
+
 namespace Mwp {
 	MWPSettings conf;
 	MwpCombox dev_combox;
@@ -107,6 +109,7 @@ namespace Mwp {
 		private StrIntStore pis;
 		private Mwp.GotoDialog posdialog;
 		private Mwp.SCWindow scwindow;
+		private bool close_check;
 
 		public async bool checker() {
 			bool ok = false;
@@ -143,6 +146,20 @@ namespace Mwp {
 			return ok;
 		}
 
+		private void check_mission_clean(ActionFunc func) {
+			var dirty = MissionManager.is_dirty();
+			if(!dirty) {
+				func();
+			} else {
+				waiter.begin((o,res) => {
+						var ok = waiter.end(res);
+						if(ok) {
+							func();
+						}
+					});
+			}
+		}
+
 		public Window (Adw.Application app) {
             Object (application: app);
 			mapdrop.factory = null;
@@ -165,10 +182,10 @@ namespace Mwp {
 #endif
 			setup_accels(app);
 			setup_misc_controls();
-			bool checked = false;
+			close_check = false;
 			close_request.connect(() => {
 					MapManager.killall();
-					if(checked) {
+					if(close_check) {
 						return false;
 					} else {
 						var dirty = MissionManager.is_dirty();
@@ -178,14 +195,13 @@ namespace Mwp {
 							waiter.begin((o,res) => {
 									var ok = waiter.end(res);
 									if(ok) {
-										checked = true;
+										close_check = true;
 										close();
 									}
 								});
 							return true;
 						}
 					}
-					return false;
 				});
 			init_basics();
 
@@ -552,17 +568,15 @@ namespace Mwp {
 		}
 
 		private void load_mission() {
-			var dirty = MissionManager.is_dirty();
-			if(!dirty) {
-				MissionManager.load_mission_file();
-			} else {
-				waiter.begin((o,res) => {
-						var ok = waiter.end(res);
-						if(ok) {
-							MissionManager.load_mission_file();
-						}
-					});
-			}
+			check_mission_clean(MissionManager.load_mission_file);
+		}
+
+		private void append_mission() {
+			check_mission_clean(MissionManager.append_mission_file);
+		}
+
+		private void do_download_mission() {
+			check_mission_clean(download_mission);
 		}
 
 		private void setup_accels(Adw.Application app) {
@@ -576,7 +590,7 @@ namespace Mwp {
 				{"kml-remove", Kml.remove_kml},
 				{"radar-view", launch_radar},
 				{"mission-open", load_mission},
-				{"mission-append", MissionManager.append_mission_file},
+				{"mission-append", append_mission},
 				{"mission-save", MissionManager.save_mission_file},
 				{"mission-save-as", MissionManager.save_mission_file_as},
 				{"mman", MissionManager.mm_manager},
@@ -600,7 +614,7 @@ namespace Mwp {
 				{"pausemission", do_mission_pause},
 				{"upload-mission", do_mission_upload},
 				{"upload-missions",do_missions_upload},
-				{"download-mission", download_mission},
+				{"download-mission", do_download_mission},
 				{"restore-mission", restore_mission},
 				{"store_mission", store_mission},
 				{"gz-load", GZUtils.load_dialog},
