@@ -1211,9 +1211,11 @@ namespace Mwp {
 			MWPLog.message("Reboot scheduled\n");
 			Msp.close_serial();
 			Timeout.add_seconds_once(2, () => {
-					if(!ser.available && !autocon) {
-						MWPLog.message("Reconnecting\n");
-						Msp.connect_serial();
+					if(!autocon) {
+						var serdev = Mwp.dev_entry.text;
+						MWPLog.message("Reconnecting %s\n", serdev);
+						var sparts = serdev.split(" ");
+						Msp.try_reopen(sparts[0]);
 					}
 				});
 			break;
