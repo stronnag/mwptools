@@ -127,12 +127,16 @@ If you use any of the map proxies (`bproxy`, `gmproxy`), you must use the latest
 
 There are a couple of Gtk related environment variables that may affect the performance of mwp, particularly on older or less well supported GPUs:
 
-* `GSK_RENDERER` : Recently the Gtk default was changed from `gl` to `ngl` (new GL) to `vulkan`. The `ngl` and `vulkan` renderers may be slower that `gl` on older GPUs, so setting `GSK_RENDERER` to `gl` may improve performance, particularly when dragging waypoint icons.
+* `GSK_RENDERER` : Recently the Gtk default was changed from `gl` to `ngl` to `vulkan`. The `ngl` and `vulkan` renderers may be slower that `gl` on older GPUs, so setting `GSK_RENDERER` to `gl` or `cairo` may improve performance, particularly when dragging waypoint icons.
 
-  On some less well supported GPUs (e.g. Imagination on riscv64) it may be necessary to use the `cairo` renderer;  it is also necessary on the author's touch screen tablet for touch screen operation.
-* `GDK_BACKEND` : In the event that your hardware / software stack is almost hopelessly broken such that mwp is aborted with a Gdk message like  "Error 71 (Protocol error) dispatching to Wayland display", then setting this variable to `x11` may help.
+  On some less well supported GPUs (e.g. Imagination on riscv64) it may be necessary to use the `cairo` renderer;  it is also necessary on the author's touch screen tablet for touch screen operation. It seems that the `cairo` `GSK_RENDERER` can give the best performance in many cases.
+* `GDK_BACKEND` : In the event that your hardware / software stack is almost hopelessly broken such that mwp is aborted with a Gdk message like  "Error 71 (Protocol error) dispatching to Wayland display", then setting this variable to `x11` may allow `mwp` to continue.
 
-These environment variables may be set in `~/.config/mwp/cmdopts` if needed.
+The environment variables may be set in `~/.config/mwp/cmdopts` if needed.
+
+```
+GSK_RENDERER=cairo
+```
 
 ## Optional
 

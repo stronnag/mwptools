@@ -55,7 +55,9 @@ namespace MissionManager {
 			}
 
 			button.hexpand = false;
+			button.vexpand = true;
 			button.halign = Gtk.Align.END;
+			button.valign = Gtk.Align.END;
 
 			button.clicked.connect(() => {
 					if (k > 0) {
