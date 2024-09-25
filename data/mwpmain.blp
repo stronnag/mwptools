@@ -136,11 +136,13 @@ template $MwpWindow: Adw.ApplicationWindow {
         spacing: 2;
 
         Gtk.Label poslabel {
-          label: "00:00:00.0N 000:00:00.0E 0m";
+	  //               1         2         3
+	  //      12345678901234567890123456789012
+          label: "00:00:00.0N 000:00:00.0E 0000m";
           margin-start: 2;
           margin-end: 2;
-          width-chars: 32;
-          max-width-chars: 32;
+          width-chars: 30;
+          max-width-chars: 30;
 	  ellipsize: end;
           hexpand: false;
           halign: fill;
@@ -163,9 +165,9 @@ template $MwpWindow: Adw.ApplicationWindow {
           label: "INAV  0.00";
           margin-start: 2;
           margin-end: 2;
-          hexpand: true;
-          halign: end;
-          justify: center;
+//          hexpand: true;
+//          halign: end;
+//          justify: center;
         }
 
         Gtk.Label typlab {
@@ -173,141 +175,156 @@ template $MwpWindow: Adw.ApplicationWindow {
           halign: start;
           margin-start: 2;
           margin-end: 2;
-          hexpand: true;
-          justify: center;
-          width-chars: 16;
+//          hexpand: true;
+//          justify: center;
+//          width-chars: 16;
         }
 
         Gtk.Label fmode {
           label: "ACRO";
           margin-start: 2;
           margin-end: 2;
-          hexpand: true;
-          halign: end;
-          justify: center;
-          width-chars: 16;
+//          hexpand: true;
+//          halign: end;
+//          justify: center;
+//          width-chars: 16;
         }
 
         Gtk.Label mmode {
           label: "....";
           margin-start: 2;
           margin-end: 2;
-          hexpand: true;
+//          hexpand: true;
           halign: end;
           justify: center;
-          width-chars: 4;
+//          width-chars: 4;
         }
+	Gtk.Box {
+          hexpand: true;
+          halign: end;
 
-        Gtk.CheckButton follow_button {
-          label: "Follow";
-          active: false;
-          tooltip-text: _("When enabled, plots the GPS location on the map");
-          hexpand: false;
-        }
+          Gtk.CheckButton follow_button {
+            label: "Follow";
+            active: false;
+            tooltip-text: _("When enabled, plots the GPS location on the map");
+            hexpand: true;
+            halign: end;
+          }
 
-	Gtk.DropDown viewmode {
-	  tooltip-text: _("'In View' keeps model on the map; 'Centre On' centres the model on the map, rotating the model, 'Moving Map' centres the model North up, map rotates");
-          model: StringList {
-            strings [
-              "In View",
-              "Centre On",
-	      "Moving Map"
-            ]
-          };
+	  Gtk.DropDown viewmode {
+            halign: end;
+            hexpand: true;
+	    tooltip-text: _("'In View' keeps model on the map; 'Centre On' centres the model on the map, rotating the model, 'Moving Map' centres the model North up, map rotates");
+            model: StringList {
+              strings [
+		"In View",
+		"Centre On",
+		"Moving Map"
+              ]
+            };
+	  }
+
+          Gtk.CheckButton logger_cb {
+            halign: end;
+            label: "Logger";
+            active: false;
+            hexpand: true;
+            tooltip-text: _("Enabled mwp logging (see also gsettings 'log-on-arm' to automatically enable / disable on arm / disarm)</property");
+          }
+
+          Gtk.CheckButton audio_cb {
+            halign: end;
+            label: "Audio";
+            active: false;
+            hexpand: true;
+            tooltip-text: _("Enabled audio reporting (see also gsettings 'audio-on-arm' to automatically enable / disable on arm / disarm");
+          }
+
+          Gtk.Label gpslab {
+            use-markup: true;
+            label: "◯";
+            halign: end;
+            margin-start: 2;
+            margin-end: 2;
+            hexpand: true;
+            justify: center;
+          }
+
+          Gtk.Box {
+            orientation: horizontal;
+            spacing: 4;
+            halign: end;
+	    hexpand: true;
+            [start]
+            Gtk.Label gyro_sts {
+              halign: end;
+              label: "<span background=\"red\"> </span>";
+              use-markup: true;
+              tooltip-text: _("Gyro Status");
+            }
+
+            Gtk.Label acc_sts {
+              halign: end;
+              label: "<span background=\"red\"> </span>";
+              use-markup: true;
+              tooltip-text: _("Acc Status");
+            }
+
+            Gtk.Label baro_sts {
+              halign: end;
+              label: "<span background=\"red\"> </span>";
+              tooltip-text: _("Baro Status");
+              use-markup: true;
+            }
+
+            Gtk.Label mag_sts {
+              halign: end;
+              label: "<span background=\"red\"> </span>";
+              tooltip-text: _("Mag Status");
+              use-markup: true;
+            }
+
+            Gtk.Label gps_sts {
+              halign: end;
+              label: "<span background=\"red\"> </span>";
+              use-markup: true;
+              tooltip-text: _("GPS Status");
+            }
+
+            Gtk.Label sonar_sts {
+              halign: end;
+              label: "<span background=\"yellow\"> </span>";
+              tooltip-text: _("Sonar Status");
+              use-markup: true;
+            }
+          }
+
+          Gtk.Label elapsedlab {
+            label: "00:00";
+            width-chars: 6;
+            max-width-chars: 6;
+            halign: end;
+            hexpand: false;
+          }
+
+          Gtk.Spinner armed_spinner {
+            halign: fill;
+            hexpand: false;
+          }
+
+          Gtk.Label validatelab {
+            label: " ";
+            hexpand: false;
+            halign: end;
+          }
+
+          Gtk.Label missionlab {
+            label: " ";
+            hexpand: false;
+            halign: end;
+            justify: right;
+          }
 	}
-
-        Gtk.CheckButton logger_cb {
-          label: "Logger";
-          active: false;
-          hexpand: false;
-          tooltip-text: _("Enabled mwp logging (see also gsettings 'log-on-arm' to automatically enable / disable on arm / disarm)</property");
-        }
-
-        Gtk.CheckButton audio_cb {
-          label: "Audio";
-          active: false;
-          hexpand: false;
-          tooltip-text: _("Enabled audio reporting (see also gsettings 'audio-on-arm' to automatically enable / disable on arm / disarm");
-        }
-
-        Gtk.Label gpslab {
-          use-markup: true;
-          label: "◯";
-          halign: start;
-          margin-start: 2;
-          margin-end: 2;
-          hexpand: false;
-          justify: center;
-        }
-
-        Gtk.Box {
-          orientation: horizontal;
-          spacing: 4;
-
-          [start]
-          Gtk.Label gyro_sts {
-            label: "<span background=\"red\"> </span>";
-            use-markup: true;
-            tooltip-text: _("Gyro Status");
-          }
-
-          Gtk.Label acc_sts {
-            label: "<span background=\"red\"> </span>";
-            use-markup: true;
-            tooltip-text: _("Acc Status");
-          }
-
-          Gtk.Label baro_sts {
-            label: "<span background=\"red\"> </span>";
-            tooltip-text: _("Baro Status");
-            use-markup: true;
-          }
-
-          Gtk.Label mag_sts {
-            label: "<span background=\"red\"> </span>";
-            tooltip-text: _("Mag Status");
-            use-markup: true;
-          }
-
-          Gtk.Label gps_sts {
-            label: "<span background=\"red\"> </span>";
-            use-markup: true;
-            tooltip-text: _("GPS Status");
-          }
-
-          Gtk.Label sonar_sts {
-            label: "<span background=\"yellow\"> </span>";
-            tooltip-text: _("Sonar Status");
-            use-markup: true;
-          }
-        }
-
-        Gtk.Label elapsedlab {
-          label: "00:00";
-          width-chars: 6;
-          max-width-chars: 6;
-          halign: fill;
-          hexpand: false;
-        }
-
-        Gtk.Spinner armed_spinner {
-          halign: fill;
-          hexpand: false;
-        }
-
-        Gtk.Label validatelab {
-          label: " ";
-          hexpand: false;
-          halign: fill;
-        }
-
-        [end]
-        Gtk.Label missionlab {
-          label: " ";
-          hexpand: false;
-          halign: fill;
-          justify: right;
-        }
       }
     }
   }

@@ -1442,12 +1442,13 @@ namespace Mwp {
                     var lab = Mwp.window.verlab.get_label();
                     StringBuilder sb = new StringBuilder();
                     sb.append(lab);
+
                     if(/*naze32 &&*/ vi.fc_api != 0)
                         sb.append_printf(" API %d.%d", vi.fc_api >> 8,vi.fc_api & 0xff);
                     if(navcap != NAVCAPS.NONE)
                         sb.append(" Nav");
                     sb.append_printf(" Pr %d", profile);
-                    Mwp.window.verlab.label = Mwp.window.verlab.tooltip_text = sb.str;
+                    Mwp.window.verlab.tooltip_text = sb.str;
                 }
 
                 want_special = 0;
