@@ -320,13 +320,27 @@ public class LOSSlider : Adw.Window {
 				cbutton.sensitive = false;
 			});
 		cbutton.sensitive = false;
+
+		button.valign = Gtk.Align.END;
+		button.hexpand = true;
+		abutton.valign = Gtk.Align.END;
+		abutton.hexpand = true;
+		cbutton.valign = Gtk.Align.END;
+		cbutton.hexpand = true;
+
+		bbox.valign = Gtk.Align.END;
+		bbox.halign = Gtk.Align.END;
+		bbox.hexpand = true;
+		bbox.vexpand = true;
+
 		bbox.append (button);
 		bbox.append (abutton);
 		bbox.append (cbutton);
-		box.append(hbox);
+
 		hbox.append(mlab);
 		hbox.append (mentry);
-		hbox.append(bbox);
+		box.append(hbox);
+		box.append(bbox);
 		default_width = 600;
 		set_transient_for (Mwp.window);
 

@@ -9,10 +9,9 @@ This document describes the migration from legacy (Gtk+-3.0) mwp to contemporary
 * Modern POSIX operating system, for example:
     * Alpine Linux 3.20+
     * Arch Linux
-    * Debian "Sid"
+    * Debian "Sid" (and derivatives)
     * Fedora 40+
     * FreeBSD 14+
-    * Ubuntu 24.04+
 
 ### Specific components
 

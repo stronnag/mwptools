@@ -9,7 +9,7 @@ mwptools revisited
 
 This is the implementation of mwp using Gtk4 / libshumate..
 
-There is a [migration guide](docs/mwp-Gtk4-migration-guide.md) for dependencies (and migration from the earlier version).
+See the [migration guide](docs/mwp-Gtk4-migration-guide.md) for dependencies (and migration from the legacy version).
 
 mwptools provides a mission planner, [terrain analysis](https://github.com/stronnag/mwptools/wiki/Mission-Elevation-Plot-and-Terrain-Analysis), line of sight analysis, ground control station, real time flight logger and log replay / blackbox replay functions for the [INAV](https://github.com/iNavFlight/inav) FC firmware.
 
@@ -55,7 +55,7 @@ There is am [online user guide](https://stronnag.github.io/mwptools/) for the ol
 
 ## Platforms and OS
 
-The tools are designed to be portable and as far as possible platform and architecture agnostic. The suite is developed on Arch Linux and is additionally tested on Alpine (Edge), Debian (Trixie / Sid), Ubuntu (latest / most recent lts), Fedora (current)  and FreeBSD (current release).
+The tools are designed to be portable and as far as possible platform and architecture agnostic. The suite is developed on Arch Linux and is additionally tested on Alpine (Edge), Debian (Trixie / Sid), Fedora (current)  and FreeBSD (current release) (at least).
 
 mwp should  build and run on any platform that provides modern Gtk and POSIX APIs.
 
@@ -63,7 +63,7 @@ mwptools is tested on x86_64, ia32, aarch64 and riscv64 architectures (Linux / F
 
 ## Installation
 
-See the [migration guide](docs/mwp-Gtk4-migration-guide.md) for dependencies (and migration from the earlier version).
+See the [migration guide](docs/mwp-Gtk4-migration-guide.md) for dependencies (and migration from the legacy version).
 
 ```
 meson setup _build --prefix=~/.local --strip
