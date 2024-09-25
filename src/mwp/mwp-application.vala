@@ -300,7 +300,7 @@ namespace Mwp {
 				}
 			}
 		} catch (Error e) {
-			MWPLog.message ("%s\n", e.message);
+			MWPLog.message ("%s %s\n", fn, e.message);
 		}
 	}
 
@@ -358,9 +358,10 @@ namespace Mwp {
 				MWPLog.message("Cowardly refusing to run as root ... for your own safety\n");
 				Posix.exit(127);
 			}
-			show_misc_info();
+			if (active_window == null) {
+				show_misc_info();
+			}
 			base.activate ();
-
 			if (active_window == null) {
 				ready = true;
 				window = new Mwp.Window (this);
@@ -371,24 +372,27 @@ namespace Mwp {
 							MapUtils.get_centre_location(out Mwp.current_lat, out Mwp.current_lon);
 						}
 					});
+			} else {
+				Cli.parse_cli_files();
 			}
 		}
 
 		public override bool dbus_register (DBusConnection connection, string object_path) throws Error {
 			bool retval = false;
-			base.dbus_register (connection, object_path);
-			try {
-				MBus.svc = new MBus.Service ();
-				MBus.svc.notify["dbus_pos_interval"].connect((s,p) => {
-						MBus.dbus_upd_ticks = MBus.svc.dbus_pos_interval / 100;
-					});
+			if( base.dbus_register (connection, object_path)) {
+				try {
+					MBus.svc = new MBus.Service ();
+					MBus.svc.notify["dbus_pos_interval"].connect((s,p) => {
+							MBus.dbus_upd_ticks = MBus.svc.dbus_pos_interval / 100;
+						});
 
-				connection.register_object ("/org/stronnag/mwp", MBus.svc);
-				retval = true;
-				MWPLog.message("Registered Dbus service %s\n", object_path);
-			} catch (IOError e) {
-				stderr.printf ("Could not register service\n");
-				MBus.svc = null;
+					connection.register_object ("/org/stronnag/mwp", MBus.svc);
+					retval = true;
+					//				MWPLog.message("Registered Dbus service %s\n", object_path);
+				} catch (IOError e) {
+					MWPLog.message ("Failed to register DBus service: %s\n", e.message);
+					MBus.svc = null;
+				}
 			}
 			return retval;
 		}
@@ -476,13 +480,13 @@ namespace Mwp {
 	static bool dex = true;
 	public void do_exit_tasks() {
 		if (dex) {
-			if(msp.available) {
+			if(msp != null && msp.available) {
 				msp.close();
 			}
 			MBus.svc.quit();
 			dex = false;
 			MapManager.killall();
-			if(Mwp.conf.atexit != null && Mwp.conf.atexit.length > 0) {
+			if(ready && Mwp.conf.atexit != null && Mwp.conf.atexit.length > 0) {
 				try {
 					Process.spawn_command_line_sync (Mwp.conf.atexit);
 				} catch {}
