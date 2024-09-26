@@ -284,7 +284,7 @@ class PlaceEdit : Adw.Window {
 		scrolled.propagate_natural_height = true;
 		scrolled.propagate_natural_width = true;
         buttons = {
-            new Gtk.Button.from_icon_name ("gtk-add"),
+            new Gtk.Button.from_icon_name ("list-add"),
             new Gtk.Button.with_label ("OK"),
         };
         Gtk.Box bbox = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 5);
@@ -292,6 +292,8 @@ class PlaceEdit : Adw.Window {
 			button.halign = Gtk.Align.END;
             bbox.append (button);
         }
+		buttons[0].tooltip_text = "Add new place";
+
 		bbox.halign = Gtk.Align.END;
 		bbox.hexpand = true;
 		build_mm();

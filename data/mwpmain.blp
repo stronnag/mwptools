@@ -25,7 +25,7 @@ template $MwpWindow: Adw.ApplicationWindow {
 
         [start]
         MenuButton button_menu {
-          icon-name: "open-menu-symbolic";
+          icon-name: "open-menu";
           primary: true;
           always-show-arrow: false;
         }
@@ -51,7 +51,7 @@ template $MwpWindow: Adw.ApplicationWindow {
           Gtk.Box {
             [start]
             Gtk.Image {
-              icon-name: "list-add-symbolic";
+              icon-name: "list-add";
             }
 
             Gtk.Label {
@@ -110,7 +110,8 @@ template $MwpWindow: Adw.ApplicationWindow {
 
         ToggleButton show_sidebar_button {
           active: true;
-          icon-name: 'view-sidebar-end-symbolic';
+	  //          icon-name: 'view-sidebar-end';
+          icon-name: 'zoom-fit-best';
           tooltip-text: _('Toggle Sidebar');
         }
       }

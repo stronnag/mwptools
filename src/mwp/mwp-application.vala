@@ -480,7 +480,7 @@ namespace Mwp {
 	static bool dex = true;
 	public void do_exit_tasks() {
 		if (dex) {
-			MWPLog.message("Cleanup tasks\n");
+			MWPLog.message("Cleaning up ...\n");
 			dex = false;
 			Mwp.cleanup();
 			if(ready && Mwp.conf.atexit != null && Mwp.conf.atexit.length > 0) {
