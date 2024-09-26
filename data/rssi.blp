@@ -13,35 +13,15 @@ template $RSSIView : Gtk.Box {
     justify: center;
     styles [ 'small' ]
   }
-/**
-  Label rssi {
-    use-markup: true;
-    label: '<span size="250%" font="monospace">0</span>';
-    halign: end;
-//    hexpand: true;
-    justify: right;
-  }
-  **/
-/**
-  Label {
-    label: "%";
-    hexpand: true;
-    vexpand: false;
-    justify: center;
-    styles [ 'small' ]
-  }
-  **/
-  Label rssi_pct {
-    use-markup: true;
-    label: '<span size="250%" font="monospace">0%</span>';
-    halign: end;
-    hexpand: true;
-    vexpand: true;
-    justify: right;
-  }
-  ProgressBar pbar {
-//    hexpand: true;
-    vexpand: false;
-
+    Label rssi_pct {
+      use-markup: true;
+      label: '<span size="250%" font="monospace">0%</span>';
+      hexpand: true;
+      vexpand: true;
+      justify: center;
+    }
+    ProgressBar pbar {
+      hexpand: true;
+      vexpand: true;
   }
 }
