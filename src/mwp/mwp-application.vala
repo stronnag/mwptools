@@ -427,9 +427,9 @@ namespace Mwp {
 		}
 
 		public override int command_line (ApplicationCommandLine command_line) {
-			this.hold ();
+			hold ();
 			int res = _command_line (command_line);
-			this.release ();
+			release ();
 			return res;
 		}
 
@@ -480,12 +480,9 @@ namespace Mwp {
 	static bool dex = true;
 	public void do_exit_tasks() {
 		if (dex) {
-			if(msp != null && msp.available) {
-				msp.close();
-			}
-			MBus.svc.quit();
+			MWPLog.message("Cleanup tasks\n");
 			dex = false;
-			MapManager.killall();
+			Mwp.cleanup();
 			if(ready && Mwp.conf.atexit != null && Mwp.conf.atexit.length > 0) {
 				try {
 					Process.spawn_command_line_sync (Mwp.conf.atexit);

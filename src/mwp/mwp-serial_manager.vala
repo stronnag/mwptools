@@ -114,14 +114,14 @@ namespace Msp {
 
 	public void close_serial() {
 		// FIXME
-		//        if(is_shutdown == true)
-        //    return;
-
+		if(Mwp.cleaned == true) {
+			    return;
+		}
 		if(!Mwp.zznopoll) {
 			if(Mwp.xnopoll != Mwp.nopoll)
 				Mwp.nopoll = Mwp.xnopoll;
 		}
-        MWPLog.message("Serial doom replay %d\n", Mwp.replayer);
+        MWPLog.message("Serial closed replay %d\n", Mwp.replayer);
 		Mwp.csdq.clear();
 
         if(Mwp.inhibit_cookie != 0) {

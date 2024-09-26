@@ -38,6 +38,18 @@ namespace Mwp {
 	uint8 gzcnt;
 	private Overlay? gzone;
 	private GZEdit gzedit;
+	private bool cleaned;
+	public void cleanup() {
+		if (!cleaned) {
+			cleaned =true;
+			Mwp.stop_replayer();
+			if(msp != null && msp.available) {
+				msp.close();
+			}
+			MBus.svc.quit();
+			MapManager.killall();
+		}
+	}
 
 	[GtkTemplate (ui = "/org/stronnag/mwp/mwpmain.ui")]
 	public class Window : Adw.ApplicationWindow {
@@ -184,12 +196,13 @@ namespace Mwp {
 			setup_misc_controls();
 			close_check = false;
 			close_request.connect(() => {
-					MapManager.killall();
 					if(close_check) {
+						Mwp.cleanup();
 						return false;
 					} else {
 						var dirty = MissionManager.is_dirty();
 						if(!dirty) {
+							Mwp.cleanup();
 							return false;
 						} else {
 							waiter.begin((o,res) => {

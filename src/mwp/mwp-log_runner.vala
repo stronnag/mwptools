@@ -45,7 +45,7 @@ namespace Mwp {
 			}
 		}
         replay_paused = !replay_paused;
-        if((replayer & (Player.BBOX|Player.OTX|Player.RAW)) != 0) {
+        if((replayer & (Player.BBOX|Player.OTX|Player.RAW)) != 0 && child_pid != 0) {
             Posix.kill(child_pid, signum);
         } else if(thr != null) {
 			robj.pause(replay_paused);
@@ -56,7 +56,7 @@ namespace Mwp {
         if(replay_paused)
             handle_replay_pause();
 
-        if((replayer & (Player.BBOX|Player.OTX)) != 0) {
+        if((replayer & (Player.BBOX|Player.OTX)) != 0 && child_pid != 0) {
             Posix.kill(child_pid, MwpSignals.Signal.TERM);
 		}
 		if((Mwp.replayer & Mwp.Player.MWP) == Mwp.Player.MWP && thr != null) {
@@ -135,6 +135,7 @@ namespace Mwp {
         args += fn;
         args += null;
 		string sargs = string.joinv(" ",args);
+		int p_stdout;
 		int p_stderr;
 
 		if((replayer & Player.BBOX) != 0  && BBL.videofile != null && BBLV.vp == null) {
@@ -149,7 +150,7 @@ namespace Mwp {
 		}
 
 		try {
-            Process.spawn_async_with_pipes (null, args, null, SpawnFlags.SEARCH_PATH | SpawnFlags.DO_NOT_REAP_CHILD, null, out child_pid, null, null, out p_stderr);
+            Process.spawn_async_with_pipes (null, args, null, SpawnFlags.SEARCH_PATH | SpawnFlags.DO_NOT_REAP_CHILD, null, out child_pid, null, out p_stdout, out p_stderr);
         } catch (SpawnError e) {
             MWPLog.message("spawnerror: %s %s \n", sargs, e.message);
 			return;
@@ -162,9 +163,25 @@ namespace Mwp {
 		}
 
 		string line = null;
+		string csline = null;
 		size_t len = 0;
+		size_t cslen = 0;
 		StringBuilder sb = new StringBuilder();
 		IOChannel error = new IOChannel.unix_new (p_stderr);
+		IOChannel cstdout = new IOChannel.unix_new (p_stdout);
+		cstdout.add_watch (IOCondition.IN|IOCondition.HUP, (source, condition) => {
+				try {
+					if (condition == IOCondition.HUP)
+						return false;
+					IOStatus eos = source.read_line (out csline, out cslen, null);
+					if(eos == IOStatus.EOF)
+                            return false;
+					if(csline == null || cslen == 0)
+						return true;
+					MWPLog.message("<fl2tlm> %s", csline);
+				} catch {}
+				return true;
+			});
 		error.add_watch (IOCondition.IN|IOCondition.HUP, (source, condition) => {
 				try {
 					if (condition == IOCondition.HUP)
@@ -181,16 +198,20 @@ namespace Mwp {
 		MWPLog.message("%s # pid=%u\n", sargs, child_pid);
 		ChildWatch.add (child_pid, (pid, status) => {
 				Process.close_pid (pid);
+				child_pid = 0;
 				if(tfile != null && tfile != MissionManager.last_file) {
                     FileUtils.unlink(tfile);
 				}
 				Sticks.done();
 				cleanup_replay();
+				replayer = 0;
 				try {
 					Process.check_wait_status(status);
 				} catch (Error e) {
 					MWPLog.message("spawn: %s\n", e.message);
-					MWPLog.message("fl2ltm %s\n", sb.str);
+					if(sb.str.length > 0) {
+						MWPLog.message("fl2ltm %s\n", sb.str);
+					}
 				}
 			});
     }
