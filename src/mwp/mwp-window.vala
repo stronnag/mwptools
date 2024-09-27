@@ -189,9 +189,9 @@ namespace Mwp {
 			button_menu.always_show_arrow = false;
 			var popover = button_menu.popover as Gtk.PopoverMenu;
 			popover.has_arrow = false;
-#if MODERN_GTK
+			//#if MODERN_GTK
 			popover.flags = Gtk.PopoverMenuFlags.NESTED;
-#endif
+			//#endif
 			setup_accels(app);
 			setup_misc_controls();
 			close_check = false;
