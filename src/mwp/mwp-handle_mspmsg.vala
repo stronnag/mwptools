@@ -80,7 +80,7 @@ namespace Mwp {
 	}
 
 	bool handle_msp(MWSerial ser, Msp.Cmds cmd, uint8[] raw, uint len, uint8 xflags, bool errs) {
-		Mwp.window.mmode.label = "Msp";
+		Mwp.window.mmode.label = "MSP";
 		bool handled = true;
 
 		if(errs == true) {

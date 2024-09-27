@@ -221,7 +221,7 @@ namespace XmlIO {
 				ms.npoints = mi.length;
 				if(ms.npoints != 0) {
 					ms.points = mi;
-					ms.update_meta();
+					ms.update_meta(false);
 					msx += ms;
 				}
 				ms = null;

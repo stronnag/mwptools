@@ -27,7 +27,7 @@ namespace Frsky {
 
 	public void process_sport_message (MWSerial ser, SportDev.FrID id, uint32 val) {
 		if(!SportDev.active) {
-			Mwp.window.mmode.label = "S-Port";
+			Mwp.window.mmode.label = "S-PORT";
 			SportDev.active = true;
 			Mwp.xnopoll = Mwp.nopoll;
 			Mwp.nopoll = true;

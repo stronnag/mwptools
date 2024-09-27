@@ -42,7 +42,7 @@ namespace TxtIO {
 							ms = new Mission();
 							no = 1;
 							ms.points = mi;
-							ms.update_meta();
+							ms.update_meta(false);
 							msx += ms;
 							ms = null;
 							mi = {};

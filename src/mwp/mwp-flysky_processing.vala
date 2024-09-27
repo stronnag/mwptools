@@ -20,7 +20,7 @@ namespace Flysky {
 	private void ProcessFlysky(MWSerial s, uint8[] raw) {
         Flysky.Telem t;
 		if(Flysky.decode(raw, out t)) {
-			Mwp.window.mmode.label = "FlySky";
+			Mwp.window.mmode.label = "FLYSKY";
 			processFlysky_telem(s, t);
 		}
 	}

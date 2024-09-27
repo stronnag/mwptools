@@ -50,7 +50,7 @@ namespace JsonIO {
 					}
 					mi += m;
 				}
-				ms.update_meta();
+				ms.update_meta(false);
 				break;
 			case "meta":
 				var msobj = obj.get_object_member("meta");

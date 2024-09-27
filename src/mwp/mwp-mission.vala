@@ -282,7 +282,7 @@ public class Mission : GLib.Object {
 		stdout.printf("Mission is %svalid\n", (is_valid(maxwp) == true) ? "" : "in");
 	}
 
-	public void update_meta() {
+	public void update_meta(bool use_hp=true) {
 		npoints = points.length;
 		if (npoints > 0) {
 			points[npoints-1].flag = 0xa5;
@@ -299,7 +299,9 @@ public class Mission : GLib.Object {
 			if (zoom == 0) {
 				zoom = (uint)Gis.map.viewport.zoom_level;
 			}
-			HomePoint.get_location(out homey, out homex); // was zoom conditional
+			if(use_hp && HomePoint.is_valid()) {
+				HomePoint.get_location(out homey, out homex);
+			}
 		}
 	}
 
