@@ -314,6 +314,7 @@ namespace Mwp {
 							MapUtils.get_centre_location(out clat, out clon);
 							HomePoint.set_home(clat, clon);
 						}
+						MissionManager.set_last();
 					} else {
 						if(MissionManager.msx.length==0) {
 							HomePoint.try_hide();
