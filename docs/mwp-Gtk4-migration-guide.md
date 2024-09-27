@@ -17,7 +17,7 @@ This document describes the migration from legacy (Gtk+-3.0) mwp to contemporary
 
 The following are minimum versions.
 
-* Gtk4 (4.12)
+* Gtk4 (4.14)
 * libsoup3 (3.2)
 * libshumate (1.3)
 * meson (1.40)

@@ -56,7 +56,7 @@ mwpsrcs = files('mwp-about.vala', 'mwp-ah_widget.vala',
                 'mwp-epoxy.c', )
 
 mwpdeps = [deps,
-	   dependency('gtk4'),
+	   dependency('gtk4', version: '>=4.14'),
            dependency ('libadwaita-1', version: '>= 1.5'),
 	   dependency('glib-2.0'),
            soupdep,
@@ -113,11 +113,6 @@ endif
 
 if paho.found()
   mwp_v_args += ['--pkg', 'paho_wrapper']
-endif
-
-gtk4 = dependency('gtk4', version: '>=4.14', required: false)
-if gtk4.found()
-  dopts += '--define=MODERN_GTK'
 endif
 
 soup3 = dependency('libsoup-3.0', version: '>=3.4', required: false)
