@@ -473,7 +473,6 @@ namespace Mwp {
 		if (ms != null) {
 			MsnTools.clear(ms);
 			ms = null;
-			MissionManager.lastmsx=null;
 		}
 		if (Mwp.window.wpeditbutton.active == false) {
 			HomePoint.try_hide();

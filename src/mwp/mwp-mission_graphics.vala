@@ -136,6 +136,7 @@ namespace MsnTools {
 	}
 
 	public void speed_updates(Mission m, Gtk.Bitset bs, double v, bool iz) {
+		MissionManager.is_dirty = true;
 		for(var i = 0; i < m.npoints; i++) {
 			if (bs.contains(i)) {
 				if (m.points[i].is_geo()) {
@@ -180,6 +181,7 @@ namespace MsnTools {
 			}
         }
 		if(dset != DELTAS.NONE) {
+			MissionManager.is_dirty = true;
 			for(var i = 0; i < m.npoints; i++) {
 				if (bs.contains(i)) {
 					if(m.points[i].is_geo()) {
@@ -212,6 +214,7 @@ namespace MsnTools {
 		mi.action = Msp.Action.WAYPOINT;
 		m.points.resize((int)m.npoints+1);
 		m.points[m.npoints] = mi;
+		MissionManager.is_dirty = true;
 		renumber_mission(m);
 		draw_mission(m);
 	}
@@ -236,6 +239,7 @@ namespace MsnTools {
 		m.points = nmis;
 		renumber_mission(m);
 		draw_mission(m);
+		MissionManager.is_dirty = true;
 	}
 
 	public void clear(Mission m) {
@@ -245,6 +249,7 @@ namespace MsnTools {
 		if(m.npoints == 0) {
 			MissionManager.check_mm_list();
 		}
+		MissionManager.is_dirty = false; // Maybe ?
 	}
 
 	public void delete_range(Mission m, Gtk.Bitset bs) {
@@ -260,6 +265,7 @@ namespace MsnTools {
 		if(m.npoints == 0) {
 			MissionManager.check_mm_list();
 		}
+		MissionManager.is_dirty = true;
 	}
 
 	public void fbh_toggle(Mission m, Gtk.Bitset bs) {
@@ -278,6 +284,7 @@ namespace MsnTools {
 		}
 		renumber_mission(m);
 		draw_mission(m);
+		MissionManager.is_dirty = true;
 	}
 
 	public void move_to(Mission m, int src, int dest) {
@@ -295,7 +302,7 @@ namespace MsnTools {
 		m.points = nmis;
 		renumber_mission(m);
 		draw_mission(m);
-
+		MissionManager.is_dirty = true;
 		m.changed();
 	}
 
@@ -321,6 +328,7 @@ namespace MsnTools {
 			nmis += m.points[i];
 		}
 		m.points = nmis;
+		MissionManager.is_dirty = true;
 		renumber_mission(m);
 		draw_mission(m);
 	}
@@ -347,6 +355,7 @@ namespace MsnTools {
 			}
 		}
 		m.points = nmis;
+		MissionManager.is_dirty = true;
 		renumber_mission(m);
 		draw_mission(m);
 	}
@@ -359,6 +368,7 @@ namespace MsnTools {
 		var mtmp = m.points[prev];
 		m.points[prev] = m.points[k];
 		m.points[k] = mtmp;
+		MissionManager.is_dirty = true;
 		renumber_mission(m);
 		draw_mission(m);
 	}
@@ -373,6 +383,7 @@ namespace MsnTools {
 		var mtmp = m.points[next];
 		m.points[next] = m.points[k];
 		m.points[k] = mtmp;
+		MissionManager.is_dirty = true;
 		renumber_mission(m);
 		draw_mission(m);
 	}
@@ -441,6 +452,7 @@ namespace MsnTools {
 			nmis += m.points[i];
 		}
 		m.points = nmis;
+		MissionManager.is_dirty = true;
 		renumber_mission(m);
 		draw_mission(m);
 		if(m.npoints == 0) {
@@ -555,6 +567,7 @@ namespace MsnTools {
 
 			mk.set_tooltip_markup(set_tip(mk, m, true));
 			mk.drag_motion.connect((la, lo) => {
+					MissionManager.is_dirty = true;
 					var idx = m.get_index(mk.no);
 					if(m.points[idx].action == Msp.Action.LAND) {
 						if(FWApproach.is_active((int)MissionManager.mdx+8)) {
@@ -571,6 +584,7 @@ namespace MsnTools {
 				});
 
 			mk.drag_end.connect(() => {
+					MissionManager.is_dirty = true;
 					m.calc_mission_distance();
 					mk.set_tooltip_markup(set_tip(mk,m,true));
 				});

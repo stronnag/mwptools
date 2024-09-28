@@ -175,7 +175,7 @@ namespace Mwp {
 			var nwp = MissionManager.check_mission_length(mmsx);
 			if(nwp > 0) {
 				MissionManager.msx = mmsx;
-				MissionManager.set_last(); // mission is clean (again)
+				MissionManager.is_dirty = false;
 				MissionManager.mdx = imdx;
 				MissionManager.setup_mission_from_mm();
 				MWPLog.message("Download completed #%d (%d)\n", nwp, MissionManager.mdx);

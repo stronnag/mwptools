@@ -151,6 +151,7 @@ namespace EditWP {
 					chg = Memory.cmp(&ei, &orig, sizeof(EditItem));
 					if(chg != 0) {
 						extract(ei.no, ei, orig);
+						MissionManager.is_dirty = true;
 					}
 				} else {
 					dlg.close();

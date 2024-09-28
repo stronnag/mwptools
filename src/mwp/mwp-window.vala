@@ -159,8 +159,7 @@ namespace Mwp {
 		}
 
 		private void check_mission_clean(ActionFunc func) {
-			var dirty = MissionManager.is_dirty();
-			if(!dirty) {
+			if(!MissionManager.is_dirty) {
 				func();
 			} else {
 				waiter.begin((o,res) => {
@@ -199,8 +198,7 @@ namespace Mwp {
 						Mwp.cleanup();
 						return false;
 					} else {
-						var dirty = MissionManager.is_dirty();
-						if(!dirty) {
+						if(!MissionManager.is_dirty) {
 							Mwp.cleanup();
 							return false;
 						} else {
@@ -314,7 +312,6 @@ namespace Mwp {
 							MapUtils.get_centre_location(out clat, out clon);
 							HomePoint.set_home(clat, clon);
 						}
-						MissionManager.set_last();
 					} else {
 						if(MissionManager.msx.length==0) {
 							HomePoint.try_hide();

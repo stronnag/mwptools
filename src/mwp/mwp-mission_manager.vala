@@ -26,18 +26,18 @@ namespace MissionManager {
 	public const uint MAXMULTI = 9;
 	public uint wp_max = 120;
 	public int mdx = -1; // current mission segment
-	public Mission? []lastmsx;
 	public Mission []msx;
 	public string last_file = null;
 	public GLib.SimpleActionGroup dg;
 	public ulong acthdlr;
 	private TA.Dialog tadialog;
+	bool is_dirty;
 	Previewer pv;
 
 	public void init() {
 		tadialog = new TA.Dialog();
 		msx={};
-		lastmsx=null;
+		is_dirty = false;
 		add_wp_actions();
 		wp_max = Mwp.conf.max_wps;
 		acthdlr = Mwp.window.actmission.notify["selected"].connect(() => {
@@ -148,6 +148,7 @@ namespace MissionManager {
 		} else {
 			save_mission_file_as();
 		}
+		is_dirty = false;
 	}
 
 	public Mission? open_mission_file(string fn, bool append=false) {
@@ -198,7 +199,7 @@ namespace MissionManager {
 			Mwp.add_toast_text("Failed to load %s".printf(fn));
 		} else {
 			last_file = fn;
-			set_last();
+			is_dirty = append;
 		}
 		return _ms;
 	}
@@ -244,21 +245,6 @@ namespace MissionManager {
 			visualise_mission();
 		}
 		return _ms;
-	}
-
-	public bool is_dirty() {
-		if(current() == null || lastmsx == null) {
-			return false;
-		}
-		if (msx.length != lastmsx.length) {
-			return true;
-		}
-		for(var j = 0; j < msx.length; j++) {
-			if(!msx[j].is_equal(lastmsx[j])) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	public void visualise_mission() {
@@ -412,14 +398,6 @@ namespace MissionManager {
 			return msx[mdx];
 		}
 		return null;
-	}
-
-	public void set_last() {
-		Mission? []_lm = {};
-		foreach (var m in msx) {
-			_lm +=  new Mission.clone(m);
-		}
-		lastmsx = _lm;
 	}
 
 	private void add_wp_actions() {
