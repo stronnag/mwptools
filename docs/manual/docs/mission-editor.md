@@ -81,6 +81,17 @@ There is a right mouse context menu, the availability of items depending on whet
 
 ![tote_menu](images/wp-edit-03.png){: width="30%" }
 
+The `param3` value is presented as:
+
+* `R` : Relative Altitude
+* `A` : Absolute (AMSL) Altitude
+* `[1234]` : User action set
+
+The `flags` values are presented as:
+
+* `EoM` : End of mission marker
+* `FBH` : [Fly By Home (FBH) waypoint](Fly-By-Home-waypoints-(inav-4-new-feature).md)
+
 ### Common Operations
 
 Many of the operations described below are shown in the videos, which probably provide a clearer explanation that any textual description could. Note also that many of these (images and videos) are legacy, but the concepts are still valid.
@@ -115,6 +126,16 @@ Bulk speed and altitude updates may be applied to selected waypoints.
 #### Clear Mission
 
 The Clear Mission option clears the mission. There is no confirmation, so be sure you really want to do this.
+
+### Uncommitted Changes
+
+If {{ mwp }} detects uncommitted changes when opening a new mission / downloading from the FC / cleanly exiting the application, then the user is presented with the following dialogue.
+
+![mconfirm](images/m-confirm.png){: width="20%" }
+
+* Don't Save : The mission is not saved, the original action completes.
+* Save : The user is presented with a Save Dialog to save the mission.
+* Cancel : The original action is cancelled.
 
 ## Advanced WP types / Video Tutorials
 
