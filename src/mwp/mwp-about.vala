@@ -16,17 +16,19 @@
  */
 
 namespace About {
+	const string CODE_NAME="Michaelmas Makeover";
 	public void show_about () {
 		string[] developers = { "Jonathan Hudson" };
-		string release_notes = "<p>This release adds the following features:</p>\n<ul><li>GTK4 UI</li>\n  <li>Shumate Map layer.</li>\n  <li>Bug fixes and performance improvements.</li>\n</ul>\n";
+		string release_notes = "<p>This release adds the following features:</p>\n<ul><li>GTK4 UI</li>\n  <li>Shumate Map layer.</li>\n  <li>Bug fixes and performance improvements.</li>\n</ul>\n\n";
 		var copyright = "© 2014-%d Jonathan Hudson".printf(new DateTime.now_local().get_year());
 
 		var details = "\"A mission planner for the rest of us\"\n\nCommit: %s\n".printf(MwpVers.get_build());
+		var avers = "%s \"%s\"".printf(MwpVers.get_id(), CODE_NAME);
 		var about = new Adw.AboutDialog () {
-					application_name = "mwp",
+				application_name = "mwp",
 					application_icon = "mwp_icon",
 					developer_name = "Jonathan Hudson",
-					version = MwpVers.get_id(),
+					version = avers,
 					developers = developers,
 					documenters = developers,
 					copyright = copyright,
@@ -35,7 +37,7 @@ namespace About {
 					comments = details,
 					website = "https://stronnag.github.io/mwptools/",
 					release_notes = release_notes,
-					release_notes_version = MwpVers.get_id()
+					release_notes_version = avers
 					};
 		about.present (Mwp.window);
 	}
