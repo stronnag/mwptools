@@ -9,7 +9,7 @@ mwptools revisited
 
 This is the implementation of mwp using Gtk4 / libshumate..
 
-See the [migration guide](docs/mwp-Gtk4-migration-guide.md) for dependencies (and migration from the legacy version).
+See the [migration guide](https://github.com/stronnag/mwptools/blob/master/docs/images/mwp4.png) for dependencies (and migration from the legacy version).
 
 mwptools provides a mission planner, [terrain analysis](https://github.com/stronnag/mwptools/wiki/Mission-Elevation-Plot-and-Terrain-Analysis), line of sight analysis, ground control station, real time flight logger and log replay / blackbox replay functions for the [INAV](https://github.com/iNavFlight/inav) FC firmware.
 
