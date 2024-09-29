@@ -2,14 +2,9 @@ project('mwptools', 'vala', 'c', version : '24.09.29', meson_version : '>= 1.4.0
 
 nogo = get_option('nogo')
 force_s = get_option('force-static')
-force_d = get_option('force-dynamic')
-dynalib = false
-if force_d
-  dynalib = true
-elif force_s
+dynalib = true
+if force_s
   dynalib = false
-else
-  dynalib = build_machine.system() == 'linux'
 endif
 
 show_deprecated = get_option('deprecations')

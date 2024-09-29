@@ -26,9 +26,7 @@ libargs = {
 }
 
 if dynalib
-  if host_machine.system() == 'linux'
-    libargs += {  'version': '2.0.0', 'soversion': '2', }
-  endif
+  libargs += {  'version': '2.0.0', 'soversion': '2', }
   mwpclib = both_libraries('mwpclib', kwargs: libargs)
 else
   mwpclib = static_library('mwpclib', kwargs: libargs)
