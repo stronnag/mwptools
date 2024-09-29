@@ -3,7 +3,7 @@ mwptools revisited
 
 "A mission planner for the rest of us"
 
-![mwp](docs/assets/mwp4.png)
+![mwp](docs/images/mwp4.png)
 
 ## Overview
 
