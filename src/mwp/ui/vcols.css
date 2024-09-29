@@ -1,9 +1,0 @@
-
-/* These are the colours / styles used by mwp for voltages */
-
-.volthigh { background-color: green ; color: white ;}
-.voltmedium { background-color: yellow ; color: slategrey ;}
-.voltlow { background-color: orange ; color: slategrey ;}
-.voltcritical { background-color:  red ; color: white ; }
-.voltsundef { background-color: darkgreen ; color: slategray;}
-.voltundef { background-color: darkgreen ; color: slategray;}

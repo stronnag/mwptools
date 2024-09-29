@@ -1,1 +1,0 @@
-../../mwp/gst-video-player.vala
