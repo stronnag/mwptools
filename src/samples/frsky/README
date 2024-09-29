@@ -1,0 +1,9 @@
+Experimental script / applciation to parse data from Frsky SPort telemetry.
+
+Note that mwp handles Smartport telemetry.
+
+E&OE. The detail encapsulated in the script has been compiled from
+various internet sources; no thanks to the unhelpful, anti-free
+software, proprietary attitude from Frsky.
+
+Consider this BSD licenced.

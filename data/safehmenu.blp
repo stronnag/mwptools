@@ -1,0 +1,56 @@
+using Gtk 4.0;
+
+menu sh-menu {
+  section {
+    item {
+      label: 'Load from file';
+      action: 'sh.load';
+    }
+
+    item {
+      label: 'Save to file';
+      action: 'sh.save';
+    }
+  }
+
+  section {
+    item {
+      label: 'Load from FC';
+      action: 'sh.loadfc';
+    }
+
+    item {
+      label: 'Save to FC';
+      action: 'sh.savefc';
+    }
+  }
+}
+
+menu shpop-menu {
+  section {
+    item {
+      custom: 'label';
+    }
+  }
+  section {
+    item {
+      label: 'Centre On';
+      action: 'shm.centre';
+    }
+
+    item {
+      label: 'Toggle State';
+      action: 'shm.toggle';
+    }
+
+    item {
+      label: 'Clear Item';
+      action: 'shm.clear';
+    }
+
+    item {
+      label: 'Clear All';
+      action: 'shm.clearall';
+    }
+  }
+}

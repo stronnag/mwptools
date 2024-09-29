@@ -1,0 +1,314 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $PrefsWindow : Adw.Window {
+  icon-name: "mwp_icon";
+  title: _('mwp Prefences');
+
+  Box vbox {
+    orientation: vertical;
+    spacing: 8;
+    [start]
+    Adw.HeaderBar {
+    }
+    [End]
+    Box {
+      orientation: vertical;
+      Box {
+	hexpand: true;
+	vexpand: true;
+	spacing: 4;
+	margin-top: 4;
+	margin-bottom: 4;
+	margin-start: 4;
+	margin-end: 4;
+
+	Notebook prefbook {
+	  hexpand: true;
+	  vexpand: true;
+
+	  Grid notebook-content {
+	    row-spacing: 4;
+	    column-spacing: 8;
+
+	    Label {
+	      halign: start;
+	      label: _('Device List');
+
+	      layout {
+		row: 0;
+		column: 0;
+	      }
+	    }
+	    Entry devlist {
+	      width-chars: 64;
+              max-width-chars: 80;
+	      placeholder-text: 'device0, device1, ... deviceN';
+	      tooltip-text: 'Comma separated list of device names that will always be presented regardless of auto-detection';
+	      layout {
+		row: 0;
+		column: 1;
+	      }
+	    }
+
+	    Label {
+	      halign: start;
+	      label: _('Default baudrate');
+
+	      layout {
+		row: 1;
+		column: 0;
+	      }
+	    }
+	    Entry baudrate {
+	      placeholder-text: '115200';
+	      layout {
+		row: 1;
+		column: 1;
+	      }
+	    }
+
+	    Label {
+	      halign: start;
+	      label: _('Default Latitude');
+
+	      layout {
+		row: 2;
+		column: 0;
+	      }
+	    }
+	    Entry deflat {
+	      placeholder-text: '00:00:00N';
+	      layout {
+		row: 2;
+		column: 1;
+	      }
+	    }
+
+	    Label {
+	      halign: start;
+	      label: _('Default Longitude');
+
+	      layout {
+		row: 3;
+		column: 0;
+	      }
+	    }
+	    Entry deflon {
+	      placeholder-text: '000:00:00E';
+	      layout {
+		row: 3;
+		column: 1;
+	      }
+	    }
+
+	    Label altlabel {
+	      halign: start;
+	      label: _('Default altitude');
+	      layout {
+		row: 4;
+		column: 0;
+	      }
+	    }
+	    Entry defalt {
+	      placeholder-text: '50';
+	      layout {
+		row: 4;
+		column: 1;
+	      }
+	    }
+
+	    Label {
+	      halign: start;
+	      label: _('Default Loiter time (s)');
+
+	      layout {
+		row: 5;
+		column: 0;
+	      }
+	    }
+	    Entry defloiter {
+	      placeholder-text: '30';
+	      layout {
+		row: 5;
+		column: 1;
+	      }
+	    }
+
+	    Label spdlabel {
+	      halign: start;
+	      label: _('Default nav speed');
+	      layout {
+		row: 6;
+		column: 0;
+	      }
+	    }
+	    Entry defspeed {
+	      placeholder-text: '10';
+	      layout {
+		row: 6;
+		column: 1;
+	      }
+	    }
+
+	    Label {
+	      halign: start;
+	      label: _('Default map');
+	      layout {
+		row: 7;
+		column: 0;
+	      }
+	    }
+	    DropDown defmap {
+	      layout {
+		row: 7;
+		column: 1;
+	      }
+	    }
+
+	    Label {
+	      halign: start;
+	      label: _('Default Zoom');
+	      layout {
+		row: 8;
+		column: 0;
+	      }
+	    }
+	    Entry defzoom {
+	      placeholder-text: '14';
+	      layout {
+		row: 8;
+		column: 1;
+	      }
+	    }
+
+	    Label {
+	      halign: start;
+	      label: _('Voice log interval (s)');
+	      layout {
+		row: 9;
+		column: 0;
+	      }
+	    }
+	    Entry defspkint {
+	      placeholder-text: '15';
+	      layout {
+		row: 9;
+		column: 1;
+	      }
+	    }
+
+	    Label {
+	      halign: start;
+	      label: _('Set land on RTH WPs');
+	      layout {
+		row: 10;
+		column: 0;
+	      }
+	    }
+
+	    // FIXME Size
+	    Switch defland {
+	      hexpand: false;
+	      vexpand: false;
+	      halign: start;
+	      valign: start;
+	      layout {
+		row: 10;
+		column: 1;
+	      }
+	    }
+	  }
+
+	  // Distance/speed Units
+
+	  [tab]
+	  Label notebook-tab {
+            label: "General";
+	  }
+
+	  Box  {
+	    orientation: horizontal;
+	    hexpand: true;
+	    vexpand: true;
+
+	    Frame  {
+	      hexpand: true;
+	      label: 'Location';
+
+	      Box {
+		orientation: vertical;
+		CheckButton decd {
+		  label: 'DDD.ddddd';
+		}
+		CheckButton dms {
+		  label: 'DD:MM:SS.s';
+		  group: decd;
+		}
+	      }
+	    }
+
+	    Frame  {
+	      hexpand: true;
+	      label: 'Distance';
+	      Box {
+		orientation: vertical;
+		CheckButton metres {
+		  label: 'Metres';
+		}
+		CheckButton feet {
+		  label: 'Feet';
+		  group: metres;
+		}
+		CheckButton yards {
+		  label: 'Yards';
+		  group: metres;
+		}
+	      }
+	    }
+
+	    Frame  {
+	      hexpand: true;
+	      label: 'Speed';
+	      Box {
+		orientation: vertical;
+		CheckButton msec {
+		  label: 'm/s';
+		}
+		CheckButton kph {
+		  label: 'kph';
+		  group: msec;
+		}
+		CheckButton mph {
+		  label: 'mph';
+		  group: msec;
+		}
+	        CheckButton knots {
+		  label: 'knots';
+		  group: msec;
+		}
+	      }
+	    }
+	  }
+
+	  [tab]
+	  Label notebook-tab1 {
+            label: "Units";
+	  }
+	}
+      }
+      Box {
+        hexpand: false;
+        halign: end;
+
+        Gtk.Button pf_apply {
+          label: _('Apply');
+        }
+
+        Gtk.Button pf_cancel {
+          label: _('Close');
+        }
+      }
+    }
+  }
+}

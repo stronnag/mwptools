@@ -1,0 +1,144 @@
+using Gtk 4.0;
+using Adw 1;
+
+Gtk.Adjustment adjustment1 {
+  lower: 0;
+  upper: 119;
+  value: 20;
+  step-increment: 1;
+  page-increment: 5;
+}
+
+Gtk.Adjustment adjustment2 {
+  lower: 0;
+  value: 200;
+  upper: 40000;
+  step-increment: 1;
+  page-increment: 10;
+}
+
+Gtk.Adjustment adjustment3 {
+  lower: 0;
+  value: 0;
+  upper: 359;
+  step-increment: 1;
+  page-increment: 10;
+}
+
+template $ShapeDialog: Adw.Window {
+  icon-name: "mwp_icon";
+  title: "Define Shape";
+
+  Box {
+    orientation: vertical;
+
+    [start]
+    Adw.HeaderBar {}
+
+    [end]
+    Box {
+      orientation: vertical;
+      spacing: 8;
+
+      [start]
+      Grid {
+        Gtk.Label {
+          label: "Number of points:";
+
+          layout {
+            row: '0';
+            column: '0';
+          }
+        }
+
+        Gtk.SpinButton nopoints {
+          numeric: true;
+          adjustment: adjustment1;
+
+          layout {
+            row: '0';
+            column: '1';
+          }
+        }
+
+        Gtk.Label {
+          label: "Radial Range:";
+
+          layout {
+            row: '1';
+            column: '0';
+          }
+        }
+
+        Gtk.SpinButton rrange {
+          numeric: true;
+          adjustment: adjustment2;
+
+          layout {
+            row: '1';
+            column: '1';
+          }
+        }
+
+        Gtk.Label {
+          label: "Offset Angle:";
+
+          layout {
+            row: '2';
+            column: '0';
+          }
+        }
+
+        Gtk.SpinButton offangle {
+          numeric: true;
+          adjustment: adjustment3;
+
+          layout {
+            row: '2';
+            column: '1';
+          }
+        }
+
+        Gtk.Label {
+          label: "Direction:";
+
+          layout {
+            row: '3';
+            column: '0';
+          }
+        }
+
+        Gtk.DropDown direction {
+          model: StringList {
+            strings [
+              "Clockwise",
+              "Counter-clockwise"
+            ]
+          };
+
+          layout {
+            row: '3';
+            column: '1';
+          }
+        }
+      }
+
+      Box {
+        orientation: horizontal;
+        spacing: 4;
+        halign: end;
+        hexpand: true;
+
+        Button shapeapply {
+          halign: end;
+          label: _('Apply');
+        }
+
+        Button shapecancel {
+          halign: end;
+          label: _('Cancel');
+        }
+      }
+    }
+  }
+}

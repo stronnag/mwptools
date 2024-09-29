@@ -1,0 +1,329 @@
+using Gtk 4.0;
+using Adw 1;
+
+Gtk.Adjustment adjustment1 {
+  lower: 0;
+  upper: 20;
+  value: 15;
+  step-increment: 1;
+  page-increment: 1;
+}
+
+template $MwpWindow: Adw.ApplicationWindow {
+  icon-name: "mwp_icon";
+  title: "mwp";
+
+  Box {
+    orientation: vertical;
+
+    [start]
+    Adw.HeaderBar {
+      [start]
+      Gtk.Box {
+        orientation: horizontal;
+        spacing: 2;
+
+        [start]
+        MenuButton button_menu {
+          icon-name: "open-menu";
+          primary: true;
+          always-show-arrow: false;
+        }
+
+        Gtk.DropDown mapdrop {
+	  tooltip-text: _('Map Source');
+          model: StringList {
+            strings [
+	      "<nil>"
+            ]
+          };
+	}
+
+	Gtk.SpinButton zoomlevel {
+	  tooltip-text: _('Map zoom level');
+          numeric: true;
+          value: 15;
+          adjustment: adjustment1;
+        }
+
+        Gtk.ToggleButton wpeditbutton {
+	  tooltip-text: _('Enable / diable on-map WP creation');
+          Gtk.Box {
+            [start]
+            Gtk.Image {
+              icon-name: "list-add";
+            }
+
+            Gtk.Label {
+              label: "Add WPs";
+            }
+          }
+        }
+
+        Gtk.DropDown actmission {
+	  tooltip-text: _('Active Mission');
+          model: StringList {
+            strings [
+              "<nil>"
+            ]
+          };
+        }
+      }
+
+      [end]
+      Gtk.Box {
+        spacing: 2;
+        orientation: horizontal;
+
+	Gtk.Button arm_warn {
+	  Gtk.Image armstat {
+	    tooltip-text: _('Arming Status');
+            margin-start: 2;
+            margin-end: 4;
+            icon-name: "dialog-error";
+          }
+	}
+
+        Gtk.Box devbox {
+          tooltip-text: _('Serial Device');
+        }
+
+        Gtk.DropDown protodrop {
+          tooltip-text: _('Telemetry Protocol');
+          model: StringList {
+            strings [
+              "<nil>"
+            ]
+          };
+        }
+
+        Gtk.Button conbutton {
+          tooltip-text: _('Enable/disable serial device');
+          label: "Connect";
+        }
+
+        Gtk.CheckButton autocon {
+          tooltip-text: _('Automatically connect to available serial device');
+          label: "Auto";
+          active: false;
+        }
+
+        ToggleButton show_sidebar_button {
+          active: true;
+	  //          icon-name: 'view-sidebar-end';
+          icon-name: 'sidebar-show-right';
+          tooltip-text: _('Toggle Sidebar');
+        }
+      }
+    }
+
+    Box {
+      orientation: vertical;
+
+      [start]
+      // Row 1
+      Adw.ToastOverlay toaster {
+        Adw.OverlaySplitView split_view {
+          vexpand: true;
+          sidebar-position: end;
+          show-sidebar: bind show_sidebar_button.active bidirectional;
+        }
+      }
+
+      //    Row 2
+      Gtk.Box {
+        hexpand: true;
+        vexpand: false;
+        spacing: 2;
+
+        Gtk.Label poslabel {
+	  //               1         2         3
+	  //      12345678901234567890123456789012
+          label: "00:00:00.0N 000:00:00.0E 0000m";
+          margin-start: 2;
+          margin-end: 2;
+          width-chars: 30;
+          max-width-chars: 30;
+	  ellipsize: end;
+          hexpand: false;
+          halign: fill;
+          xalign: 0;
+          styles [
+            "monospace"
+          ]
+        }
+
+        Gtk.Label statusbar1 {
+          margin-start: 4;
+          margin-end: 4;
+          hexpand: false;
+          halign: fill;
+          ellipsize: end;
+//          width-chars: 28;
+        }
+
+        Gtk.Label verlab {
+          margin-start: 2;
+          margin-end: 2;
+//          hexpand: true;
+//          halign: end;
+//          justify: center;
+        }
+
+        Gtk.Label typlab {
+          halign: start;
+          margin-start: 2;
+          margin-end: 2;
+//          hexpand: true;
+//          justify: center;
+//          width-chars: 16;
+        }
+
+        Gtk.Label fmode {
+          margin-start: 2;
+          margin-end: 2;
+//          hexpand: true;
+//          halign: end;
+//          justify: center;
+//          width-chars: 16;
+        }
+
+        Gtk.Label mmode {
+          margin-start: 2;
+          margin-end: 2;
+//          hexpand: true;
+          halign: end;
+          justify: center;
+//          width-chars: 4;
+        }
+
+	Gtk.Box {
+          hexpand: true;
+          halign: end;
+
+          Gtk.CheckButton follow_button {
+            label: "Follow";
+            active: false;
+            tooltip-text: _("When enabled, plots the GPS location on the map");
+            hexpand: true;
+            halign: end;
+          }
+
+	  Gtk.DropDown viewmode {
+            halign: end;
+            hexpand: true;
+	    tooltip-text: _("'In View' keeps model on the map; 'Centre On' centres the model on the map, rotating the model, 'Moving Map' centres the model North up, map rotates");
+            model: StringList {
+              strings [
+		"In View",
+		"Centre On",
+		"Moving Map"
+              ]
+            };
+	  }
+
+          Gtk.CheckButton logger_cb {
+            halign: end;
+            label: "Logger";
+            active: false;
+            hexpand: true;
+            tooltip-text: _("Enabled mwp logging (see also gsettings 'log-on-arm' to automatically enable / disable on arm / disarm)</property");
+          }
+
+          Gtk.CheckButton audio_cb {
+            halign: end;
+            label: "Audio";
+            active: false;
+            hexpand: true;
+            tooltip-text: _("Enabled audio reporting (see also gsettings 'audio-on-arm' to automatically enable / disable on arm / disarm");
+          }
+
+          Gtk.Label gpslab {
+            use-markup: true;
+            label: "◯";
+            halign: end;
+            margin-start: 2;
+            margin-end: 2;
+            hexpand: true;
+            justify: center;
+          }
+
+          Gtk.Box {
+            orientation: horizontal;
+            spacing: 4;
+            halign: end;
+	    hexpand: true;
+            [start]
+            Gtk.Label gyro_sts {
+              halign: end;
+              label: "<span background=\"red\"> </span>";
+              use-markup: true;
+              tooltip-text: _("Gyro Status");
+            }
+
+            Gtk.Label acc_sts {
+              halign: end;
+              label: "<span background=\"red\"> </span>";
+              use-markup: true;
+              tooltip-text: _("Acc Status");
+            }
+
+            Gtk.Label baro_sts {
+              halign: end;
+              label: "<span background=\"red\"> </span>";
+              tooltip-text: _("Baro Status");
+              use-markup: true;
+            }
+
+            Gtk.Label mag_sts {
+              halign: end;
+              label: "<span background=\"red\"> </span>";
+              tooltip-text: _("Mag Status");
+              use-markup: true;
+            }
+
+            Gtk.Label gps_sts {
+              halign: end;
+              label: "<span background=\"red\"> </span>";
+              use-markup: true;
+              tooltip-text: _("GPS Status");
+            }
+
+            Gtk.Label sonar_sts {
+              halign: end;
+              label: "<span background=\"yellow\"> </span>";
+              tooltip-text: _("Sonar Status");
+              use-markup: true;
+            }
+          }
+
+          Gtk.Label elapsedlab {
+            label: "00:00";
+            width-chars: 6;
+            max-width-chars: 6;
+            halign: end;
+            hexpand: false;
+          }
+
+          Gtk.Spinner armed_spinner {
+            halign: fill;
+            hexpand: false;
+          }
+
+          Gtk.Label validatelab {
+            label: " ";
+            hexpand: false;
+            halign: end;
+          }
+
+          Gtk.Label missionlab {
+            label: " ";
+            hexpand: false;
+            halign: end;
+            justify: right;
+          }
+	}
+      }
+    }
+  }
+}

@@ -1,0 +1,86 @@
+mwptools installation instructions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+$ meson setup _build --buildtype=release --strip [--prefix=DIR]
+
+* recommended everywhere:
+  $ meson setup _build --buildtype=release --strip --prefix=~/.local
+
+* Otherwise
+  * FreeBSD --- don't provide --prefix
+    Binaries in /use/local/bin etc.
+  * Linux
+    o System wide install --prefix=/usr
+      Binaries in /use/bin etc.
+  * User install --prefix=$HOME/.local
+      Binaries in $HOME/.local/bin etc. Recommended.
+
+then:
+
+$ cd _build
+# Local install. Preferred mode, requires ~/.local/bin on PATH
+$ ninja install
+# or, System wide install
+$ ninja && sudo ninja install
+
+Other useful hints:
+$ [sudo] ninja uninstall
+$ ninja clean
+$ ninja reconfigure
+
+For modern `ninja`, local one hit _build and install, in top level directory:
+
+$ ninja -C _build install
+
+More Information:
+ https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja
+
+No GO(lang)
+~~~~~~~~~~~
+
+If you don't have internet access, the build will (probably) fail because go needs to update some modules. You can avoid building the golang programs wwith the `nogo` property.
+
+e.g.
+
+$ meson setup --buildtype=minsize -D debug=false --prefix=~/.local  --strip -D nogo=true _nogo
+$ ninja -C _nogo install
+
+MinSize build:
+~~~~~~~~~~~~~
+
+$ meson setup _build --buildtype=minsize -D debug=false -D b_lto=true -D b_pie=true --prefix=~/.local --strip
+
+Mold linker
+~~~~~~~~~~~
+
+If you have the modern `mold` linker installed, you can speed up the build (in particular, linking `mwp`) by:
+
+$ mold --run ninja -C _build install
+
+Non-default targets
+~~~~~~~~~~~~~~~~~~~
+
+As part of the post installed, `fc-set` is a hard link to `fc-get`.
+
+A number of applications, e.g. `flashdl` (replaced by `flashgo`), `ublox-geo` etc. are not built by default, they may be built via specifying a specific target (e.g. `ninja -C _build ublox-geo`), and installed by `install s _build/ublox-geo ~/.local/bin/`.
+
+Uninstall
+~~~~~~~~~
+
+There is a standard uninstall target (needs `sudo` for system uninstall).
+
+$ ninja -C _build uninstall
+
+This will only work if you haven't reconfigured the build for a different install directory.
+
+For convenience, there is a `meson/uninstall.sh` script to do this. It requires:
+
+* The installation prefix
+* For a system uninstall, run as root
+
+e.g.
+
+$ meson/uninstall.sh ~/.local
+$ sudo meson/uninstall.sh /usr/local
+
+This will remove everything installed mwp.

@@ -1,0 +1,642 @@
+<?xml version="1.0" encoding="utf-8"?>
+<schemalist>
+  <enum id="org.stronnag.mwp.fwds">
+    <value nick="none" value="0"/>
+    <value nick="LTM" value="1"/>
+    <value nick="minLTM" value="2"/>
+    <value nick="minMAV" value="3"/>
+    <value nick="all" value="4"/>
+  </enum>
+
+
+  <enum id="org.stronnag.mwp.spfuel">
+    <value nick="none" value="0"/>
+    <value nick="pct" value="1"/>
+    <value nick="mAh" value="2"/>
+    <value nick="mWh" value="3"/>
+  </enum>
+
+  <enum id="org.stronnag.mwp.skamps">
+    <value nick="none" value="0"/>
+    <value nick="live-1" value="1"/>
+    <value nick="live-2" value="2"/>
+    <value nick="live-4" value="4"/>
+    <value nick="all-1" value="17"/>
+    <value nick="all-2" value="18"/>
+    <value nick="all-4" value="20"/>
+  </enum>
+
+  <enum id="org.stronnag.mwp.sticks">
+    <value nick="yes" value="0"/>
+    <value nick="no" value="1"/>
+    <value nick="icon" value="2"/>
+  </enum>
+
+  <enum id="org.stronnag.mwp.mspadsb">
+    <value nick="off" value="0"/>
+    <value nick="on" value="1"/>
+    <value nick="auto" value="2"/>
+  </enum>
+
+  <enum id="org.stronnag.mwp.viewmodes">
+    <value nick="inview" value="0"/>
+    <value nick="centreon" value="1"/>
+    <value nick="movingmap" value="2"/>
+  </enum>
+
+  <schema id="org.stronnag.mwp" path="/org/stronnag/mwp/" >
+
+    <key name="device-names" type="as">
+        <default>[]</default>
+        <summary>Device names</summary>
+        <description>A list of device names to be added to those that
+	can be auto-discovered</description>
+    </key>
+
+    <key name="default-latitude" type="d">
+      <default>50.909528</default>
+      <summary>Default Latitude</summary>
+      <description>
+        Default Latitude when no GPS
+      </description>
+    </key>
+
+    <key name="default-longitude" type="d">
+      <default>-1.532936</default>
+      <summary>Default Longitude</summary>
+      <description>
+        Default Longitude when no GPS
+      </description>
+    </key>
+
+    <key name="default-loiter" type="u">
+      <default>30</default>
+      <summary>Default Loiter time</summary>
+      <description>
+        Default Loiter time
+      </description>
+    </key>
+
+    <key name="default-altitude" type="u">
+      <default>20</default>
+      <summary>Default altitude</summary>
+      <description>
+        Default Altitude for mission (m)
+      </description>
+    </key>
+
+    <key name="default-nav-speed" type="d">
+      <default>2.5</default>
+      <summary>Default Nav speed</summary>
+      <description>
+        Default Nav speed (m/s). For calculating durations only.
+      </description>
+    </key>
+
+    <key name="default-map" type="s">
+      <default>""</default>
+      <summary>Default Map</summary>
+      <description>Default map *key*</description>
+    </key>
+
+    <key name="default-zoom" type="u">
+      <default>15</default>
+      <summary>Default Map zoom</summary>
+      <description>Default map zoom</description>
+    </key>
+
+    <key name="speak-interval" type="u">
+      <default>15</default>
+      <summary>Interval between voice prompts</summary>
+      <description>Interval between voice prompts, 0 disables</description>
+    </key>
+
+    <key type="b" name="dump-unknown">
+      <default>false</default>
+      <summary>dump unknown</summary>
+      <description>dump unknown message payload (debug aid)</description>
+    </key>
+
+    <key type="b" name="display-dms">
+      <default>false</default>
+      <summary>Position display</summary>
+      <description>Show positions as dd:mm:ss rather than decimal degrees</description>
+    </key>
+
+    <key name="map-sources" type="s">
+      <summary>Additional Map sources</summary>
+      <default>""</default>
+      <description>JSON file defining additional map sources</description>
+    </key>
+
+    <key name="espeak-voice" type="s">
+      <summary>Default espeak voice</summary>
+      <default>"en"</default>
+      <description>Default espeak voice (see espeak documentation)</description>
+    </key>
+
+    <key name="speechd-voice" type="s">
+      <summary>Default speechd voice</summary>
+      <default>"male1"</default>
+      <description>Default speechd voice (see speechd documentation)</description>
+    </key>
+
+    <key name="flite-voice-file" type="s">
+      <summary>Default flite voice file</summary>
+      <default>""</default>
+      <description>Default flite voice file (full path, *.flitevox), see flite documentation)</description>
+    </key>
+
+    <key type="b" name="audio-on-arm">
+      <default>true</default>
+      <summary>start audio on arm</summary>
+      <description>start audio on arm (and stop on disarm)</description>
+    </key>
+
+    <key type="b" name="log-on-arm">
+      <default>false</default>
+      <summary>start logging on arm</summary>
+      <description>start logging on arm (and stop on disarm)</description>
+    </key>
+
+    <key type="b" name="auto-follow">
+      <default>true</default>
+      <summary>set auto-follow</summary>
+      <description>set auto-follow on start</description>
+    </key>
+
+    <key name="baudrate" type="u">
+      <default>115200</default>
+      <summary>Baud rate</summary>
+      <description>Serial baud rate</description>
+    </key>
+
+    <key name="beep" type="b">
+      <summary>Beep  for alerts</summary>
+      <default>true</default>
+      <description>Whether to emit an alert sound for alerts.</description>
+    </key>
+
+    <key name="atstart" type="s">
+      <summary>Something that is executed at startup</summary>
+      <default>""</default>
+      <description>e.g. `gsettings set
+      org.gnome.settings-daemon.plugins.power idle-dim false`. See also `manage-power` (and consider setting to true). </description>
+    </key>
+
+    <key name="atexit" type="s">
+      <summary>Something that is executed at exit</summary>
+      <default>""</default>
+      <description>e.g. `gsettings set
+      org.gnome.settings-daemon.plugins.power idle-dim true`. See also
+      `manage-power` (and consider setting `manage-power` to `true` instead). </description>
+    </key>
+
+    <key name="vlevels" type="s">
+      <summary>Voltage levels</summary>
+      <default>""</default>
+      <description>Semi-colon(;) separated list of *cell* voltages values for transition between voltage label colours</description>
+    </key>
+
+    <key name="poll-timeout" type="u">
+      <default>900</default>
+      <summary>Poll messages timeout (ms)</summary>
+      <description>
+	Timeout in milliseconds for telemetry poll messages. Note that timer loop has a resolution of 100ms.
+      </description>
+    </key>
+
+    <key name="display-distance" type="u">
+      <default>0</default>
+      <summary>Distance units</summary>
+      <description>0=metres, 1=feet, 2=yards</description>
+    </key>
+
+    <key name="display-speed" type="u">
+      <default>0</default>
+      <summary>Speed units</summary>
+      <description>0=metres/sec, 1=kilometres/hour, 2=miles/hour, 3=knots</description>
+    </key>
+
+    <key name="gpsintvl" type="u">
+      <default>2000</default>
+      <summary>gps sanity time (m/s)</summary>
+      <description>gps sanity time (m/s), check for current fix</description>
+    </key>
+
+    <key name="uilang" type="s">
+      <default>""</default>
+      <summary>Language Handling</summary>
+      <description>"en" do everything as English (UI numeric decimal points, voice), "ev" do voice as English (so say 'point' for decimals even when shown as 'comma')</description>
+    </key>
+
+    <key name="led" type="s">
+      <default>"#60ff00"</default>
+      <summary>GPS LED colour</summary>
+      <description>GPS LED colour as well know string or #RRGGBB</description>
+    </key>
+
+    <key name="rings-colour" type="s">
+      <default>"#ffffff20"</default>
+      <summary>range rings colour</summary>
+      <description>range rings colour as well know string or #RRGGBBAA</description>
+    </key>
+
+    <key name="rth-autoland" type="b">
+      <default>false</default>
+      <summary>Set land on RTH waypoints</summary>
+      <description>Automatically assert land on RTH waypoints</description>
+    </key>
+
+    <key name="ignore-nm" type="b">
+      <default>false</default>
+      <summary>Ignore Network Manager</summary>
+      <description>Set to true to always ignore NM status (may slow down startup)</description>
+    </key>
+
+    <key name="ah-invert-roll" type="b">
+      <default>false</default>
+      <summary>Invert AH roll</summary>
+      <description>Set to true to invert roll in the AH (so it becomes an attitude indicator)</description>
+    </key>
+
+    <key name="mission-path" type="s">
+      <default>""</default>
+      <summary>Directory for mission files</summary>
+      <description>Directory for mission files, default = current directory</description>
+    </key>
+
+    <key name="kml-path" type="s">
+      <default>""</default>
+      <summary>Directory for KML overlays</summary>
+      <description>Directory for KML overlays, default = current directory</description>
+    </key>
+
+    <key name="log-path" type="s">
+      <default>""</default>
+      <summary>Directory for replay log files</summary>
+      <description>Directory for log files (for replay), default = current directory</description>
+    </key>
+    <key name="log-save-path" type="s">
+      <default>""</default>
+      <summary>Directory for storing log files</summary>
+      <description>Directory for log files (for save), default = current directory</description>
+    </key>
+
+    <key name="speech-api" type="s">
+      <choices>
+        <choice value='none'/>
+        <choice value='espeak'/>
+        <choice value='speechd'/>
+        <choice value='flite'/>
+      </choices>
+      <default>"espeak"</default>
+      <summary>API for speech synthesis</summary>
+      <description>espeak, speechd, flite. Only change this if you know you have the required development files at build time</description>
+    </key>
+
+    <key name="max-home-delta" type="d">
+      <default>2.5</default>
+      <summary>home position delta (m)</summary>
+      <description>
+	Maximum variation of home position without verbal alert
+      </description>
+    </key>
+
+    <key name="stats-timeout" type="u">
+      <default>30</default>
+      <summary>timeout for flight statistics display (s)</summary>
+      <description>Timeout before the flight statistics popup automatically closes. A value of 0 means no timeout.</description>
+    </key>
+
+    <key name="auto-restore-mission" type="b">
+      <default>false</default>
+      <summary>Whether to automatically import a mission in FC memory
+      to MWP</summary>
+      <description>
+	If the FC holds a valid mission in memory, and there is no mission loaded into MWP, this setting controls whether MWP automatically downloads the mission.
+      </description>
+    </key>
+
+    <key name="forward" enum="org.stronnag.mwp.fwds">
+      <default>"minLTM"</default>
+      <summary>Types of message to forward</summary>
+      <description>
+        Types of message to forward (none, LTM, minLTM, minMAV, all)
+      </description>
+    </key>
+
+    <key name="smartport-fuel-unit" enum="org.stronnag.mwp.spfuel">
+      <default>"none"</default>
+      <summary>User selected fuel type</summary>
+      <description>
+        Units label for smartport fuel (none, %, mAh, mWh)
+      </description>
+    </key>
+
+    <key name="wp-text-style" type="s">
+      <default>"Sans 72/#ff000060"</default>
+      <summary>Style of text used for next WP display</summary>
+      <description>
+        Defines the way the WP numbers are displayed. Font, size and RGBA description (or well known name, with alpha)
+      </description>
+    </key>
+
+    <key name="wp-spotlight" type="s">
+      <default>"#ffffff60"</default>
+      <summary>Style for the 'next waypoint' highlight</summary>
+      <description>
+        Defines RGBA colour for 'next way point' highlight
+      </description>
+    </key>
+
+    <key name="flash-warn" type="u">
+      <default>0</default>
+      <summary>Flash storage warning</summary>
+      <description>
+	If a dataflash is configured for black box, and this key is non-zero, a warning in generated if the data flash is greater than "flash-warn" percent full.
+      </description>
+    </key>
+
+    <key name="auto-wp-edit" type="b">
+      <default>false</default>
+      <summary>Whether direct WP editing is available
+      </summary>
+      <description>
+	If true, the user can edit / create waypoints directly by clicking on the map, if false, it is necessary to toggle the WP Edit button to enable editing.
+      </description>
+    </key>
+
+    <key name="osd-mode" type="u">
+      <default>3</default>
+      <summary>Data items overlaid on the map</summary>
+      <description>
+	0 = none, 1 = current WP/Max WP, 2 = next WP distance and course. This is a mask, so 3 means both OSD items.
+      </description>
+    </key>
+
+    <key name="wp-dist-size" type="d">
+      <default>56.0</default>
+      <summary>Font size (points) for OSD WP distance display</summary>
+      <description>
+	Font size (points) for OSD WP distance display
+      </description>
+    </key>
+
+    <key name="adjust-tz" type="b">
+      <default>true</default>
+      <summary>Adjust FC's TZ (and DST)</summary>
+      <description>mwp should  adjust FC's TZ (and DST) based on the local clock</description>
+    </key>
+
+    <key name="blackbox-decode" type="s">
+      <default>"blackbox_decode"</default>
+      <summary>Name of the blackbox_decode application</summary>
+      <description>Name of the blackbox_decode application (in case there are separate for iNav and betaflight)</description>
+    </key>
+
+    <key name="geouser" type="s">
+      <default>"mwptools"</default>
+      <summary>User account on geonames.org</summary>
+      <description>A user account to query geonames.org for blackbox log timezone info. A default account of 'mwptools' is provided; however users are requested to create their own account.</description>
+    </key>
+
+    <key name="zone-detect" type="s">
+      <default>""</default>
+      <summary>Application to return timezone from location</summary>
+      <description>If supplied, the application will be used to return the timezone (in preference to geonames.org). The application should take latitude and longitude as parameters. See samples/tzget.sh</description>
+    </key>
+
+    <key name="mag-sanity" type ="s">
+      <default>""</default>
+       <summary>Enable mag sanity checking</summary>
+       <description>mwp offers a primitive mag sanity checker that compares compass heading with GPS course over the ground using LTM (only). There are  various hard-coded constraints (speed &gt; 3m/s, certain flight modes) and two configurable parameters that should be set here in order to enable this check. The parameters are angular difference (⁰) and duration (s). The author finds a settings of 45,3 (i.e. 45⁰ over 3 seconds) works OK, detecting real instances (a momentarily breaking cable) and not reporting false positives.
+       </description>
+    </key>
+
+    <key name="say-bearing" type="b">
+      <default>true</default>
+      <summary>Whether audio report includes bearing</summary>
+      <description>Whether audio report includes bearing</description>
+    </key>
+
+    <key name="pos-is-centre" type="b">
+      <default>false</default>
+      <summary>Determines position label content</summary>
+      <description>Whether the position label is the centre or pointer location</description>
+    </key>
+
+    <key name="delta-minspeed" type="d">
+      <default>0.0</default>
+      <summary>Minimum speed for elapsed distance updates</summary>
+      <description>
+	Minimum speed for elapsed distance updates (m/s). Default is
+	zero, which means the elapsed distance is always updated;
+	larger values will take out hover / jitter movements.
+      </description>
+    </key>
+
+    <key name="speak-amps" enum="org.stronnag.mwp.skamps">
+      <default>"none"</default>
+      <summary>When to speak amps/hr used</summary>
+      <description>
+	none, live-n, all-n n=1,2,4 : n = how often spoken (modulus basically)
+      </description>
+    </key>
+
+    <key name="max-radar-slots" type="u">
+      <default>4</default>
+      <summary>Maximum number of aircraft</summary>
+      <description>Maximum number of aircraft reported by iNav-radar</description>
+    </key>
+
+    <key type="b" name="arming-speak">
+      <default>false</default>
+      <summary>speak arming states</summary>
+      <description>whether to reporting arming state by audio</description>
+    </key>
+
+    <key type="b" name="manage-power">
+      <default>false</default>
+      <summary>manage power and screen</summary>
+      <description>whether to manage idle and screen saver</description>
+    </key>
+
+    <key type="b" name="uc-mission-tags">
+      <default>false</default>
+      <summary>Upper case mission XML tags</summary>
+      <description>If true, MISSION, VERSION and MISSIONITEM tags are upper case (for interoperability with legacy Android applications)</description>
+    </key>
+
+    <key type="b" name="mission-meta-tag">
+      <default>false</default>
+      <summary>use meta vice mwp in mission file</summary>
+      <description>If true, the legacy 'mwp' tag is named 'meta'</description>
+    </key>
+
+    <key type="s" name="load-safehome">
+      <default>""</default>
+      <summary>Load default set of safehomes</summary>
+      <description>Set to file[,Y]. File defines a set of safehome
+      lines (CLI format), optionally followed by a comma and Y. If the
+      definition includes ",Y", then the safehome locations will be
+      displayed. If the name has the special value '-FC-', then
+      safehomes will be loaded from the FC on connection.</description>
+    </key>
+
+    <key name="max-climb-angle" type="d">
+      <default>0.0</default>
+      <summary>Maximum climb angle highlight for terrain analysis</summary>
+      <description>If non-zero, any climb angles exceeding the
+      specified value will be highlighted in Terrain Analysis Climb /
+      Dive report. Note that the absolute value is taken as a positive
+      (climb) angle</description>
+    </key>
+
+    <key name="max-dive-angle" type="d">
+      <default>0.0</default>
+      <summary>Maximum dive angle highlight for terrain analysis</summary>
+      <description>If non-zero, any dive angles exceeding the
+      specified value will be highlighted in Terrain Analysis Climb /
+      Dive report. Note that the absolute value is taken as a negative
+      (dive) angle</description>
+    </key>
+
+    <key name="max-wps" type="u">
+      <default>120</default>
+      <summary>Maximum number of WP supported</summary>
+      <description>Maximum number of WP supported</description>
+    </key>
+
+    <key name="radar-list-max-altitude" type="u">
+      <default>0</default>
+      <summary>Maximum altitude for targets to show in the radar list view</summary>
+      <description>Maximum altitude (metres) to include targets in the radar
+      list view. Targets higher than this value will show only in the map view.
+      This is mainly for ADS-B receivers where there is no need for high altitude targets to be shown.
+      Setting to 0 disables. Note that ADS-B altitudes are AMSL (or geoid).</description>
+    </key>
+
+    <key name="radar-alert-altitude" type="u">
+      <default>0</default>
+      <summary>Altitude below which ADS-B alerts may be generated</summary>
+      <description>Target altitude (metres) below which ADS-B
+      proximity alerts may be generated. Requires that 'radar-alert-range'
+      is also set (non-zero). Setting to 0 disables. Note that ADS-B altitudes are AMSL (or geoid). </description>
+    </key>
+
+    <key name="radar-alert-range" type="u">
+      <default>0</default>
+      <summary>Range below which ADS-B alerts may be generated</summary>
+      <description>Target range (metres) below which ADS-B
+      proximity alerts may be generated. Requires that 'radar-alert-altitude'
+      is also set (non-zero). Setting to 0 disables.</description>
+    </key>
+
+    <key type="s" name="gpsd-host">
+      <default>"localhost"</default>
+      <summary>gpsd provider</summary>
+      <description>Provider for GCS location via gpsd.
+      Default is "localhost", can be set to other host name or IP
+      address. Setting blank ("") disables.</description>
+    </key>
+
+    <key name="window-scale" type="i">
+      <default>80</default>
+      <summary>Window size as percent of monitor</summary>
+      <description>Default window size size as percent of monitor size for non-full screen invocation.</description>
+    </key>
+
+    <key name="misc-icon-size" type="i">
+      <default>32</default>
+      <summary>Miscellaneous icon size</summary>
+      <description>Size for miscellaneous icons (radar, GCS location)
+      in pixels. -1 means the image's natural size (no scaling).</description>
+    </key>
+
+    <key name="show-sticks" enum="org.stronnag.mwp.sticks">
+      <default>"icon"</default>
+      <summary>Whether to show sticks in log replay</summary>
+      <description>If "yes", stick position is shown bottom right during log replay, if "no" , never shown. If "icon", then it shown iconified (bottom right)</description>
+    </key>
+
+    <key name="msp2-adsb" enum="org.stronnag.mwp.mspadsb">
+      <default>"off"</default>
+      <summary>MSP2_ADSB_VEHICLE_LIST usage</summary>
+      <description>Options for requesting MSP2_ADSB_VEHICLE_LIST. "off": never request, "on:" always request, "auto:" heuristic based on serial settings / bandwidth</description>
+    </key>
+
+    <key name="view-mode" enum="org.stronnag.mwp.viewmodes">
+      <default>"inview"</default>
+      <summary>UAV view mode</summary>
+      <description>Options for model view</description>
+    </key>
+
+    <key name="los-margin" type="i">
+      <default>0</default>
+      <summary>Margin(m) for LOS Analysis</summary>
+      <description>Margin(m) for LOS Analysis</description>
+    </key>
+
+    <key name="ga-alt" type="i">
+      <default>0</default>
+      <summary>Units for GA Altiude</summary>
+      <description>0=m, 1=ft, 2=FL</description>
+    </key>
+
+    <key name="ga-range" type="i">
+      <default>0</default>
+      <summary>Units for GA Range</summary>
+      <description>0=m, 1=km, 2=miles, 3=nautical miles</description>
+    </key>
+
+    <key name="ga-speed" type="i">
+      <default>0</default>
+      <summary>Units for GA Speed</summary>
+      <description>0=m/s, 1=kph, 2=mph, 3=knots</description>
+    </key>
+
+    <key type="b" name="bluez-disco">
+      <default>false</default>
+      <summary>Use Bluetooth discovery</summary>
+      <description>Only discovered Bluetooth serial devices with non-zero RSSI will be offered</description>
+    </key>
+
+    <key type="b" name="autoload-geozones">
+      <default>false</default>
+      <summary>Autoload geozones from FC</summary>
+      <description>Autoload geozones from FC on connect, remove from display on disconnect</description>
+    </key>
+
+  <key name="min-dem-zoom" type="i">
+      <default>9</default>
+      <summary>Minimum zoom for DEM loading</summary>
+      <description>DEMs will not be fetched if zoom is below this value</description>
+    </key>
+
+    <key type="s" name="mapbox-apikey">
+      <default>""</default>
+      <summary>Mapbox API Key</summary>
+      <description>Mapbox API key, enables Mapbox as a map Provider. Setting blank ("") disables.</description>
+    </key>
+
+    <key name="symbol-scale" type="d">
+      <default>1.0</default>
+      <summary>Symbol scale</summary>
+      <description>
+	Symbol scale factor, scales map symbols as multiplier.
+      </description>
+    </key>
+
+    <key name="touch-factor" type="d">
+      <default>0.0</default>
+      <summary>Touch (Hi)DPI scaling</summary>
+      <description>
+        Adjustment factor for HiDpi touch screens (0 disable, often 1.5 or 2.0).
+      </description>
+    </key>
+
+
+
+  </schema>
+</schemalist>

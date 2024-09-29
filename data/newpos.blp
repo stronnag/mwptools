@@ -1,0 +1,108 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $NewPosWindow: Adw.Window {
+  icon-name: "mwp_icon";
+  title: "Edit Place";
+
+  Box {
+    orientation: vertical;
+
+    [start]
+    Adw.HeaderBar {}
+
+    [end]
+    Box {
+      spacing: 8;
+      orientation: vertical;
+
+      [start]
+      Grid {
+        row-spacing: 8;
+        Label {
+          label: _('Name');
+          layout {
+            column: '0';
+            row: '0';
+          }
+        }
+
+        Entry goname {
+          hexpand: true;
+          layout {
+            column: '1';
+            row: '0';
+          }
+        }
+
+        Label {
+          label: _('Latitude');
+          layout {
+            column: '0';
+            row: '1';
+          }
+        }
+        Entry golat {
+          hexpand: true;
+          input-purpose: number;
+          layout {
+            column: '1';
+            row: '1';
+          }
+        }
+
+        Label {
+          label: _('Longitude');
+          layout {
+            column: '0';
+            row: '2';
+          }
+        }
+	Entry golon {
+          hexpand: true;
+          input-purpose: number;
+          layout {
+            column: '1';
+            row: '2';
+          }
+        }
+
+        Label {
+          label: _('Zoom');
+          layout {
+            column: '0';
+            row: '3';
+          }
+        }
+
+	Entry gozoom {
+          hexpand: true;
+          input-purpose: digits;
+          layout {
+            column: '1';
+            row: '3';
+          }
+        }
+      }
+
+      [end]
+      Box {
+        orientation: horizontal;
+        halign: end;
+        hexpand: true;
+        spacing: 8;
+
+        Button goapp {
+          halign: end;
+          label: 'Apply';
+          receives-default: true;
+        }
+
+        Button gocan {
+          halign: end;
+          label: 'Cancel';
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,113 @@
+using Gtk 4.0;
+
+template $FlightBoxView : Gtk.Box {
+  hexpand: true;
+  margin-start: 4;
+  spacing: 4;
+  halign: fill;
+
+  Grid fv_grid {
+    visible: true;
+    can-focus: false;
+    hexpand: true;
+    column-spacing: 1;
+    row-spacing: 6;
+    column-homogeneous: true;
+
+    //Row
+    Label latitude {
+      use-markup: true;
+      label: '<span size="150%" font="monospace">00:00:00.0N</span>';
+      halign: start;
+      layout {
+        row: 0;
+        column: 0;
+      }
+    }
+    Label longitude {
+      use-markup: true;
+      label: '<span size="150%" font="monospace">000:00:00.0E</span>';
+      halign: start;
+      layout {
+        row: 0;
+        column: 1;
+      }
+    }
+
+    //Row
+    Label range {
+      use-markup: true;
+      halign: start;
+      single-line-mode: true;
+      label: '<span size="small">Range</span><span size="300%" font="monospace">   0</span><span size="x-small">m</span>';
+      layout {
+        row: 1;
+        column: 0;
+      }
+    }
+    Label bearing {
+      use-markup: true;
+      halign: start;
+      single-line-mode: true;
+      label: '<span size="small">Bearing</span><span size="300%" font="monospace">180°</span>';
+      layout {
+        row: 1;
+        column: 1;
+      }
+    }
+    //Row
+    Label heading {
+      visible: true;
+      can-focus: false;
+      halign: start;
+      use-markup: true;
+      single-line-mode: true;
+      label: '<span size="small">Heading</span><span size="300%" font="monospace">000°</span>';
+      layout {
+        row: 2;
+        column: 0;
+      }
+    }
+
+    Label altitude {
+      visible: true;
+      can-focus: false;
+      halign: start;
+      use-markup: true;
+      single-line-mode: true;
+      label: '<span size="small">Alt</span><span size="300%" font="monospace"> 0</span><span size="x-small">m</span>';
+      layout {
+        row: 2;
+        column: 1;
+      }
+    }
+
+    //Row
+    Label speed {
+      visible: true;
+      can-focus: false;
+      halign: start;
+      use-markup: true;
+      single-line-mode: true;
+      label: '<span size="small">Speed</span><span size="250%" font="monospace"> 0.0</span><span size="x-small"> m/s</span>';
+      layout {
+        row: 3;
+        column: 0;
+      }
+    }
+
+    Label sats {
+      visible: true;
+      can-focus: false;
+      halign: start;
+      use-markup: true;
+      single-line-mode: true;
+      label: '<span size="small">Sats</span><span size="300%" font="monospace">0</span><span size="x-small">no-fix</span>';
+      layout {
+        row: 3;
+        column: 1;
+      }
+
+    }
+  }
+}

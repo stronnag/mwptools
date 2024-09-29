@@ -1,0 +1,11 @@
+# mwp places name,lat,lon
+#
+# add your own favourite locations and copy the file to ~/.config/mwp/
+#
+# You can either edit this file (delimited) or use the GUI editor
+#
+# The valid delimiters are |;: and <TAB>. Note "," is not a delimiter
+# for reasons of localisation.
+#
+Beaulieu|50.8047104|-1.4942621|17
+Jurby:54.353974:-4.523600:-1

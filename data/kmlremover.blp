@@ -1,0 +1,41 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KmlRemover: Adw.Window {
+  icon-name: "mwp_icon";
+  title: "Remove Overlays";
+
+  Box {
+    orientation: vertical;
+
+    [start]
+    Adw.HeaderBar {}
+
+    [end]
+    Box {
+      orientation: vertical;
+
+      Box kmlitems {
+        spacing: 8;
+        orientation: vertical;
+      }
+
+      Box buttons {
+        spacing: 8;
+        orientation: horizontal;
+        halign: fill;
+        hexpand: true;
+
+        Button kmlcan {
+          hexpand: true;
+          label: _("Cancel");
+        }
+
+        Button kmlok {
+          hexpand: true;
+          label: _("OK");
+        }
+      }
+    }
+  }
+}

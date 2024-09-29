@@ -1,0 +1,58 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $MwpjsWindow : Adw.Window {
+  title: "mwp JSON Log selector";
+  icon-name: "mwp_icon";
+
+  Box vbox {
+    orientation: vertical;
+    [start]
+    Adw.HeaderBar {}
+    [End]
+    // Row 1
+    Box {
+      orientation: horizontal;
+      Label {
+	label: "Json Log: ";
+      }
+      Button log_btn {
+	Box {
+	  spacing: 4;
+
+          Label log_name {
+            label: "(none)";
+            halign: fill;
+            hexpand: true;
+            tooltip-text: "JSON log file";
+          }
+	  [End]
+          Image {
+            icon-name: "document-open-symbolic";
+          }
+	}
+      }
+    }
+    // Row 2
+    Box {
+      Gtk.CheckButton speedup {
+	hexpand: true;
+	halign: end;
+        label: "Speedup";
+      }
+    }
+    // Row 4
+    Box  {
+      hexpand: false;
+      vexpand: true;
+      halign: end;
+      valign: end;
+      Button cancel {
+        label: _('Cancel');
+      }
+      Button apply {
+        label: _('OK');
+      }
+    }
+  }
+}

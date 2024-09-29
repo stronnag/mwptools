@@ -1,0 +1,112 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $MwpGotoDialog: Adw.Window {
+  icon-name: "mwp_icon";
+  title: "Stored Places";
+
+  Box {
+    orientation: vertical;
+
+    [start]
+    Adw.HeaderBar {}
+
+    [end]
+    Box {
+      spacing: 8;
+      orientation: vertical;
+
+      [start]
+      Grid grid5 {
+        row-spacing: 8;
+
+        Label {
+          label: _('Longitude');
+
+          layout {
+            column: '0';
+            row: '1';
+          }
+        }
+
+        Entry golat {
+          focusable: true;
+          hexpand: true;
+          input-purpose: number;
+
+          layout {
+            column: '1';
+            row: '0';
+          }
+        }
+
+        Entry golon {
+          focusable: true;
+          hexpand: true;
+          input-purpose: alpha;
+
+          layout {
+            column: '1';
+            row: '1';
+          }
+        }
+
+        Label {
+          label: _('Latitude');
+
+          layout {
+            column: '0';
+            row: '0';
+          }
+        }
+
+        Label {
+          tooltip-text: _('Named places are read from ~/.config/mwp/places.\nSee the "samples" directory for an example of each.');
+          label: _('Place');
+
+          layout {
+            column: '0';
+            row: '2';
+          }
+        }
+
+        DropDown places_dd {
+          model: StringList {
+            strings [
+            ]
+          };
+
+          layout {
+            column: '1';
+            row: '2';
+          }
+        }
+      }
+
+      [end]
+      Box {
+        orientation: horizontal;
+        halign: end;
+        hexpand: true;
+        spacing: 8;
+
+        Button place_edit {
+          halign: end;
+          label: _('Editor ...');
+          tooltip-text: _('Opens the stored places editor');
+        }
+
+        Button gotoapp {
+          halign: end;
+          label: 'Apply';
+          receives-default: true;
+        }
+
+        Button gotocan {
+          halign: end;
+          label: 'Cancel';
+        }
+      }
+    }
+  }
+}

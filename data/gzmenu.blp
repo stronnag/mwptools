@@ -1,0 +1,29 @@
+using Gtk 4.0;
+
+menu gz-menu {
+  section {
+    item {
+      custom: 'label';
+    }
+  }
+  section {
+    item {
+      label: 'Insert';
+      action: 'geoz.gzinsert';
+    }
+
+    item {
+      label: 'Delete';
+      action: 'geoz.gzdelete';
+    }
+  }
+}
+
+menu stick-menu {
+  section {
+    item {
+      label: 'Hide';
+      action: 'stick.hide';
+    }
+  }
+}

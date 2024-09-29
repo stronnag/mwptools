@@ -1,0 +1,120 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $DeltaDialog: Adw.Window {
+  icon-name: "mwp_icon";
+  title: "Delta updates";
+
+  Box {
+    orientation: vertical;
+
+    [start]
+    Adw.HeaderBar {}
+
+    [end]
+    Box {
+      orientation: vertical;
+      spacing: 8;
+
+      [start]
+      Grid {
+        hexpand: false;
+        column-spacing: 8;
+        row-spacing: 8;
+
+        Gtk.Label {
+          label: "Y Delta Latitude (m):";
+
+          layout {
+            row: '0';
+            column: '0';
+          }
+        }
+
+        Gtk.Entry latdelta {
+          placeholder-text: _('Distance (m) [optional]');
+          input-purpose: digits;
+
+          layout {
+            row: '0';
+            column: '1';
+          }
+        }
+
+        Gtk.Label {
+          label: "X Delta Longitude (m):";
+
+          layout {
+            row: '1';
+            column: '0';
+          }
+        }
+
+        Gtk.Entry londelta {
+          placeholder-text: _('Distance (m) [optional]');
+          input-purpose: digits;
+
+          layout {
+            row: '1';
+            column: '1';
+          }
+        }
+
+        Gtk.Label {
+          label: "Z Delta Elevation (m):";
+
+          layout {
+            row: '2';
+            column: '0';
+          }
+        }
+
+        Gtk.Entry elevdelta {
+          placeholder-text: _('Distance (m) [optional]');
+          input-purpose: digits;
+
+          layout {
+            row: '2';
+            column: '1';
+          }
+        }
+
+        Gtk.Label {
+          label: "Move home:";
+
+          layout {
+            row: '3';
+            column: '0';
+          }
+        }
+
+        Gtk.Switch movehome {
+          hexpand: false;
+          halign: start;
+
+          layout {
+            row: '3';
+            column: '1';
+          }
+        }
+      }
+
+      Box {
+        orientation: horizontal;
+        spacing: 4;
+        halign: end;
+        hexpand: true;
+
+        Button apply {
+          halign: end;
+          label: _('Apply');
+        }
+
+        Button cancel {
+          halign: end;
+          label: _('Cancel');
+        }
+      }
+    }
+  }
+}
