@@ -407,21 +407,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Graphical User Interface">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#display-managers" class="md-nav__link">
-    <span class="md-ellipsis">
-      Display Managers
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -465,15 +450,6 @@
   <a href="#drag-and-drop" class="md-nav__link">
     <span class="md-ellipsis">
       Drag and Drop
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#clean-and-unclean-exits" class="md-nav__link">
-    <span class="md-ellipsis">
-      Clean and unclean exits
     </span>
   </a>
   
@@ -1271,21 +1247,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Graphical User Interface">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#display-managers" class="md-nav__link">
-    <span class="md-ellipsis">
-      Display Managers
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -1334,15 +1295,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#clean-and-unclean-exits" class="md-nav__link">
-    <span class="md-ellipsis">
-      Clean and unclean exits
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -1368,22 +1320,8 @@
 
 <h1 id="running-mwp">Running mwp<a class="headerlink" href="#running-mwp" title="Permanent link">#</a></h1>
 <h2 id="video-tutorials">Video Tutorials<a class="headerlink" href="#video-tutorials" title="Permanent link">#</a></h2>
-<p>There is an <a href="https://vimeo.com/267437907">slightly outdated video</a>  that describes dock usage and some post-install actions:</p>
-<iframe src="https://player.vimeo.com/video/267437907?h=015ed1fdc6" width="640" height="431" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
-
-<div class="admonition info">
-<p class="admonition-title">Update</p>
-<ul>
-<li>More useful than I remember!</li>
-<li>The dock is now installed populated.</li>
-<li>WP editor switch is enabled by default</li>
-<li>There is now a graphical "favourite places" editor</li>
-<li>The build system is no longer <code>make</code></li>
-</ul>
-</div>
-<p>Apart from that, it's quite informative.</p>
 <h3 id="tutorial-playlist">Tutorial Playlist<a class="headerlink" href="#tutorial-playlist" title="Permanent link">#</a></h3>
-<p>All the developer's tutorial videos are in a <a href="https://www.youtube.com/playlist?list=PLE_mnLfCdjvAH4pLe9HCqaWm682_r8NT3">YouTube playlist</a>.</p>
+<p>All the developer's tutorial videos are in a <a href="https://www.youtube.com/playlist?list=PLE_mnLfCdjvAH4pLe9HCqaWm682_r8NT3">YouTube playlist</a>. These refer to the legacy version.</p>
 <h2 id="graphical-user-interface">Graphical User Interface<a class="headerlink" href="#graphical-user-interface" title="Permanent link">#</a></h2>
 <p>Once you've <a href="../Building-with-meson-and-ninja/">built and / or installed</a> <a href="https://github.com/stronnag/mwptools">mwp</a>.</p>
 <p>The install process installs an desktop icon and <code>mwp.desktop</code> application file <img alt="icon" src="../images/mwp_icon.svg" /></p>
@@ -1392,35 +1330,22 @@
 <li>It is also possible to run <a href="https://github.com/stronnag/mwptools">mwp</a> from a terminal, passing additional <a href="../mwp-Configuration/">options</a> if required.</li>
 <li>Such <a href="../mwp-Configuration/">options can be added to a configuration file</a> for persistence or use from the graphical icon.</li>
 </ul>
-<h3 id="display-managers">Display Managers<a class="headerlink" href="#display-managers" title="Permanent link">#</a></h3>
-<p><a href="https://github.com/stronnag/mwptools">mwp</a> uses a library, <code>libchamplain</code> to draw maps and mission symbols; unfortunately, this does not integrate consistently with the various generations of open source display managers (ironically, it works without problems in WSL2-G). Please check the following before raising Github issues:</p>
-<ul>
-<li>
-<p>On <strong>Wayland</strong> : Wayland is the latest open source display manager. On some graphics cards, it may fail to 'pick' waypoint symbols when there are more than c. 40 symbols in a mission.
-  In order to mitigate this, the default setting in mwp is to use a fallback implementation known as <strong>XWayland</strong>. Use of <strong>Wayland</strong> (vice XWayland) for newer graphics cards may be forced by setting <code>GDK_BACKEND=wayland</code> in <a href="../mwp-Configuration/#cmdopts"><code>~/.config/mwp/cmdopts</code></a> or the environment.</p>
-</li>
-<li>
-<p>On <strong>Xlib</strong> : For older versions of mwp sometimes you may load a mission and the WPs cannot be 'picked' and the map is unresponsive to mouse control. The work-around is to move the mouse off the map and back on again (or scroll the map with the keyboard, CTRL-arrow-keys).</p>
-<p>This is fixed in mwp later than 5.251.652 (2022-09-08); the solution being to ensure all dialogs are non-modal. <strong>Please upgrade.</strong></p>
-</li>
-</ul>
 <h2 id="touch-screen">Touch Screen<a class="headerlink" href="#touch-screen" title="Permanent link">#</a></h2>
-<p>From <a href="https://github.com/stronnag/mwptools">mwp</a> 7.178.767, the mwp map and map symbols are 'touch-aware'.</p>
+<p>The <a href="https://github.com/stronnag/mwptools">mwp</a>  map and map symbols are 'touch-aware'.</p>
 <ul>
 <li>You can drag map symbols using touch</li>
-<li>You can invoke "right mouse button" actions by a double tap</li>
+<li>You can invoke "right mouse button" actions by a long press.</li>
 </ul>
 <h2 id="command-line-options">Command line options<a class="headerlink" href="#command-line-options" title="Permanent link">#</a></h2>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a>'s command line options may be displayed with the <code>--help</code> option:</p>
-<pre><code>mwp --help
+<div class="highlight"><pre><span></span><code>$ mwp --help
 Usage:
-  mwp [OPTION…]
+mwp [OPTION…]
 
 Help Options:
   -h, --help                          Show help options
   --help-all                          Show all help options
   --help-gapplication                 Show GApplication options
-  --help-gtk                          Show GTK Options
 
 Application Options:
   -m, --mission=file-name             Mission file
@@ -1429,19 +1354,14 @@ Application Options:
   -f, --flight-controller=fc-name     mw|mwnav|bf|cf
   -c, --connect                       connect to first device (does not set auto flag)
   -a, --auto-connect                  auto-connect to first device (sets auto flag)
-  -N, --no-poll                       don't poll for nav info
-  -T, --no-trail                      don't display GPS trail
+  -N, --no-poll                       don&#39;t poll for nav info
+  -T, --no-trail                      don&#39;t display GPS trail
   -r, --raw-log                       log raw serial data to file
-  --ignore-sizing                     ignore minimum size constraint
   --full-screen                       open full screen
-  --ignore-rotation                   legacy unused
-  --dont-maximise                     don't maximise the window
+  --dont-maximise                     don&#39;t maximise the window
   --force-mag                         force mag for vehicle direction
-  --force-nav                         force nav capaable
-  -l, --layout                        Layout name
   -t, --force-type=type-code_no       Model type
   -4, --force4                        Force ipv4
-  -3, --ignore-3dr                    Ignore 3DR RSSI info
   -H, --centre-on-home                Centre on home
   --debug-flags                       Debug flags (mask)
   -p, --replay-mwp=file-name          replay mwp log file
@@ -1457,13 +1377,10 @@ Application Options:
   --really-really-run-as-root         no reason to ever use this
   --forward-to=device-name            forward telemetry to
   --radar-device=device-name          dedicated inav radar device
-  --perma-warn                        info dialogues never time out
-  --fsmenu                            use a menu bar in full screen (vice a menu button)
   -k, --kmlfile=file-name             KML file
+  --relaxed-msp                       don&#39;t check MSP direction flag
   --rebase=lat,lon                    rebase location (for replay)
-  --relaxed-msp                       don't check MSP direction flag
-  --display=DISPLAY                   X display to use
-</code></pre>
+</code></pre></div>
 <h3 id="bash-completion">Bash completion<a class="headerlink" href="#bash-completion" title="Permanent link">#</a></h3>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> installation also installs a 'bash completion' script.
 Note this is only available after you log in, so on first install, it's only available after the <em>next</em> login.</p>
@@ -1485,8 +1402,6 @@ Note this is only available after you log in, so on first install, it's only ava
 <li>Mission Files</li>
 <li>KML Overlays</li>
 </ul>
-<h3 id="clean-and-unclean-exits">Clean and unclean exits<a class="headerlink" href="#clean-and-unclean-exits" title="Permanent link">#</a></h3>
-<p>If you exit <a href="https://github.com/stronnag/mwptools">mwp</a> from the <strong>Quit</strong> menu (or Control-Q key shortcut), then the current dock layout will be saved; if you close <a href="https://github.com/stronnag/mwptools">mwp</a> from the Window Manager <code>close</code> title bar button, or CLI <code>kill</code> command, the layout is not saved; this is a feature.</p>
 
 
 
