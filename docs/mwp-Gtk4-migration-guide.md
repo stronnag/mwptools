@@ -39,6 +39,17 @@ dconf dump /org/mwptools/planner/ | dconf load /org/stronnag/mwp/
 
 Full list of settings is at the end of this document.
 
+## libshumate
+
+[libshumate](https://gitlab.gnome.org/GNOME/libshumate) is the replacement for the obsolete libchamplain. `libshumate` uses a different cache directory organisation compared to `libchamplain`. If required, you can bulk move (`rsync` etc.) your old `libchamplain` files to the new locations.
+
+The old files are under `~/.cache/champlain/`, the new cache `~/.cache/shumate/`; the following table illustrates the naming for Bing and OpenStreetmap caches. Other caches follow a similar pattern.
+
+| `libchamplain` | `libshumate` |
+| -------------- | ------------ |
+| `osm-mapnik`     | `https___tile_openstreetmap_org__z___x___y__png` |
+| `BingProxy`  | `http___localhost_31897_Bing__z___x___y__png` |
+
 ## Map Sources
 
 In preparation for the announced removal of the Bing Maps service, `mwp` adds a `MapBox` entry where the user has acquired a [Mapbox API key](https://mapbox.com/).

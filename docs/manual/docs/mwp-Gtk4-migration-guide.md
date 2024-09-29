@@ -29,15 +29,26 @@ The following are minimum versions.
 
 For replaying blackbox log, [bbl2kml](https://github.com/stronnag/bbl2kml) 1.0.24 or later is rquired.
 
-## GSettings Domain
+## GSettings /DConf schema
 
-The gsettings / dconf tree is now `/org/stronnag/mwp/`. The keys are (mainly) the same as for mwp/gtk3 and may be migrated:
+The gsettings / dconf schema is now `/org/stronnag/mwp/`. The keys are (mainly) the same as for legacy mwp/gtk3 and may be migrated:
 
 ```
 dconf dump /org/mwptools/planner/ | dconf load /org/stronnag/mwp/
 ```
 
 Full list of settings is at the end of this document.
+
+## libshumate
+
+[libshumate](https://gitlab.gnome.org/GNOME/libshumate) is the replacement for the obsolete libchamplain. `libshumate` uses a different cache directory organisation compared to `libchamplain`. If required, you can bulk move (`rsync` etc.) your old `libchamplain` files to the new locations.
+
+The old files are under `~/.cache/champlain/`, the new cache `~/.cache/shumate/`; the following table illustrates the naming for Bing and OpenStreetmap caches. Other caches follow a similar pattern.
+
+| `libchamplain` | `libshumate` |
+| -------------- | ------------ |
+| `osm-mapnik`     | `https___tile_openstreetmap_org__z___x___y__png` |
+| `BingProxy`  | `http___localhost_31897_Bing__z___x___y__png` |
 
 ## Map Sources
 
@@ -117,9 +128,9 @@ would appear as:
 
 mwp (Gtk4) and legacy (Gtk+-3.0) versions can coexist.
 
-* Install mwp (Gtk+-3.0)
+* Install legacy mwp (Gtk+-3.0)
 * Rename the executable (e.g. to mwp3)
-* Install mwp (Gtk4).
+* Install master mwp (Gtk4).
 
 If you use any of the map proxies (`bproxy`, `gmproxy`), you must use the latest version.
 
@@ -127,8 +138,8 @@ If you use any of the map proxies (`bproxy`, `gmproxy`), you must use the latest
 
 There are a couple of Gtk related environment variables that may affect the performance of mwp, particularly on older or less well supported GPUs:
 
-* `GSK_RENDERER` : Recently the Gtk default was changed from `gl` to `ngl` to `vulkan`. The `ngl` and `vulkan`.
-  On some less well supported GPUs (e.g. Imagination on riscv64) it may be necessary to use the `cairo` renderer;  `cairo` is also necessary on the author's touch screen tablet for correct touch screen WP dragging. Note that there may well be trade offs: on one of the author's machines, WP dragging seems slightly snappier using the `cairo` `GSK_RENDERER`, however the CPU usage for BBL replay is 10x greater using `cairo` compared to `vulkan`.
+* `GSK_RENDERER` : Recently the Gtk default was changed from `gl` to `ngl` to `vulkan`.
+  On some less well supported GPUs it may be necessary to use the `cairo` renderer;  `cairo` is also necessary on the author's touch screen tablet for correct touch screen WP dragging. Note that there may well be trade offs: on one of the author's machines, WP dragging seems slightly snappier using the `cairo` `GSK_RENDERER`, however the CPU usage for BBL replay is 10x greater using `cairo` compared to `vulkan`.
 * `GDK_BACKEND` : In the event that your hardware / software stack is almost hopelessly broken such that mwp is aborted with a Gdk message like  "Error 71 (Protocol error) dispatching to Wayland display", then setting this variable to `x11` may allow `mwp` to continue.
 
 The environment variables may be set in `~/.config/mwp/cmdopts` if needed.
@@ -139,7 +150,7 @@ GSK_RENDERER=cairo
 
 ## Optional
 
-If you use a map sources file in `~/.config/mwp`, optionally convert the `#X#` elements (for X, Y, Z) replacing with more standard `{x}` etc.
+If you use a map sources file in `~/.config/mwp`, you may optionally convert the `#X#` elements (for X, Y, Z) replacing with more standard `{x}` etc.
 
 ## Omissions
 
@@ -185,7 +196,7 @@ sudo apt install -y blueprint-compiler libprotobuf-c-dev \
 
 ### Ubuntu
 
-The Ubuntu 24.04 version of `meson` is too old. A more update version may be installed locally using `pipx`.
+The Ubuntu 24.04 version of `meson` is too old. A more update version may be installed locally using `pipx`. For Ubuntu 24.10, the distro version is adequate.
 
 ```
 sudo apt install pipx
