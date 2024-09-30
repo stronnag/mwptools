@@ -1,0 +1,19 @@
+using Gtk 4.0;
+
+menu as_popup {
+  section {
+    item {
+      custom: 'label';
+    }
+  }
+  section {
+    item {
+      label: 'Insert';
+      action: 'survey.asinsert';
+    }
+    item {
+      label: 'Delete';
+      action: 'survey.asdelete';
+    }
+  }
+}

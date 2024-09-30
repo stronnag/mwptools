@@ -1,0 +1,141 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $SurveyDialog: Adw.Window {
+  icon-name: "mwp_icon";
+  title: "Survey Definition";
+
+  Box {
+    orientation: vertical;
+    [start]
+    Adw.HeaderBar {}
+
+    [end]
+    Box {
+      orientation: vertical;
+      spacing: 8;
+
+      [start]
+      Grid {
+	Gtk.Label {
+          label: "Angle (°):";
+          layout {
+            row: '0';
+            column: '0';
+          }
+        }
+	Gtk.Entry as_angle {
+          input-purpose: number;
+          layout {
+            row: '0';
+            column: '1';
+          }
+	}
+
+	Gtk.Label {
+          label: "1st Turn:";
+          layout {
+            row: '1';
+            column: '0';
+          }
+	}
+	Gtk.DropDown as_turn {
+          model: StringList {
+            strings [
+              "Left",
+              "Right"
+            ]
+	  };
+          layout {
+            row: '1';
+            column: '1';
+          }
+	}
+
+	Gtk.Label {
+          label: "Row Separation (m):";
+          layout {
+            row: '2';
+            column: '0';
+          }
+        }
+	Gtk.Entry as_rowsep {
+          input-purpose: number;
+          layout {
+            row: '2';
+            column: '1';
+          }
+	}
+
+	Gtk.Label {
+          label: "Altitude (m):";
+          layout {
+            row: '3';
+            column: '0';
+          }
+        }
+	Gtk.Entry as_altm {
+          input-purpose: number;
+          layout {
+            row: '3';
+            column: '1';
+          }
+	}
+
+	Gtk.Label {
+          label: "RTH:";
+          layout {
+            row: '4';
+            column: '0';
+          }
+        }
+	Gtk.Switch as_rth {
+          hexpand: false;
+          vexpand: false;
+          halign: start;
+          valign: start;
+          layout {
+	    row: 4;
+	    column: 1;
+          }
+	}
+
+	Gtk.Label {
+          label: "Leg Speed (m/s):";
+          layout {
+            row: '5';
+            column: '0';
+          }
+        }
+	Gtk.Entry as_speed {
+          input-purpose: number;
+          layout {
+            row: '5';
+            column: '1';
+          }
+	}
+      }
+
+      Box {
+        orientation: horizontal;
+        spacing: 4;
+        halign: end;
+        hexpand: true;
+
+        Button as_apply {
+          halign: end;
+          label: _('Apply');
+        }
+
+        Button as_view {
+          halign: end;
+          label: _('Reset View');
+        }
+        Button as_mission {
+          halign: end;
+          label: _('Generate Mission');
+        }
+      }
+    }
+  }
+}
