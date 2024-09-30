@@ -17,6 +17,9 @@ template $SurveyDialog: Adw.Window {
 
       [start]
       Grid {
+	column-spacing: 10;
+	row-spacing: 4;
+
 	Gtk.Label {
           label: "Angle (°):";
           layout {
@@ -116,6 +119,64 @@ template $SurveyDialog: Adw.Window {
 	}
       }
 
+      Gtk.Frame {
+	Gtk.Box {
+	  orientation: vertical;
+	  Gtk.Label {
+	    use-markup: true;
+            label: "<b>Mission Data</b>";
+	    halign: center;
+	    hexpand: true;
+          }
+
+	  Grid {
+	    column-spacing: 16;
+	    row-spacing: 4;
+	    Gtk.Label {
+	      use-markup: true;
+              label: "<b>Points:</b>";
+              layout {
+		row: '1';
+		column: '0';
+              }
+            }
+	    Gtk.Label as_npoints {
+              layout {
+		row: '1';
+		column: '1';
+              }
+	    }
+	    Gtk.Label {
+	      use-markup: true;
+              label: "<b>Distance:</b>";
+              layout {
+		row: '2';
+		column: '0';
+              }
+            }
+	    Gtk.Label as_dist {
+              layout {
+		row: '2';
+		column: '1';
+              }
+	    }
+	    Gtk.Label {
+	      use-markup: true;
+              label: "<b>Flight Time:</b>";
+              layout {
+		row: '3';
+		column: '0';
+              }
+            }
+	    Gtk.Label as_time {
+              layout {
+		row: '3';
+		column: '1';
+              }
+	    }
+	  }
+	}
+      }
       Box {
         orientation: horizontal;
         spacing: 4;
@@ -125,15 +186,18 @@ template $SurveyDialog: Adw.Window {
         Button as_apply {
           halign: end;
           label: _('Apply');
+	  tooltip-text: 'Generates outline survey path; requires that the row separation is comesurate with the survey bounding box';
         }
 
         Button as_view {
           halign: end;
           label: _('Reset View');
+	  tooltip-text: 'Resets the survey bounding box to fit within the current view / zoom level';
         }
         Button as_mission {
           halign: end;
           label: _('Generate Mission');
+	  tooltip-text: 'Generates a mission from the outline survey view. Requires that the row separation is comesurate with maximum mission size';
         }
       }
     }

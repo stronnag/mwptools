@@ -60,10 +60,23 @@ namespace Survey {
 		[GtkChild]
 		private unowned Gtk.Button as_mission;
 
+		[GtkChild]
+		private unowned Gtk.Label as_npoints;
+		[GtkChild]
+		private unowned Gtk.Label as_dist;
+		[GtkChild]
+		private unowned Gtk.Label as_time;
+
 		private GLib.MenuModel as_menu;
 		internal GLib.SimpleActionGroup dg;
 
 		private uint genpts;
+
+		private void init_result() {
+			as_npoints.label = "0";
+			as_dist.label = "0.0";
+			as_time.label = "00:00";
+		}
 
 		public Dialog () {
 			genpts = 0;
@@ -76,6 +89,7 @@ namespace Survey {
 
 			as_rowsep.text = "20";
 			as_rowsep.activate.connect(() => {
+					validate_bbox();
 					generate_path();
 				});
 			as_turn.notify["selected"].connect(() =>  {
@@ -98,8 +112,14 @@ namespace Survey {
 
 			as_view.clicked.connect(() => {
 					reset_view();
+					validate_bbox();
 				});
+
+			as_mission.sensitive = false;
+
+			init_result();
 			init();
+			validate_bbox();
 		}
 
 		private void generate_mission() {
@@ -117,7 +137,7 @@ namespace Survey {
 				mis += mi;
 				n++;
 				mi =  new MissionItem.full(n, Msp.Action.WAYPOINT, r.end.y,
-											   r.end.x, alt, lspeed, 0, 0, 0);
+										   r.end.x, alt, lspeed, 0, 0, 0);
 				mis += mi;
 			}
 			if(as_rth.active) {
@@ -135,6 +155,34 @@ namespace Survey {
 			close();
 		}
 
+		private void validate_bbox() {
+			var pts = Gis.svy_path.get_nodes();
+			var npts = pts.length();
+			MapUtils.BoundingBox b={999.0, 999.0, -999.0, -999.0};
+			for(var j = 0; j < npts; j++) {
+				var mk = (MWPPoint)pts.nth_data(j);
+				if(mk.latitude < b.minlat) {
+					b.minlat = mk.latitude;
+				}
+				if(mk.latitude > b.maxlat) {
+					b.maxlat = mk.latitude;
+				}
+				if(mk.longitude < b.minlon) {
+					b.minlon = mk.longitude;
+				}
+				if(mk.longitude > b.maxlon) {
+					b.maxlon = mk.longitude;
+				}
+			}
+			double width = 0;
+			double height = 0;
+			b.get_map_size(out width, out height);
+			var rs = DStr.strtod(as_rowsep.text,null);
+			var wpts = (int)(width / rs);
+			var hpts = (int)(height / rs);
+			as_apply.sensitive = (wpts < 400 && hpts < 400);
+		}
+
 		private void reset_view() {
 			var inview = true;
 			var mbx = MapUtils.get_bounding_box();
@@ -149,6 +197,7 @@ namespace Survey {
 			}
 			if(!inview) {
 				genpts = 0;
+				as_mission.sensitive = false;
 				Gis.svy_mpoints.remove_all();
 				Gis.svy_markers.remove_all();
 				Gis.svy_mpath.remove_all();
@@ -159,23 +208,27 @@ namespace Survey {
 
 		private AreaCalc.RowPoints [] generate_path() {
 			AreaCalc.RowPoints []rows={};
-			var npts = Gis.svy_path.get_nodes().length();
-			if(npts > 2) {
+			var pts = Gis.svy_path.get_nodes();
+			var npts = pts.length();
+			init_result();
+
+			if(as_apply.sensitive && npts > 2) {
+				var n = 0;
 				AreaCalc.Vec []vec={};
 				for(var j = 0; j < npts; j++) {
-					var mk = (MWPPoint)Gis.svy_path.get_nodes().nth_data(j);
+					var mk = (MWPPoint)pts.nth_data(j);
 					AreaCalc.Vec v={0};
 					v.y = mk.latitude;
 					v.x = mk.longitude;
 					vec += v;
 				}
-				double angle = double.parse(as_angle.text);
-				double separation = double.parse(as_rowsep.text);
+				double angle = DStr.strtod(as_angle.text,null);
+				double separation = DStr.strtod(as_rowsep.text,null);
 				uint8 turn = (uint8)as_turn.selected;
+				double speed = DStr.strtod(as_speed.text, null);
 				Gis.svy_mpath.remove_all();
 				Gis.svy_mpoints.remove_all();
 				rows = AreaCalc.generateFlightPath(vec, angle, turn, separation);
-				var n = 0;
 				var col = "#00ffff60";
 				MWPLabel mk = null;
 				foreach (var r in rows){
@@ -194,13 +247,41 @@ namespace Survey {
 					Gis.svy_mpath.add_node(mk);
 					Gis.svy_mpoints.add_marker(mk);
 				}
+
 				if(as_rth.active) {
 					mk.set_colour("#00aaff60");
 				}
 				genpts = rows.length;
+				as_mission.sensitive = (((int)as_rth.sensitive + 2*genpts) < 121);
+				as_npoints.label = n.to_string();
+				pts = Gis.svy_mpath.get_nodes();
+				var td  = 0.0;
+				double llat = 0;
+				double llon = 0;
+				for(var j = 0; j < n; j++) {
+					mk = (MWPLabel)pts.nth_data(j);
+					if(j != 0) {
+						double _c,d;
+						Geo.csedist(llat, llon, mk.latitude, mk.longitude, out d, out _c);
+						td += d;
+					}
+					llat = mk.latitude;
+					llon = mk.longitude;
+				}
+				td *= 1852.0;
+				as_dist.label = "%.1fm".printf(td);
+				if (speed > 0) {
+					var et = (int)(td/speed + 0.5);
+					var em = et / 60;
+					var es = et % 60;
+					as_time.label = "%02d:%02d".printf(em, es);
+				}
 			} else {
 				genpts = 0;
+				as_mission.sensitive = false;
 			}
+
+
 			return rows;
 		}
 
@@ -227,6 +308,7 @@ namespace Survey {
 				Gis.svy_path.insert_node (mk, (uint)ipt);
 			}
 			mk.drag_motion.connect((la,lo) => {
+					validate_bbox();
 					if(genpts != 0) {
 						generate_path();
 					}
@@ -271,6 +353,7 @@ namespace Survey {
 					if  (nv > 3) {
 						MwpMenu.set_menu_state(dg, "asdelete", true);
 					}
+					validate_bbox();
 					if(genpts != 0) {
 						generate_path();
 					}
@@ -285,6 +368,7 @@ namespace Survey {
 					if  (nv < 4) {
 						MwpMenu.set_menu_state(dg, "asdelete", false);
 					}
+					validate_bbox();
 					if(genpts != 0) {
 						generate_path();
 					}
