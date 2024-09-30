@@ -29,5 +29,7 @@
     <file preprocess="xml-stripblanks" compressed="true">prefs.ui</file>
     <file preprocess="xml-stripblanks" compressed="true">newpos.ui</file>
     <file preprocess="xml-stripblanks" compressed="true">shedit.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">survey.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">surveymenu.ui</file>
   </gresource>
 </gresources>

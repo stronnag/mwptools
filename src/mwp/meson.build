@@ -1,4 +1,6 @@
 
+subdir('survey')
+
 getinfo = files('getinfo.sh')
 mwp_v_args = []
 
@@ -71,6 +73,8 @@ mwpdeps = [deps,
            meson.get_compiler('vala').find_library('posix'),
            meson.get_compiler('vala').find_library('linux'),
           ]
+
+mwpsrcs += svyfiles
 
 
 protoc = meson.get_compiler('c').find_library('protobuf-c', dirs: ldirs, required: false)

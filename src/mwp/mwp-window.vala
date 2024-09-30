@@ -589,6 +589,20 @@ namespace Mwp {
 			check_mission_clean(download_mission);
 		}
 
+		private void run_area_planner() {
+			check_mission_clean(area_planner);
+		}
+
+		private void area_planner() {
+			do_mission_clear();
+			var s = new Survey.Dialog();
+			s.present();
+			s.close_request.connect(() => {
+					s.cleanup();
+					return false;
+				});
+		}
+
 		private void setup_accels(Adw.Application app) {
 			GLib.ActionEntry[] winacts = {
 				{"quit",  Mwp.window.close},
@@ -641,6 +655,7 @@ namespace Mwp {
 				{"go-home", go_home},
 				{"handle-connect", Msp.handle_connect},
 				{"show-serial-stats", show_serial_stats},
+				{"areap", run_area_planner},
 			};
 
             add_action_entries (winacts, this);

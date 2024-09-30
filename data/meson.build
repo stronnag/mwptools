@@ -27,6 +27,8 @@ blpfiles = files(
   'prefs.blp',
   'newpos.blp',
   'shedit.blp',
+  'survey.blp',
+  'surveymenu.blp'
 )
 
 blueprints = custom_target('blueprints',
