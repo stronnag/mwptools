@@ -36,7 +36,11 @@ internal class AsPop : Object {
 }
 
 namespace Survey {
-	const string POINTCOL="#a0a0a0a0";
+	//	const string POINTCOL="#a0a0a0a0";
+	const string POINTCOL="#ffcd70a0";
+	const string PATHCOL ="rgba(0xc5,0xc5,0xc5, 0.625)";
+	const string FILLCOL ="rgba(0,0,0, 0.2)";
+
 	const int POINTSZ=36;
 
 	[GtkTemplate (ui = "/org/stronnag/mwp/survey.ui")]
@@ -381,11 +385,15 @@ namespace Survey {
 			Gis.svy_markers = new Shumate.MarkerLayer(Gis.map.viewport);
 			Gis.svy_mpoints = new Shumate.MarkerLayer(Gis.map.viewport);
 
-			Gdk.RGBA rgba = {1,0.4f,0,0.5f};
+			Gdk.RGBA rgba={};
+			rgba.parse(PATHCOL);
 			Gis.svy_path.set_stroke_width(5.0);
 			Gis.svy_path.set_stroke_color(rgba);
 			Gis.map.add_layer(Gis.svy_path);
 			Gis.svy_path.closed = true;
+			rgba.parse(FILLCOL);
+			Gis.svy_path.set_fill_color(rgba);
+			Gis.svy_path.fill = true;
 
 			rgba = {1,0,0,0.7f};
 			Gis.svy_mpath.set_stroke_width(2.0);
