@@ -296,7 +296,6 @@ namespace Survey {
 			Gis.svy_mpath = new Shumate.PathLayer(Gis.map.viewport);
 			Gis.svy_markers = new Shumate.MarkerLayer(Gis.map.viewport);
 			Gis.svy_mpoints = new Shumate.MarkerLayer(Gis.map.viewport);
-			Gis.map.add_layer(Gis.svy_markers);
 
 			Gdk.RGBA rgba = {1,0.4f,0,0.5f};
 			Gis.svy_path.set_stroke_width(5.0);
@@ -309,7 +308,7 @@ namespace Survey {
 			Gis.svy_mpath.set_stroke_color(rgba);
 			Gis.map.add_layer(Gis.svy_mpath);
 			Gis.map.add_layer(Gis.svy_mpoints);
-
+			Gis.map.add_layer(Gis.svy_markers);
 			make_default_box();
 		}
 
