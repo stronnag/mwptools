@@ -178,12 +178,12 @@ namespace AreaCalc {
 		var perpDist = dist(lxly,uxly);
 		var rowsNeeded = Math.ceil( perpDist / latLngSeparation );
 
-		RowPoints[] rowends = {};
+		RowPoints[] rowends = new RowPoints[(int)rowsNeeded];
 
 		for (var i = 0; i < rowsNeeded; i++) {
 			var start = add(lxly, scale(perpVec,i*latLngSeparation));
 			var end = add(lxuy, scale(perpVec,i*latLngSeparation));
-			rowends += RowPoints() {start = start, end = end};
+			rowends[i] = RowPoints() {start = start, end = end};
 		}
 
 		for (var i = 0; i < rowends.length; i++) {

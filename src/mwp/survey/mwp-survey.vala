@@ -40,7 +40,6 @@ namespace Survey {
 	const string POINTCOL="#ffcd70a0";
 	const string PATHCOL ="rgba(0xc5,0xc5,0xc5, 0.625)";
 	const string FILLCOL ="rgba(0,0,0, 0.2)";
-
 	const int POINTSZ=36;
 
 	[GtkTemplate (ui = "/org/stronnag/mwp/survey.ui")]
@@ -128,34 +127,9 @@ namespace Survey {
 
 		private void generate_mission() {
 			var rows = generate_path();
-			print("Mission Generate %u rows\n", rows.length);
-			int n = 0;
 			int alt = int.parse(as_altm.text);
 			int lspeed = (int)(100*double.parse(as_speed.text));
-  			var ms = new Mission();
-			MissionItem []mis={};
-			foreach (var r in rows){
-				n++;
-				var mi =  new MissionItem.full(n, Msp.Action.WAYPOINT, r.start.y,
-											   r.start.x, alt, lspeed, 0, 0, 0);
-				mis += mi;
-				n++;
-				mi =  new MissionItem.full(n, Msp.Action.WAYPOINT, r.end.y,
-										   r.end.x, alt, lspeed, 0, 0, 0);
-				mis += mi;
-			}
-			if(as_rth.active) {
-				n++;
-				var mi =  new MissionItem.full(n, Msp.Action.RTH, 0, 0, 0, 0, 0, 0, 0);
-				mis += mi;
-			}
-			mis[n-1].flag = 0xa5;
-			ms.points = mis;
-			ms.npoints = n;
-			MissionManager.msx = {ms};
-			MissionManager.is_dirty = true;
-			MissionManager.mdx = 0;
-			MissionManager.setup_mission_from_mm();
+			Survey.build_mission(rows, alt, lspeed, as_rth.active);
 			close();
 		}
 
@@ -188,105 +162,93 @@ namespace Survey {
 		}
 
 		private void reset_view() {
-			var inview = true;
-			var mbx = MapUtils.get_bounding_box();
-			var pts = Gis.svy_path.get_nodes();
-			var npts = pts.length();
-			for(var j = 0; j < npts; j++) {
-				var mk = (MWPPoint)pts.nth_data(j);
-				if(!mbx.covers(mk.latitude, mk.longitude)) {
-					inview = false;
-					break;
-				}
+			genpts = 0;
+			as_mission.sensitive = false;
+			Gis.svy_mpoints.remove_all();
+			Gis.svy_markers.remove_all();
+			Gis.svy_mpath.remove_all();
+			Gis.svy_path.remove_all();
+			make_default_box();
+		}
+
+		private void generate_survey(AreaCalc.RowPoints[] rows, double speed ) {
+			var col = "#00ffff60";
+			MWPLabel mk = null;
+			int n = 0;
+			foreach (var r in rows){
+				n++;
+				mk = new MWPLabel("%3d".printf(n));
+				mk.latitude = r.start.y;
+				mk.longitude = r.start.x;
+				mk.set_colour(col);
+				Gis.svy_mpath.add_node(mk);
+				Gis.svy_mpoints.add_marker(mk);
+				n++;
+				mk = new MWPLabel("%3d".printf(n));
+				mk.latitude = r.end.y;
+				mk.longitude = r.end.x;
+				mk.set_colour(col);
+				Gis.svy_mpath.add_node(mk);
+				Gis.svy_mpoints.add_marker(mk);
 			}
-			if(!inview) {
-				genpts = 0;
-				as_mission.sensitive = false;
-				Gis.svy_mpoints.remove_all();
-				Gis.svy_markers.remove_all();
-				Gis.svy_mpath.remove_all();
-				Gis.svy_path.remove_all();
-				make_default_box();
+
+			if(as_rth.active) {
+				mk.set_colour("#00aaff60");
+			}
+			genpts = rows.length;
+			as_mission.sensitive = (((int)as_rth.sensitive + 2*genpts) < 121);
+			as_npoints.label = n.to_string();
+			var pts = Gis.svy_mpath.get_nodes();
+			var td  = 0.0;
+			double llat = 0;
+			double llon = 0;
+			for(var j = 0; j < n; j++) {
+				mk = (MWPLabel)pts.nth_data(j);
+				if(j != 0) {
+					double _c,d;
+					Geo.csedist(llat, llon, mk.latitude, mk.longitude, out d, out _c);
+					td += d;
+				}
+				llat = mk.latitude;
+				llon = mk.longitude;
+			}
+			td *= 1852.0;
+			as_dist.label = "%.1fm".printf(td);
+			if (speed > 0) {
+				var et = (int)(td/speed + 0.5);
+				var em = et / 60;
+				var es = et % 60;
+				as_time.label = "%02d:%02d".printf(em, es);
 			}
 		}
 
-		private AreaCalc.RowPoints [] generate_path() {
-			AreaCalc.RowPoints []rows={};
+		private AreaCalc.RowPoints[]  generate_path() {
 			var pts = Gis.svy_path.get_nodes();
 			var npts = pts.length();
+			AreaCalc.Vec []vec= new AreaCalc.Vec [npts];
+
 			init_result();
 
-			if(as_apply.sensitive && npts > 2) {
-				var n = 0;
-				AreaCalc.Vec []vec={};
+			if(!as_apply.sensitive || npts < 3) {
+				genpts = 0;
+				as_mission.sensitive = false;
+				return {};
+			} else {
+				Gis.svy_mpath.remove_all();
+				Gis.svy_mpoints.remove_all();
 				for(var j = 0; j < npts; j++) {
 					var mk = (MWPPoint)pts.nth_data(j);
-					AreaCalc.Vec v={0};
-					v.y = mk.latitude;
-					v.x = mk.longitude;
-					vec += v;
+					AreaCalc.Vec v= AreaCalc.Vec(){y = mk.latitude, x = mk.longitude};
+					vec[j] = v;
 				}
 				double angle = DStr.strtod(as_angle.text,null);
 				double separation = DStr.strtod(as_rowsep.text,null);
 				uint8 turn = (uint8)as_turn.selected;
 				double speed = DStr.strtod(as_speed.text, null);
-				Gis.svy_mpath.remove_all();
-				Gis.svy_mpoints.remove_all();
-				rows = AreaCalc.generateFlightPath(vec, angle, turn, separation);
-				var col = "#00ffff60";
-				MWPLabel mk = null;
-				foreach (var r in rows){
-					n++;
-					mk = new MWPLabel("%3d".printf(n));
-					mk.latitude = r.start.y;
-					mk.longitude = r.start.x;
-					mk.set_colour(col);
-					Gis.svy_mpath.add_node(mk);
-					Gis.svy_mpoints.add_marker(mk);
-					n++;
-					mk = new MWPLabel("%3d".printf(n));
-					mk.latitude = r.end.y;
-					mk.longitude = r.end.x;
-					mk.set_colour(col);
-					Gis.svy_mpath.add_node(mk);
-					Gis.svy_mpoints.add_marker(mk);
-				}
-
-				if(as_rth.active) {
-					mk.set_colour("#00aaff60");
-				}
-				genpts = rows.length;
-				as_mission.sensitive = (((int)as_rth.sensitive + 2*genpts) < 121);
-				as_npoints.label = n.to_string();
-				pts = Gis.svy_mpath.get_nodes();
-				var td  = 0.0;
-				double llat = 0;
-				double llon = 0;
-				for(var j = 0; j < n; j++) {
-					mk = (MWPLabel)pts.nth_data(j);
-					if(j != 0) {
-						double _c,d;
-						Geo.csedist(llat, llon, mk.latitude, mk.longitude, out d, out _c);
-						td += d;
-					}
-					llat = mk.latitude;
-					llon = mk.longitude;
-				}
-				td *= 1852.0;
-				as_dist.label = "%.1fm".printf(td);
-				if (speed > 0) {
-					var et = (int)(td/speed + 0.5);
-					var em = et / 60;
-					var es = et % 60;
-					as_time.label = "%02d:%02d".printf(em, es);
-				}
-			} else {
-				genpts = 0;
-				as_mission.sensitive = false;
+				var rows = AreaCalc.generateFlightPath(vec, angle, turn, separation);
+				generate_survey(rows, speed);
+				return rows;
 			}
-
-
-			return rows;
 		}
 
 		private MWPPoint SurveyMk(int n, double plat, double plon, int ipt=-1) {
