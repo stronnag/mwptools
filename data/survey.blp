@@ -8,7 +8,14 @@ template $SurveyDialog: Adw.Window {
   Box {
     orientation: vertical;
     [start]
-    Adw.HeaderBar {}
+    Adw.HeaderBar {
+      [start]
+      MenuButton button_menu {
+        icon-name: "open-menu";
+        primary: true;
+        always-show-arrow: false;
+      }
+    }
 
     [end]
     Box {

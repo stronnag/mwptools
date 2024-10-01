@@ -69,9 +69,14 @@ namespace Survey {
 		private unowned Gtk.Label as_dist;
 		[GtkChild]
 		private unowned Gtk.Label as_time;
+		[GtkChild]
+		private unowned Gtk.MenuButton button_menu;
 
 		private GLib.MenuModel as_menu;
+		private GLib.MenuModel as_fmenu;
+
 		internal GLib.SimpleActionGroup dg;
+		internal GLib.SimpleActionGroup dg1;
 
 		private uint genpts;
 
@@ -133,7 +138,7 @@ namespace Survey {
 			close();
 		}
 
-		private void validate_bbox() {
+		private MapUtils.BoundingBox validate_bbox() {
 			var pts = Gis.svy_path.get_nodes();
 			var npts = pts.length();
 			MapUtils.BoundingBox b={999.0, 999.0, -999.0, -999.0};
@@ -159,16 +164,19 @@ namespace Survey {
 			var wpts = (int)(width / rs);
 			var hpts = (int)(height / rs);
 			as_apply.sensitive = (wpts < 400 && hpts < 400);
+			return b;
 		}
 
-		private void reset_view() {
+		private void reset_view(bool default = true) {
 			genpts = 0;
 			as_mission.sensitive = false;
 			Gis.svy_mpoints.remove_all();
 			Gis.svy_markers.remove_all();
 			Gis.svy_mpath.remove_all();
 			Gis.svy_path.remove_all();
-			make_default_box();
+			if(default) {
+				make_default_box();
+			}
 		}
 
 		private void generate_survey(AreaCalc.RowPoints[] rows, double speed ) {
@@ -302,10 +310,76 @@ namespace Survey {
 			Gis.map.remove_layer(Gis.svy_path);
 		}
 
+		public void load_file() {
+			IChooser.Filter []ifm = {
+				{"Text file", {"txt"}},
+			};
+			var fc = IChooser.chooser(Mwp.conf.missionpath, ifm);
+			fc.title = "Open Area File";
+			fc.modal = true;
+			fc.open.begin (Mwp.window, null, (o,r) => {
+					try {
+						var file = fc.open.end(r);
+						var fn = file.get_path ();
+						var pts = parse_file(fn);
+						if(pts.length > 0) {
+							reset_view(false);
+							int n = 0;
+							foreach(var p in pts) {
+								SurveyMk(n, p.y, p.x);
+								n++;
+							}
+							var bb = validate_bbox();
+							double clat= bb.get_centre_latitude();
+							double clon= bb.get_centre_longitude();
+							MapUtils.map_centre_on(clat, clon);
+							var z = MapUtils.evince_zoom(bb);
+							Gis.map.viewport.set_zoom_level(z);
+						}
+					} catch (Error e) {
+						MWPLog.message("Failed to open mission file: %s\n", e.message);
+					}
+				});
+		}
+
+		public void save_file() {
+			IChooser.Filter []ifm = {
+				{"Text file", {"txt"}},
+			};
+			var fc = IChooser.chooser(Mwp.conf.missionpath, ifm);
+			fc.title = "Save Area File";
+			fc.modal = true;
+			fc.save.begin (Mwp.window, null, (o,r) => {
+					try {
+						var fh = fc.save.end(r);
+						var fn = fh.get_path ();
+						var pts = get_points();
+						Survey.write_file(fn, pts);
+					} catch (Error e) {
+						MWPLog.message("Failed to save mission file: %s\n", e.message);
+					}
+				});
+		}
+
+		private AreaCalc.Vec[] get_points() {
+			var pts = Gis.svy_path.get_nodes();
+			var npts = pts.length();
+			AreaCalc.Vec[] vpts = {};
+			for(var j = 0; j < npts; j++) {
+				var mk = (MWPPoint)pts.nth_data(j);
+				var  v = AreaCalc.Vec(){y = mk.latitude, x = mk.longitude};
+				vpts += v;
+			}
+			return vpts;
+		}
+
 		public void init() {
 			var sbuilder = new Gtk.Builder.from_resource ("/org/stronnag/mwp/surveymenu.ui");
 			as_menu = sbuilder.get_object("as_popup") as GLib.MenuModel;
+			as_fmenu = sbuilder.get_object("as_menu") as GLib.MenuModel;
 			dg = new GLib.SimpleActionGroup();
+			dg1 = new GLib.SimpleActionGroup();
+
 			var aq = new GLib.SimpleAction("asinsert",null);
 			aq.activate.connect(() => {
 					var npts = Gis.svy_path.get_nodes().length();
@@ -340,7 +414,27 @@ namespace Survey {
 					}
 				});
 			dg.add_action(aq);
+
+			button_menu.menu_model = as_fmenu;
+			button_menu.always_show_arrow = false;
+			var popover = button_menu.popover as Gtk.PopoverMenu;
+			popover.has_arrow = false;
+			popover.flags = Gtk.PopoverMenuFlags.NESTED;
+
+			aq = new GLib.SimpleAction("asload",null);
+			aq.activate.connect(() => {
+					load_file();
+				});
+			dg1.add_action(aq);
+
+			aq = new GLib.SimpleAction("assave",null);
+			aq.activate.connect(() => {
+					save_file();
+				});
+			dg1.add_action(aq);
+
 			Mwp.window.insert_action_group("survey", dg);
+			this.insert_action_group("asfiles", dg1);
 
 			Gis.svy_path = new Shumate.PathLayer(Gis.map.viewport);
 			Gis.svy_mpath = new Shumate.PathLayer(Gis.map.viewport);
