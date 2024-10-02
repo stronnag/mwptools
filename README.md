@@ -7,7 +7,7 @@ mwptools revisited
 
 ## Overview
 
-This is the implementation of mwp using Gtk4 / libshumate..
+This is the (re)implementation of mwp using Gtk4 / libshumate..
 
 See the [migration guide](https://github.com/stronnag/mwptools/blob/master/docs/images/mwp4.png) for dependencies (and migration from the legacy version).
 
@@ -46,7 +46,7 @@ In addition, mwp proivdes legacy suport for multiwii navigation functions.
 
 ## User Guide
 
-There is am [online user guide](https://stronnag.github.io/mwptools/) for the older Gtk+-3.0 version.
+There is am [online user guide](https://stronnag.github.io/mwptools/).
 
 ## Tools
 
@@ -69,10 +69,6 @@ See the [migration guide](docs/mwp-Gtk4-migration-guide.md) for dependencies (an
 meson setup _build --prefix=~/.local --strip
 ninja -C _build install
 ```
-## Compatibility
-
-As well as supporting INAV, mwp aims to be compatible with EOSBandi's WinGUI for MultiWii. It used the same XML mission file format (with INAV and mwp extensions) and aims to provide similar functionally where possible.
-
 ## Licence
 
 GPL v3 or later
