@@ -97,14 +97,16 @@ This is persistent, in order to revert to the default, non-scanning no RSSI filt
 
 ### mwp-ble-bridge
 
-In order to use BLE serial devices with other tools that do not implement the BLE protocol, mwp provides a `mwp-ble-bridge` tool that uses a pseudo-terminal, TCP server or UDP server to facilitate BLE connectivity for other tools that expect a device node. See the `README.md` in `src/mwp-ble-bridge`. Using TCP allows connectivity with the INAV Configurator that appears not to understand BLE on Linux.
+In order to use BLE serial devices with tools (i.e. other than mwp)  that do not implement the BLE protocol, mwp provides a `mwp-ble-bridge` tool that uses a pseudo-terminal, TCP server or UDP server to facilitate BLE connectivity for other tools that expect a device node. See the `README.md` in `src/mwp-ble-bridge`.
+
+Using a bridge with TCP allows connectivity with the INAV Configurator versions that appear not to understand BLE on Linux. Note that INAV Configurator 8.0 will "sort of" support BLE on Linux.
 
 ### BLE Caveats
 
 BLE not particularly useful for anything other than low power. The transfer rates are extremely slow and whether the device can be used at all depends on its MTU (maximum transmission unit). For some devices this is unacceptable low for use with mwp / INAV.
 
 * The SpeedyBee version 2 BLE device has an MTU of 517 bytes; it works perfectly.
-* CC2541 based devices have an MTU of 23 bytes; this is useless for our requirement.
+* CC2541 based devices have an MTU of 23 bytes; this is less useful for our requirement.
 
 mwp will never send more than 20 bytes in a single write to a BLE device; chunking up messages as required. The FC cannot do this, so large messages will result in massive data overrun (for example MSP_BOX_NAMES will typically return more than 400 bytes).
 
