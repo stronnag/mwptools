@@ -1,4 +1,4 @@
-# mwp area planner
+# Mwp area planner
 
 {{ mwp}} area planner is a tool to plan "survey" or "search" missions. It generates MWXML mission files compatible with mwp and the INAV Configurator. A simple "parallel lines across a polygon" survey pattern is supported.
 
@@ -49,6 +49,12 @@ Note also how the angle and turn parameters affect the staring point.
 
 Example of generated mission from above plan:
 ![area planner](images/area-planner_05.png)
+
+### File Menu
+
+The area planner dialog has a drop down menu to load and save area definitions to / from the file system. The files are the same format as for the legacy `mwp-area-planner`.
+
+![area planner](images/area-plan-menu.png)
 
 ## Obsolete video
 
