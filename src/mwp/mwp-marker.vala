@@ -123,7 +123,6 @@ public class MWPMarker : Shumate.Marker {
 			pix =  Img.load_image_from_file(fn, size, size);
 			var tex =  Gdk.Texture.for_pixbuf(pix);
 			var img = new Gtk.Picture.for_paintable(tex);
-			MWPLog.message("Load from file %s %d %d (%d)\n", fn, pix.width, pix.height, size);
 			if (size == -1) {
 				_size = int.max(pix.width, pix.height);
 			} else {

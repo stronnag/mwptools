@@ -61,8 +61,15 @@ public class Previewer : Object {
 				return true;
 			});
 
+		var ms = MissionManager.current();
+		if (ms.points[ms.npoints-1].action == Msp.Action.RTH) {
+			if (HomePoint.is_valid()) {
+				HomePos hpos = HomePos(){ hlat=HomePoint.lat(), hlon=HomePoint.lon(), valid=true};
+				mprv.set_home(hpos);
+			}
+		}
 
-        thr = mprv.run_mission(MissionManager.current());
+        thr = mprv.run_mission(ms);
         preview_running = true;
     }
 
