@@ -7,11 +7,11 @@ mwptools revisited
 
 ## Overview
 
-This is the (re)implementation of mwp using Gtk4 / libshumate..
+**mwptools** provides a mission planner, ground control station, real time flight logger, terrain analysis, line of sight analysis and log replay / blackbox replay functions for the [INAV](https://github.com/iNavFlight/inav) FC firmware based model aircraft / UAS.
 
-See the [migration guide](https://github.com/stronnag/mwptools/blob/master/docs/images/mwp4.png) for dependencies (and migration from the legacy version).
+The current default (`master`) branch is the (re)implementation of mwp using Gtk4 / libshumate.
 
-mwptools provides a mission planner, [terrain analysis](https://github.com/stronnag/mwptools/wiki/Mission-Elevation-Plot-and-Terrain-Analysis), line of sight analysis, ground control station, real time flight logger and log replay / blackbox replay functions for the [INAV](https://github.com/iNavFlight/inav) FC firmware.
+See the [migration guide](https://github.com/stronnag/mwptools/blob/master/docs/images/mwp4.png) for dependencies (and migration from the legacy version (`legacy` branch).
 
 mwp supports the following telemetry protocols:
 
@@ -23,14 +23,14 @@ mwp supports the following telemetry protocols:
 * Flysky AA (via Multi-protocol Module)
 * [BulletGCCS MQTT](https://github.com/stronnag/mwptools/wiki/mqtt---bulletgcss-telemetry)
 
-mwp also supports the real-time display of adjacent aircraft using:
+mwp supports the real-time display of adjacent aircraft using:
 
 * [INAV-radar](https://github.com/OlivierC-FR/ESP32-INAV-Radar/) (INAV UAS)
 * MAVlink Traffic Report (e.g. full-size aviation, typically ADS-B via a device such as uAvionix PingRX)
 * ADS-B using Dump1090 /  SBS-1 Basestation streaming TCP protocol.
 * Any other mwp supported telemetry protocol
 
-mwp also provides logging and the replay of:
+mwp provides logging and the replay of:
 
 * mwp log files
 * Blackbox logs
@@ -40,9 +40,7 @@ mwp also provides logging and the replay of:
 
 Log replay requires tools from the [flightlog2x](https://github.com/stronnag/bbl2kml) project.
 
-There is also an [INAV](https://github.com/iNavFlight/inav) [Safehome editor](https://github.com/stronnag/mwptools/wiki/mwp-safehomes-editor).
-
-In addition, mwp proivdes legacy suport for multiwii navigation functions.
+mwp also proivdes legacy suport for Multiwii navigation functions.
 
 ## User Guide
 
