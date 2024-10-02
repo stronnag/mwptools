@@ -1624,12 +1624,13 @@ quit
 <pre><code>$ gsettings set org.mwptools.planner  bluez-disco false
 </code></pre>
 <h3 id="mwp-ble-bridge">mwp-ble-bridge<a class="headerlink" href="#mwp-ble-bridge" title="Permanent link">#</a></h3>
-<p>In order to use BLE serial devices with other tools that do not implement the BLE protocol, mwp provides a <code>mwp-ble-bridge</code> tool that uses a pseudo-terminal, TCP server or UDP server to facilitate BLE connectivity for other tools that expect a device node. See the <code>README.md</code> in <code>src/mwp-ble-bridge</code>. Using TCP allows connectivity with the INAV Configurator that appears not to understand BLE on Linux.</p>
+<p>In order to use BLE serial devices with tools (i.e. other than mwp)  that do not implement the BLE protocol, mwp provides a <code>mwp-ble-bridge</code> tool that uses a pseudo-terminal, TCP server or UDP server to facilitate BLE connectivity for other tools that expect a device node. See the <code>README.md</code> in <code>src/mwp-ble-bridge</code>.</p>
+<p>Using a bridge with TCP allows connectivity with the INAV Configurator versions that appear not to understand BLE on Linux. Note that INAV Configurator 8.0 will "sort of" support BLE on Linux.</p>
 <h3 id="ble-caveats">BLE Caveats<a class="headerlink" href="#ble-caveats" title="Permanent link">#</a></h3>
 <p>BLE not particularly useful for anything other than low power. The transfer rates are extremely slow and whether the device can be used at all depends on its MTU (maximum transmission unit). For some devices this is unacceptable low for use with mwp / INAV.</p>
 <ul>
 <li>The SpeedyBee version 2 BLE device has an MTU of 517 bytes; it works perfectly.</li>
-<li>CC2541 based devices have an MTU of 23 bytes; this is useless for our requirement.</li>
+<li>CC2541 based devices have an MTU of 23 bytes; this is less useful for our requirement.</li>
 </ul>
 <p>mwp will never send more than 20 bytes in a single write to a BLE device; chunking up messages as required. The FC cannot do this, so large messages will result in massive data overrun (for example MSP_BOX_NAMES will typically return more than 400 bytes).</p>
 <p>mwp will log the detected MTU when it connects a BLE device.</p>
