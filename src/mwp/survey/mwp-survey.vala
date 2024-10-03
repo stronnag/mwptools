@@ -9,6 +9,11 @@ namespace SMenu {
 	MWPPoint mk;
 }
 
+internal enum SaveAs {
+	TEXT,
+	KML
+}
+
 internal class AsPop : Object {
   internal Gtk.PopoverMenu pop;
   internal Gtk.Button button;
@@ -342,11 +347,17 @@ namespace Survey {
 				});
 		}
 
-		public void save_file() {
-			IChooser.Filter []ifm = {
-				{"Text file", {"txt"}},
-			};
-			var fc = IChooser.chooser(Mwp.conf.missionpath, ifm);
+		private void save_file(SaveAs t) {
+			IChooser.Filter []ifm;
+			string spath;
+			if (t == SaveAs.TEXT) {
+				ifm = {{"Text file", {"txt"}},};
+				spath = Mwp.conf.missionpath;
+			} else {
+				ifm = {{"KML file", {"kml"}},};
+				spath = Mwp.conf.kmlpath;
+			}
+			var fc = IChooser.chooser(spath, ifm);
 			fc.title = "Save Area File";
 			fc.modal = true;
 			fc.save.begin (Mwp.window, null, (o,r) => {
@@ -354,7 +365,12 @@ namespace Survey {
 						var fh = fc.save.end(r);
 						var fn = fh.get_path ();
 						var pts = get_points();
-						Survey.write_file(fn, pts);
+						if (t == SaveAs.TEXT) {
+							Survey.write_file(fn, pts);
+						} else {
+							int alt = int.parse(as_altm.text);
+							Survey.write_kml(fn, alt, pts);
+						}
 					} catch (Error e) {
 						MWPLog.message("Failed to save mission file: %s\n", e.message);
 					}
@@ -429,7 +445,13 @@ namespace Survey {
 
 			aq = new GLib.SimpleAction("assave",null);
 			aq.activate.connect(() => {
-					save_file();
+					save_file(SaveAs.TEXT);
+				});
+			dg1.add_action(aq);
+
+			aq = new GLib.SimpleAction("askml",null);
+			aq.activate.connect(() => {
+					save_file(SaveAs.KML);
 				});
 			dg1.add_action(aq);
 
