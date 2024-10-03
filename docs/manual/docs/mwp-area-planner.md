@@ -56,6 +56,8 @@ The area planner dialog has a drop down menu to load and save area definitions t
 
 ![area planner](images/area-plan-menu.png)
 
+In addition (not shown), it is also possible to save the survey outline as a KML file for future display / analysis.
+
 ## Obsolete video
 
 There is an old [youtube video](https://youtu.be/AUYETXqdJ1g?list=PLE_mnLfCdjvAH4pLe9HCqaWm682_r8NT3) covering both the legacy `mwp-area-planner` and iforce2d's on line tool.
