@@ -121,8 +121,8 @@ namespace Mwp {
 			ser.td.gps.gspeed = spd;
 
 			if(ser.is_main) {
+				gpsfix = (fix > 1);
 				if(gpsfix) {
-					gpsfix = (fix > 1);
 					nsats = m.satellites_visible;
 					usemag = (m.cog == 0xffff);
 					last_gps = nticks;
