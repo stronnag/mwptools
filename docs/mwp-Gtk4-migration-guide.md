@@ -154,7 +154,6 @@ If you use a map sources file in `~/.config/mwp`, you may optionally convert the
 
 ## Omissions
 
-* mwp-area-planner (future work)
 * ublox-geo (abandoned)
 
 ## OS Specifics
