@@ -386,6 +386,7 @@ func (m *MavReader) process(dat []byte) {
 func (m *MavReader) mav_len_check() bool {
 	mm, ok := m.mavmeta[m.cmd]
 	if ok {
+		fmt.Printf("%08.2f ", m.elapsed)
 		fmt.Printf("Mav%d: %s %d", m.vers, mm.name, m.csize)
 		if m.csize > mm.expect {
 			fmt.Printf("!%d", mm.expect)
