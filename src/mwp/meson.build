@@ -55,7 +55,9 @@ mwpsrcs = files('mwp-about.vala', 'mwp-ah_widget.vala',
                 'mwp-voltage.vala', 'mwp-window.vala', 'mwp-wp_io_handler.vala',
                 'mwp-wpeditmgr.vala', 'mwp-wpeditwindow.vala', 'mwp-xdg_notify.vala',
                 'mwp-combox.vala',
-                'mwp-epoxy.c', )
+                'mwp-epoxy.c',
+                'mwp-gpsstats.vala',
+               )
 
 mwpdeps = [deps,
 	   dependency('gtk4', version: '>=4.14'),

@@ -28,7 +28,8 @@ blpfiles = files(
   'newpos.blp',
   'shedit.blp',
   'survey.blp',
-  'surveymenu.blp'
+  'surveymenu.blp',
+  'gps_stats_dialog.blp'
 )
 
 blueprints = custom_target('blueprints',

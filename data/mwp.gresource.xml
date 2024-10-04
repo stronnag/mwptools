@@ -31,5 +31,6 @@
     <file preprocess="xml-stripblanks" compressed="true">shedit.ui</file>
     <file preprocess="xml-stripblanks" compressed="true">survey.ui</file>
     <file preprocess="xml-stripblanks" compressed="true">surveymenu.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">gps_stats_dialog.ui</file>
   </gresource>
 </gresources>

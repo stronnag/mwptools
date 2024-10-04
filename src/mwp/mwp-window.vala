@@ -603,6 +603,11 @@ namespace Mwp {
 				});
 		}
 
+		private void show_gps_stats() {
+			var g = new GPSStats.Window();
+			g.present();
+		}
+
 		private void setup_accels(Adw.Application app) {
 			GLib.ActionEntry[] winacts = {
 				{"quit",  Mwp.window.close},
@@ -656,6 +661,7 @@ namespace Mwp {
 				{"handle-connect", Msp.handle_connect},
 				{"show-serial-stats", show_serial_stats},
 				{"areap", run_area_planner},
+				{"gps-stats", show_gps_stats},
 			};
 
             add_action_entries (winacts, this);

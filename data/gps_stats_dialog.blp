@@ -1,7 +1,7 @@
 using Gtk 4.0;
 using Adw 1;
 
-template $GPSStatsindow: Adw.Window {
+template $GPSStatsWindow: Adw.Window {
   title: _('GPS Statistics');
   icon-name: "mwp_icon";
 
@@ -13,15 +13,12 @@ template $GPSStatsindow: Adw.Window {
 
     [End]
     Grid {
-      visible: true;
-      can-focus: false;
-      column-homogeneous: true;
+       row-spacing: 4;
+       column-spacing: 8;
 
       Label {
-        visible: true;
-        can-focus: false;
         label: _('Update Rate');
-
+        halign: start;
         layout {
           row: '0';
           column: '0';
@@ -29,10 +26,8 @@ template $GPSStatsindow: Adw.Window {
       }
 
       Label {
-        visible: true;
-        can-focus: false;
         label: _('Errors');
-
+        halign: start;
         layout {
           row: '1';
           column: '0';
@@ -40,10 +35,8 @@ template $GPSStatsindow: Adw.Window {
       }
 
       Label {
-        visible: true;
-        can-focus: false;
         label: _('Timeouts');
-
+        halign: start;
         layout {
           row: '2';
           column: '0';
@@ -51,11 +44,8 @@ template $GPSStatsindow: Adw.Window {
       }
 
       Label {
-        visible: true;
-        can-focus: false;
         label: _('Packet Count');
-        max-width-chars: 11;
-
+        halign: start;
         layout {
           row: '3';
           column: '0';
@@ -63,10 +53,8 @@ template $GPSStatsindow: Adw.Window {
       }
 
       Label {
-        visible: true;
-        can-focus: false;
         label: _('HDOP');
-
+        halign: start;
         layout {
           row: '4';
           column: '0';
@@ -74,10 +62,8 @@ template $GPSStatsindow: Adw.Window {
       }
 
       Label {
-        visible: true;
-        can-focus: false;
         label: _('EPH');
-
+        halign: start;
         layout {
           row: '5';
           column: '0';
@@ -85,10 +71,8 @@ template $GPSStatsindow: Adw.Window {
       }
 
       Label {
-        visible: true;
-        can-focus: false;
         label: _('EPV');
-
+        halign: start;
         layout {
           row: '6';
           column: '0';
@@ -96,13 +80,9 @@ template $GPSStatsindow: Adw.Window {
       }
 
       Label gps_stats_last_dt {
-        visible: true;
-        can-focus: false;
         halign: end;
+	hexpand: true;
         label: _('0');
-        justify: fill;
-        max-width-chars: 10;
-
         layout {
           row: '0';
           column: '1';
@@ -110,12 +90,8 @@ template $GPSStatsindow: Adw.Window {
       }
 
       Label gps_stats_errors {
-        visible: true;
-        can-focus: false;
         halign: end;
         label: _('0');
-        justify: right;
-
         layout {
           row: '1';
           column: '1';
@@ -123,12 +99,8 @@ template $GPSStatsindow: Adw.Window {
       }
 
       Label gps_stats_timeouts {
-        visible: true;
-        can-focus: false;
         halign: end;
         label: _('0');
-        justify: right;
-
         layout {
           row: '2';
           column: '1';
@@ -136,12 +108,8 @@ template $GPSStatsindow: Adw.Window {
       }
 
       Label gps_stats_packets {
-        visible: true;
-        can-focus: false;
         halign: end;
         label: _('0');
-        justify: right;
-
         layout {
           row: '3';
           column: '1';
@@ -149,12 +117,8 @@ template $GPSStatsindow: Adw.Window {
       }
 
       Label gps_stats_hdop {
-        visible: true;
-        can-focus: false;
         halign: end;
         label: _('100');
-        justify: right;
-
         layout {
           row: '4';
           column: '1';
@@ -162,12 +126,8 @@ template $GPSStatsindow: Adw.Window {
       }
 
       Label gps_stats_eph {
-        visible: true;
-        can-focus: false;
         halign: end;
         label: _('100');
-        justify: right;
-
         layout {
           row: '5';
           column: '1';
@@ -175,25 +135,20 @@ template $GPSStatsindow: Adw.Window {
       }
 
       Label gps_stats_epv {
-        visible: true;
-        can-focus: false;
         halign: end;
         label: _('100');
-        justify: right;
-
         layout {
           row: '6';
           column: '1';
         }
       }
     }
-
+    /*
     Box {
       visible: true;
       can-focus: false;
       halign: end;
       hexpand: false;
-
       Button gps_stats_close {
         label: 'Close';
         visible: true;
@@ -201,5 +156,6 @@ template $GPSStatsindow: Adw.Window {
         receives-default: true;
       }
     }
+    */
   }
 }

@@ -26,7 +26,6 @@ namespace Mwp {
 				init_have_home();
 			}
             no_ofix = 0;
-            gpsstats = {0, 0, 0, 0, 9999, 9999, 9999};
         } else {
             if(armtime == 0)
                 time_t(out armtime);

@@ -31,7 +31,6 @@ namespace Mwp {
 	bool gz_from_msp;
 	uint8 []boxids;
 
-
     private void msp_publish_home(uint8 id) {
         if(id < Safehome.MAXHOMES) {
             var h = Safehome.manager.get_home(id);
@@ -664,6 +663,8 @@ namespace Mwp {
 			SEDE.deserialise_u16(raw+16, out gpsstats.eph);
 			SEDE.deserialise_u16(raw+18, out gpsstats.epv);
 			rhdop = xf.hdop = gpsstats.hdop;
+
+			//			MWPLog.message(":DBG: GPS dt: %hu err %hu to %hu cnt %hu hdop %hu eph %hu epv %hu\n", gpsstats.last_message_dt, gpsstats.errors, gpsstats.timeouts, gpsstats.packet_count, gpsstats.hdop, gpsstats.eph, gpsstats.epv);
 
 			ser.td.gps.hdop = xf.hdop/100.0;
 			if(Logger.is_logging) {
