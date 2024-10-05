@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/mwp_icon.ico">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.39">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
     
     
       
@@ -723,18 +723,18 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#editing-outline-points" class="md-nav__link">
+  <a href="#parallel-lines-editing-outline-points" class="md-nav__link">
     <span class="md-ellipsis">
-      Editing outline points
+      "Parallel Lines" Editing outline points
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#mission-parameters" class="md-nav__link">
+  <a href="#parameters" class="md-nav__link">
     <span class="md-ellipsis">
-      Mission Parameters
+      Parameters
     </span>
   </a>
   
@@ -744,6 +744,15 @@
   <a href="#file-menu" class="md-nav__link">
     <span class="md-ellipsis">
       File Menu
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#square-pattern-generator" class="md-nav__link">
+    <span class="md-ellipsis">
+      "Square" pattern generator
     </span>
   </a>
   
@@ -1215,18 +1224,18 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#editing-outline-points" class="md-nav__link">
+  <a href="#parallel-lines-editing-outline-points" class="md-nav__link">
     <span class="md-ellipsis">
-      Editing outline points
+      "Parallel Lines" Editing outline points
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#mission-parameters" class="md-nav__link">
+  <a href="#parameters" class="md-nav__link">
     <span class="md-ellipsis">
-      Mission Parameters
+      Parameters
     </span>
   </a>
   
@@ -1236,6 +1245,15 @@
   <a href="#file-menu" class="md-nav__link">
     <span class="md-ellipsis">
       File Menu
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#square-pattern-generator" class="md-nav__link">
+    <span class="md-ellipsis">
+      "Square" pattern generator
     </span>
   </a>
   
@@ -1274,10 +1292,15 @@
 
 
 <h1 id="mwp-area-planner">Mwp area planner<a class="headerlink" href="#mwp-area-planner" title="Permanent link">#</a></h1>
-<p><a href="https://github.com/stronnag/mwptools">mwp</a> area planner is a tool to plan "survey" or "search" missions. It generates MWXML mission files compatible with mwp and the INAV Configurator. A simple "parallel lines across a polygon" survey pattern is supported.</p>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> area planner is a tool to plan "survey" or "search" missions. It generates MWXML mission files compatible with mwp and the INAV Configurator. A simple "parallel lines across a polygon" survey pattern is supported, as well as a "creeping square" pattern.</p>
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">#</a></h2>
 <p>The area planner is invoked from the "Edit" menu. It loads a dialogue window and presents a basic search area outline.</p>
-<p><img alt="area planner" src="../images/area-planner_01.png" /></p>
+<p><img alt="area planner" src="../images/survey-dropdown.png" /></p>
+<p>The drop-down in the top right offers options of:</p>
+<ul>
+<li>Parallel: Default parallel line pattern</li>
+<li>Square: Expanding Square.</li>
+</ul>
 <p>The tool is controlled by the three buttons at the bottom of the window.</p>
 <ul>
 <li>
@@ -1290,12 +1313,12 @@
 <p><strong>Generate Mission:</strong> Generates a mission from the survey plan. The survey tool is closed. The mission may be edited / save / uploaded to the FC as normal. If the number of points would exceed the maximum number of mission points, this button is disabled.  In order to resolve this it will be necessary to either reduce the size of the survey area or increase the row separation.</p>
 </li>
 </ul>
-<h3 id="editing-outline-points">Editing outline points<a class="headerlink" href="#editing-outline-points" title="Permanent link">#</a></h3>
+<h3 id="parallel-lines-editing-outline-points">"Parallel Lines" Editing outline points<a class="headerlink" href="#parallel-lines-editing-outline-points" title="Permanent link">#</a></h3>
 <p>Points may be inserted / deleted from the survey outline from a right mouse / long press on a survey points. Insert adds a point in a clock-wise direction; delete removes the clicked point.</p>
 <p>Points may be moved by dragging.</p>
 <p><img alt="area planner" src="../images/area-planner_02.png" /></p>
 <p>Any plotted outline mission will be recalculated as points are manipulated.</p>
-<h3 id="mission-parameters">Mission Parameters<a class="headerlink" href="#mission-parameters" title="Permanent link">#</a></h3>
+<h3 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">#</a></h3>
 <ul>
 <li><strong>Angle:</strong> Defines the direction of the first mission leg.</li>
 <li><strong>1st Turn:</strong> Left or Right</li>
@@ -1304,7 +1327,7 @@
 <li><strong>RTH</strong> (mission parameter). Whether to set RTH on the final generated WP.</li>
 <li><strong>Leg Speed</strong> (mission parameter).</li>
 </ul>
-<p>Once an initial solution has been plotted, changing any of the first three parameters will result in the solution being recalculated.</p>
+<p>Once an initial solution has been plotted, changing any of the first three parameters will result in the solution being recalculated. The latter three options are common to "Parallel" and "Square" patterns.</p>
 <p>After a solution has been calculated, the "Mission Data" summary is updated.</p>
 <p>Example of too many points being generated due to over-large area / narrow row separation:
 <img alt="area planner" src="../images/area-planner_03.png" /></p>
@@ -1316,6 +1339,14 @@
 <h3 id="file-menu">File Menu<a class="headerlink" href="#file-menu" title="Permanent link">#</a></h3>
 <p>The area planner dialog has a drop down menu to load and save area definitions to / from the file system. The files are the same format as for the legacy <code>mwp-area-planner</code>.</p>
 <p><img alt="area planner" src="../images/area-plan-menu.png" /></p>
+<p>In addition (not shown), it is also possible to save the survey outline as a KML file for future display / analysis.</p>
+<h3 id="square-pattern-generator">"Square" pattern generator<a class="headerlink" href="#square-pattern-generator" title="Permanent link">#</a></h3>
+<p>The "Square" generator provides a single draggable point with options of start angle, first leg distance and the number of iterations.</p>
+<p><img alt="area planner" src="../images/survey-square-ui.png" /></p>
+<p>The default parameters result in the following survey pattern.</p>
+<p><img alt="area planner" src="../images/survey-gen-square.png" /></p>
+<p>The generated mission is from these settings looks like:</p>
+<p><img alt="area planner" src="../images/survey-mission-sq.png" /></p>
 <h2 id="obsolete-video">Obsolete video<a class="headerlink" href="#obsolete-video" title="Permanent link">#</a></h2>
 <p>There is an old <a href="https://youtu.be/AUYETXqdJ1g?list=PLE_mnLfCdjvAH4pLe9HCqaWm682_r8NT3">youtube video</a> covering both the legacy <code>mwp-area-planner</code> and iforce2d's on line tool.</p>
 <iframe width="560" height="315" src="https://www.youtube.com/embed/AUYETXqdJ1g?list=PLE_mnLfCdjvAH4pLe9HCqaWm682_r8NT3" title="mwp area planner intro" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
