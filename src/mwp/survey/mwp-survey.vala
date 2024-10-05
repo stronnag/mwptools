@@ -9,11 +9,6 @@ namespace SMenu {
 	MWPPoint mk;
 }
 
-internal enum SaveAs {
-	TEXT,
-	KML
-}
-
 internal class AsPop : Object {
   internal Gtk.PopoverMenu pop;
   internal Gtk.Button button;
@@ -40,15 +35,20 @@ internal class AsPop : Object {
   }
 }
 
+
 namespace Survey {
 	//	const string POINTCOL="#a0a0a0a0";
 	const string POINTCOL="#ffcd70a0";
+	const string SQRCOL="#ff0000a0";
 	const string PATHCOL ="rgba(0xc5,0xc5,0xc5, 0.625)";
 	const string FILLCOL ="rgba(0,0,0, 0.2)";
 	const int POINTSZ=36;
+	const int SQRSZ=20;
 
 	[GtkTemplate (ui = "/org/stronnag/mwp/survey.ui")]
 	public class Dialog : Adw.Window {
+		[GtkChild]
+		private unowned Gtk.DropDown as_type;
 		[GtkChild]
 		private unowned Gtk.Entry as_angle;
 		[GtkChild]
@@ -67,7 +67,6 @@ namespace Survey {
 		private unowned Gtk.Button as_view;
 		[GtkChild]
 		private unowned Gtk.Button as_mission;
-
 		[GtkChild]
 		private unowned Gtk.Label as_npoints;
 		[GtkChild]
@@ -76,6 +75,17 @@ namespace Survey {
 		private unowned Gtk.Label as_time;
 		[GtkChild]
 		private unowned Gtk.MenuButton button_menu;
+
+		[GtkChild]
+		private unowned Gtk.Grid pgrid;
+		[GtkChild]
+		private unowned Gtk.Grid sgrid;
+		[GtkChild]
+		private unowned Gtk.Entry ss_angle;
+		[GtkChild]
+		private unowned Gtk.Entry ss_dist;
+		[GtkChild]
+		private unowned Gtk.Entry ss_exp;
 
 		private GLib.MenuModel as_menu;
 		private GLib.MenuModel as_fmenu;
@@ -105,18 +115,27 @@ namespace Survey {
 					validate_bbox();
 					generate_path();
 				});
+
 			as_turn.notify["selected"].connect(() =>  {
 					generate_path();
 				});
+
 			as_altm.text = "50";
-			as_altm.activate.connect(() => {
-					generate_path();
-				});
 			as_speed.text = "7";
 
+			ss_angle.text = "0";
+			ss_angle.activate.connect(() => {
+					generate_square();
+				});
 
-			as_apply.clicked.connect(() => {
-					generate_path();
+			ss_dist.text = "50";
+			ss_dist.activate.connect(() => {
+					generate_square();
+				});
+
+			ss_exp.text = "7";
+			ss_exp.activate.connect(() => {
+					generate_square();
 				});
 
 			as_mission.clicked.connect(() => {
@@ -128,47 +147,79 @@ namespace Survey {
 					validate_bbox();
 				});
 
-			as_mission.sensitive = false;
+			as_apply.clicked.connect(() => {
+					if(as_type.selected == 0) {
+						generate_path();
+					} else {
+						generate_square();
+					}
+				});
 
+			as_type.notify["selected"].connect(() =>  {
+					if(as_type.selected == 0) {
+						sgrid.visible = false;
+						pgrid.visible = true;
+					} else {
+						pgrid.visible = false;
+						sgrid.visible = true;
+					}
+					reset_view();
+				});
+
+			as_mission.sensitive = false;
 			init_result();
 			init();
 			validate_bbox();
 		}
 
 		private void generate_mission() {
-			var rows = generate_path();
 			int alt = int.parse(as_altm.text);
 			int lspeed = (int)(100*double.parse(as_speed.text));
-			Survey.build_mission(rows, alt, lspeed, as_rth.active);
+			if(as_type.selected == 0) {
+				var rows = generate_path();
+				Survey.build_mission(rows, alt, lspeed, as_rth.active);
+			} else {
+				var pts = Gis.svy_mpath.get_nodes();
+				var npts = pts.length();
+				AreaCalc.Vec []vec= new AreaCalc.Vec [npts];
+				for(var j = 0; j < npts; j++) {
+					var mk = (MWPPoint)pts.nth_data(j);
+					AreaCalc.Vec v= AreaCalc.Vec(){y = mk.latitude, x = mk.longitude};
+					vec[j] = v;
+				}
+				Survey.build_square_mission(vec, alt, lspeed, as_rth.active);
+			}
 			close();
 		}
 
 		private MapUtils.BoundingBox validate_bbox() {
-			var pts = Gis.svy_path.get_nodes();
-			var npts = pts.length();
 			MapUtils.BoundingBox b={999.0, 999.0, -999.0, -999.0};
-			for(var j = 0; j < npts; j++) {
-				var mk = (MWPPoint)pts.nth_data(j);
-				if(mk.latitude < b.minlat) {
-					b.minlat = mk.latitude;
+			if(as_type.selected == 0) {
+				var pts = Gis.svy_path.get_nodes();
+				var npts = pts.length();
+				for(var j = 0; j < npts; j++) {
+					var mk = (MWPPoint)pts.nth_data(j);
+					if(mk.latitude < b.minlat) {
+						b.minlat = mk.latitude;
+					}
+					if(mk.latitude > b.maxlat) {
+						b.maxlat = mk.latitude;
+					}
+					if(mk.longitude < b.minlon) {
+						b.minlon = mk.longitude;
+					}
+					if(mk.longitude > b.maxlon) {
+						b.maxlon = mk.longitude;
+					}
 				}
-				if(mk.latitude > b.maxlat) {
-					b.maxlat = mk.latitude;
-				}
-				if(mk.longitude < b.minlon) {
-					b.minlon = mk.longitude;
-				}
-				if(mk.longitude > b.maxlon) {
-					b.maxlon = mk.longitude;
-				}
+				double width = 0;
+				double height = 0;
+				b.get_map_size(out width, out height);
+				var rs = DStr.strtod(as_rowsep.text,null);
+				var wpts = (int)(width / rs);
+				var hpts = (int)(height / rs);
+				as_apply.sensitive = (wpts < 400 && hpts < 400);
 			}
-			double width = 0;
-			double height = 0;
-			b.get_map_size(out width, out height);
-			var rs = DStr.strtod(as_rowsep.text,null);
-			var wpts = (int)(width / rs);
-			var hpts = (int)(height / rs);
-			as_apply.sensitive = (wpts < 400 && hpts < 400);
 			return b;
 		}
 
@@ -180,8 +231,25 @@ namespace Survey {
 			Gis.svy_mpath.remove_all();
 			Gis.svy_path.remove_all();
 			if(default) {
-				make_default_box();
+				if(as_type.selected == 0) {
+					make_default_box();
+				} else {
+					init_square();
+				}
 			}
+		}
+
+		private void init_square() {
+			double clat, clon;
+			MapUtils.get_centre_location(out clat, out clon);
+			var mk = new MWPPoint.with_colour("#00ffff60");
+			mk.set_size_request(SQRSZ, SQRSZ);
+			mk.latitude = clat;
+			mk.longitude = clon;
+			mk.no = 0;
+			mk.set_draggable(true);
+			Gis.svy_mpoints.add_marker(mk);
+			Gis.svy_mpath.add_node(mk);
 		}
 
 		private void generate_survey(AreaCalc.RowPoints[] rows, double speed ) {
@@ -209,14 +277,21 @@ namespace Survey {
 				mk.set_colour("#00aaff60");
 			}
 			genpts = rows.length;
-			as_mission.sensitive = (((int)as_rth.sensitive + 2*genpts) < 121);
-			as_npoints.label = n.to_string();
+
+			set_summary(speed);
+		}
+
+		private void set_summary(double speed) {
 			var pts = Gis.svy_mpath.get_nodes();
+			var npts = pts.length();
+			as_mission.sensitive = (((int)as_rth.sensitive + 2*genpts) < 121);
+			as_npoints.label = npts.to_string();
+
 			var td  = 0.0;
 			double llat = 0;
 			double llon = 0;
-			for(var j = 0; j < n; j++) {
-				mk = (MWPLabel)pts.nth_data(j);
+			for(var j = 0; j < npts; j++) {
+				var mk = (MWPMarker)pts.nth_data(j);
 				if(j != 0) {
 					double _c,d;
 					Geo.csedist(llat, llon, mk.latitude, mk.longitude, out d, out _c);
@@ -262,6 +337,38 @@ namespace Survey {
 				generate_survey(rows, speed);
 				return rows;
 			}
+		}
+
+		private void  generate_square() {
+			var col = "#00ffff60";
+			var pts = Gis.svy_mpath.get_nodes();
+			var mk = (MWPPoint)pts.nth_data(0);
+			double plat = mk.latitude;
+			double plon = mk.longitude;
+			mk.set_draggable(false);
+			var dist = DStr.strtod(ss_dist.text, null);
+			var iangle = int.parse(ss_angle.text);
+			var nexp = int.parse(ss_exp.text);
+			double edist = 0;
+			double speed = DStr.strtod(as_speed.text, null);
+
+			for(var j = 0; j < 4* nexp; j++) {
+				if((j & 1) == 0) {
+					edist += dist;
+				}
+				Geo.posit(plat, plon, iangle, edist/1852.0, out plat, out plon);
+				mk = new MWPPoint.with_colour(col);
+				mk.set_size_request(SQRSZ, SQRSZ);
+				mk.latitude = plat;
+				mk.longitude = plon;
+				mk.no = j+1;
+				Gis.svy_mpoints.add_marker(mk);
+				Gis.svy_mpath.add_node(mk);
+				iangle += 90;
+				iangle %= 360;
+				genpts++;
+			}
+			set_summary(speed);
 		}
 
 		private MWPPoint SurveyMk(int n, double plat, double plon, int ipt=-1) {
@@ -347,17 +454,11 @@ namespace Survey {
 				});
 		}
 
-		private void save_file(SaveAs t) {
-			IChooser.Filter []ifm;
-			string spath;
-			if (t == SaveAs.TEXT) {
-				ifm = {{"Text file", {"txt"}},};
-				spath = Mwp.conf.missionpath;
-			} else {
-				ifm = {{"KML file", {"kml"}},};
-				spath = Mwp.conf.kmlpath;
-			}
-			var fc = IChooser.chooser(spath, ifm);
+		public void save_file() {
+			IChooser.Filter []ifm = {
+				{"Text file", {"txt"}},
+			};
+			var fc = IChooser.chooser(Mwp.conf.missionpath, ifm);
 			fc.title = "Save Area File";
 			fc.modal = true;
 			fc.save.begin (Mwp.window, null, (o,r) => {
@@ -365,12 +466,7 @@ namespace Survey {
 						var fh = fc.save.end(r);
 						var fn = fh.get_path ();
 						var pts = get_points();
-						if (t == SaveAs.TEXT) {
-							Survey.write_file(fn, pts);
-						} else {
-							int alt = int.parse(as_altm.text);
-							Survey.write_kml(fn, alt, pts);
-						}
+						Survey.write_file(fn, pts);
 					} catch (Error e) {
 						MWPLog.message("Failed to save mission file: %s\n", e.message);
 					}
@@ -445,13 +541,7 @@ namespace Survey {
 
 			aq = new GLib.SimpleAction("assave",null);
 			aq.activate.connect(() => {
-					save_file(SaveAs.TEXT);
-				});
-			dg1.add_action(aq);
-
-			aq = new GLib.SimpleAction("askml",null);
-			aq.activate.connect(() => {
-					save_file(SaveAs.KML);
+					save_file();
 				});
 			dg1.add_action(aq);
 

@@ -15,18 +15,26 @@ template $SurveyDialog: Adw.Window {
         primary: true;
         always-show-arrow: false;
       }
+      [end]
+      Gtk.DropDown as_type {
+          model: StringList {
+            strings [
+              "Parallel",
+              "Square"
+            ]
+	  };
+	}
     }
-
     [end]
     Box {
       orientation: vertical;
       spacing: 8;
 
       [start]
-      Grid {
+      Grid pgrid {
 	column-spacing: 10;
 	row-spacing: 4;
-
+	column-homogeneous: true;
 	Gtk.Label {
           label: "Angle (°):";
           layout {
@@ -76,18 +84,74 @@ template $SurveyDialog: Adw.Window {
             column: '1';
           }
 	}
+      }
+
+      Grid sgrid {
+	column-homogeneous: true;
+	column-spacing: 10;
+	row-spacing: 4;
+	visible: false;
+
+	Gtk.Label {
+          label: "Angle (°):";
+          layout {
+            row: '0';
+            column: '0';
+          }
+        }
+	Gtk.Entry ss_angle {
+          input-purpose: number;
+          layout {
+            row: '0';
+            column: '1';
+          }
+	}
+
+	Gtk.Label {
+          label: "1st leg (m):";
+          layout {
+            row: '1';
+            column: '0';
+          }
+	}
+	Gtk.Entry ss_dist {
+          input-purpose: number;
+          layout {
+            row: '1';
+            column: '1';
+          }
+	}
+	Gtk.Label {
+          label: "Expansions:";
+          layout {
+            row: '3';
+            column: '0';
+          }
+	}
+	Gtk.Entry ss_exp {
+          input-purpose: number;
+          layout {
+            row: '3';
+            column: '1';
+          }
+	}
+      }
+      Grid mgrid {
+	column-homogeneous: true;
+	column-spacing: 10;
+	row-spacing: 4;
 
 	Gtk.Label {
           label: "Altitude (m):";
           layout {
-            row: '3';
+            row: '0';
             column: '0';
           }
         }
 	Gtk.Entry as_altm {
           input-purpose: number;
           layout {
-            row: '3';
+            row: '0';
             column: '1';
           }
 	}
@@ -95,7 +159,7 @@ template $SurveyDialog: Adw.Window {
 	Gtk.Label {
           label: "RTH:";
           layout {
-            row: '4';
+            row: '1';
             column: '0';
           }
         }
@@ -105,7 +169,7 @@ template $SurveyDialog: Adw.Window {
           halign: start;
           valign: start;
           layout {
-	    row: 4;
+	    row: 1;
 	    column: 1;
           }
 	}
@@ -113,14 +177,14 @@ template $SurveyDialog: Adw.Window {
 	Gtk.Label {
           label: "Leg Speed (m/s):";
           layout {
-            row: '5';
+            row: '2';
             column: '0';
           }
         }
 	Gtk.Entry as_speed {
           input-purpose: number;
           layout {
-            row: '5';
+            row: '2';
             column: '1';
           }
 	}
@@ -184,6 +248,8 @@ template $SurveyDialog: Adw.Window {
 	  }
 	}
       }
+
+
       Box {
         orientation: horizontal;
         spacing: 4;

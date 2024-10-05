@@ -26,4 +26,29 @@ namespace Survey {
 		MissionManager.mdx = 0;
 		MissionManager.setup_mission_from_mm();
 	}
+
+	void build_square_mission(AreaCalc.Vec []vec, int alt, int lspeed, bool rth) {
+		int n = 0;
+		var ms = new Mission();
+		MissionItem []mis={};
+		foreach (var v in vec){
+			n++;
+			var mi =  new MissionItem.full(n, Msp.Action.WAYPOINT, v.y, v.x, alt, lspeed, 0, 0, 0);
+			mis += mi;
+		}
+		if(rth) {
+			n++;
+			var mi =  new MissionItem.full(n, Msp.Action.RTH, 0, 0, 0, 0, 0, 0, 0);
+			mis += mi;
+		}
+		mis[n-1].flag = 0xa5;
+		ms.points = mis;
+		ms.npoints = n;
+		MissionManager.msx = {ms};
+		MissionManager.is_dirty = true;
+		MissionManager.mdx = 0;
+		MissionManager.setup_mission_from_mm();
+
+	}
+
 }
