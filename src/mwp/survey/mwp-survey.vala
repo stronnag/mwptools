@@ -125,16 +125,19 @@ namespace Survey {
 
 			ss_angle.text = "0";
 			ss_angle.activate.connect(() => {
+					reset_view();
 					generate_square();
 				});
 
 			ss_dist.text = "50";
 			ss_dist.activate.connect(() => {
+					reset_view();
 					generate_square();
 				});
 
 			ss_exp.text = "7";
 			ss_exp.activate.connect(() => {
+					reset_view();
 					generate_square();
 				});
 
