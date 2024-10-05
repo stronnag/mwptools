@@ -52,8 +52,8 @@ Example of fewer points being generated with adjusted area and row separation:
 
 Note also how the angle and turn parameters affect the staring point.
 
-Example of generated mission from above plan:
-![area planner](images/area-planner_05.png)
+Example of generated mission with KML backdrop showing original survey area:
+![area planner](images/survey-ovl-kml.png)
 
 ### File Menu
 
