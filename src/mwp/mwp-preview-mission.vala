@@ -22,6 +22,7 @@ public class Previewer : Object {
 	private IOChannel chn;
 	int fds[2];
 	Craft pcraft;
+	double posn[3];
 
 	public Previewer() {
 		MwpMenu.set_menu_state(Mwp.window, "mpreview", false);
@@ -51,7 +52,6 @@ public class Previewer : Object {
 					done();
 					return false;
 				}
-				double posn[3];
 				var n = Posix.read(fds[0], posn, 3*sizeof(double));
 				if (n <= 0) {
 					done();

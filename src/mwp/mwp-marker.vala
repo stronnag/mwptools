@@ -122,13 +122,13 @@ public class MWPMarker : Shumate.Marker {
 		try {
 			pix =  Img.load_image_from_file(fn, size, size);
 			var tex =  Gdk.Texture.for_pixbuf(pix);
-			var img = new Gtk.Picture.for_paintable(tex);
+			var img = new Gtk.Image.from_paintable(tex);
 			if (size == -1) {
 				_size = int.max(pix.width, pix.height);
 			} else {
 				_size = size;
 			}
-			//			img.set_pixel_size(_size);
+			img.set_pixel_size(_size);
 			set_child(img);
 		} catch (Error e) {
 			MWPLog.message("Image open %s : %s\n", fn, e.message);
@@ -139,7 +139,8 @@ public class MWPMarker : Shumate.Marker {
 		this.pix = pix;
 		var tex = Gdk.Texture.for_pixbuf(pix);
 		_size = int.max(pix.width, pix.height);
-		var img = new Gtk.Picture.for_paintable(tex);
+		var img = new Gtk.Image.from_paintable(tex);
+		img.set_pixel_size(_size);
 		set_child(img);
     }
 
@@ -150,7 +151,7 @@ public class MWPMarker : Shumate.Marker {
 	public void set_image (Gdk.Pixbuf pix) {
 		this.pix = pix;
 		var tex = Gdk.Texture.for_pixbuf(pix);
-		((Gtk.Picture)get_child()).paintable = tex;
+		((Gtk.Image)get_child()).paintable = tex;
 		double a = _lastang;
 		_lastang = -2;
 		rotate(a);
@@ -183,7 +184,7 @@ public class MWPMarker : Shumate.Marker {
 				cr.paint();
 				var px = Gdk.pixbuf_get_from_surface (cst, 0, 0, w, h);
 				var tex = Gdk.Texture.for_pixbuf(px);
-				((Gtk.Picture)get_child()).paintable = tex;
+				((Gtk.Image)get_child()).paintable = tex;
 				_lastang =ang;
 			}
 		}
