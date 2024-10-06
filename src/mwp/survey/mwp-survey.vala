@@ -221,7 +221,9 @@ namespace Survey {
 				var rs = DStr.strtod(as_rowsep.text,null);
 				var wpts = (int)(width / rs);
 				var hpts = (int)(height / rs);
-				as_apply.sensitive = (wpts < 400 && hpts < 400);
+				if(as_type.selected == 0) {
+					as_apply.sensitive = (wpts < 400 && hpts < 400);
+				}
 			}
 			return b;
 		}
@@ -240,6 +242,7 @@ namespace Survey {
 					init_square();
 				}
 			}
+			init_result();
 		}
 
 		private void init_square() {
@@ -253,6 +256,7 @@ namespace Survey {
 			mk.set_draggable(true);
 			Gis.svy_mpoints.add_marker(mk);
 			Gis.svy_mpath.add_node(mk);
+			as_apply.sensitive = true;
 		}
 
 		private void generate_survey(AreaCalc.RowPoints[] rows, double speed ) {
