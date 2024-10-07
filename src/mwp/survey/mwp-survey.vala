@@ -166,6 +166,7 @@ namespace Survey {
 						pgrid.visible = false;
 						sgrid.visible = true;
 					}
+					ss_angle.sensitive =  (as_type.selected != 2);
 					reset_view();
 				});
 
@@ -291,7 +292,7 @@ namespace Survey {
 		private void set_summary(double speed) {
 			var pts = Gis.svy_mpath.get_nodes();
 			var npts = pts.length();
-			as_mission.sensitive = (((int)as_rth.sensitive + 2*genpts) < 121);
+			as_mission.sensitive = (((int)as_rth.sensitive + npts) < 121);
 			as_npoints.label = npts.to_string();
 
 			var td  = 0.0;
@@ -349,6 +350,13 @@ namespace Survey {
 		private void  generate_square() {
 			var col = "#00ffff60";
 			var pts = Gis.svy_mpath.get_nodes();
+			var npts = pts.length();
+			for( var j = 1; j < npts; j++) {
+				var mk = (MWPMarker)Gis.svy_path.get_nodes().nth_data(j);
+					Gis.svy_mpoints.remove_marker(mk);
+					Gis.svy_mpath.remove_node(mk);
+			}
+
 			var mk = (MWPPoint)pts.nth_data(0);
 			double plat = mk.latitude;
 			double plon = mk.longitude;
@@ -359,21 +367,44 @@ namespace Survey {
 			double edist = 0;
 			double speed = DStr.strtod(as_speed.text, null);
 
-			for(var j = 0; j < 4* nexp; j++) {
-				if((j & 1) == 0) {
-					edist += dist;
+			if(as_type.selected == 1) {
+				for(var j = 0; j < 4* nexp; j++) {
+					if((j & 1) == 0) {
+						edist += dist;
+					}
+					Geo.posit(plat, plon, iangle, edist/1852.0, out plat, out plon);
+					mk = new MWPPoint.with_colour(col);
+					mk.set_size_request(SQRSZ, SQRSZ);
+					mk.latitude = plat;
+					mk.longitude = plon;
+					mk.no = j+1;
+					Gis.svy_mpoints.add_marker(mk);
+					Gis.svy_mpath.add_node(mk);
+					iangle += 90;
+					iangle %= 360;
+					genpts++;
 				}
-				Geo.posit(plat, plon, iangle, edist/1852.0, out plat, out plon);
-				mk = new MWPPoint.with_colour(col);
-				mk.set_size_request(SQRSZ, SQRSZ);
-				mk.latitude = plat;
-				mk.longitude = plon;
-				mk.no = j+1;
-				Gis.svy_mpoints.add_marker(mk);
-				Gis.svy_mpath.add_node(mk);
-				iangle += 90;
-				iangle %= 360;
-				genpts++;
+			} else {
+				double alat, alon;
+				int n = 0;
+				int last = 360 * nexp + 180 + 10;
+				for(var j = 180; j < last;  ) {
+					var r = (dist/360.0) * (double)(j);
+					var ang = j % 360;
+					n++;
+					Geo.posit(plat, plon, ang, r/1852.0, out alat, out alon);
+					mk = new MWPPoint.with_colour(col);
+					mk.set_size_request(SQRSZ, SQRSZ);
+					mk.latitude = alat;
+					mk.longitude = alon;
+					mk.no = n;
+					Gis.svy_mpoints.add_marker(mk);
+					Gis.svy_mpath.add_node(mk);
+					genpts++;
+					var delta = j * 30 /(last-190);
+					// angle will start 45° down to 15° (initial 180 => +2)
+					j += (47-delta);
+				}
 			}
 			set_summary(speed);
 		}
