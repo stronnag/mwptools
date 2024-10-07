@@ -24,7 +24,7 @@
     
     
       
-        <title>Mwp area planner - mwptools</title>
+        <title>Mwp Survey Planner - mwptools</title>
       
     
     
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#mwp-area-planner" class="md-skip">
+        <a href="#mwp-survey-planner" class="md-skip">
           Skip to content
         </a>
       
@@ -114,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Mwp area planner
+              Mwp Survey Planner
             
           </span>
         </div>
@@ -680,7 +680,7 @@
           
   
   <span class="md-ellipsis">
-    Mwp area planner
+    Mwp Survey Planner
   </span>
   
 
@@ -691,7 +691,7 @@
         
   
   <span class="md-ellipsis">
-    Mwp area planner
+    Mwp Survey Planner
   </span>
   
 
@@ -753,6 +753,15 @@
   <a href="#square-pattern-generator" class="md-nav__link">
     <span class="md-ellipsis">
       "Square" pattern generator
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spiral-pattern-generator" class="md-nav__link">
+    <span class="md-ellipsis">
+      "Spiral" pattern generator
     </span>
   </a>
   
@@ -1259,6 +1268,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#spiral-pattern-generator" class="md-nav__link">
+    <span class="md-ellipsis">
+      "Spiral" pattern generator
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1291,8 +1309,8 @@
   
 
 
-<h1 id="mwp-area-planner">Mwp area planner<a class="headerlink" href="#mwp-area-planner" title="Permanent link">#</a></h1>
-<p><a href="https://github.com/stronnag/mwptools">mwp</a> area planner is a tool to plan "survey" or "search" missions. It generates MWXML mission files compatible with mwp and the INAV Configurator. A simple "parallel lines across a polygon" survey pattern is supported, as well as a "creeping square" pattern.</p>
+<h1 id="mwp-survey-planner">Mwp Survey Planner<a class="headerlink" href="#mwp-survey-planner" title="Permanent link">#</a></h1>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> survey / area planner is a tool to plan "survey" or "search" missions. It generates MWXML mission files compatible with mwp and the INAV Configurator. A simple "parallel lines across a polygon" survey pattern is supported, as well as a "creeping square" pattern.</p>
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">#</a></h2>
 <p>The area planner is invoked from the "Edit" menu. It loads a dialogue window and presents a basic search area outline.</p>
 <p><img alt="area planner" src="../images/survey-dropdown.png" /></p>
@@ -1300,6 +1318,7 @@
 <ul>
 <li>Parallel: Default parallel line pattern</li>
 <li>Square: Expanding Square.</li>
+<li>Spiral: Spiral pattern.</li>
 </ul>
 <p>The tool is controlled by the three buttons at the bottom of the window.</p>
 <ul>
@@ -1345,8 +1364,14 @@
 <p><img alt="area planner" src="../images/survey-square-ui.png" /></p>
 <p>The default parameters result in the following survey pattern.</p>
 <p><img alt="area planner" src="../images/survey-gen-square.png" /></p>
-<p>The generated mission is from these settings looks like:</p>
+<p>The generated mission from these settings looks like:</p>
 <p><img alt="area planner" src="../images/survey-mission-sq.png" /></p>
+<h3 id="spiral-pattern-generator">"Spiral" pattern generator<a class="headerlink" href="#spiral-pattern-generator" title="Permanent link">#</a></h3>
+<p>The "Spiral" generator provides a single draggable point with options of first leg distance and the number of iterations. In this case, the first leg distance is the range to the 0° radial, which is repeated for each iteration. The number of points per iteration varies with the "radius" in order to provide practical leg lengths within INAV's 120 mission point constraint.</p>
+<p>The default parameters result in the following survey pattern.</p>
+<p><img alt="area planner" src="../images/survey-spiral-01.png" /></p>
+<p>The generated mission from these settings looks like:</p>
+<p><img alt="area planner" src="../images/survey-spiral-02.png" /></p>
 <h2 id="obsolete-video">Obsolete video<a class="headerlink" href="#obsolete-video" title="Permanent link">#</a></h2>
 <p>There is an old <a href="https://youtu.be/AUYETXqdJ1g?list=PLE_mnLfCdjvAH4pLe9HCqaWm682_r8NT3">youtube video</a> covering both the legacy <code>mwp-area-planner</code> and iforce2d's on line tool.</p>
 <iframe width="560" height="315" src="https://www.youtube.com/embed/AUYETXqdJ1g?list=PLE_mnLfCdjvAH4pLe9HCqaWm682_r8NT3" title="mwp area planner intro" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
