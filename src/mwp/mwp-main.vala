@@ -18,7 +18,7 @@
 
 int main (string[] args) {
 	MWPUtils.set_app_name("mwp");
-    Environment.set_prgname(Mwp.MWPID);
+	Environment.set_application_name ("mwp");
 	var s = Mwp.read_env_args();
     StringBuilder sb = new StringBuilder();
     bool rtn = false;

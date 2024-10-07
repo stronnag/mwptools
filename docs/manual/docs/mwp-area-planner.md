@@ -41,7 +41,7 @@ Any plotted outline mission will be recalculated as points are manipulated.
 * **RTH** (mission parameter). Whether to set RTH on the final generated WP.
 * **Leg Speed** (mission parameter).
 
-Once an initial solution has been plotted, changing any of the first three parameters will result in the solution being recalculated. The latter three options are common to "Parallel" and "Square" patterns.
+Once an initial solution has been plotted, changing any of the first three parameters will result in the solution being recalculated. The latter three options are common to all patterns.
 
 After a solution has been calculated, the "Mission Data" summary is updated.
 
