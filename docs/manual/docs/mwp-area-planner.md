@@ -1,6 +1,6 @@
-# Mwp area planner
+# Mwp Survey Planner
 
-{{ mwp}} area planner is a tool to plan "survey" or "search" missions. It generates MWXML mission files compatible with mwp and the INAV Configurator. A simple "parallel lines across a polygon" survey pattern is supported, as well as a "creeping square" pattern.
+{{ mwp}} survey / area planner is a tool to plan "survey" or "search" missions. It generates MWXML mission files compatible with mwp and the INAV Configurator. A simple "parallel lines across a polygon" survey pattern is supported, as well as a "creeping square" pattern.
 
 ## Usage
 
@@ -12,6 +12,7 @@ The drop-down in the top right offers options of:
 
 * Parallel: Default parallel line pattern
 * Square: Expanding Square.
+* Spiral: Spiral pattern.
 
 The tool is controlled by the three buttons at the bottom of the window.
 
@@ -73,9 +74,22 @@ The default parameters result in the following survey pattern.
 
 ![area planner](images/survey-gen-square.png)
 
-The generated mission is from these settings looks like:
+The generated mission from these settings looks like:
 
 ![area planner](images/survey-mission-sq.png)
+
+### "Spiral" pattern generator
+
+The "Spiral" generator provides a single draggable point with options of first leg distance and the number of iterations. In this case, the first leg distance is the range to the 0° radial, which is repeated for each iteration. The number of points per iteration varies with the "radius" in order to provide practical leg lengths within INAV's 120 mission point constraint.
+
+The default parameters result in the following survey pattern.
+
+![area planner](images/survey-spiral-01.png)
+
+The generated mission from these settings looks like:
+
+![area planner](images/survey-spiral-02.png)
+
 
 ## Obsolete video
 
