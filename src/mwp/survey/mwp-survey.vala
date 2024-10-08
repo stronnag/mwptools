@@ -60,6 +60,8 @@ namespace Survey {
 		[GtkChild]
 		private unowned Gtk.Switch as_rth;
 		[GtkChild]
+		private unowned Gtk.CheckButton as_amsl;
+		[GtkChild]
 		private unowned Gtk.Entry as_speed;
 		[GtkChild]
 		private unowned Gtk.Button as_apply;
@@ -181,7 +183,7 @@ namespace Survey {
 			int lspeed = (int)(100*double.parse(as_speed.text));
 			if(as_type.selected == 0) {
 				var rows = generate_path();
-				Survey.build_mission(rows, alt, lspeed, as_rth.active);
+				Survey.build_mission(rows, alt, lspeed, as_rth.active, as_amsl.active);
 			} else {
 				var pts = Gis.svy_mpath.get_nodes();
 				var npts = pts.length();
@@ -191,7 +193,7 @@ namespace Survey {
 					AreaCalc.Vec v= AreaCalc.Vec(){y = mk.latitude, x = mk.longitude};
 					vec[j] = v;
 				}
-				Survey.build_square_mission(vec, alt, lspeed, as_rth.active);
+				Survey.build_square_mission(vec, alt, lspeed, as_rth.active, as_amsl.active);
 			}
 			close();
 		}
