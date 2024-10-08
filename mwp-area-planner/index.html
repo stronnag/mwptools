@@ -723,6 +723,24 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#mission-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mission Parameters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#control-buttons" class="md-nav__link">
+    <span class="md-ellipsis">
+      Control Buttons
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#parallel-lines-editing-outline-points" class="md-nav__link">
     <span class="md-ellipsis">
       "Parallel Lines" Editing outline points
@@ -741,15 +759,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#file-menu" class="md-nav__link">
-    <span class="md-ellipsis">
-      File Menu
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#square-pattern-generator" class="md-nav__link">
     <span class="md-ellipsis">
       "Square" pattern generator
@@ -762,6 +771,15 @@
   <a href="#spiral-pattern-generator" class="md-nav__link">
     <span class="md-ellipsis">
       "Spiral" pattern generator
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-menu" class="md-nav__link">
+    <span class="md-ellipsis">
+      File Menu
     </span>
   </a>
   
@@ -1233,6 +1251,24 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#mission-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mission Parameters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#control-buttons" class="md-nav__link">
+    <span class="md-ellipsis">
+      Control Buttons
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#parallel-lines-editing-outline-points" class="md-nav__link">
     <span class="md-ellipsis">
       "Parallel Lines" Editing outline points
@@ -1251,15 +1287,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#file-menu" class="md-nav__link">
-    <span class="md-ellipsis">
-      File Menu
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#square-pattern-generator" class="md-nav__link">
     <span class="md-ellipsis">
       "Square" pattern generator
@@ -1272,6 +1299,15 @@
   <a href="#spiral-pattern-generator" class="md-nav__link">
     <span class="md-ellipsis">
       "Spiral" pattern generator
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-menu" class="md-nav__link">
+    <span class="md-ellipsis">
+      File Menu
     </span>
   </a>
   
@@ -1320,6 +1356,19 @@
 <li>Square: Expanding Square.</li>
 <li>Spiral: Spiral pattern.</li>
 </ul>
+<h3 id="mission-parameters">Mission Parameters<a class="headerlink" href="#mission-parameters" title="Permanent link">#</a></h3>
+<p>The dialog provides options for mission creation that are common to each survey pattern:</p>
+<ul>
+<li><strong>Altitude:</strong> in metres (mission parameter), relative or absolute, dependent on:</li>
+<li><strong>AMSL / Ground Clearance:</strong> This controls how the altitude value is used:<ul>
+<li>If not set, the same altitude value is set for each way-point and is relative to the arming location.</li>
+<li>If set, the altitude value is added to the AMSL (Absolute/Above Mean Sea Level) elevation for each way point, and the way-point altitude is set as absolute.</li>
+</ul>
+</li>
+<li><strong>RTH</strong> (mission parameter). Whether to set RTH on the final generated WP.</li>
+<li><strong>Leg Speed</strong> (mission parameter).</li>
+</ul>
+<h3 id="control-buttons">Control Buttons<a class="headerlink" href="#control-buttons" title="Permanent link">#</a></h3>
 <p>The tool is controlled by the three buttons at the bottom of the window.</p>
 <ul>
 <li>
@@ -1342,11 +1391,8 @@
 <li><strong>Angle:</strong> Defines the direction of the first mission leg.</li>
 <li><strong>1st Turn:</strong> Left or Right</li>
 <li><strong>Row Separation:</strong> Distance between the rows in metres</li>
-<li><strong>Altitude:</strong> in metres (mission parameter)</li>
-<li><strong>RTH</strong> (mission parameter). Whether to set RTH on the final generated WP.</li>
-<li><strong>Leg Speed</strong> (mission parameter).</li>
 </ul>
-<p>Once an initial solution has been plotted, changing any of the first three parameters will result in the solution being recalculated. The latter three options are common to "Parallel" and "Square" patterns.</p>
+<p>Once an initial solution has been plotted, changing any of the first three parameters will result in the solution being recalculated.</p>
 <p>After a solution has been calculated, the "Mission Data" summary is updated.</p>
 <p>Example of too many points being generated due to over-large area / narrow row separation:
 <img alt="area planner" src="../images/area-planner_03.png" /></p>
@@ -1355,10 +1401,6 @@
 <p>Note also how the angle and turn parameters affect the staring point.</p>
 <p>Example of generated mission with KML backdrop showing original survey area:
 <img alt="area planner" src="../images/survey-ovl-kml.png" /></p>
-<h3 id="file-menu">File Menu<a class="headerlink" href="#file-menu" title="Permanent link">#</a></h3>
-<p>The area planner dialog has a drop down menu to load and save area definitions to / from the file system. The files are the same format as for the legacy <code>mwp-area-planner</code>.</p>
-<p><img alt="area planner" src="../images/area-plan-menu.png" /></p>
-<p>In addition (not shown), it is also possible to save the survey outline as a KML file for future display / analysis.</p>
 <h3 id="square-pattern-generator">"Square" pattern generator<a class="headerlink" href="#square-pattern-generator" title="Permanent link">#</a></h3>
 <p>The "Square" generator provides a single draggable point with options of start angle, first leg distance and the number of iterations.</p>
 <p><img alt="area planner" src="../images/survey-square-ui.png" /></p>
@@ -1372,6 +1414,10 @@
 <p><img alt="area planner" src="../images/survey-spiral-01.png" /></p>
 <p>The generated mission from these settings looks like:</p>
 <p><img alt="area planner" src="../images/survey-spiral-02.png" /></p>
+<h3 id="file-menu">File Menu<a class="headerlink" href="#file-menu" title="Permanent link">#</a></h3>
+<p>The area planner dialog has a drop down menu to load and save area definitions to / from the file system. The files are the same format as for the legacy <code>mwp-area-planner</code>.</p>
+<p><img alt="area planner" src="../images/area-plan-menu.png" /></p>
+<p>In addition (not shown), it is also possible to save the survey outline as a KML file for future display / analysis.</p>
 <h2 id="obsolete-video">Obsolete video<a class="headerlink" href="#obsolete-video" title="Permanent link">#</a></h2>
 <p>There is an old <a href="https://youtu.be/AUYETXqdJ1g?list=PLE_mnLfCdjvAH4pLe9HCqaWm682_r8NT3">youtube video</a> covering both the legacy <code>mwp-area-planner</code> and iforce2d's on line tool.</p>
 <iframe width="560" height="315" src="https://www.youtube.com/embed/AUYETXqdJ1g?list=PLE_mnLfCdjvAH4pLe9HCqaWm682_r8NT3" title="mwp area planner intro" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
