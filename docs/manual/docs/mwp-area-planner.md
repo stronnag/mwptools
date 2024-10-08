@@ -25,6 +25,11 @@ The dialog provides options for mission creation that are common to each survey 
 * **RTH** (mission parameter). Whether to set RTH on the final generated WP.
 * **Leg Speed** (mission parameter).
 
+
+
+!!! note "Legacy Images"
+	There are some older images in the samples below without the AMSL button.
+
 ### Control Buttons
 
 The tool is controlled by the three buttons at the bottom of the window.
@@ -76,7 +81,7 @@ The default parameters result in the following survey pattern.
 
 ![area planner](images/survey-gen-square.png)
 
-The generated mission from these settings looks like:
+And a generated mission from these settings looks might look like:
 
 ![area planner](images/survey-mission-sq.png)
 
@@ -88,7 +93,7 @@ The default parameters result in the following survey pattern.
 
 ![area planner](images/survey-spiral-01.png)
 
-The generated mission from these settings looks like:
+And a generated mission from these settings looks might look like:
 
 ![area planner](images/survey-spiral-02.png)
 
