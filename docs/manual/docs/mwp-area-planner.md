@@ -14,6 +14,19 @@ The drop-down in the top right offers options of:
 * Square: Expanding Square.
 * Spiral: Spiral pattern.
 
+### Mission Parameters
+
+The dialog provides options for mission creation that are common to each survey pattern:
+
+* **Altitude:** in metres (mission parameter), relative or absolute, dependent on:
+* **AMSL / Ground Clearance:** This controls how the altitude value is used:
+    * If not set, the same altitude value is set for each way-point and is relative to the arming location.
+	* If set, the altitude value is added to the AMSL (Absolute/Above Mean Sea Level) elevation for each way point, and the way-point altitude is set as absolute.
+* **RTH** (mission parameter). Whether to set RTH on the final generated WP.
+* **Leg Speed** (mission parameter).
+
+### Control Buttons
+
 The tool is controlled by the three buttons at the bottom of the window.
 
 * **Apply:** The settings are applied and the pattern is drawn. The button will be disabled if the size of the survey outline and the row separation values would result in an impractically large number of turning points. In order to resolve this it will be necessary to either reduce the size of the survey area or increase the row separation.
@@ -37,11 +50,8 @@ Any plotted outline mission will be recalculated as points are manipulated.
 * **Angle:** Defines the direction of the first mission leg.
 * **1st Turn:** Left or Right
 * **Row Separation:** Distance between the rows in metres
-* **Altitude:** in metres (mission parameter)
-* **RTH** (mission parameter). Whether to set RTH on the final generated WP.
-* **Leg Speed** (mission parameter).
 
-Once an initial solution has been plotted, changing any of the first three parameters will result in the solution being recalculated. The latter three options are common to all patterns.
+Once an initial solution has been plotted, changing any of the first three parameters will result in the solution being recalculated.
 
 After a solution has been calculated, the "Mission Data" summary is updated.
 
@@ -55,14 +65,6 @@ Note also how the angle and turn parameters affect the staring point.
 
 Example of generated mission with KML backdrop showing original survey area:
 ![area planner](images/survey-ovl-kml.png)
-
-### File Menu
-
-The area planner dialog has a drop down menu to load and save area definitions to / from the file system. The files are the same format as for the legacy `mwp-area-planner`.
-
-![area planner](images/area-plan-menu.png)
-
-In addition (not shown), it is also possible to save the survey outline as a KML file for future display / analysis.
 
 ### "Square" pattern generator
 
@@ -90,6 +92,13 @@ The generated mission from these settings looks like:
 
 ![area planner](images/survey-spiral-02.png)
 
+### File Menu
+
+The area planner dialog has a drop down menu to load and save area definitions to / from the file system. The files are the same format as for the legacy `mwp-area-planner`.
+
+![area planner](images/area-plan-menu.png)
+
+In addition (not shown), it is also possible to save the survey outline as a KML file for future display / analysis.
 
 ## Obsolete video
 
