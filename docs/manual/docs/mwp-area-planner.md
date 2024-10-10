@@ -1,6 +1,6 @@
 # Mwp Survey Planner
 
-{{ mwp}} survey / area planner is a tool to plan "survey" or "search" missions. It generates MWXML mission files compatible with mwp and the INAV Configurator. A simple "parallel lines across a polygon" survey pattern is supported, as well as a "creeping square" pattern.
+{{ mwp}} survey / area planner is a tool to plan "survey" or "search" missions. It generates MWXML mission files compatible with mwp and the INAV Configurator. A simple "parallel lines across a polygon" survey pattern is supported, as well as a "creeping square" pattern and a spiral pattern.
 
 ## Usage
 

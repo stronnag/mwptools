@@ -53,7 +53,7 @@ The following tables summarise the available menu options. Where usage is not ob
 | ---- | ----- |
 | Set FollowMe Point | Displays the [Follow Me](mwp-follow-me.md) dialogue |
 | Preferences | Displays the [preferences](misc-ui-elements.md#preferences) dialogue |
-| Area Planner | Invokes the [area-planner](mwp-area-planner.md) to generate search or survey plans as a mission.
+| Survey / Area Planner | Invokes the [area-planner](mwp-area-planner.md) to generate search or survey plans as a mission.
 | Mission Manager | Display the multi-mission dialogue to remove segments from a multi-mission |
 | CLI serial terminal | Displays the {{ inav }} CLI using the current connection |
 | Get FC Mission Info | Display the mission status from a connected FC |

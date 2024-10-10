@@ -117,7 +117,7 @@ If an item if left black (or 0), then no adjustment is applied to that axis. Off
 
 #### Speed and Altitude updates
 
-Bulk speed and altitude updates may be applied to selected waypoints.
+Bulk speed and altitude updates may be applied to selected waypoints. The altitude update allows either relative (to home) to absolute (ASL) altitudes.
 
 #### Preview Mission
 
