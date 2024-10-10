@@ -16,29 +16,63 @@ template $AltDialog: Adw.Window {
       orientation: vertical;
       spacing: 8;
 
+      [start]
       Grid {
         column-spacing: 8;
         row-spacing: 8;
 
         Label {
           label: _('Altitude');
+          layout {
+            row: '0';
+            column: '0';
+          }
         }
 
         Entry deltaalt {
           hexpand: true;
           input-purpose: number;
+          layout {
+            row: '0';
+            column: '1';
+          }
         }
+
+	Gtk.Label {
+          label: "AMSL / Ground clearance:";
+          layout {
+            row: '1';
+            column: '0';
+          }
+        }
+
+	Gtk.CheckButton as_amsl {
+	  hexpand: false;
+	  halign: start;
+	  tooltip-text: 'Sets the mission WP altitude as absolute (WP AMSL + elevation value)';
+	  layout {
+            row: '1';
+            column: '1';
+          }
+	}
       }
 
+      [end]
       Box {
+        valign: end;
         halign: end;
-        hexpand: false;
+        vexpand: true;
+        hexpand: true;
 
         Button apply {
+          halign: end;
+	  hexpand: false;
           label: _('Apply');
         }
 
         Button cancel {
+          halign: end;
+	  hexpand: false;
           label: _('Cancel');
         }
       }

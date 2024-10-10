@@ -125,11 +125,20 @@ namespace MsnTools {
 
 	Shumate.PathLayer []jumplist;
 
-	public void alt_updates(Mission m, Gtk.Bitset bs, double v) {
+	public void alt_updates(Mission m, Gtk.Bitset bs, double v, bool as_amsl) {
 		for(var i = 0; i < m.npoints; i++) {
 			if (bs.contains(i)) {
 				if (m.points[i].is_geo()) {
-					m.points[i].alt = (int)v;
+					if(!as_amsl) {
+						m.points[i].alt = (int)v;
+							m.points[i].param3 &= ~1;
+					} else {
+						var e = DemManager.lookup(m.points[i].lat, m.points[i].lon);
+						if (e != Hgt.NODATA) {
+							m.points[i].param3 |= 1;
+							m.points[i].alt = (int)(v+e);
+						}
+					}
 				}
 			}
 		}

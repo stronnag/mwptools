@@ -21,16 +21,18 @@ namespace Alt {
 		[GtkChild]
 		private unowned Gtk.Entry deltaalt;
 		[GtkChild]
+		private unowned Gtk.CheckButton as_amsl;
+		[GtkChild]
 		private unowned Gtk.Button apply;
 		[GtkChild]
 		private unowned Gtk.Button cancel;
 
-		public signal void get_value(double v);
+		public signal void get_value(double v, bool b);
 
 		public Dialog() {
 			apply.clicked.connect(() => {
 					var alt = InputParser.get_scaled_real(deltaalt.get_text(),"d");
-					get_value(alt);
+					get_value(alt, as_amsl.active);
 					close();
 				});
 			cancel.clicked.connect(() => {

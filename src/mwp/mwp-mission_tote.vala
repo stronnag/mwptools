@@ -379,8 +379,8 @@ namespace MissionManager {
 						var ms = MissionManager.current();
 						var dd = new Alt.Dialog();
 						dd.get_alt();
-						dd.get_value.connect((v) => {
-								MsnTools.alt_updates(ms, bs, v);
+						dd.get_value.connect((v,b) => {
+								MsnTools.alt_updates(ms, bs, v, b);
 							});
 					}
 				});
