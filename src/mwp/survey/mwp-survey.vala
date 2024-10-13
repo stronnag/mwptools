@@ -156,6 +156,7 @@ namespace Survey {
 					if(as_type.selected == 0) {
 						generate_path();
 					} else {
+						reset_view();
 						generate_square();
 					}
 				});
