@@ -222,20 +222,6 @@ namespace MapManager {
 		MwpMapDesc[] sources = {};
 		proxypids = {};
 
-		if(Gis.mapbox_key != null) {
-			var mb = MwpMapDesc();
-			mb.id = "mbox";
-			mb.name = "MapBox";
-			mb.min_zoom_level = 0;
-			mb.max_zoom_level = 19;
-			mb.projection = Shumate.MapProjection.MERCATOR;
-			mb.tile_size = 256;
-			mb.license_uri = "https://mapbox.com/";
-			mb.url_template = "https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=%s".printf(Gis.mapbox_key);
-			mb.license = "(c) Mapbox & partners";
-			sources += mb;
-		}
-
 		var bg = new BingMap();
         var ms = bg.get_ms();
 		MWPLog.message("Starting Bing proxy %s\n", (offline) ? "(offline)" : "");
@@ -255,13 +241,14 @@ namespace MapManager {
 		sources += ms;
 		sp.set_uri(bg.get_buri());
 
+		var have_mb = false;
+
 		if(fn != null) {
             try {
                 var parser = new Json.Parser ();
                 parser.load_from_file (fn);
                 var root_object = parser.get_root ().get_object ();
-                foreach (var node in
-                     root_object.get_array_member ("sources").get_elements ()) {
+                foreach (var node in root_object.get_array_member ("sources").get_elements ()) {
                     var s = MwpMapDesc();
                     var item = node.get_object ();
                     s.id = item.get_string_member ("id");
@@ -276,6 +263,9 @@ namespace MapManager {
                              "http://localhost:21303/quadkey-proxy/#Z#/#X#/#Y#.png" ||
                              s.license_uri == "http://www.bing.com/maps/");
 					if(!skip) {
+						if (s.name == "MapBox" || s.id == "mapbox") {
+							have_mb = true;
+						}
 						s.name = item.get_string_member ("name");
 						s.license = item.get_string_member("license");
 						s.min_zoom_level = (int)item.get_int_member ("min_zoom");
@@ -301,13 +291,26 @@ namespace MapManager {
             }
         }
 
-		/*
-		  MapIdCache.init();
-		foreach (var s in sources) {
-			var cname = MapIdCache.normalise(s.url_template);
-			MapIdCache.cache.insert(s.id, {cname, s.url_template});
+		if(!have_mb) {
+			if(Gis.mapbox_key != null) {
+				MwpMapDesc[] es={};
+				var mb = MwpMapDesc();
+				mb.id = "mbox";
+				mb.name = "MapBox";
+				mb.min_zoom_level = 0;
+				mb.max_zoom_level = 19;
+				mb.projection = Shumate.MapProjection.MERCATOR;
+				mb.tile_size = 256;
+				mb.license_uri = "https://mapbox.com/";
+				mb.url_template = "https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=%s".printf(Gis.mapbox_key);
+				mb.license = "(c) Mapbox & partners";
+				es += mb;
+				foreach(var _s in sources) {
+					es += _s;
+				}
+				sources = es;
+			}
 		}
-		*/
 		return sources;
     }
 
