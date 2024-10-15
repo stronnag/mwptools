@@ -12,14 +12,15 @@ As most people won't want to actually build the manual, these are not hard build
 * mkdocs-with-pdf
 * mkdocs-macros-plugin
 * mkdocs-material
+* probably some more ...
 
-Most distros don't package all of these; you'll end up with `pip` packages as well.
+Trying run `mkdocs` will reveal missing packages. Most distros don't package all that is needed; you'll end up with some `pip`/`pipx` packages as well.
 
 The HTML site can then be build with `mkdocs build` or `mkdocs serve`.
 
 The PDF is built with `ENABLE_PDF_EXPORT=1 mkdocs build`
 
-The PDF file is extremely large (c. 40MB), reduce to an acceptable size ...
+The PDF file is extremely large (c. 40MB), reduce to a more acceptable size ...
 
 ```
 gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/ebook \
