@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/mwp_icon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.40">
     
     
       
@@ -1563,11 +1563,26 @@
 
 <h1 id="build-install-mwp-generic">Build / install mwp (Generic)<a class="headerlink" href="#build-install-mwp-generic" title="Permanent link">#</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">#</a></h2>
-<p>If you just want to install <a href="https://github.com/stronnag/mwptools">mwp</a> on a Debian /derivative (includin WSL), x64_64, then you can install the binary <code>.deb</code> package from the <a href="https://github.com/stronnag/mwptools/releases">Release Area</a>.</p>
-<p>For Arch Linux, you can install the AUR package <code>mwptools-git</code></p>
-<p>Otherwise, if you're using a different (not Debian based) distribution, just curious about building mwptools, you want to explore other tools and scripts in the repository or you're using a different architecture (ia32, Arm7, aarch64, riscV, ppc etc.), then you can build from source.</p>
-<p>The <strong>mwptools</strong> suite is built using the <a href="https://mesonbuild.com/SimpleStart.html">meson</a> and <a href="https://ninja-build.org/">ninja</a> toolchain. For most users these will be automatically provided by a <code>build-essentials</code> type of package transparently to the user.</p>
+<p>If you just want to install <a href="https://github.com/stronnag/mwptools">mwp</a> on a Debian /derivative,  x64_64, then you can install the reasonably recent binary <code>.deb</code> package from the <a href="https://github.com/stronnag/mwptools/releases">Release Area</a>.</p>
+<p>For Arch Linux, you can install the AUR package <code>mwptools-git</code>. This tracks <code>master</code>.</p>
+<p>Otherwise, if you're using a different (not Debian based) distribution, just curious about building mwptools, you want to explore other tools and scripts in the repository or you're using a different architecture (ia32, Arm7, aarch64, riscv64, ppc etc.), or you want the most recent code, then you can build from source. This is the recommended installation method.</p>
+<p>The <strong>mwptools</strong> suite is built using the <a href="https://mesonbuild.com/SimpleStart.html">meson</a> and <a href="https://ninja-build.org/">ninja</a> toolchain. For most users these will be automatically provided by a <code>build-essentials</code> type of package.</p>
 <p>For Debian and derivatives there is a <a href="#easy-first-time-install-on-debian-and-derivatives">"one stop" installation script</a>, as well as a x86_64 "Release" <code>.deb</code> archive.</p>
+<p>For Fedora, the is a also a documented list of packages.</p>
+<p>For Arch, the <code>PKGBLD</code> lists the required packages.</p>
+<p>For any other distribution / platform / OS, any of the above documents should give you an idea of the packages required, typically:</p>
+<ul>
+<li>Gtk4 (4.14)</li>
+<li>libsoup3 (3.2)</li>
+<li>libshumate (1.3)</li>
+<li>meson (1.40)</li>
+<li>blueprint-compiler (0.12.0)</li>
+<li>libvte4</li>
+<li>libadwaita-1 (1.5)</li>
+<li>libepoxy</li>
+<li>libsecret-1</li>
+</ul>
+<p>Numbers is parenthesis indicate a minimum version. Modern OS should be able to satisfy these requirements.</p>
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">#</a></h2>
 <h3 id="normative-guide">Normative guide<a class="headerlink" href="#normative-guide" title="Permanent link">#</a></h3>
 <p>Note that the normative build reference is the <code>INSTALL</code> file in the source tree. This is most current documentation.</p>
@@ -1584,9 +1599,6 @@
 <li>For FreeBSD (*BSD), for a system-wide install,  don't set <code>--prefix</code> as the default (<code>/usr/local</code>) is suitable</li>
 </ul>
 <p>Unless you need a multi-user setup, a local install is preferable, as you don't need <code>sudo</code> to install, and you'll not risk messing up build permissions.</p>
-<ul>
-<li>If you're using a really old OS (e.g. Debian 10), you may also need <code>export XDG_DATA_DIRS=/usr/share:$HOME/.local/share</code> for a local install.</li>
-</ul>
 <h3 id="easy-first-time-install-on-debian-and-derivatives">"Easy" first-time install on Debian and derivatives<a class="headerlink" href="#easy-first-time-install-on-debian-and-derivatives" title="Permanent link">#</a></h3>
 <ul>
 <li>Download the <a href="https://raw.githubusercontent.com/stronnag/mwptools/master/docs/deb-install.sh">first time build script</a></li>
@@ -1634,16 +1646,8 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="df11", MODE="0660
 <td>Mission planner, GCS, log replay etc.</td>
 </tr>
 <tr>
-<td><code>mwp-area-planner</code></td>
-<td>Survey planner</td>
-</tr>
-<tr>
 <td><code>mwp-plot-elevations</code> <a href="#note1">1</a></td>
 <td>Mission elevation / terrain analysis</td>
-</tr>
-<tr>
-<td><code>gmproxy</code></td>
-<td>Proxy for certain commercial TMS</td>
 </tr>
 <tr>
 <td><code>cliterm</code></td>
@@ -1672,9 +1676,9 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="df11", MODE="0660
 </tbody>
 </table>
 <h3 id="libraries">Libraries<a class="headerlink" href="#libraries" title="Permanent link">#</a></h3>
-<pre><code>$prefix/lib/libmwpclib.*so
+<pre><code>$prefix/lib/libmwpclib.*so.2.0.0
 $prefix/lib/libmwpclib.a
-$prefix/lib/libmwpvlib.*so
+$prefix/lib/libmwpvlib.*so.2.0.0
 $prefix/lib/libmwpclib.a
 </code></pre>
 <div class="admonition note">
@@ -1699,6 +1703,10 @@ sudo ninja install
 <tr>
 <td><code>ublox-cli</code></td>
 <td>Ublox GPS tool</td>
+</tr>
+<tr>
+<td><code>gmproxy</code></td>
+<td>Proxy for certain commercial TMS</td>
 </tr>
 </tbody>
 </table>
@@ -1792,14 +1800,9 @@ ninja install
 <td>Settings schema</td>
 </tr>
 <tr>
-<td><code>src/mwp/vcols.css</code></td>
+<td><code>src/mwp/volts.css</code></td>
 <td><code>$prefix/share/mwp/</code></td>
 <td>Colours used by battery widget</td>
-</tr>
-<tr>
-<td><code>src/mwp/default.layout</code></td>
-<td><code>$prefix/share/mwp/</code></td>
-<td>Default dock layout</td>
 </tr>
 <tr>
 <td><code>src/mwp/beep-sound.ogg</code></td>
