@@ -2,15 +2,33 @@
 
 ## Overview
 
-If you just want to install {{ mwp }} on a Debian /derivative (includin WSL), x64_64, then you can install the binary `.deb` package from the [Release Area](https://github.com/stronnag/mwptools/releases).
+If you just want to install {{ mwp }} on a Debian /derivative,  x64_64, then you can install the reasonably recent binary `.deb` package from the [Release Area](https://github.com/stronnag/mwptools/releases).
 
-For Arch Linux, you can install the AUR package `mwptools-git`
+For Arch Linux, you can install the AUR package `mwptools-git`. This tracks `master`.
 
-Otherwise, if you're using a different (not Debian based) distribution, just curious about building mwptools, you want to explore other tools and scripts in the repository or you're using a different architecture (ia32, Arm7, aarch64, riscV, ppc etc.), then you can build from source.
+Otherwise, if you're using a different (not Debian based) distribution, just curious about building mwptools, you want to explore other tools and scripts in the repository or you're using a different architecture (ia32, Arm7, aarch64, riscv64, ppc etc.), or you want the most recent code, then you can build from source. This is the recommended installation method.
 
-The **mwptools** suite is built using the [meson](https://mesonbuild.com/SimpleStart.html) and [ninja](https://ninja-build.org/) toolchain. For most users these will be automatically provided by a `build-essentials` type of package transparently to the user.
+The **mwptools** suite is built using the [meson](https://mesonbuild.com/SimpleStart.html) and [ninja](https://ninja-build.org/) toolchain. For most users these will be automatically provided by a `build-essentials` type of package.
 
 For Debian and derivatives there is a ["one stop" installation script](#easy-first-time-install-on-debian-and-derivatives), as well as a x86_64 "Release" `.deb` archive.
+
+For Fedora, the is a also a documented list of packages.
+
+For Arch, the `PKGBLD` lists the required packages.
+
+For any other distribution / platform / OS, any of the above documents should give you an idea of the packages required, typically:
+
+* Gtk4 (4.14)
+* libsoup3 (3.2)
+* libshumate (1.3)
+* meson (1.40)
+* blueprint-compiler (0.12.0)
+* libvte4
+* libadwaita-1 (1.5)
+* libepoxy
+* libsecret-1
+
+Numbers is parenthesis indicate a minimum version. Modern OS should be able to satisfy these requirements.
 
 ## Usage
 
@@ -30,8 +48,6 @@ Set up the `meson` build system from the top level. Note that `_build` is a dire
 * For FreeBSD (*BSD), for a system-wide install,  don't set `--prefix` as the default (`/usr/local`) is suitable
 
 Unless you need a multi-user setup, a local install is preferable, as you don't need `sudo` to install, and you'll not risk messing up build permissions.
-
-* If you're using a really old OS (e.g. Debian 10), you may also need `export XDG_DATA_DIRS=/usr/share:$HOME/.local/share` for a local install.
 
 ### "Easy" first-time install on Debian and derivatives
 
@@ -71,9 +87,7 @@ The user needs to have read / write permissions on the serial port in order to c
 | Application | Usage |
 | ----------- | ----- |
 | `mwp` | Mission planner, GCS, log replay etc. |
-| `mwp-area-planner` | Survey planner |
 | `mwp-plot-elevations` [1](#note1) | Mission elevation / terrain analysis |
-| `gmproxy` | Proxy for certain commercial TMS |
 | `cliterm` | Interact with the CLI |
 | `fc-get`, `fc-set` [2](#note2) | Backup / restore CLI diff |
 | `inav_states.rb` | Summarise BBL state changes, also installed `inav_states_data.rb` |
@@ -83,9 +97,9 @@ The user needs to have read / write permissions on the serial port in order to c
 
 ### Libraries
 
-    $prefix/lib/libmwpclib.*so
+    $prefix/lib/libmwpclib.*so.2.0.0
 	$prefix/lib/libmwpclib.a
-    $prefix/lib/libmwpvlib.*so
+    $prefix/lib/libmwpvlib.*so.2.0.0
     $prefix/lib/libmwpclib.a
 
 
@@ -105,6 +119,7 @@ These are only built by explicit target name; they will be installed if built.
 | Application | Usage |
 | ----------- | ----- |
 | `ublox-cli` | Ublox GPS tool |
+| `gmproxy` | Proxy for certain commercial TMS |
 
 ### Troubleshooting and Hints
 
@@ -135,7 +150,6 @@ If you used the `deb-install.sh` script, then it installed everything into `$HOM
 
 Linux (like most other OS) has the concept of a `PATH`, a list of places where it looks for executable files). You can see this from a terminal:
 
-
     ## a colon separated list
     echo $PATH
 
@@ -146,7 +160,6 @@ If it is, then the problem may be  that the older mwp also exists elsewhere on t
 So, maybe you have an old install. You didn't remove it (alas); so the system thinks that mwp is `/usr/bin/mwp`; in fact it's now `$HOME/.local/bin/mwp`
 
 If `$HOME/.local/bin` is on the PATH before `/usr/bin`, the you have two choices:
-
 
     # reset the path search
     hash -r
@@ -204,8 +217,7 @@ Something, or persons unknown has removed this file.
 | ---- | ------ | ----- |
 | `src/common/mwp_icon.svg` | `$prefix/share/icons/hicolor/scalable/apps/` | Desktop icon |
 | `src/mwp/org.stronnag.mwp.gschema.xml` | `$prefix/share/glib-2.0/schemas/` | Settings schema |
-| `src/mwp/vcols.css` | `$prefix/share/mwp/` | Colours used by battery widget |
-| `src/mwp/default.layout` | `$prefix/share/mwp/` | Default dock layout |
+| `src/mwp/volts.css` | `$prefix/share/mwp/` | Colours used by battery widget |
 | `src/mwp/beep-sound.ogg` | `$prefix/share/mwp/` | Alert sound  |
 | `src/mwp/bleet.ogg` | `$prefix/share/mwp/` | Alert sound  |
 | `src/mwp/menubar.ui` | `$prefix/share/mwp/` | Menu definition |

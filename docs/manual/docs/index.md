@@ -64,16 +64,10 @@ Log replay requires tools from the [flightlog2x](https://github.com/stronnag/bbl
 
 ## Platforms and OS
 
-The tools are designed to be portable and as far as possible platform and architecture agnostic. The suite is developed on Arch Linux and is tested on Debian (Trixie / Sid), Ubuntu (latest and most recent LTS), Fedora (current)  and FreeBSD (current release).
+The tools are designed to be portable and as far as possible platform and architecture agnostic. The suite is developed on Arch Linux and is tested on Debian (Trixie / Sid), Alpine (Edge), Fedora (current)  and FreeBSD (current release). Being able to satisfy the required dependencies is more important than the actual distro / OS / platform.
 
 ## Build and installation
 
 Build and installation is described in the following sections:
 
-* [Generic build and installation](Building-with-meson-and-ninja.md) Linux, FreeBSD, Windows / WSL
-
-### Installation Tutorial
-
-[Somewhat outdated](https://vimeo.com/256052320), if you follow this, please note that some of is much simplified by the later  [Generic build and installation](Building-with-meson-and-ninja.md) article.
-
-<iframe src="https://player.vimeo.com/video/256052320?h=83d47b048d"  width="640" height="360" frameborder="0" allow="autoplay; fullscreen;  picture-in-picture" allowfullscreen></iframe>
+* [Generic build and installation](Building-with-meson-and-ninja.md).

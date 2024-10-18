@@ -19,11 +19,11 @@
 * Ensure you're running the latest `master` version.
 * See also [Information requirements](#information-requirements). Without this information, it is unlikely that any, non-trivial, support can be given.
 
-### Supported OS
+### "Supported" OS
 
 * Arch Linux
-* Debian Stable and later (`testing`, `sid`)
-* Ubuntu latest and latest LTS (prior release where latest is also LTS).
+* Alpine Linux (Edge)
+* Debian Testing (`trixie`, `sid`), and contemporaneous derivatives.
 * Fedora latest
 * FreeBSD latest `RELEASE`
 * Supported Desktop Enviroment / Window Managers: basically must comply with XDG standards, specifically GNOME, KDE, xfce, LXqt, labwc, wayfire.

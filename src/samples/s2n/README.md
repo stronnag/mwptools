@@ -1,6 +1,6 @@
 # ser2udp - simple serial to IP (UDP) bridge
 
-`ser2udp` is a simple serial to UDP bridge. It is intended to be used for accessing a serial USB flight controller using Windows 11 / WSLg and mwp; however there is almost nothing either Windows or mwp specific. It can be used as a generic bridge, for cases where the UDP side "speaks" first, unless `-remote` is set.
+`ser2udp` is a simple serial to UDP bridge. It is intended to be used for accessing a serial USB flight controller in (virtualised) environments that are so broken that they cannot perform USB passthrough. It can also be used as a generic bridge, for cases where the UDP side "speaks" first, (`-remote` allows specifying the remote where the serial "speaks" first).
 
 ## Usage
 
@@ -19,7 +19,7 @@ If port is not provided, it defaults to `:17071` (the colon in required).
 
 If device is not provided (which implies that port is not either), or is 'auto' then the device will be auto-detected (and has to be (a) USB and (b) have a USB pid:vid of 5740:0483, i.e. a STM32 device).
 
-If `ser2udp` is run in Windows as a bridge for mwp in WSLg, then it will also tell you the addresses of the Linux side interface.
+If `ser2udp` is run in Windows as a bridge in WSL, then it will also tell you the addresses of the Linux side interface.
 
 ```
 > ./set2udp.exe
@@ -27,7 +27,7 @@ External address: fe80::1439:d6de:efcb:97e1%17
 External address: 172.29.32.1
 ```
 
-In this case, for mwp use a device name of `udp://172.29.32.1:17071` on the Linux side. Note that for the WSLg case, this address is the default gateway address on the Linux side.
+In this case, for mwp use a device name of `udp://172.29.32.1:17071` on the Linux side. Note that for the WSL case, this address is the default gateway address on the Linux side.
 
 ### Verbosity
 
@@ -59,16 +59,11 @@ Thus:
 * In mwp preferences, set the serial device to `udp://__MWP_SERIAL_HOST:17071` for WSL and `ser2udp`
 * Or in the shell, for some other provider `export MWP_SERIAL_HOST=foobox.org` if you have a use case.
 
-
 ## Building
 
-Building `ser2udp` requires a Go (golang) compiler. This is easily installed in Linux and can cross compile a Windows binary. You could otherwise install the Go compiler in Windows and build it there.
+Building `ser2udp` requires a Go (golang) compiler. This is easily installed in Linux and can cross compile binaries for other OS. You could otherwise install the Go natively and build there.
 
 * Build natively: `go build -ldflags "-w -s"`
 * Cross compile for Windows: `GOOS=windows go build -ldflags "-w -s"`
 
 For convenience, there is a Makefile that provides suitable targets.
-
-## Further Info
-
-Further information, for example automating the launching of `ser2udp.exe` from WSL is described in the [user guide](https://stronnag.github.io/mwptools/mwp-in-Windows-11---WSL-G/#autos2n).
