@@ -127,19 +127,16 @@ namespace Survey {
 
 			ss_angle.text = "0";
 			ss_angle.activate.connect(() => {
-					reset_view();
 					generate_square();
 				});
 
 			ss_dist.text = "50";
 			ss_dist.activate.connect(() => {
-					reset_view();
 					generate_square();
 				});
 
 			ss_exp.text = "7";
 			ss_exp.activate.connect(() => {
-					reset_view();
 					generate_square();
 				});
 
@@ -156,7 +153,6 @@ namespace Survey {
 					if(as_type.selected == 0) {
 						generate_path();
 					} else {
-						reset_view();
 						generate_square();
 					}
 				});
@@ -253,7 +249,7 @@ namespace Survey {
 			double clat, clon;
 			MapUtils.get_centre_location(out clat, out clon);
 			var mk = new MWPPoint.with_colour("#00ffff60");
-			mk.set_size_request(SQRSZ, SQRSZ);
+			mk.set_size_request(POINTSZ, POINTSZ);
 			mk.latitude = clat;
 			mk.longitude = clon;
 			mk.no = 0;
@@ -353,16 +349,14 @@ namespace Survey {
 		private void  generate_square() {
 			var col = "#00ffff60";
 			var pts = Gis.svy_mpath.get_nodes();
-			var npts = pts.length();
-			for( var j = 1; j < npts; j++) {
-				var mk = (MWPMarker)Gis.svy_path.get_nodes().nth_data(j);
-					Gis.svy_mpoints.remove_marker(mk);
-					Gis.svy_mpath.remove_node(mk);
-			}
-
 			var mk = (MWPPoint)pts.nth_data(0);
 			double plat = mk.latitude;
 			double plon = mk.longitude;
+			reset_view();
+			pts = Gis.svy_mpath.get_nodes();
+			mk = (MWPPoint)pts.nth_data(0);
+			mk.latitude = plat;
+			mk.longitude = plon;
 			mk.set_draggable(false);
 			var dist = DStr.strtod(ss_dist.text, null);
 			var iangle = int.parse(ss_angle.text);
