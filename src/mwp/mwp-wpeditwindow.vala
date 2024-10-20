@@ -98,7 +98,13 @@ public class WPPopEdit : Adw.Window {
 	public signal void completed(bool state);
 	public signal void marker_changed(Msp.Action act);
 
-    public WPPopEdit(string posit) {
+	public void set_jump_dst(int n) {
+		if(jump1ent != null) {
+			jump1ent.text = n.to_string();
+		}
+	}
+
+	public WPPopEdit(string posit) {
 		var sbox = new Gtk.Box(Gtk.Orientation.VERTICAL, 2);
 		var header_bar = new Adw.HeaderBar();
 		sbox.append(header_bar);
@@ -191,12 +197,17 @@ public class WPPopEdit : Adw.Window {
             wpt.optional = 0;
             if(headcb.active) {
                 wpt.optional |= WPEditMask.SETHEAD;
-            }
+            } else {
+				headent.text = "";
+			}
             wpt.heading = int.parse(headent.text);
 
             if(jumpcb.active) {
                 wpt.optional |= WPEditMask.JUMP;
-            }
+			} else {
+				jump1ent.text = "";
+				jump2ent.text = "";
+			}
             wpt.jump1 = int.parse(jump1ent.text);
             wpt.jump2 = int.parse(jump2ent.text);
             if(rthcb.active) {
@@ -432,6 +443,7 @@ public class WPPopEdit : Adw.Window {
                 grid.attach (jumpcb, 0, j);
                 txt = "%d".printf(wpt.jump1);
                 jump1ent = new QEntry(txt, 3, Gtk.InputPurpose.DIGITS);
+				jump1ent.tooltip_text = "Enter the WP number of a valid, visible geographic WP. mwp will adjust the target number as required";
                 grid.attach (jump1ent, 1, j);
 
                 grid.attach (qlabel("Iterations"), 2, j);

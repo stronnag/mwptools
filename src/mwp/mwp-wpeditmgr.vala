@@ -16,6 +16,22 @@
  */
 
 namespace EditWP {
+	[Flags]
+	private enum EIFields {
+		NO,
+		P1,
+		P2,
+		P3,
+		ALT,
+		JUMP1,
+		JUMP2,
+		HDR,
+		RTL,
+		ACT,
+		FLAG,
+		OPT
+	}
+
 	private EditItem create(int no, out string posit) {
 		EditItem ei ={};
 		MissionItem mi;
@@ -41,14 +57,38 @@ namespace EditWP {
 		}
 		if ((mi._mflag & MsnTools.IFlags.JUMPF) != 0) {
 			ei.optional |= WPEditMask.JUMP;
+			int _p1, _p2;
+			if(get_extra(mi.no, Msp.Action.JUMP, out _p1, out _p2)) {
+				ei.jump1 = _p1;
+				ei.jump2 = _p2;
+			}
 		}
 		if ((mi._mflag & MsnTools.IFlags.SET_HEAD) != 0) {
 			ei.optional |= WPEditMask.SETHEAD;
+			int _p1, _p2;
+			if(get_extra(mi.no, Msp.Action.SET_HEAD, out _p1, out _p2)) {
+				ei.heading = _p1;
+			}
 		}
 		return ei;
 	}
 
-	private void extract(int no, EditItem ei, EditItem orig) {
+	private bool get_extra(int idx, Msp.Action act, out int p1, out int p2) {
+		p1 = 0;
+		p2 = 0;
+		var m = MissionManager.current();
+		for(var j = idx; j < m.npoints; j++) {
+			if (m.points[j].action == act) {
+				p1 = m.points[j].param1;
+				p2 = m.points[j].param2;
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private bool extract(int no, EditItem ei, EditItem orig) {
+		bool ret = true;
 		MissionItem mi;
 		var ms = MissionManager.current();
 		var idx = ms.get_index(no);
@@ -99,18 +139,31 @@ namespace EditWP {
 		omask = (orig.optional & WPEditMask.JUMP);
 		if (emask != omask) {
 			if(emask != 0) { // added JUMP
-				wanted = insert_element(idx, Msp.Action.JUMP);
+				int valmax = (int)ms.npoints;
+				var jok = validate_jump(no, ei.jump1, valmax);
+				if(jok) {
+					wanted = insert_element(idx, Msp.Action.JUMP);
+					if(ei.jump1 > no) {
+						ei.jump1++;
+					}
+				} else {
+					ret = false;
+				}
 			} else { // removed JUMP
 				remove_element(idx, Msp.Action.JUMP);
 			}
 		} else {
 			wanted = find_next(idx, Msp.Action.JUMP);
+			var jok = validate_jump(idx, ei.jump1, (int)ms.npoints);
+			if(!jok) {
+				ret = false;
+				wanted = -1;
+			}
 		}
 		if(wanted != -1) {
 			ms.points[wanted].param1 = ei.jump1;
 			ms.points[wanted].param2 = ei.jump2;
 		}
-
 		wanted = -1;
 		emask = (ei.optional & WPEditMask.RTH);
 		omask = (orig.optional & WPEditMask.RTH);
@@ -126,12 +179,63 @@ namespace EditWP {
 		if(wanted != -1) {
 			ms.points[wanted].param1 = ei.rthland;
 		}
+		return ret;
+	}
+
+	private bool validate_jump(int src, int dst, int lastid) {
+		bool jok = false;
+
+		jok =  !(dst < 1 || ((dst > src-2) && (dst < src+2)) || (dst > lastid));
+		if(jok) {
+			var m = MissionManager.current();
+			jok = m.points[dst-1].is_geo();
+		}
+		return jok;
+	}
+
+	private EIFields eicmp(EditItem ei, EditItem xi) {
+		EIFields res = 0;
+		if(ei.no != xi.no) {
+			res |= EIFields.NO;
+		}
+		if(ei.p1 != xi.p1) {
+			res |= EIFields.P1;
+		}
+		if(ei.p2 != xi.p2) {
+			res |= EIFields.P2;
+		}
+		if(ei.alt != xi.alt) {
+			res |= EIFields.ALT;
+		}
+		if(ei.jump1 != xi.jump1) {
+			res |= EIFields.JUMP1;
+		}
+		if(ei.jump2 != xi.jump2) {
+			res |= EIFields.JUMP2;
+		}
+		if(ei.heading != xi.heading) {
+			res |= EIFields.HDR;
+		}
+		if(ei.rthland != xi.rthland) {
+			res |= EIFields.RTL;
+		}
+		if(ei.action != xi.action) {
+			res |= EIFields.ACT;
+		}
+		if(ei.flag != xi.flag) {
+			res |= EIFields.FLAG;
+		}
+		if(ei.optional != xi.optional) {
+			res |= EIFields.OPT;
+		}
+		return res;
 	}
 
 	public void editwp(int no) {
 		string posit;
 		var ei = create(no, out posit);
 		var orig = ei;
+		var xorig = ei;
 		var dlg = new WPPopEdit(posit);
 		dlg.marker_changed.connect((s) => {
 				//var typ = Msp.get_wpname(s);
@@ -148,12 +252,22 @@ namespace EditWP {
 						FWApproach.set(MissionManager.mdx+8, l);
 						ll = true;
 					}
-					chg = Memory.cmp(&ei, &orig, sizeof(EditItem));
+					chg = eicmp(ei, orig); //Memory.cmp(&ei, &orig, sizeof(EditItem));
 					if(chg != 0) {
-						extract(ei.no, ei, orig);
-						MissionManager.is_dirty = true;
+						var res = extract(ei.no, ei, orig);
+						if (!res) {
+							dlg.set_jump_dst(orig.jump1);
+							var msg = "Invalid jump target (#%d).".printf(ei.jump1);
+							var buri = new Gtk.LinkButton.with_label("https://github.com/iNavFlight/inav/wiki/MSP-Navigation-Messages#jump", "INAV Wiki jump validation rules");
+							Utils.warning_box(msg, 0, dlg, buri);
+						}
+						orig = ei;
 					}
 				} else {
+					chg = eicmp(ei, xorig); //Memory.cmp(&ei, &xorig, sizeof(EditItem));
+					if(chg != 0) {
+						MissionManager.is_dirty = true;
+					}
 					dlg.close();
 				}
 				if(chg != 0 || ll) {
@@ -161,7 +275,6 @@ namespace EditWP {
 					MsnTools.renumber_mission(MissionManager.current());
 					MissionManager.visualise_mission();
 				}
-
 			});
 		dlg.wpedit(ei);
 	}

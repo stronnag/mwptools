@@ -293,10 +293,9 @@ namespace Utils {
         return s;
     }
 
-	public void warning_box(string warnmsg,	int timeout = 0) {
+	public void warning_box(string warnmsg,	int timeout = 0, Gtk.Window? w = null, Gtk.Widget? extra=null) {
 		uint tid = 0;
 		var am = new Adw.AlertDialog("MWP Message",  warnmsg);
-
 		am. set_body_use_markup (true);
 		am.add_response ("ok", "OK");
 		am.response.connect((s) => {
@@ -304,7 +303,15 @@ namespace Utils {
 					Source.remove(tid);
 				}
 			});
-		am.present(Mwp.window);
+		if(w == null) {
+			w = Mwp.window;
+		}
+
+		if(extra != null) {
+			am.set_extra_child(extra);
+		}
+
+		am.present(w);
 		if(timeout > 0) {
             tid = Timeout.add_seconds_once(timeout, () => {
 					tid = 0;
