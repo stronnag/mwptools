@@ -127,7 +127,7 @@ namespace EditWP {
 			} else { // remove SH
 				remove_element(idx, Msp.Action.SET_HEAD);
 			}
-		} else {
+		} else if (emask != 0) {
 			wanted = find_next(idx, Msp.Action.SET_HEAD);
 		}
 		if (wanted != -1) {
@@ -152,7 +152,7 @@ namespace EditWP {
 			} else { // removed JUMP
 				remove_element(idx, Msp.Action.JUMP);
 			}
-		} else {
+		} else if(emask != 0) { // edited JUMP
 			wanted = find_next(idx, Msp.Action.JUMP);
 			var jok = validate_jump(idx, ei.jump1, (int)ms.npoints);
 			if(!jok) {
@@ -173,7 +173,7 @@ namespace EditWP {
 			} else { // removed RTH
 				remove_element(idx, Msp.Action.RTH);
 			}
-		} else {
+		} else if (emask != 0) {
 			wanted = find_next(idx, Msp.Action.RTH);
 		}
 		if(wanted != -1) {
