@@ -387,7 +387,7 @@ namespace Mwp {
 			set_mission_menus(false);
 			reboot_status();
 			set_replay_menus(true);
-			string []opts={"stop-replay", "kml-remove", "gz-edit", "gz-save", "gz-kml", "gz-clear"};
+			string []opts={"stop-replay", "kml-remove", /*"gz-edit",*/ "gz-save", "gz-kml", "gz-clear"};
 			foreach(var o in opts) {
 				MwpMenu.set_menu_state(Mwp.window, o, false);
 			}

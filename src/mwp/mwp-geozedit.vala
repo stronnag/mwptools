@@ -243,13 +243,17 @@ public class GZEdit : Adw.Window {
 		buttons[Buttons.NEXT].clicked.connect(() => {
 				remove_edit_markers();
 				newlab.visible=false;
-				nitem = (nitem + 1) % Mwp.gzr.length();
+				if(Mwp.gzr.length() > 0) {
+					nitem = (nitem + 1) % Mwp.gzr.length();
+				}
 				set_buttons_sensitive();
 				edit_markers();
 			});
 
 		buttons[Buttons.REMOVE].clicked.connect(() => {
-				remove_current_zone();
+				if(Mwp.gzr.length() > 0) {
+					remove_current_zone();
+				}
 			});
 
 		buttons[Buttons.ADD].clicked.connect(() => {
