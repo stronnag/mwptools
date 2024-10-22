@@ -11,7 +11,7 @@ mwptools revisited
 
 The current default (`master`) branch is the (re)implementation of mwp using Gtk4 / libshumate.
 
-See the [migration guide](https://github.com/stronnag/mwptools/blob/master/docs/images/mwp4.png) for dependencies (and migration from the legacy version (`legacy` branch).
+See the [migration guide](https://github.com/stronnag/mwptools/blob/master/docs/mwp-Gtk4-migration-guide.md) for dependencies (and migration from the legacy version (`legacy` branch).
 
 mwp supports the following telemetry protocols:
 
