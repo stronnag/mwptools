@@ -58,6 +58,8 @@ public class GZEdit : Adw.Window {
 		ANY = 0xff,
 	}
 
+	const string NEWLAB="Once you've set any required fields (including <b>radius</b> for circles), click the <b>REFRESH</b> button to enable the shape";
+
 	public GZEdit() {
 		var gbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 2);
 		var header_bar = new Adw.HeaderBar();
@@ -162,7 +164,7 @@ public class GZEdit : Adw.Window {
 		newlab = new Gtk.Label(null);
 		newlab.set_use_markup(true);
 		newlab.wrap=true;
-		newlab.set_label("Once you've set any required fields (including <b>radius</b> for circles), click the <b>REFRESH</b> button to enable the shape");
+		newlab.label = NEWLAB;
 
 		Gtk.Box bbox = new Gtk.Box (Gtk.Orientation.HORIZONTAL,2);
 		bbox.set_spacing (16);
@@ -228,26 +230,27 @@ public class GZEdit : Adw.Window {
 		set_content(gbox);
 		nitem = 0;
 		buttons[Buttons.PREV].clicked.connect(() => {
-				remove_edit_markers();
-				newlab.visible=false;
-				if (nitem == 0) {
-					if(Mwp.gzr.length() > 0)
+				if(Mwp.gzr.length() > 0) {
+					remove_edit_markers();
+					newlab.label="";
+					if (nitem == 0) {
 						nitem = Mwp.gzr.length()-1;
-				} else {
-					nitem -= 1;
+					} else {
+						nitem -= 1;
+					}
+					set_buttons_sensitive();
+					edit_markers();
 				}
-				set_buttons_sensitive();
-				edit_markers();
 			});
 
 		buttons[Buttons.NEXT].clicked.connect(() => {
-				remove_edit_markers();
-				newlab.visible=false;
 				if(Mwp.gzr.length() > 0) {
+					remove_edit_markers();
+					newlab.label="";
 					nitem = (nitem + 1) % Mwp.gzr.length();
+					set_buttons_sensitive();
+					edit_markers();
 				}
-				set_buttons_sensitive();
-				edit_markers();
 			});
 
 		buttons[Buttons.REMOVE].clicked.connect(() => {
@@ -275,7 +278,7 @@ public class GZEdit : Adw.Window {
 						if (rad <= 0.0) {
 							return;
 						}
-						newlab.visible=false;
+						newlab.label="";
 						Mwp.gzr.append_zone(nitem, (GeoZoneManager.GZShape)zshape.selected,
 										  (GeoZoneManager.GZType)ztype.selected,
 										  minalt, maxalt,
@@ -283,12 +286,12 @@ public class GZEdit : Adw.Window {
 						k = Mwp.gzr.append_vertex(nitem, 0, (int)(clat*1e7), (int)(clon*1e7));
 						k = Mwp.gzr.append_vertex(nitem, 1, (int)(rad*100), 0);
 					} else {
-						newlab.visible=false;
+						newlab.label="";
 						Mwp.gzr.append_zone(nitem,
-										  (GeoZoneManager.GZShape)zshape.selected,
-										  (GeoZoneManager.GZType)ztype.selected,
-										  minalt, maxalt,
-										  (GeoZoneManager.GZAction)zaction.selected);
+											(GeoZoneManager.GZShape)zshape.selected,
+											(GeoZoneManager.GZType)ztype.selected,
+											minalt, maxalt,
+											(GeoZoneManager.GZAction)zaction.selected);
 						var delta = 16*Math.pow(2, (20-Gis.map.viewport.zoom_level));
 						double nlat, nlon;
 						for(var i = 0; i < 3; i++) {
@@ -335,7 +338,6 @@ public class GZEdit : Adw.Window {
 				refresh_storage(Upd.MAXALT, true);
 			});
 
-		//newlab.no_show_all = true;
 		grid.attach(newlab, 2, 2, 2, 4);
 		set_buttons_sensitive();
 	}
@@ -389,7 +391,7 @@ public class GZEdit : Adw.Window {
 
 
 	private void show_markers() {
-		newlab.visible=false;
+		//newlab.label=NEWLAB;
 		zidx.set_label(nitem.to_string());
 		ztype.selected = (int)Mwp.gzr.get_ztype(nitem);
 		zshape.selected = (int)Mwp.gzr.get_shape(nitem);
@@ -578,7 +580,7 @@ public class GZEdit : Adw.Window {
 
 	private void new_zone(bool rm = true) {
 		remove_edit_markers(rm);
-		newlab.visible=true;
+		newlab.label=NEWLAB;
 		nitem = Mwp.gzr.length();
 		toggle_shape();
 		zidx.set_label(nitem.to_string());
