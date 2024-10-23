@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/mwp_icon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.40">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.42">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.8c3ca2c6.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.0253249f.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -1321,12 +1321,12 @@ safehome 7 0 0 0
 <p>Note that editing functions are only available when the <code>Safe Homes</code> window is active; if the windows is dismissed with icons displayed, then the icons remain on the map, but are not editable.</p>
 <h3 id="display-safehomes-at-startup">Display safehomes at startup<a class="headerlink" href="#display-safehomes-at-startup" title="Permanent link">#</a></h3>
 <p>It also is possible to set a <code>gsettings</code> key to define a file of safehomes to load at startup, and optionally display (readonly) icons.</p>
-<pre><code>gsettings set org.mwptools.planner load-safehome ~/.config/mwp/safehome.txt,Y
+<pre><code>gsettings set org.stronnag.mwp load-safehome ~/.config/mwp/safehome.txt,Y
 </code></pre>
 <p>This sets the default safehomes file to <code>~/.config/mwp/safehome.txt</code> and the appended <code>,Y</code> means display the icons on the map.</p>
 <p>If the file also contains <code>fwapproach</code> data, that will be applied as well.</p>
 <p>If the name part is set to <code>-FC-</code>, then the safehomes will be loaded from the flight controller, for example:</p>
-<pre><code>gsettings get org.mwptools.planner load-safehome
+<pre><code>gsettings get org.stronnag.mwp load-safehome
 '-FC-,Y'
 </code></pre>
 <h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">#</a></h3>
@@ -1385,7 +1385,7 @@ safehome 7 0 0 0
     <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.525ec568.min.js"></script>
+      <script src="../assets/javascripts/bundle.83f73b43.min.js"></script>
       
     
   </body>

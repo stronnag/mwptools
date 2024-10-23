@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/mwp_icon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.40">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.42">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.8c3ca2c6.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.0253249f.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -2201,10 +2201,10 @@ $ gsettings set org.stronnag.mwp log-save-path ~/flight-logs/
 <h3 id="replicating-gsettings-between-machines-or-users">Replicating gsettings between machines or users<a class="headerlink" href="#replicating-gsettings-between-machines-or-users" title="Permanent link">#</a></h3>
 <p>The standard system <code>dconf</code> application can be used to back up and restore the above <code>gsettings</code>.
 To backup the settings:</p>
-<pre><code>dconf dump /org/mwptools/planner/  &gt;/tmp/mwp-dconf.txt
+<pre><code>dconf dump /org/stronnag/mwp  &gt;/tmp/mwp-dconf.txt
 </code></pre>
 <p>To restore the settings (overwrite). This could be for a different user or on a new machine.</p>
-<pre><code>dconf load /org/mwptools/planner/  &lt;/tmp/mwp-dconf.txt
+<pre><code>dconf load /org/stronnag/mwp  &lt;/tmp/mwp-dconf.txt
 </code></pre>
 <h2 id="settings-precedence-and-user-updates">Settings precedence and user updates<a class="headerlink" href="#settings-precedence-and-user-updates" title="Permanent link">#</a></h2>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> installs a number of icon files in <code>$prefix/share/mwp/pixmaps</code>. The user can override these by creating an eponymous file in the user configuration directory, <code>~/.config/mwp/pixmaps/</code>. Such user configurations are never over-written on upgrade.</p>
@@ -2362,7 +2362,7 @@ file ~/.config/mwp/pixmaps/inav-radar.svg
     <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.525ec568.min.js"></script>
+      <script src="../assets/javascripts/bundle.83f73b43.min.js"></script>
       
     
   </body>
