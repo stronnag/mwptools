@@ -24,8 +24,8 @@ Flite is configured using two `gsettings` keys:
 | `speech-api` | Defines the speech API to be used, one of `none`, `espeak`, `speechd` or `flite`  |
 | `flite-voice` | The voice file to be used. If not specified, the internal `slt` (female) voice is used. The value takes the absolute path name to a voice file, optionally followed by a `,` and a floating point speed factor (see below) |
 
-    $ gsettings set org.mwptools.planner speech-api flite
-    $ gsettings set org.mwptools.planner flite-voice-file /home/jrh/.config/mwp/cmu_us_clb.flitevox,0.9
+    $ gsettings set org.stronnag.mwp speech-api flite
+    $ gsettings set org.stronnag.mwp flite-voice-file /home/jrh/.config/mwp/cmu_us_clb.flitevox,0.9
 
 ## Discussion
 

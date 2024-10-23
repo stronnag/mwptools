@@ -88,11 +88,11 @@ The downside being that is RSSI if never discovered / advertised by the OS, then
 
 This mode is enabled by a setting:
 
-    $ gsettings set org.mwptools.planner  bluez-disco true
+    $ gsettings set org.stronnag.mwp  bluez-disco true
 
 This is persistent, in order to revert to the default, non-scanning no RSSI filter:
 
-    $ gsettings set org.mwptools.planner  bluez-disco false
+    $ gsettings set org.stronnag.mwp  bluez-disco false
 
 
 ### mwp-ble-bridge

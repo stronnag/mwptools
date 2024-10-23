@@ -25,13 +25,13 @@ That was the easy bit! Now it is necessary to tell {{ mwp }} where to find the p
 
 First of all, ensure that the `map-sources` setting is enabled:
 
-    $ gsettings get org.mwptools.planner map-sources
+    $ gsettings get org.stronnag.mwp map-sources
     'sources.json'
     # here this set to a file sources.json (in ~/.config/mwp/)
 
 if this is not set, then set it:
 
-    $ gsettings set org.mwptools.planner map-sources 'sources.json'
+    $ gsettings set org.stronnag.mwp map-sources 'sources.json'
 
 Now we need to edit the file `~/.config/mwp/sources.json`, there is a sample file in `mwptools/samples/sources.json `. you file needs a stanza like:
 

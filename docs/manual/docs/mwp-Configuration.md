@@ -268,11 +268,11 @@ This *may* not be installed by default, but should be available via the OS packa
 The standard system `dconf` application can be used to back up and restore the above `gsettings`.
 To backup the settings:
 
-    dconf dump /org/mwptools/planner/  >/tmp/mwp-dconf.txt
+    dconf dump /org/stronnag/mwp  >/tmp/mwp-dconf.txt
 
 To restore the settings (overwrite). This could be for a different user or on a new machine.
 
-    dconf load /org/mwptools/planner/  </tmp/mwp-dconf.txt
+    dconf load /org/stronnag/mwp  </tmp/mwp-dconf.txt
 
 ## Settings precedence and user updates
 

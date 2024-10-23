@@ -357,7 +357,7 @@ The document returned by DBus introspection **is** the definitive definition of 
           <arg type="s" name="machine_uuid" direction="out"/>
         </method>
       </interface>
-      <interface name="org.mwptools.mwp">
+      <interface name="org.stronng.mwp">
         <method name="GetStateNames">
           <arg type="as" name="names" direction="out"/>
           <arg type="i" name="result" direction="out"/>

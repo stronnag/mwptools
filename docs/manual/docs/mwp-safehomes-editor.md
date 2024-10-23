@@ -64,7 +64,7 @@ Note that editing functions are only available when the `Safe Homes` window is a
 
 It also is possible to set a `gsettings` key to define a file of safehomes to load at startup, and optionally display (readonly) icons.
 
-    gsettings set org.mwptools.planner load-safehome ~/.config/mwp/safehome.txt,Y
+    gsettings set org.stronnag.mwp load-safehome ~/.config/mwp/safehome.txt,Y
 
 This sets the default safehomes file to `~/.config/mwp/safehome.txt` and the appended `,Y` means display the icons on the map.
 
@@ -72,7 +72,7 @@ If the file also contains `fwapproach` data, that will be applied as well.
 
 If the name part is set to `-FC-`, then the safehomes will be loaded from the flight controller, for example:
 
-    gsettings get org.mwptools.planner load-safehome
+    gsettings get org.stronnag.mwp load-safehome
 	'-FC-,Y'
 
 ### Example

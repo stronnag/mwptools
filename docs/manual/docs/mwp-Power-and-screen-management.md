@@ -6,12 +6,12 @@ There are a number of ways of managing the screen (inhibit screen saver etc.)
 
 * Use the legacy {{ mwp }}  settings options, for example:
 
-    	org.mwptools.planner atexit 'gsettings set org.gnome.settings-daemon.plugins.power idle-dim true'
-    	org.mwptools.planner atstart 'gsettings set org.gnome.settings-daemon.plugins.power idle-dim false'
+    	org.stronnag.mwp atexit 'gsettings set org.gnome.settings-daemon.plugins.power idle-dim true'
+    	org.stronnag.mwp atstart 'gsettings set org.gnome.settings-daemon.plugins.power idle-dim false'
 
 * Allow {{ mwp }} to manage screen and power settings, controlled by a setting:
 
-    	gsettings set org.mwptools.planner manage-power true
+    	gsettings set org.stronnag.mwp manage-power true
 
 In the first two cases, the setting is somewhat coarse, either requiring the user to click on something and applying to the whole {{ mwp }} session.
 

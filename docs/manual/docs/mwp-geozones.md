@@ -33,11 +33,11 @@ The effect these parameters have on FC behaviour will, presumably, be made avail
 
 ![mwp geozones](images/geozones_00.png){: width="50%" }
 
-Note that the Save, Export, Clear, Download and Upload  options are not sensitive if no geozone is loaded. Once a geozone is loaded, some or all of these options will be enabled. The MSP options are only enabled if the FC offers `feature GEOZONE`.
+Note that the **Save**, **Export**, **Clear**, **Download** and **Upload** options are not sensitive if no geozone is loaded. Once a geozone is loaded, some or all of these options will be enabled. The MSP options are only enabled if the FC offers `feature GEOZONE`.
 
-Note that if `feature GEOZONE` is present, {{ mwp }} will attempt to load Geozones from the FC unless the setting `autoload-geozones` is false, e.g.:
+Note that if `feature GEOZONE` is present, {{ mwp }} will attempt to load Geozones from the FC if the setting `autoload-geozones` is true, e.g.:
 
-    gsettings set org.mwptools.planner autoload-geozones false
+    gsettings set org.stronnag.mwp autoload-geozones true
 
 ## User Interface
 
