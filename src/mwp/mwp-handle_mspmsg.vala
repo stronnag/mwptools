@@ -122,21 +122,25 @@ namespace Mwp {
 				queue_cmd(Msp.Cmds.API_VERSION, null,0);
 				run_queue();
 				break;
+
 			case Msp.Cmds.WP_MISSION_LOAD:
 				queue_cmd(msp_get_status,null,0);
 				run_queue();
 				break;
+
 			case Msp.Cmds.INAV_STATUS:
 			case Msp.Cmds.BOX: // e.g. ACTIVEBOXES
 				msp_get_status = Msp.Cmds.STATUS_EX;
 				queue_cmd(msp_get_status,null,0);
 				run_queue();
 				break;
+
 			case Msp.Cmds.STATUS_EX:
 				msp_get_status = Msp.Cmds.STATUS;
 				queue_cmd(msp_get_status,null,0);
 				run_queue();
 				break;
+
 			case  Msp.Cmds.WP_GETINFO:
 			case  Msp.Cmds.SET_RTC:
 			case  Msp.Cmds.COMMON_SETTING:
@@ -507,6 +511,7 @@ namespace Mwp {
 
 				if ((raw[3] & 0x10) == 0x10) {
 					navcap = NAVCAPS.WAYPOINTS|NAVCAPS.NAVSTATUS|NAVCAPS.NAVCONFIG;
+					wp_max = 120;
 				} else {
 					navcap = NAVCAPS.NONE;
 				}
@@ -861,6 +866,7 @@ namespace Mwp {
 			uint8* rp = raw;
 			rp++;
 			wp_max = wpi.max_wp = *rp++;
+			MWPLog.message("GETINFO %d\n", wp_max);
 			wpi.wps_valid = *rp++;
 			wpi.wp_count = *rp;
 			MWPLog.message("WP_GETINFO: %u/%u/%u\n",

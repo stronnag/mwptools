@@ -211,7 +211,6 @@ namespace Mwp {
 
 		rhdop = 10000;
 		gpsintvl = 0;
-		wp_max = 0;
 
 		nav_wp_safe_distance = 10000;
 		safehome_max_distance = 20000;
