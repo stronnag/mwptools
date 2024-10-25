@@ -605,28 +605,28 @@ namespace Mwp {
 					var i = raw[j];
                     sb.append_printf(" %d", i);
 					switch(i) {
-					case Perm.ID.PERM_ARM:
+					case Perm.ID.ARM:
 						arm_mask = (1 << j);
 						break;
-					case Perm.ID.PERM_ANGLE:
+					case Perm.ID.ANGLE:
 						angle_mask = (1 << j);
 						break;
-					case Perm.ID.PERM_HORIZON:
+					case Perm.ID.HORIZON:
 						horz_mask = (1 << j);
 						break;
-					case Perm.ID.PERM_NAV_RTH:
+					case Perm.ID.NAV_RTH:
 						rth_mask = (1 << j);
 						break;
-					case Perm.ID.PERM_NAV_POSHOLD:
+					case Perm.ID.NAV_POSHOLD:
 						ph_mask = (1 << j);
 						break;
-					case Perm.ID.PERM_NAV_WP:
+					case Perm.ID.NAV_WP:
 						wp_mask = (1 << j);
 						break;
-					case Perm.ID.PERM_NAV_COURSE_HOLD:
+					case Perm.ID.NAV_COURSE_HOLD:
 						cr_mask = (1 << j);
 						break;
-					case Perm.ID.PERM_FAILSAFE:
+					case Perm.ID.FAILSAFE:
 						fs_mask = (1 << j);
 						break;
 					}
