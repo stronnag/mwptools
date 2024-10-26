@@ -1729,12 +1729,6 @@ $ gsettings set org.stronnag.mwp log-save-path ~/flight-logs/
 <td>false</td>
 </tr>
 <tr>
-<td>auto-wp-edit</td>
-<td>Whether direct WP editing is available</td>
-<td>If true, the user can edit / create waypoints directly by clicking on the map, if false, it is necessary to toggle the WP Edit button to enable editing.</td>
-<td>false</td>
-</tr>
-<tr>
 <td>autoload-geozones</td>
 <td>Autoload geozones from FC</td>
 <td>Autoload geozones from FC on connect, remove from display on disconnect</td>
@@ -1762,7 +1756,7 @@ $ gsettings set org.stronnag.mwp log-save-path ~/flight-logs/
 <td>bluez-disco</td>
 <td>Use Bluetooth discovery</td>
 <td>Only discovered Bluetooth serial devices with non-zero RSSI will be offered</td>
-<td>false</td>
+<td>true</td>
 </tr>
 <tr>
 <td>default-altitude</td>
@@ -1901,6 +1895,12 @@ $ gsettings set org.stronnag.mwp log-save-path ~/flight-logs/
 <td>gps sanity time (m/s)</td>
 <td>gps sanity time (m/s), check for current fix</td>
 <td>2000</td>
+</tr>
+<tr>
+<td>ident-limit</td>
+<td>MSP_IDENT limit for MSP recognition</td>
+<td>Timeout value in seconds for a MSP FC to reply to a MSP_INDENT probe. Effectively a timeout counter in seconds. Set to a negative value to disable.</td>
+<td>60</td>
 </tr>
 <tr>
 <td>ignore-nm</td>
