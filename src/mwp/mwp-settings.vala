@@ -63,7 +63,6 @@ public class MWPSettings : GLib.Object {
     public string wp_text {get; set; default="Sans 72/#ff000060";}
     public string wp_spotlight {get; set; default="#ffffff60";}
     public uint flash_warn { get; set; default=0; }
-    public bool auto_wp_edit {get; set; default=true;}
     public bool horizontal_dbox {get; set; default=false;}
     public uint osd_mode {get; set; default=3;}
     public double wp_dist_fontsize {get; set; default=56;}

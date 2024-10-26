@@ -71,3 +71,5 @@ The tools are designed to be portable and as far as possible platform and archit
 Build and installation is described in the following sections:
 
 * [Generic build and installation](Building-with-meson-and-ninja.md).
+
+If you are migrating from the legacy (Gtk+-3.0) version to the extant (Gtk 4) version, you are advised to read the [migration guide](mwp-Gtk4-migration-guide.md) first.

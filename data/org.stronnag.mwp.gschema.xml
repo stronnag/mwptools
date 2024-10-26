@@ -357,15 +357,6 @@
       </description>
     </key>
 
-    <key name="auto-wp-edit" type="b">
-      <default>false</default>
-      <summary>Whether direct WP editing is available
-      </summary>
-      <description>
-	If true, the user can edit / create waypoints directly by clicking on the map, if false, it is necessary to toggle the WP Edit button to enable editing.
-      </description>
-    </key>
-
     <key name="osd-mode" type="u">
       <default>3</default>
       <summary>Data items overlaid on the map</summary>

@@ -227,7 +227,6 @@ sudo dnf5 install -y libshumate-devel vte291-gtk4-devel protobuf-c-devel \
 | audio-on-arm | start audio on arm | start audio on arm (and stop on disarm) | true |
 | auto-follow | set auto-follow | set auto-follow on start | true |
 | auto-restore-mission | Whether to automatically import a mission in FC memory to MWP | If the FC holds a valid mission in memory, and there is no mission loaded into MWP, this setting controls whether MWP automatically downloads the mission. | false |
-| auto-wp-edit | Whether direct WP editing is available | If true, the user can edit / create waypoints directly by clicking on the map, if false, it is necessary to toggle the WP Edit button to enable editing. | false |
 | autoload-geozones | Autoload geozones from FC | Autoload geozones from FC on connect, remove from display on disconnect | false |
 | baudrate | Baud rate | Serial baud rate | 115200 |
 | beep | Beep for alerts | Whether to emit an alert sound for alerts. | true |
