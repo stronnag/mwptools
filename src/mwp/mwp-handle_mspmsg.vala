@@ -866,7 +866,6 @@ namespace Mwp {
 			uint8* rp = raw;
 			rp++;
 			wp_max = wpi.max_wp = *rp++;
-			MWPLog.message("GETINFO %d\n", wp_max);
 			wpi.wps_valid = *rp++;
 			wpi.wp_count = *rp;
 			MWPLog.message("WP_GETINFO: %u/%u/%u\n",
