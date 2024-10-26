@@ -99,7 +99,7 @@ public class MWPSettings : GLib.Object {
     public uint view_mode {get; set; default=0;}
     public int msp2_adsb {get; set; default=0;}
 	public int los_margin {get; set; default=0;}
-	public bool bluez_disco {get; set; default=false;}
+	public bool bluez_disco {get; set; default=true;}
 	public bool autoload_geozones {get; set; default=false;}
 	public int min_dem_zoom {get; set; default=9;}
 	public string mapbox_apikey {get; set; default="";}
