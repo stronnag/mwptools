@@ -1174,7 +1174,6 @@ namespace Mwp {
 			break;
 
 		case Msp.Cmds.WP_MISSION_SAVE:
-			MWPLog.message("Msp Recv %s\n", cmd.to_string());
 			MWPLog.message("Confirmed mission save\n");
 			if ((wpmgr.wp_flag & WPDL.GETINFO) != 0) {
 				if(inav)
@@ -1182,10 +1181,9 @@ namespace Mwp {
 				Mwp.window.validatelab.set_text("✔"); // u+2714
 				Utils.warning_box("Mission uploaded", 5);
 			}
-						break;
+			break;
 
 		case Msp.Cmds.EEPROM_WRITE:
-			MWPLog.message("Msp Recv %s\n", cmd.to_string());
 			MWPLog.message("Wrote EEPROM\n");
 			if ((wpmgr.wp_flag & WPDL.RESET_POLLER) != 0) {
 				wp_reset_poller();

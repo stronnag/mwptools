@@ -103,8 +103,13 @@ namespace Mwp {
 					msg[k] = s.data[k];
 				}
 				msg[k] = 0;
-				msg[k+1] = (uint8)MissionManager.mdx+1;
-				MWPLog.message("Set active %d\n", msg[k+1]);
+				uint actmm = (int8)MissionManager.mdx+1;
+				if (actmm == 0)  {
+					MWPLog.message("Warning:: mdx=-1 on save **FIXME**\n");
+					actmm = 1;
+				}
+				msg[k+1] = (uint8)actmm;
+				MWPLog.message("Set active mission %d\n", actmm);
 				queue_cmd(Msp.Cmds.COMMON_SET_SETTING, msg, k+2);
 			}
 		} else if ((wpmgr.wp_flag & WPDL.RESET_POLLER) != 0) {

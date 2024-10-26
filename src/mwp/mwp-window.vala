@@ -645,7 +645,7 @@ namespace Mwp {
 				{"upload-missions",do_missions_upload},
 				{"download-mission", do_download_mission},
 				{"restore-mission", restore_mission},
-				{"store_mission", store_mission},
+				{"store-mission", store_mission},
 				{"gz-load", GZUtils.load_dialog},
 				{"gz-save", do_gz_save},
 				{"gz-kml", do_gz_kml},
