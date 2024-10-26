@@ -109,7 +109,7 @@ namespace CRSF {
 				Rebase.relocate(ref dlat, ref dlon);
 			}
 
-			alt *= 100;
+			//alt *= 100;
 			ser.td.gps.lat = dlat;
 			ser.td.gps.lon = dlon;
 			ser.td.gps.gspeed = gspeed;
