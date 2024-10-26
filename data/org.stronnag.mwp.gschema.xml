@@ -547,6 +547,12 @@
       <description>Default window size size as percent of monitor size for non-full screen invocation.</description>
     </key>
 
+    <key name="ident-limit" type="i">
+      <default>60</default>
+      <summary>MSP_IDENT limit for MSP recognition</summary>
+      <description>Timeout value in seconds for a MSP FC to reply to a MSP_INDENT probe. Effectively a timeout counter in seconds. Set to a negative value to disable.</description>
+    </key>
+
     <key name="misc-icon-size" type="i">
       <default>32</default>
       <summary>Miscellaneous icon size</summary>

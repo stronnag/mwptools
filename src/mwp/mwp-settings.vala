@@ -105,6 +105,7 @@ public class MWPSettings : GLib.Object {
 	public string mapbox_apikey {get; set; default="";}
 	public double symbol_scale {get; set; default=1.0;}
 	public int window_scale {get; set; default=80;}
+	public int ident_limit  {get; set; default=60;}
 	public double touch_factor {get; set; default=0.0;}
 
 	public signal void settings_update (string s);
@@ -155,6 +156,7 @@ public class MWPSettings : GLib.Object {
 		settings.bind("geouser", this, "geouser", SettingsBindFlags.DEFAULT);
 		settings.bind("gpsd-host", this, "gpsdhost", SettingsBindFlags.DEFAULT);
 		settings.bind("gpsintvl", this, "gpsintvl", SettingsBindFlags.DEFAULT);
+		settings.bind("ident-limit", this, "ident_limit", SettingsBindFlags.DEFAULT);
 		settings.bind("ignore-nm", this, "ignore-nm", SettingsBindFlags.DEFAULT);
 		settings.bind("kml-path", this, "kmlpath", SettingsBindFlags.DEFAULT);
 		settings.bind("led", this, "led", SettingsBindFlags.DEFAULT);

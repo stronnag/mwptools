@@ -376,9 +376,9 @@ namespace Mwp {
 									}
 									if (lastmsg.cmd == Msp.Cmds.IDENT) {
 										idcount++;
-										if(idcount == 60) {
+										if(idcount == Mwp.conf.ident_limit) {
 											Msp.close_serial();
-											Utils.warning_box("No response received from the FC\nPlesae check connection and protocol\nConsider <tt>--no-poll</tt> if this is intentional");
+											Utils.warning_box("No response received from the FC\nPlesae check connection and protocol\nConsider <tt>--no-poll</tt> if this is intentional\nSee also the <tt>ident-limit</tt> setting");
 											idcount = 0;
 										}
 									}
