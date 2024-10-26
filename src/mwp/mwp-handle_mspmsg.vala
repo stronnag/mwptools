@@ -30,6 +30,8 @@ namespace Mwp {
 	bool prlabel;
 	bool gz_from_msp;
 	uint8 []boxids;
+	int idcount;
+
 
     private void msp_publish_home(uint8 id) {
         if(id < Safehome.MAXHOMES) {
@@ -119,6 +121,7 @@ namespace Mwp {
 				break;
 
 			case Msp.Cmds.IDENT:
+				idcount = -7200;
 				queue_cmd(Msp.Cmds.API_VERSION, null,0);
 				run_queue();
 				break;
@@ -494,6 +497,7 @@ namespace Mwp {
 			break;
 
 		case Msp.Cmds.IDENT:
+			idcount = 0;
 			last_gps = 0;
 			have_vers = true;
 			//bat_annul();

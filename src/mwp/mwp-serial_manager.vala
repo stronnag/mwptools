@@ -237,6 +237,7 @@ namespace Msp {
 				MWPLog.message("Serial %s (%x) ready %s\n", serdev, cmode, Mwp.nopoll.to_string());
 				if(Mwp.nopoll == false && !Mwp.mqtt_available) {
 					Mwp.serstate = Mwp.SERSTATE.NORMAL;
+					Mwp.msp.use_v2 = false;
 					Mwp.queue_cmd(Msp.Cmds.IDENT,null,0);
 					Mwp.run_queue();
 				} else

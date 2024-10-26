@@ -157,6 +157,7 @@ namespace Mwp {
 		pausetm = 0;;
 		rtcsecs = 0;
 		phtim = 0;
+		idcount = 0;
 
 		armed = 0;
 		dac = 0;
@@ -353,6 +354,7 @@ namespace Mwp {
                                 init_state();
                                 init_sstats();
                                 serstate = SERSTATE.NORMAL;
+								idcount = 0;
                                 queue_cmd(Msp.Cmds.IDENT,null,0);
                                 if(inhibit_cookie != 0) {
                                     Mwp.window.application.uninhibit(inhibit_cookie);
@@ -371,6 +373,14 @@ namespace Mwp {
 													   nticks, lastok, lastrx, res, serstate.to_string());
 									if (lastmsg.cmd == Msp.Cmds.ADSB_VEHICLE_LIST) {
 										clear_poller_item(Msp.Cmds.ADSB_VEHICLE_LIST);
+									}
+									if (lastmsg.cmd == Msp.Cmds.IDENT) {
+										idcount++;
+										if(idcount == 60) {
+											Msp.close_serial();
+											Utils.warning_box("No response received from the FC\nPlesae check connection and protocol\nConsider <tt>--no-poll</tt> if this is intentional");
+											idcount = 0;
+										}
 									}
 									lastok = nticks;
 									tcycle = 0;
