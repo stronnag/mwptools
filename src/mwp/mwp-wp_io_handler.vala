@@ -19,6 +19,7 @@ namespace Mwp {
     private WPMGR wpmgr;
     private uint8 last_wp_pts =0;
 	private uint upltid;
+	private uint timeo;
 
     private void remove_tid(ref uint tid) {
         if(tid > 0)
@@ -159,12 +160,15 @@ namespace Mwp {
 		rp = SEDE.deserialise_i16(rp, out w.p3);
 		w.flag = *rp;
         wpmgr.wps += w;
-		bool done;
+		bool done = false;
 
-		if(vi.fc_vers >= FCVERS.hasWP_V4)
-			done = (wpmgr.wps.length == wpmgr.npts);
-		else
-			done = (w.flag == 0xa5);
+		if(vi.fc_vers >= FCVERS.hasWP_V4 && wpmgr.wps.length == wpmgr.npts) {
+			done = true;
+		}
+
+		if (w.flag == 0xa5) {
+			done = true;
+		}
 
 		if(done) {
 			var ms = MissionManager.current();
@@ -178,7 +182,7 @@ namespace Mwp {
 				MissionManager.is_dirty = false;
 				MissionManager.mdx = imdx;
 				MissionManager.setup_mission_from_mm();
-				MWPLog.message("Download completed #%d (%d)\n", nwp, MissionManager.mdx);
+				MWPLog.message("WP Download completed #%d (idx=%d)\n", nwp, MissionManager.mdx);
 				Mwp.window.validatelab.set_text("✔"); // u+2714
 				wp_get_approaches(0);
 			} else {
@@ -199,7 +203,6 @@ namespace Mwp {
 	private void start_download() {
 		serstate = SERSTATE.NORMAL;
 		mq.clear();
-		int timeo;
 		int rwp;
 		//		wpi.max_wp, wpi.wp_count
 		rwp = (wpi.wp_count > 0) ? wpi.wp_count : wp_max;

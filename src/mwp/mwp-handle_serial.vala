@@ -292,6 +292,7 @@ namespace Mwp {
         have_wp = false;
         buf[0] = wp;
         queue_cmd(Msp.Cmds.WP,buf,1);
+		run_queue();
     }
 
 	void msg_poller() {
@@ -305,7 +306,6 @@ namespace Mwp {
 	void resend_last() {
         if(msp.available) {
             if(lastmsg.cmd != Msp.Cmds.INVALID) {
-				//                MWPLog.message("resend %s\n", lastmsg.cmd.o_string());
                 msp.send_command((uint16)lastmsg.cmd, lastmsg.data, lastmsg.len);
             } else
                 run_queue();
@@ -317,7 +317,6 @@ namespace Mwp {
             mq.clear();
         } else if(msp.available && !mq.is_empty()) {
             lastmsg = mq.pop_head();
-			//            MWPLog.message("send %s\n", lastmsg.cmd.to_string());
             msp.send_command((uint16)lastmsg.cmd, lastmsg.data, lastmsg.len);
         }
     }
