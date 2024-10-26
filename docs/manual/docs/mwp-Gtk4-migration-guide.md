@@ -232,7 +232,7 @@ sudo dnf5 install -y libshumate-devel vte291-gtk4-devel protobuf-c-devel \
 | baudrate | Baud rate | Serial baud rate | 115200 |
 | beep | Beep for alerts | Whether to emit an alert sound for alerts. | true |
 | blackbox-decode | Name of the blackbox_decode application | Name of the blackbox_decode application (in case there are separate for iNav and betaflight) | "blackbox_decode" |
-| bluez-disco | Use Bluetooth discovery | Only discovered Bluetooth serial devices with non-zero RSSI will be offered | false |
+| bluez-disco | Use Bluetooth discovery | Only discovered Bluetooth serial devices with non-zero RSSI will be offered | true |
 | default-altitude | Default altitude | Default Altitude for mission (m) | 20 |
 | default-latitude | Default Latitude | Default Latitude when no GPS | 50.909528 |
 | default-loiter | Default Loiter time | Default Loiter time | 30 |
@@ -256,6 +256,7 @@ sudo dnf5 install -y libshumate-devel vte291-gtk4-devel protobuf-c-devel \
 | geouser | User account on geonames.org | A user account to query geonames.org for blackbox log timezone info. A default account of 'mwptools' is provided; however users are requested to create their own account. | "mwptools" |
 | gpsd-host | gpsd provider | Provider for GCS location via gpsd. Default is "localhost", can be set to other host name or IP address. Setting blank ("") disables. | "localhost" |
 | gpsintvl | gps sanity time (m/s) | gps sanity time (m/s), check for current fix | 2000 |
+| ident-limit | MSP_IDENT limit for MSP recognition | Timeout value in seconds for a MSP FC to reply to a MSP_INDENT probe. Effectively a timeout counter in seconds. Set to a negative value to disable. | 60 |
 | ignore-nm | Ignore Network Manager | Set to true to always ignore NM status (may slow down startup) | false |
 | kml-path | Directory for KML overlays | Directory for KML overlays, default = current directory | "" |
 | led | GPS LED colour | GPS LED colour as well know string or #RRGGBB | "#60ff00" |
