@@ -21,7 +21,7 @@ template $MwpWindow: Adw.ApplicationWindow {
       [start]
       Gtk.Box {
         orientation: horizontal;
-        spacing: 2;
+        spacing: 1;
 
         [start]
         MenuButton button_menu {
@@ -55,7 +55,7 @@ template $MwpWindow: Adw.ApplicationWindow {
             }
 
             Gtk.Label {
-              label: "Add WPs";
+              label: "WPs";
             }
           }
         }
@@ -72,14 +72,14 @@ template $MwpWindow: Adw.ApplicationWindow {
 
       [end]
       Gtk.Box {
-        spacing: 2;
+        spacing: 1;
         orientation: horizontal;
 
 	Gtk.Button arm_warn {
 	  Gtk.Image armstat {
 	    tooltip-text: _('Arming Status');
-            margin-start: 2;
-            margin-end: 4;
+            margin-start: 1;
+            margin-end: 1;
             icon-name: "dialog-error";
           }
 	}
@@ -134,14 +134,14 @@ template $MwpWindow: Adw.ApplicationWindow {
       Gtk.Box {
         hexpand: true;
         vexpand: false;
-        spacing: 2;
+        spacing: 1;
 
         Gtk.Label poslabel {
 	  //               1         2         3
 	  //      12345678901234567890123456789012
           label: "00:00:00.0N 000:00:00.0E 0000m";
-          margin-start: 2;
-          margin-end: 2;
+          margin-start: 1;
+          margin-end: 1;
           width-chars: 30;
           max-width-chars: 30;
 	  ellipsize: end;
@@ -154,8 +154,8 @@ template $MwpWindow: Adw.ApplicationWindow {
         }
 
         Gtk.Label statusbar1 {
-          margin-start: 4;
-          margin-end: 4;
+          margin-start: 1;
+          margin-end: 1;
           hexpand: false;
           halign: fill;
           ellipsize: end;
@@ -163,8 +163,8 @@ template $MwpWindow: Adw.ApplicationWindow {
         }
 
         Gtk.Label verlab {
-          margin-start: 2;
-          margin-end: 2;
+          margin-start: 1;
+          margin-end: 1;
 //          hexpand: true;
 //          halign: end;
 //          justify: center;
@@ -172,16 +172,16 @@ template $MwpWindow: Adw.ApplicationWindow {
 
         Gtk.Label typlab {
           halign: start;
-          margin-start: 2;
-          margin-end: 2;
+          margin-start: 1;
+          margin-end: 1;
 //          hexpand: true;
 //          justify: center;
 //          width-chars: 16;
         }
 
         Gtk.Label fmode {
-          margin-start: 2;
-          margin-end: 2;
+          margin-start: 1;
+          margin-end: 1;
 //          hexpand: true;
 //          halign: end;
 //          justify: center;
@@ -189,8 +189,8 @@ template $MwpWindow: Adw.ApplicationWindow {
         }
 
         Gtk.Label mmode {
-          margin-start: 2;
-          margin-end: 2;
+          margin-start: 1;
+          margin-end: 1;
 //          hexpand: true;
           halign: end;
           justify: center;

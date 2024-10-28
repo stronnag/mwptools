@@ -61,6 +61,9 @@ namespace Mwp {
 			var e = Environment.get_variable(ev);
 			if (e != null) {
 				sb.append_printf(" %s=%s", ev, e);
+			} else if (ev == "GSK_RENDERER") {
+				MWPLog.message("**NOTICE**: GSK_RENDERER not set.\n\tSetting it to \"cairo\" for maximum compatibility.\n\tSet a value in ~/.config/mwp/cmdopts or .profile or /etc/environment\n\tto use a more performant setting\n\tsee https://stronnag.github.io/mwptools/mwp-Gtk4-migration-guide/#display-variables-tweaks\n");
+				Environment.set_variable(ev, "cairo", true);
 			}
 		}
 		sb.append_c('\n');
