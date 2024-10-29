@@ -1569,7 +1569,7 @@
 <li>Modern POSIX operating system, for example:<ul>
 <li>Alpine Linux 3.20+</li>
 <li>Arch Linux</li>
-<li>Debian "Sid" (and derivatives)</li>
+<li>Debian "Trixie" / "Sid" (and derivatives)</li>
 <li>Fedora 40+</li>
 <li>FreeBSD 14+</li>
 </ul>
@@ -1700,13 +1700,15 @@ volts, 3, 0
 <h2 id="display-variables-tweaks">Display Variables / Tweaks<a class="headerlink" href="#display-variables-tweaks" title="Permanent link">#</a></h2>
 <p>There are a couple of Gtk related environment variables that may affect the performance of mwp, particularly on older or less well supported GPUs:</p>
 <ul>
-<li><code>GSK_RENDERER</code> : Recently the Gtk default was changed from <code>gl</code> to <code>ngl</code> to <code>vulkan</code>.
-  On some less well supported GPUs it may be necessary to use the <code>cairo</code> renderer;  <code>cairo</code> is also necessary on the author's touch screen tablet for correct touch screen WP dragging. Note that there may well be trade offs: on one of the author's machines, WP dragging seems slightly snappier using the <code>cairo</code> <code>GSK_RENDERER</code>, however the CPU usage for BBL replay is 10x greater using <code>cairo</code> compared to <code>vulkan</code>.</li>
+<li><code>GSK_RENDERER</code> : Recently the Gtk renderer default was changed from <code>gl</code> to <code>ngl</code> (4.14+) to <code>vulkan</code> (4.16+).
+  On some older / less well supported GPUs it may be necessary to use the <code>cairo</code> renderer;  <code>cairo</code> is also necessary on the author's touch screen tablet for correct touch screen WP dragging. Note that there may well be trade offs: on one of the author's machines, WP dragging seems slightly snappier using the <code>cairo</code> <code>GSK_RENDERER</code>, however the CPU usage for BBL replay is much greater using <code>cairo</code> compared to <code>vulkan</code>.</li>
 <li><code>GDK_BACKEND</code> : In the event that your hardware / software stack is almost hopelessly broken such that mwp is aborted with a Gdk message like  "Error 71 (Protocol error) dispatching to Wayland display", then setting this variable to <code>x11</code> may allow <code>mwp</code> to continue.</li>
 </ul>
-<p>The environment variables may be set in <code>~/.config/mwp/cmdopts</code> if needed.</p>
+<p>From mwp 24.10.28, mwp will set <code>GSK_RENDERER=cairo</code> for its own use if the OS or user has not previously set <code>GSK_RENDERER</code>.</p>
+<p>The environment variable(s) may be set in <code>~/.config/mwp/cmdopts</code> for mwp exclusive use if required.
 <div class="highlight"><pre><span></span><code>GSK_RENDERER=cairo
-</code></pre></div>
+</code></pre></div></p>
+<p>Otherwise, the variable(s) may be set in <code>/etc/environment</code>, <code>.profile</code> or a <code>.config/environment.d</code> file if required.</p>
 <h2 id="optional">Optional<a class="headerlink" href="#optional" title="Permanent link">#</a></h2>
 <p>If you use a map sources file in <code>~/.config/mwp</code>, you may optionally convert the <code>#X#</code> elements (for X, Y, Z) replacing with more standard <code>{x}</code> etc.</p>
 <h2 id="omissions">Omissions<a class="headerlink" href="#omissions" title="Permanent link">#</a></h2>
