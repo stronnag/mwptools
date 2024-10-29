@@ -127,12 +127,3 @@ if soup3.found()
 endif
 
 common_inc_dir += include_directories('.')
-
-bcd =  dependency('bash-completion', required: false)
-if bcd.found()
-  bcd_dir = bcd.get_variable(pkgconfig : 'completionsdir')
-  if not bcd_dir.startswith(get_option('prefix'))
-    bcd_dir = join_paths(get_option('prefix'), 'share', 'bash-completion', 'completions')
-  endif
-  install_data(['mwp_complete.sh'], rename: ['mwp'], install_dir: bcd_dir )
-endif

@@ -57,3 +57,12 @@ install_data (
   'org.stronnag.mwp.gschema.xml',
   install_dir: join_paths(get_option('datadir'), 'glib-2.0', 'schemas'),
 )
+
+bcd =  dependency('bash-completion', required: false)
+if bcd.found()
+  bcd_dir = bcd.get_variable(pkgconfig : 'completionsdir')
+  if not bcd_dir.startswith(get_option('prefix'))
+    bcd_dir = join_paths(get_option('prefix'), 'share', 'bash-completion', 'completions')
+  endif
+  install_data(['mwp-completion.sh'], rename: ['mwp'], install_dir: bcd_dir )
+endif

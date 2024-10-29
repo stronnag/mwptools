@@ -31,7 +31,7 @@ The {{ mwp }}  map and map symbols are 'touch-aware'.
 ```
 $ mwp --help
 Usage:
-mwp [OPTION…]
+  mwp [OPTION…]
 
 Help Options:
   -h, --help                          Show help options
@@ -39,38 +39,37 @@ Help Options:
   --help-gapplication                 Show GApplication options
 
 Application Options:
-  -m, --mission=file-name             Mission file
-  -s, --serial-device=device_name     Serial device
-  -d, --device=device-name            Serial device
-  -f, --flight-controller=fc-name     mw|mwnav|bf|cf
-  -c, --connect                       connect to first device (does not set auto flag)
   -a, --auto-connect                  auto-connect to first device (sets auto flag)
-  -N, --no-poll                       don't poll for nav info
-  -T, --no-trail                      don't display GPS trail
-  -r, --raw-log                       log raw serial data to file
-  --full-screen                       open full screen
+  --build-id                          show build id
+  --centre=position                   Centre position (lat lon or named place)
+  -H, --centre-on-home                Centre on home
+  -c, --connect                       connect to first device (does not set auto flag)
+  --debug-flags                       Debug flags (mask)
+  -d, --device=device-name            Serial device
   --dont-maximise                     don't maximise the window
   --force-mag                         force mag for vehicle direction
   -t, --force-type=type-code_no       Model type
   -4, --force4                        Force ipv4
-  -H, --centre-on-home                Centre on home
-  --debug-flags                       Debug flags (mask)
-  -p, --replay-mwp=file-name          replay mwp log file
-  -b, --replay-bbox=file-name         replay bbox log file
-  --centre=position                   Centre position (lat lon or named place)
-  --offline                           force offline proxy mode
-  -S, --n-points=N                    Number of points shown in GPS trail
-  -M, --mod-points=N                  Modulo points to show in GPS trail
-  --rings=number,interval             Range rings (number, interval(m)), e.g. --rings 10,20
-  --voice-command=command string      External speech command
-  -v, --version                       show version
-  --build-id                          show build id
-  --really-really-run-as-root         no reason to ever use this
   --forward-to=device-name            forward telemetry to
-  --radar-device=device-name          dedicated inav radar device
+  --full-screen                       open full screen
   -k, --kmlfile=file-name             KML file
-  --relaxed-msp                       don't check MSP direction flag
+  -m, --mission=file-name             Mission file
+  -M, --mod-points=N                  Modulo points to show in GPS trail
+  -S, --n-points=N                    Number of points shown in GPS trail
+  -N, --no-poll                       don't poll for nav info
+  -T, --no-trail                      don't display GPS trail
+  --offline                           force offline proxy mode
+  --radar-device=device-name          dedicated inav radar device
+  -r, --raw-log                       log raw serial data to file
+  --really-really-run-as-root         no reason to ever use this
   --rebase=lat,lon                    rebase location (for replay)
+  --relaxed-msp                       don't check MSP direction flag
+  -b, --replay-bbox=file-name         replay bbox log file
+  -p, --replay-mwp=file-name          replay mwp log file
+  --rings=number,interval             Range rings (number, interval(m)), e.g. --rings 10,20
+  -s, --serial-device=device_name     Serial device
+  -v, --version                       show version
+  --voice-command=command string      External speech command
 ```
 
 ### Bash completion
