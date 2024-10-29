@@ -3,6 +3,7 @@ private static string eolmstr;
 private static string dev;
 private static bool noinit=false;
 private static bool msc=false;
+private static bool sitl=false;
 private static bool gpspass=false;
 private static string rcfile=null;
 private static int eolm;
@@ -15,6 +16,7 @@ const OptionEntry[] options = {
     { "noinit", 'n', 0,  OptionArg.NONE, out noinit, "noinit", "false"},
     { "cli-delay", 'W', 0,  OptionArg.INT, out cli_delay, "delay", "0"},
     { "msc", 'm', 0,  OptionArg.NONE, out msc, "msc mode", "false"},
+    { "sitl", 's', 0,  OptionArg.NONE, out sitl, "SITL (localhost:5670)", "false"},
     { "gpspass", 'g', 0,  OptionArg.NONE, out gpspass, "gpspassthrough", "false"},
     { "gpspass", 'p', 0,  OptionArg.NONE, out gpspass, "gpspassthrough", "false"},
     { "file", 'f', 0, OptionArg.STRING, out rcfile, "file", null},
@@ -306,6 +308,12 @@ class ClITerm : Object {
             eolm = 3;
             break;
 		}
+
+		if(sitl) {
+			dev = "tcp://localhost:5760";
+			msc = false;
+		}
+
 		var cli = new ClITerm();
 		Timeout.add(700, () => {
 				cli.init();
