@@ -16,6 +16,12 @@
  */
 extern int epoxy_glinfo();
 
+internal const string GSK_NOTICE="""Setting "GSK_RENDERER=cairo" for maximum GPU compatibility.
+	Export an alternate value from `~/.config/mwp/cmdopts` or `.profile`
+	or `/etc/environment` to use a potentially more performant setting, see:
+	https://stronnag.github.io/mwptools/mwp-Gtk4-migration-guide/#display-variables-tweaks
+""";
+
 namespace Mwp {
 	public void show_misc_info () {
 		MWPLog.message("%s\n", Mwp.user_args);
@@ -62,7 +68,7 @@ namespace Mwp {
 			if (e != null) {
 				sb.append_printf(" %s=%s", ev, e);
 			} else if (ev == "GSK_RENDERER") {
-				MWPLog.message("**NOTICE**: GSK_RENDERER not set.\n\tSetting it to \"cairo\" for maximum compatibility.\n\tSet a value in ~/.config/mwp/cmdopts or .profile or /etc/environment\n\tto use a more performant setting\n\tsee https://stronnag.github.io/mwptools/mwp-Gtk4-migration-guide/#display-variables-tweaks\n");
+				MWPLog.message(GSK_NOTICE);
 				Environment.set_variable(ev, "cairo", true);
 			}
 		}
