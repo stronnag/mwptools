@@ -9,7 +9,7 @@ This document describes the migration from legacy (Gtk+-3.0) mwp to contemporary
 * Modern POSIX operating system, for example:
     * Alpine Linux 3.20+
     * Arch Linux
-    * Debian "Sid" (and derivatives)
+    * Debian "Trixie" / "Sid" (and derivatives)
     * Fedora 40+
     * FreeBSD 14+
 
@@ -138,15 +138,18 @@ If you use any of the map proxies (`bproxy`, `gmproxy`), you must use the latest
 
 There are a couple of Gtk related environment variables that may affect the performance of mwp, particularly on older or less well supported GPUs:
 
-* `GSK_RENDERER` : Recently the Gtk default was changed from `gl` to `ngl` to `vulkan`.
-  On some less well supported GPUs it may be necessary to use the `cairo` renderer;  `cairo` is also necessary on the author's touch screen tablet for correct touch screen WP dragging. Note that there may well be trade offs: on one of the author's machines, WP dragging seems slightly snappier using the `cairo` `GSK_RENDERER`, however the CPU usage for BBL replay is 10x greater using `cairo` compared to `vulkan`.
+* `GSK_RENDERER` : Recently the Gtk renderer default was changed from `gl` to `ngl` (4.14+) to `vulkan` (4.16+).
+  On some older / less well supported GPUs it may be necessary to use the `cairo` renderer;  `cairo` is also necessary on the author's touch screen tablet for correct touch screen WP dragging. Note that there may well be trade offs: on one of the author's machines, WP dragging seems slightly snappier using the `cairo` `GSK_RENDERER`, however the CPU usage for BBL replay is much greater using `cairo` compared to `vulkan`.
 * `GDK_BACKEND` : In the event that your hardware / software stack is almost hopelessly broken such that mwp is aborted with a Gdk message like  "Error 71 (Protocol error) dispatching to Wayland display", then setting this variable to `x11` may allow `mwp` to continue.
 
-The environment variables may be set in `~/.config/mwp/cmdopts` if needed.
+From mwp 24.10.28, mwp will set `GSK_RENDERER=cairo` for its own use if the OS or user has not previously set `GSK_RENDERER`.
 
+The environment variable(s) may be set in `~/.config/mwp/cmdopts` for mwp exclusive use if required.
 ```
 GSK_RENDERER=cairo
 ```
+
+Otherwise, the variable(s) may be set in `/etc/environment`, `.profile` or a `.config/environment.d` file if required.
 
 ## Optional
 
