@@ -174,13 +174,16 @@ namespace MissionManager {
 
 		int imdx = 0;
 		if (append) {
+			if(msx == null) {
+				msx={};
+			}
 			imdx = _msx.length;
-			mdx = imdx;
 			var mlim = msx.length;
+			mdx = mlim;
 			imdx += mlim;
 			msx.resize((int)imdx);
-			foreach(var m in _msx) {
-				msx[mlim] = m;
+			for(var j = 0; j < _msx.length; j++) {
+				msx[mlim] = _msx[j];
 				mlim++;
 			}
 			if (mlim > MAXMULTI) {
