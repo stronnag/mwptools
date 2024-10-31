@@ -94,11 +94,13 @@ static int rate_to_constant(int baudrate) {
 #endif
 
 void flush_serial(int fd) {
+  if(isatty(fd)) {
 #ifdef __linux__
-  ioctl(fd, TCFLSH, TCIOFLUSH);
+    ioctl(fd, TCFLSH, TCIOFLUSH);
 #else
-  tcflush(fd, TCIOFLUSH);
+    tcflush(fd, TCIOFLUSH);
 #endif
+  }
 }
 void close_serial(int fd) {
   flush_serial(fd);
