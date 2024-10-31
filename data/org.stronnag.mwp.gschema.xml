@@ -624,6 +624,14 @@
       </description>
     </key>
 
+    <key name="touch-scale" type="d">
+      <default>1.0</default>
+      <summary>Touch symbol scale</summary>
+      <description>
+	Symbol scale factor, scales map symbols as multiplier (for touch screens)
+      </description>
+    </key>
+
     <key name="touch-factor" type="d">
       <default>0.0</default>
       <summary>Touch (Hi)DPI scaling</summary>

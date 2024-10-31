@@ -222,7 +222,11 @@ public class MWPLabel : MWPMarker {
 		label.use_markup = true;
         var stylec = label.get_style_context();
 		stylec.add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
-		set_font_scale(Mwp.conf.symbol_scale);
+		var fs = Mwp.conf.symbol_scale;
+		if(Touch.has_touch_screen()) {
+			fs *= Mwp.conf.touch_scale;
+		}
+		set_font_scale(fs);
 		label.add_css_class("mycol");
 		label.vexpand = false;
 		label.hexpand = false;
