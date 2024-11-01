@@ -31,6 +31,7 @@ apt $CONFIRM install \
     libgstreamer1.0-dev \
     libgstreamer-plugins-base1.0-dev \
     libprotobuf-c-dev \
+    libxml2-utils \
     desktop-file-utils
 
 # vanity, prettier terminal progress bars (fcset, flashdl)
