@@ -90,13 +90,8 @@ namespace Measurer {
 
 		public void run() {
 			tdist = 0.0;
-			label.label = format_distance();
-			/*
-			  double lat;
-			double lon;
-			MapUtils.get_centre_location(out lat, out lon);
-			*/
-			add_point(Mwp.current_lat, Mwp.current_lon);
+			//			label.label = format_distance();
+			label.label = "<b>Click on map to start</b>";
 			present();
 		}
 
