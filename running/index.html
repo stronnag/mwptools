@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/mwp_icon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.42">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.43">
     
     
       
@@ -450,6 +450,15 @@
   <a href="#drag-and-drop" class="md-nav__link">
     <span class="md-ellipsis">
       Drag and Drop
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cli-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      CLI Files
     </span>
   </a>
   
@@ -1316,6 +1325,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#cli-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      CLI Files
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1373,6 +1391,7 @@ Application Options:
   --build-id                          show build id
   --centre=position                   Centre position (lat lon or named place)
   -H, --centre-on-home                Centre on home
+  --cli-file                          CLI file
   -c, --connect                       connect to first device (does not set auto flag)
   --debug-flags                       Debug flags (mask)
   -d, --device=device-name            Serial device
@@ -1421,6 +1440,16 @@ Note this is only available after you log in, so on first install, it's only ava
 <li>Blackbox Logs</li>
 <li>Mission Files</li>
 <li>KML Overlays</li>
+<li>CLI files</li>
+</ul>
+<h3 id="cli-files">CLI Files<a class="headerlink" href="#cli-files" title="Permanent link">#</a></h3>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> can extract the following artefacts from a CLI File (<code>diff</code> or <code>dump</code>):</p>
+<ul>
+<li>Missions</li>
+<li>Safe Homes</li>
+<li>FW Approach definitions</li>
+<li><code>set</code> parameters affecting visualisation (<code>nav_fw_land_approach_length</code>, <code>nav_fw_loiter_radius</code>).</li>
+<li>(future) GeoZones</li>
 </ul>
 
 
