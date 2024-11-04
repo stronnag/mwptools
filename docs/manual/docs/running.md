@@ -43,6 +43,7 @@ Application Options:
   --build-id                          show build id
   --centre=position                   Centre position (lat lon or named place)
   -H, --centre-on-home                Centre on home
+  --cli-file                          CLI file
   -c, --connect                       connect to first device (does not set auto flag)
   --debug-flags                       Debug flags (mask)
   -d, --device=device-name            Serial device
@@ -101,3 +102,14 @@ You can *drag and drop* relevant files onto the {{ mwp }} map:
 * Blackbox Logs
 * Mission Files
 * KML Overlays
+* CLI files
+
+### CLI Files
+
+{{ mwp }} can extract the following artefacts from a CLI File (`diff` or `dump`):
+
+* Missions
+* Safe Homes
+* FW Approach definitions
+* `set` parameters affecting visualisation (`nav_fw_land_approach_length`, `nav_fw_loiter_radius`).
+* (future) GeoZones

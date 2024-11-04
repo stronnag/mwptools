@@ -14,6 +14,10 @@ _mwp_complete()
       _mwp_files mission
       return 0
       ;;
+    '--cli-file')
+      _mwp_files mission
+      return 0
+      ;;
     '-s'|'-d'|'serial-device'|'--device')
       devs=$(ls /dev/ttyUSB* /dev/ttyACM* /dev/rfcomm* 2> /dev/null)
       COMPREPLY=( $(compgen -W "$devs" -- $cur) )
@@ -100,7 +104,8 @@ _mwp_complete()
 	--radar-device
 	--kmlfile
 	--relaxed-msp
-	--rebase"
+	--rebase
+	--cli-file"
 
       COMPREPLY=( $(compgen -W "${OPTS[*]}" -- $cur) )
       return 0
@@ -137,7 +142,7 @@ _mwp_files()
   fi
   case $wanted in
     'mission')
-      _filedir '@(json|mission)'
+      _filedir '@(json|mission|txt)'
       ;;
     'TXT')
       _filedir '@(txt|TXT|bbl|BBL)'

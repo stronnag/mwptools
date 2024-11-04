@@ -17,8 +17,9 @@
 extern int epoxy_glinfo();
 
 internal const string GSK_NOTICE="""Setting "GSK_RENDERER=cairo" for maximum GPU compatibility.
-	Export an alternate value from `~/.config/mwp/cmdopts` or `.profile`
-	or `/etc/environment` to use a potentially more performant setting, see:
+	Export an alternate value from `~/.config/mwp/cmdopts`, `.profile`,
+	`/etc/environment` or `~/.config/environment.d/` to use a potentially
+	more performant setting, see:
 	https://stronnag.github.io/mwptools/mwp-Gtk4-migration-guide/#display-variables-tweaks
 """;
 

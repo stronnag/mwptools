@@ -24,6 +24,7 @@ namespace Mwp {
     private string kmlfile;
     private string rfile = null;
     private string bfile = null;
+	private string clifile = null;
 
 	private string serial;
     private bool mkcon = false;
@@ -63,11 +64,11 @@ namespace Mwp {
 	public double clon;
 
 	const OptionEntry[] options = {
-
 		{ "auto-connect", 'a', 0, OptionArg.NONE, null, "auto-connect to first device (sets auto flag)", null},
 		{ "build-id", 0, 0, OptionArg.NONE, null, "show build id", null},
 		{ "centre", 0, 0, OptionArg.STRING, null, "Centre position (lat lon or named place)", "position"},
 		{ "centre-on-home", 'H', 0, OptionArg.NONE, null, "Centre on home", null},
+		{ "cli-file", 0, 0, OptionArg.STRING, null, "CLI File", null},
 		{ "connect", 'c', 0, OptionArg.NONE, null, "connect to first device (does not set auto flag)", null},
 		{ "debug-flags", 0, 0, OptionArg.INT, null, "Debug flags (mask)", null},
 		{ "device", 'd', 0, OptionArg.STRING, null, "Serial device", "device-name"},
@@ -437,6 +438,7 @@ namespace Mwp {
 			o.lookup("kmlfile", "s", ref kmlfile);
 			o.lookup("replay-mwp", "s", ref rfile);
 			o.lookup("replay-bbox", "s", ref bfile);
+			o.lookup("cli-file", "s", ref clifile);
 
 			if(!ready) {
 				o.lookup("serial-device", "s", ref serial);

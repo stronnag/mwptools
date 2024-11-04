@@ -608,6 +608,22 @@ namespace Mwp {
 			g.present();
 		}
 
+		private void do_cli_open() {
+			IChooser.Filter []ifm = { {"CLI File", {"txt"}}, };
+			var fc = IChooser.chooser(Mwp.conf.missionpath, ifm);
+			fc.title = "Open CLI File";
+			fc.modal = true;
+			fc.open.begin (Mwp.window, null, (o,r) => {
+					try {
+						var file = fc.open.end(r);
+						Mwp.clifile = file.get_path ();
+						Cli.parse_cli_files();
+					} catch (Error e) {
+						MWPLog.message("Declined to open mission file: %s\n", e.message);
+					}
+				});
+		}
+
 		private void setup_accels(Adw.Application app) {
 			GLib.ActionEntry[] winacts = {
 				{"quit",  Mwp.window.close},
@@ -620,6 +636,7 @@ namespace Mwp {
 				{"radar-view", launch_radar},
 				{"mission-open", load_mission},
 				{"mission-append", append_mission},
+				{"clifile", do_cli_open},
 				{"mission-save", MissionManager.save_mission_file},
 				{"mission-save-as", MissionManager.save_mission_file_as},
 				{"mman", MissionManager.mm_manager},

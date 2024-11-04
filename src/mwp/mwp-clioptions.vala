@@ -47,9 +47,15 @@ namespace Cli {
 		var aa = Mwp.extra_files.steal();
 		foreach(var a in aa) {
 			string fn;
-			var ftyp = MWPFileType.guess_content_type(a, out fn);
-			if(ftyp != FType.UNKNOWN)  {
-				MWPFileType.handle_file_by_type(ftyp, fn);
+			if(a != Mwp.mission &&
+			   a != Mwp.clifile &&
+			   a != Mwp.bfile &&
+			   a != Mwp.rfile &&
+			   a != Mwp.kmlfile) {
+				var ftyp = MWPFileType.guess_content_type(a, out fn);
+				if(ftyp != FType.UNKNOWN)  {
+					MWPFileType.handle_file_by_type(ftyp, fn);
+				}
 			}
 		}
 		parse_options();
@@ -293,6 +299,16 @@ namespace Cli {
 	}
 
 	public void parse_cli_files() {
+		if (Mwp.clifile != null) {
+			if (Mwp.mission == null) {
+				Mwp.mission = Mwp.clifile;
+			}
+			Mwp.sh_load = Mwp.clifile;
+			Mwp.gz_load = Mwp.clifile;
+			Mwp.sh_disp = true;
+			Mwp.clifile = null;
+		}
+
 		if (Mwp.mission != null) {
 			var fn = Mwp.mission;
 			Mwp.mission = null;
@@ -361,6 +377,5 @@ namespace Cli {
 				Mwp.set_gzsave_state(true);
 			}
 		}
-
 	}
 }
