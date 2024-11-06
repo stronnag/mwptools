@@ -129,8 +129,8 @@ namespace Measurer {
 			double lon = 0;
 			bool calc = false;
 			pl.get_nodes().foreach((n) => {
-					lon = ((Shumate.Point)n).longitude;
-					lat = ((Shumate.Point)n).latitude;
+					lon = ((Shumate.Marker)n).longitude;
+					lat = ((Shumate.Marker)n).latitude;
 					double c;
 					double d = 0;
 					if(calc) {
