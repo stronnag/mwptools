@@ -674,6 +674,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#fw-approach-fwa-visualisation" class="md-nav__link">
+    <span class="md-ellipsis">
+      FW Approach (FWA) visualisation
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1250,6 +1259,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#fw-approach-fwa-visualisation" class="md-nav__link">
+    <span class="md-ellipsis">
+      FW Approach (FWA) visualisation
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1332,6 +1350,22 @@ safehome 7 0 0 0
 <h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">#</a></h3>
 <p>The image below shows a blackbox replay. Note that the flight home location (brown icon) is coincident with the pale orange safehome icon.</p>
 <p><img alt="mwp safehomes replay" src="../images/mwp-safehomes-replay.png" width="50%" /></p>
+<h3 id="fw-approach-fwa-visualisation">FW Approach (FWA) visualisation<a class="headerlink" href="#fw-approach-fwa-visualisation" title="Permanent link">#</a></h3>
+<p>Please note that for the display of the geometry of the FWA, <a href="https://github.com/stronnag/mwptools">mwp</a> uses the same rules as the flight controller; in particular the length of "base leg / dog leg" depends two CLI parameters, <code>nav_fw_land_approach_length</code>, <code>nav_fw_loiter_radius</code>. These are not part of the safe home (or mission) definition, rather they are properties of the model (and thus are persisted in a CLI <code>diff</code> file).</p>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> can load these properties from a CLI <code>diff</code>/<code>dump</code> format file, as well as other <a href="../running/#cli-files">CLI artefacts</a>.</p>
+<p>In particular, the length of the "base leg / dog leg" is the <strong>maximum</strong> of:</p>
+<ul>
+<li><code>nav_fw_land_approach_length / 2</code> or</li>
+<li><code>nav_fw_loiter_radius * 4</code></li>
+</ul>
+<p>For example, in the first image the user had set <code>nav_fw_land_approach_length</code> to 150m (for a small, agile plane) but had accidentally left the <code>nav_fw_loiter_radius</code> at the default of <code>75m</code>. The excessive radius dominates and gives an unacceptable geometry:</p>
+<p><img alt="fwa1" src="../images/fwa-ex1.png" /></p>
+<p>Setting the radius to a more appropriate value for the model (40m) results in a much more acceptable geometry (still dominated by the loiter radius).</p>
+<p><img alt="fwa2" src="../images/fwa-ex2.png" /></p>
+<p>In summary, in order to display FWA accurately for either safe homes or missions, it is advisable to provide a CLI <code>diff</code> format file containing at a minimum, <code>set</code> values for <code>nav_fw_land_approach_length</code> and <code>nav_fw_loiter_radius</code>. For the above example:</p>
+<div class="highlight"><pre><span></span><code>set nav_fw_loiter_radius = 4000
+set nav_fw_land_approach_length = 15000
+</code></pre></div>
 
 
 
