@@ -220,24 +220,21 @@ namespace MissionManager {
 							ngp++;
 							m.homey += mi.lat;
 							m.homex += mi.lon;
+							m.check_wp_sanity(ref mi);
 						}
 					}
 					m.homey /= ngp;
 					m.homex /= ngp;
 				}
-				for(var i = 0; i < m.npoints; i++) {
-					if (m.points[i].flag == 0x48) {
-						m.points[i].lat = m.homey;
-						m.points[i].lon = m.homex;
-					}
-				}
-				if(Rebase.has_reloc()) {
-					for(var j = 0; j < msx.length; j++) {
-						rewrite_mission(ref msx[j]);
-					}
-				}
 				mnp += m.npoints;
 			}
+			if(Rebase.has_reloc()) {
+				for(var j = 0; j < msx.length; j++) {
+					rewrite_mission(ref msx[j]);
+				}
+			}
+
+
 			_ms = msx[mdx];
 			Mwp.add_toast_text("Loaded mission file with %u/%u points (%u segments)".printf(_ms.npoints, mnp, msx.length));
 			foreach(var _m in msx) {
@@ -347,7 +344,12 @@ namespace MissionManager {
 			}
 			m.homey = Rebase.reloc.lat;
 			m.homex = Rebase.reloc.lon;
+			m.maxy=-90;
+			m.maxx=-180;
+			m.miny=90;
+			m.minx=180;
 		}
+
 		for(var i = 0; i < m.npoints; i++) {
 			if (m.points[i].is_geo()) {
 				if(!Rebase.is_valid()) {
@@ -360,6 +362,7 @@ namespace MissionManager {
 				Rebase.relocate(ref _lat, ref _lon);
 				m.points[i].lat = _lat;
 				m.points[i].lon = _lon;
+				m.check_wp_sanity(ref m.points[i]);
 			}
 		}
 		if (Rebase.is_valid()) {
@@ -384,9 +387,9 @@ namespace MissionManager {
 			sb.append(".mission");
 			fn = sb.str;
 		}
-		foreach (var ms in msx) {
-			ms.update_meta();
-			ms.zoom = (uint)Gis.map.viewport.zoom_level;
+		for (var j =0 ; j < msx.length; j++) {
+			msx[j].update_meta();
+			msx[j].zoom = (uint)Gis.map.viewport.zoom_level;
 		}
 
 		if (ftype == 'm') {
