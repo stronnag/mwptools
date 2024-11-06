@@ -2,8 +2,8 @@
 
 ## Troubleshooting
 
-* Check the ["changes" note on the wiki](https://github.com/stronnag/mwptools/wiki/Recent-Changes) for new dependencies.
 * Please ensure you've completed all the steps in the [installation guide](Building-with-meson-and-ninja.md).
+* The [migration guide](mwp-Gtk4-migration-guide.md) provides some useful hints for the current  Gtk4 based mwp.
 * Please read the [Help](Building-with-meson-and-ninja.md#help) section in the [installation guide](Building-with-meson-and-ninja.md)
 * There are a couple of articles on (rare) serial issues on the wiki:
     * [Serial USB Checklist](https://github.com/stronnag/mwptools/wiki/Serial-USB-checklist)
