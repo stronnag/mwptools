@@ -96,6 +96,9 @@ namespace Mwp {
 		case Msp.Cmds.MAVLINK_MSG_GPS_GLOBAL_INT:
 			break;
 
+		case Msp.Cmds.MAVLINK_MSG_RC_CHANNELS:
+			break;
+
 		case Msp.Cmds.MAVLINK_MSG_GPS_RAW_INT:
 			Mav.MAVLINK_GPS_RAW_INT m = *(Mav.MAVLINK_GPS_RAW_INT*)raw;
 			double ddm;
@@ -253,7 +256,7 @@ namespace Mwp {
 				raw[51] = 0;
 				string text = (string)raw[1:50];
 				var stext = text.strip();
-				MWPLog.message("mavstatus (%d) %s\n", sev, stext);
+				MWPLog.message("INFO: mavstatus (%d) %s\n", sev, stext);
 			}
 			break;
 
