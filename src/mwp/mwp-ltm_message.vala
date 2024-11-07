@@ -36,12 +36,13 @@ namespace Mwp {
 				wp0.lat = ser.td.origin.lat;
 				wp0.lon = ser.td.origin.lon;
 				if (Rebase.has_reloc()) {
-					if (!Rebase.has_origin()) {
-						Rebase.set_origin(wp0.lat, wp0.lon);
+					if (wp0.lat != 0.0 && wp0.lon != 0.0) {
+						if (!Rebase.has_origin()) {
+							Rebase.set_origin(wp0.lat, wp0.lon);
+						}
+						Rebase.relocate(ref wp0.lat, ref wp0.lon);
 					}
-					Rebase.relocate(ref wp0.lat, ref wp0.lon);
 				}
-
 				if(home_changed(wp0.lat, wp0.lon)) {
 					if(of.fix == 0) {
 						no_ofix++;
@@ -81,8 +82,13 @@ namespace Mwp {
 			gf.sats = *rp;
 			double lat = gf.lat/1.0e7;
 			double lon = gf.lon/1.0e7;
-			if(Rebase.is_valid()) {
-				Rebase.relocate(ref lat, ref lon);
+			if (Rebase.has_reloc()) {
+				if (lat != 0.0 && lon != 0.0) {
+					if (!Rebase.has_origin()) {
+							Rebase.set_origin(lat, lon);
+					}
+				}
+				Rebase.relocate(ref lat,ref lon);
 			}
 			gf.alt /= 100;
 

@@ -109,6 +109,16 @@ namespace Mwp {
 			}
 			double mlat = m.lat/1e7;
 			double mlon = m.lon/1e7;
+
+			if (Rebase.has_reloc()) {
+				if (mlat != 0.0 && mlon != 0.0) {
+					if (!Rebase.has_origin()) {
+						Rebase.set_origin(mlat, mlon);
+					}
+					Rebase.relocate(ref mlat, ref mlon);
+				}
+			}
+
 			var spd  = (m.vel == 0xffff) ? 0 : m.vel/100.0;
 
 			var cse = calc_cse_dist_delta(mlat, mlon, out ddm);
@@ -187,8 +197,20 @@ namespace Mwp {
 
 		case Msp.Cmds.MAVLINK_MSG_GPS_GLOBAL_ORIGIN:
 			Mav. MAVLINK_GPS_GLOBAL_ORIGIN m = *(Mav.MAVLINK_GPS_GLOBAL_ORIGIN *)raw;
-			ser.td.origin.lat = m.latitude / 1e7;
-			ser.td.origin.lon = m.longitude / 1e7;
+
+			double mlat =  m.latitude / 1e7;
+			double mlon = m.longitude / 1e7;
+
+			if (Rebase.has_reloc()) {
+				if (mlat != 0.0 && mlon != 0.0) {
+					if (!Rebase.has_origin()) {
+						Rebase.set_origin(mlat, mlon);
+					}
+					Rebase.relocate(ref mlat, ref mlon);
+				}
+			}
+			ser.td.origin.lat = mlat;
+			ser.td.origin.lon = mlon;
 			if (ser.is_main) {
 				wp0.lat  = ser.td.origin.lat;
 				wp0.lon  = ser.td.origin.lon;
