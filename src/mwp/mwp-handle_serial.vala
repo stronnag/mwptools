@@ -275,11 +275,6 @@ namespace Mwp {
 		serial_reset();
         autocount = 0;
         nsats = 0;
-        //gpsinfo.annul();
-        //bat_annul();
-        //navstatus.reset();
-        //art_win.update(0, 0, item_visible(DOCKLETS.ARTHOR));
-        //set_bat_stat(0);
         clear_sensor_array();
         last_ltmf = 0xff;
         Mwp.window.validatelab.set_text("");
@@ -506,7 +501,7 @@ namespace Mwp {
     }
 
 	public void telem_init(Msp.Cmds cmd) {
-		var mtype= (cmd >= Msp.Cmds.MAV_BASE) ? "MAVlink" : "LTM";
+		var mtype= (cmd >= Msp.Cmds.MAV_BASE) ? "MAVLink" : "LTM";
 		var mstr = "%s telemetry".printf(mtype);
 		MWPLog.message("%s\n", mstr);
 		if (conf.manage_power && inhibit_cookie == 0) {
@@ -514,12 +509,13 @@ namespace Mwp {
 			dtnotify.send_notification("mwp", "Inhibiting screen/idle/suspend");
 			MWPLog.message("Managing screen idle and suspend\n");
 		}
+		Mwp.window.mmode.label = mtype;
 		serstate = SERSTATE.TELEM;
 		init_sstats();
 		last_tm = nticks;
 		last_gps = nticks;
 		if(last_tm == 0) {
-			last_tm =1;
+			last_tm = 1;
 		}
 	}
 
