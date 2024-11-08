@@ -465,14 +465,14 @@ public class LOSSlider : Adw.Window {
 					try {
 						ok =  los.wait_check_async.end(res);
 						if (mlog) {
-							MWPLog.message("LOS DBG Spawn End %s\n", ok.to_string());
+							MWPLog.message("LOS DBG subp end %s\n", ok.to_string());
 						}
 					}  catch (Error e) {
-						MWPLog.message("LOS Spawn %s\n", e.message);
+						MWPLog.message("LOS subp %s\n", e.message);
 					}
 				});
 		} catch (Error e) {
-			MWPLog.message("LOS Spawn %s\n", e.message);
+			MWPLog.message("LOS subp %s\n", e.message);
 		}
     }
 

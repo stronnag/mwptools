@@ -191,13 +191,17 @@ public class BingMap : Object {
 
 namespace MapManager {
     public string id = null;
-    private int[] proxypids;
+	private GLib.Subprocess[] proxypids;
 	private SoupProxy sp;
+	private bool ikill = false;
 
 	public void killall() {
-        foreach(var p in proxypids)
-            Posix.kill(p, 15);
-    }
+		ikill = true;
+		foreach(var p in proxypids) {
+			p.send_signal(ProcessSignal.TERM);
+		}
+		proxypids = {};
+	}
 
 	private string? fixup_template_uri(string a) {
 		var parts = a.split("#");
@@ -319,24 +323,15 @@ namespace MapManager {
         int iport = 0;
 
         try {
-            int pid;
-            int p_out;
-            Shell.parse_argv (cmd, out argvp);
-            Process.spawn_async_with_pipes ("/",
-                                            argvp,
-                                            null,
-                                            SpawnFlags.SEARCH_PATH|SpawnFlags.STDERR_TO_DEV_NULL,
-                                            null,
-                                            out pid,
-                                            null,
-                                            out p_out,
-                                            null);
-            proxypids += pid;
-            IOChannel ioc = new IOChannel.unix_new (p_out);
-            string line = null;
+			Shell.parse_argv (cmd, out argvp);
+			var subp = new Subprocess.newv(argvp, SubprocessFlags.STDOUT_PIPE);
+            proxypids += subp;
+			DataInputStream ioc = new DataInputStream(subp.get_stdout_pipe());
+            string? line = null;
             size_t len = 0;
-            IOStatus eos = ioc.read_line (out line, out len, null);
-            if(eos != IOStatus.EOF && len != 0) {
+
+            line = ioc.read_line (out len, null);
+            if(line != null && len > 0) {
 				var parts = line.split("\t");
 				if (parts.length > 1) {
 					iport = int.parse(parts[1]);
@@ -355,7 +350,21 @@ namespace MapManager {
 					MWPLog.message(sb.str);
 				}
 			}
-        } catch {
+
+			var pid = subp.get_identifier();
+			if(pid != null) {
+				subp.wait_check_async.begin(null, (obj,res) => {
+						try {
+							var ok =  subp.wait_check_async.end(res);
+							MWPLog.message("Map subprocess end %s %s\n", cmd, ok.to_string());
+						}  catch (Error e) {
+							if (!ikill) {
+								MWPLog.message("%s %s\n", cmd, e.message);
+							}
+						}
+					});
+			}
+		} catch {
             MWPLog.message("Failed to start external proxy %s\n", cmd);
             iport = -1;
         }

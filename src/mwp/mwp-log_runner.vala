@@ -19,6 +19,11 @@ namespace BBLV {
 	VideoPlayer vp = null;
 }
 
+namespace LogPlay {
+	GLib.Subprocess subp;
+	uint child_pid;
+}
+
 namespace Mwp {
 	int playfd[2];
     Thread<int> thr;
@@ -31,13 +36,13 @@ namespace Mwp {
         magcheck = false;
 
         if(replay_paused) {
-            signum = MwpSignals.Signal.CONT;
+            signum = ProcessSignal.CONT;
             time_t now;
             time_t (out now);
             armtime += (now - pausetm);
         } else {
             time_t (out pausetm);
-            signum = MwpSignals.Signal.STOP;
+            signum = ProcessSignal.STOP;
         }
 		if(!from_vid) {
 			if(BBLV.vp != null) {
@@ -45,8 +50,8 @@ namespace Mwp {
 			}
 		}
         replay_paused = !replay_paused;
-        if((replayer & (Player.BBOX|Player.OTX|Player.RAW)) != 0 && child_pid != 0) {
-            Posix.kill(child_pid, signum);
+        if((replayer & (Player.BBOX|Player.OTX|Player.RAW)) != 0 && LogPlay.child_pid != 0) {
+			LogPlay.subp.send_signal(signum);
         } else if(thr != null) {
 			robj.pause(replay_paused);
         }
@@ -56,8 +61,8 @@ namespace Mwp {
         if(replay_paused)
             handle_replay_pause();
 
-        if((replayer & (Player.BBOX|Player.OTX)) != 0 && child_pid != 0) {
-            Posix.kill(child_pid, MwpSignals.Signal.TERM);
+		if((replayer & (Player.BBOX|Player.OTX)) != 0 && LogPlay.child_pid != 0) {
+			LogPlay.subp.send_signal(ProcessSignal.TERM);
 		}
 		if((Mwp.replayer & Mwp.Player.MWP) == Mwp.Player.MWP && thr != null) {
 			robj.stop();
@@ -84,6 +89,39 @@ namespace Mwp {
 		}
 		return tfile;
 	}
+
+	private async string [] err_reader(DataInputStream inp)  throws Error {
+		string []errlines = {};
+		for(;;) {
+			try {
+				var line = yield inp.read_line_async();
+				if (line == null) {
+					break;
+				} else {
+					errlines += line;
+				}
+			} catch (Error e) {
+				return {};
+			}
+		}
+		return errlines;
+    }
+
+	private async bool out_reader(DataInputStream inp)  throws Error {
+		for(;;) {
+			try {
+				var line = yield inp.read_line_async();
+				if (line == null) {
+					break;
+				} else {
+					MWPLog.message("<fl2tlm> %s\n", line);
+				}
+			} catch (Error e) {
+				return false;
+			}
+		}
+		return true;
+    }
 
 	private void spawn_otx_task(string fn, bool delay, int idx, int typ=0, uint dura=0) {
         var dstr = "udp://localhost:%d".printf(playfd[1]);
@@ -133,10 +171,8 @@ namespace Mwp {
             }
         }
         args += fn;
-        args += null;
+
 		string sargs = string.joinv(" ",args);
-		int p_stdout;
-		int p_stderr;
 
 		if((replayer & Player.BBOX) != 0  && BBL.videofile != null && BBLV.vp == null) {
 			var furi = "file://%s".printf(BBL.videofile);
@@ -149,71 +185,58 @@ namespace Mwp {
 			BBLV.vp.present();
 		}
 
+		string []errlines={};
 		try {
-            Process.spawn_async_with_pipes (null, args, null, SpawnFlags.SEARCH_PATH | SpawnFlags.DO_NOT_REAP_CHILD, null, out child_pid, null, out p_stdout, out p_stderr);
-        } catch (SpawnError e) {
-            MWPLog.message("spawnerror: %s %s \n", sargs, e.message);
-			return;
-        }
+			LogPlay.child_pid = 0;
+			LogPlay.subp = new Subprocess.newv(args, SubprocessFlags.STDOUT_PIPE|SubprocessFlags.STDERR_PIPE);
+			var outp = new DataInputStream(LogPlay.subp.get_stdout_pipe());
+			var errp = new DataInputStream(LogPlay.subp.get_stderr_pipe());
 
-		if((replayer & (Player.RAW|Player.MWP)) == 0) {
-			if(conf.show_sticks != 1) {
-				Sticks.create_sticks();
+			if((replayer & (Player.RAW|Player.MWP)) == 0) {
+				if(conf.show_sticks != 1) {
+					Sticks.create_sticks();
+				}
 			}
-		}
 
-		string line = null;
-		string csline = null;
-		size_t len = 0;
-		size_t cslen = 0;
-		StringBuilder sb = new StringBuilder();
-		IOChannel error = new IOChannel.unix_new (p_stderr);
-		IOChannel cstdout = new IOChannel.unix_new (p_stdout);
-		cstdout.add_watch (IOCondition.IN|IOCondition.HUP, (source, condition) => {
-				try {
-					if (condition == IOCondition.HUP)
-						return false;
-					IOStatus eos = source.read_line (out csline, out cslen, null);
-					if(eos == IOStatus.EOF)
-                            return false;
-					if(csline == null || cslen == 0)
-						return true;
-					MWPLog.message("<fl2tlm> %s", csline);
-				} catch {}
-				return true;
-			});
-		error.add_watch (IOCondition.IN|IOCondition.HUP, (source, condition) => {
-				try {
-					if (condition == IOCondition.HUP)
-						return false;
-					IOStatus eos = source.read_line (out line, out len, null);
-					if(eos == IOStatus.EOF)
-                            return false;
-					if(line == null || len == 0)
-						return true;
-					sb.append(line);
-				} catch {}
-				return true;
-			});
-		MWPLog.message("%s # pid=%u\n", sargs, child_pid);
-		ChildWatch.add (child_pid, (pid, status) => {
-				Process.close_pid (pid);
-				child_pid = 0;
-				if(tfile != null && tfile != MissionManager.last_file) {
-                    FileUtils.unlink(tfile);
-				}
-				Sticks.done();
-				cleanup_replay();
-				replayer = 0;
-				try {
-					Process.check_wait_status(status);
-				} catch (Error e) {
-					MWPLog.message("spawn: %s\n", e.message);
-					if(sb.str.length > 0) {
-						MWPLog.message("fl2ltm %s\n", sb.str);
-					}
-				}
-			});
+			out_reader.begin(outp, (obj,res) => {
+					try {
+						out_reader.end(res);
+					} catch {};
+				});
+
+			err_reader.begin(errp, (obj,res) => {
+					try {
+						errlines = err_reader.end(res);
+					} catch {};
+				});
+
+			LogPlay.child_pid = uint.parse(LogPlay.subp.get_identifier());
+			LogPlay.subp.wait_check_async.begin(null, (obj,res) => {
+						bool ok = false;
+						try {
+							ok =  LogPlay.subp.wait_check_async.end(res);
+						} catch {}
+						if(tfile != null && tfile != MissionManager.last_file) {
+							FileUtils.unlink(tfile);
+						}
+						Sticks.done();
+						cleanup_replay();
+						replayer = 0;
+						if(errlines.length > 0) {
+							StringBuilder sb = new StringBuilder("Replay errors\n");
+							foreach (var l in errlines) {
+								sb.append_c('\t');
+								sb.append(l);
+								sb.append_c('\n');
+							}
+							MWPLog.message(sb.str);
+						}
+						LogPlay.child_pid = 0;
+					});
+			MWPLog.message("%s # pid=%u\n", sargs, LogPlay.child_pid);
+		} catch (Error e) {
+			MWPLog.message("log runner: %s\n", e.message);
+		}
     }
 
     private void spawn_bbox_task(string fn, int index, int btype,

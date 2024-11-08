@@ -157,19 +157,9 @@ namespace Kml {
 			string path = null;
 			try {
 				td = DirUtils.make_tmp(path);
-				string []argv = {"unzip", kname, "-d", td};
-				int status;
-				Process.spawn_sync ("/",
-									argv,
-									null,
-									SpawnFlags.SEARCH_PATH |
-									SpawnFlags.STDOUT_TO_DEV_NULL|
-									SpawnFlags.STDERR_TO_DEV_NULL,
-									null,
-									null,
-									null,
-									out status);
-				if(status == 0) {
+				var subp = new Subprocess(SubprocessFlags.STDOUT_SILENCE, "unzip", kname, "-d", td);
+				subp.wait(null);
+				if (subp.get_successful()) {
 					Dir dir = Dir.open (td, 0);
 					string? name = null;
 					while ((name = dir.read_name ()) != null) {

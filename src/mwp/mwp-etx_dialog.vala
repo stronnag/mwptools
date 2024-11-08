@@ -194,7 +194,7 @@ namespace ETX {
 								log_name.label = file.get_basename();
 								get_etx_metas();
 							} catch (Error e) {
-								MWPLog.message("Failed to open BBL file: %s\n", e.message);
+								MWPLog.message("Failed to open ETX file: %s\n", e.message);
 							}
 						});
 				});
@@ -209,69 +209,52 @@ namespace ETX {
 			present();
 		}
 
+		private async bool meta_reader(DataInputStream inp)  throws Error {
+			for(;;) {
+				try {
+					var line = yield inp.read_line_async();
+					if (line == null) {
+						break;
+					} else {
+						var parts = line.split(",");
+						if (parts.length == 7) {
+							int flags = int.parse(parts[5]);
+							if (flags != 0) {
+								int idx = int.parse(parts[0]);
+								int istart = int.parse(parts[3]);
+								int iend= int.parse(parts[4]);
+								int dura= int.parse(parts[5]);
+								var dtext="%02d:%02d".printf(dura/60, dura%60);
+								var b = new ETXEntry(idx, dtext, parts[2], iend-istart+1);
+								lstore.append(b);
+							}
+						}
+					}
+				} catch (Error e) {
+					return false;
+				}
+			}
+			return true;
+		}
+
 		private void get_etx_metas() {
 			try {
-				string[] spawn_args = {"fl2ltm", "--metas"};
-				spawn_args += etxfile.get_path();
-				spawn_args += null;
-
-				int p_stdout;
-				Pid child_pid;
-				Process.spawn_async_with_pipes (null,
-												spawn_args,
-												null,
-												SpawnFlags.SEARCH_PATH |
-												SpawnFlags.DO_NOT_REAP_CHILD /*|SpawnFlags.STDERR_TO_DEV_NULL*/,
-												null,
-												out child_pid,
-												null,
-												out p_stdout,
-												null);
-
-				IOChannel chan = new IOChannel.unix_new (p_stdout);
-				IOStatus eos = 0;
-				string line = "";
-				size_t len = -1;
-
-				chan.add_watch (IOCondition.IN|IOCondition.HUP, (source, condition) => {
-						if (condition == IOCondition.HUP) {
-							return false;
-						}
-
+				var subp = new Subprocess(SubprocessFlags.STDOUT_PIPE, "fl2ltm", "--metas", etxfile.get_path());
+				var dis = new DataInputStream(subp.get_stdout_pipe());
+				meta_reader.begin(dis, (obj,res) => {
 						try {
-							eos = source.read_line (out line, out len, null);
-							if(eos == IOStatus.EOF) {
-								return false;
-							}
-							if (line  == null || len == 0)
-								return true;
-							var parts = line.split(",");
-							if (parts.length == 7) {
-								int flags = int.parse(parts[5]);
-								if (flags != 0) {
-									int idx = int.parse(parts[0]);
-									int istart = int.parse(parts[3]);
-									int iend= int.parse(parts[4]);
-									int dura= int.parse(parts[5]);
-									var dtext="%02d:%02d".printf(dura/60, dura%60);
-									var b = new ETXEntry(idx, dtext, parts[2], iend-istart+1);
-									lstore.append(b);
-								}
-							}
-							return true;
-						} catch (IOChannelError e) {
-							stderr.printf ("IOChannelError: %s\n", e.message);
-							return false;
-						} catch (ConvertError e) {
-							stderr.printf ("ConvertError: %s\n", e.message);
-							return false;
-						}
+							meta_reader.end(res);
+						} catch {};
 					});
-				ChildWatch.add (child_pid, (pid, status) => {
-						try { chan.shutdown(false); } catch {}
-						Process.close_pid (pid);
-					});
-			} catch (SpawnError e) {}
+				var pid = subp.get_identifier();
+				if(pid != null) {
+					subp.wait_check_async.begin(null, (obj,res) => {
+							try {
+								subp.wait_check_async.end(res);
+							} catch {}
+						});
+				}
+			} catch (Error e) {}
 		}
 	}
 }

@@ -246,7 +246,14 @@ namespace Cli {
 
         if(Mwp.conf.atstart != null && Mwp.conf.atstart.length > 0) {
             try {
-                Process.spawn_command_line_async(Mwp.conf.atstart);
+				string []exa;
+				Shell.parse_argv(Mwp.conf.atstart, out exa);
+				var subp = new Subprocess.newv(exa, SubprocessFlags.STDOUT_SILENCE);
+				subp.wait_async.begin(null, (obj,res) => {
+						try {
+							subp.wait_async.end(res);
+						} catch {}
+					});
             } catch {};
         }
 

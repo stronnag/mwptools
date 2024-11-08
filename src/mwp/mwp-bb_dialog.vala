@@ -287,7 +287,6 @@ namespace BBL {
 							}
 						});
 				});
-
 		}
 
 		public void run(string? s=null) {
@@ -350,105 +349,91 @@ namespace BBL {
 			return nrow;
 		}
 
+		private async string [] err_reader(DataInputStream inp)  throws Error {
+			string []errlines = {};
+			for(;;) {
+				try {
+					var line = yield inp.read_line_async();
+					if (line == null) {
+						break;
+					} else {
+						errlines += line;
+					}
+				} catch (Error e) {
+					return {};
+				}
+			}
+			return errlines;
+		}
+
 		private void find_valid() {
 			is_valid = false;
 			is_broken = false;
 			valid = {};
 			maxidx = -1;
+			string [] errlines={};
 			try {
-				string[] spawn_args = {Mwp.conf.blackbox_decode, "--stdout",
-					bblname.get_path()};
-				Pid child_pid;
-				int p_stderr;
-				Process.spawn_async_with_pipes (null,
-												spawn_args,
-												null,
-												SpawnFlags.SEARCH_PATH |
-												SpawnFlags.DO_NOT_REAP_CHILD |
-												SpawnFlags.STDOUT_TO_DEV_NULL,
-												null,
-												out child_pid,
-												null,
-												null,
-												out p_stderr);
-
-				IOChannel error = new IOChannel.unix_new (p_stderr);
-				string line = null;
-				string [] lines = {}; // for the error path
-				size_t len = 0;
-
-				error.add_watch (IOCondition.IN|IOCondition.HUP, (source, condition) => {
+				var subp = new Subprocess(SubprocessFlags.STDERR_PIPE|SubprocessFlags.STDOUT_SILENCE, Mwp.conf.blackbox_decode, "--stdout", bblname.get_path());
+				var dis = new DataInputStream(subp.get_stderr_pipe());
+				err_reader.begin(dis, (obj,res) => {
 						try {
-							if (condition == IOCondition.HUP)
-								return false;
-							IOStatus eos = source.read_line (out line, out len, null);
-							if(eos == IOStatus.EOF)
-								return false;
-
-							if(line == null || len == 0)
-								return true;
-
+							errlines = err_reader.end(res);
 							int idx=0, offset, size=0;
-							lines += line;
-							if(line.scanf(" %d %d %d", &idx, &offset, &size) == 3) {
-								if(size > BB_MINSIZE) {
+							foreach(var line in errlines) {
+								if(line.scanf(" %d %d %d", &idx, &offset, &size) == 3) {
+									if(size > BB_MINSIZE) {
+										is_valid = true;
+										valid += idx;
+									}  // else { valid += 0}; // really!!!
+									maxidx = idx;
+								} else if (line.has_prefix("WARNING: Missing expected metadata")) {
+									is_valid = false;
+									is_broken = true;
+									valid = {};
+									maxidx = 0;
+								} else if(line.has_prefix("Log 1 of")) {
+									valid += 1;
+									maxidx = 1;
 									is_valid = true;
-									valid += idx;
-								}  // else { valid += 0}; // really!!!
-								maxidx = idx;
-							} else if (line.has_prefix("WARNING: Missing expected metadata")) {
-								is_valid = false;
-								is_broken = true;
-								valid = {};
-								maxidx = 0;
-							} else if(line.has_prefix("Log 1 of")) {
-								valid += 1;
-								maxidx = 1;
-								is_valid = true;
+								}
 							}
-							return true;
-						} catch (IOChannelError e) {
-							MWPLog.message("IOChannelError: %s\n", e.message);
-							return false;
-						} catch (ConvertError e) {
-							MWPLog.message ("ConvertError: %s\n", e.message);
-							return false;
-						}
-					});
-				ChildWatch.add (child_pid, (pid, status) => {
-						try { error.shutdown(false); } catch {}
-						Process.close_pid (pid);
-						if(!is_valid) {
-							StringBuilder sb = new StringBuilder("No valid log detected.\n");
-							if(lines.length > 0) {
-								bool skip = is_broken;
-								sb.append("blackbox_decode says: ");
-								foreach(var l in lines) {
-									if (is_broken) {
-										if (l.has_prefix("WARNING: ")) {
-											skip = false;
-											sb.append("\n<tt>");
+							if(!is_valid) {
+								StringBuilder sb = new StringBuilder("No valid log detected.\n");							if(errlines.length > 0) {
+									bool skip = is_broken;
+									sb.append("blackbox_decode says: ");
+									foreach(var l in errlines) {
+										if (is_broken) {
+											if (l.has_prefix("WARNING: ")) {
+												skip = false;
+												sb.append("\n<tt>");
+											}
 										}
-									}
-									if (!skip) {
-										l = l.strip();
-										if (l.length > 0) {
-											sb.append(l);
+										if (!skip) {
+											l = l.strip();
+											if (l.length > 0) {
+												sb.append(l);
 											sb.append_c('\n');
+											}
 										}
 									}
+									if(is_broken) {
+										sb.append("</tt>");
+									}
 								}
-								if(is_broken) {
-									sb.append("</tt>");
-								}
+								set_normal(sb.str);
+							} else {
+								var tsslen = find_start_times();
+								spawn_decoder(0, tsslen);
 							}
-							set_normal(sb.str);
-						} else {
-							var tsslen = find_start_times();
-							spawn_decoder(0, tsslen);
-						}
+						} catch {};
 					});
-			} catch (SpawnError e) {
+
+				subp.wait_check_async.begin(null, (obj,res) => {
+						try {
+							subp.wait_check_async.end(res);
+						} catch {}
+					});
+			} catch (Error e) {
 				show_child_err(e.message);
 			}
 		}
@@ -489,6 +474,39 @@ namespace BBL {
 			}
 		}
 
+		private async bool item_reader(DataInputStream inp, int j, int tsslen)  throws Error {
+			for(;;) {
+				try {
+					var line = yield inp.read_line_async();
+					if (line == null) {
+						break;
+					} else {
+						int n;
+						n = line.index_of("Log ");
+						if(n == 0) {
+							n = line.index_of(" duration ");
+							if(n > 16) {
+								n += 10;
+								var len = line.length;
+								string dura = line.substring(n, (long)len - n -1);
+								string tsval;
+								if(tsslen > 0 && maxidx == tsslen)
+									tsval = get_formatted_time_stamp(j);
+								else
+									tsval = "Unknown";
+
+								var b = new BBLEntry(nidx, dura, tsval);
+								lstore.append(b);
+							}
+						}
+					}
+				} catch (Error e) {
+					return false;
+				}
+			}
+			return true;
+		}
+
 		private void spawn_decoder(int j, int tsslen) {
 			for(;j < maxidx && valid[j] == 0; j++)
 				;
@@ -499,68 +517,23 @@ namespace BBL {
 			nidx = j+1;
 
 			try {
-				string[] spawn_args = {Mwp.conf.blackbox_decode, "--stdout", "--index", nidx.to_string(), bblname.get_path()};
-				Pid child_pid;
-				int p_stderr;
-
-				Process.spawn_async_with_pipes (null,
-												spawn_args,
-												null,
-												SpawnFlags.SEARCH_PATH |
-												SpawnFlags.DO_NOT_REAP_CHILD |
-												SpawnFlags.STDOUT_TO_DEV_NULL,
-												null,
-												out child_pid,
-												null,
-												null,
-												out p_stderr);
-
-				IOChannel error = new IOChannel.unix_new (p_stderr);
-				error.add_watch (IOCondition.IN|IOCondition.HUP, (source, condition) => {
-						if (condition == IOCondition.HUP)
-							return false;
+				var subp = new Subprocess(SubprocessFlags.STDERR_PIPE|SubprocessFlags.STDOUT_SILENCE, Mwp.conf.blackbox_decode, "--stdout", "--index", nidx.to_string(), bblname.get_path());
+				var dis = new DataInputStream(subp.get_stderr_pipe());
+				item_reader.begin(dis, j, tsslen, (obj,res) => {
 						try {
-							string line;
-							size_t len = 0;
-
-							IOStatus eos = source.read_line (out line, out len, null);
-							if(eos == IOStatus.EOF)
-								return false;
-							if (line  == null || len == 0)
-								return true;
-
-							int n;
-							n = line.index_of("Log ");
-							if(n == 0) {
-								n = line.index_of(" duration ");
-								if(n > 16) {
-									n += 10;
-									string dura = line.substring(n, (long)len - n -1);
-									string tsval;
-									if(tsslen > 0 && maxidx == tsslen)
-										tsval = get_formatted_time_stamp(j);
-									else
-										tsval = "Unknown";
-
-									var b = new BBLEntry(nidx, dura, tsval);
-									lstore.append(b);
-								}
+							var ok = item_reader.end(res);
+							if (ok) {
+								spawn_decoder(j+1, tsslen);
 							}
-							return true;
-						} catch (IOChannelError e) {
-							MWPLog.message ("IOChannelError: %s\n", e.message);
-							return false;
-						} catch (ConvertError e) {
-							MWPLog.message ("ConvertError: %s\n", e.message);
-							return false;
-						}
+						} catch {}
 					});
-				ChildWatch.add (child_pid, (pid, status) => {
-						try { error.shutdown(false); } catch {}
-						Process.close_pid (pid);
-						spawn_decoder(j+1, tsslen);
+
+				subp.wait_check_async.begin(null, (obj,res) => {
+						try {
+							subp.wait_check_async.end(res);
+						} catch {}
 					});
-			} catch (SpawnError e) {
+			} catch (Error e) {
 				show_child_err(e.message);
 			}
 		}
@@ -575,48 +548,31 @@ namespace BBL {
 			Utils.warning_box(s, Gtk.MessageType.WARNING);
 		}
 
+
 		private bool find_base_position(string filename, string index,
 										out double xlat, out double xlon) {
 			bool ok = false;
 			xlon = xlat = 0;
 			try {
-				string[] spawn_args = {Mwp.conf.blackbox_decode, "--stdout",
-					"--index", index, "--merge-gps", filename};
-				Pid child_pid;
-				int p_stdout;
-				Process.spawn_async_with_pipes (null,
-												spawn_args,
-												null,
-												SpawnFlags.SEARCH_PATH |
-												SpawnFlags.DO_NOT_REAP_CHILD |
-												SpawnFlags.STDERR_TO_DEV_NULL,
-												null,
-												out child_pid,
-												null,
-												out p_stdout,
-												null);
-
-				IOChannel chan = new IOChannel.unix_new (p_stdout);
-				ChildWatch.add (child_pid, (pid, status) => {
-						Process.close_pid (pid);
+				var subp = new Subprocess(SubprocessFlags.STDOUT_PIPE|SubprocessFlags.STDERR_SILENCE, Mwp.conf.blackbox_decode, "--stdout", "--index", index, "--merge-gps", filename);
+				subp.wait_check_async.begin(null, (obj,res) => {
+						try {
+							subp.wait_check_async.end(res);
+						} catch {}
 					});
 
-				IOStatus eos;
+				DataInputStream inp = new DataInputStream(subp.get_stdout_pipe());
 				int n = 0;
 				int latp = -1, lonp = -1, fixp = -1, typp = -1;
-				string str = null;
-				size_t length = -1;
 				int ft=-1,ns=-1;
 
 				try {
 					for(;;) {
-						eos = chan.read_line (out str, out length, null);
-						if (eos == IOStatus.EOF)
+						var line = inp.read_line();
+						if (line == null) {
 							break;
-						if(str == null || length == 0)
-							continue;
-
-						var parts=str.split(",");
+						}
+						var parts=line.split(",");
 						if(n == 0) {
 							int j = 0;
 							foreach (var p in parts) {
@@ -634,7 +590,7 @@ namespace BBL {
 								j++;
 							}
 							if(latp == -1 || lonp == -1 || fixp == -1 || typp == -1) {
-								Posix.kill(child_pid, MwpSignals.Signal.TERM);
+								subp.send_signal(ProcessSignal.TERM);
 								break;
 							}
 						} else {
@@ -646,25 +602,24 @@ namespace BBL {
 									xlon = double.parse(parts[lonp]);
 									if(xlat != 0.0 && xlon != 0.0) {
 										ok = true;
-										Posix.kill(child_pid, MwpSignals.Signal.TERM);
+										subp.send_signal(ProcessSignal.TERM);
 										break;
 									}
 								}
 							}
-						}
+					}
 						n++;
 					}
-				} catch  (Error e) {
-					MWPLog.message("%s\n", e.message);
+				} catch  {
+					ok = false;
 				}
-			} catch (SpawnError e) {
+			} catch (Error e) {
 				MWPLog.message("%s\n", e.message);
 			}
 			if (Rebase.is_valid()) {
 				Rebase.relocate(ref xlat, ref xlon);
 			}
-			MWPLog.message("Getting base location from index %s %f %f %s\n",
-						   index, xlat, xlon, ok.to_string());
+			MWPLog.message("Getting base location from index %s %f %f %s\n", index, xlat, xlon, ok.to_string());
 			return ok;
 		}
 
@@ -705,44 +660,16 @@ namespace BBL {
 
 			if(Mwp.conf.zone_detect != null && Mwp.conf.zone_detect != "") {
 				try {
-					string[] spawn_args = {Mwp.conf.zone_detect, (string)cbuflat, (string)cbuflon};
-					Pid child_pid;
-					int p_stdout;
-					Process.spawn_async_with_pipes (null,
-													spawn_args,
-													null,
-													SpawnFlags.SEARCH_PATH |
-													SpawnFlags.DO_NOT_REAP_CHILD |
-													SpawnFlags.STDERR_TO_DEV_NULL,
-													null,
-													out child_pid,
-													null,
-													out p_stdout,
-													null);
-
-					ChildWatch.add (child_pid, (pid, status) => {
-							Process.close_pid (pid);
-						});
-					IOChannel chan = new IOChannel.unix_new (p_stdout);
-					IOStatus eos;
-					try {
-						for(;;) {
-							string s;
-							eos = chan.read_line (out s, null, null);
-							if (eos == IOStatus.EOF)
-								break;
-							if (s != null)
-								str = s.strip();
+					var subp = new Subprocess(SubprocessFlags.STDOUT_PIPE, Mwp.conf.zone_detect, (string)cbuflat, (string)cbuflon);
+					subp.communicate_utf8(null, null, out str, null);
+					if(subp.get_successful()) {
+						if(str.length > 0) {
+							MWPLog.message("%s %f %f : %s\n", Mwp.conf.zone_detect, lat, lon, str);
+							add_if_missing(str, true);
 						}
-					} catch  (Error e) {
-						MWPLog.message("%s\n", e.message);
 					}
-				} catch (SpawnError e) {
+				} catch (Error e) {
 					MWPLog.message("%s\n", e.message);
-				}
-				if(str != null) {
-					MWPLog.message("%s %f %f : %s\n", Mwp.conf.zone_detect, lat, lon, str);
-					add_if_missing(str, true);
 				}
 			} else if(Mwp.conf.geouser != null && Mwp.conf.geouser != "") {
 				string uri = GURI.printf((string)cbuflat, (string)cbuflon, Mwp.conf.geouser);
@@ -780,110 +707,97 @@ namespace BBL {
 					});
 			}
 		}
+
+		private async bool bbox_reader(DataInputStream inp, out MapUtils.BoundingBox b)  throws Error {
+			b = {999, 999, -999, -999};
+			int latp = -1, lonp = -1, fixp = -1, typp = -1;
+			int ft=-1,ns=-1;
+			double lon = 0;
+			double lat = 0;
+			bool hdr = false;
+			bool ok = false;
+
+			var done = false;
+			for (;!done;) {
+				var str = yield inp.read_line_async();
+				if(str == null) {
+					break;
+				}
+				var parts=str.split(",");
+				if(hdr == false) {
+					hdr = true;
+					int j = 0;
+					foreach (var p in parts) {
+						var pp = p.strip();
+						if (pp == "GPS_fixType")
+							typp = j;
+						if (pp == "GPS_numSat")
+							fixp = j;
+						if (pp == "GPS_coord[0]")
+							latp = j;
+						else if(pp == "GPS_coord[1]") {
+							lonp = j;
+							break;
+						}
+						j++;
+					}
+					if(latp == -1 || lonp == -1 || fixp == -1 || typp == -1) {
+						ok = false;
+						done = true;
+					}
+				} else {
+					ok = true;
+					ft = int.parse(parts[typp]);
+					if(ft == 2) {
+						ns = int.parse(parts[fixp]);
+						if(ns > 5) {
+							lat = double.parse(parts[latp]);
+							lon = double.parse(parts[lonp]);
+							if(lat < b.minlat)
+								b.minlat = lat;
+							if(lat > b.maxlat)
+								b.maxlat = lat;
+							if(lon < b.minlon)
+								b.minlon = lon;
+							if(lon > b.maxlon)
+								b.maxlon = lon;
+						}
+					}
+				}
+			}
+			return ok;
+		}
+
 		public void find_bbox_box(string filename, uint index) {
-			Thread<int> thr = null;
-			thr = new Thread<int> (null, () => {
-					MapUtils.BoundingBox b = {999, 999, -999, -999};
-					try {
-						Pid child_pid;
-						string[] spawn_args = {Mwp.conf.blackbox_decode, "--stdout",
-							"--index", index.to_string(), "--merge-gps", filename};
-						int p_stdout;
-						Process.spawn_async_with_pipes (null,
-														spawn_args,
-														null,
-														SpawnFlags.SEARCH_PATH |
-														SpawnFlags.DO_NOT_REAP_CHILD |
-														SpawnFlags.STDERR_TO_DEV_NULL,
-														null,
-														out child_pid,
-														null,
-														out p_stdout,
-														null);
-
-						IOChannel chan = new IOChannel.unix_new (p_stdout);
-						ChildWatch.add (child_pid, (pid, status) => {
-								Process.close_pid (pid);
-							});
-
-
-						int latp = -1, lonp = -1, fixp = -1, typp = -1;
-						string str = null;
-						size_t length = -1;
-						int ft=-1,ns=-1;
-						double lon = 0;
-						double lat = 0;
-						bool hdr = false;
-
+			MWPLog.message("Start find_bbox\n");
+			try {
+				var subp = new Subprocess(SubprocessFlags.STDOUT_PIPE|SubprocessFlags.STDERR_SILENCE, Mwp.conf.blackbox_decode, "--stdout", "--index", index.to_string(), "--merge-gps", filename);
+				var dis = new DataInputStream(subp.get_stdout_pipe());
+				subp.wait_async.begin(null, (obj,res) => {
 						try {
-							var done = false;
-							for (;!done;) {
-								var eos = chan.read_line (out str, out length, null);
-								if (eos == IOStatus.EOF)
-									done = true;
-								if(str == null || length == 0)
-									continue;
-								var parts=str.split(",");
-								if(hdr == false) {
-									hdr = true;
-									int j = 0;
-									foreach (var p in parts) {
-										var pp = p.strip();
-										if (pp == "GPS_fixType")
-											typp = j;
-										if (pp == "GPS_numSat")
-											fixp = j;
-										if (pp == "GPS_coord[0]")
-											latp = j;
-										else if(pp == "GPS_coord[1]") {
-											lonp = j;
-											break;
-										}
-										j++;
+							subp.wait_async.end(res);
+						} catch {}
+					});
+
+				bbox_reader.begin(dis, (obj,res) => {
+						try {
+							MapUtils.BoundingBox b = {};
+							var ok = bbox_reader.end(res, out b);
+							if (ok) {
+								if(b.minlat > -90 && b.maxlat < 90 && b.minlon > -180 && b.maxlon < 180) {
+									if (Rebase.is_valid()) {
+										Rebase.relocate(ref b.minlat, ref b.minlon);
+										Rebase.relocate(ref b.maxlat, ref b.maxlon);
 									}
-									if(latp == -1 || lonp == -1 || fixp == -1 || typp == -1) {
-										Posix.kill(child_pid, 15);
-										done = true;
-									}
-								} else {
-									ft = int.parse(parts[typp]);
-									if(ft == 2) {
-										ns = int.parse(parts[fixp]);
-										if(ns > 5) {
-											lat = double.parse(parts[latp]);
-											lon = double.parse(parts[lonp]);
-											if(lat < b.minlat)
-												b.minlat = lat;
-											if(lat > b.maxlat)
-												b.maxlat = lat;
-											if(lon < b.minlon)
-												b.minlon = lon;
-											if(lon > b.maxlon)
-												b.maxlon = lon;
-										}
-									}
+									rescale(b);
 								}
 							}
-						} catch  (Error e) {
-							print("%s\n", e.message);
-						}
-
-						try { chan.shutdown(false); } catch {}
-						if(b.minlat > -90 && b.maxlat < 90 && b.minlon > -180 && b.maxlon < 180) {
-							if (Rebase.is_valid()) {
-								Rebase.relocate(ref b.minlat, ref b.minlon);
-								Rebase.relocate(ref b.maxlat, ref b.maxlon);
-							}
-							MainContext.@default().invoke(()=> { rescale(b); return false; });
-							//Idle.add_once(() => { rescale(b); });
-						}
-					} catch (SpawnError e) {
-						print("%s\n", e.message);
-					}
-					MainContext.@default().invoke(()=> {thr.join(); return false;});
-					//					Idle.add(()=> {thr.join(); return false;});
-					return 0;
-				});
+						} catch {}
+						subp.send_signal(ProcessSignal.TERM);
+					});
+			} catch (Error e) {
+				MWPLog.message("find_bbox %s\n", e.message);
+			}
 		}
 	}
 }

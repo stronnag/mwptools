@@ -197,13 +197,12 @@ namespace Mwp {
 
 		if(cmd != null) {
 			try {
-				string strout;
-				int status;
-				Process.spawn_command_line_sync (cmd, out strout,
-												 null, out status);
-				if(Process.if_exited(status)) {
-					strout = strout.chomp();
+				string strout="";
+				var subp = new Subprocess(SubprocessFlags.STDOUT_PIPE, cmd);
+				subp.communicate_utf8(null, null, out strout, null);
+				if(subp.get_successful()) {
 					if(strout.length > 0) {
+						strout = strout.chomp();
 						if(os == "Linux")
 							hyper = strout;
 						else {
@@ -213,51 +212,30 @@ namespace Mwp {
 						}
 					}
 				}
-			} catch (SpawnError e) {}
-			if(hyper != null)
-				return hyper;
+				subp.wait(null);
+			} catch (Error e) {}
+			return hyper;
         }
 
 		try {
-			string[] spawn_args = {"dmesg"};
-			int p_stdout;
-			Pid child_pid;
-
-			Process.spawn_async_with_pipes (null,
-											spawn_args,
-											null,
-											SpawnFlags.SEARCH_PATH |
-											SpawnFlags.STDERR_TO_DEV_NULL,
-											null,
-											out child_pid,
-											null,
-											out p_stdout,
-											null);
-
-			IOChannel chan = new IOChannel.unix_new (p_stdout);
-			IOStatus eos;
+			var subp = new Subprocess(SubprocessFlags.STDOUT_PIPE, "dmesg");
+			DataInputStream chn = new DataInputStream(subp.get_stdout_pipe());
 			string line;
 			size_t length = -1;
-
-			try {
-				for(;;) {
-					eos = chan.read_line (out line, out length, null);
-					if(eos == IOStatus.EOF)
-						break;
-					if(line == null || length == 0)
-						continue;
-					line = line.chomp();
-					var index = line.index_of("Hypervisor");
-					if(index != -1) {
-						hyper = line.substring(index);
-						break;
-					}
+			for(;;) {
+				line = chn.read_line (out length, null);
+				if(line == null) {
+					break;
 				}
-			} catch (IOChannelError e) {}
-			catch (ConvertError e) {}
-			try { chan.shutdown(false); } catch {}
-			Process.close_pid (child_pid);
-		} catch (SpawnError e) {}
+				line = line.chomp();
+				var index = line.index_of("Hypervisor");
+				if(index != -1) {
+					hyper = line.substring(index);
+					break;
+				}
+			}
+			subp.wait(null);
+		} catch (Error e) {}
 		return hyper;
 	}
 
@@ -486,7 +464,10 @@ namespace Mwp {
 			Mwp.cleanup();
 			if(ready && Mwp.conf.atexit != null && Mwp.conf.atexit.length > 0) {
 				try {
-					Process.spawn_command_line_sync (Mwp.conf.atexit);
+					string []exa;
+					Shell.parse_argv(Mwp.conf.atexit, out exa);
+					var subp = new Subprocess.newv(exa, SubprocessFlags.STDOUT_SILENCE);
+					subp.wait();
 				} catch {}
 			}
 		}

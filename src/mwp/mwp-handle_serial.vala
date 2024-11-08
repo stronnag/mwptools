@@ -20,7 +20,6 @@ namespace Mwp {
 	bool seenMSP;
 
     int replayer;
-    Pid child_pid;
     Msp.Cmds[] requests;
     Msp.Cmds msp_get_status;
     uint32 xarm_flags;

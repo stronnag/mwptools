@@ -85,49 +85,51 @@ namespace Mwp {
 	public void get_gl_info() {
 		if(epoxy_glinfo() != 0) {
 			string strout;
-			int status;
 			string []glexes={"es2_info", "glinfo"};
 			foreach (var s in glexes) {
-				bool found = (Environment.find_program_in_path(s) != null);
-				if(found) {
-					StringBuilder sb = new StringBuilder();
-					try {
-						Process.spawn_command_line_sync (s, out strout, null, out status);
-						if(Process.if_exited(status)) {
-							if(strout.length > 0) {
-								int nm = 0;
-								string glversion=null;
-								string glvendor=null;
-								string glrenderer=null;
-								var parts = strout.split("\n");
-								foreach (var p in parts) {
-									if(p.has_prefix("GL_VERSION: ")) {
-										glversion = p["GL_VERSION: ".length:];
-										nm++;
-									} else if(p.has_prefix("GL_RENDERER: ")) {
-										glrenderer = p["GL_RENDERER: ".length:];
-										nm++;
-									} else if(p.has_prefix("GL_VENDOR: ")) {
-										glvendor = p["GL_VENDOR: ".length:];
-										nm++;
-									}
-									if(nm == 3) {
-										sb.append(glvendor);
-										sb.append_c(' ');
-										sb.append(glrenderer);
-										sb.append_c(' ');
-										sb.append(glversion);
-								break;
+					bool found = (Environment.find_program_in_path(s) != null);
+					if(found) {
+						StringBuilder sb = new StringBuilder();
+						try {
+							strout = "";
+							var subp = new Subprocess(SubprocessFlags.STDOUT_PIPE, s);
+							subp.communicate_utf8(null, null, out strout, null);
+							if(subp.get_successful()) {
+								if(strout.length > 0) {
+									int nm = 0;
+									string glversion=null;
+									string glvendor=null;
+									string glrenderer=null;
+									var parts = strout.split("\n");
+									foreach (var p in parts) {
+										if(p.has_prefix("GL_VERSION: ")) {
+											glversion = p["GL_VERSION: ".length:];
+											nm++;
+										} else if(p.has_prefix("GL_RENDERER: ")) {
+											glrenderer = p["GL_RENDERER: ".length:];
+											nm++;
+										} else if(p.has_prefix("GL_VENDOR: ")) {
+											glvendor = p["GL_VENDOR: ".length:];
+											nm++;
+										}
+										if(nm == 3) {
+											sb.append(glvendor);
+											sb.append_c(' ');
+											sb.append(glrenderer);
+											sb.append_c(' ');
+											sb.append(glversion);
+											sb.append_printf(" (%s)", s);
+											break;
+										}
 									}
 								}
+								MWPLog.message("GL: %s\n", sb.str);
+								break;
 							}
-							MWPLog.message("GL: %s\n", sb.str);
-							break;
+						} catch (Error e) {
+							MWPLog.message("%s : %s\n", s, e.message);
 						}
-					} catch (SpawnError e) {
-						MWPLog.message("%s : %s\n", s, e.message);
 					}
-				}
 			}
 		}
 	}

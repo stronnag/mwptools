@@ -46,8 +46,6 @@ namespace TA {
 		private double maxdive = -12.0;
 
 		private ScrollView? altview;
-		private Pid pid;
-
 
 		public Dialog() {
 			altview = null;
@@ -68,7 +66,6 @@ namespace TA {
 			pe_rthalt.text = rth_alt.to_string();
 			pe_climb.text = "%.1f".printf(maxclimb);
 			pe_dive.text = "%.1f".printf(maxdive);
-
 		}
 
 		public void cleanup() {
@@ -93,7 +90,22 @@ namespace TA {
 			present();
 		}
 
-
+		private async string [] line_reader(DataInputStream inp)  throws Error {
+			string []cdlines = {};
+			for(;;) {
+				try {
+					var line = yield inp.read_line_async();
+					if (line == null) {
+						break;
+					} else {
+						cdlines += line;
+					}
+				} catch (Error e) {
+					return {};
+				}
+			}
+			return cdlines;
+		}
 
 		private void run_elevation_tool() {
 			var outfn = Utils.mstempname();
@@ -132,103 +144,70 @@ namespace TA {
 			XmlIO.to_xml_file(outfn, {ms});
 			spawn_args += outfn;
 			MWPLog.message("%s\n", string.joinv(" ",spawn_args));
-			string []cdlines = {};
+
+			string []cdlines={};
+			string []errlines={};
 			try {
-				int p_stderr;
-				int p_stdout;
-				Process.spawn_async_with_pipes (null,
-												spawn_args,
-												null,
-												SpawnFlags.SEARCH_PATH |
-												SpawnFlags.DO_NOT_REAP_CHILD,
-												null,
-												out pid,
-												null,
-												out p_stdout,
-												out p_stderr);
+				var subp = new Subprocess.newv(spawn_args, SubprocessFlags.STDOUT_PIPE| SubprocessFlags.STDERR_PIPE);
+				var outp = new DataInputStream(subp.get_stdout_pipe());
+				var errp = new DataInputStream(subp.get_stderr_pipe());
 
-				IOChannel outp = new IOChannel.unix_new (p_stdout);
-				IOChannel error = new IOChannel.unix_new (p_stderr);
-				string line = null;
-				string lastline = null;
-				size_t len = 0;
-
-				error.add_watch (IOCondition.IN|IOCondition.HUP, (source, condition) => {
+				line_reader.begin(outp, (obj,res) => {
 						try {
-							if (condition == IOCondition.HUP)
-								return false;
-							IOStatus eos = source.read_line (out line, out len, null);
-							if(eos == IOStatus.EOF)
-								return false;
-
-							if(line == null || len == 0)
-								return true;
-							lastline = line;
-							return true;
-						} catch (IOChannelError e) {
-							MWPLog.message("IOChannelError: %s\n", e.message);
-							return false;
-						} catch (ConvertError e) {
-							MWPLog.message ("ConvertError: %s\n", e.message);
-							return false;
-						}
+							cdlines = line_reader.end(res);
+						} catch {};
 					});
 
-				outp.add_watch (IOCondition.IN|IOCondition.HUP, (source, condition) => {
+				line_reader.begin(errp, (obj,res) => {
 						try {
-							if (condition == IOCondition.HUP)
-								return false;
-							IOStatus eos = source.read_line (out line, out len, null);
-							if(eos == IOStatus.EOF)
-								return false;
-
-							if(line == null || len == 0)
-								return true;
-							cdlines += line;
-							return true;
-						} catch (IOChannelError e) {
-							MWPLog.message("IOChannelError: %s\n", e.message);
-							return false;
-						} catch (ConvertError e) {
-							MWPLog.message ("ConvertError: %s\n", e.message);
-							return false;
-						}
+							errlines = line_reader.end(res);
+						} catch {};
 					});
 
+				var pid = subp.get_identifier();
+				if(pid != null) {
+					subp.wait_check_async.begin(null, (obj,res) => {
+							try {
+								var ok =  subp.wait_check_async.end(res);
+								if (!ok) {
+									StringBuilder sb = new StringBuilder("TA Plot errors\n");
+									foreach (var l in errlines) {
+										sb.append_c('\t');
+										sb.append(l);
+										sb.append_c('\n');
+									}
+									MWPLog.message(sb.str);
+								} else {
+								if (replname != null) {
+									MissionManager.open_mission_file(replname);
+								}
+								FileUtils.unlink(outfn);
+								if(replname != null)
+									FileUtils.unlink(replname);
 
-				ChildWatch.add (pid, (pid, status) => {
-						try { error.shutdown(false); } catch {}
-						Process.close_pid (pid);
-						if(status == 0) {
-							if (replname != null) {
-								MissionManager.open_mission_file(replname);
+								if (cdlines.length > 0) {
+									// FIXME Dstr ...
+									maxclimb = double.parse(pe_climb.text);
+									maxdive = double.parse(pe_dive.text);
+									if (altview != null) {
+										altview.close();
+										altview = null;
+									}
+									altview = new ScrollView("MWP Altitude Analysis");
+									altview.close_request.connect(() => {
+											altview = null;
+											return false;
+										});
+									altview.generate_climb_dive(cdlines, maxclimb, maxdive);
+								}
+								}
+							}  catch (Error e) {
+								MWPLog.message("TA %s\n", e.message);
 							}
-						} else {
-							var errstr="Plot Error: %s".printf(lastline);
-							MWPLog.message("Conspire: %s\n", errstr);
-						}
-						FileUtils.unlink(outfn);
-						if(replname != null)
-							FileUtils.unlink(replname);
-
-						if (cdlines.length > 0) {
-							// FIXME Dstr ...
-							maxclimb = double.parse(pe_climb.text);
-							maxdive = double.parse(pe_dive.text);
-							if (altview != null) {
-								altview.close();
-								altview = null;
-							}
-							altview = new ScrollView("MWP Altitude Analysis");
-							altview.close_request.connect(() => {
-									altview = null;
-									return false;
-								});
-							altview.generate_climb_dive(cdlines, maxclimb, maxdive);
-						}
-                });
-			} catch (SpawnError e) {
-				MWPLog.message ("Spawn Error: %s\n", e.message);
+						});
+				}
+			} catch (Error e) {
+				MWPLog.message ("TA plotter: %s\n", e.message);
 			}
 		}
 	}
@@ -283,6 +262,7 @@ public class  ScrollView : Adw.Window {
             sb.append(l);
             if(hilite)
                 sb.append("</span>");
+			sb.append_c('\n');
 		}
 		sb.append("</tt>");
 		label.set_markup(sb.str);

@@ -49,8 +49,8 @@ namespace TTS {
 	uint spktid = 0;
     private int si = 0;
     private bool mt_voice = false;
-    private int efdin;
-    private Pid epid;
+	private GLib.OutputStream efdin=null;
+	private GLib.Subprocess epid = null;
 	private uint8 spkamp = 0;
 	private string arm_msg = null;
 	private int lsat_t = 0;
@@ -109,19 +109,18 @@ namespace TTS {
 
 	private void audio_init (string? voice, bool use_en = false, string? espawn=null) {
         if(Mwp.vinit == false) {
-            efdin=0;
+            efdin=null;
             Mwp.vinit = true;
             if(voice == null)
                 voice = "default";
 
             if(espawn != null) {
-                var args = espawn.split(" ");
+                string []args;
                 try {
-                    Process.spawn_async_with_pipes ("/", args, null,
-                                                    SpawnFlags.SEARCH_PATH|
-                                                    SpawnFlags.STDOUT_TO_DEV_NULL,
-                                                    null, out epid, out efdin,
-                                                    null, null);
+					Shell.parse_argv(espawn, out args);
+					epid = new Subprocess.newv(args, SubprocessFlags.STDOUT_SILENCE|SubprocessFlags.STDIN_PIPE);
+					efdin = epid.get_stdin_pipe();
+
                 } catch (Error e) {
                     MWPLog.message("spawn \"%s\", %s\n", espawn, e.message);
                 }
@@ -136,7 +135,7 @@ namespace TTS {
             audio_close();
         }
         mt = new AudioThread((si == Mwp.SPEAKER_API.FLITE));
-        mt.start(use_en, efdin);
+        mt.start(use_en);
         mt_voice=true;
     }
 
@@ -147,6 +146,10 @@ namespace TTS {
 			mt.message(TTS.Vox.DONE);
 			mt.thread.join ();
 			mt = null;
+			if(epid != null) {
+				epid.force_exit();
+				epid = null;
+			}
 		}
     }
 
@@ -224,7 +227,6 @@ public class AudioThread : Object {
     private double lsat_t;
     private uint lsats;
     private bool use_en = false;
-    private int efd;
     private bool nicely = false;
 
     private AsyncQueue<TTS.Vox?> msgs;
@@ -282,8 +284,7 @@ public class AudioThread : Object {
         return sb.str;
     }
 
-    public void start(bool _use_en = false, int _efd = 0) {
-        efd = _efd;
+    public void start(bool _use_en = false) {
         use_en = _use_en;
         lsats = 255;
         timer = new Timer();
@@ -487,16 +488,20 @@ public class AudioThread : Object {
                             s = s.replace(",",".");
 						}
 						//						MWPLog.message(":DBG: Say %s\n", s);
-                        if(efd != 0) {
-                            Posix.write(efd, s, s.length);
-                            Posix.write(efd, "\n\n", 2);
+                        if(TTS.efdin != null) {
+							StringBuilder sb = new StringBuilder(s);
+							sb.append("\n\n");
+							TTS.efdin.write_all_async.begin(sb.str.data, Priority.DEFAULT,null);
                         } else {
                             MwpSpeech.say(s);
 						}
                     }
                 }
-				if (efd > 0) {
-					Posix.close(efd);
+				if (TTS.efdin != null) {
+					try {
+						TTS.efdin.close();
+					} catch {}
+					TTS.efdin = null;
 				}
                 return 0;
             });
