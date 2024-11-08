@@ -18,7 +18,7 @@
 
 /* Based on the Multiwii UBLOX parser, GPL by a cast of thousands */
 
-public class MWSerial : Object {
+public class UBSerial : Object {
     public struct SerialStats {
         double elapsed;
         ulong rxbytes;
@@ -153,7 +153,7 @@ public class MWSerial : Object {
 
     public int gps_state = State.START;
 
-    public MWSerial() {
+    public UBSerial() {
         available = false;
         fd = -1;
     }
@@ -186,7 +186,7 @@ public class MWSerial : Object {
         return available;
     }
 
-    ~MWSerial() {
+    ~UBSerial() {
         if(fd != -1)
             close();
     }

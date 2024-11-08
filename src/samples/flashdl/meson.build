@@ -5,7 +5,7 @@ fdldeps = [deps,
            meson.get_compiler('vala').find_library('linux'),
 	  ]
 
-fdl_v_args = ['--pkg', 'mwp-gatt-bridge']
+fdl_v_args = [] #'--pkg', 'mwp-gatt-bridge']
 if termcap.found()
   fdldeps += meson.get_compiler('c').find_library('ncurses')
   fdl_v_args += ['-D', 'USE_TERMCAP']
