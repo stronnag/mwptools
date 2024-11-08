@@ -18,7 +18,7 @@
 
 namespace Msp {
     public enum Feature {
-		GEOZONE = (1 << 5),
+		GEOZONE = (1 << 4),
         GPS = (1 << 7),
         TELEMETRY = (1 << 10),
         CURRENT = (1 << 11)
@@ -140,6 +140,9 @@ namespace Msp {
 
 		GEOZONE =  0x2110,
 		SET_GEOZONE =  0x2111,
+		GEOZONE_VERTEX = 0x2212,
+		SET_GEOZONE_VERTEX = 0x2213,
+
 		FW_APPROACH = 0x204A,
 		SET_FW_APPROACH = 0x204B,
 
