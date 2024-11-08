@@ -228,7 +228,7 @@ public class Flashdl : Object {
         MWPLog.set_time_format("%T");
         ml = new MainLoop();
         msp = new MWSerial();
-        dmgr = new DevManager(DevMask.USB);
+        dmgr = new DevManager();
 
         dmgr.device_added.connect((sdev) => {
 				if(!msp.available && sdev.type == DevMask.USB) {
@@ -249,13 +249,13 @@ public class Flashdl : Object {
                 ml.quit();
             });
 
-        Unix.signal_add(MwpSignals.Signal.INT, () => {
-                Timeout.add(100, () => {
-                        stderr.printf("%s\n", MwpTermCap.cnorm);
-                        ml.quit();
-                        return Source.REMOVE;
-                    });
-                return Source.REMOVE;
+        Unix.signal_add(ProcessSignal.INT, () => {
+					Timeout.add(100, () => {
+							stderr.printf("%s\n", MwpTermCap.cnorm);
+							ml.quit();
+							return Source.REMOVE;
+						});
+					return Source.REMOVE;
             });
 
 		if(dev == null) {

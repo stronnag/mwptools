@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2014 Jonathan Hudson <jh+mwptools@daria.co.uk>
  *
@@ -22,9 +21,9 @@
 
 
 static MainLoop ml;
-static MWSerial msp;
+static UBSerial msp;
 
-void show_stats(MWSerial s) {
+void show_stats(UBSerial s) {
     var st = s.getstats();
     stderr.puts("\n");
     MWPLog.message("%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s)\n",
@@ -46,13 +45,13 @@ private bool sigfunc_quit () {
 
 public static int main (string[] args) {
     ml = new MainLoop();
-    msp = new MWSerial();
+    msp = new UBSerial();
 
     if (msp.parse_option(args) == 0) {
-        if(msp.ublox_open(MWSerial.devname, MWSerial.brate)) {
-            Unix.signal_add(MwpSignals.Signal.INT, sigfunc_quit);
-            Unix.signal_add(MwpSignals.Signal.USR1, sigfunc);
-            Unix.signal_add(MwpSignals.Signal.USR2, sigfunc);
+        if(msp.ublox_open(UBSerial.devname, UBSerial.brate)) {
+            Unix.signal_add(ProcessSignal.INT, sigfunc_quit);
+            Unix.signal_add(ProcessSignal.USR1, sigfunc);
+            Unix.signal_add(ProcessSignal.USR2, sigfunc);
             ml.run();
         }
     }
