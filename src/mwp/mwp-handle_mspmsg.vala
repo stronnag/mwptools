@@ -1140,6 +1140,7 @@ namespace Mwp {
 			var id = FWApproach.deserialise(raw, len);
 			if(id == last_safehome-1) {
 				if(id ==Safehome.MAXHOMES-1) {
+					Safehome.manager.reset_fwa();
 					Safehome.manager.set_status(sh_disp);
 				} else {
 					wp_get_approaches(id+1-Safehome.MAXHOMES);

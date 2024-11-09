@@ -289,6 +289,7 @@ public class  SafeHomeDialog : Adw.Window {
 
 		aq_fcl = new GLib.SimpleAction("loadfc",null);
 		aq_fcl.activate.connect(() => {
+				Mwp.sh_disp = true;
 				Mwp.request_fc_safehomes();
 			});
 		aq_fcl.set_enabled(false);
@@ -813,7 +814,22 @@ public class  SafeHomeDialog : Adw.Window {
 
     }
 
-    private void refresh_home(int idx, SafeHome h, bool forced = false) {
+	public void reset_fwa() {
+		for(var j = 0; j < Safehome.MAXHOMES; j++) {
+			var sh = lstore.get_item(j) as SafeHome;
+			FWApproach.approach lnd = FWApproach.get(j);
+			sh.appalt = lnd.appalt;
+			sh.landalt = lnd.landalt;
+			sh.dirn1 = lnd.dirn1;
+			sh.ex1 = lnd.ex1;
+			sh.dirn2 = lnd.dirn2;
+			sh.ex2 =  lnd.ex2;
+			sh.aref = lnd.aref;
+			sh.dref = lnd.dref;
+		}
+	}
+
+	private void refresh_home(int idx, SafeHome h, bool forced = false) {
         var sh = lstore.get_item(idx) as SafeHome;
         sh.enabled = h.enabled;
         sh.lat = h.lat;
