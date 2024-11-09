@@ -16,7 +16,7 @@
  */
 
 namespace About {
-	const string CODE_NAME="Hop-tu-Naa Horror";
+	const string CODE_NAME="Weary Wombat";
 	public void show_about () {
 		string[] developers = { "Jonathan Hudson" };
 		string release_notes = "<p>This release adds the following features:</p>\n<ul><li>GTK4 UI</li>\n  <li>Shumate Map layer.</li>\n  <li>Bug fixes and performance improvements.</li>\n</ul>\n\n";
