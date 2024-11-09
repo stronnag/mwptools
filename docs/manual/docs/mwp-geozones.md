@@ -2,7 +2,13 @@
 
 ## Introduction
 
-{{ mwp }} provides a UI for the Geozones function that may appear in INAV 8.0.0 (or later). As the technical details for this feature has not yet been made publicly available, the implementation described below should be considered experimental; at least the user can generate colourful shapes ...
+{{ mwp }} provides a UI for the Geozones function that will appear in INAV 8.0.0 (probably).
+
+
+As the technical details for this feature has not yet been made publicly available (other than *RTFS*), the implementation described below might be considered experimental; at least the user can generate colourful shapes ...
+
+!!! Note "Version Requirements"
+	The public API (MSP etc.) exposed in the initial INAV PR differs from the API described in earlier provisional documentation. The INAV 8.0 implemetation **requires** {{ mwp }} 24.11.09 or later.
 
 Geozones provides (in theory at least) a set of geographical shapes that the FC can navigate around, characterised by:
 
@@ -33,7 +39,7 @@ The effect these parameters have on FC behaviour will, presumably, be made avail
 
 ![mwp geozones](images/geozones_00.png){: width="50%" }
 
-Note that the **Save**, **Export**, **Clear**, **Download** and **Upload** options are not sensitive if no geozone is loaded. Once a geozone is loaded, some or all of these options will be enabled. The MSP options are only enabled if the FC offers `feature GEOZONE`.
+Note that the **Save**, **Export**, **Clear**, **Download** and **Upload** options are not sensitive if no geozone is loaded. Once a geozone is loaded, some or all of these options will be enabled. The MSP options are only enabled if the FC offers `feature GEOZONE` with the INAV 8.0 `feature` value of `(1 << 4)`.
 
 Note that if `feature GEOZONE` is present, {{ mwp }} will attempt to load Geozones from the FC if the setting `autoload-geozones` is true, e.g.:
 
