@@ -219,9 +219,6 @@ public class  SafeHomeDialog : Adw.Window {
 	private GLib.SimpleAction aq_fcl;
 	private GLib.SimpleAction aq_fcs;
 
-	public signal void request_safehomes(uint8 first, uint8 last);
-	public signal void notify_publish_request();
-
 	private SafeHomeMarkers shmarkers;
 
 	private void upsert(uint idx, SafeHome _sh) {
@@ -292,14 +289,14 @@ public class  SafeHomeDialog : Adw.Window {
 
 		aq_fcl = new GLib.SimpleAction("loadfc",null);
 		aq_fcl.activate.connect(() => {
-				request_safehomes(0, (uint8)Safehome.MAXHOMES);
+				Mwp.request_fc_safehomes();
 			});
 		aq_fcl.set_enabled(false);
 		dg.add_action(aq_fcl);
 
 		aq_fcs = new GLib.SimpleAction("savefc",null);
 		aq_fcs.activate.connect(() => {
-				notify_publish_request();
+				Mwp.save_safehomes_fc();
 			});
 		aq_fcs.set_enabled(false);
 		dg.add_action(aq_fcs);

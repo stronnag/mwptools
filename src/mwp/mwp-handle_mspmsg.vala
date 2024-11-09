@@ -739,10 +739,7 @@ namespace Mwp {
 			queue_cmd(msp_get_status,null,0);
 			if(sh_load == "-FC-") {
 				Timeout.add(1200, () => {
-						last_safehome = Safehome.MAXHOMES;
-						uint8 shid = 0;
-						MWPLog.message("Load FC safehomes\n");
-						queue_cmd(Msp.Cmds.SAFEHOME,&shid,1);
+						request_fc_safehomes();
 						return false;
 					});
 			}
@@ -1632,5 +1629,17 @@ namespace Mwp {
 		zb[0] = (uint8) nz;
 		zb[1] = (uint8) nv;
 		queue_cmd(Msp.Cmds.GEOZONE_VERTEX, zb, 2);
+	}
+
+	public void request_fc_safehomes() {
+		last_safehome = Safehome.MAXHOMES;
+		uint8 shid = 0;
+		MWPLog.message("Load FC safehomes\n");
+		queue_cmd(Msp.Cmds.SAFEHOME,&shid,1);
+	}
+
+	public void save_safehomes_fc() {
+		safeindex = 0;
+		msp_publish_home(0);
 	}
 }
