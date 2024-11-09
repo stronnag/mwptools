@@ -86,7 +86,7 @@ namespace Mwp {
 
 		if(errs == true) {
             lastrx = lastok = nticks;
-            MWPLog.message("Msp Error: %s[%d,%db] %s\n", cmd.to_string(), cmd, len,
+            MWPLog.message("Msp Error: %s[0x%x,%d,%db] %s\n", cmd.to_string(), cmd, cmd, len,
                            (cmd == Msp.Cmds.COMMON_SETTING) ? (string)lastmsg.data : "");
             switch(cmd) {
 			case Msp.Cmds.ADSB_VEHICLE_LIST:
@@ -361,9 +361,12 @@ namespace Mwp {
 				MwpMenu.set_menu_state(Mwp.window, "gz-dl", true);
 				MwpMenu.set_menu_state(Mwp.window, "gz-ul", true);
 				if(conf.autoload_geozones) {
+					MWPLog.message("Load FC Geozones\n");
 					gzr.reset();
 					queue_gzone(0);
 					gz_from_msp = true;
+				} else {
+					queue_cmd(Msp.Cmds.BLACKBOX_CONFIG,null,0);
 				}
 			} else {
 				queue_cmd(Msp.Cmds.BLACKBOX_CONFIG,null,0);
@@ -372,8 +375,23 @@ namespace Mwp {
 
 		case Msp.Cmds.GEOZONE:
 			gzedit.clear();
-			var cnt = gzr.append(raw, len);
+			var cnt = gzr.zone_parse(raw, len);
 			if (cnt >= GeoZoneManager.MAXGZ) {
+				queue_gzvertex(0, 0);
+			} else {
+				queue_gzone(cnt);
+			}
+			break;
+
+
+		case Msp.Cmds.GEOZONE_VERTEX:
+			int8 nz;
+			int8 nv = 0;
+			bool res =  gzr.vertex_parse(raw, len, out nz, out nv);
+			if (res) {
+				queue_gzvertex(nz, nv);
+			} else {
+			// get state
 				if(gzone != null) {
 					gzone.remove();
 					set_gzsave_state(false);
@@ -389,16 +407,27 @@ namespace Mwp {
 						return false;
 					});
 				queue_cmd(Msp.Cmds.BLACKBOX_CONFIG,null,0);
-			} else {
-				queue_gzone(cnt);
 			}
 			break;
 
 		case Msp.Cmds.SET_GEOZONE:
 			gzcnt++;
 			if (gzcnt < GeoZoneManager.MAXGZ) {
-				var mbuf = gzr.encode(gzcnt);
+				var mbuf = gzr.encode_zone(gzcnt);
 				queue_cmd(Msp.Cmds.SET_GEOZONE, mbuf, mbuf.length);
+			} else {
+				gzr.init_vertex_iter();
+				var mbuf = gzr.encode_next_vertex();
+				if (mbuf.length > 0) {
+					queue_cmd(Msp.Cmds.SET_GEOZONE_VERTEX, mbuf, mbuf.length);
+				}
+			}
+			break;
+
+		case Msp.Cmds.SET_GEOZONE_VERTEX:
+			var mbuf = gzr.encode_next_vertex();
+			if (mbuf.length > 0) {
+				queue_cmd(Msp.Cmds.SET_GEOZONE_VERTEX, mbuf, mbuf.length);
 			}
 			break;
 
@@ -1596,5 +1625,12 @@ namespace Mwp {
 	private void queue_gzone(int cnt) {
 		uint8 zb=(uint8)cnt;
 		queue_cmd(Msp.Cmds.GEOZONE, &zb, 1);
+	}
+
+	private void queue_gzvertex(int8 nz, int8 nv) {
+		uint8 zb[2];
+		zb[0] = (uint8) nz;
+		zb[1] = (uint8) nv;
+		queue_cmd(Msp.Cmds.GEOZONE_VERTEX, zb, 2);
 	}
 }

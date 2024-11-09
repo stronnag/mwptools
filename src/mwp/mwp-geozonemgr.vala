@@ -35,8 +35,9 @@ public class GeoZoneManager {
 		RTH = 3,
 	}
 
-	const size_t VSIZE = 9;
-	const size_t ZSIZEMIN = 13;
+	const size_t VERTSIZEP = 10;
+	const size_t VERTSIZEC = 14;
+	const size_t ZONESIZE = 13;
 
 	public struct Vertex {
 		uint8 zindex;
@@ -51,6 +52,7 @@ public class GeoZoneManager {
 		GZAction action;
 		int minalt;
 		int maxalt;
+		uint8 vrec; // to upload only
 	}
 
 	private struct ZoneColours {
@@ -75,6 +77,9 @@ public class GeoZoneManager {
 	private Vertex []vs;
 	private ZoneColours [,] zc;
 
+	private int8 _nextz;
+	private int8 _nextv;
+
 	public void reset() {
 		for(var k = 0; k < MAXGZ; k++) {
 			zs[k].type = GZType.Unused;
@@ -82,6 +87,24 @@ public class GeoZoneManager {
 		for(var k = 0; k < MAXVTX; k++) {
 			vs[k].zindex = 0xff;
 		}
+		_nextz = 0;
+		_nextv = 0;
+	}
+
+	private bool get_next_vertex() {
+		_nextv++;
+		if (_nextv >= zs[_nextz].vrec || (zs[_nextz].shape == GZShape.Circular && _nextv > 0)) {
+			_nextv = 0;
+			_nextz++;
+			if(_nextz >= MAXGZ) {
+				_nextz = -1;
+				return false;
+			}
+		}
+		if (zs[_nextz].vrec == 0) {
+			return false;
+		}
+		return true;
 	}
 
 	public GeoZoneManager() {
@@ -277,12 +300,13 @@ public class GeoZoneManager {
 	}
 
 	public void append_zone(uint n,  GZShape shape,  GZType ztype, int minalt, int maxalt,
-							GZAction action) {
+							GZAction action, uint8 vrec=0) {
 		zs[n].shape = shape;
 		zs[n].type = ztype;
 		zs[n].minalt = minalt;
 		zs[n].maxalt = maxalt;
 		zs[n].action = action;
+		zs[n].vrec = vrec;
 	}
 
 	public int append_vertex(uint n, uint zidx, int lat, int lon) {
@@ -398,34 +422,75 @@ public class GeoZoneManager {
 		vs[n].longitude = l;
 	}
 
-	public uint8[] encode (int n) {
-		uint8[] buf;
+	public uint8[] encode_zone (int n) {
+		var buf = new uint8[ZONESIZE];
+		GLib.Memory.@set(buf, 0, ZONESIZE);
 		if (n < MAXGZ) {
 			var vsz = find_vertices(n);
-			var zvsize = ZSIZEMIN + vsz.length*VSIZE;
-			buf = new uint8[zvsize];
 			uint8*ptr = &buf[0];
-			*ptr++ = (uint8)zs[n].type;
-			*ptr++ = (uint8)zs[n].shape;
-			ptr = SEDE.serialise_i32(ptr, zs[n].minalt);
-			ptr = SEDE.serialise_i32(ptr, zs[n].maxalt);
-			*ptr++ = (uint8)zs[n].action;
-			*ptr++ = (uint8)vsz.length;
+			zs[n].vrec = (uint8)vsz.length;
 			*ptr++ = (uint8)n;
-
-			foreach(var v in vsz) {
-				*ptr++ = vs[v].index;
-				ptr = SEDE.serialise_i32(ptr, vs[v].latitude);
-				ptr = SEDE.serialise_i32(ptr, vs[v].longitude);
+			if (zs[n].vrec > 0 ) {
+				*ptr++ = (uint8)zs[n].type;
+				*ptr++ = (uint8)zs[n].shape;
+				ptr = SEDE.serialise_i32(ptr, zs[n].minalt);
+				ptr = SEDE.serialise_i32(ptr, zs[n].maxalt);
+				*ptr++ = (uint8)zs[n].action;
 			}
-		} else {
-			buf = new uint8[ZSIZEMIN];
-			Posix.memset(buf, 0, ZSIZEMIN);
+			buf[12] = zs[n].vrec;
 		}
 		return buf;
 	}
 
-	public int parse(uint8[] buf) {
+	public void init_vertex_iter() {
+		_nextz = 0;
+		_nextv = 0;
+	}
+
+	public uint8[] encode_next_vertex () {
+		var mbuf =  encode_vertex (_nextz, _nextv);
+		if (mbuf.length > 0) {
+			if (zs[_nextz].shape == GZShape.Circular) {
+				_nextz++;
+				_nextv = 0;
+			} else {
+				_nextv++;
+				if (_nextv >= zs[_nextz].vrec) {
+					_nextz++;
+					_nextv = 0;
+				}
+			}
+		}
+		return mbuf;
+	}
+
+
+	private  uint8[] encode_vertex (int nz, int nv) {
+		var k = find_vertex((uint)nz, (uint)nv);
+		if (k != -1) {
+			uint8 []buf;
+			if(zs[nz].shape == GZShape.Circular) {
+				var k1 = find_vertex((uint)nz, 1);
+				if (k1 == -1) {
+					return {};
+				}
+				buf = new uint8[VERTSIZEC];
+				SEDE.serialise_i32(&buf[10], vs[k1].latitude);
+			} else {
+				buf = new uint8[VERTSIZEP];
+			}
+			uint8*ptr = &buf[0];
+			*ptr++ = (uint8)nz;
+			*ptr++ = (uint8)nv;
+			ptr = SEDE.serialise_i32(ptr, vs[k].latitude);
+			ptr = SEDE.serialise_i32(ptr, vs[k].longitude);
+			return buf;
+		}
+		return {};
+	}
+
+
+	public int zone_decode(uint8[] buf) {
 		uint8* ptr = &buf[0];
 		var ztype = (GZType)*ptr++;
 		var shape = (GZShape)*ptr++;
@@ -435,20 +500,29 @@ public class GeoZoneManager {
 		var action = (GZAction)*ptr++;
 		var nvertices = *ptr++;
 		var index = *ptr++;
-		var zvsize = ZSIZEMIN + nvertices*VSIZE;
-		if(index < MAXGZ && zvsize ==  buf.length) {
-			append_zone(index, shape, ztype, minalt, maxalt, action);
-			for (var j = 0; j < nvertices; j++) {
-				int lat, lon;
-				var vindex = *ptr++;
-				ptr = SEDE.deserialise_i32(ptr, out lat);
-				ptr = SEDE.deserialise_i32(ptr, out lon);
-				append_vertex(index, vindex, lat, lon);
+		if(index < MAXGZ) {
+			if (nvertices > 0) {
+				append_zone(index, shape, ztype, minalt, maxalt, action, nvertices);
 			}
 		} else {
 			return -1;
 		}
 		return (int)index;
+	}
+
+	public void vertex_decode(uint8[] buf) {
+		uint8* ptr = &buf[0];
+		var zid = *ptr++;
+		var vid = *ptr++;
+		int lat, lon;
+		ptr = SEDE.deserialise_i32(ptr, out lat);
+		ptr = SEDE.deserialise_i32(ptr, out lon);
+		append_vertex(zid, vid, lat, lon);
+		if(buf.length == VERTSIZEC) {
+			int alt;
+			ptr = SEDE.deserialise_i32(ptr, out alt);
+			append_vertex(zid, vid+1, alt, 0);
+		}
 	}
 
 	public OverlayItem.StyleItem fetch_style(uint n) {
@@ -535,11 +609,26 @@ public class GeoZoneManager {
 		return o;
 	}
 
-	public int append(uint8[] raw, size_t len) {
-		if (len > ZSIZEMIN) {
-			return 1+parse(raw[0:len]);
+	public int zone_parse(uint8[] raw, size_t len) {
+		if (len == ZONESIZE) {
+			return 1+zone_decode(raw[0:len]);
 		}
 		return MAXGZ;
+	}
+
+	public bool vertex_parse(uint8[] raw, size_t len, out int8 nzone, out int8 nvert) {
+		bool res = false;
+		nzone = -1;
+		nvert = -1;
+		if (len == VERTSIZEP || len == VERTSIZEC) {
+			vertex_decode(raw[0:len]);
+			res =  get_next_vertex();
+			if (res) {
+				nzone = (int8) _nextz;
+				nvert = (int8) _nextv;
+			}
+		}
+		return res;
 	}
 
 	public void save_file(string filename) {
