@@ -674,7 +674,7 @@ public class  SafeHomeDialog : Adw.Window {
 	}
 
 	public void online_change(uint32 v) {
-		var sens = (v >= 0x020700/*Mwp.FCVERS.hasSAFEAPI*/); //.FIXME
+		var sens = (v >= Mwp.FCVERS.hasSAFEAPI);
 		aq_fcs.set_enabled(sens);
 		aq_fcl.set_enabled(sens);
 	}
@@ -914,7 +914,7 @@ public class  SafeHomeDialog : Adw.Window {
 		}
 		UpdateFile.save(filename, "fwapproach", sb.str);
     }
-//current_folder_changed ()
+
     private void run_chooser(Gtk.FileChooserAction action) {
 		IChooser.Filter []ifm = {
 			{"Text files", {"txt"}},
@@ -947,7 +947,10 @@ public class  SafeHomeDialog : Adw.Window {
     }
 
     public void display_ui() {
-        if(!_available) {
+		if(Mwp.msp != null && Mwp.msp.available) {
+			online_change(Mwp.vi.fc_vers);
+		}
+		if(!_available) {
 			_available = true;
             present ();
             shmarkers.set_interactive(true);
