@@ -1389,7 +1389,12 @@
 
 <h1 id="mwp-and-geozones">mwp and Geozones<a class="headerlink" href="#mwp-and-geozones" title="Permanent link">#</a></h1>
 <h2 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permanent link">#</a></h2>
-<p><a href="https://github.com/stronnag/mwptools">mwp</a> provides a UI for the Geozones function that may appear in INAV 8.0.0 (or later). As the technical details for this feature has not yet been made publicly available, the implementation described below should be considered experimental; at least the user can generate colourful shapes ...</p>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> provides a UI for the Geozones function that will appear in INAV 8.0.0 (probably).</p>
+<p>As the technical details for this feature has not yet been made publicly available (other than <em>RTFS</em>), the implementation described below might be considered experimental; at least the user can generate colourful shapes ...</p>
+<div class="admonition note">
+<p class="admonition-title">Version Requirements</p>
+<p>The public API (MSP etc.) exposed in the initial INAV PR differs from the API described in earlier provisional documentation. The INAV 8.0 implemetation <strong>requires</strong> <a href="https://github.com/stronnag/mwptools">mwp</a> 24.11.09 or later.</p>
+</div>
 <p>Geozones provides (in theory at least) a set of geographical shapes that the FC can navigate around, characterised by:</p>
 <ul>
 <li>
@@ -1425,7 +1430,7 @@
 <h3 id="menu-options">Menu options<a class="headerlink" href="#menu-options" title="Permanent link">#</a></h3>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> adds a Geozones menu option, with suboptions:</p>
 <p><img alt="mwp geozones" src="../images/geozones_00.png" width="50%" /></p>
-<p>Note that the <strong>Save</strong>, <strong>Export</strong>, <strong>Clear</strong>, <strong>Download</strong> and <strong>Upload</strong> options are not sensitive if no geozone is loaded. Once a geozone is loaded, some or all of these options will be enabled. The MSP options are only enabled if the FC offers <code>feature GEOZONE</code>.</p>
+<p>Note that the <strong>Save</strong>, <strong>Export</strong>, <strong>Clear</strong>, <strong>Download</strong> and <strong>Upload</strong> options are not sensitive if no geozone is loaded. Once a geozone is loaded, some or all of these options will be enabled. The MSP options are only enabled if the FC offers <code>feature GEOZONE</code> with the INAV 8.0 <code>feature</code> value of <code>(1 &lt;&lt; 4)</code>.</p>
 <p>Note that if <code>feature GEOZONE</code> is present, <a href="https://github.com/stronnag/mwptools">mwp</a> will attempt to load Geozones from the FC if the setting <code>autoload-geozones</code> is true, e.g.:</p>
 <pre><code>gsettings set org.stronnag.mwp autoload-geozones true
 </code></pre>
