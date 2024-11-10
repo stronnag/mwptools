@@ -104,7 +104,9 @@ namespace KMLWriter {
 				}
 				polyg->new_text_child (ns, "altitudeMode", altmode);
 				polyg->new_text_child (ns, "extrude", "1");
-				polyg->new_text_child (ns, "tessellate", "0");
+				if (isAMSL == 0) {
+					polyg->new_text_child (ns, "tessellate", "1");
+				}
 				var obis = polyg->new_text_child (ns, "outerBoundaryIs", "");
 				var lring = obis->new_text_child (ns, "LinearRing", "");
 				var sb = new StringBuilder();
