@@ -68,9 +68,10 @@ namespace KMLWriter {
 				vfolder->new_text_child (ns, "name", el.name);
 				vfolder->new_text_child (ns, "description", el.desc);
 				int alt = 0;
+				int isAMSL=0;
 				if(el.desc.has_prefix("geozone")) {
 					var gels = el.desc.split(" ");
-					if (gels.length >= 7) {
+					if (gels.length >= 8) {
 						Xml.Node* xdata = new Xml.Node (ns, "ExtendedData");
 						var gns = xdata->new_ns("http://geo.daria.co.uk/zones/1.0", "gzone");
 						xdata->new_text_child (gns, "id", gels[1]);
@@ -79,11 +80,13 @@ namespace KMLWriter {
 						xdata->new_text_child (gns, "minalt", gels[4]);
 						xdata->new_text_child (gns, "maxalt", gels[5]);
 						alt = int.parse(gels[5])/100;
-						xdata->new_text_child (gns, "action", gels[6]);
-						if(gels.length == 11 && gels[7] == "circle") {
-							xdata->new_text_child (gns, "centre-lat", gels[8]);
-							xdata->new_text_child (gns, "centre-lon", gels[9]);
-							xdata->new_text_child (gns, "radius", gels[10]);
+						isAMSL = (uint8)int.parse(gels[6]);
+						xdata->new_text_child (gns, "isAMSL", gels[6]);
+						xdata->new_text_child (gns, "action", gels[7]);
+						if(gels.length == 12 && gels[8] == "circle") {
+							xdata->new_text_child (gns, "centre-lat", gels[9]);
+							xdata->new_text_child (gns, "centre-lon", gels[10]);
+							xdata->new_text_child (gns, "radius", gels[11]);
 						}
 						vfolder->add_child(xdata);
 					}
@@ -95,6 +98,9 @@ namespace KMLWriter {
 				var altmode = "relativeToGround";
 				if (alt == 0) {
 					altmode = "clampToGround";
+				}
+				if (isAMSL == 1) {
+					altmode = "absolute";
 				}
 				polyg->new_text_child (ns, "altitudeMode", altmode);
 				polyg->new_text_child (ns, "extrude", "1");

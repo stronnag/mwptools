@@ -357,20 +357,7 @@ namespace Mwp {
 						   (0 != (feature_mask & Msp.Feature.TELEMETRY)).to_string(),
 						   (0 != (feature_mask & Msp.Feature.GPS)).to_string(),
 						   curf.to_string());
-			if ((feature_mask & Msp.Feature.GEOZONE) == Msp.Feature.GEOZONE) {
-				MwpMenu.set_menu_state(Mwp.window, "gz-dl", true);
-				MwpMenu.set_menu_state(Mwp.window, "gz-ul", true);
-				if(conf.autoload_geozones) {
-					MWPLog.message("Load FC Geozones\n");
-					gzr.reset();
-					queue_gzone(0);
-					gz_from_msp = true;
-				} else {
-					queue_cmd(Msp.Cmds.BLACKBOX_CONFIG,null,0);
-				}
-			} else {
-				queue_cmd(Msp.Cmds.BLACKBOX_CONFIG,null,0);
-			}
+			queue_cmd(Msp.Cmds.BLACKBOX_CONFIG,null,0);
 			break;
 
 		case Msp.Cmds.GEOZONE:
@@ -382,7 +369,6 @@ namespace Mwp {
 				queue_gzone(cnt);
 			}
 			break;
-
 
 		case Msp.Cmds.GEOZONE_VERTEX:
 			int8 nz;
@@ -738,10 +724,22 @@ namespace Mwp {
 			}
 			queue_cmd(msp_get_status,null,0);
 			if(sh_load == "-FC-") {
-				Timeout.add(1200, () => {
+				Timeout.add(1000, () => {
 						request_fc_safehomes();
 						return false;
 					});
+			}
+			if (vi.fc_vers >= FCVERS.hasGeoZones && ((feature_mask & Msp.Feature.GEOZONE) == Msp.Feature.GEOZONE)) {
+				MwpMenu.set_menu_state(Mwp.window, "gz-dl", true);
+				MwpMenu.set_menu_state(Mwp.window, "gz-ul", true);
+				if(conf.autoload_geozones) {
+					Timeout.add_once(2000, () => {
+							MWPLog.message("Load FC Geozones\n");
+							gzr.reset();
+							queue_gzone(0);
+							gz_from_msp = true;
+						});
+				}
 			}
 			break;
 

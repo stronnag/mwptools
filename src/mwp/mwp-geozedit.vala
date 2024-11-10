@@ -24,6 +24,7 @@ public class GZEdit : Adw.Window {
 	private Gtk.DropDown zaction;
 	private Gtk.Entry zminalt;
 	private Gtk.Entry zmaxalt;
+	private Gtk.Switch zisamsl;
 	private Gtk.Entry zradius;
 	private Gtk.Button[] buttons;
 	private uint nitem;
@@ -54,6 +55,7 @@ public class GZEdit : Adw.Window {
 		RADIUS = 0x10,
 		MINALT = 0x20,
 		MAXALT = 0x40,
+		ISAMSL = 0x80,
 		PROPERTIES = 0xf,
 		ANY = 0xff,
 	}
@@ -205,6 +207,12 @@ public class GZEdit : Adw.Window {
 		zmaxalt.set_editable(true);
 		zmaxalt.input_purpose = InputPurpose.NUMBER;
 
+		zisamsl = new Gtk.Switch();
+		zisamsl.hexpand = false;
+		zisamsl.vexpand = false;
+		zisamsl.halign = Gtk.Align.START;
+		zisamsl.valign = Gtk.Align.START;
+
 		grid.attach (new Gtk.Label("Index"), 0, 0); // left, top
 		grid.attach (zidx, 1, 0);
 		grid.attach (new Gtk.Label("Shape"), 0, 1);
@@ -223,6 +231,9 @@ public class GZEdit : Adw.Window {
 		grid.attach (zminalt, 1, 4);
 		grid.attach (new Gtk.Label("Max Altitude (m)"), 0, 5);
 		grid.attach (zmaxalt, 1, 5);
+		grid.attach (new Gtk.Label("is AMSL"), 0, 6);
+		grid.attach (zisamsl, 1, 6);
+
 		grid.column_homogeneous = true;
 		vbox.append (grid);
 		set_transient_for (Mwp.window);
@@ -269,6 +280,7 @@ public class GZEdit : Adw.Window {
 				if(nitem >= Mwp.gzr.length()) {
 					var minalt = (int)(100* DStr.strtod(zminalt.text, null));
 					var maxalt = (int)(100* DStr.strtod(zmaxalt.text, null));
+					var isamsl = (uint8)zisamsl.active;
 					double clat = 0;
 					double clon = 0;
 					MapUtils.get_centre_location(out clat, out clon);
@@ -281,7 +293,7 @@ public class GZEdit : Adw.Window {
 						newlab.label="";
 						Mwp.gzr.append_zone(nitem, (GeoZoneManager.GZShape)zshape.selected,
 										  (GeoZoneManager.GZType)ztype.selected,
-										  minalt, maxalt,
+											minalt, maxalt, isamsl,
 										  (GeoZoneManager.GZAction)zaction.selected);
 						k = Mwp.gzr.append_vertex(nitem, 0, (int)(clat*1e7), (int)(clon*1e7));
 						k = Mwp.gzr.append_vertex(nitem, 1, (int)(rad*100), 0);
@@ -290,7 +302,7 @@ public class GZEdit : Adw.Window {
 						Mwp.gzr.append_zone(nitem,
 											(GeoZoneManager.GZShape)zshape.selected,
 											(GeoZoneManager.GZType)ztype.selected,
-											minalt, maxalt,
+											minalt, maxalt, 0, // FIXME
 											(GeoZoneManager.GZAction)zaction.selected);
 						var delta = 16*Math.pow(2, (20-Gis.map.viewport.zoom_level));
 						double nlat, nlon;
@@ -336,6 +348,10 @@ public class GZEdit : Adw.Window {
 
 		zmaxalt.activate.connect(() => {
 				refresh_storage(Upd.MAXALT, true);
+			});
+
+		zisamsl.activate.connect(() => {
+				refresh_storage(Upd.ISAMSL, true);
 			});
 
 		grid.attach(newlab, 2, 2, 2, 4);
@@ -399,6 +415,7 @@ public class GZEdit : Adw.Window {
 		zaction.selected = (int)Mwp.gzr.get_action(nitem);
 		zminalt.set_text("%.2f".printf(Mwp.gzr.get_minalt(nitem)/100.0));
 		zmaxalt.set_text("%.2f".printf(Mwp.gzr.get_maxalt(nitem)/100.0));
+		zisamsl.active = (bool) Mwp.gzr.get_amsl(nitem);
 		toggle_shape();
 		unowned OverlayItem el = ovl.get_elements().nth_data(nitem);
 		if(el.circ.radius_nm == 0) { // polyline
@@ -540,6 +557,11 @@ public class GZEdit : Adw.Window {
 					upd |= Upd.MAXALT;
 					Mwp.gzr.set_maxalt(nitem, talt);
 				}
+			}
+
+			if((mask & Upd.ISAMSL) == Upd.ISAMSL) {
+				upd |= Upd.ISAMSL;
+				Mwp.gzr.set_amsl(nitem, (uint8)zisamsl.active);
 			}
 
 			if(upd != 0 && display) {

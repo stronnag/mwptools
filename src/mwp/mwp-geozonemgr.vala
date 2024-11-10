@@ -37,7 +37,7 @@ public class GeoZoneManager {
 
 	const size_t VERTSIZEP = 10;
 	const size_t VERTSIZEC = 14;
-	const size_t ZONESIZE = 13;
+	const size_t ZONESIZE = 14;
 
 	public struct Vertex {
 		uint8 zindex;
@@ -52,6 +52,7 @@ public class GeoZoneManager {
 		GZAction action;
 		int minalt;
 		int maxalt;
+		uint8 isAMSL;
 		uint8 vrec; // to upload only
 	}
 
@@ -267,6 +268,14 @@ public class GeoZoneManager {
 		return zs[n].minalt;
 	}
 
+	public void set_amsl(uint n, uint8 val) {
+		zs[n].isAMSL = val;
+	}
+
+	public uint8 get_amsl(uint n) {
+		return zs[n].isAMSL;
+	}
+
 	public int get_maxalt(uint n) {
 		return zs[n].maxalt;
 	}
@@ -300,11 +309,12 @@ public class GeoZoneManager {
 	}
 
 	public void append_zone(uint n,  GZShape shape,  GZType ztype, int minalt, int maxalt,
-							GZAction action, uint8 vrec=0) {
+							uint8 isAMSL, GZAction action, uint8 vrec=0) {
 		zs[n].shape = shape;
 		zs[n].type = ztype;
 		zs[n].minalt = minalt;
 		zs[n].maxalt = maxalt;
+		zs[n].isAMSL = isAMSL;
 		zs[n].action = action;
 		zs[n].vrec = vrec;
 	}
@@ -435,9 +445,10 @@ public class GeoZoneManager {
 				*ptr++ = (uint8)zs[n].shape;
 				ptr = SEDE.serialise_i32(ptr, zs[n].minalt);
 				ptr = SEDE.serialise_i32(ptr, zs[n].maxalt);
+				*ptr++ = zs[n].isAMSL;
 				*ptr++ = (uint8)zs[n].action;
 			}
-			buf[12] = zs[n].vrec;
+			buf[13] = zs[n].vrec;
 		}
 		return buf;
 	}
@@ -492,17 +503,18 @@ public class GeoZoneManager {
 
 	public int zone_decode(uint8[] buf) {
 		uint8* ptr = &buf[0];
+		var index = *ptr++;
 		var ztype = (GZType)*ptr++;
 		var shape = (GZShape)*ptr++;
 		int minalt, maxalt;
 		ptr = SEDE.deserialise_i32(ptr, out minalt);
 		ptr = SEDE.deserialise_i32(ptr, out maxalt);
+		var isAMSL = *ptr++;
 		var action = (GZAction)*ptr++;
 		var nvertices = *ptr++;
-		var index = *ptr++;
 		if(index < MAXGZ) {
 			if (nvertices > 0) {
-				append_zone(index, shape, ztype, minalt, maxalt, action, nvertices);
+				append_zone(index, shape, ztype, minalt, maxalt, isAMSL, action, nvertices);
 			}
 		} else {
 			return -1;
@@ -555,8 +567,8 @@ public class GeoZoneManager {
 		oi.type = OverlayItem.OLType.POLYGON;
 		oi.idx = (uint8)n;
 		var sb = new StringBuilder();
-		sb.append_printf("geozone %u %d %d %d %d %d", n, zs[n].shape, zs[n].type,
-						 zs[n].minalt, zs[n].maxalt, zs[n].action);
+		sb.append_printf("geozone %u %d %d %d %d %d %d", n, zs[n].shape, zs[n].type,
+						 zs[n].minalt, zs[n].maxalt, zs[n].isAMSL, zs[n].action);
 		oi.styleinfo =  get_style(zs[n]);
 		if (zs[n].shape == GZShape.Circular) {
 			oi.name = "Circle %2u".printf(n);
@@ -641,8 +653,8 @@ public class GeoZoneManager {
 		int n = 0;
 		foreach (var z in zs) {
 			if(z.type != GZType.Unused) {
-				sb.append_printf("geozone %d %d %d %d %d %d\n", n, z.shape, z.type,
-							 z.minalt, z.maxalt, z.action);
+				sb.append_printf("geozone %d %d %d %d %d %d %d\n", n, z.shape, z.type,
+								 z.minalt, z.maxalt, z.isAMSL, z.action);
 				var nvs = find_vertices(n);
 				foreach(var v in nvs) {
 					sb.append_printf("geozone vertex %d %d %d %d\n", vs[v].zindex, vs[v].index, vs[v].latitude, vs[v].longitude);
@@ -715,7 +727,8 @@ public class GeoZoneManager {
 						z.type =(GZType)int.parse(parts[3]);
 						z.minalt = int.parse(parts[4]);
 						z.maxalt = int.parse(parts[5]);
-						z.action = (GZAction)int.parse(parts[6]);
+						z.isAMSL = (uint8) int.parse(parts[6]);
+						z.action = (GZAction)int.parse(parts[7]);
 						zs[index] = z;
 						break;
 					}
