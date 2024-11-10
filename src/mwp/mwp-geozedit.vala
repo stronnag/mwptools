@@ -267,14 +267,14 @@ public class GZEdit : Adw.Window {
 
 		buttons[Buttons.REFRESH].clicked.connect(() => {
 				if(nitem >= Mwp.gzr.length()) {
-					var minalt = (int)(100* double.parse(zminalt.text));
-					var maxalt = (int)(100* double.parse(zmaxalt.text));
+					var minalt = (int)(100* DStr.strtod(zminalt.text, null));
+					var maxalt = (int)(100* DStr.strtod(zmaxalt.text, null));
 					double clat = 0;
 					double clon = 0;
 					MapUtils.get_centre_location(out clat, out clon);
 					int k=-1;
 					if(zshape.selected == 0) {
-						var rad = double.parse(zradius.text);
+						var rad = DStr.strtod(zradius.text, null);
 						if (rad <= 0.0) {
 							return;
 						}
@@ -516,7 +516,7 @@ public class GZEdit : Adw.Window {
 					var nvs = Mwp.gzr.find_vertices(nitem);
 					if(nvs.length == 2) {
 						int alt = Mwp.gzr.get_latitude(nvs[1]);
-						int talt = (int)(1e2*double.parse(zradius.text));
+						int talt = (int)(1e2*DStr.strtod(zradius.text, null));
 						if(alt != talt) {
 							upd |= Upd.RADIUS;
 							Mwp.gzr.set_latitude(nvs[1], talt);
@@ -526,7 +526,7 @@ public class GZEdit : Adw.Window {
 			}
 			if((mask & Upd.MINALT) == Upd.MINALT) {
 				int alt = Mwp.gzr.get_minalt(nitem);
-				int talt = (int)(1e2*double.parse(zminalt.text));
+				int talt = (int)(1e2*DStr.strtod(zminalt.text, null));
 				if(alt != talt) {
 					upd |= Upd.MINALT;
 					Mwp.gzr.set_minalt(nitem, talt);
@@ -535,7 +535,7 @@ public class GZEdit : Adw.Window {
 
 			if((mask & Upd.MAXALT) == Upd.MAXALT) {
 				int alt = Mwp.gzr.get_maxalt(nitem);
-				int talt = (int)(1e2*double.parse(zmaxalt.text));
+				int talt = (int)(1e2*DStr.strtod(zmaxalt.text, null));
 				if(alt != talt) {
 					upd |= Upd.MAXALT;
 					Mwp.gzr.set_maxalt(nitem, talt);

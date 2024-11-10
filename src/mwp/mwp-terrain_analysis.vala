@@ -186,9 +186,8 @@ namespace TA {
 									FileUtils.unlink(replname);
 
 								if (cdlines.length > 0) {
-									// FIXME Dstr ...
-									maxclimb = double.parse(pe_climb.text);
-									maxdive = double.parse(pe_dive.text);
+									maxclimb = DStr.strtod(pe_climb.text, null);
+									maxdive = DStr.strtod(pe_dive.text, null);
 									if (altview != null) {
 										altview.close();
 										altview = null;

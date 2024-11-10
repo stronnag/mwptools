@@ -184,15 +184,15 @@ public class WPPopEdit : Adw.Window {
         wpt.flag = (fbhcb.active) ? 72 : 0;
 
         if(act == Msp.Action.POSHOLD_TIME) {
-            wpt.p2 = double.parse(speedent.text);
-            wpt.p1 = double.parse(loiterent.text);
+            wpt.p2 = DStr.strtod(speedent.text, null);
+		wpt.p1 = DStr.strtod(loiterent.text, null);
         } else {
-            wpt.p1 = double.parse(speedent.text);
+		wpt.p1 = DStr.strtod(speedent.text, null);
             wpt.p2 = 0;
         }
 
         if(act == Msp.Action.LAND) {
-            wpt.p2 = double.parse(landent.text);
+            wpt.p2 = DStr.strtod(landent.text, null);
         } else {
             wpt.optional = 0;
             if(headcb.active) {
@@ -405,7 +405,7 @@ public class WPPopEdit : Adw.Window {
 
 				amslcb.toggled.connect(() => {
                         if(wpt.elv.amsl0 != (int)Hgt.NODATA) {
-							var na = double.parse(appalt.text);
+							var na = DStr.strtod(appalt.text, null);
                             if (amslcb.active) {
                                 na = na + wpt.elv.amsl0;
                             } else {
@@ -413,7 +413,7 @@ public class WPPopEdit : Adw.Window {
                             }
                             appalt.text = "%.2f".printf(na);
                             set_alt_border(appalt, false);
-                            var na1 = double.parse(altent.text);
+                            var na1 = DStr.strtod(altent.text, null);
                             if (amslcb.active) {
                                 na1 = na1 + wpt.elv.amsl0;
                             } else {
@@ -462,7 +462,7 @@ public class WPPopEdit : Adw.Window {
                 grid.attach (landcb, 1, j);
                 amslcb.toggled.connect(() => {
                         if(wpt.elv.amsl0 != Hgt.NODATA) {
-                            var na = double.parse(altent.text);
+                            var na = DStr.strtod(altent.text, null);
                             if (amslcb.active) {
                                 na = na + wpt.elv.amsl0;
                             } else {
@@ -491,8 +491,8 @@ public class WPPopEdit : Adw.Window {
 
 	public FWApproach.approach extract_land() {
 		FWApproach.approach l = {};
-		l.landalt = double.parse(landent.text);
-		l.appalt = double.parse(appalt.text);
+		l.landalt = DStr.strtod(landent.text, null);
+		l.appalt = DStr.strtod(appalt.text, null);
 		l.dirn1 = (int16) int.parse(fwdirn1.text);
 		l.ex1 = ex1.active;
 		l.dirn2 = (int16) int.parse(fwdirn2.text);

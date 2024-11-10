@@ -30,8 +30,8 @@ namespace Safehome {
 		public Editor() {
 			sh = new SafeHome();
 			shapp.clicked.connect(() => {
-					sh.appalt = double.parse(shappalt.text);
-					sh.landalt = double.parse(shlandalt.text);
+					sh.appalt = DStr.strtod(shappalt.text, null);
+					sh.landalt = DStr.strtod(shlandalt.text, null);
 					sh.dirn1 = (int16)int.parse(shdirn1.text);
 					sh.dirn2 = (int16)int.parse(shdirn2.text);
 					sh.ex1 = shex1.active;

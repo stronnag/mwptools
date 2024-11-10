@@ -171,7 +171,7 @@ namespace ETX {
 					var o = lstore.get_item(selidx) as ETXEntry;
 					if (o != null) {
 						var parts = o.duration.split(";");
-						ETX.duras = (parts.length == 2) ? (uint)int.parse(parts[0])*60 + (uint)(double.parse(parts[1])+0.5) : 0;
+						ETX.duras = (parts.length == 2) ? (uint)int.parse(parts[0])*60 + (uint)(DStr.strtod(parts[1], null)+0.5) : 0;
 					}
 					complete();
 					close();

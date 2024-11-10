@@ -177,7 +177,8 @@ namespace Survey {
 
 		private void generate_mission() {
 			int alt = int.parse(as_altm.text);
-			int lspeed = (int)(100*double.parse(as_speed.text));
+			double dtmp = DStr.strtod(as_speed.text, null);
+			int lspeed = (int)(100*dtmp);
 			if(as_type.selected == 0) {
 				var rows = generate_path();
 				Survey.build_mission(rows, alt, lspeed, as_rth.active, as_amsl.active);

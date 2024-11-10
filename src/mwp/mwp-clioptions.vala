@@ -215,7 +215,7 @@ namespace Cli {
             var parts = Mwp.rrstr.split(",");
             if(parts.length == 2) {
                 Mwp.nrings = int.parse(parts[0]);
-                Mwp.ringint = double.parse(parts[1]);
+                Mwp.ringint = DStr.strtod(parts[1], null);
             }
         }
 
