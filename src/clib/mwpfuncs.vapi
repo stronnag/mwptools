@@ -67,7 +67,7 @@ namespace MwpLibC {
 [CCode (cheader_filename = "glib.h")]
 namespace DStr {
     [CCode (cname = "g_strtod")]
-    public double strtod(string s, out string t);
+    public double strtod(string s, out string? t=null);
 }
 
 [CCode (cheader_filename = "mwpfuncs.h")]

@@ -221,7 +221,7 @@ namespace BBL {
 							neg = true;
 						}
 						var mins = (int.parse(min_entry.text)).abs();
-						var secs = DStr.strtod(sec_entry.text, null);
+						var secs = DStr.strtod(sec_entry.text);
 						BBL.nsecs = (int64)((mins*60 + secs)*1e9);
 						if(neg && BBL.nsecs > 0) { // for the '-0' case
 							BBL.nsecs *= -1;
@@ -230,7 +230,7 @@ namespace BBL {
 					var o = lstore.get_item(selidx) as BBLEntry;
 					if (o != null) {
 						var parts = o.duration.split(";");
-						BBL.duras = (parts.length == 2) ? (uint)int.parse(parts[0])*60 + (uint)( DStr.strtod(parts[1],null)+0.5) : 0;
+						BBL.duras = (parts.length == 2) ? (uint)int.parse(parts[0])*60 + (uint)( DStr.strtod(parts[1])+0.5) : 0;
 					}
 					complete();
 					close();
