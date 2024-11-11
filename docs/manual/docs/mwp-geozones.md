@@ -2,13 +2,12 @@
 
 ## Introduction
 
-{{ mwp }} provides a UI for the Geozones function that will appear in INAV 8.0.0 (probably).
+{{ mwp }} provides a UI for the Geozones function that is planned to appear in INAV 8.0.0.
 
-
-As the technical details for this feature has not yet been made publicly available (other than *RTFS*), the implementation described below might be considered experimental; at least the user can generate colourful shapes ...
+As the technical details for this feature has not yet been made publicly available (other than *RTFS*), the implementation described below may be considered experimental; at least the user can generate colourful shapes ...
 
 !!! Note "Version Requirements"
-	The public API (MSP etc.) exposed in the initial INAV PR differs from the API described in earlier provisional documentation. The INAV 8.0 implemetation **requires** {{ mwp }} 24.11.09 or later.
+	The public API (MSP etc.) exposed in the initial INAV PR differs from the API described in earlier provisional documentation. The proposed INAV 8.0 implementation **requires** {{ mwp }} 24.11.11 or later.
 
 Geozones provides (in theory at least) a set of geographical shapes that the FC can navigate around, characterised by:
 
@@ -51,6 +50,9 @@ Note that if `feature GEOZONE` is present, {{ mwp }} will attempt to load Geozon
 * Export: Exports a loaded Geozone to KML. Geozone specific parameters are stored in the KML such that the original Geozone in CLI notation could be reproduced from the KML.
 
 ### Editor
+
+!!! note "Edit UI Images"
+	The image immediately below represents the current Edit UI (it has the AMSL button); other Edit UI images are from an earlier instance without this button. The altitude values have no bearing on mwp's display of the Geozones, other than in the generated KML.
 
 ![mwp geozones](images/geozones_01.png){: width="50%" }
 
