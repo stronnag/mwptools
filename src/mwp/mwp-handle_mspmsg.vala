@@ -404,6 +404,7 @@ namespace Mwp {
 				var mbuf = gzr.encode_zone(gzcnt);
 				queue_cmd(Msp.Cmds.SET_GEOZONE, mbuf, mbuf.length);
 			} else {
+				MWPLog.message("Geozone completed, start vertices\n");
 				gzr.init_vertex_iter();
 				var mbuf = gzr.encode_next_vertex();
 				if (mbuf.length > 0) {
@@ -416,6 +417,8 @@ namespace Mwp {
 			var mbuf = gzr.encode_next_vertex();
 			if (mbuf.length > 0) {
 				queue_cmd(Msp.Cmds.SET_GEOZONE_VERTEX, mbuf, mbuf.length);
+			} else {
+				MWPLog.message("Geozone vertices completed\n");
 			}
 			break;
 

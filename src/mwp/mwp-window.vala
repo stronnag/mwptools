@@ -563,6 +563,7 @@ namespace Mwp {
 
 		private void do_gz_ul() {
 			gzcnt = 0;
+			MWPLog.message("Geozone upload started\n");
 			var mbuf = gzr.encode_zone(gzcnt);
 			queue_cmd(Msp.Cmds.SET_GEOZONE, mbuf, mbuf.length);
 		}
