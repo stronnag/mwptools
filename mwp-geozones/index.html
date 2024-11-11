@@ -1389,11 +1389,11 @@
 
 <h1 id="mwp-and-geozones">mwp and Geozones<a class="headerlink" href="#mwp-and-geozones" title="Permanent link">#</a></h1>
 <h2 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permanent link">#</a></h2>
-<p><a href="https://github.com/stronnag/mwptools">mwp</a> provides a UI for the Geozones function that will appear in INAV 8.0.0 (probably).</p>
-<p>As the technical details for this feature has not yet been made publicly available (other than <em>RTFS</em>), the implementation described below might be considered experimental; at least the user can generate colourful shapes ...</p>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> provides a UI for the Geozones function that is planned to appear in INAV 8.0.0.</p>
+<p>As the technical details for this feature has not yet been made publicly available (other than <em>RTFS</em>), the implementation described below may be considered experimental; at least the user can generate colourful shapes ...</p>
 <div class="admonition note">
 <p class="admonition-title">Version Requirements</p>
-<p>The public API (MSP etc.) exposed in the initial INAV PR differs from the API described in earlier provisional documentation. The INAV 8.0 implemetation <strong>requires</strong> <a href="https://github.com/stronnag/mwptools">mwp</a> 24.11.09 or later.</p>
+<p>The public API (MSP etc.) exposed in the initial INAV PR differs from the API described in earlier provisional documentation. The proposed INAV 8.0 implementation <strong>requires</strong> <a href="https://github.com/stronnag/mwptools">mwp</a> 24.11.11 or later.</p>
 </div>
 <p>Geozones provides (in theory at least) a set of geographical shapes that the FC can navigate around, characterised by:</p>
 <ul>
@@ -1440,6 +1440,10 @@
 <li>Export: Exports a loaded Geozone to KML. Geozone specific parameters are stored in the KML such that the original Geozone in CLI notation could be reproduced from the KML.</li>
 </ul>
 <h3 id="editor">Editor<a class="headerlink" href="#editor" title="Permanent link">#</a></h3>
+<div class="admonition note">
+<p class="admonition-title">Edit UI Images</p>
+<p>The image immediately below represents the current Edit UI (it has the AMSL button); other Edit UI images are from an earlier instance without this button. The altitude values have no bearing on mwp's display of the Geozones, other than in the generated KML.</p>
+</div>
 <p><img alt="mwp geozones" src="../images/geozones_01.png" width="50%" /></p>
 <p>The icons along the top are:</p>
 <ul>

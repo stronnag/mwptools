@@ -1822,6 +1822,12 @@ pipx install meson
 <td>false</td>
 </tr>
 <tr>
+<td>autoload-safehomes</td>
+<td>Load safehomes on connect</td>
+<td>. If true, then safehomes will be loaded from the FC on connection.</td>
+<td>false</td>
+</tr>
+<tr>
 <td>baudrate</td>
 <td>Baud rate</td>
 <td>Serial baud rate</td>
@@ -2006,12 +2012,6 @@ pipx install meson
 <td>GPS LED colour</td>
 <td>GPS LED colour as well know string or #RRGGBB</td>
 <td>"#60ff00"</td>
-</tr>
-<tr>
-<td>load-safehome</td>
-<td>Load default set of safehomes</td>
-<td>Set to file[,Y]. File defines a set of safehome lines (CLI format), optionally followed by a comma and Y. If the definition includes ",Y", then the safehome locations will be displayed. If the name has the special value '-FC-', then safehomes will be loaded from the FC on connection.</td>
-<td>""</td>
 </tr>
 <tr>
 <td>log-on-arm</td>
