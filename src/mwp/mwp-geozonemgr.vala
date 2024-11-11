@@ -634,6 +634,8 @@ public class GeoZoneManager {
 		nvert = -1;
 		if (len == VERTSIZEP || len == VERTSIZEC) {
 			vertex_decode(raw[0:len]);
+			_nextz = (int8)raw[0];
+			_nextv = (int8)raw[1];
 			res =  get_next_vertex();
 			if (res) {
 				nzone = (int8) _nextz;

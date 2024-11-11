@@ -280,20 +280,6 @@ namespace Cli {
 			Mwp.set_pos_label(Mwp.clat, Mwp.clon);
 		}
 
-		if(Mwp.sh_load == null) {
-			if(Mwp.conf.load_safehomes != "") {
-				var parts = Mwp.conf.load_safehomes.split(",");
-				Mwp.sh_load = parts[0];
-				Mwp.sh_disp = (parts.length == 2 && (parts[1] == "Y" || parts[1] == "y"));
-				if (Mwp.sh_load != "-FC-") {
-					Safehome.manager.load_homes(Mwp.sh_load, Mwp.sh_disp);
-					if(Rebase.is_valid()) {
-						Safehome.manager.relocate_safehomes();
-					}
-				}
-			}
-		}
-
 		if(Mwp.conf.mag_sanity != "") {
             var parts = Mwp.conf.mag_sanity.split(",");
             if (parts.length == 2) {

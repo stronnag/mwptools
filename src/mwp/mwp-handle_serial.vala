@@ -452,8 +452,8 @@ namespace Mwp {
         }
     }
 
-     void send_poll() {
-        if(serstate == SERSTATE.POLLER) {
+	void send_poll() {
+        if(serstate == SERSTATE.POLLER && requests.length > tcycle) {
 			bool skip = false;
             var req=requests[tcycle];
             lastm = nticks;

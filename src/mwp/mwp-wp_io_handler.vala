@@ -31,7 +31,9 @@ namespace Mwp {
 		wpmgr.npts = 0;
 		wpmgr.wp_flag = 0;
 		wpmgr.wps = {};
-		reset_poller();
+		if(starttasks == 0) {
+			reset_poller();
+		}
 	}
 
 	private int mission_has_land(int idx) {
@@ -71,6 +73,7 @@ namespace Mwp {
 			queue_cmd(Msp.Cmds.FW_APPROACH, &k, 1);
 		} else {
 			reset_wp_dl();
+			handle_misc_startup();
 		}
 	}
 

@@ -32,6 +32,16 @@ namespace Mwp {
 	uint8 []boxids;
 	int idcount;
 
+	[Flags]
+	private enum StartupTasks {
+		SAFEHOMES,
+		GEOZONES,
+		MISSION,
+		STATUS
+	}
+
+	StartupTasks starttasks = 0;
+	bool need_startup= false;
 
     private void msp_publish_home(uint8 id) {
         if(id < Safehome.MAXHOMES) {
@@ -297,14 +307,6 @@ namespace Mwp {
 			}
 
 			MWPLog.message(loc);
-
-			if(need_mission) {
-				need_mission = false;
-				if(conf.auto_restore_mission) {
-					MWPLog.message("Auto-download FC mission\n");
-					download_mission();
-				}
-			}
 			break;
 
 		case Msp.Cmds.BOARD_INFO:
@@ -392,7 +394,7 @@ namespace Mwp {
 						}
 						return false;
 					});
-				queue_cmd(Msp.Cmds.BLACKBOX_CONFIG,null,0);
+				handle_misc_startup();
 			}
 			break;
 
@@ -707,6 +709,7 @@ namespace Mwp {
 			}
 			sb.append_c('\n');
 			MWPLog.message(sb.str);
+			need_startup = true;
 			if(vi.fc_vers >= FCVERS.hasTZ) {
 				string maxdstr = (vi.fc_vers >= FCVERS.hasWP1m) ? "nav_wp_max_safe_distance" : "nav_wp_safe_distance";
 				MWPLog.message("Requesting common settings\n");
@@ -716,31 +719,33 @@ namespace Mwp {
 				if(vi.fc_vers > FCVERS.hasJUMP && vi.fc_vers <= FCVERS.hasPOI) { // also 2.6 feature
 					request_common_setting("nav_rth_home_offset_distance");
 				}
-				request_common_setting("safehome_max_distance");
+				if(vi.fc_vers >= FCVERS.hasSAFEAPI) {
+					request_common_setting("safehome_max_distance");
+				}
 				if(vi.fc_vers >= FCVERS.hasFWApp) {
 					request_common_setting("nav_fw_land_approach_length");
 					request_common_setting("nav_fw_loiter_radius");
 				}
 			}
-			queue_cmd(msp_get_status,null,0);
-			if(sh_load == "-FC-") {
-				Timeout.add(1000, () => {
-						request_fc_safehomes();
-						return false;
-					});
+
+			if(vi.fc_vers > FCVERS.hasSAFEAPI && conf.autoload_safehomes) {
+				starttasks |= StartupTasks.SAFEHOMES;
 			}
 			if (vi.fc_vers >= FCVERS.hasGeoZones && ((feature_mask & Msp.Feature.GEOZONE) == Msp.Feature.GEOZONE)) {
 				MwpMenu.set_menu_state(Mwp.window, "gz-dl", true);
 				MwpMenu.set_menu_state(Mwp.window, "gz-ul", true);
 				if(conf.autoload_geozones) {
-					Timeout.add_once(2000, () => {
-							MWPLog.message("Load FC Geozones\n");
-							gzr.reset();
-							queue_gzone(0);
-							gz_from_msp = true;
-						});
+					starttasks |= StartupTasks.GEOZONES;
 				}
 			}
+			if(need_mission) {
+				need_mission = false;
+				if(conf.auto_restore_mission) {
+					starttasks |= StartupTasks.MISSION;
+				}
+			}
+			starttasks |= StartupTasks.STATUS;
+			//handle_misc_startup();
 			break;
 
 		case Msp.Cmds.COMMON_SET_SETTING:
@@ -865,6 +870,12 @@ namespace Mwp {
 				break;
 			}
 			MWPLog.message(sb.str);
+			if(csdq.is_empty ()) {
+				if(need_startup) {
+					need_startup = false;
+					handle_misc_startup();
+				}
+			}
 			break;
 
 		case Msp.Cmds.STATUS:
@@ -1143,6 +1154,7 @@ namespace Mwp {
 				} else {
 					wp_get_approaches(id+1-Safehome.MAXHOMES);
 				}
+				handle_misc_startup();
 			} else {
 				id++;
 				queue_cmd(Msp.Cmds.FW_APPROACH,&id,1);
@@ -1621,6 +1633,7 @@ namespace Mwp {
 	private void queue_gzone(int cnt) {
 		uint8 zb=(uint8)cnt;
 		queue_cmd(Msp.Cmds.GEOZONE, &zb, 1);
+		run_queue();
 	}
 
 	private void queue_gzvertex(int8 nz, int8 nv) {
@@ -1628,6 +1641,7 @@ namespace Mwp {
 		zb[0] = (uint8) nz;
 		zb[1] = (uint8) nv;
 		queue_cmd(Msp.Cmds.GEOZONE_VERTEX, zb, 2);
+		run_queue();
 	}
 
 	public void request_fc_safehomes() {
@@ -1640,5 +1654,32 @@ namespace Mwp {
 	public void save_safehomes_fc() {
 		safeindex = 0;
 		msp_publish_home(0);
+	}
+
+	public void handle_misc_startup() {
+		if ((starttasks & StartupTasks.SAFEHOMES) != 0) {
+			starttasks &= ~StartupTasks.SAFEHOMES;
+			last_safehome = Safehome.MAXHOMES;
+			uint8 shid = 0;
+			MWPLog.message("Load FC safehomes\n");
+			queue_cmd(Msp.Cmds.SAFEHOME,&shid,1);
+			run_queue();
+		} else if ((starttasks & StartupTasks.GEOZONES) != 0) {
+			starttasks &= ~StartupTasks.GEOZONES;
+			MWPLog.message("Load FC Geozones\n");
+			gzr.reset();
+			queue_gzone(0);
+			gz_from_msp = true;
+			run_queue();
+		} else if ((starttasks & StartupTasks.MISSION) != 0) {
+			starttasks &= ~StartupTasks.MISSION;
+			MWPLog.message("Auto-download FC mission\n");
+			download_mission();
+		} else if ((starttasks & StartupTasks.STATUS) != 0) {
+			starttasks &= ~StartupTasks.STATUS;
+			queue_cmd(msp_get_status,null,0);
+			run_queue();
+		}
+		//		MWPLog.message(":DBG: misc startup %d\n", starttasks);
 	}
 }

@@ -464,14 +464,10 @@
       <description>If true, the legacy 'mwp' tag is named 'meta'</description>
     </key>
 
-    <key type="s" name="load-safehome">
-      <default>""</default>
-      <summary>Load default set of safehomes</summary>
-      <description>Set to file[,Y]. File defines a set of safehome
-      lines (CLI format), optionally followed by a comma and Y. If the
-      definition includes ",Y", then the safehome locations will be
-      displayed. If the name has the special value '-FC-', then
-      safehomes will be loaded from the FC on connection.</description>
+    <key type="b" name="autoload-safehomes">
+      <default>false</default>
+      <summary>Load safehomes on connect</summary>
+      <description>. If true, then safehomes will be loaded from the FC on connection.</description>
     </key>
 
     <key name="max-climb-angle" type="d">

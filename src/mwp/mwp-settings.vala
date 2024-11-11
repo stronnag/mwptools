@@ -82,7 +82,7 @@ public class MWPSettings : GLib.Object {
     public string kmlpath {get; set; default="";}
     public bool ucmissiontags {get; set; default=false;}
     public bool missionmetatag {get; set; default=false;}
-    public string load_safehomes {get; set; default="";}
+	public bool autoload_safehomes {get; set; default=false;}
     public double maxclimb {get; set; default=0;}
     public double maxdive {get; set; default=0;}
     public uint max_wps { get; set; default=60; }
@@ -160,7 +160,7 @@ public class MWPSettings : GLib.Object {
 		settings.bind("ignore-nm", this, "ignore-nm", SettingsBindFlags.DEFAULT);
 		settings.bind("kml-path", this, "kmlpath", SettingsBindFlags.DEFAULT);
 		settings.bind("led", this, "led", SettingsBindFlags.DEFAULT);
-		settings.bind("load-safehome", this, "load-safehomes", SettingsBindFlags.DEFAULT);
+		settings.bind("autoload-safehomes", this, "autoload-safehomes", SettingsBindFlags.DEFAULT);
 		settings.bind("log-on-arm", this, "logarmed", SettingsBindFlags.DEFAULT);
 		settings.bind("log-path", this, "logpath", SettingsBindFlags.DEFAULT);
 		settings.bind("log-save-path", this, "logsavepath", SettingsBindFlags.DEFAULT);
