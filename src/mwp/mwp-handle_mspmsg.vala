@@ -732,23 +732,24 @@ namespace Mwp {
 			}
 
 			if(vi.fc_vers > FCVERS.hasSAFEAPI && conf.autoload_safehomes) {
-				starttasks |= StartupTasks.SAFEHOMES;
+				starttasks += StartupTasks.SAFEHOMES;
 			}
 			if (vi.fc_vers >= FCVERS.hasGeoZones && ((feature_mask & Msp.Feature.GEOZONE) == Msp.Feature.GEOZONE)) {
 				MwpMenu.set_menu_state(Mwp.window, "gz-dl", true);
 				MwpMenu.set_menu_state(Mwp.window, "gz-ul", true);
 				if(conf.autoload_geozones) {
-					starttasks |= StartupTasks.GEOZONES;
+					starttasks += StartupTasks.GEOZONES;
 				}
 			}
 			if(need_mission) {
 				need_mission = false;
 				if(conf.auto_restore_mission) {
-					starttasks |= StartupTasks.MISSION;
+					starttasks += StartupTasks.MISSION;
 				}
 			}
-			starttasks |= StartupTasks.STATUS;
-			//handle_misc_startup();
+			starttasks += StartupTasks.STATUS;
+			// fired off by common settings ....
+
 			break;
 
 		case Msp.Cmds.COMMON_SET_SETTING:
@@ -1660,26 +1661,26 @@ namespace Mwp {
 	}
 
 	public void handle_misc_startup() {
-		if ((starttasks & StartupTasks.SAFEHOMES) != 0) {
-			starttasks &= ~StartupTasks.SAFEHOMES;
+		if (SAFEHOMES in starttasks) {
+			starttasks -= StartupTasks.SAFEHOMES;
 			last_safehome = Safehome.MAXHOMES;
 			uint8 shid = 0;
 			MWPLog.message("Load FC safehomes\n");
 			queue_cmd(Msp.Cmds.SAFEHOME,&shid,1);
 			run_queue();
-		} else if ((starttasks & StartupTasks.GEOZONES) != 0) {
-			starttasks &= ~StartupTasks.GEOZONES;
+		} else if (GEOZONES in starttasks) {
+			starttasks -= StartupTasks.GEOZONES;
 			MWPLog.message("Load FC Geozones\n");
 			gzr.reset();
 			queue_gzone(0);
 			gz_from_msp = true;
 			run_queue();
-		} else if ((starttasks & StartupTasks.MISSION) != 0) {
-			starttasks &= ~StartupTasks.MISSION;
+		} else if (MISSION in starttasks) {
+			starttasks -= StartupTasks.MISSION;
 			MWPLog.message("Auto-download FC mission\n");
 			download_mission();
-		} else if ((starttasks & StartupTasks.STATUS) != 0) {
-			starttasks &= ~StartupTasks.STATUS;
+		} else if (STATUS in starttasks) {
+			starttasks -= StartupTasks.STATUS;
 			queue_cmd(msp_get_status,null,0);
 			run_queue();
 		}
