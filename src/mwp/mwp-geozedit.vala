@@ -242,6 +242,7 @@ public class GZEdit : Adw.Window {
 		nitem = 0;
 		buttons[Buttons.PREV].clicked.connect(() => {
 				if(Mwp.gzr.length() > 0) {
+					refresh_storage(Upd.ANY, false);
 					remove_edit_markers();
 					newlab.label="";
 					if (nitem == 0) {
@@ -256,6 +257,7 @@ public class GZEdit : Adw.Window {
 
 		buttons[Buttons.NEXT].clicked.connect(() => {
 				if(Mwp.gzr.length() > 0) {
+					refresh_storage(Upd.ANY, false);
 					remove_edit_markers();
 					newlab.label="";
 					nitem = (nitem + 1) % Mwp.gzr.length();
@@ -278,6 +280,7 @@ public class GZEdit : Adw.Window {
 
 		buttons[Buttons.REFRESH].clicked.connect(() => {
 				if(nitem >= Mwp.gzr.length()) {
+					refresh_storage(Upd.ANY, false);
 					var minalt = (int)(100* DStr.strtod(zminalt.text, null));
 					var maxalt = (int)(100* DStr.strtod(zmaxalt.text, null));
 					var isamsl = (uint8)zisamsl.active;
