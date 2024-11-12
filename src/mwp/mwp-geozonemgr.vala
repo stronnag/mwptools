@@ -258,13 +258,13 @@ public class GeoZoneManager {
 				v += p;
 			}
 			double d1 = 0;
-			var res = GZMisc.is_convex(v, out d1);
-			if (res == false || d1 < 0) {
+			/*var res =*/ GZMisc.is_convex(v, out d1);
+			if (/*res == false ||*/ d1 < 0) {
 				nf++;
 				sb.append_printf("Zone %d invalid:", j);
-				if(res == false) {
-					sb.append(" not convex");
-				}
+				//				if(res == false) {
+				//	sb.append(" not convex");
+				//}
 				if(d1 < 0) {
 					sb.append(" not counter-clockwise");
 				}
