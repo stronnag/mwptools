@@ -230,6 +230,18 @@ public class GeoZoneManager {
 		return n;
 	}
 
+	public bool validate() {
+		bool ok = true;
+		for(var i = 0; i < 63; i++) {
+			var j = nvertices(i);
+			if (zs[i].vrec != j) {
+				ok = false;
+				MWPLog.message("Zone %d fails vertex count validation\n", i);
+			}
+		}
+		return ok;
+	}
+
 	public GeoZone get_zone(uint n) {
 		return zs[n];
 	}

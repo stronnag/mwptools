@@ -379,21 +379,26 @@ namespace Mwp {
 			if (res) {
 				queue_gzvertex(nz, nv);
 			} else {
-			// get state
-				if(gzone != null) {
-					gzone.remove();
-					set_gzsave_state(false);
+				res = gzr.validate();
+				if (res) {
+					MWPLog.message("Geozones validated\n");
+					if(gzone != null) {
+						gzone.remove();
+						set_gzsave_state(false);
+					}
+					gzone = gzr.generate_overlay();
+					set_gzsave_state(true);
+					Idle.add(() => {
+							gzone.display();
+							gzedit.refresh(gzone);
+							if (Logger.is_logging) {
+								Logger.logstring("geozone", gzr.to_string());
+							}
+							return false;
+						});
+				} else {
+					gzr.reset();
 				}
-				gzone = gzr.generate_overlay();
-				set_gzsave_state(true);
-				Idle.add(() => {
-						gzone.display();
-						gzedit.refresh(gzone);
-						if (Logger.is_logging) {
-							Logger.logstring("geozone", gzr.to_string());
-						}
-						return false;
-					});
 				handle_misc_startup();
 			}
 			break;
@@ -418,7 +423,7 @@ namespace Mwp {
 			if (mbuf.length > 0) {
 				queue_cmd(Msp.Cmds.SET_GEOZONE_VERTEX, mbuf, mbuf.length);
 			} else {
-				MWPLog.message("Geozone vertices completed\n");
+				MWPLog.message("Geozone vertices upload completed\n");
 			}
 			break;
 

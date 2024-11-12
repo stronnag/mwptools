@@ -310,7 +310,7 @@ public class GZEdit : Adw.Window {
 						var delta = 16*Math.pow(2, (20-Gis.map.viewport.zoom_level));
 						double nlat, nlon;
 						for(var i = 0; i < 3; i++) {
-							Geo.posit(clat, clon, i*120, delta/1852.0, out nlat, out nlon);
+							Geo.posit(clat, clon, 360-i*120, delta/1852.0, out nlat, out nlon);
 							k = Mwp.gzr.append_vertex(nitem, i, (int)(nlat*1e7), (int)(nlon*1e7));
 						}
 					}
