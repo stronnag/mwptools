@@ -242,6 +242,43 @@ public class GeoZoneManager {
 		return ok;
 	}
 
+	public string validate_shapes() {
+		int nf = 0;
+		StringBuilder sb = new StringBuilder();
+		for(var j = 0; j < MAXGZ; j++) {
+			if (nvertices(j) == 0)
+				break;
+			if(get_shape(j) == GZShape.Circular)
+				continue;
+
+			GZMisc.Vec []v = {};
+			var verts = find_vertices(j);
+			foreach (var kv in verts) {
+				var p = GZMisc.to_ecef(vs[kv].latitude/1e7,  vs[kv].longitude/1e7, 0);
+				v += p;
+			}
+			double d1 = 0;
+			var res = GZMisc.is_convex(v, out d1);
+			if (res == false || d1 < 0) {
+				nf++;
+				sb.append_printf("Zone %d invalid:", j);
+				if(res == false) {
+					sb.append(" not convex");
+				}
+				if(d1 < 0) {
+					sb.append(" not counter-clockwise");
+				}
+				sb.append_c('\n');
+			}
+		}
+		if(nf == 0) {
+			return "";
+		} else {
+			sb.append("<b>Upload cancelled</b>\n");
+			return sb.str;
+		}
+	}
+
 	public GeoZone get_zone(uint n) {
 		return zs[n];
 	}
@@ -261,7 +298,7 @@ public class GeoZoneManager {
 		return zs[n].shape;
 	}
 
-	public void set_shappe(uint n, GZShape val) {
+	public void set_shape(uint n, GZShape val) {
 		zs[n].shape = val;
 	}
 
