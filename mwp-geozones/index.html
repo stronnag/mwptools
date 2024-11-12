@@ -1390,10 +1390,14 @@
 <h1 id="mwp-and-geozones">mwp and Geozones<a class="headerlink" href="#mwp-and-geozones" title="Permanent link">#</a></h1>
 <h2 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permanent link">#</a></h2>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> provides a UI for the Geozones function that is planned to appear in INAV 8.0.0.</p>
-<p>As the technical details for this feature has not yet been made publicly available (other than <em>RTFS</em>), the implementation described below may be considered experimental; at least the user can generate colourful shapes ...</p>
+<p>As the technical details for this feature has not yet been made publicly available (other than in the source code), the implementation described below may be considered experimental; at least the user can generate colourful shapes, download / upload from / to the FC, load / save from / to files and generate KMLs.</p>
 <div class="admonition note">
 <p class="admonition-title">Version Requirements</p>
 <p>The public API (MSP etc.) exposed in the initial INAV PR differs from the API described in earlier provisional documentation. The proposed INAV 8.0 implementation <strong>requires</strong> <a href="https://github.com/stronnag/mwptools">mwp</a> 24.11.11 or later.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Implementation Caveat</p>
+<p>The <a href="https://github.com/stronnag/mwptools">mwp</a> implementation currently requires that Geozones are organised contiguously from 0 to N (where N &lt; 63). If your Geozones are not contiguous from 0, then <a href="https://github.com/stronnag/mwptools">mwp</a> will be unable to correctly load / display / edit /save Geozones. The same limitation appears to apply to the INAV Configurator.</p>
 </div>
 <p>Geozones provides (in theory at least) a set of geographical shapes that the FC can navigate around, characterised by:</p>
 <ul>
@@ -1425,7 +1429,7 @@
 <h2 id="mwp-user-interface">mwp User interface<a class="headerlink" href="#mwp-user-interface" title="Permanent link">#</a></h2>
 <div class="admonition note">
 <p class="admonition-title">Legacy Images</p>
-<p>The images this section are from legacy mwp, however the capability is the same.</p>
+<p>The majority of images this section are from legacy mwp, however the capability is the same.</p>
 </div>
 <h3 id="menu-options">Menu options<a class="headerlink" href="#menu-options" title="Permanent link">#</a></h3>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> adds a Geozones menu option, with suboptions:</p>
