@@ -4,10 +4,14 @@
 
 {{ mwp }} provides a UI for the Geozones function that is planned to appear in INAV 8.0.0.
 
-As the technical details for this feature has not yet been made publicly available (other than *RTFS*), the implementation described below may be considered experimental; at least the user can generate colourful shapes ...
+As the technical details for this feature has not yet been made publicly available (other than in the source code), the implementation described below may be considered experimental; at least the user can generate colourful shapes, download / upload from / to the FC, load / save from / to files and generate KMLs.
 
 !!! Note "Version Requirements"
 	The public API (MSP etc.) exposed in the initial INAV PR differs from the API described in earlier provisional documentation. The proposed INAV 8.0 implementation **requires** {{ mwp }} 24.11.11 or later.
+
+!!! Note "Implementation Caveat"
+
+	The {{ mwp }} implementation currently requires that Geozones are organised contiguously from 0 to N (where N < 63). If your Geozones are not contiguous from 0, then {{ mwp }} will be unable to correctly load / display / edit /save Geozones. The same limitation appears to apply to the INAV Configurator.
 
 Geozones provides (in theory at least) a set of geographical shapes that the FC can navigate around, characterised by:
 
@@ -30,7 +34,7 @@ The effect these parameters have on FC behaviour will, presumably, be made avail
 ## mwp User interface
 
 !!! note "Legacy Images"
-    The images this section are from legacy mwp, however the capability is the same.
+    The majority of images this section are from legacy mwp, however the capability is the same.
 
 ### Menu options
 
