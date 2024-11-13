@@ -109,6 +109,21 @@ With multiple zones loaded (or created), the user can switch between zones using
 
 ![mwp geozones](images/geozones_06.png){: width="50%" }
 
+### Example validation
+
+In the following image, from left to right
+
+| Zone Id | Colour | Characteristics | Validity |
+| ------- | ------ | --------------- | -------- |
+| 0       | Red    | Counter-clockwise | Valid |
+| 1       | Green  | Clockwise | Invalid |
+| 2       | Red, fill    | Counter-clockwise, "complex" | Invalid |
+| 3       | Green, fill  | Counter-clockwise, concave | Valid |
+
+Invalid zones are reported with the "Check Valdity" or "Upload to FC" options.
+
+![mwp geozones](images/geozones_10.png)
+
 ## Zone Colours
 
 {{ mwp }} sets line and fill characteristics for GeoZones according to the zone's `type` and `action`.
