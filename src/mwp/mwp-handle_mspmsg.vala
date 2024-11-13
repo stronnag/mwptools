@@ -373,7 +373,6 @@ namespace Mwp {
 			break;
 
 		case Msp.Cmds.GEOZONE:
-			gzedit.clear();
 			var cnt = gzr.zone_parse(raw, len);
 			if (cnt >= GeoZoneManager.MAXGZ) {
 				queue_gzvertex(0, 0);
@@ -389,6 +388,7 @@ namespace Mwp {
 			if (res) {
 				queue_gzvertex(nz, nv);
 			} else {
+				reset_poller();
 				res = gzr.validate();
 				if (res) {
 					MWPLog.message("Geozones validated\n");
@@ -424,6 +424,8 @@ namespace Mwp {
 				var mbuf = gzr.encode_next_vertex();
 				if (mbuf.length > 0) {
 					queue_cmd(Msp.Cmds.SET_GEOZONE_VERTEX, mbuf, mbuf.length);
+				} else {
+					reset_poller();
 				}
 			}
 			break;
@@ -434,6 +436,7 @@ namespace Mwp {
 				queue_cmd(Msp.Cmds.SET_GEOZONE_VERTEX, mbuf, mbuf.length);
 			} else {
 				MWPLog.message("Geozone vertices upload completed\n");
+				reset_poller();
 			}
 			break;
 

@@ -491,12 +491,14 @@ namespace Mwp {
     }
 
     private void reset_poller() {
-        lastok = nticks;
-        if(serstate != SERSTATE.NONE && serstate != SERSTATE.TELEM) {
-            if(nopoll == false) // FIXNOPOLL
-                serstate = SERSTATE.POLLER;
-            msg_poller();
-        }
+		if(starttasks == 0) {
+			lastok = nticks;
+			if(serstate != SERSTATE.NONE && serstate != SERSTATE.TELEM) {
+				if(nopoll == false) // FIXNOPOLL
+					serstate = SERSTATE.POLLER;
+				msg_poller();
+			}
+		}
     }
 
 	public void telem_init(Msp.Cmds cmd) {

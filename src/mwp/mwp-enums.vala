@@ -80,6 +80,7 @@ namespace Mwp {
         POLLER,
 		SET_WP,
 		EXTRA_WP,
+		MISC_BULK,
         TELEM = 128,
         TELEM_SP,
     }

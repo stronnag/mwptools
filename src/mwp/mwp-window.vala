@@ -557,7 +557,9 @@ namespace Mwp {
 		}
 
 		private void do_gz_dl() {
+			gzedit.clear();
 			gzr.reset();
+			pause_poller(SERSTATE.MISC_BULK);
 			queue_gzone(0);
 		}
 
@@ -570,6 +572,7 @@ namespace Mwp {
 			var s = gzr.validate_shapes("Upload Cancelled");
 			if (s.length == 0) {
 				gzcnt = 0;
+				pause_poller(SERSTATE.MISC_BULK);
 				MWPLog.message("Geozone upload started\n");
 				var mbuf = gzr.encode_zone(gzcnt);
 				queue_cmd(Msp.Cmds.SET_GEOZONE, mbuf, mbuf.length);

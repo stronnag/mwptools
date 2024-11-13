@@ -31,9 +31,7 @@ namespace Mwp {
 		wpmgr.npts = 0;
 		wpmgr.wp_flag = 0;
 		wpmgr.wps = {};
-		if(starttasks == 0) {
-			reset_poller();
-		}
+		reset_poller();
 	}
 
 	private int mission_has_land(int idx) {
@@ -83,7 +81,7 @@ namespace Mwp {
 		if(j == -1) {
 			handle_extra_up_tasks();
 		} else {
-			serstate = SERSTATE.EXTRA_WP;
+			pause_poller(SERSTATE.EXTRA_WP);
 			lastm = nticks;
 			safeindex = Safehome.MAXHOMES+j;
 			last_safehome = Safehome.MAXHOMES+j+1;
@@ -209,8 +207,7 @@ namespace Mwp {
 	}
 
 	private void start_download() {
-		serstate = SERSTATE.NORMAL;
-		mq.clear();
+		pause_poller(SERSTATE.NORMAL);
 		int rwp;
 		//		wpi.max_wp, wpi.wp_count
 		rwp = (wpi.wp_count > 0) ? wpi.wp_count : wp_max;
@@ -280,8 +277,7 @@ namespace Mwp {
         wpmgr.wps = wps;
         wpmgr.wp_flag = flag;
 
-        serstate = SERSTATE.SET_WP;
-        mq.clear();
+        pause_poller(SERSTATE.SET_WP);
 
         var timeo = 1500+(wps.length*1000);
         uint8 wtmp[32];
@@ -290,4 +286,10 @@ namespace Mwp {
         queue_cmd(Msp.Cmds.SET_WP, wtmp, nb);
         start_wp_timer(timeo);
 	}
+
+	public void pause_poller(SERSTATE s) {
+		serstate = s;
+        mq.clear();
+	}
+
 }
