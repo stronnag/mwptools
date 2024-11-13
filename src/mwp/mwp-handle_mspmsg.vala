@@ -427,6 +427,7 @@ namespace Mwp {
 					queue_cmd(Msp.Cmds.SET_GEOZONE_VERTEX, mbuf, mbuf.length);
 				} else {
 					reset_poller();
+
 				}
 			}
 			break;
@@ -437,7 +438,8 @@ namespace Mwp {
 				queue_cmd(Msp.Cmds.SET_GEOZONE_VERTEX, mbuf, mbuf.length);
 			} else {
 				MWPLog.message("Geozone vertices upload completed\n");
-				reset_poller();
+				wpmgr.wp_flag = WPDL.RESET_POLLER;
+				queue_cmd(Msp.Cmds.EEPROM_WRITE,null, 0);
 			}
 			break;
 
