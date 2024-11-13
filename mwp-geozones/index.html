@@ -734,6 +734,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#example-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example validation
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1379,6 +1388,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#example-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example validation
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1549,6 +1567,46 @@
 <p><img alt="mwp geozones" src="../images/geozones_05.png" width="50%" /></p>
 <p>With multiple zones loaded (or created), the user can switch between zones using the <code>&lt;</code> and <code>&gt;</code> icons.</p>
 <p><img alt="mwp geozones" src="../images/geozones_06.png" width="50%" /></p>
+<h3 id="example-validation">Example validation<a class="headerlink" href="#example-validation" title="Permanent link">#</a></h3>
+<p>In the following image, from left to right</p>
+<table>
+<thead>
+<tr>
+<th>Zone Id</th>
+<th>Colour</th>
+<th>Characteristics</th>
+<th>Validity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Red</td>
+<td>Counter-clockwise</td>
+<td>Valid</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Green</td>
+<td>Clockwise</td>
+<td>Invalid</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Red, fill</td>
+<td>Counter-clockwise, "complex"</td>
+<td>Invalid</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Green, fill</td>
+<td>Counter-clockwise, concave</td>
+<td>Valid</td>
+</tr>
+</tbody>
+</table>
+<p>Invalid zones are reported with the "Check Valdity" or "Upload to FC" options.</p>
+<p><img alt="mwp geozones" src="../images/geozones_10.png" /></p>
 <h2 id="zone-colours">Zone Colours<a class="headerlink" href="#zone-colours" title="Permanent link">#</a></h2>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> sets line and fill characteristics for GeoZones according to the zone's <code>type</code> and <code>action</code>.</p>
 <p>The default values are set as:</p>
