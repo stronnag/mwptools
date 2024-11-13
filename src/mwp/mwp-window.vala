@@ -551,6 +551,7 @@ namespace Mwp {
 			if(gzone!=null) {
 				gzedit.clear();
 				gzone.remove();
+				gzone = null;
 			}
 			gzr.reset();
 			set_gzsave_state(false);

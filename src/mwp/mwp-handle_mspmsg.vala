@@ -394,6 +394,7 @@ namespace Mwp {
 					MWPLog.message("Geozones validated\n");
 					if(gzone != null) {
 						gzone.remove();
+						gzone = null;
 						set_gzsave_state(false);
 					}
 					gzone = gzr.generate_overlay();
@@ -1261,6 +1262,7 @@ namespace Mwp {
 				if(gzone != null) {
 					set_gzsave_state(false);
 					gzone.remove();
+					gzone = null;
 				}
 				gzone = gzr.generate_overlay();
 				Idle.add(() => {
