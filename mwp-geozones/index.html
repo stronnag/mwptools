@@ -659,6 +659,39 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#geozone-validity-and-enforcement" class="md-nav__link">
+    <span class="md-ellipsis">
+      Geozone Validity and Enforcement
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Geozone Validity and Enforcement">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zone-geometry" class="md-nav__link">
+    <span class="md-ellipsis">
+      Zone Geometry
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runtime-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Runtime Considerations
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#mwp-user-interface" class="md-nav__link">
     <span class="md-ellipsis">
       mwp User interface
@@ -1271,6 +1304,39 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#geozone-validity-and-enforcement" class="md-nav__link">
+    <span class="md-ellipsis">
+      Geozone Validity and Enforcement
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Geozone Validity and Enforcement">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zone-geometry" class="md-nav__link">
+    <span class="md-ellipsis">
+      Zone Geometry
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runtime-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Runtime Considerations
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#mwp-user-interface" class="md-nav__link">
     <span class="md-ellipsis">
       mwp User interface
@@ -1393,7 +1459,7 @@
 <p>As the technical details for this feature has not yet been made publicly available (other than in the source code), the implementation described below may be considered experimental; at least the user can generate colourful shapes, download / upload from / to the FC, load / save from / to files and generate KMLs.</p>
 <div class="admonition note">
 <p class="admonition-title">Version Requirements</p>
-<p>The public API (MSP etc.) exposed in the initial INAV PR differs from the API described in earlier provisional documentation. The proposed INAV 8.0 implementation <strong>requires</strong> <a href="https://github.com/stronnag/mwptools">mwp</a> 24.11.11 or later.</p>
+<p>The public API (MSP etc.) exposed in the initial INAV PR differs from the API described in earlier provisional documentation. The proposed INAV 8.0 implementation <strong>requires</strong> <a href="https://github.com/stronnag/mwptools">mwp</a> 24.11.13 or later.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Implementation Caveat</p>
@@ -1426,6 +1492,22 @@
 </li>
 </ul>
 <p>The effect these parameters have on FC behaviour will, presumably, be made available once the Geozones function is publicly available in the firmware.</p>
+<h2 id="geozone-validity-and-enforcement">Geozone Validity and Enforcement<a class="headerlink" href="#geozone-validity-and-enforcement" title="Permanent link">#</a></h2>
+<h3 id="zone-geometry">Zone Geometry<a class="headerlink" href="#zone-geometry" title="Permanent link">#</a></h3>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> checks that Geozones conform to the FC's known rules for validity:</p>
+<ul>
+<li>Zones are numbered consecutively from zero and are contiguous.</li>
+<li>Polygon zones are counter-clockwise.</li>
+<li>Polygon zones are "simple" (not "complex") polygon. That means there are no crossing line segments within a single polygon.</li>
+</ul>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> provides a "Check Validity" menu option to perform ad-hoc checks. mwp will not permit the upload of an invalid Geozone set to the FC. It is however possible to save a set that mwp claims is invalid in case the user wish to dispute such categorisation with the developer.</p>
+<h3 id="runtime-considerations">Runtime Considerations<a class="headerlink" href="#runtime-considerations" title="Permanent link">#</a></h3>
+<p>There are a number of runtime recommendations from the Geozone developer:</p>
+<ul>
+<li>If nested inclusive zones are used, ensure that they overlap by at least <code>2 * loiter radius</code> (or <code>geozone_mr_stop_distance</code> for multirotors) horizontally and 50 metres vertically to allow RTH to calculate a proper heading.</li>
+<li>When connecting polygonal zones, at least 2 vertices of one zone must be within the over-lapping zone.</li>
+</ul>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> does not currently attempt to enforce these recommendations nor warns of their violation.</p>
 <h2 id="mwp-user-interface">mwp User interface<a class="headerlink" href="#mwp-user-interface" title="Permanent link">#</a></h2>
 <div class="admonition note">
 <p class="admonition-title">Legacy Images</p>
