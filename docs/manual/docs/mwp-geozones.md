@@ -7,7 +7,7 @@
 As the technical details for this feature has not yet been made publicly available (other than in the source code), the implementation described below may be considered experimental; at least the user can generate colourful shapes, download / upload from / to the FC, load / save from / to files and generate KMLs.
 
 !!! Note "Version Requirements"
-	The public API (MSP etc.) exposed in the initial INAV PR differs from the API described in earlier provisional documentation. The proposed INAV 8.0 implementation **requires** {{ mwp }} 24.11.11 or later.
+	The public API (MSP etc.) exposed in the initial INAV PR differs from the API described in earlier provisional documentation. The proposed INAV 8.0 implementation **requires** {{ mwp }} 24.11.13 or later.
 
 !!! Note "Implementation Caveat"
 
@@ -30,6 +30,27 @@ Geozones provides (in theory at least) a set of geographical shapes that the FC 
     - RTH
 
 The effect these parameters have on FC behaviour will, presumably, be made available once the Geozones function is publicly available in the firmware.
+
+## Geozone Validity and Enforcement
+
+### Zone Geometry
+
+{{ mwp }} checks that Geozones conform to the FC's known rules for validity:
+
+* Zones are numbered consecutively from zero and are contiguous.
+* Polygon zones are counter-clockwise.
+* Polygon zones are "simple" (not "complex") polygon. That means there are no crossing line segments within a single polygon.
+
+{{ mwp }} provides a "Check Validity" menu option to perform ad-hoc checks. mwp will not permit the upload of an invalid Geozone set to the FC. It is however possible to save a set that mwp claims is invalid in case the user wish to dispute such categorisation with the developer.
+
+### Runtime Considerations
+
+There are a number of runtime recommendations from the Geozone developer:
+
+* If nested inclusive zones are used, ensure that they overlap by at least `2 * loiter radius` (or `geozone_mr_stop_distance` for multirotors) horizontally and 50 metres vertically to allow RTH to calculate a proper heading.
+* When connecting polygonal zones, at least 2 vertices of one zone must be within the over-lapping zone.
+
+{{ mwp }} does not currently attempt to enforce these recommendations nor warns of their violation.
 
 ## mwp User interface
 

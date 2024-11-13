@@ -167,6 +167,16 @@ namespace Mwp {
 			case  Msp.Cmds.COMMON_SET_SETTING:
 				run_queue();
 				break;
+			case Msp.Cmds.GEOZONE:
+			case Msp.Cmds.GEOZONE_VERTEX:
+				gzr.reset();
+				if(starttasks != 0) {
+					handle_misc_startup();
+				} else {
+					queue_cmd(msp_get_status,null,0);
+					run_queue();
+				}
+				break;
 			default:
 				queue_cmd(msp_get_status,null,0);
 				run_queue();

@@ -387,7 +387,7 @@ namespace Mwp {
 			set_mission_menus(false);
 			reboot_status();
 			set_replay_menus(true);
-			string []opts={"stop-replay", "kml-remove", /*"gz-edit",*/ "gz-save", "gz-kml", "gz-clear"};
+			string []opts={"stop-replay", "kml-remove", "gz-save", "gz-kml", "gz-clear", "gz-check"};
 			foreach(var o in opts) {
 				MwpMenu.set_menu_state(Mwp.window, o, false);
 			}
@@ -561,8 +561,13 @@ namespace Mwp {
 			queue_gzone(0);
 		}
 
+		private void do_gz_check() {
+			var s = gzr.validate_shapes("Zones fail validation", "Zones validate");
+			Utils.warning_box(s);
+		}
+
 		private void do_gz_ul() {
-			var s = gzr.validate_shapes();
+			var s = gzr.validate_shapes("Upload Cancelled");
 			if (s.length == 0) {
 				gzcnt = 0;
 				MWPLog.message("Geozone upload started\n");
@@ -676,6 +681,7 @@ namespace Mwp {
 				{"gz-clear", do_gz_clear},
 				{"gz-dl", do_gz_dl},
 				{"gz-ul", do_gz_ul},
+				{"gz-check", do_gz_check},
 				{"followme", Follow.run},
 				{"audio-test", test_audio},
 				{"prefs", run_prefs},
@@ -865,6 +871,7 @@ namespace Mwp {
 		MwpMenu.set_menu_state(Mwp.window, "gz-save", val);
 		MwpMenu.set_menu_state(Mwp.window, "gz-kml", val);
 		MwpMenu.set_menu_state(Mwp.window, "gz-clear", val);
-		MwpMenu.set_menu_state(Mwp.window, "gz-edit", val);
+		MwpMenu.set_menu_state(Mwp.window, "gz-check", val);
+		//MwpMenu.set_menu_state(Mwp.window, "gz-edit", val);
 	}
 }

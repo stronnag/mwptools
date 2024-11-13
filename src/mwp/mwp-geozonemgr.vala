@@ -242,7 +242,7 @@ public class GeoZoneManager {
 		return ok;
 	}
 
-	public string validate_shapes() {
+	public string validate_shapes(string? s1=null, string? s2=null) {
 		int nf = 0;
 		StringBuilder sb = new StringBuilder();
 		for(var j = 0; j < MAXGZ; j++) {
@@ -251,30 +251,36 @@ public class GeoZoneManager {
 			if(get_shape(j) == GZShape.Circular)
 				continue;
 
-			GZMisc.Vec []v = {};
+			AreaCalc.Vec []v = {};
 			var verts = find_vertices(j);
 			foreach (var kv in verts) {
-				var p = GZMisc.to_ecef(vs[kv].latitude/1e7,  vs[kv].longitude/1e7, 0);
+				var p = GZMisc.to_ecef(vs[kv].latitude/1e7,  vs[kv].longitude/1e7);
 				v += p;
 			}
-			double d1 = 0;
-			/*var res =*/ GZMisc.is_convex(v, out d1);
-			if (/*res == false ||*/ d1 < 0) {
+			uint8 d1 = GZMisc.validate_polygon(v);
+			if (d1 != 0) {
 				nf++;
 				sb.append_printf("Zone %d invalid:", j);
-				//				if(res == false) {
-				//	sb.append(" not convex");
-				//}
-				if(d1 < 0) {
-					sb.append(" not counter-clockwise");
+				if((d1 & 1) == 1) {
+					sb.append(" clockwise");
+				}
+				if((d1 & 2) == 2) {
+					sb.append(" complex");
 				}
 				sb.append_c('\n');
 			}
 		}
 		if(nf == 0) {
-			return "";
+			if(s2 != null) {
+				sb.append_printf("<b>%s</b>\n", s2);
+				return sb.str;
+			}  else {
+				return "";
+			}
 		} else {
-			sb.append("<b>Upload cancelled</b>\n");
+			if(s1 != null) {
+				sb.append_printf("<b>%s</b>\n", s1);
+			}
 			return sb.str;
 		}
 	}
