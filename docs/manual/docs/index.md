@@ -22,11 +22,12 @@ From its MultiWii origins mwp has evolved to support navigation capabilities in 
 * [**Flight log replay**](replay-tools.md)  (Blackbox, OTX/ETX logs, BulletGCSS)
 * [**Embedded video**](mwp_video_player.md) (live and replay)
 * **Support** functions
-    * {{ inav }} [Safehome editor](mwp-safehomes-editor.md) and [FW Auto-Land plans](mwp-safehomes-editor.md).
+    * {{ inav }} [Safehome editor](mwp-safehomes-editor.md), [FW Auto-Land plans](mwp-safehomes-editor.md). [INAV8 Geozone editor](mwp-geozones.md).
+	* [Survey / Search Area Planner](mwp-area-planner.md)
     * [Automatic mission shape](mission-editor.md#add-shape) generation, block moves, animated mission preview.
     * [Terrain Analysis](Mission-Elevation-Plot-and-Terrain-Analysis.md) with WP mission rewrite to safe elevation margins
     * [Line of sight Analysis](mwp-los-tool.md) along a WP mission file.
-    * Favourite sites editor
+    * [Favourite sites manager](misc-ui-elements.md#favourite-places)
     * KML/KMZ static overlays
 
 ### Supported Protocols

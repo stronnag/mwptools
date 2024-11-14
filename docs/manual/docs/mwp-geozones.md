@@ -4,16 +4,12 @@
 
 {{ mwp }} provides a UI for the Geozones function that is planned to appear in INAV 8.0.0.
 
-As the technical details for this feature has not yet been made publicly available (other than in the source code), the implementation described below may be considered experimental; at least the user can generate colourful shapes, download / upload from / to the FC, load / save from / to files and generate KMLs.
+The technical details for this feature will be published as part of INAV 8.0.
 
 !!! Note "Version Requirements"
-	The public API (MSP etc.) exposed in the initial INAV PR differs from the API described in earlier provisional documentation. The proposed INAV 8.0 implementation **requires** {{ mwp }} 24.11.13 or later.
+	The proposed INAV 8.0 implementation of GeoZones **requires** {{ mwp }} 24.11.14 or later.
 
-!!! Note "Implementation Caveat"
-
-	The {{ mwp }} implementation currently requires that Geozones are organised contiguously from 0 to N (where N < 63). If your Geozones are not contiguous from 0, then {{ mwp }} will be unable to correctly load / display / edit /save Geozones. The same limitation appears to apply to the INAV Configurator.
-
-Geozones provides (in theory at least) a set of geographical shapes that the FC can navigate around, characterised by:
+Geozones provides a set of geographical shapes that the FC can navigate around, characterised by:
 
 * Shape
     - Circular
@@ -29,7 +25,7 @@ Geozones provides (in theory at least) a set of geographical shapes that the FC 
     - Poshold
     - RTH
 
-The effect these parameters have on FC behaviour will, presumably, be made available once the Geozones function is publicly available in the firmware.
+The effect these parameters have on FC behaviour will be made available once the Geozones function is publicly available in the INAV firmware.
 
 ## Geozone Validity and Enforcement
 
@@ -50,7 +46,7 @@ There are a number of runtime recommendations from the Geozone developer:
 * If nested inclusive zones are used, ensure that they overlap by at least `2 * loiter radius` (or `geozone_mr_stop_distance` for multirotors) horizontally and 50 metres vertically to allow RTH to calculate a proper heading.
 * When connecting polygonal zones, at least 2 vertices of one zone must be within the over-lapping zone.
 
-{{ mwp }} does not currently attempt to enforce these recommendations nor warns of their violation.
+{{ mwp }} does not currently attempt to enforce the runtime recommendations nor warns of their violation.
 
 ## mwp User interface
 
@@ -71,7 +67,7 @@ Note that if `feature GEOZONE` is present, {{ mwp }} will attempt to load Geozon
 
 ## User Interface
 
-* Open, Save: Expects a textual definition in INAV CLI format
+* Open, Save: Expects a textual definition in INAV CLI format. This may be read from an INAV dif for offline use.
 * Export: Exports a loaded Geozone to KML. Geozone specific parameters are stored in the KML such that the original Geozone in CLI notation could be reproduced from the KML.
 
 ### Editor
