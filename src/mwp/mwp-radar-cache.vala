@@ -17,12 +17,13 @@
 
 
 namespace Radar {
+	[Flags]
 	public enum RadarSource {
 		NONE = 0,
-		INAV = 1,
-		TELEM = 2,
-		MAVLINK = 4,
-		SBS = 8,
+		INAV,     // 1
+		TELEM,    // 2,
+		MAVLINK,  // 4,
+		SBS,      //  8,
 		M_INAV = (INAV|TELEM),
 		M_ADSB = (MAVLINK|SBS),
 	}

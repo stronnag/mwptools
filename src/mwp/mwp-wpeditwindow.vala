@@ -17,11 +17,12 @@
 
 using Gtk;
 
+[Flags]
 public enum WPEditMask {
-    SETHEAD = 1,
-    JUMP = 2,
-    RTH = 4,
-	ATHOME = 8
+    SETHEAD,
+    JUMP,
+    RTH,
+	ATHOME
 }
 
 public struct EditItem {

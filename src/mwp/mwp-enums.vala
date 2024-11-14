@@ -65,13 +65,14 @@ namespace Mwp {
 		hasGeoZones = 0x080000,
     }
 
+	[Flags]
 	public enum WPS {
-        isINAV = (1<<0),
-        isFW = (1<<1),
-        hasJUMP = (1<<2),
-        hasPHT = (1<<3),
-        hasLAND = (1<<4),
-        hasPOI = (1<<5),
+        isINAV,
+        isFW,
+        hasJUMP,
+        hasPHT,
+        hasLAND,
+        hasPOI,
     }
 
     public enum SERSTATE {
@@ -85,35 +86,38 @@ namespace Mwp {
         TELEM_SP,
     }
 
+	[Flags]
     public enum DEBUG_FLAGS {
         NONE=0,
-        WP = (1 << 0),          // 1
-        INIT = (1 << 1),        // 2
-        MSP = (1 << 2),			// 4
-        ADHOC = (1 << 3),		// 8
-        RADAR= (1 << 4),		// 16
-        OTXSTDERR = (1 << 5),	// 32
-		SERIAL = (1 << 6),		// 64
-		VIDEO = (1 << 7),		// 128
-		GCSLOC = (1 << 8),		// 256
-		LOSANA = (1 << 9),		// 512
-		RDRLIST = (1 << 10),	// 1024
+        WP,         // 1
+        INIT,       // 2
+        MSP,		// 4
+        ADHOC,		// 8
+        RADAR,		// 16
+        OTXSTDERR,	// 32
+		SERIAL,		// 64
+		VIDEO,		// 128
+		GCSLOC,		// 256
+		LOSANA,		// 512
+		RDRLIST,	// 1024
     }
 
+	[Flags]
     private enum SAT_FLAGS {
         NONE=0,
-        NEEDED = 1,
-        URGENT = 2,
-        BEEP = 4
+        NEEDED,
+        URGENT,
+        BEEP
     }
 
+	[Flags]
     private enum Player {
         NONE = 0,
-        MWP = 1,
-        BBOX = 2,
-        OTX = 4,
-        FL2LTM = 8,
-        RAW = 16,
+        MWP,
+        BBOX,
+        OTX,
+        FL2LTM,
+        RAW,
         FAST_MASK = 128,
         MWP_FAST = MWP |FAST_MASK,
         BBOX_FAST = BBOX|FAST_MASK,
@@ -136,23 +140,24 @@ namespace Mwp {
         mixer = 0x0202,
     }
 
+	[Flags]
     private enum WPDL {
         IDLE=0,
-        DOWNLOAD = (1<<0),
-        REPLACE = (1<<1),
-        POLL = (1<<2),
-        REPLAY = (1<<3),
-        SAVE_EEPROM = (1<<4),
-        GETINFO = (1<<5),
-        CALLBACK = (1<<6),
-        CANCEL = (1<<7),
-		SET_ACTIVE = (1<<8),
-		SAVE_ACTIVE = (1<<9),
-		RESET_POLLER = (1<<10),
-		KICK_DL = (1<<11),
-        FOLLOW_ME = (1 << 12),
-		SAVE_FWA = (1 << 13),
-		REBOOT = (1 << 14),
+        DOWNLOAD,
+        REPLACE,
+        POLL,
+        REPLAY,
+        SAVE_EEPROM,
+        GETINFO,
+        CALLBACK,
+        CANCEL,
+		SET_ACTIVE,
+		SAVE_ACTIVE,
+		RESET_POLLER,
+		KICK_DL,
+        FOLLOW_ME,
+		SAVE_FWA,
+		REBOOT,
     }
 
     private struct WPMGR {
@@ -164,26 +169,27 @@ namespace Mwp {
 
     private enum WPFAIL {
         OK=0,
-        NO = (1<<0),
-        ACT = (1<<1),
-        LAT = (1<<2),
-        LON = (1<<3),
-        ALT = (1<<4),
-        P1 = (1<<5),
-        P2 = (1<<6),
-        P3 = (1<<7),
-        FLAG = (1<<8)
+        NO,
+        ACT,
+        LAT,
+        LON,
+        ALT,
+        P1,
+        P2,
+        P3,
+        FLAG
     }
 
+	[Flags]
     private enum POSMODE {
         HOME = 1,
-        PH = 2,
-        RTH = 4,
-        WP = 8,
-        ALTH = 16,
-        CRUISE = 32,
-		UNDEF = 64, // emergency maybe
-		LAND = 128,
+        PH,
+        RTH,
+        WP,
+        ALTH,
+        CRUISE,
+		UNDEF, // emergency maybe
+		LAND,
     }
 
         // ./src/main/fc/runtime_config.h
@@ -287,11 +293,12 @@ namespace Mwp {
         INAV_FW=16
     }
 
+	[Flags]
     public enum SPK {
-        Volts = 1,
-        GPS = 2,
-        BARO = 4,
-        ELEV = 8
+        Volts,
+        GPS,
+        BARO,
+        ELEV
     }
 
     public enum SAY_WHAT {

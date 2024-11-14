@@ -90,15 +90,15 @@ namespace GCS {
 }
 
 namespace Gpsd {
-
+	[Flags]
 	public enum Mask {
-		TIME = (1<<0),
-		FIX = (1<<1),
-		LAT = (1<<2),
-		LON = (1<<3),
-		ALT = (1<<4),
-		CSE = (1<<5),
-		SPD = (1<<6),
+		TIME,
+		FIX,
+		LAT,
+		LON,
+		ALT,
+		CSE,
+		SPD,
 	}
 
 	public struct Gpsd_data {
