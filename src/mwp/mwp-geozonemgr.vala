@@ -622,8 +622,9 @@ public class GeoZoneManager {
 		oi.type = OverlayItem.OLType.POLYGON;
 		oi.idx = (uint8)n;
 		var sb = new StringBuilder();
-		sb.append_printf("geozone %u %d %d %d %d %d %d", n, zs[n].shape, zs[n].type,
-						 zs[n].minalt, zs[n].maxalt, zs[n].isAMSL, zs[n].action);
+		var nv = nvertices(n);
+		sb.append_printf("geozone %u %d %d %d %d %d %d %d", n, zs[n].shape, zs[n].type,
+						 zs[n].minalt, zs[n].maxalt, zs[n].isAMSL, zs[n].action, nv);
 		oi.styleinfo =  get_style(zs[n]);
 		if (zs[n].shape == GZShape.Circular) {
 			oi.name = "Circle %2u".printf(n);
@@ -709,9 +710,10 @@ public class GeoZoneManager {
 		StringBuilder sb = new StringBuilder();
 		int n = 0;
 		foreach (var z in zs) {
+			var nv = nvertices(n);
 			if(z.type != GZType.Unused) {
-				sb.append_printf("geozone %d %d %d %d %d %d %d\n", n, z.shape, z.type,
-								 z.minalt, z.maxalt, z.isAMSL, z.action);
+				sb.append_printf("geozone %d %d %d %d %d %d %d %d\n", n, z.shape, z.type,
+								 z.minalt, z.maxalt, z.isAMSL, z.action, nv);
 				var nvs = find_vertices(n);
 				foreach(var v in nvs) {
 					sb.append_printf("geozone vertex %d %d %d %d\n", vs[v].zindex, vs[v].index, vs[v].latitude, vs[v].longitude);
