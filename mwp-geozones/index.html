@@ -1474,16 +1474,12 @@
 <h1 id="mwp-and-geozones">mwp and Geozones<a class="headerlink" href="#mwp-and-geozones" title="Permanent link">#</a></h1>
 <h2 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permanent link">#</a></h2>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> provides a UI for the Geozones function that is planned to appear in INAV 8.0.0.</p>
-<p>As the technical details for this feature has not yet been made publicly available (other than in the source code), the implementation described below may be considered experimental; at least the user can generate colourful shapes, download / upload from / to the FC, load / save from / to files and generate KMLs.</p>
+<p>The technical details for this feature will be published as part of INAV 8.0.</p>
 <div class="admonition note">
 <p class="admonition-title">Version Requirements</p>
-<p>The public API (MSP etc.) exposed in the initial INAV PR differs from the API described in earlier provisional documentation. The proposed INAV 8.0 implementation <strong>requires</strong> <a href="https://github.com/stronnag/mwptools">mwp</a> 24.11.13 or later.</p>
+<p>The proposed INAV 8.0 implementation of GeoZones <strong>requires</strong> <a href="https://github.com/stronnag/mwptools">mwp</a> 24.11.14 or later.</p>
 </div>
-<div class="admonition note">
-<p class="admonition-title">Implementation Caveat</p>
-<p>The <a href="https://github.com/stronnag/mwptools">mwp</a> implementation currently requires that Geozones are organised contiguously from 0 to N (where N &lt; 63). If your Geozones are not contiguous from 0, then <a href="https://github.com/stronnag/mwptools">mwp</a> will be unable to correctly load / display / edit /save Geozones. The same limitation appears to apply to the INAV Configurator.</p>
-</div>
-<p>Geozones provides (in theory at least) a set of geographical shapes that the FC can navigate around, characterised by:</p>
+<p>Geozones provides a set of geographical shapes that the FC can navigate around, characterised by:</p>
 <ul>
 <li>
 <p>Shape</p>
@@ -1509,7 +1505,7 @@
 </ul>
 </li>
 </ul>
-<p>The effect these parameters have on FC behaviour will, presumably, be made available once the Geozones function is publicly available in the firmware.</p>
+<p>The effect these parameters have on FC behaviour will be made available once the Geozones function is publicly available in the INAV firmware.</p>
 <h2 id="geozone-validity-and-enforcement">Geozone Validity and Enforcement<a class="headerlink" href="#geozone-validity-and-enforcement" title="Permanent link">#</a></h2>
 <h3 id="zone-geometry">Zone Geometry<a class="headerlink" href="#zone-geometry" title="Permanent link">#</a></h3>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> checks that Geozones conform to the FC's known rules for validity:</p>
@@ -1525,7 +1521,7 @@
 <li>If nested inclusive zones are used, ensure that they overlap by at least <code>2 * loiter radius</code> (or <code>geozone_mr_stop_distance</code> for multirotors) horizontally and 50 metres vertically to allow RTH to calculate a proper heading.</li>
 <li>When connecting polygonal zones, at least 2 vertices of one zone must be within the over-lapping zone.</li>
 </ul>
-<p><a href="https://github.com/stronnag/mwptools">mwp</a> does not currently attempt to enforce these recommendations nor warns of their violation.</p>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> does not currently attempt to enforce the runtime recommendations nor warns of their violation.</p>
 <h2 id="mwp-user-interface">mwp User interface<a class="headerlink" href="#mwp-user-interface" title="Permanent link">#</a></h2>
 <div class="admonition note">
 <p class="admonition-title">Legacy Images</p>
@@ -1540,7 +1536,7 @@
 </code></pre>
 <h2 id="user-interface">User Interface<a class="headerlink" href="#user-interface" title="Permanent link">#</a></h2>
 <ul>
-<li>Open, Save: Expects a textual definition in INAV CLI format</li>
+<li>Open, Save: Expects a textual definition in INAV CLI format. This may be read from an INAV dif for offline use.</li>
 <li>Export: Exports a loaded Geozone to KML. Geozone specific parameters are stored in the KML such that the original Geozone in CLI notation could be reproduced from the KML.</li>
 </ul>
 <h3 id="editor">Editor<a class="headerlink" href="#editor" title="Permanent link">#</a></h3>
