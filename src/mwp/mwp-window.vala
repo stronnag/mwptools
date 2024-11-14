@@ -569,14 +569,29 @@ namespace Mwp {
 			Utils.warning_box(s);
 		}
 
+		private void gz_upload_dialog() {
+			var warnmsg = "Uploading Geozones requires that the FC be rebooted in order for the FC to reevaluate the Geozones.\n\nClick OK to upload and reboot";
+			var am = new Adw.AlertDialog("Reboot required",  warnmsg);
+			am.add_response ("cancel", "Cancel");
+			am.add_response ("ok", "OK");
+			am.set_close_response ("cancel");
+			am.response.connect((s) => {
+					if (s == "ok") {
+						gzcnt = 0;
+						pause_poller(SERSTATE.MISC_BULK);
+						MWPLog.message("Geozone upload started\n");
+						var mbuf = gzr.encode_zone(gzcnt);
+						queue_cmd(Msp.Cmds.SET_GEOZONE, mbuf, mbuf.length);
+					}
+					am.close();
+				});
+			am.present(Mwp.window);
+		}
+
 		private void do_gz_ul() {
 			var s = gzr.validate_shapes("Upload Cancelled");
 			if (s.length == 0) {
-				gzcnt = 0;
-				pause_poller(SERSTATE.MISC_BULK);
-				MWPLog.message("Geozone upload started\n");
-				var mbuf = gzr.encode_zone(gzcnt);
-				queue_cmd(Msp.Cmds.SET_GEOZONE, mbuf, mbuf.length);
+				gz_upload_dialog();
 			} else {
 				Utils.warning_box(s);
 			}

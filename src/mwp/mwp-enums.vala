@@ -152,6 +152,7 @@ namespace Mwp {
 		KICK_DL = (1<<11),
         FOLLOW_ME = (1 << 12),
 		SAVE_FWA = (1 << 13),
+		REBOOT = (1 << 14),
     }
 
     private struct WPMGR {

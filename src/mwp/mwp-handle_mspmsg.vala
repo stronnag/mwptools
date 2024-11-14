@@ -438,7 +438,7 @@ namespace Mwp {
 				queue_cmd(Msp.Cmds.SET_GEOZONE_VERTEX, mbuf, mbuf.length);
 			} else {
 				MWPLog.message("Geozone vertices upload completed\n");
-				wpmgr.wp_flag = WPDL.RESET_POLLER; // abusive ... ish
+				wpmgr.wp_flag = WPDL.RESET_POLLER|WPDL.REBOOT; // abusive ... ish
 				queue_cmd(Msp.Cmds.EEPROM_WRITE,null, 0);
 			}
 			break;
@@ -1238,8 +1238,9 @@ namespace Mwp {
 		case Msp.Cmds.WP_MISSION_SAVE:
 			MWPLog.message("Confirmed mission save\n");
 			if ((wpmgr.wp_flag & WPDL.GETINFO) != 0) {
-				if(inav)
+				if(inav) {
 					queue_cmd(Msp.Cmds.WP_GETINFO, null, 0);
+				}
 				Mwp.window.validatelab.set_text("✔"); // u+2714
 				Utils.warning_box("Mission uploaded", 5);
 			}
@@ -1247,8 +1248,11 @@ namespace Mwp {
 
 		case Msp.Cmds.EEPROM_WRITE:
 			MWPLog.message("Wrote EEPROM\n");
-			if ((wpmgr.wp_flag & WPDL.RESET_POLLER) != 0) {
+			if ((wpmgr.wp_flag & WPDL.REBOOT) != 0) {
+				queue_cmd(Msp.Cmds.REBOOT, null, 0);
+			} else if ((wpmgr.wp_flag & WPDL.RESET_POLLER) != 0) {
 				wp_reset_poller();
+				wpmgr.wp_flag &= ~WPDL.RESET_POLLER;
 			}
 			break;
 
