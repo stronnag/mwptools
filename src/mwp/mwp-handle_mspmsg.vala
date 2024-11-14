@@ -1249,10 +1249,11 @@ namespace Mwp {
 		case Msp.Cmds.EEPROM_WRITE:
 			MWPLog.message("Wrote EEPROM\n");
 			if ((wpmgr.wp_flag & WPDL.REBOOT) != 0) {
+				wpmgr.wp_flag &= ~WPDL.REBOOT;
 				queue_cmd(Msp.Cmds.REBOOT, null, 0);
 			} else if ((wpmgr.wp_flag & WPDL.RESET_POLLER) != 0) {
-				wp_reset_poller();
 				wpmgr.wp_flag &= ~WPDL.RESET_POLLER;
+				wp_reset_poller();
 			}
 			break;
 
