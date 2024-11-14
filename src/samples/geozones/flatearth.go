@@ -34,7 +34,7 @@ func project_point(lat1, lon1, cse, dist float64) (float64, float64) {
 		lon = rlon1 // endpoint a pole
 	} else {
 		/*
-		 * ** Note signed changed from Williams formulae, as we're going forward ... **
+		 * ** Note signed changed from Williams formulae, as we use stand longitude signs ... **
 		 * We just use the worst case version because modern computers don't care
 		 */
 		dlon := math.Atan2(math.Sin(tc)*math.Sin(rdist)*math.Cos(rlat1), math.Cos(rdist)-math.Sin(rlat1)*math.Sin(lat))

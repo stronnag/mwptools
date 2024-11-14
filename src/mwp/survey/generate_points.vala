@@ -1,3 +1,27 @@
+/*
+  This file is a (mildly modified) translation from Javascript to vala
+  of iforce2d's online
+  [survey planner](https://www.iforce2d.net/surveyplanner).  See
+  https://www.iforce2d.net/surveyplanner/generate.js for the original
+ */
+
+/*
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * (c) Jonathan Hudson <jh+mwptools@daria.co.uk>
+ */
+
 namespace AreaCalc {
 	public struct Vec {
 		double x;
@@ -50,7 +74,17 @@ namespace AreaCalc {
 		var dy = a.y - b.y;
 		return Math.sqrt( dx*dx + dy*dy );
 	}
-
+	// Find the intersection between two lines v0-v1 and t0-t1.
+	// If no intersection exists return null, otherwise return
+	// an object like:
+	//    {
+	//      frac: 0.35,
+	//      point: {x:1.23, y:4.56}
+	//    }
+	// where 'point' is the intersection point, and 'frac' is
+	// the fraction of v0-v1 at which the intersection occurs.
+	// Eg. a fraction of 0.25 means the intersection is one
+	// quarter the way along the line going from v0 to v1
 	private XVec? linesCross(Vec v0, Vec v1, Vec t0, Vec t1) {
 		if ( areVecsEqual(v1,t0) ||
 			 areVecsEqual(v0,t0) ||
@@ -85,6 +119,36 @@ namespace AreaCalc {
 		return XVec() {frac=frac, point=add(v0, scale(fullvec,frac)) };
 	}
 
+	// Given a polygon in lat/lon coordinates, generate a flight path
+	// according to the desired angle and separation parameters.
+	//     points: an array of three or more objects like {x:1.23, y:4.56}
+	//           where x and y correspond to lon and lat respectively.
+	//     metersPerLat: number of meters per degree of latitude at this location
+	//     metersPerLng: number of meters per degree of longitude at this location
+	//     angle: desired angle of flight of first row, 0 being north, 90 being east
+	//     turn: desired direction to turn at the end of the first row, 0=left, 1=right
+	//     separation: desired separation in meters between rows
+	//
+	// The metersPerLat/Lng values are necessary because the user will want to define
+	// the row separation in meters, but the flight path will be defined in lat/lon
+	// coordinates, and the relation between these dimensions is not constant worldwide.
+	// The final meters per degree value used will also depend on the angle of the rows.
+	// For example, if the rows run exactly north-south, then metersPerLat will be used,
+	// if the rows run exactly west-east then metersPerLng will be used. For any other
+	// angle a value interpolated between them will be used.
+	//
+	// Returns an array of point pairs, each representing one row of the flight path, eg:
+	//    [
+	//      {
+	//        start: {x:1.23, y:4.56},
+	//        end:   {x:7.89, y:0.12},
+	//      },
+	//      {
+	//        start: {x:1.23, y:4.56},
+	//        end:   {x:7.89, y:0.12},
+	//      }
+	//    ]
+	// The full flight path can then be constructed by joining consecutive rows.
 	public RowPoints[] generateFlightPath(Vec[] points, double angle, uint8 turn, double separation) {
 		// get vector parallel to rows
 		var rad = angle * DEG2RAD;

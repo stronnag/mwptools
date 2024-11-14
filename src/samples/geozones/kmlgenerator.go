@@ -63,13 +63,19 @@ func add_poly(g GeoZone, showp, pline bool) kml.Element {
 	var points []kml.Coordinate
 	var wps []kml.Element
 	st := get_style(g.gtype)
+	var altmode kml.AltitudeModeEnum
+	if g.isAMSL == 0 {
+		altmode = kml.AltitudeModeRelativeToGround
+	} else {
+		altmode = kml.AltitudeModeAbsolute
+	}
 	for i, pt := range g.points {
 		if showp {
 			p := kml.Placemark(
 				kml.Name(fmt.Sprintf("%d", i+1)),
 				kml.StyleURL(st),
 				kml.Point(
-					kml.AltitudeMode(kml.AltitudeModeRelativeToGround),
+					kml.AltitudeMode(altmode),
 					kml.Coordinates(kml.Coordinate{Lon: pt.lon, Lat: pt.lat, Alt: float64(g.maxalt / 100.0)}),
 				),
 			).Add(kml.Visibility(true))
@@ -83,27 +89,29 @@ func add_poly(g GeoZone, showp, pline bool) kml.Element {
 		kml.Description(fmt.Sprintf("Polyline Track %d", g.zid)),
 		kml.StyleURL(st))
 	if pline {
-		track.Add(
-			kml.LineString(
-				kml.AltitudeMode(kml.AltitudeModeRelativeToGround),
-				kml.Extrude(true),
-				kml.Tessellate(false),
-				kml.Coordinates(points...),
-			),
+		lp := kml.LineString(
+			kml.AltitudeMode(altmode),
+			kml.Extrude(true),
+			kml.Coordinates(points...),
 		)
+		if g.isAMSL == 0 {
+			lp.Add(kml.Tessellate(false))
+		}
+		track.Add(lp)
 	} else {
-		track.Add(
-			kml.Polygon(
-				kml.AltitudeMode(kml.AltitudeModeRelativeToGround),
-				kml.Extrude(true),
-				kml.Tessellate(false),
-				kml.OuterBoundaryIs(
-					kml.LinearRing(
-						kml.Coordinates(points...),
-					),
+		pl := kml.Polygon(
+			kml.AltitudeMode(altmode),
+			kml.Extrude(true),
+			kml.OuterBoundaryIs(
+				kml.LinearRing(
+					kml.Coordinates(points...),
 				),
 			),
 		)
+		if g.isAMSL == 0 {
+			pl.Add(kml.Tessellate(false))
+		}
+		track.Add(pl)
 	}
 	name := fmt.Sprintf("Poly %d", g.zid)
 	desc := fmt.Sprintf(g.to_string())
@@ -118,13 +126,19 @@ func add_circle(g GeoZone, showp, pline bool) kml.Element {
 	var points []kml.Coordinate
 	var wps []kml.Element
 	st := get_style(g.gtype)
+	var altmode kml.AltitudeModeEnum
+	if g.isAMSL == 0 {
+		altmode = kml.AltitudeModeRelativeToGround
+	} else {
+		altmode = kml.AltitudeModeAbsolute
+	}
 	if showp {
 		p := kml.Placemark(
 			kml.Name(""),
 			kml.StyleURL(st),
 			kml.Point(
-				kml.AltitudeMode(kml.AltitudeModeRelativeToGround),
-				kml.Coordinates(kml.Coordinate{Lon: g.points[0].lon, Lat: g.points[0].lat, Alt: float64(g.maxalt)}),
+				kml.AltitudeMode(altmode),
+				kml.Coordinates(kml.Coordinate{Lon: g.points[0].lon, Lat: g.points[0].lat, Alt: float64(g.maxalt / 100)}),
 			),
 		).Add(kml.Visibility(true))
 		wps = append(wps, p)
@@ -141,27 +155,28 @@ func add_circle(g GeoZone, showp, pline bool) kml.Element {
 		kml.StyleURL(st))
 
 	if pline {
-		track.Add(
-			kml.LineString(
-				kml.AltitudeMode(kml.AltitudeModeRelativeToGround),
-				kml.Extrude(true),
-				kml.Tessellate(false),
-				kml.Coordinates(points...),
-			),
+		lp := kml.LineString(
+			kml.AltitudeMode(altmode),
+			kml.Coordinates(points...),
 		)
+		if g.isAMSL == 0 {
+			lp.Add(kml.Tessellate(false))
+		}
+		track.Add(lp)
 	} else {
-		track.Add(
-			kml.Polygon(
-				kml.AltitudeMode(kml.AltitudeModeRelativeToGround),
-				kml.Extrude(true),
-				kml.Tessellate(false),
-				kml.OuterBoundaryIs(
-					kml.LinearRing(
-						kml.Coordinates(points...),
-					),
+		pl := kml.Polygon(
+			kml.AltitudeMode(altmode),
+			kml.Extrude(true),
+			kml.OuterBoundaryIs(
+				kml.LinearRing(
+					kml.Coordinates(points...),
 				),
 			),
 		)
+		if g.isAMSL == 0 {
+			pl.Add(kml.Tessellate(true))
+		}
+		track.Add(pl)
 	}
 	name := fmt.Sprintf("Circle %d", g.zid)
 	desc := fmt.Sprintf(g.to_string())

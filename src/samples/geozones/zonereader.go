@@ -20,6 +20,7 @@ type GeoZone struct {
 	gtype  int
 	minalt int
 	maxalt int
+	isAMSL int
 	action int
 	points []Point
 }
@@ -36,7 +37,7 @@ const (
 
 func (g *GeoZone) to_string() string {
 	var s1 string
-	s := fmt.Sprintf("geozone %d %d %d %d %d %d\n", g.zid, g.gtype, g.shape, g.minalt, g.maxalt, g.action)
+	s := fmt.Sprintf("geozone %d %d %d %d %d %d %d\n", g.zid, g.gtype, g.shape, g.minalt, g.maxalt, g.isAMSL, g.action)
 	if g.shape == SHAPE_CIRCLE {
 		s1 = fmt.Sprintf("%f,%f radius %.2fm", g.points[0].lat, g.points[0].lon, g.points[1].lat)
 	} else {
@@ -65,59 +66,64 @@ func NewGeoZones(fn string) ([]GeoZone, error) {
 			if !(len(l) == 0 || strings.HasPrefix(l, "#") || strings.HasPrefix(l, ";")) {
 				parts := strings.Split(l, " ")
 				/*
-				   geozone <id> <shape> <type> <minimum altitude> <maximum altitude> <fence action>
-				     0      1      2      3            4                 5                 6
+				   geozone <id> <shape> <type> <minimum altitude> <maximum altitude> <isAMSL> <fence action>
+				     0      1      2      3            4                 5                 6      7
 				   geozone vertex <zone id> <vertex idx> <latitude> <logitude>
 				     0       1      2            3           4          5
 				*/
-				if len(parts) > 5 {
-					switch parts[1] {
-					case "vertex":
-						vid := -1
-						ilat := -1
-						ilon := -1
-						zid, err = strconv.Atoi(parts[2])
-						if err == nil {
-							vid, err = strconv.Atoi(parts[3])
+				if parts[0] == "geozone" {
+					if len(parts) > 5 {
+						switch parts[1] {
+						case "vertex":
+							vid := -1
+							ilat := -1
+							ilon := -1
+							zid, err = strconv.Atoi(parts[2])
 							if err == nil {
-								if zid < len(gzone) && vid == len(gzone[zid].points) {
-									ilat, err = strconv.Atoi(parts[4])
-									if err == nil {
-										ilon, err = strconv.Atoi(parts[5])
+								vid, err = strconv.Atoi(parts[3])
+								if err == nil {
+									if zid < len(gzone) && vid == len(gzone[zid].points) {
+										ilat, err = strconv.Atoi(parts[4])
 										if err == nil {
-											if ilon == 0 {
-												gzone[zid].points = append(gzone[zid].points, Point{float64(ilat) / 100.0, 0.0})
-											} else {
-												gzone[zid].points = append(gzone[zid].points, Point{float64(ilat) / 1e7, float64(ilon) / 1e7})
+											ilon, err = strconv.Atoi(parts[5])
+											if err == nil {
+												if ilon == 0 {
+													gzone[zid].points = append(gzone[zid].points, Point{float64(ilat) / 100.0, 0.0})
+												} else {
+													gzone[zid].points = append(gzone[zid].points, Point{float64(ilat) / 1e7, float64(ilon) / 1e7})
+												}
 											}
 										}
 									}
 								}
+							} else {
+								fmt.Fprintf(os.Stderr, "Invalid vertex %d/%d\n", zid, vid)
 							}
-						} else {
-							fmt.Fprintf(os.Stderr, "Invalid vertex %d/%d\n", zid, vid)
-						}
-					default:
-						zid, err = strconv.Atoi(parts[1])
-						if zid == len(gzone) {
-							var gz = GeoZone{}
-							gz.zid = zid
-							gz.shape, err = strconv.Atoi(parts[2])
-							if err == nil {
-								gz.gtype, err = strconv.Atoi(parts[3])
+						default:
+							zid, err = strconv.Atoi(parts[1])
+							if zid == len(gzone) {
+								var gz = GeoZone{}
+								gz.zid = zid
+								gz.shape, err = strconv.Atoi(parts[2])
 								if err == nil {
-									gz.minalt, err = strconv.Atoi(parts[4])
+									gz.gtype, err = strconv.Atoi(parts[3])
 									if err == nil {
-										gz.maxalt, err = strconv.Atoi(parts[5])
+										gz.minalt, err = strconv.Atoi(parts[4])
 										if err == nil {
-											gz.action, err = strconv.Atoi(parts[6])
-											gzone = append(gzone, gz)
+											gz.maxalt, err = strconv.Atoi(parts[5])
+											if err == nil {
+												gz.isAMSL, err = strconv.Atoi(parts[6])
+												if err == nil {
+													gz.action, err = strconv.Atoi(parts[7])
+													gzone = append(gzone, gz)
+												}
+											}
 										}
 									}
 								}
+							} else {
+								fmt.Fprintf(os.Stderr, "Invalid zone id %d (%d)\n", zid, len(gzone))
 							}
-						} else {
-							fmt.Fprintf(os.Stderr, "Invalid zone id %d\n", zid)
 						}
 					}
 				}
