@@ -623,7 +623,7 @@ public class GeoZoneManager {
 		oi.idx = (uint8)n;
 		var sb = new StringBuilder();
 		var nv = nvertices(n);
-		sb.append_printf("geozone %u %d %d %d %d %d %d %d", n, zs[n].shape, zs[n].type,
+		sb.append_printf("geozone %u %d %d %d %d %d %d %u", n, zs[n].shape, zs[n].type,
 						 zs[n].minalt, zs[n].maxalt, zs[n].isAMSL, zs[n].action, nv);
 		oi.styleinfo =  get_style(zs[n]);
 		if (zs[n].shape == GZShape.Circular) {
@@ -712,7 +712,7 @@ public class GeoZoneManager {
 		foreach (var z in zs) {
 			var nv = nvertices(n);
 			if(z.type != GZType.Unused) {
-				sb.append_printf("geozone %d %d %d %d %d %d %d %d\n", n, z.shape, z.type,
+				sb.append_printf("geozone %d %d %d %d %d %d %d %u\n", n, z.shape, z.type,
 								 z.minalt, z.maxalt, z.isAMSL, z.action, nv);
 				var nvs = find_vertices(n);
 				foreach(var v in nvs) {
