@@ -99,6 +99,7 @@ public class MWPMarker : Shumate.Marker {
 					Gis.map.viewport.widget_coords_to_location (this, _sx, _sy, out lat, out lon);
 					**/
 					this.set_location (lat, lon);
+					Mwp.set_pos_label(lat, lon);
 					drag_motion(lat, lon);
 				}
 			});
