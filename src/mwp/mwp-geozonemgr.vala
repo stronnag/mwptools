@@ -780,14 +780,16 @@ public class GeoZoneManager {
 						vs[k].longitude = int.parse(parts[5]);
 						break;
 					default:
-						var z = GeoZone();
+						var z = GeoZone(){};
 						var index = int.parse(parts[1]);
 						z.shape = (GZShape)int.parse(parts[2]);
 						z.type =(GZType)int.parse(parts[3]);
 						z.minalt = int.parse(parts[4]);
 						z.maxalt = int.parse(parts[5]);
-						z.isAMSL = (uint8) int.parse(parts[6]);
-						z.action = (GZAction)int.parse(parts[7]);
+						if(parts.length == 8) {
+							z.isAMSL = (uint8) int.parse(parts[6]);
+							z.action = (GZAction)int.parse(parts[7]);
+						}
 						zs[index] = z;
 						break;
 					}
