@@ -789,7 +789,7 @@ public class GeoZoneManager {
 						z.type =(GZType)int.parse(parts[3]);
 						z.minalt = int.parse(parts[4]);
 						z.maxalt = int.parse(parts[5]);
-						if(parts.length == 8) {
+						if(parts.length > 7) {
 							z.isAMSL = (uint8) int.parse(parts[6]);
 							z.action = (GZAction)int.parse(parts[7]);
 						}
