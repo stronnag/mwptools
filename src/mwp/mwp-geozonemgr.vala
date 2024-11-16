@@ -252,9 +252,12 @@ public class GeoZoneManager {
 				continue;
 
 			AreaCalc.Vec []v = {};
+			FlatEarth fe = new FlatEarth();
+
 			var verts = find_vertices(j);
+			fe.set_origin(vs[verts[0]].latitude/1e7,  vs[verts[0]].longitude/1e7);
 			foreach (var kv in verts) {
-				var p = GZMisc.to_ecef(vs[kv].latitude/1e7,  vs[kv].longitude/1e7);
+				var p = fe.lla_to_point(vs[kv].latitude/1e7,  vs[kv].longitude/1e7);
 				v += p;
 			}
 			uint8 d1 = GZMisc.validate_polygon(v);

@@ -15,22 +15,59 @@
  * (c) Jonathan Hudson <jh+mwptools@daria.co.uk>
  */
 
-namespace GZMisc {
-	const double RAD = 0.017453292;
-	const double A = 6378137;
-	const double F = 1.0 / 298.257224;
+public class FlatEarth {
+	private const double MLAT=111120.0; // Metres / degree latitude (1852*60)
+	public struct Origin {
+		double lat;
+		double lon;
+		double scale;
+		bool valid;
+	}
 
-	AreaCalc.Vec to_ecef (double lat, double lon /*, double h*/) {
-		double ESQ1 = (1-F)*(1-F);
-		lat = lat * RAD;
-		lon = lon * RAD;
-		var c  = 1.0/(Math.sqrt( (Math.cos(lat)*Math.cos(lat)) + ESQ1*Math.sin(lat)*Math.sin(lat)));
-		AreaCalc.Vec p={};
-		p.x = ((A*c)*Math.cos(lat)*Math.cos(lon));
-		p.y = ((A*c)*Math.cos(lat)*Math.sin(lon));
+	public struct Point {
+		double x;
+		double y;
+	}
+
+	public struct LLA {
+		double lat;
+		double lon;
+	}
+
+	private Origin origin;
+
+	public FlatEarth() {
+		origin.valid = false;
+	}
+
+	public AreaCalc.Vec lla_to_point(double lat, double lon) {
+		AreaCalc.Vec p = {0,0};
+		if(origin.valid) {
+			p.y = (lat - origin.lat) * MLAT;
+			p.x = (lon - origin.lon) * MLAT * origin.scale;
+		}
 		return p;
 	}
 
+	public LLA point_to_geo(AreaCalc.Vec p) {
+		LLA lla = {0,0};
+		if (origin.valid) {
+			lla.lat = origin.lat + p.y / MLAT;
+			lla.lon = origin.lon + p.x * origin.scale / MLAT;
+		}
+		return lla;
+	}
+
+	public void set_origin(double lat, double lon) {
+		origin.valid = true;
+		origin.lat = lat;
+		origin.lon = lon;
+        origin.scale = Math.cos(Math.fabs(lat) * Math.PI/180.0);
+	}
+}
+
+namespace GZMisc {
+	private const double RAD = 0.017453292;
 	private bool is_clockwise(AreaCalc.Vec []v) {
 		double sum = 0;
 		for (var i = 0; i < v.length; i++) {
@@ -45,10 +82,7 @@ namespace GZMisc {
 		for (var i = 0; i < v.length; i++) {
 			AreaCalc.Vec v0 = v[i];
 			AreaCalc.Vec v1 = v[(i + 1) % v.length];
-			for(var j = 0; j < v.length; j++) {
-				if(j == i) {
-					continue;
-				}
+			for(var j = i+1; j < v.length; j++) {
 				AreaCalc.Vec t0 = v[j];
 				AreaCalc.Vec t1 = v[(j + 1) % v.length];
 				if (AreaCalc.linesCross(v0, v1, t0, t1) != null) {
