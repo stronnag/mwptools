@@ -416,11 +416,11 @@ namespace Rebase {
 namespace LLparse {
 	bool llparse(string llstr, ref double clat, ref double clon, ref uint zm) {
 		var llok = false;
-		string[] delims =  {","," "};
+		string[] delims =  {" ",","};
 		var nps = 0;
 		foreach (var delim in delims) {
 			var parts = llstr.split(delim);
-			if(parts.length >= 2) {
+			if(parts.length == 2 || parts.length == 3) {
 				foreach(var pp in parts) {
 					var ps = pp.strip();
 					if(InputParser.posok(ps)) {
@@ -441,7 +441,7 @@ namespace LLparse {
 						}
 					}
 				}
-				if (nps >= 2) {
+				if (nps == 2) {
 					llok = true;
 					break;
 				}

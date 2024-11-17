@@ -32,13 +32,12 @@ namespace EditWP {
 		OPT
 	}
 
-	private EditItem create(int no, out string posit) {
+	private EditItem create(int no) {
 		EditItem ei ={};
 		MissionItem mi;
 		mi = MissionManager.current().points[no-1];
 		ei.action = mi.action;
 		ei.no = mi.no;
-		posit = PosFormat.pos(mi.lat, mi.lon, Mwp.conf.dms, true);
 		ei.alt = mi.alt;
 		ei.p1 = (double)mi.param1;
 		ei.p2 = (double)mi.param2;
@@ -232,14 +231,12 @@ namespace EditWP {
 	}
 
 	public void editwp(int no) {
-		string posit;
-		var ei = create(no, out posit);
+		var ei = create(no);
 		var orig = ei;
 		var xorig = ei;
-		var dlg = new WPPopEdit(posit);
+		var dlg = new WPPopEdit(no);
 		dlg.marker_changed.connect((s) => {
-				//var typ = Msp.get_wpname(s);
-				//MWPLog.message(":DLG: Marker changed type %s\n", typ.to_string());
+				//MWPLog.message(":DLG: Marker changed %s\n", Msp.get_wpname(s).to_string());
 			});
 
 		dlg.completed.connect((s) => {

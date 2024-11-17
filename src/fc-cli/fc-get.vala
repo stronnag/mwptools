@@ -421,24 +421,27 @@ class FCMgr :Object {
                                 try_connect(); return false;
                             });
                     }
-                } else if( inp > 3 && Memory.cmp(&inbuf[inp-3],"\n# ".data, 3) ==0) {
-					if(itest) {
-						var els = timer.elapsed();
-						if(lastid != -1) {
-							tstream.printf("%04d\t%6.3f\t%s\n", lastid, els, lines[lastid]);
-							lastid = -1;
+                } else if( inp > 3) {
+					if(inbuf[inp-1] == ' ' && inbuf[inp-2] == '#' &&
+					   (inbuf[inp-3] == '\n' || inbuf[inp-3] == '\r')) {
+						if(itest) {
+							var els = timer.elapsed();
+							if(lastid != -1) {
+								tstream.printf("%04d\t%6.3f\t%s\n", lastid, els, lines[lastid]);
+								lastid = -1;
+							}
+						}
+						if(state == State.SETLINES)
+							next_state();
+						else {
+							tid = Timeout.add(500, () => {
+									tid = 0;
+									if(inp == linp)
+										next_state();
+									return false;
+								});
 						}
 					}
-                    if(state == State.SETLINES)
-                        next_state();
-                    else {
-                        tid = Timeout.add(500, () => {
-                                tid = 0;
-                                if(inp == linp)
-                                    next_state();
-                                return false;
-                            });
-                    }
 				}
             });
 

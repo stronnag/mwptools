@@ -62,7 +62,7 @@ private class QEntry : Gtk.Entry {
         input_purpose = pp;
         text=etext;
         width_chars = len;
-		max_width_chars = MAX_Q_WIDTH;
+		max_width_chars = (len < MAX_Q_WIDTH) ? MAX_Q_WIDTH : len;
     }
 }
 
@@ -71,7 +71,6 @@ public class WPPopEdit : Adw.Window {
     private Gtk.DropDown wp_combo;
     private Gtk.Grid  grid0;
     private Gtk.Grid  grid;
-    private string pos;
     private QEntry altent;
     private Gtk.CheckButton amslcb;
     private Gtk.CheckButton fbhcb;
@@ -105,12 +104,10 @@ public class WPPopEdit : Adw.Window {
 		}
 	}
 
-	public WPPopEdit(string posit) {
+	public WPPopEdit(int no) {
 		var sbox = new Gtk.Box(Gtk.Orientation.VERTICAL, 2);
 		var header_bar = new Adw.HeaderBar();
 		sbox.append(header_bar);
-
-        pos = posit;
         title = "WP Edit";
 		//        add_button("Apply", Gtk.ResponseType.OK);
         set_transient_for(Mwp.window);
@@ -334,9 +331,18 @@ public class WPPopEdit : Adw.Window {
         string txt;
 
         grid.attach (qlabel("Position"), 0, j);
-        posl = new QLabel(pos).l;
+
+		var mks = Gis.mm_layer.get_markers();
+		// no, mks.nth_data(no-1).latitude, mks.nth_data(no-1).longitude,
+		var idx = wpt.no-1;
+		var pos = PosFormat.pos(mks.nth_data(idx).latitude, mks.nth_data(idx).longitude, Mwp.conf.dms, true);
+		posl = new QLabel(pos).l;
         posl.visible=true;
         grid.attach (posl, 1, j, 2);
+		((MWPMarker)mks.nth_data(idx)).drag_motion.connect((la, lo) => {
+				var s = PosFormat.pos(la, lo, Mwp.conf.dms, true);
+				posl.label = s;
+			});
 
         if (wpt.action != Msp.Action.SET_POI) {
             j++;
