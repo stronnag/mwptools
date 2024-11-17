@@ -707,14 +707,16 @@ namespace MsnTools {
 		return sb.str;
 	}
 
-	unowned MWPMarker? search_markers_by_id(int id) {
-		unowned MWPMarker? m0 = null;
-		Gis.mm_layer.get_markers().@foreach((g) => {
-				if(	  ((MWPMarker)g).no == id) {
-					m0 = (MWPMarker)g;
-				}
-			});
-		return m0;
+	public unowned MWPMarker? search_markers_by_id (int id) {
+		SearchFunc<MWPMarker?,int> id_cmp = (g,t) =>  {
+			return (int) (g.no > t) - (int) (g.no < t);
+		};
+		var lst = Gis.mm_layer.get_markers();
+		unowned var ll = lst.search(id, id_cmp);
+		if (ll != null && ll.length() > 0) {
+			return (MWPMarker)ll.nth_data(0);
+		}
+		return null;
 	}
 
 	public Elevdata resolve_elevations(MissionItem  mi) {
