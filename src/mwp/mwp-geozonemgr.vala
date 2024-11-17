@@ -255,13 +255,18 @@ public class GeoZoneManager {
 			FlatEarth fe = new FlatEarth();
 
 			var verts = find_vertices(j);
+			bool altsok = true;;
+
 			fe.set_origin(vs[verts[0]].latitude/1e7,  vs[verts[0]].longitude/1e7);
 			foreach (var kv in verts) {
 				var p = fe.lla_to_point(vs[kv].latitude/1e7,  vs[kv].longitude/1e7);
 				v += p;
 			}
+			if(zs[j].maxalt !=0 && zs[j].maxalt <= zs[j].minalt) {
+					altsok = false;
+			}
 			uint8 d1 = GZMisc.validate_polygon(v);
-			if (d1 != 0) {
+			if (d1 != 0 || !altsok) {
 				nf++;
 				sb.append_printf("Zone %d invalid:", j);
 				if((d1 & 1) == 1) {
@@ -269,6 +274,9 @@ public class GeoZoneManager {
 				}
 				if((d1 & 2) == 2) {
 					sb.append(" complex");
+				}
+				if(!altsok) {
+					sb.append(" altitudes");
 				}
 				sb.append_c('\n');
 			}
