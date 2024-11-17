@@ -332,14 +332,12 @@ public class WPPopEdit : Adw.Window {
 
         grid.attach (qlabel("Position"), 0, j);
 
-		var mks = Gis.mm_layer.get_markers();
-		// no, mks.nth_data(no-1).latitude, mks.nth_data(no-1).longitude,
-		var idx = wpt.no-1;
-		var pos = PosFormat.pos(mks.nth_data(idx).latitude, mks.nth_data(idx).longitude, Mwp.conf.dms, true);
+		unowned MWPMarker? m0 = MsnTools.search_markers_by_id(wpt.no);
+		var pos = PosFormat.pos(m0.latitude, m0.longitude, Mwp.conf.dms, true);
 		posl = new QLabel(pos).l;
         posl.visible=true;
         grid.attach (posl, 1, j, 2);
-		((MWPMarker)mks.nth_data(idx)).drag_motion.connect((la, lo) => {
+		m0.drag_motion.connect((la, lo) => {
 				var s = PosFormat.pos(la, lo, Mwp.conf.dms, true);
 				posl.label = s;
 			});
