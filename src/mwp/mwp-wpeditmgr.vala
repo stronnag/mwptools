@@ -242,14 +242,28 @@ namespace EditWP {
 		dlg.completed.connect((s) => {
 				int chg = 0;
 				bool ll = false;
+				double la,lo;
+				uint8 lx = 0;
 				if(s) {
+					lx = dlg.extractll(out la, out lo);
+					if(lx != 0) {
+						var ms = MissionManager.current();
+						var idx = ms.get_index(ei.no);
+						if ((lx & 1) == 1) {
+							ms.points[idx].lat = la;
+						}
+						if ((lx & 2) == 2) {
+							ms.points[idx].lon = lo;
+						}
+					}
+
 					dlg.extract_data(Msp.Action.UNKNOWN, ref ei);
 					if(ei.action == Msp.Action.LAND) {
 						var l = dlg.extract_land();
 						FWApproach.set(MissionManager.mdx+8, l);
 						ll = true;
 					}
-					chg = eicmp(ei, orig); //Memory.cmp(&ei, &orig, sizeof(EditItem));
+					chg = eicmp(ei, orig);
 					if(chg != 0) {
 						var res = extract(ei.no, ei, orig);
 						if (!res) {
@@ -267,10 +281,11 @@ namespace EditWP {
 					}
 					dlg.close();
 				}
-				if(chg != 0 || ll) {
+				if(chg != 0 || ll || lx != 0) {
 					MsnTools.clear_display();
 					MsnTools.renumber_mission(MissionManager.current());
 					MissionManager.visualise_mission();
+					dlg.setup_ll_listener(ei.no);
 				}
 			});
 		dlg.wpedit(ei);

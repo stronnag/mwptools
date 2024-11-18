@@ -94,7 +94,11 @@ public class WPPopEdit : Adw.Window {
     private Gtk.DropDown dref_combo;
     private Gtk.CheckButton ex1;
     private Gtk.CheckButton ex2;
+	private QEntry poslat;
+	private QEntry poslon;
+	private Gtk.Label poselv;
 
+	private uint8 posupd;
 	public signal void completed(bool state);
 	public signal void marker_changed(Msp.Action act);
 
@@ -105,11 +109,11 @@ public class WPPopEdit : Adw.Window {
 	}
 
 	public WPPopEdit(int no) {
+		posupd = 0;
 		var sbox = new Gtk.Box(Gtk.Orientation.VERTICAL, 2);
 		var header_bar = new Adw.HeaderBar();
 		sbox.append(header_bar);
         title = "WP Edit";
-		//        add_button("Apply", Gtk.ResponseType.OK);
         set_transient_for(Mwp.window);
         build_box();
 		sbox.append(vbox);
@@ -247,7 +251,24 @@ public class WPPopEdit : Adw.Window {
 		return nv;
 	}
 
-    public void extract_data(Msp.Action oldact, ref EditItem wpt) {
+	public uint8 extractll(out double llat, out double llon) {
+		var res = posupd;
+		llat = 0;
+		llon = 0;
+		if ((posupd & 1) == 1) {
+			llat = InputParser.get_latitude(poslat.text);
+			poslat.text = PosFormat.lat(llat, Mwp.conf.dms);
+		}
+		if ((posupd & 2) == 2) {
+			llon = InputParser.get_longitude(poslon.text);
+			poslon.text = PosFormat.lon(llon, Mwp.conf.dms);
+		}
+		posupd = 0;
+		return res;
+	}
+
+
+	public void extract_data(Msp.Action oldact, ref EditItem wpt) {
         Msp.Action nv;
         if (oldact == Msp.Action.UNKNOWN) {
 			nv = get_action_from_combo();
@@ -325,21 +346,51 @@ public class WPPopEdit : Adw.Window {
 		return id;
 	}
 
+	private string format_elev(double lat, double lon) {
+		string res="";
+		var elev = DemManager.lookup(lat, lon);
+		if (elev != Hgt.NODATA) {
+			res = " %.0f%s".printf(Units.distance(elev), Units.distance_units());
+		}
+		return res;
+	}
+
+	private void showlle(double la, double lo) {
+		poslat.text = PosFormat.lat(la, Mwp.conf.dms);
+		poslon.text = PosFormat.lon(lo, Mwp.conf.dms);
+		var elv = format_elev(la, lo);
+		poselv.label = elv;
+	}
+
+	public void setup_ll_listener(int idx) {
+		unowned MWPMarker? m0 = MsnTools.search_markers_by_id(idx);
+		showlle(m0.latitude, m0.longitude);
+		m0.drag_motion.connect((la, lo) => {
+				showlle(la, lo);
+			});
+	}
+
 	private void set_base_elements(EditItem wpt) {
         int j = 0;
-        Gtk.Label posl;
         string txt;
-
+		var box = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 8);
         grid.attach (qlabel("Position"), 0, j);
+		poslat = new QEntry("", 12,  Gtk.InputPurpose.FREE_FORM);
+		poslon = new QEntry("", 12,  Gtk.InputPurpose.FREE_FORM);
+		poselv = new QLabel("").l;
+        poselv.visible=true;
+		box.append(poslat);
+		box.append(poslon);
+		box.append(poselv);
+		setup_ll_listener(wpt.no);
+        grid.attach (box, 1, j, 2);
 
-		unowned MWPMarker? m0 = MsnTools.search_markers_by_id(wpt.no);
-		var pos = PosFormat.pos(m0.latitude, m0.longitude, Mwp.conf.dms, true);
-		posl = new QLabel(pos).l;
-        posl.visible=true;
-        grid.attach (posl, 1, j, 2);
-		m0.drag_motion.connect((la, lo) => {
-				var s = PosFormat.pos(la, lo, Mwp.conf.dms, true);
-				posl.label = s;
+
+		poslat.changed.connect(() => {
+				posupd |= 1;
+			});
+		poslon.changed.connect(() => {
+				posupd |= 2;
 			});
 
         if (wpt.action != Msp.Action.SET_POI) {
