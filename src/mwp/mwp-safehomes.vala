@@ -696,7 +696,7 @@ public class  SafeHomeDialog : Adw.Window {
 	private void mcentre_on() {
 		var sh = lstore.get_item(SHPop.idx) as SafeHome;
 		if(sh.lat != 0 && sh.lon != 0) {
-			Gis.map.center_on(sh.lat, sh.lon);
+			MapUtils.centre_on(sh.lat, sh.lon);
 		}
     }
 

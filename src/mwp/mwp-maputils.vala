@@ -69,6 +69,11 @@ namespace MapUtils {
 		}
 	}
 
+	public void centre_on(double lat, double lon) {
+		Gis.map.center_on(lat, lon);
+		Gis.map.go_to(lat, lon);
+	}
+
 	public int evince_zoom(BoundingBox b) {
 		// undingdouble lamin, double lomin, double lamax, double lomax
 		var alat = b.get_centre_latitude();

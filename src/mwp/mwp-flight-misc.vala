@@ -313,7 +313,7 @@ namespace Mwp {
 		if(pv) {
             if(Mwp.window.follow_button.active) {
 				if(conf.view_mode > 0) {
-					Gis.map.center_on(msp.td.gps.lat, msp.td.gps.lon);
+					MapUtils.centre_on(msp.td.gps.lat, msp.td.gps.lon);
 				} else {
 					MapUtils.try_centre_on(msp.td.gps.lat, msp.td.gps.lon);
 				}
@@ -383,7 +383,7 @@ namespace Mwp {
             }
 			craft.special_wp(Craft.Special.HOME, wp0.lat, wp0.lon);
             if(chome) {
-				Gis.map.center_on(lat, lon);
+				MapUtils.centre_on(lat, lon);
 			}
 
             StringBuilder sb = new StringBuilder ();

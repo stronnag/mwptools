@@ -745,7 +745,7 @@ namespace Radar {
 			if(n != 0) {
 				alat /= n;
 				alon /= n;
-				Gis.map.center_on(alat, alon);
+				MapUtils.centre_on(alat, alon);
 			}
 		}
 		private void show_number() {

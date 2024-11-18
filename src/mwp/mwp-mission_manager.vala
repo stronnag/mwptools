@@ -249,21 +249,32 @@ namespace MissionManager {
 
 	public void visualise_mission() {
 		zoom_to_mission();
-		HomePoint.hp.opacity = 1.0;
+		if (HomePoint.hp != null) {
+			HomePoint.hp.opacity = 1.0;
+		}
 		MsnTools.draw_mission(msx[mdx]);
 	}
 
 	public void zoom_to_mission() {
 		var _ms = current();
 		if (_ms != null) {
-			if(_ms.cx != 0 && _ms.cy != 0) {
-				Gis.map.center_on(_ms.cy, _ms.cx);
-			} else {
-				Gis.map.center_on(_ms.homey, _ms.homex);
+			var cx = _ms.cx;
+			var cy = _ms.cy;
+			if(cx == 0 || cy == 0) {
+				cx = _ms.homey;
+				cy = _ms.homex;
 			}
-			if(_ms.zoom > 0) {
-				Mwp.set_zoom_sanely(_ms.zoom);
+			var zoom = _ms.zoom;
+			if (zoom <= 0) {
+				MapUtils.BoundingBox b = {};
+				b.minlat = _ms.miny;
+				b.maxlat = _ms.maxy;
+				b.minlon = _ms.minx;
+				b.maxlon = _ms.maxx;
+				zoom = MapUtils.evince_zoom(b);
 			}
+			Mwp.set_zoom_sanely(zoom);
+			MapUtils.centre_on(cy, cx);
 			HomePoint.set_home(_ms.homey, _ms.homex);
 		} else {
 			Mwp.add_toast_text("No loaded mission");

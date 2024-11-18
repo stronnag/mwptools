@@ -70,7 +70,7 @@ namespace Mwp {
 					}
 					glat = InputParser.get_latitude(t1);
 					glon = InputParser.get_longitude(t2);
-					Gis.map.center_on(glat,glon);
+					MapUtils.centre_on(glat,glon);
 
 					var n = places_dd.get_selected ();
 					if (n > 0 && pls[n].zoom > 0) {

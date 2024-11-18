@@ -752,7 +752,7 @@ namespace Mwp {
 	}
 
 	private void go_home() {
-		Gis.map.center_on(Mwp.conf.latitude, Mwp.conf.longitude);
+		MapUtils.centre_on(Mwp.conf.latitude, Mwp.conf.longitude);
 	}
 
 	private void toggle_fs() {

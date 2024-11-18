@@ -26,7 +26,7 @@ namespace BBL {
 		bbl.rescale.connect((b) => {
 				var z= MapUtils.evince_zoom(b);
 				Gis.map.viewport.zoom_level = z;
-				Gis.map.center_on(b.get_centre_latitude(), b.get_centre_longitude());
+				MapUtils.centre_on(b.get_centre_latitude(), b.get_centre_longitude());
 				if(videofile != null && videofile != "") {
 					MWPLog.message("BBL videofile %s offset\n", videofile, nsecs);
 				}
@@ -469,7 +469,7 @@ namespace BBL {
 		private void process_tz_record(int idx) {
 			double xlat,xlon;
 			if(find_base_position(bblname.get_path(), idx.to_string(), out xlat, out xlon)) {
-				Gis.map.center_on(xlat, xlon);
+				MapUtils.centre_on(xlat, xlon);
 				get_tz(xlat, xlon);
 			}
 		}

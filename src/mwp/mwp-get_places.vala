@@ -401,10 +401,10 @@ class PlaceEdit : Adw.Window {
 		aq.activate.connect(() => {
 				if(poprow != -1) {
 					var pi = lstore.get_item((uint)poprow) as Places.PosItem;
-					Gis.map.center_on(pi.lat, pi.lon);
 					if (pi.zoom > 0) {
 						Mwp.set_zoom_sanely(pi.zoom);
 					}
+					MapUtils.centre_on(pi.lat, pi.lon);
 					Mwp.set_pos_label(Mwp.clat, Mwp.clon);
 				}
             });

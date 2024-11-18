@@ -51,6 +51,7 @@ namespace Gis {
 	public void init () {
 		Gis.simple = new Shumate.SimpleMap();
 		Gis.map = Gis.simple.map;
+		Gis.map.go_to_duration = 250;
 		Gis.simple.show_zoom_buttons = false;
 		Gis.simple.vexpand = true;
 		Gis.base_layer = null;
@@ -196,8 +197,9 @@ namespace Gis {
 		Gis.simple.license.append_map_source(ms);
 		qml.push_tail(Gis.base_layer);
 
-		Gis.map.center_on(Mwp.conf.latitude, Mwp.conf.longitude);
 		Gis.map.viewport.set_zoom_level( Mwp.conf.zoom);
+		MapUtils.centre_on(Mwp.conf.latitude, Mwp.conf.longitude);
+
 		Gis.info_layer = new Shumate.MarkerLayer(Gis.map.viewport); // radar markers
 		Gis.map.add_layer(Gis.info_layer);
 
