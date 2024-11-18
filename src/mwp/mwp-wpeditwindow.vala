@@ -374,10 +374,13 @@ public class WPPopEdit : Adw.Window {
         int j = 0;
         string txt;
 		var box = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 8);
+		box.hexpand = false;
         grid.attach (qlabel("Position"), 0, j);
 		poslat = new QEntry("", 12,  Gtk.InputPurpose.FREE_FORM);
 		poslon = new QEntry("", 12,  Gtk.InputPurpose.FREE_FORM);
 		poselv = new QLabel("").l;
+		poselv.max_width_chars = 8;
+		poselv.width_chars = 6;
         poselv.visible=true;
 		box.append(poslat);
 		box.append(poslon);
