@@ -113,18 +113,20 @@ namespace Mwp {
 									}
 								}  else {
 									if(p.has_prefix("    Version: ")) {
+										print("%s\n", p);
 										glversion = p["    Version: ".length:];
 										nm++;
 									} else if(p.has_prefix("    Device: ")) {
+										print("%s\n", p);
 										glrenderer = p["    Device: ".length:];
 										nm++;
 									} else if(p.has_prefix("    Vendor: ")) {
+										print("%s\n", p);
 										glvendor = p["    Vendor: ".length:];
 										nm++;
 									}
 								}
 							}
-
 							if(nm == 3) {
 								sb.append(glvendor);
 								sb.append_c(' ');
@@ -132,10 +134,10 @@ namespace Mwp {
 								sb.append_c(' ');
 								sb.append(glversion);
 								sb.append_printf(" (%s)", s);
+								MWPLog.message("GL: %s\n", sb.str);
 								break;
 							}
 						}
-						MWPLog.message("GL: %s\n", sb.str);
 						break;
 					}
 				} catch (Error e) {
