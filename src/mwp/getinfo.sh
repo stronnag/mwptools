@@ -17,6 +17,6 @@ GITBRANCH=$(git branch --show-current)
 GITSTAMP=$(git log -1 --format=%cI)
 
 > $OUTPUT echo "#define BUILDINFO \"${TNOW}Z ${PLAT} ${NODE}\""
->> $OUTPUT echo "#define COMPINFO \"Apple compiler\""
+>> $OUTPUT echo "#define COMPINFO \"Acme compiler\""
 >> $OUTPUT echo "#define MWPGITVERSION \"${GITVERS} (${GITBRANCH})\""
 >> $OUTPUT echo "#define MWPGITSTAMP \"${GITSTAMP}\""
