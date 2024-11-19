@@ -1,7 +1,12 @@
 
 clib_dep = [ dependency('glib-2.0'), dependency('gmodule-2.0')]
 
-paho = meson.get_compiler('c').find_library('paho-mqtt3cs', required: false)
+pahoargs = { 'required': false}
+if ldirs.length() > 0
+  pahoargs += { 'dirs': ldirs }
+endif
+
+paho = meson.get_compiler('c').find_library('paho-mqtt3cs', kwargs: pahoargs)
 
 clsrcs = files('btdev.c', 'get_locale_double.c', 'cserial.c', 'speech_wrapper.c')
 if paho.found()
