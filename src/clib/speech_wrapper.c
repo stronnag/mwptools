@@ -28,9 +28,14 @@
 #define API_SPEECHD 2
 #define API_FLITE 3
 
-extern void __attribute__((weak)) mwp_log_message(const gchar *format, ...);
-#if defined(USE_ESPEAK) || defined(USE_SPEECHD) || defined(USE_FLITE)
 
+#ifdef __APPLE__
+#define mwp_log_message printf
+#else
+extern void __attribute__((weak)) mwp_log_message(const gchar *format, ...);
+#endif
+
+#if defined(USE_ESPEAK) || defined(USE_SPEECHD) || defined(USE_FLITE)
 static GModule *handle;
 
 static inline gchar *m_module_build_path(const gchar *dir, const gchar *name) {
