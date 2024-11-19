@@ -107,6 +107,7 @@ public class MWPSettings : GLib.Object {
 	public int window_scale {get; set; default=80;}
 	public int ident_limit  {get; set; default=60;}
 	public double touch_factor {get; set; default=0.0;}
+	public double sidebar_scale_factor {get; set; default=0.0;}
 
 	public signal void settings_update (string s);
 
@@ -187,6 +188,7 @@ public class MWPSettings : GLib.Object {
 		settings.bind("rings-colour", this, "rcolstr", SettingsBindFlags.DEFAULT);
 		settings.bind("rth-autoland", this, "rth-autoland", SettingsBindFlags.DEFAULT);
 		settings.bind("say-bearing", this, "say-bearing", SettingsBindFlags.DEFAULT);
+		settings.bind("sidebar-scale-factor", this, "sidebar-scale-factor", SettingsBindFlags.DEFAULT);
 		settings.bind("speak-interval", this, "speakint", SettingsBindFlags.DEFAULT);
 		settings.bind("speech-api", this, "speech-api", SettingsBindFlags.DEFAULT);
 		settings.bind("speechd-voice", this, "svoice", SettingsBindFlags.DEFAULT);

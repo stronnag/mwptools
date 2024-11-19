@@ -104,6 +104,12 @@
       <description>Default map zoom</description>
     </key>
 
+    <key name="sidebar-scale-factor" type="d">
+      <default>0.0</default>
+      <summary>Sidebar scaling</summary>
+      <description>Scales the sidebar size, default 0.0 disables scaling. Most users should not need to change this</description>
+    </key>
+
     <key name="speak-interval" type="u">
       <default>15</default>
       <summary>Interval between voice prompts</summary>
