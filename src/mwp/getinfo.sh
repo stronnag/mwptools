@@ -9,9 +9,9 @@ PLAT=$(uname -smr)
 CC=${CC:-cc}
 LD=${LD-ld}
 
-CVERS=$($CC -v 2>&1 | grep " version ")
+CVERS=$($CC -v 2>&1 | grep " version " | head -n 1)
 VVERS=$(valac --version 2>&1)
-LDVERS=$($LD -v 2>&1)
+LDVERS=$($LD -v 2>&1 | head -n 1)
 GITVERS=$(git rev-parse  --short HEAD)
 GITBRANCH=$(git branch --show-current)
 GITSTAMP=$(git log -1 --format=%cI)
