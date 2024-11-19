@@ -79,11 +79,12 @@ mwpdeps = [deps,
 mwpsrcs += svyfiles
 
 
-protoc = meson.get_compiler('c').find_library('protobuf-c', dirs: ldirs, required: false)
+protoc = dependency('libprotobuf-c', required: false)
 if protoc.found()
-       mwpsrcs += files('readsb.pb-c.c', 'decode_readsb.c', 'decode_readsb.c')
-       mwpdeps += protoc
-       mwp_v_args += ['--vapidir', meson.current_source_dir(), '--pkg', 'decode_readsb', '--define=PROTOC' ]
+  protoc =  meson.get_compiler('c').find_library('protobuf-c', dirs: ldirs)
+  mwpsrcs += files('readsb.pb-c.c', 'decode_readsb.c', 'decode_readsb.c')
+  mwpdeps += protoc
+  mwp_v_args += ['--vapidir', meson.current_source_dir(), '--pkg', 'decode_readsb', '--define=PROTOC' ]
 endif
 
 # for BSD etc.
@@ -95,8 +96,9 @@ if paho.found()
   mwpdeps += paho
   mwpsrcs += files('mwp-mqtt_support.vala', 'mwp-mqtt_common.vala')
 else
-  mosquitto = meson.get_compiler('c').find_library('mosquitto', dirs: ldirs, required: false)
+  mosquitto = dependency('libmosquitto', required: false)
   if mosquitto.found()
+    mosquitto = meson.get_compiler('c').find_library('mosquitto', dirs: ldirs)
     mwp_v_args += '--define=MQTT'
     mwp_v_args += '--define=MQTT_MOSQUITTO'
     mwp_v_args += ['--pkg', 'libmosquitto']

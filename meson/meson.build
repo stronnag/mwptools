@@ -1,5 +1,5 @@
-ldirs = ['/usr/lib', '/usr/local/lib']
 gnome = import('gnome')
+ldirs = ['/usr/local/lib']
 
 deps = []
 dopts = []
@@ -22,23 +22,23 @@ endif
 
 soupdep = dependency('libsoup-3.0')
 
-speak = meson.get_compiler('c').find_library('espeak-ng', dirs: ldirs, required: false).found()
+speak = dependency('espeak-ng', required: false).found()
 if speak
     xopts += 'USE_ESPEAK_NG'
 else
-  speak = meson.get_compiler('c').find_library('espeak', dirs: ldirs, required: false).found()
+  speak = dependency('espeak', required: false).found()
 endif
 
 if speak
   xopts += 'USE_ESPEAK'
 endif
 
-speak = meson.get_compiler('c').find_library('speechd', dirs: ldirs, required: false).found()
+speak = dependency('speech-dispatcher', required: false).found()
 if speak
   xopts += 'USE_SPEECHD'
 endif
 
-speak = meson.get_compiler('c').find_library('flite', dirs: ldirs, required: false).found()
+speak = dependency('flite', required: false).found()
 if speak
   xopts += 'USE_FLITE'
 endif
