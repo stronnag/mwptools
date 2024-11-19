@@ -100,25 +100,39 @@ namespace Mwp {
 							string glrenderer=null;
 							var parts = strout.split("\n");
 							foreach (var p in parts) {
-								if(p.has_prefix("GL_VERSION: ")) {
-									glversion = p["GL_VERSION: ".length:];
-									nm++;
-								} else if(p.has_prefix("GL_RENDERER: ")) {
-									glrenderer = p["GL_RENDERER: ".length:];
-									nm++;
-								} else if(p.has_prefix("GL_VENDOR: ")) {
-									glvendor = p["GL_VENDOR: ".length:];
-									nm++;
+								if (s == "es2_info") {
+									if(p.has_prefix("GL_VERSION: ")) {
+										glversion = p["GL_VERSION: ".length:];
+										nm++;
+									} else if(p.has_prefix("GL_RENDERER: ")) {
+										glrenderer = p["GL_RENDERER: ".length:];
+										nm++;
+									} else if(p.has_prefix("GL_VENDOR: ")) {
+										glvendor = p["GL_VENDOR: ".length:];
+										nm++;
+									}
+								}  else {
+									if(p.has_prefix("    Version: ")) {
+										glversion = p["    Version: ".length:];
+										nm++;
+									} else if(p.has_prefix("    Device: ")) {
+										glrenderer = p["    Device: ".length:];
+										nm++;
+									} else if(p.has_prefix("    Vendor: ")) {
+										glvendor = p["    Vendor: ".length:];
+										nm++;
+									}
 								}
-								if(nm == 3) {
-									sb.append(glvendor);
-									sb.append_c(' ');
-									sb.append(glrenderer);
-									sb.append_c(' ');
-									sb.append(glversion);
-									sb.append_printf(" (%s)", s);
-									break;
-								}
+							}
+
+							if(nm == 3) {
+								sb.append(glvendor);
+								sb.append_c(' ');
+								sb.append(glrenderer);
+								sb.append_c(' ');
+								sb.append(glversion);
+								sb.append_printf(" (%s)", s);
+								break;
 							}
 						}
 						MWPLog.message("GL: %s\n", sb.str);
