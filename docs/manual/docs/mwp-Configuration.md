@@ -246,6 +246,7 @@ This *may* not be installed by default, but should be available via the OS packa
 | rth-autoland | Set land on RTH waypoints | Automatically assert land on RTH waypoints | false |
 | say-bearing | Whether audio report includes bearing | Whether audio report includes bearing | true |
 | show-sticks | Whether to show sticks in log replay | If "yes", stick position is shown bottom right during log replay, if "no" , never shown. If "icon", then it shown iconified (bottom right) | "icon" |
+| sidebar-scale-factor | Sidebar scaling | Scales the sidebar size, default 0.0 disables scaling. Most users should not need to change this | 0.0 |
 | smartport-fuel-unit | User selected fuel type | Units label for smartport fuel (none, %, mAh, mWh) | "none" |
 | speak-amps | When to speak amps/hr used | none, live-n, all-n n=1,2,4 : n = how often spoken (modulus basically) | "none" |
 | speak-interval | Interval between voice prompts | Interval between voice prompts, 0 disables | 15 |
