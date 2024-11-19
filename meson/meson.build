@@ -1,5 +1,4 @@
 gnome = import('gnome')
-ldirs = ['/usr/local/lib']
 
 deps = []
 dopts = []
