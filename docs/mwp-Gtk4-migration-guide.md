@@ -24,7 +24,6 @@ The following are minimum versions.
 * blueprint-compiler (0.12.0)
 * libvte4
 * libadwaita-1 1.5
-* libepoxy
 * libsecret-1
 
 For replaying blackbox log, [bbl2kml](https://github.com/stronnag/bbl2kml) 1.0.24 or later is rquired.
@@ -170,7 +169,6 @@ For the Debian package runtime dependencies:
 libadwaita-1-0 (>= 1.5~beta)
 libc6 (>= 2.38)
 libcairo2 (>= 1.2.4)
-libepoxy0 (>= 1.0)
 libgdk-pixbuf-2.0-0 (>= 2.22.0)
 libglib2.0-0t64 (>= 2.80.0)
 libgraphene-1.0-0 (>= 1.5.4)
@@ -193,7 +191,7 @@ Example packages:
 ```
 sudo apt install -y blueprint-compiler libprotobuf-c-dev \
   libvte-2.91-gtk4-dev libshumate-dev libpaho-mqtt-dev libgtk-4-dev \
-  libadwaita-1-dev libepoxy-dev libsecret-1-dev
+  libadwaita-1-dev libsecret-1-dev
 ```
 
 ### Ubuntu
@@ -213,7 +211,7 @@ Example package list:
 
 ```
 sudo dnf5 install -y libshumate-devel vte291-gtk4-devel protobuf-c-devel \
-	paho-c-devel blueprint-compiler gtk4-devel libepoxy-devel libsecret-devel
+	paho-c-devel blueprint-compiler gtk4-devel libsecret-devel
 ```
 
 ## Gsetting keys

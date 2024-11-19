@@ -3,7 +3,7 @@
 dnf groupinstall development-libs development-tools gnome-software-development
 dnf install gstreamer1-devel \
     libshumate-devel vte291-gtk4-devel protobuf-c-devel \
-    paho-c-devel blueprint-compiler gtk4-devel libepoxy-devel libsecret-devel \
+    paho-c-devel blueprint-compiler gtk4-devel libsecret-devel \
     gobject-introspection-devel vala vala-devel vala-doc \
     libgudev-devel espeak-devel \
     ncurses-devel ninja-build meson desktop-file-utils \

@@ -14,7 +14,6 @@
  *
  * (c) Jonathan Hudson <jh+mwptools@daria.co.uk>
  */
-extern int epoxy_glinfo();
 
 internal const string GSK_NOTICE="""Setting "GSK_RENDERER=cairo" for maximum GPU compatibility.
 	Export an alternate value from `~/.config/mwp/cmdopts`, `.profile`,
@@ -83,53 +82,51 @@ namespace Mwp {
 	}
 
 	public void get_gl_info() {
-		if(epoxy_glinfo() != 0) {
-			string strout;
-			string []glexes={"es2_info", "glinfo"};
-			foreach (var s in glexes) {
-					bool found = (Environment.find_program_in_path(s) != null);
-					if(found) {
-						StringBuilder sb = new StringBuilder();
-						try {
-							strout = "";
-							var subp = new Subprocess(SubprocessFlags.STDOUT_PIPE, s);
-							subp.communicate_utf8(null, null, out strout, null);
-							if(subp.get_successful()) {
-								if(strout.length > 0) {
-									int nm = 0;
-									string glversion=null;
-									string glvendor=null;
-									string glrenderer=null;
-									var parts = strout.split("\n");
-									foreach (var p in parts) {
-										if(p.has_prefix("GL_VERSION: ")) {
-											glversion = p["GL_VERSION: ".length:];
-											nm++;
-										} else if(p.has_prefix("GL_RENDERER: ")) {
-											glrenderer = p["GL_RENDERER: ".length:];
-											nm++;
-										} else if(p.has_prefix("GL_VENDOR: ")) {
-											glvendor = p["GL_VENDOR: ".length:];
-											nm++;
-										}
-										if(nm == 3) {
-											sb.append(glvendor);
-											sb.append_c(' ');
-											sb.append(glrenderer);
-											sb.append_c(' ');
-											sb.append(glversion);
-											sb.append_printf(" (%s)", s);
-											break;
-										}
-									}
+		string strout;
+		string []glexes={"es2_info", "glinfo"};
+		foreach (var s in glexes) {
+			bool found = (Environment.find_program_in_path(s) != null);
+			if(found) {
+				StringBuilder sb = new StringBuilder();
+				try {
+					strout = "";
+					var subp = new Subprocess(SubprocessFlags.STDOUT_PIPE, s);
+					subp.communicate_utf8(null, null, out strout, null);
+					if(subp.get_successful()) {
+						if(strout.length > 0) {
+							int nm = 0;
+							string glversion=null;
+							string glvendor=null;
+							string glrenderer=null;
+							var parts = strout.split("\n");
+							foreach (var p in parts) {
+								if(p.has_prefix("GL_VERSION: ")) {
+									glversion = p["GL_VERSION: ".length:];
+									nm++;
+								} else if(p.has_prefix("GL_RENDERER: ")) {
+									glrenderer = p["GL_RENDERER: ".length:];
+									nm++;
+								} else if(p.has_prefix("GL_VENDOR: ")) {
+									glvendor = p["GL_VENDOR: ".length:];
+									nm++;
 								}
-								MWPLog.message("GL: %s\n", sb.str);
-								break;
+								if(nm == 3) {
+									sb.append(glvendor);
+									sb.append_c(' ');
+									sb.append(glrenderer);
+									sb.append_c(' ');
+									sb.append(glversion);
+									sb.append_printf(" (%s)", s);
+									break;
+								}
 							}
-						} catch (Error e) {
-							MWPLog.message("%s : %s\n", s, e.message);
 						}
+						MWPLog.message("GL: %s\n", sb.str);
+						break;
 					}
+				} catch (Error e) {
+					MWPLog.message("%s : %s\n", s, e.message);
+				}
 			}
 		}
 	}

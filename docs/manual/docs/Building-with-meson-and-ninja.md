@@ -25,7 +25,6 @@ For any other distribution / platform / OS, any of the above documents should gi
 * blueprint-compiler (0.12.0)
 * libvte4
 * libadwaita-1 (1.5)
-* libepoxy
 * libsecret-1
 
 Numbers is parenthesis indicate a minimum version. Modern OS should be able to satisfy these requirements.
