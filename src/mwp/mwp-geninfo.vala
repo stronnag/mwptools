@@ -83,7 +83,7 @@ namespace Mwp {
 
 	public void get_gl_info() {
 		string strout;
-		string []glexes={"es2_info", "glinfo"};
+		string []glexes={"es2_info", "glxinfo"};
 		foreach (var s in glexes) {
 			bool found = (Environment.find_program_in_path(s) != null);
 			if(found) {
