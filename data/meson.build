@@ -1,4 +1,4 @@
-blpfiles = files(
+blpfiles = [
   'mwpmain.blp',
   'mwpmenu.blp',
   'mwpsc.blp',
@@ -30,20 +30,34 @@ blpfiles = files(
   'survey.blp',
   'surveymenu.blp',
   'gps_stats_dialog.blp'
-)
+]
+
+blueprints_ui = []
+blueprints_vala = []
+foreach b : blpfiles
+  blueprints_ui += b.replace('.blp', '.ui')
+  blueprints_vala += b + '.vala'
+endforeach
 
 blueprints = custom_target('blueprints',
-  input: blpfiles,
-  output: '.',
-  command: [find_program('blueprint-compiler'), 'batch-compile', '@OUTPUT@', '@CURRENT_SOURCE_DIR@', '@INPUT@'],
-)
+		           input: blpfiles,
+		           output: blueprints_ui,
+		           command: [find_program('blueprint-compiler'),
+                                     'batch-compile', '@OUTDIR@', '@CURRENT_SOURCE_DIR@', '@INPUT@'],
+                          )
+
+blueprints_hack = custom_target('blueprints_hack',
+                                input: blueprints,
+	                        output: blueprints_vala,
+		                command: [find_program('touch'), '@OUTPUT@'],
+			       )
 
 mresources = gnome.compile_resources(
   'm-resources',
   'mwp.gresource.xml',
   source_dir: 'data',
   c_name: 'm',
-  dependencies: [blueprints, blpfiles]
+  dependencies: [blueprints, ]
 )
 
 install_data (
