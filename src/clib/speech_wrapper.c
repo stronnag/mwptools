@@ -28,7 +28,7 @@
 #define API_SPEECHD 2
 #define API_FLITE 3
 
-extern void __attribute__((weak)) mwp_log_message(const gchar *format, ...);
+//extern void __attribute__((weak)) mwp_log_message(const gchar *format, ...);
 #if defined(USE_ESPEAK) || defined(USE_SPEECHD) || defined(USE_FLITE)
 
 static GModule *handle;
@@ -210,7 +210,7 @@ static cmulex_init_t fl_cmu;
 
 static int fl_init(char *vname) {
   if (FLITE_PROJECT_VERSION[0] < '2') {
-    mwp_log_message("flite requires version 2 or later, this is %s: disabling\n", FLITE_PROJECT_VERSION);
+    fprintf(stderr, ("flite requires version 2 or later, this is %s: disabling\n", FLITE_PROJECT_VERSION);
     goto out;
   }
 
@@ -288,7 +288,7 @@ static int fl_init(char *vname) {
         if (f != 0.0)
           (*fl_fsf)(voice->features, "duration_stretch", f);
         const char *name = (*fl_fstr)(voice->features, "name");
-        mwp_log_message("flite voice = %s\n", name);
+        fprintf(stderr, "flite voice = %s\n", name);
       }
     }
   }
@@ -317,7 +317,7 @@ unsigned char get_speech_api_mask() {
 
 static int ss_init(char *v) { return 0; }
 
-static void ss_say(char *t) { mwp_log_message ("null speech say %s\n", t); }
+ static void ss_say(char *t) { fprintf (stderr, "null speech say %s\n", t); }
 
 static void ss_close(void) {}
 
