@@ -1,3 +1,4 @@
 option('nogo', type : 'boolean', value : false)
 option('force-static', type : 'boolean', value : false)
 option('deprecations', type : 'boolean', value : false)
+option('extra-lib-paths', type : 'array')
