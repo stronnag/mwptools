@@ -113,15 +113,12 @@ namespace Mwp {
 									}
 								}  else {
 									if(p.has_prefix("    Version: ")) {
-										print("%s\n", p);
 										glversion = p["    Version: ".length:];
 										nm++;
 									} else if(p.has_prefix("    Device: ")) {
-										print("%s\n", p);
 										glrenderer = p["    Device: ".length:];
 										nm++;
 									} else if(p.has_prefix("    Vendor: ")) {
-										print("%s\n", p);
 										glvendor = p["    Vendor: ".length:];
 										nm++;
 									}
