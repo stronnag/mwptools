@@ -218,6 +218,12 @@ namespace Mwp {
 			setup_terminal_reboot();
 			follow_button.active = conf.autofollow;
 			show_window();
+			Timeout.add_once(1000, () => {
+				int w,h;
+				w = Mwp.window.get_width();
+				h = Mwp.window.get_height();
+				MWPLog.message(":DBG: windows %dx%d\n", w,  h);
+				});
 		}
 
 		public async bool waiter() {
@@ -292,6 +298,8 @@ namespace Mwp {
 				}
 			}
 			DemManager.init();
+
+
 			Gis.init();
 			Gis.map.viewport.notify["zoom-level"].connect(() => {
 					var val = (int)Gis.map.viewport.zoom_level;
@@ -350,13 +358,25 @@ namespace Mwp {
 			hwstatus[0] = 1; // Assume OK
 			Msp.init();
 			Gis.map.add_controller(gestc);
-			split_view.sidebar_width_unit = Adw.LengthUnit.SP;
+
+			var mlu= Environment.get_variable("MWP_LENGTH_UNIT");
+			if(mlu != null) {
+				var nlu = int.parse(mlu);
+				if (nlu >= 0 && nlu < 3) {
+					split_view.sidebar_width_unit = (Adw.LengthUnit)nlu;
+					MWPLog.message(":DBG: set sidebar_width_unit=%d\n", nlu);
+				}
+			} else {
+				split_view.sidebar_width_unit = Adw.LengthUnit.SP;
+			}
 			int fw,fh;
 			check_pango_size(this, "Monospace", "_00:00:00.0N 000.00.00.0W_", out fw, out fh);
 			// Must match 150% scaling in flight_view
+			MWPLog.message(":DBG: sidebar initial width=%d\n", fw);
 			fw = 2+(150*fw)/100;
 			if(conf.sidebar_scale_factor != 0) {
 				fw = (int)((double)fw*conf.sidebar_scale_factor);
+				MWPLog.message(":DBG: sidebar scaled width=%d (%.3f)\n", fw, conf.sidebar_scale_factor);
 			}
 			split_view.min_sidebar_width = fw;
 			split_view.content = Gis.overlay;
