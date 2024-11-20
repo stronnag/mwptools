@@ -388,12 +388,31 @@ namespace Mwp {
 				pane.set_end_child(new Panel.Box());
 				pane.wide_handle = true;
 				pane.position = init_w - fw;
+
 				pane.shrink_end_child = false;
 				pane.resize_end_child = false;
 				toaster.set_child(pane);
 				show_sidebar_button.clicked.connect(() => {
 						pane.end_child.visible  = show_sidebar_button.active;
 					});
+				{
+					var w = pane.get_first_child();
+					while (w != null) {
+						var s = w.get_type().name();
+						if (s == "GtkPanedHandle") {
+							var pevtck = new Gtk.EventControllerMotion();
+							w.add_controller(pevtck);
+							pevtck.leave.connect(() => {
+									var ww = window.get_width();
+									var pw = ww - pane.position;
+									MWPLog.message(":DBG: PANE Pw=%d pos=%d ww=%d\n", pw, pane.position, ww);
+									MWPLog.message(":DBG: PANE init_w=%d fw=%d\n", init_w, fw);
+								});
+							break;
+						}
+						w = w.get_next_sibling();
+					}
+				}
 			}
 
 			Gis.setup_map_sources(mapdrop);
