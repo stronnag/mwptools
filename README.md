@@ -53,7 +53,7 @@ There is am [online user guide](https://stronnag.github.io/mwptools/).
 
 ## Platforms and OS
 
-The tools are designed to be portable and as far as possible platform and hardware agnostic. The suite is developed on Arch Linux and is additionally tested on Alpine (Edge), Debian (Trixie / Sid), Fedora (current)  and FreeBSD (current release) (at least).
+The tools are designed to be portable and as far as possible platform and hardware agnostic. The suite is developed on Arch Linux and is additionally tested on Alpine (Edge), Debian (Trixie / Sid), Fedora (current)  and FreeBSD (current release) (at least). It is also possible to build and run mwp on MacOS (from mwptools 2024.11.20).
 
 mwp should  build and run on any platform that provides modern Gtk and POSIX APIs.
 

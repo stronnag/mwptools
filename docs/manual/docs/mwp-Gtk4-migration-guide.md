@@ -12,6 +12,7 @@ This document describes the migration from legacy (Gtk+-3.0) mwp to contemporary
     * Debian "Trixie" / "Sid" (and derivatives)
     * Fedora 40+
     * FreeBSD 14+
+	* MacOS (recent)
 
 ### Specific components
 
@@ -214,6 +215,14 @@ sudo dnf5 install -y libshumate-devel vte291-gtk4-devel protobuf-c-devel \
 	paho-c-devel blueprint-compiler gtk4-devel libsecret-devel
 ```
 
+### MacOS
+
+Requires mwptools 2024.11.20 or later.
+
+* Use Homebrew to install required packages (names may be evinced from the Linux docs)
+* Follow generic instructions for `meson` and `ninja`
+
+
 ## Gsetting keys
 
 ### List of mwp settings
@@ -280,6 +289,7 @@ sudo dnf5 install -y libshumate-devel vte291-gtk4-devel protobuf-c-devel \
 | mission-path | Directory for mission files | Directory for mission files, default = current directory | "" |
 | msp2-adsb | MSP2_ADSB_VEHICLE_LIST usage | Options for requesting MSP2_ADSB_VEHICLE_LIST. "off": never request, "on:" always request, "auto:" heuristic based on serial settings / bandwidth | "off" |
 | osd-mode | Data items overlaid on the map | 0 = none, 1 = current WP/Max WP, 2 = next WP distance and course. This is a mask, so 3 means both OSD items. | 3 |
+| p-pane-width | Private setting | Please do not change this unless you appreciate the consequences | 0 |
 | poll-timeout | Poll messages timeout (ms) | Timeout in milliseconds for telemetry poll messages. Note that timer loop has a resolution of 100ms. | 900 |
 | pos-is-centre | Determines position label content | Whether the position label is the centre or pointer location | false |
 | radar-alert-altitude | Altitude below which ADS-B alerts may be generated | Target altitude (metres) below which ADS-B proximity alerts may be generated. Requires that 'radar-alert-range' is also set (non-zero). Setting to 0 disables. Note that ADS-B altitudes are AMSL (or geoid). | 0 |
@@ -289,7 +299,7 @@ sudo dnf5 install -y libshumate-devel vte291-gtk4-devel protobuf-c-devel \
 | rth-autoland | Set land on RTH waypoints | Automatically assert land on RTH waypoints | false |
 | say-bearing | Whether audio report includes bearing | Whether audio report includes bearing | true |
 | show-sticks | Whether to show sticks in log replay | If "yes", stick position is shown bottom right during log replay, if "no" , never shown. If "icon", then it shown iconified (bottom right) | "icon" |
-| sidebar-scale-factor | Sidebar scaling | Scales the sidebar size, default 0.0 disables scaling. Most users should not need to change this | 0.0 |
+| sidebar-type | Sidebar type | Options for the sidebar type. Unless you know better, leave at auto | "auto" |
 | smartport-fuel-unit | User selected fuel type | Units label for smartport fuel (none, %, mAh, mWh) | "none" |
 | speak-amps | When to speak amps/hr used | none, live-n, all-n n=1,2,4 : n = how often spoken (modulus basically) | "none" |
 | speak-interval | Interval between voice prompts | Interval between voice prompts, 0 disables | 15 |

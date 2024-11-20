@@ -16,6 +16,8 @@ For Fedora, the is a also a documented list of packages.
 
 For Arch, the `PKGBLD` lists the required packages.
 
+For MacOS, use Homebrew to install required packages, having evinced the names from one of the Linux guides.
+
 For any other distribution / platform / OS, any of the above documents should give you an idea of the packages required, typically:
 
 * Gtk4 (4.14)
