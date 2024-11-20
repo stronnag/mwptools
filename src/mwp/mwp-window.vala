@@ -222,7 +222,7 @@ namespace Mwp {
 					int w,h;
 					w = Mwp.window.get_width();
 					h = Mwp.window.get_height();
-					MWPLog.message(":DBG: windows %dx%d\n", w,  h);
+					MWPLog.message(":DBG: window actual %dx%d\n", w,  h);
 				});
 		}
 
