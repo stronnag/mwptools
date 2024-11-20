@@ -56,8 +56,6 @@ namespace Mwp {
 		[GtkChild]
 		internal unowned Adw.ToastOverlay toaster;
 		[GtkChild]
-		internal unowned Adw.OverlaySplitView split_view;
-		[GtkChild]
 		internal unowned Gtk.SpinButton zoomlevel;
 		[GtkChild]
 		internal unowned Gtk.Label poslabel;
@@ -117,6 +115,8 @@ namespace Mwp {
 		internal unowned Gtk.CheckButton audio_cb;
 		[GtkChild]
 		internal unowned Gtk.Button arm_warn;
+		[GtkChild]
+		internal unowned Gtk.ToggleButton show_sidebar_button;
 
 		private StrIntStore pis;
 		private Mwp.GotoDialog posdialog;
@@ -219,10 +219,10 @@ namespace Mwp {
 			follow_button.active = conf.autofollow;
 			show_window();
 			Timeout.add_once(1000, () => {
-				int w,h;
-				w = Mwp.window.get_width();
-				h = Mwp.window.get_height();
-				MWPLog.message(":DBG: windows %dx%d\n", w,  h);
+					int w,h;
+					w = Mwp.window.get_width();
+					h = Mwp.window.get_height();
+					MWPLog.message(":DBG: windows %dx%d\n", w,  h);
 				});
 		}
 
@@ -287,18 +287,21 @@ namespace Mwp {
 		}
 
 		private void show_window() {
+			int init_w;
+			int init_h;
+			Gdk.Rectangle r;
+			Misc.get_primary_size(out r);
+			init_w = r.width;
+			init_h = r.height;
 			if (!no_max) {
 				maximize();
 			} else {
-				Gdk.Rectangle r;
-				if(Misc.get_primary_size(out r)) {
-					int w = (r.width*conf.window_scale)/100;
-					int h = (r.height*conf.window_scale)/100;
-					set_default_size(w, h);
-				}
+				init_w = (init_w*conf.window_scale)/100;
+				init_h = (init_h*conf.window_scale)/100;
 			}
+			set_default_size(init_w, init_h);
+			MWPLog.message(":DBG: Win init %d %d %d %d\n", r.width, r.height, init_w, init_h);
 			DemManager.init();
-
 
 			Gis.init();
 			Gis.map.viewport.notify["zoom-level"].connect(() => {
@@ -359,16 +362,6 @@ namespace Mwp {
 			Msp.init();
 			Gis.map.add_controller(gestc);
 
-			var mlu= Environment.get_variable("MWP_LENGTH_UNIT");
-			if(mlu != null) {
-				var nlu = int.parse(mlu);
-				if (nlu >= 0 && nlu < 3) {
-					split_view.sidebar_width_unit = (Adw.LengthUnit)nlu;
-					MWPLog.message(":DBG: set sidebar_width_unit=%d\n", nlu);
-				}
-			} else {
-				split_view.sidebar_width_unit = Adw.LengthUnit.SP;
-			}
 			int fw,fh;
 			check_pango_size(this, "Monospace", "_00:00:00.0N 000.00.00.0W_", out fw, out fh);
 			// Must match 150% scaling in flight_view
@@ -378,13 +371,64 @@ namespace Mwp {
 				fw = (int)((double)fw*conf.sidebar_scale_factor);
 				MWPLog.message(":DBG: sidebar scaled width=%d (%.3f)\n", fw, conf.sidebar_scale_factor);
 			}
-			split_view.min_sidebar_width = fw;
-			split_view.content = Gis.overlay;
+			bool use_split = Environment.get_variable("MWP_USE_PANED") == null;
+			MWPLog.message(":DBG: USE_PANED is %s\n", !use_split.to_string());
+			if(use_split) {
+				Adw.OverlaySplitView split_view = new 	Adw.OverlaySplitView();
+				split_view.vexpand = true;
+				split_view.sidebar_position = Gtk.PackType.END;
+				toaster.set_child(split_view);
+				show_sidebar_button.clicked.connect(() => {
+						split_view.show_sidebar = show_sidebar_button.active;
+					});
+				var mlu= Environment.get_variable("MWP_LENGTH_UNIT");
+				if(mlu != null) {
+					var nlu = int.parse(mlu);
+					if (nlu >= 0 && nlu < 3) {
+						split_view.sidebar_width_unit = (Adw.LengthUnit)nlu;
+						MWPLog.message(":DBG: set sidebar_width_unit=%d\n", nlu);
+					}
+				} else {
+					split_view.sidebar_width_unit = Adw.LengthUnit.SP;
+				}
+				split_view.min_sidebar_width = fw;
+				split_view.content = Gis.overlay;
+				split_view.sidebar = new Panel.Box();
+			} else {
+				Gtk.Paned pane = new Gtk.Paned(Gtk.Orientation.HORIZONTAL);
+				pane.set_start_child(Gis.overlay);
+				pane.set_end_child(new Panel.Box());
+				pane.wide_handle = true;
+				pane.position = init_w - fw;
+				toaster.set_child(pane);
+				window.notify["default-width"].connect(() => {
+						MWPLog.message(":DBG: Window event %d %d\n",
+									   window.get_width(), window.get_height());
+						pane.position = window.get_width() - fw;
+					});
+			}
+
+			((Gtk.Widget)window).notify["width"].connect(() => {
+					MWPLog.message(":DBG: Window event ACT WIDTH\n");
+				});
+			((Gtk.Window)window).notify["default-width"].connect(() => {
+					MWPLog.message(":DBG: Window event DEF WIDTH\n");
+				});
+			((Gtk.Window)window).notify["default-height"].connect(() => {
+					MWPLog.message(":DBG: Window event HEIGHT\n");
+				});
+			((Gtk.Window)window).notify["maximised"].connect(() => {
+					MWPLog.message(":DBG: Window event MAXIMISED\n");
+				});
+			((Gtk.Window)window).notify["fullscreen"].connect(() => {
+					MWPLog.message(":DBG: Window event FS\n");
+				});
+
 			Gis.setup_map_sources(mapdrop);
 			FWPlot.init();
 			MissionManager.init();
 			Safehome.manager = new SafeHomeDialog();
-			Mwp.window.split_view.sidebar = new Panel.Box();
+
 			dtnotify = new MwpNotify();
 			Cli.handle_options();
 			Radar.init();
