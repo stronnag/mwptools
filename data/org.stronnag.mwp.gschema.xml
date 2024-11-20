@@ -587,6 +587,12 @@
       <description>0=m, 1=ft, 2=FL</description>
     </key>
 
+    <key name="p-pane-width" type="i">
+      <default>0</default>
+      <summary>Private setting</summary>
+      <description>Please do not change this unless you appreciate the consequences</description>
+    </key>
+
     <key name="ga-range" type="i">
       <default>0</default>
       <summary>Units for GA Range</summary>

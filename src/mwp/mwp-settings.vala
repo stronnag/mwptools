@@ -108,7 +108,7 @@ public class MWPSettings : GLib.Object {
 	public int window_scale {get; set; default=80;}
 	public int ident_limit  {get; set; default=60;}
 	public double touch_factor {get; set; default=0.0;}
-
+	public int p_pane_width {get; set; default=0;}
 	public signal void settings_update (string s);
 
 	construct {
@@ -203,6 +203,7 @@ public class MWPSettings : GLib.Object {
 		settings.bind("wp-spotlight", this, "wp-spotlight", SettingsBindFlags.DEFAULT);
 		settings.bind("wp-text-style", this, "wp-text", SettingsBindFlags.DEFAULT);
 		settings.bind("zone-detect", this, "zone-detect", SettingsBindFlags.DEFAULT);
+		settings.bind("p-pane-width", this, "p-pane-width", SettingsBindFlags.DEFAULT);
 	}
 
     public MWPSettings() {
