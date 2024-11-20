@@ -56,8 +56,6 @@ namespace Mwp {
 		[GtkChild]
 		internal unowned Adw.ToastOverlay toaster;
 		[GtkChild]
-		internal unowned Adw.OverlaySplitView split_view;
-		[GtkChild]
 		internal unowned Gtk.SpinButton zoomlevel;
 		[GtkChild]
 		internal unowned Gtk.Label poslabel;
@@ -117,6 +115,8 @@ namespace Mwp {
 		internal unowned Gtk.CheckButton audio_cb;
 		[GtkChild]
 		internal unowned Gtk.Button arm_warn;
+		[GtkChild]
+		internal unowned Gtk.ToggleButton show_sidebar_button;
 
 		private StrIntStore pis;
 		private Mwp.GotoDialog posdialog;
@@ -281,17 +281,21 @@ namespace Mwp {
 		}
 
 		private void show_window() {
+			int init_w;
+			int init_h;
+			Gdk.Rectangle r;
+			Misc.get_primary_size(out r);
+			init_w = r.width;
+			init_h = r.height;
 			if (!no_max) {
 				maximize();
 			} else {
-				Gdk.Rectangle r;
-				if(Misc.get_primary_size(out r)) {
-					int w = (r.width*conf.window_scale)/100;
-					int h = (r.height*conf.window_scale)/100;
-					set_default_size(w, h);
-				}
+				init_w = (init_w*conf.window_scale)/100;
+				init_h = (init_h*conf.window_scale)/100;
 			}
+			set_default_size(init_w, init_h);
 			DemManager.init();
+
 			Gis.init();
 			Gis.map.viewport.notify["zoom-level"].connect(() => {
 					var val = (int)Gis.map.viewport.zoom_level;
@@ -350,21 +354,53 @@ namespace Mwp {
 			hwstatus[0] = 1; // Assume OK
 			Msp.init();
 			Gis.map.add_controller(gestc);
-			split_view.sidebar_width_unit = Adw.LengthUnit.SP;
+
 			int fw,fh;
 			check_pango_size(this, "Monospace", "_00:00:00.0N 000.00.00.0W_", out fw, out fh);
 			// Must match 150% scaling in flight_view
 			fw = 2+(150*fw)/100;
-			if(conf.sidebar_scale_factor != 0) {
-				fw = (int)((double)fw*conf.sidebar_scale_factor);
+
+			var pane_type = conf.pane_type;
+			if(conf.pane_type == 0) {
+				var u = Posix.utsname();
+				if (u.sysname == "Darwin") {
+					pane_type = 2;
+				} else {
+					pane_type = 1;
+				}
 			}
-			split_view.min_sidebar_width = fw;
-			split_view.content = Gis.overlay;
+
+			if(pane_type == 1) {
+				Adw.OverlaySplitView split_view = new 	Adw.OverlaySplitView();
+				split_view.vexpand = true;
+				split_view.sidebar_position = Gtk.PackType.END;
+				toaster.set_child(split_view);
+				show_sidebar_button.clicked.connect(() => {
+						split_view.show_sidebar = show_sidebar_button.active;
+					});
+				split_view.sidebar_width_unit = Adw.LengthUnit.SP;
+				split_view.min_sidebar_width = fw;
+				split_view.content = Gis.overlay;
+				split_view.sidebar = new Panel.Box();
+			} else {
+				Gtk.Paned pane = new Gtk.Paned(Gtk.Orientation.HORIZONTAL);
+				pane.set_start_child(Gis.overlay);
+				pane.set_end_child(new Panel.Box());
+				pane.wide_handle = true;
+				pane.position = init_w - fw;
+				pane.shrink_end_child = false;
+				pane.resize_end_child = false;
+				toaster.set_child(pane);
+				show_sidebar_button.clicked.connect(() => {
+						pane.end_child.visible  = show_sidebar_button.active;
+					});
+			}
+
 			Gis.setup_map_sources(mapdrop);
 			FWPlot.init();
 			MissionManager.init();
 			Safehome.manager = new SafeHomeDialog();
-			Mwp.window.split_view.sidebar = new Panel.Box();
+
 			dtnotify = new MwpNotify();
 			Cli.handle_options();
 			Radar.init();

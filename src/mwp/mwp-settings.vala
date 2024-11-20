@@ -97,6 +97,7 @@ public class MWPSettings : GLib.Object {
     public int show_sticks {get; set; default=2;}
     public uint view_mode {get; set; default=0;}
     public int msp2_adsb {get; set; default=0;}
+    public int pane_type {get; set; default=0;}
 	public int los_margin {get; set; default=0;}
 	public bool bluez_disco {get; set; default=true;}
 	public bool autoload_geozones {get; set; default=false;}
@@ -107,7 +108,6 @@ public class MWPSettings : GLib.Object {
 	public int window_scale {get; set; default=80;}
 	public int ident_limit  {get; set; default=60;}
 	public double touch_factor {get; set; default=0.0;}
-	public double sidebar_scale_factor {get; set; default=0.0;}
 
 	public signal void settings_update (string s);
 
@@ -188,7 +188,6 @@ public class MWPSettings : GLib.Object {
 		settings.bind("rings-colour", this, "rcolstr", SettingsBindFlags.DEFAULT);
 		settings.bind("rth-autoland", this, "rth-autoland", SettingsBindFlags.DEFAULT);
 		settings.bind("say-bearing", this, "say-bearing", SettingsBindFlags.DEFAULT);
-		settings.bind("sidebar-scale-factor", this, "sidebar-scale-factor", SettingsBindFlags.DEFAULT);
 		settings.bind("speak-interval", this, "speakint", SettingsBindFlags.DEFAULT);
 		settings.bind("speech-api", this, "speech-api", SettingsBindFlags.DEFAULT);
 		settings.bind("speechd-voice", this, "svoice", SettingsBindFlags.DEFAULT);
@@ -212,6 +211,7 @@ public class MWPSettings : GLib.Object {
 		speak_amps = settings.get_enum("speak-amps");
 		show_sticks = settings.get_enum("show-sticks");
 		msp2_adsb = settings.get_enum("msp2-adsb");
+		pane_type = settings.get_enum("sidebar-type");
 		smartport_fuel = settings.get_enum("smartport-fuel-unit");
 		devices = settings.get_strv ("device-names");
 		if (devices == null) {
