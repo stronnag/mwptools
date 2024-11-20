@@ -372,7 +372,7 @@ namespace Mwp {
 				MWPLog.message(":DBG: sidebar scaled width=%d (%.3f)\n", fw, conf.sidebar_scale_factor);
 			}
 			bool use_split = Environment.get_variable("MWP_USE_PANED") == null;
-			MWPLog.message(":DBG: USE_PANED is %s\n", !use_split.to_string());
+			MWPLog.message(":DBG: USE_PANED is %s\n", (!use_split).to_string());
 			if(use_split) {
 				Adw.OverlaySplitView split_view = new 	Adw.OverlaySplitView();
 				split_view.vexpand = true;
