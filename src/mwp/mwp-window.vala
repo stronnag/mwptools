@@ -400,11 +400,11 @@ namespace Mwp {
 				pane.set_end_child(new Panel.Box());
 				pane.wide_handle = true;
 				pane.position = init_w - fw;
+				pane.shrink_end_child = false;
+				pane.resize_end_child = false;
 				toaster.set_child(pane);
-				window.notify["default-width"].connect(() => {
-						MWPLog.message(":DBG: Window event %d %d\n",
-									   window.get_width(), window.get_height());
-						pane.position = window.get_width() - fw;
+				show_sidebar_button.clicked.connect(() => {
+						pane.end_child.visible  = show_sidebar_button.active;
 					});
 			}
 
