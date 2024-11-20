@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/mwp_icon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.43">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.44">
     
     
       
@@ -507,6 +507,15 @@
   <a href="#fedora" class="md-nav__link">
     <span class="md-ellipsis">
       Fedora
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#macos" class="md-nav__link">
+    <span class="md-ellipsis">
+      MacOS
     </span>
   </a>
   
@@ -1505,6 +1514,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#macos" class="md-nav__link">
+    <span class="md-ellipsis">
+      MacOS
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1572,6 +1590,7 @@
 <li>Debian "Trixie" / "Sid" (and derivatives)</li>
 <li>Fedora 40+</li>
 <li>FreeBSD 14+</li>
+<li>MacOS (recent)</li>
 </ul>
 </li>
 </ul>
@@ -1585,7 +1604,6 @@
 <li>blueprint-compiler (0.12.0)</li>
 <li>libvte4</li>
 <li>libadwaita-1 1.5</li>
-<li>libepoxy</li>
 <li>libsecret-1</li>
 </ul>
 <p>For replaying blackbox log, <a href="https://github.com/stronnag/bbl2kml">bbl2kml</a> 1.0.24 or later is rquired.</p>
@@ -1721,7 +1739,6 @@ volts, 3, 0
 <p><div class="highlight"><pre><span></span><code>libadwaita-1-0 (&gt;= 1.5~beta)
 libc6 (&gt;= 2.38)
 libcairo2 (&gt;= 1.2.4)
-libepoxy0 (&gt;= 1.0)
 libgdk-pixbuf-2.0-0 (&gt;= 2.22.0)
 libglib2.0-0t64 (&gt;= 2.80.0)
 libgraphene-1.0-0 (&gt;= 1.5.4)
@@ -1742,7 +1759,7 @@ libxml2 (&gt;= 2.7.4)
 Example packages:</p>
 <div class="highlight"><pre><span></span><code>sudo apt install -y blueprint-compiler libprotobuf-c-dev \
   libvte-2.91-gtk4-dev libshumate-dev libpaho-mqtt-dev libgtk-4-dev \
-  libadwaita-1-dev libepoxy-dev libsecret-1-dev
+  libadwaita-1-dev libsecret-1-dev
 </code></pre></div>
 <h3 id="ubuntu">Ubuntu<a class="headerlink" href="#ubuntu" title="Permanent link">#</a></h3>
 <p>The Ubuntu 24.04 version of <code>meson</code> is too old. A more update version may be installed locally using <code>pipx</code>. For Ubuntu 24.10, the distro version is adequate.</p>
@@ -1753,8 +1770,14 @@ pipx install meson
 <h3 id="fedora">Fedora<a class="headerlink" href="#fedora" title="Permanent link">#</a></h3>
 <p>Example package list:</p>
 <div class="highlight"><pre><span></span><code>sudo dnf5 install -y libshumate-devel vte291-gtk4-devel protobuf-c-devel \
-    paho-c-devel blueprint-compiler gtk4-devel libepoxy-devel libsecret-devel
+    paho-c-devel blueprint-compiler gtk4-devel libsecret-devel
 </code></pre></div>
+<h3 id="macos">MacOS<a class="headerlink" href="#macos" title="Permanent link">#</a></h3>
+<p>Requires mwptools 2024.11.20 or later.</p>
+<ul>
+<li>Use Homebrew to install required packages (names may be evinced from the Linux docs)</li>
+<li>Follow generic instructions for <code>meson</code> and <code>ninja</code></li>
+</ul>
 <h2 id="gsetting-keys">Gsetting keys<a class="headerlink" href="#gsetting-keys" title="Permanent link">#</a></h2>
 <h3 id="list-of-mwp-settings">List of mwp settings<a class="headerlink" href="#list-of-mwp-settings" title="Permanent link">#</a></h3>
 <table>
@@ -2128,6 +2151,12 @@ pipx install meson
 <td>3</td>
 </tr>
 <tr>
+<td>p-pane-width</td>
+<td>Private setting</td>
+<td>Please do not change this unless you appreciate the consequences</td>
+<td>0</td>
+</tr>
+<tr>
 <td>poll-timeout</td>
 <td>Poll messages timeout (ms)</td>
 <td>Timeout in milliseconds for telemetry poll messages. Note that timer loop has a resolution of 100ms.</td>
@@ -2180,6 +2209,12 @@ pipx install meson
 <td>Whether to show sticks in log replay</td>
 <td>If "yes", stick position is shown bottom right during log replay, if "no" , never shown. If "icon", then it shown iconified (bottom right)</td>
 <td>"icon"</td>
+</tr>
+<tr>
+<td>sidebar-type</td>
+<td>Sidebar type</td>
+<td>Options for the sidebar type. Unless you know better, leave at auto</td>
+<td>"auto"</td>
 </tr>
 <tr>
 <td>smartport-fuel-unit</td>
