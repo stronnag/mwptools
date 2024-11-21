@@ -44,7 +44,7 @@ The `radar-device` option is defined by the standard {{ mwp }} naming scheme:
 	* `http://jagular/dump1090/data/aircraft.json`
 * A `readsb` protobuf source, defined by a special URI:
     * `pba://[[host][:port]]` (requires `adsbpbsrv` on the SDR host).
-  Host and port are optional, defaulting to `localhost` and `38008`. So the minimal "URI" is `jsa://`.
+  Host and port are optional, defaulting to `localhost` and `38008`. So the minimal "URI" is `pba://`.
 * A `dump1090` JSON source, defined by a special URI:
     * `jsa://[[host][:port]]` (requires `jsacsrv` on the SDR host).
   Host and port are optional, defaulting to `localhost` and `37007`. So the minimal "URI" is `jsa://`.
