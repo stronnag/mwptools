@@ -659,9 +659,57 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#sourcesjson" class="md-nav__link">
+  <a href="#map-sources" class="md-nav__link">
     <span class="md-ellipsis">
-      sources.json
+      Map Sources
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Map Sources">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mapbox-api-key-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mapbox API Key management
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Mapbox API Key management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#keyring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyring
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gsettings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gsettings
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional-map-sources-sourcesjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      Additional Map Sources: sources.json
     </span>
   </a>
   
@@ -1367,9 +1415,57 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#sourcesjson" class="md-nav__link">
+  <a href="#map-sources" class="md-nav__link">
     <span class="md-ellipsis">
-      sources.json
+      Map Sources
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Map Sources">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mapbox-api-key-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mapbox API Key management
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Mapbox API Key management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#keyring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyring
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gsettings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gsettings
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional-map-sources-sourcesjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      Additional Map Sources: sources.json
     </span>
   </a>
   
@@ -1581,7 +1677,31 @@ MWP_BLACK_TILE=/home/jrh/.config/mwp/mars.png
 </code></pre>
 <p>So here the only current, valid options are  <code>--rings 50,20 --dont-maximise</code>, and the <a href="#environment-variables">environment variable</a> MWP_BLACK_TILE is set (for <a href="../Black-Ops/#custom-tile">anonymous maps</a>).</p>
 <p>The environment is set before any GTK / UI calls are made.</p>
-<h2 id="sourcesjson"><code>sources.json</code><a class="headerlink" href="#sourcesjson" title="Permanent link">#</a></h2>
+<h2 id="map-sources">Map Sources<a class="headerlink" href="#map-sources" title="Permanent link">#</a></h2>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> provides by default:</p>
+<ul>
+<li>OpenStreetMap Mapnik</li>
+<li>OpenStreetMap Cycle Map</li>
+<li>OpenStreetMap Transport Map</li>
+<li>Maps for Free Relief</li>
+<li>Bing Maps (no API key required, for as long as the service remains available).</li>
+<li>MapBox (requires API key)</li>
+</ul>
+<h3 id="mapbox-api-key-management">Mapbox API Key management<a class="headerlink" href="#mapbox-api-key-management" title="Permanent link">#</a></h3>
+<p>In preparation for the announced removal of the Bing Maps service, <code>mwp</code> adds a <code>MapBox</code> entry where the user has acquired a <a href="https://mapbox.com/">Mapbox API key</a>.</p>
+<p>This key may be either stored in the Desktop keyring (managed by <code>libsecret</code>) or as a plain text string in the <code>gsettings</code> database.</p>
+<h4 id="keyring">Keyring<a class="headerlink" href="#keyring" title="Permanent link">#</a></h4>
+<p>Add to the keyring using <code>secret-tool</code> with the following attributes:</p>
+<div class="highlight"><pre><span></span><code>secret-tool store --label=&quot;Mapbox API&quot; name mapbox-api-key domain org.stronnag.mwp
+Password: *************************************************
+</code></pre></div>
+<h4 id="gsettings">Gsettings<a class="headerlink" href="#gsettings" title="Permanent link">#</a></h4>
+<p>Alternatively, the key can be added to the <code>gsettings</code> database:
+<div class="highlight"><pre><span></span><code> gsettings set org.stronnag.mwp mapbox-apikey &#39;pk.xxxxxxx&#39;
+ # where &#39;pk.xxxxxxx&#39; is your MapBox API Key
+</code></pre></div></p>
+<p>Note that sadly <code>libshumate</code> creates a cache directory name from which the MapBox access token may be recovered, so there is little security / privacy gain by using the secret key-ring, alas. See <a href="https://gitlab.gnome.org/GNOME/libshumate/-/issues/84">Gitlab issue</a>.</p>
+<h2 id="additional-map-sources-sourcesjson">Additional Map Sources: <code>sources.json</code><a class="headerlink" href="#additional-map-sources-sourcesjson" title="Permanent link">#</a></h2>
 <p><code>sources.json</code> facilitates adding non-standard map sources to <a href="https://github.com/stronnag/mwptools">mwp</a>. See the  <a href="../Black-Ops/#custom-tile">anonymous maps</a> section and comments in the source files in the <code>qproxy</code> directory.</p>
 <p>Here is an example <code>mwptools/src/samples/sources.json</code>.</p>
 <pre><code>{
