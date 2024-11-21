@@ -67,7 +67,43 @@ So here the only current, valid options are  `--rings 50,20 --dont-maximise`, an
 
 The environment is set before any GTK / UI calls are made.
 
-## `sources.json`
+## Map Sources
+
+{{ mwp }} provides by default:
+
+* OpenStreetMap Mapnik
+* OpenStreetMap Cycle Map
+* OpenStreetMap Transport Map
+* Maps for Free Relief
+* Bing Maps (no API key required, for as long as the service remains available).
+* MapBox (requires API key)
+
+### Mapbox API Key management
+
+In preparation for the announced removal of the Bing Maps service, `mwp` adds a `MapBox` entry where the user has acquired a [Mapbox API key](https://mapbox.com/).
+
+This key may be either stored in the Desktop keyring (managed by `libsecret`) or as a plain text string in the `gsettings` database.
+
+#### Keyring
+
+Add to the keyring using `secret-tool` with the following attributes:
+
+```
+secret-tool store --label="Mapbox API" name mapbox-api-key domain org.stronnag.mwp
+Password: *************************************************
+```
+
+#### Gsettings
+
+Alternatively, the key can be added to the `gsettings` database:
+```
+ gsettings set org.stronnag.mwp mapbox-apikey 'pk.xxxxxxx'
+ # where 'pk.xxxxxxx' is your MapBox API Key
+```
+
+Note that sadly `libshumate` creates a cache directory name from which the MapBox access token may be recovered, so there is little security / privacy gain by using the secret key-ring, alas. See [Gitlab issue](https://gitlab.gnome.org/GNOME/libshumate/-/issues/84).
+
+## Additional Map Sources: `sources.json`
 
 `sources.json` facilitates adding non-standard map sources to {{ mwp }}. See the  [anonymous maps](Black-Ops.md#custom-tile) section and comments in the source files in the `qproxy` directory.
 
