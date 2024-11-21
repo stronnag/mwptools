@@ -257,12 +257,13 @@ namespace MissionManager {
 
 	public void zoom_to_mission() {
 		var _ms = current();
+
 		if (_ms != null) {
 			var cx = _ms.cx;
 			var cy = _ms.cy;
 			if(cx == 0 || cy == 0) {
-				cx = _ms.homey;
-				cy = _ms.homex;
+				cy = _ms.homey;
+				cx = _ms.homex;
 			}
 			var zoom = _ms.zoom;
 			if (zoom <= 0) {
@@ -271,7 +272,7 @@ namespace MissionManager {
 				b.maxlat = _ms.maxy;
 				b.minlon = _ms.minx;
 				b.maxlon = _ms.maxx;
-				zoom = MapUtils.evince_zoom(b);
+				zoom = MapUtils.evince_zoom(b)+1;
 			}
 			Mwp.set_zoom_sanely(zoom);
 			MapUtils.centre_on(cy, cx);
