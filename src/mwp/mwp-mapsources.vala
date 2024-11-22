@@ -344,6 +344,7 @@ namespace MapManager {
 					if (parts.length == 3) {
 						sb.append_c(' ');
 						sb.append(parts[2]); // has LP
+						sb.append_c('\n');
 					} else {
 						sb.append(" unknown error\n"); // has LP
 					}
