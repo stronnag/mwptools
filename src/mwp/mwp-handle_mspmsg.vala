@@ -426,8 +426,10 @@ namespace Mwp {
 				if (mbuf.length > 0) {
 					queue_cmd(Msp.Cmds.SET_GEOZONE_VERTEX, mbuf, mbuf.length);
 				} else {
-					reset_poller();
-
+					// allow saving of empty zone set
+					MWPLog.message("Geozone vertices upload completed\n");
+					wpmgr.wp_flag = WPDL.RESET_POLLER|WPDL.REBOOT; // abusive ... ish
+					queue_cmd(Msp.Cmds.EEPROM_WRITE,null, 0);
 				}
 			}
 			break;

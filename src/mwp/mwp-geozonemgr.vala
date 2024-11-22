@@ -102,6 +102,13 @@ public class GeoZoneManager {
 				return false;
 			}
 		}
+
+		/*
+		 * This would allow non-sequential zones ...
+		while (zs[_nextz].vrec == 0 && _nextz <  MAXGZ-1) {
+			_nextz++;
+		}
+		*/
 		if (zs[_nextz].vrec == 0) {
 			return false;
 		}
@@ -236,7 +243,10 @@ public class GeoZoneManager {
 			var j = nvertices(i);
 			if (zs[i].vrec != j) {
 				ok = false;
-				MWPLog.message("Zone %d fails vertex count validation\n", i);
+				var s = "<b>Zone %d fails vertex validation</b>".printf(i);
+				StringBuilder sb = new StringBuilder(s);
+				sb.append("\nmwp's geozone local cache has been cleared\nYou may wish to upload this to reset the FC's geozone database");
+				Utils.warning_box(sb.str);
 			}
 		}
 		return ok;
