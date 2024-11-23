@@ -346,14 +346,8 @@ namespace Mwp {
 			base.activate ();
 			if (active_window == null) {
 				ready = true;
-				//				Idle.add_once(() => {Mwp.get_gl_info(); });
 				window = new Mwp.Window (this);
 				window.present ();
-				Timeout.add_once(100, () => {
-						if(Mwp.current_lat == 0 && Mwp.current_lon == 0) {
-							MapUtils.get_centre_location(out Mwp.current_lat, out Mwp.current_lon);
-						}
-					});
 			} else {
 				Cli.parse_cli_files();
 			}
