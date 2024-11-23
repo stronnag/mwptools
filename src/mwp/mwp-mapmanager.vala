@@ -197,8 +197,7 @@ namespace Gis {
 		Gis.simple.license.append_map_source(ms);
 		qml.push_tail(Gis.base_layer);
 
-		Gis.map.viewport.set_zoom_level( Mwp.conf.zoom);
-		MapUtils.centre_on(Mwp.conf.latitude, Mwp.conf.longitude);
+		MapUtils.centre_on(Mwp.conf.latitude, Mwp.conf.longitude, Mwp.conf.zoom);
 
 		Gis.info_layer = new Shumate.MarkerLayer(Gis.map.viewport); // radar markers
 		Gis.map.add_layer(Gis.info_layer);

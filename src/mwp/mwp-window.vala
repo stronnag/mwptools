@@ -839,14 +839,15 @@ namespace Mwp {
         var mmin = Gis.map.viewport.get_min_zoom_level();
         if (zval > mmax) {
             sane= false;
-            Gis.map.viewport.zoom_level = mmax;
+            zval = mmax;
         } else if (zval < mmin) {
             sane = false;
-            Gis.map.viewport.zoom_level = mmin;
-        } else {
-            Gis.map.viewport.zoom_level = zval;
-		}
-        return sane;
+            zval = mmin;
+        }
+		double clat, clon;
+		MapUtils.get_centre_location(out clat, out clon);
+		Gis.map.go_to_full(clat, clon, zval);
+		return sane;
     }
 
 	public void add_toast_text(string s) {

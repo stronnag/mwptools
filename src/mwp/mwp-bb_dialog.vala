@@ -25,10 +25,7 @@ namespace BBL {
 
 		bbl.rescale.connect((b) => {
 				var z= MapUtils.evince_zoom(b);
-				if (z != -1) {
-					Gis.map.viewport.zoom_level = z;
-				}
-				MapUtils.centre_on(b.get_centre_latitude(), b.get_centre_longitude());
+				MapUtils.centre_on(b.get_centre_latitude(), b.get_centre_longitude(), z);
 				if(videofile != null && videofile != "") {
 					MWPLog.message("BBL videofile %s offset\n", videofile, nsecs);
 				}

@@ -70,11 +70,11 @@ namespace Mwp {
 					}
 					glat = InputParser.get_latitude(t1);
 					glon = InputParser.get_longitude(t2);
-					MapUtils.centre_on(glat,glon);
-
+					var zl = -1.0;
 					var n = places_dd.get_selected ();
-					if (n > 0 && pls[n].zoom > 0) {
-						Gis.map.viewport.zoom_level = pls[n].zoom;
+					if (n > 0) {
+						zl = pls[n].zoom;
+						MapUtils.centre_on(glat, glon, zl);
 					}
 					visible=false;
 				});

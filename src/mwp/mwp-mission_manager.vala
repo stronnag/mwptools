@@ -273,8 +273,7 @@ namespace MissionManager {
 				b.maxlon = _ms.maxx;
 				zoom = MapUtils.evince_zoom(b);
 			}
-			Mwp.set_zoom_sanely(zoom);
-			MapUtils.centre_on(cy, cx);
+			MapUtils.centre_on(cy, cx, zoom);
 			HomePoint.set_home(_ms.homey, _ms.homex);
 		} else {
 			Mwp.add_toast_text("No loaded mission");

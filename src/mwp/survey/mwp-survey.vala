@@ -497,11 +497,8 @@ namespace Survey {
 							var bb = validate_bbox();
 							double clat= bb.get_centre_latitude();
 							double clon= bb.get_centre_longitude();
-							MapUtils.map_centre_on(clat, clon);
 							var z = MapUtils.evince_zoom(bb);
-							if (z != -1) {
-								Gis.map.viewport.set_zoom_level(z);
-							}
+							MapUtils.centre_on(clat, clon, z);
 						}
 					} catch (Error e) {
 						MWPLog.message("Failed to open mission file: %s\n", e.message);

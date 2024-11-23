@@ -238,7 +238,7 @@ namespace Prefs {
 				u = uint.parse(defzoom.text);
 				if(u != Mwp.conf.zoom) {
 					Mwp.conf.zoom = u;
-					Gis.map.viewport.zoom_level = u;
+					Mwp.set_zoom_sanely(u);
 				}
 
 				i = int.parse(defspkint.text);

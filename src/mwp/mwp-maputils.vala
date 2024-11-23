@@ -69,9 +69,13 @@ namespace MapUtils {
 		}
 	}
 
-	public void centre_on(double lat, double lon) {
+	public void centre_on(double lat, double lon, double zoom = -1.0) {
 		Gis.map.center_on(lat, lon);
-		Gis.map.go_to(lat, lon);
+		if (zoom > 0) {
+			Gis.map.go_to_full(lat, lon, zoom);
+		} else {
+			Gis.map.go_to(lat, lon);
+		}
 	}
 
 	internal const double WCIRC = 40075016.686; // Earth circumference
