@@ -499,7 +499,9 @@ namespace Survey {
 							double clon= bb.get_centre_longitude();
 							MapUtils.map_centre_on(clat, clon);
 							var z = MapUtils.evince_zoom(bb);
-							Gis.map.viewport.set_zoom_level(z);
+							if (z != -1) {
+								Gis.map.viewport.set_zoom_level(z);
+							}
 						}
 					} catch (Error e) {
 						MWPLog.message("Failed to open mission file: %s\n", e.message);

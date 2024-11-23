@@ -234,7 +234,6 @@ namespace MissionManager {
 				}
 			}
 
-
 			_ms = msx[mdx];
 			Mwp.add_toast_text("Loaded mission file with %u/%u points (%u segments)".printf(_ms.npoints, mnp, msx.length));
 			foreach(var _m in msx) {
@@ -272,7 +271,7 @@ namespace MissionManager {
 				b.maxlat = _ms.maxy;
 				b.minlon = _ms.minx;
 				b.maxlon = _ms.maxx;
-				zoom = MapUtils.evince_zoom(b)+1;
+				zoom = MapUtils.evince_zoom(b);
 			}
 			Mwp.set_zoom_sanely(zoom);
 			MapUtils.centre_on(cy, cx);

@@ -47,6 +47,7 @@ namespace Survey {
 			p3 = resolve_alt(r.end.y, r.end.x, alt, amsl, out elev);
 			mi =  new MissionItem.full(n, Msp.Action.WAYPOINT, r.end.y,
 									   r.end.x, elev, lspeed, 0, p3, 0);
+			ms.check_wp_sanity(ref mi);
 			mis += mi;
 		}
 		if(rth) {
@@ -57,10 +58,7 @@ namespace Survey {
 		mis[n-1].flag = 0xa5;
 		ms.points = mis;
 		ms.npoints = n;
-		MissionManager.msx = {ms};
-		MissionManager.is_dirty = true;
-		MissionManager.mdx = 0;
-		MissionManager.setup_mission_from_mm();
+		finalise_mission(ms);
 	}
 
 	void build_square_mission(AreaCalc.Vec []vec, int alt, int lspeed, bool rth, bool amsl) {
@@ -73,6 +71,7 @@ namespace Survey {
 			n++;
 			p3 = resolve_alt(v.y, v.x, alt, amsl, out elev);
 			var mi =  new MissionItem.full(n, Msp.Action.WAYPOINT, v.y, v.x, elev, lspeed, 0, p3, 0);
+			ms.check_wp_sanity(ref mi);
 			mis += mi;
 		}
 		if(rth) {
@@ -83,11 +82,15 @@ namespace Survey {
 		mis[n-1].flag = 0xa5;
 		ms.points = mis;
 		ms.npoints = n;
+		finalise_mission(ms);
+	}
+
+	internal void finalise_mission(Mission ms) {
+		ms.cy = (ms.maxy + ms.miny)/2;
+		ms.cx = (ms.maxx + ms.minx)/2;
 		MissionManager.msx = {ms};
 		MissionManager.is_dirty = true;
 		MissionManager.mdx = 0;
 		MissionManager.setup_mission_from_mm();
-
 	}
-
 }

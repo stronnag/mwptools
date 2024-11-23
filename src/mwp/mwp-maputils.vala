@@ -61,11 +61,11 @@ namespace MapUtils {
 			double apos;
 			apos = get_centre_latitude();
 			Geo.csedist(apos, minlon, apos, maxlon, out dist, out cse);
-			width = dist *= 1852.0;
+			width = dist * 1852.0;
 
 			apos = get_centre_longitude();
 			Geo.csedist(maxlat, apos, minlat, apos, out dist, out cse);
-			height = dist *= 1852.0;
+			height = dist * 1852.0;
 		}
 	}
 
@@ -74,36 +74,28 @@ namespace MapUtils {
 		Gis.map.go_to(lat, lon);
 	}
 
+	internal const double WCIRC = 40075016.686; // Earth circumference
 	public int evince_zoom(BoundingBox b) {
-		// undingdouble lamin, double lomin, double lamax, double lomax
+		var h = Gis.map.get_height();
+		var w = Gis.map.get_width();
 		var alat = b.get_centre_latitude();
-		var vrng = b.maxlat - b.minlat;
-		var hrng = (b.maxlon - b.minlon) / Math.cos(alat*Math.PI/180.0);		// well, sort of
-		var drng = Math.sqrt(vrng*vrng+hrng*hrng) * 60 * 1852 * 0.7;
-		// MWPLog.message("lamin %f, lomin %f, lamax %f lomax %f\n", lamin, lomin, lamax, lomax);
-		// MWPLog.message("v %f, h %f, d %f\n", vrng*60*1852, hrng*60*1852, drng);
-		var z = 0;
-		if (drng < 120) {
-			z = 20;
-		} else if (drng < 240) {
-			z = 19;
-		} else if (drng < 480) {
-			z = 18;
-		} else if (drng < 960) {
-			z = 17;
-		} else if (drng < 1920) {
-			z = 16;
-		} else if (drng < 3840) {
-			z = 15;
-		} else if (drng < 7680) {
-			z = 14;
-		} else if (drng < 7680*2) {
-			z = 13;
-		} else {
-			z = 12;
+		var alon = b.get_centre_longitude();
+		double c, dlat, dlon;
+		Geo.csedist(alat, b.minlon, alat, b.maxlon, out dlon, out c);
+		Geo.csedist(b.minlat, alon, b.maxlat, alon, out dlat, out c);
+		dlon *= 1852;
+		dlat *= 1852;
+		uint rz = 0;
+		for(var z = Gis.map.viewport.min_zoom_level; z <= Gis.map.viewport.max_zoom_level; z++) {
+			var spix = WCIRC*Math.cos(alat*Math.PI/180.0)/(256* Math.pow(2.0, z));
+			var hpix = dlon/spix;
+			var vpix = dlat/spix;
+			if (hpix > w || vpix > h) {
+				rz = z;
+				break;
+			}
 		}
-		// MWPLog.message("v %f, h %f, d %f z => %d\n", vrng*60*1852, hrng*60*1852, drng, z);
-		return z;
+		return (int)rz-1;
 	}
 
 	public void get_centre_location(out double clat, out double clon) {
