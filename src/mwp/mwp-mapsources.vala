@@ -184,8 +184,8 @@ public class BingMap : Object {
 		ms.projection = Shumate.MapProjection.MERCATOR;
 		ms.license = "(c) Microsoft Corporation and partners";
 		ms.license_uri = "http://www.bing.com/maps/";
-		//buri = "http://ecn.t3.tiles.virtualearth.net/tiles/a#Q#.jpeg?g=13902";
-		buri = "http://ecn.t%d.tiles.virtualearth.net/tiles/a{Q}.jpeg?g=13902&mkt=en";
+		//buri = "http://ecn.t%d.tiles.virtualearth.net/tiles/a{Q}.jpeg?g=13902&mkt=en";
+		buri = "https://t.ssl.ak.tiles.virtualearth.net/tiles/a{Q}.jpeg?g=14826&n=z&prx=1";
 	}
 }
 
