@@ -202,6 +202,7 @@ namespace MBus {
 		}
 		public uint set_mission (string mission) throws GLib.Error {
 			Mission? ms = null;
+
 			unichar c = mission.get_char(0);
 			Mission []_msx;
 
@@ -219,8 +220,12 @@ namespace MBus {
 		}
 
 		public uint load_mission (string filename) throws GLib.Error {
-			var ms = MissionManager.open_mission_file(filename);
-			return ms.npoints;
+			if(FileUtils.test(filename, FileTest.EXISTS)) {
+				var ms = MissionManager.open_mission_file(filename);
+				return ms.npoints;
+			} else {
+				return 0;
+			}
 		}
 
 		public void clear_mission () throws GLib.Error {
