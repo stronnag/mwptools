@@ -827,6 +827,11 @@ namespace Mwp {
 		}
 	}
 
+	public void set_zoom_range(double zmin, double zmax) {
+		window.zoomlevel.adjustment.set_lower(zmin);
+		window.zoomlevel.adjustment.set_upper(zmax);
+	}
+
 	public void set_pos_label(double lat, double lon) {
 		if (!conf.pos_is_centre) {
 			Mwp.window.poslabel.label = PosFormat.pos(lat, lon, Mwp.conf.dms, true);

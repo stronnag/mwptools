@@ -57,6 +57,7 @@ public class GMProxy : Soup.Server {
     private const string UASTR = "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:%d1.0) Gecko/%d%d%d Firefox/%d.0.%d";
 	private string cache_dir;
 	private string id;
+	public static bool verbose;
 
     public GMProxy() {
 		id = "gm"; // should be set from caller
@@ -185,7 +186,9 @@ public class GMProxy : Soup.Server {
             }
         } else if (method == "GET") {
             var xpath = rewrite_path(path);
-			//			stderr.printf("xpath %s\n", xpath);
+			if(verbose) {
+				stderr.printf("URI %s\n", xpath);
+			}
             var session = new Soup.Session ();
             var message = new Soup.Message ("GET", xpath);
             message.get_request_headers().append("Referrer", "https://maps.google.com/");
@@ -203,12 +206,13 @@ public class GMProxy : Soup.Server {
 
 	const OptionEntry[] options = {
 		{"port", 'p', 0, OptionArg.INT, out port, "TCP Port", null},
+		{"verbose", 0, 0, OptionArg.NONE, ref verbose, "verbose", null},
 		{null}
     };
 
     public static int main (string []args) {
 		port = 50051;
-
+		verbose = false;
 		try {
             var opt = new OptionContext(" - gmproxy args");
             opt.set_help_enabled(true);

@@ -234,6 +234,7 @@ namespace Gis {
 					qml.push_tail(Gis.base_layer);
 					Gis.simple.license.append_map_source(msl);
 					Gis.map.set_map_source (msl);
+					Mwp.set_zoom_range((double)Gis.map.viewport.min_zoom_level,(double)Gis.map.viewport.max_zoom_level);
 					cleanup_qml();
 				}
 			});
