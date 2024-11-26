@@ -63,7 +63,7 @@ public class SoupProxy : Soup.Server {
 	}
 
 	public void set_uri(string uri) {
-		var parts = uri.split("{Q}");
+		var parts = uri.split("{q}");
         if(parts.length == 2) {
             basename = parts[0];
             extname = parts[1];
@@ -159,33 +159,58 @@ public class SoupProxy : Soup.Server {
     }
 }
 
-public class BingMap : Object {
-	private string buri;
-	private MwpMapDesc ms;
+namespace MapBox {
+	MwpMapDesc get_source() {
+		var mb = MwpMapDesc();
+		mb.id = "mbox";
+		mb.name = "MapBox";
+		mb.min_zoom_level = 0;
+		mb.max_zoom_level = 19;
+		mb.projection = Shumate.MapProjection.MERCATOR;
+		mb.tile_size = 256;
+		mb.license_uri = "https://mapbox.com/";
+		mb.url_template = "https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=%s".printf(Gis.mapbox_key);
+		mb.license = "(c) Mapbox & partners";
+		return mb;
+	}
+}
 
-	public BingMap() {
-		get_static_data();
+namespace EsriWorld {
+	MwpMapDesc get_source() {
+		var es = MwpMapDesc();
+		es.id = "esri";
+		es.name= "ESRI World";
+		es.license = "© 2021 Esri, Maxar, Earthstar Geographics, USDA FSA, USGS, Aerogrid, IGN, IGP, and the GIS User Community";
+		es.license_uri = "https://www.esriuk.com/en-gb/content/products?esri-world-imagery-service";
+		es.min_zoom_level = 0;
+		es.max_zoom_level = 19;
+		es.tile_size = 256;
+		es.projection = Shumate.MapProjection.MERCATOR;
+		es.url_template = "https://clarity.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+		return es;
+	}
+}
+
+namespace BingMap {
+	public string get_buri(int i) {
+		if (i == 0) {
+			return "https://t.ssl.ak.tiles.virtualearth.net/tiles/a{q}.jpeg?g=14826&n=z&prx=1";
+		} else {
+			return "https://t.ssl.ak.tiles.virtualearth.net/tiles/h{q}.jpeg?g=14826&n=z&prx=1";
+		}
 	}
 
-	public string get_buri() {
-		return buri;
-	}
-
-	public MwpMapDesc get_ms() {
-		return ms;
-	}
-
-	public void get_static_data() {
-		ms.id= "Bing";
-		ms.name = "Bing Maps";
+	public MwpMapDesc get_source(int id) {
+		var ms = MwpMapDesc();
+		ms.id= (id == 0) ? "Bing" : "Hybrid" ;
+		ms.name = (id == 0) ? "Bing Aerial" : "Bing Hybrid" ;
 		ms.min_zoom_level =  0;
 		ms.max_zoom_level = 19;
 		ms.tile_size = 256;
 		ms.projection = Shumate.MapProjection.MERCATOR;
 		ms.license = "(c) Microsoft Corporation and partners";
 		ms.license_uri = "http://www.bing.com/maps/";
-		//buri = "http://ecn.t3.tiles.virtualearth.net/tiles/a#Q#.jpeg?g=13902";
-		buri = "http://ecn.t%d.tiles.virtualearth.net/tiles/a{Q}.jpeg?g=13902&mkt=en";
+		return ms;
 	}
 }
 
@@ -228,24 +253,26 @@ namespace MapManager {
 		MwpMapDesc[] sources = {};
 		proxypids = {};
 
-		var bg = new BingMap();
-        var ms = bg.get_ms();
+		sources += 	EsriWorld.get_source();
+
 		MWPLog.message("Starting Bing proxy %s\n", (offline) ? "(offline)" : "");
 		uint port = 0;
-        sp = new SoupProxy(offline);
-        try {
-            sp.listen_local(31897, 0);
-            var u  = sp.get_uris();
-            port = u.nth_data(0).get_port ();
-        } catch { port = 0; }
-		if (port != 0) {
-			ms.url_template = "http://localhost:%u/%s/{z}/{x}/{y}.png".printf(port,ms.id);
-			var cdir = "http___localhost_%u_%s__z___x___y__png".printf(port, ms.id);
-			sp.set_cdir(cdir);
+		for(var ij = 0; ij < 2; ij++)  {
+			var ms = BingMap.get_source(ij);
+			sp = new SoupProxy(offline);
+			try {
+				sp.listen_local(31897+ij, 0);
+				var u  = sp.get_uris();
+				port = u.nth_data(0).get_port ();
+			} catch { port = 0; }
+			if (port != 0) {
+				ms.url_template = "http://localhost:%u/%s/{z}/{x}/{y}.png".printf(port,ms.id);
+				var cdir = "http___localhost_%u_%s__z___x___y__png".printf(port, ms.id);
+				sp.set_cdir(cdir);
+			}
+			sources += ms;
+			sp.set_uri(BingMap.get_buri(ij));
 		}
-
-		sources += ms;
-		sp.set_uri(bg.get_buri());
 
 		var have_mb = false;
 
@@ -264,33 +291,27 @@ namespace MapManager {
 						var tut = fixup_template_uri(ut);
 						s.url_template = (tut == null) ? ut : tut;
 					}
-					bool skip = (s.id == "BingProxy" ||
-                             s.url_template ==
-                             "http://localhost:21303/quadkey-proxy/#Z#/#X#/#Y#.png" ||
-                             s.license_uri == "http://www.bing.com/maps/");
-					if(!skip) {
-						if (s.name == "MapBox" || s.id == "mapbox") {
-							have_mb = true;
-						}
-						s.name = item.get_string_member ("name");
-						s.license = item.get_string_member("license");
-						s.min_zoom_level = (int)item.get_int_member ("min_zoom");
-						s.max_zoom_level = (int) item.get_int_member ("max_zoom");
-						s.tile_size = (int)item.get_int_member("tile_size");
-						s.projection = Shumate.MapProjection.MERCATOR;
-						if(item.has_member("spawn")) {
-							var spawncmd = item.get_string_member("spawn");
-							var iport = spawn_proxy(spawncmd);
-							if(iport > 0)
-								s.url_template = "http://localhost:%u/%s/{z}/{x}/{y}.png".printf(iport,s.id);
-							if(iport != -1)
-								sources += s;
-						}
-						else {
-							sources += s;
-						}
+					if (s.name == "MapBox" || s.id == "mapbox") {
+						have_mb = true;
 					}
-                }
+					s.name = item.get_string_member ("name");
+					s.license = item.get_string_member("license");
+					s.min_zoom_level = (int)item.get_int_member ("min_zoom");
+					s.max_zoom_level = (int) item.get_int_member ("max_zoom");
+					s.tile_size = (int)item.get_int_member("tile_size");
+					s.projection = Shumate.MapProjection.MERCATOR;
+					if(item.has_member("spawn")) {
+						var spawncmd = item.get_string_member("spawn");
+						var iport = spawn_proxy(spawncmd);
+						if(iport > 0)
+							s.url_template = "http://localhost:%u/%s/{z}/{x}/{y}.png".printf(iport,s.id);
+						if(iport != -1)
+							sources += s;
+					}
+					else {
+						sources += s;
+					}
+				}
             }
             catch (Error e) {
                 MWPLog.message ("mapsources : %s\n", e.message);
@@ -300,16 +321,7 @@ namespace MapManager {
 		if(!have_mb) {
 			if(Gis.mapbox_key != null) {
 				MwpMapDesc[] es={};
-				var mb = MwpMapDesc();
-				mb.id = "mbox";
-				mb.name = "MapBox";
-				mb.min_zoom_level = 0;
-				mb.max_zoom_level = 19;
-				mb.projection = Shumate.MapProjection.MERCATOR;
-				mb.tile_size = 256;
-				mb.license_uri = "https://mapbox.com/";
-				mb.url_template = "https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=%s".printf(Gis.mapbox_key);
-				mb.license = "(c) Mapbox & partners";
+				var mb = MapBox.get_source();
 				es += mb;
 				foreach(var _s in sources) {
 					es += _s;

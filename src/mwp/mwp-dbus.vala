@@ -220,8 +220,8 @@ namespace MBus {
 		}
 
 		public uint load_mission (string filename) throws GLib.Error {
-			if(FileUtils.test(filename, FileTest.EXISTS)) {
-				var ms = MissionManager.open_mission_file(filename);
+			var ms = MissionManager.open_mission_file(filename);
+			if (ms != null) {
 				return ms.npoints;
 			} else {
 				return 0;

@@ -52,13 +52,14 @@ The old files are under `~/.cache/champlain/`, the new cache `~/.cache/shumate/`
 
 ## Map Sources
 
-In preparation for the announced removal of the Bing Maps service, `mwp` adds a `MapBox` entry where the user has acquired a [Mapbox API key](https://mapbox.com/).
+In preparation for the announced removal of the Bing Maps service, `mwp` adds two new imagery sources:
 
-This key may be either stored in the Desktop keyring (managed by `libsecret`) or as a plain text string in the `gsettings` database.
+* **ESRI World** : No registration required, some minor data quality affects.
+* **MapBox** : Requires registration, the user acquiring a [Mapbox API key](https://mapbox.com/). This key may be either stored in the Desktop keyring (managed by `libsecret`) or as a plain text string in the `gsettings` database.
 
 ### Keyring
 
-Add to the keyring using `secret-tool` with the following attributes:
+Add to the MapBox key to the user keyring using `secret-tool` with the following attributes:
 
 ```
 secret-tool store --label="Mapbox API" name mapbox-api-key domain org.stronnag.mwp
@@ -74,6 +75,13 @@ Alternatively, the key can be added to the `gsettings` database:
 ```
 
 Note that sadly `libshumate` creates a cache directory name from which the MapBox access token may be recovered, so there is little security / privacy gain by using the secret key-ring, alas. See [Gitlab issue](https://gitlab.gnome.org/GNOME/libshumate/-/issues/84).
+
+### Bing Services
+
+While it lasts, the Bing services (no registration required) provide:
+
+* Bing Aerial : Imagery with no annotations
+* Bing Hybrid : Imagery with road / place annotations
 
 ## Side Panel
 
