@@ -7,6 +7,10 @@ if force_s
   dynalib = false
 endif
 
+if build_machine.system() == 'windows'
+  dynalib = false
+endif
+
 show_deprecated = get_option('deprecations')
 if show_deprecated  == false
   add_project_arguments('-Wno-deprecated-declarations', language : 'c')
@@ -204,16 +208,16 @@ if nogo == false and gook == true and gotrim != ''
     install_dir: 'bin')
 endif
 
-meson.add_install_script('meson/post_install.sh')
-
-gnome.post_install(
-  glib_compile_schemas: true,
-  gtk_update_icon_cache: true,
-  update_desktop_database: true
-)
-meson.add_install_script('meson/post_install.sh')
-gnome.post_install(
-  glib_compile_schemas: true,
-  gtk_update_icon_cache: true,
-  update_desktop_database: true
-)
+if host_machine.system() != 'windows'
+  meson.add_install_script('meson/post_install.sh')
+  gnome.post_install(
+    glib_compile_schemas: true,
+    gtk_update_icon_cache: true,
+    update_desktop_database: true
+  )
+else
+    gnome.post_install(
+      glib_compile_schemas: true,
+      gtk_update_icon_cache: true
+    )
+endif

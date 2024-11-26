@@ -712,7 +712,15 @@ public class MWSerial : Object {
         clear_counters();
         state = States.S_HEADER;
         try {
+#if UNIX
             io_read = new IOChannel.unix_new(fd);
+#else
+            if((commode & ComMode.TTY) == ComMode.TTY) {
+				io_read = new IOChannel.win32_new_fd(fd);
+			} else {
+				io_read = new IOChannel.win32_socket(fd);
+			}
+#endif
             if(io_read.set_encoding(null) != IOStatus.NORMAL)
 				error("Failed to set encoding");
             tag = io_read.add_watch(IOCondition.IN|IOCondition.HUP|
@@ -780,7 +788,7 @@ public class MWSerial : Object {
                     foreach (var address in addresses) {
                         sockaddr = new InetSocketAddress (address, port);
                         var fam = sockaddr.get_family();
-						if(debug) {
+						if(true) {
 							MWPLog.message("sockaddr try %s (%s)\n", sockaddr.to_string(), fam.to_string());
 						}
                         if(force4 && fam != SocketFamily.IPV4)
@@ -796,6 +804,7 @@ public class MWSerial : Object {
                         skt = new Socket (fam, stype, sproto);
                         if(skt != null) {
                             fd = skt.fd;
+							MWPLog.message(":DBG: Get socket %d\n", fd);
                             if(fd != -1) {
                                 try {
                                     if (sproto != SocketProtocol.UDP)
@@ -1156,7 +1165,7 @@ public class MWSerial : Object {
 
     private bool device_read(IOChannel gio, IOCondition cond) {
         ssize_t res = 0;
-
+		MWPLog.message("DBG: Dev Read %s\n", cond.to_string());
         if((cond & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0) {
             show_cond(cond);
 			//            available = false;
@@ -1729,6 +1738,7 @@ public class MWSerial : Object {
 	}
 
 	public ssize_t write(void *buf, size_t count) {
+		MWPLog.message("DBG: IOWrite mode  %x\n", commode);
 		ssize_t size = 0;
 		if(ro)
 			return 0;
@@ -1755,6 +1765,7 @@ public class MWSerial : Object {
 			}
 #endif
 		} else if((commode & ComMode.STREAM) == ComMode.STREAM) {
+			MWPLog.message("DBG: Stream %d %d\n", wrfd, (int)size);
 			if((commode & ComMode.WEAK) == ComMode.WEAK) {
 				for(int n = (int)count; n > 0; ) {
 					var nc = (n > WEAKSIZE) ? WEAKSIZE : n;
@@ -1766,7 +1777,16 @@ public class MWSerial : Object {
 					}
 				}
 			} else {
-			size = Posix.write(wrfd, buf, count);
+            if((commode & ComMode.TTY) == ComMode.TTY) {
+				size = Posix.write(wrfd, buf, count);
+			} else {
+				uint8[]ubuf = new uint8[count];
+				for(var k = 0; k < count; k++) {
+					ubuf[k] = *(((uint8*)buf + k));
+				}
+				size = skt.send (ubuf);
+			}
+			MWPLog.message("DBG: Write %d %d\n", wrfd, (int)size);
 			}
 		} else {
 			unowned uint8[] sbuf = (uint8[]) buf;
@@ -1892,6 +1912,8 @@ public class MWSerial : Object {
 	}
 
 	public size_t send_command(uint16 cmd, void *data, size_t len, bool sim=false) {
+		MWPLog.message(":DBG: send cmd %u %s %s\n", cmd,
+					   available.to_string(), ro.to_string());
 		if(available == true && !ro) {
 			char tmp = writedirn;
 			if (sim) // forces SIM mode (inav-radar)

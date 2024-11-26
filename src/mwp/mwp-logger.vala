@@ -205,7 +205,7 @@ namespace Logger {
         sb.append(u.machine);
         return sb.str;
 #else
-		return "msys2,probably";
+		return "on msys2 (probably, good luck)";
 #endif
     }
 

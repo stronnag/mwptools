@@ -47,7 +47,12 @@ public class Previewer : Object {
 #endif
 		mprv.is_mr = false;
 		mprv.fd = fds[1];
+#if UNIX
 		chn = new IOChannel.unix_new (fds[0]);
+#else
+		chn = new IOChannel.win32_new_fd(fds[0]);
+
+#endif
 		try {
 			chn.set_encoding(null);
 		} catch {}

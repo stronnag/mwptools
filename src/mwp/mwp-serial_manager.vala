@@ -234,14 +234,17 @@ namespace Msp {
 				set_pmask_poller(pmask);
 				Mwp.msp.setup_reader();
 				var cmode = Mwp.msp.get_commode();
-				MWPLog.message("Serial %s (%x) ready %s\n", serdev, cmode, Mwp.nopoll.to_string());
+				MWPLog.message(":DBG: Serial %s (%x) ready %s\n", serdev, cmode, Mwp.nopoll.to_string());
 				if(Mwp.nopoll == false && !Mwp.mqtt_available) {
 					Mwp.serstate = Mwp.SERSTATE.NORMAL;
 					Mwp.msp.use_v2 = false;
+					MWPLog.message(":DBG: **** queue IDENT\n");
 					Mwp.queue_cmd(Msp.Cmds.IDENT,null,0);
 					Mwp.run_queue();
-				} else
+				} else {
+					MWPLog.message(":DBG: DONT que IDENT\n");
 					Mwp.serstate = Mwp.SERSTATE.TELEM;
+				}
 			}
 		} else {
 			string estr = null;
