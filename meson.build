@@ -40,7 +40,9 @@ subdir('src/fc-cli')
 subdir('src/qproxy')
 subdir('data')
 subdir('src/samples/')
-subdir('src/mwp-ble-bridge')
+if host_machine.system() == 'linux'
+  subdir('src/mwp-ble-bridge')
+endif
 subdir('docs')
 
 exargs = {

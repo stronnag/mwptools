@@ -8,13 +8,8 @@
 #ifdef __FreeBSD__
 #define __BSD_VISIBLE 1
 #endif
-#include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <arpa/inet.h>
 #include <errno.h>
 #ifdef __linux__
 #include <asm/termbits.h>
@@ -22,10 +17,20 @@
 #include <asm-generic/ioctls.h>
 #endif
 #else
+#ifndef __WIN64
 #include <termios.h>
 #endif
+#endif
 
-#ifdef __CYGWIN__
+#ifdef __unix__
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#endif
+
+#ifdef __WIN64
 #include <io.h>
 #include <windows.h>
 #endif
@@ -58,7 +63,7 @@ bool is_cygwin(void) {
 #endif
 }
 
-#if !defined(__linux__) && !defined(__APPLE__) && !defined(__CYGWIN__)
+#if !defined(__linux__) && !defined(__APPLE__) && !defined(__WIN64)
 static int rate_to_constant(int baudrate) {
 #ifdef __FreeBSD__
   return baudrate;
@@ -98,7 +103,9 @@ void flush_serial(int fd) {
 #ifdef __linux__
     ioctl(fd, TCFLSH, TCIOFLUSH);
 #else
+#ifndef __WIN64
     tcflush(fd, TCIOFLUSH);
+#endif
 #endif
   }
 }
@@ -107,10 +114,10 @@ void close_serial(int fd) {
   close(fd);
 }
 
-#ifdef __CYGWIN__
+#ifdef __WIN64
 static int set_attributes(int fd, serial_opts_t *sopts, int *aspeed) {
   // heresy, but quite a nice API
-  HANDLE hdl = (HANDLE)get_osfhandle(fd);
+  HANDLE hdl = (HANDLE)_get_osfhandle(fd);
   int res = -1;
   DCB dcb = {0};
   dcb.DCBlength = sizeof(DCB);
@@ -280,6 +287,12 @@ void report_speed(int rate, int aspeed) {
   }
 }
 
+#ifdef __WIN64
+#ifndef  O_NOCTTY
+#define O_NOCTTY 0
+#endif
+#endif
+
 int open_serial(char *devname, int baudrate) {
   serial_opts_t sopts = {.devname = devname, .baudrate = baudrate};
   int fd;
@@ -298,14 +311,18 @@ int open_serial(char *devname, int baudrate) {
   return fd;
 }
 
+#ifndef __WIN64
 int cf_pipe(int *fds) { return pipe(fds); }
-
 int cf_pipe_close(int fd) { return close(fd); }
+#else
+int cf_pipe(int *fds) { return _pipe(fds, 4096, 0); }
+int cf_pipe_close(int fd) { return close(fd); }
+#endif
 
-#ifdef __CYGWIN__
-#include <sys/cygwin.h>
+#ifdef __WIN64
 /* Conversion from incoming posix path to win32 path */
 // CCP_RELATIVE
+/*
 char *get_native_path(char *upath) {
   char *wpath = NULL;
   wpath = cygwin_create_path(CCP_POSIX_TO_WIN_A, upath);
@@ -314,6 +331,7 @@ char *get_native_path(char *upath) {
     perror("cygwin_create");
   return wpath;
 }
+*/
 
 char *get_error_text(int dummy, char *pBuf, size_t bufSize) {
   DWORD retSize;
@@ -333,7 +351,7 @@ char *get_error_text(int dummy, char *pBuf, size_t bufSize) {
     char *s = pTemp + retSize -1;
     while (s > pTemp && isspace((int)*s))
       *s-- = 0;
-    sprintf(pBuf, "%s (0x%x)", pTemp, GetLastError());
+    sprintf(pBuf, "%s (0x%lx)", pTemp, GetLastError());
     LocalFree((HLOCAL)pTemp);
   }
   return (pBuf);

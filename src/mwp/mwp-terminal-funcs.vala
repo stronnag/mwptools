@@ -17,7 +17,15 @@
 
 namespace Mwp {
 	public void setup_terminal_reboot()  {
-		var saq = new GLib.SimpleAction("terminal",null);
+        var saq = new GLib.SimpleAction("reboot",null);
+        saq.activate.connect(() => {
+				if(msp.available && armed == 0) {
+					queue_cmd(Msp.Cmds.REBOOT,null, 0);
+				}
+            });
+        window.add_action(saq);
+#if UNIX
+		saq = new GLib.SimpleAction("terminal",null);
         saq.activate.connect(() => {
 				var txpoll = nopoll;
 				var in_cli = false;
@@ -59,12 +67,6 @@ namespace Mwp {
 			});
 		window.add_action(saq);
 
-        saq = new GLib.SimpleAction("reboot",null);
-        saq.activate.connect(() => {
-				if(msp.available && armed == 0) {
-					queue_cmd(Msp.Cmds.REBOOT,null, 0);
-				}
-            });
-        window.add_action(saq);
+#endif
 	}
 }

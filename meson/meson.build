@@ -9,14 +9,16 @@ deps += dependency('glib-2.0')
 
 if host_machine.system() == 'linux'
   dopts += '--define=LINUX'
-  dopts += '--define=UNIX'
   deps += dependency('gudev-1.0')
   deps += dependency('gio-unix-2.0')
 endif
 
 if host_machine.system() == 'freebsd'
-  dopts += '--define=UNIX'
   dopts += '--define=FREEBSD'
+endif
+
+if host_machine.system() != 'windows'
+  dopts += '--define=UNIX'
 endif
 
 soupdep = dependency('libsoup-3.0')

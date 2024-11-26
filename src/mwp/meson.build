@@ -70,11 +70,14 @@ mwpdeps = [deps,
            dependency('shumate-1.0'),
            dependency('gstreamer-1.0'),
            dependency('json-glib-1.0'),
-#           dependency('vte-2.91-gtk4'),
-#           dependency('libsecret-1'),
+           dependency('libsecret-1'),
            meson.get_compiler('vala').find_library('posix'),
            meson.get_compiler('vala').find_library('linux'),
           ]
+
+if host_machine.system() != 'windows'
+  deps += dependency('vte-2.91-gtk4')
+endif
 
 mwpsrcs += svyfiles
 
