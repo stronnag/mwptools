@@ -200,13 +200,6 @@ if nogo == false and gook == true and gotrim != ''
 endif
 
 meson.add_install_script('meson/post_install.sh')
-
-gnome.post_install(
-  glib_compile_schemas: true,
-  gtk_update_icon_cache: true,
-  update_desktop_database: true
-)
-meson.add_install_script('meson/post_install.sh')
 gnome.post_install(
   glib_compile_schemas: true,
   gtk_update_icon_cache: true,

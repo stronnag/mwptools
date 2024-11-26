@@ -76,16 +76,11 @@ namespace Cli {
 
 	private bool get_app_status(string app, out string bblhelp) {
         bool ok = true;
-        bblhelp="";
         try {
 			var bbl = new Subprocess(SubprocessFlags.STDERR_MERGE|SubprocessFlags.STDOUT_PIPE,
-									 app, "--help");
+									 app, "--version");
 			bbl.communicate_utf8(null, null, out bblhelp, null);
-			bbl.wait_check_async.begin(null, (obj,res) => {
-					try {
-						ok = bbl.wait_check_async.end(res);
-					} catch { /* exit status != 0 */ }
-				});
+			bbl.wait();
         } catch (Error e) {
 			bblhelp = e.message;
 			ok = false;
@@ -135,11 +130,15 @@ namespace Cli {
 		if (appsts[0]) {
 			string text;
 			var res = get_app_status(Mwp.conf.blackbox_decode, out text);
+			MWPLog.message(":DBG: BBL DEC <%s>\n", text);
 			if(res == false) {
 				MWPLog.message("%s %s\n", Mwp.conf.blackbox_decode, text);
-			} else if (!text.contains("--datetime")) {
-				MWPLog.message("\"%s\" too old, replay disabled\n", Mwp.conf.blackbox_decode);
-				res = false;
+			} else {
+				var iv = int.parse(text);
+				if (iv < 5) {
+					MWPLog.message("\"%s\" too old, replay disabled\n", Mwp.conf.blackbox_decode);
+					res = false;
+				}
 			}
 			appsts[0] = res;
 		}
@@ -147,6 +146,7 @@ namespace Cli {
 		if(appsts[6]) {
 			string text;
 			var res = get_app_status("fl2ltm", out text);
+			MWPLog.message(":DBG: FL2LTM <%s>\n", text);
 			if(res == false) {
 				MWPLog.message("fl2ltm %s\n", text);
 			} else {
