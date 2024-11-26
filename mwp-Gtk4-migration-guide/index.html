@@ -425,6 +425,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#bing-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bing Services
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1427,6 +1436,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#bing-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bing Services
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1634,10 +1652,13 @@
 </tbody>
 </table>
 <h2 id="map-sources">Map Sources<a class="headerlink" href="#map-sources" title="Permanent link">#</a></h2>
-<p>In preparation for the announced removal of the Bing Maps service, <code>mwp</code> adds a <code>MapBox</code> entry where the user has acquired a <a href="https://mapbox.com/">Mapbox API key</a>.</p>
-<p>This key may be either stored in the Desktop keyring (managed by <code>libsecret</code>) or as a plain text string in the <code>gsettings</code> database.</p>
+<p>In preparation for the announced removal of the Bing Maps service, <code>mwp</code> adds two new imagery sources:</p>
+<ul>
+<li><strong>ESRI World</strong> : No registration required, some minor data quality affects.</li>
+<li><strong>MapBox</strong> : Requires registration, the user acquiring a <a href="https://mapbox.com/">Mapbox API key</a>. This key may be either stored in the Desktop keyring (managed by <code>libsecret</code>) or as a plain text string in the <code>gsettings</code> database.</li>
+</ul>
 <h3 id="keyring">Keyring<a class="headerlink" href="#keyring" title="Permanent link">#</a></h3>
-<p>Add to the keyring using <code>secret-tool</code> with the following attributes:</p>
+<p>Add to the MapBox key to the user keyring using <code>secret-tool</code> with the following attributes:</p>
 <div class="highlight"><pre><span></span><code>secret-tool store --label=&quot;Mapbox API&quot; name mapbox-api-key domain org.stronnag.mwp
 Password: *************************************************
 </code></pre></div>
@@ -1647,6 +1668,12 @@ Password: *************************************************
  # where &#39;pk.xxxxxxx&#39; is your MapBox API Key
 </code></pre></div></p>
 <p>Note that sadly <code>libshumate</code> creates a cache directory name from which the MapBox access token may be recovered, so there is little security / privacy gain by using the secret key-ring, alas. See <a href="https://gitlab.gnome.org/GNOME/libshumate/-/issues/84">Gitlab issue</a>.</p>
+<h3 id="bing-services">Bing Services<a class="headerlink" href="#bing-services" title="Permanent link">#</a></h3>
+<p>While it lasts, the Bing services (no registration required) provide:</p>
+<ul>
+<li>Bing Aerial : Imagery with no annotations</li>
+<li>Bing Hybrid : Imagery with road / place annotations</li>
+</ul>
 <h2 id="side-panel">Side Panel<a class="headerlink" href="#side-panel" title="Permanent link">#</a></h2>
 <p>As <code>libgdl</code> is retired, a simple, bespoke panel comprising embedded resizeable panes has been implemented. The configuration may be user defined by a simple text file <code>~/.config/mwp/panel.conf</code>.</p>
 <ul>
