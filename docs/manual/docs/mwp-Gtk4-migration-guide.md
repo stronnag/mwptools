@@ -54,7 +54,7 @@ The old files are under `~/.cache/champlain/`, the new cache `~/.cache/shumate/`
 
 In preparation for the announced removal of the Bing Maps service, `mwp` adds two new imagery sources:
 
-* **ESRI World** : No registration required, some minor data quality affects.
+* **ESRI Clarity** : No registration required, some minor data quality affects.
 * **MapBox** : Requires registration, the user acquiring a [Mapbox API key](https://mapbox.com/). This key may be either stored in the Desktop keyring (managed by `libsecret`) or as a plain text string in the `gsettings` database.
 
 ### Keyring

@@ -179,7 +179,7 @@ namespace EsriWorld {
 	MwpMapDesc get_source() {
 		var es = MwpMapDesc();
 		es.id = "esri";
-		es.name= "ESRI World";
+		es.name= "ESRI Clarity";
 		es.license = "© 2021 Esri, Maxar, Earthstar Geographics, USDA FSA, USGS, Aerogrid, IGN, IGP, and the GIS User Community";
 		es.license_uri = "https://www.esriuk.com/en-gb/content/products?esri-world-imagery-service";
 		es.min_zoom_level = 0;
