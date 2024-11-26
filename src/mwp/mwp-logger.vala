@@ -175,6 +175,7 @@ namespace Logger {
     }
 
     public string get_host_info(out string os) {
+#if UNIX
         string r=null;
         var dis = FileStream.open("/etc/os-release","r");
         if(dis != null) {
@@ -203,6 +204,9 @@ namespace Logger {
         sb.append_c(' ');
         sb.append(u.machine);
         return sb.str;
+#else
+		return "msys2,probably";
+#endif
     }
 
     internal  void write_stream() {

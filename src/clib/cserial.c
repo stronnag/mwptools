@@ -33,6 +33,7 @@
 #ifdef __WIN64
 #include <io.h>
 #include <windows.h>
+#include <time.h>
 #endif
 
 #ifdef __APPLE__
@@ -115,6 +116,11 @@ void close_serial(int fd) {
 }
 
 #ifdef __WIN64
+struct tm *localtime_r(const time_t *restrict timep, struct tm *r) {
+     r = localtime(timep);
+     return r;
+}
+
 static int set_attributes(int fd, serial_opts_t *sopts, int *aspeed) {
   // heresy, but quite a nice API
   HANDLE hdl = (HANDLE)_get_osfhandle(fd);

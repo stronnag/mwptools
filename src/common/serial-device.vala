@@ -821,7 +821,9 @@ public class MWSerial : Object {
     }
 
     private void set_noblock() {
+#if UNIX
         Posix.fcntl(fd, Posix.F_SETFL, Posix.fcntl(fd, Posix.F_GETFL, 0) | Posix.O_NONBLOCK);
+#endif
     }
 
 /*
@@ -1164,9 +1166,11 @@ public class MWSerial : Object {
             return Source.REMOVE;
         } else if (fd != -1 && (cond & IOCondition.IN) != 0) {
             if((commode & ComMode.BT) == ComMode.BT) {
+#if UNIX
                 res = Posix.recv(fd,devbuf,MemAlloc.DEV,0);
                 if(res == 0)
                     return Source.CONTINUE;
+#endif
             } else if((commode & ComMode.STREAM) == ComMode.STREAM) {
                 res = Posix.read(fd,devbuf,MemAlloc.DEV);
                 if(res == 0) {
@@ -1735,6 +1739,7 @@ public class MWSerial : Object {
 		stats.txbytes += count;
 
 		if((commode & ComMode.BT) == ComMode.BT) {
+#if UNIX
 			if((commode & ComMode.WEAKBLE) == ComMode.WEAKBLE) {
 				for(int n = (int)count; n > 0; ) {
 					var nc = (n > WEAKSIZE) ? WEAKSIZE : n;
@@ -1748,6 +1753,7 @@ public class MWSerial : Object {
 			} else {
 				size = Posix.send(wrfd, buf, count, 0);
 			}
+#endif
 		} else if((commode & ComMode.STREAM) == ComMode.STREAM) {
 			if((commode & ComMode.WEAK) == ComMode.WEAK) {
 				for(int n = (int)count; n > 0; ) {

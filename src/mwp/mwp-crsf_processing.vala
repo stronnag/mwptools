@@ -44,6 +44,18 @@ namespace CRSF {
 	}
 	Teledata teledata;
 
+	uint16 bswap16(uint16 x) {
+		Variant v = new Variant.uint16(x);
+		v.byteswap();
+		return v.get_uint16();
+	}
+
+	uint32 bswap32(uint32 x) {
+		Variant v = new Variant.uint32(x);
+		v.byteswap();
+		return v.get_uint32();
+	}
+
 	uint8 * deserialise_be_u24(uint8* rp, out uint32 v) {
         v = (*(rp) << 16 |  (*(rp+1) << 8) | *(rp+2));
         return rp + 3*sizeof(uint8);
@@ -75,21 +87,21 @@ namespace CRSF {
 		switch(id) {
 		case CRSF.GPS_ID:
 			ptr= SEDE.deserialise_u32(ptr, out val32);  // Latitude (deg * 1e7)
-			int32 lat = (int32)Posix.ntohl(val32);
+			int32 lat = (int32)bswap32(val32);
 			ptr= SEDE.deserialise_u32(ptr, out val32); // Longitude (deg * 1e7)
-			int32 lon = (int32)Posix.ntohl(val32);
+			int32 lon = (int32)bswap32(val32);
 			ptr= SEDE.deserialise_u16(ptr, out val16); // Groundspeed ( km/h * 10 )
 			double gspeed = 0;
 			if (val16 != 0xffff) {
-				gspeed = Posix.ntohs(val16) / 36.0; // m/s
+				gspeed = bswap16(val16) / 36.0; // m/s
 			}
 			ptr= SEDE.deserialise_u16(ptr, out val16);  // COG Heading ( degree * 100 )
 			double hdg = 0;
 			if (val16 != 0xffff) {
-				hdg = Posix.ntohs(val16) / 100.0; // deg
+				hdg = bswap16(val16) / 100.0; // deg
 			}
 			ptr= SEDE.deserialise_u16(ptr, out val16);
-			int32 alt= (int32)Posix.ntohs(val16) - 1000; // m
+			int32 alt= (int32)bswap16(val16) - 1000; // m
 			uint8 nsat = *ptr;
 			var dlat = lat / 1e7;
 			CRSF.teledata.lat = dlat;
@@ -174,12 +186,12 @@ namespace CRSF {
 				ptr= SEDE.deserialise_u16(ptr, out val16);  // Voltage ( mV * 100 )
 				double volts = 0;
 				if (val16 != 0xffff) {
-					volts = Posix.ntohs(val16) / 10.0; // Volts
+					volts = bswap16(val16) / 10.0; // Volts
 				}
 				ptr= SEDE.deserialise_u16(ptr, out val16);  // Voltage ( mV * 100 )
 				double amps = 0;
 				if (val16 != 0xffff) {
-					amps = Posix.ntohs(val16) / 10.0; // Amps
+					amps = bswap16(val16) / 10.0; // Amps
 				}
 				ptr = CRSF.deserialise_be_u24(ptr, out val32);
 				uint32 capa = val32;
@@ -197,15 +209,15 @@ namespace CRSF {
 		case CRSF.VARIO_ID:
 			if(ser.is_main) {
 				ptr= SEDE.deserialise_u16(ptr, out val16);  // Voltage ( mV * 100 )
-				CRSF.teledata.vario = (int)Posix.ntohs(val16);
+				CRSF.teledata.vario = (int)bswap16(val16);
 			}
 			break;
 		case CRSF.BARO_ID:
 			ptr= SEDE.deserialise_u16(ptr, out val16);
-			CRSF.teledata.alt = (int)Posix.ntohs(val16);
+			CRSF.teledata.alt = (int)bswap16(val16);
 			if (buffer.length > 5) {
 				SEDE.deserialise_u16(ptr, out val16);
-				CRSF.teledata.vario = (int)Posix.ntohs(val16);
+				CRSF.teledata.vario = (int)bswap16(val16);
 			}
 			ser.td.alt.alt = CRSF.teledata.alt;
 			break;
@@ -213,13 +225,13 @@ namespace CRSF {
 			if(ser.is_main) {
 				ptr= SEDE.deserialise_u16(ptr, out val16);  // Pitch radians *10000
 				double pitch = 0;
-				pitch = ((int16)Posix.ntohs(val16)) * CRSF.ATTITODEG;
+				pitch = ((int16)bswap16(val16)) * CRSF.ATTITODEG;
 				ptr= SEDE.deserialise_u16(ptr, out val16);  // Roll radians *10000
 				double roll = 0;
-				roll = ((int16)Posix.ntohs(val16)) * CRSF.ATTITODEG;
+				roll = ((int16)bswap16(val16)) * CRSF.ATTITODEG;
 				ptr= SEDE.deserialise_u16(ptr, out val16);  // Roll radians *10000
 				double yaw = 0;
-				yaw = ((int16)Posix.ntohs(val16)) * CRSF.ATTITODEG;
+				yaw = ((int16)bswap16(val16)) * CRSF.ATTITODEG;
 				//			yaw = ((yaw + 180) % 360);
 				//			stdout.printf("Pitch %.1f, Roll %.1f, Yaw %.1f\n", pitch, roll, yaw);
 				CRSF.teledata.pitch = (int16)pitch;

@@ -14,7 +14,9 @@
  *
  * (c) Jonathan Hudson <jh+mwptools@daria.co.uk>
  */
-
+#if !UNIX
+extern int cf_pipe(int* fds);
+#endif
 public class Previewer : Object {
 	private MissionPreviewer mprv;
 	private bool preview_running = false;
@@ -34,12 +36,15 @@ public class Previewer : Object {
 	public void run() {
 		pcraft = new Craft("mpreview.svg");
         pcraft.new_craft(false);
-
+#if UNIX
 		try {
 			GLib.Unix.open_pipe(fds, 0);
 		} catch (Error e) {
 			MWPLog.message("Pipe file %s\n", e.message);
 		}
+#else
+		cf_pipe(fds);
+#endif
 		mprv.is_mr = false;
 		mprv.fd = fds[1];
 		chn = new IOChannel.unix_new (fds[0]);

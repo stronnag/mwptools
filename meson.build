@@ -53,6 +53,7 @@ exargs = {
   'vala_args': [dopts, mwp_v_args ],
   'c_args': [mwp_c_args, dev_args, vcargs ],
   'install' : true,
+  'gui_app': true,
 }
 if dynalib
     exargs += { 'install_rpath': '$ORIGIN/../lib',}
@@ -80,6 +81,7 @@ if dynalib
 endif
 executable('gmproxy', kwargs: exargs)
 
+if host_machine.system() != 'windows'
 exargs = {
   'sources': [clisrcs ],
   'dependencies': [ clideps ],
@@ -94,6 +96,7 @@ if dynalib
     exargs += { 'install_rpath': '$ORIGIN/../lib',}
 endif
 executable('cliterm', kwargs: exargs)
+endif
 
 exargs = {
   'sources': [fcsrcs, fccommon ],

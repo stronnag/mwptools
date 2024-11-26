@@ -41,7 +41,7 @@ public class MWPUtils : Object {
 		if (appname == null) {
 			app = Environment.get_application_name();
 			if(app == null)
-				app = MwpVers.progname;
+				app = "mwp";
 		} else {
 			app = appname;
 		}

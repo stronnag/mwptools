@@ -589,7 +589,9 @@ namespace BBL {
 								j++;
 							}
 							if(latp == -1 || lonp == -1 || fixp == -1 || typp == -1) {
+#if UNIX
 								subp.send_signal(ProcessSignal.TERM);
+#endif
 								break;
 							}
 						} else {
@@ -601,7 +603,9 @@ namespace BBL {
 									xlon = double.parse(parts[lonp]);
 									if(xlat != 0.0 && xlon != 0.0) {
 										ok = true;
+#if UNIX
 										subp.send_signal(ProcessSignal.TERM);
+#endif
 										break;
 									}
 								}
@@ -792,7 +796,9 @@ namespace BBL {
 								}
 							}
 						} catch {}
+#if UNIX
 						subp.send_signal(ProcessSignal.TERM);
+#endif
 					});
 			} catch (Error e) {
 				MWPLog.message("find_bbox %s\n", e.message);

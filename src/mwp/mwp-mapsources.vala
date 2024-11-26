@@ -198,7 +198,9 @@ namespace MapManager {
 	public void killall() {
 		ikill = true;
 		foreach(var p in proxypids) {
+#if UNIX
 			p.send_signal(ProcessSignal.TERM);
+#endif
 		}
 		proxypids = {};
 	}

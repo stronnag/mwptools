@@ -362,12 +362,16 @@ namespace Mwp {
 
 			var pane_type = conf.pane_type;
 			if(conf.pane_type == 0) {
+#if UNIX
 				var u = Posix.utsname();
 				if (u.sysname == "Darwin") {
 					pane_type = 2;
 				} else {
 					pane_type = 1;
 				}
+#else
+					pane_type = 1;
+#endif
 			}
 
 			if(pane_type == 1) {

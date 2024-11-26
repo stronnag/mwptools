@@ -16,7 +16,6 @@ vcommon = files( 'serial-device.vala',
 		'mwc.vala',
 		'mwplog.vala',
 		'mavcmd.vala',
-		'mlock.vala',
 		'devman.vala',
                 'track_data.vala',
                )

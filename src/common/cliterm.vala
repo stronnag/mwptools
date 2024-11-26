@@ -16,6 +16,7 @@
  */
 
 public class CLITerm : Gtk.Window {
+#if UNIX
     private MWSerial s;
     private MWSerial.ProtoMode oldmode;
     private Vte.Terminal term;
@@ -82,4 +83,8 @@ public class CLITerm : Gtk.Window {
 			s.write(c, 1);
 		}
     }
+#else
+	public void configure_serial (MWSerial _s, bool hash=false) {}
+    public CLITerm (Gtk.Window? w = null) {}
+#endif
 }

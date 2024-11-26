@@ -7,7 +7,7 @@ mwp_v_args = []
 mwpvers_h = custom_target(
     '_mwpvers.h',
     output : '_mwpvers.h',
-    command : [getinfo, '@OUTPUT@'],
+    command : ['sh', getinfo, '@OUTPUT@'],
 )
 
 libmwpvers = static_library('mwpvers', ['_mwpvers.c', mwpvers_h],

@@ -36,13 +36,21 @@ namespace Mwp {
         magcheck = false;
 
         if(replay_paused) {
+#if UNIX
             signum = ProcessSignal.CONT;
+#else
+			signum = 19;
+#endif
             time_t now;
             time_t (out now);
             armtime += (now - pausetm);
         } else {
             time_t (out pausetm);
+#if UNIX
             signum = ProcessSignal.STOP;
+#else
+			signum = 17;
+#endif
         }
 		if(!from_vid) {
 			if(BBLV.vp != null) {
@@ -51,7 +59,9 @@ namespace Mwp {
 		}
         replay_paused = !replay_paused;
         if((replayer & (Player.BBOX|Player.OTX|Player.RAW)) != 0 && LogPlay.child_pid != 0) {
+#if UNIX
 			LogPlay.subp.send_signal(signum);
+#endif
         } else if(thr != null) {
 			robj.pause(replay_paused);
         }
@@ -62,7 +72,9 @@ namespace Mwp {
             handle_replay_pause();
 
 		if((replayer & (Player.BBOX|Player.OTX)) != 0 && LogPlay.child_pid != 0) {
+#if UNIX
 			LogPlay.subp.send_signal(ProcessSignal.TERM);
+#endif
 		}
 		if((Mwp.replayer & Mwp.Player.MWP) == Mwp.Player.MWP && thr != null) {
 			robj.stop();

@@ -80,8 +80,8 @@ namespace MwpVers {
     unowned string get_build_host();
     [CCode (cname="get_build_compiler")]
     unowned string get_build_compiler();
-    [CCode (cname="__progname")]
-    string progname;
+//    [CCode (cname="__progname")]
+//    string progname;
 }
 
 [CCode (cheader_filename = "termcap.h")]

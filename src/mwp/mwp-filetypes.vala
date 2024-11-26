@@ -67,11 +67,15 @@ namespace MWPFileType {
 		}
 
 	public 	string? validate_cli_file(string fn) {
+#if UNIX
 		var vfn = Posix.realpath(fn);
 		if (vfn == null) {
 			MWPLog.message("CLI provided file \"%s\" not found\n", fn);
 		}
 		return vfn;
+#else
+		return fn;
+#endif
 	}
 
 	public FType guess_content_type(string uri, out string fn) {

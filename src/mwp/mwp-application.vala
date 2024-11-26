@@ -332,10 +332,12 @@ namespace Mwp {
 		}
 #endif
 		public override void activate () {
+#if UNIX
 			if((Posix.geteuid() == 0 || Posix.getuid() == 0)) {
 				MWPLog.message("Cowardly refusing to run as root ... for your own safety\n");
 				Posix.exit(127);
 			}
+#endif
 			if (active_window == null) {
 				show_misc_info();
 				new Thread<int> ("glinfo", () => {
