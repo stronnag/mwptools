@@ -130,7 +130,6 @@ namespace Cli {
 		if (appsts[0]) {
 			string text;
 			var res = get_app_status(Mwp.conf.blackbox_decode, out text);
-			MWPLog.message(":DBG: BBL DEC <%s>\n", text);
 			if(res == false) {
 				MWPLog.message("%s %s\n", Mwp.conf.blackbox_decode, text);
 			} else {
@@ -146,7 +145,6 @@ namespace Cli {
 		if(appsts[6]) {
 			string text;
 			var res = get_app_status("fl2ltm", out text);
-			MWPLog.message(":DBG: FL2LTM <%s>\n", text);
 			if(res == false) {
 				MWPLog.message("fl2ltm %s\n", text);
 			} else {

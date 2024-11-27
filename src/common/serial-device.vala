@@ -717,6 +717,7 @@ public class MWSerial : Object {
             io_read = new IOChannel.unix_new(fd);
             if(io_read.set_encoding(null) != IOStatus.NORMAL)
 				error("Failed to set encoding");
+			io_read.set_buffered(false);
             tag = io_read.add_watch(IOCondition.IN|IOCondition.HUP|
                                     IOCondition.NVAL|IOCondition.ERR,
                                     device_read);
@@ -800,7 +801,7 @@ public class MWSerial : Object {
                                 try {
                                     if (sproto != SocketProtocol.UDP)
                                         skt.connect(sockaddr);
-                                    set_noblock();
+                                    skt.set_blocking(false);
                                 } catch (Error e) {
                                     MWPLog.message("connection fails %s\n", e.message);
                                     skt.close();
@@ -1733,7 +1734,19 @@ public class MWSerial : Object {
 
 		stats.txbytes += count;
 
-		if((commode & ComMode.BT) == ComMode.BT) {
+		if(rawlog == true) {
+			log_raw('o',buf,(int)count);
+		}
+
+		if((commode & ComMode.UDP) == ComMode.UDP) {
+			unowned uint8[] sbuf = (uint8[]) buf;
+			sbuf.length = (int)count;
+			try {
+				size = skt.send_to (sockaddr, sbuf);
+			} catch(Error e) {
+				size = 0;
+			}
+		} else if((commode & ComMode.BT) == ComMode.BT) {
 			if((commode & ComMode.WEAKBLE) == ComMode.WEAKBLE) {
 				for(int n = (int)count; n > 0; ) {
 					var nc = (n > WEAKSIZE) ? WEAKSIZE : n;
@@ -1751,7 +1764,7 @@ public class MWSerial : Object {
 			if((commode & ComMode.WEAK) == ComMode.WEAK) {
 				for(int n = (int)count; n > 0; ) {
 					var nc = (n > WEAKSIZE) ? WEAKSIZE : n;
-					size += Posix.write(wrfd, buf, nc);
+					size += stream_write(buf, nc);
 					n -= nc;
 					buf = (void*)((uint8*)buf + nc);
 					if (n > 0) {
@@ -1759,22 +1772,23 @@ public class MWSerial : Object {
 					}
 				}
 			} else {
-			size = Posix.write(wrfd, buf, count);
+				size = stream_write(buf, count);
 			}
-		} else {
-			unowned uint8[] sbuf = (uint8[]) buf;
-			sbuf.length = (int)count;
-			try {
-				size = skt.send_to (sockaddr, sbuf);
-			} catch(Error e) {
-				size = 0;
-			}
-		}
-		if(rawlog == true) {
-			log_raw('o',buf,(int)count);
 		}
 		return size;
 	}
+
+	private ssize_t stream_write(void *buf, size_t count) {
+		if((commode & ComMode.TTY|ComMode.FD) != 0) {
+			return Posix.write(wrfd, buf, count);
+		} else {
+			unowned uint8[] sbuf = (uint8[]) buf;
+			sbuf.length = (int)count;
+			return skt.send(sbuf);
+		}
+
+	}
+
 
 	public void send_ltm(uint8 cmd, void *data, size_t len) {
 		if(available == true && !ro) {
