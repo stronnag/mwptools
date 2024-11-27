@@ -466,14 +466,16 @@ public class MWSerial : Object {
         DEV=2048
     }
 
+	[Flags]
     public enum ComMode {
-        TTY=1,
-        STREAM=2,
-        FD=4,
-        BT=8,
-		BLE=0x10,
-		WEAK=0x20,
-		WEAKBLE=0x40,
+        TTY,
+        STREAM,
+        FD,
+        BT,
+		BLE,
+		WEAK,
+		WEAKBLE,
+		UDP
     }
 
     public enum Mode {
@@ -727,8 +729,7 @@ public class MWSerial : Object {
     private void setup_ip(string? host, uint16 port, string? rhost=null, uint16 rport = 0) {
         fd = -1;
         baudrate = 0;
-		if((host == null || host.length == 0) &&
-           ((commode & ComMode.STREAM) != ComMode.STREAM)) {
+		if((host == null || host.length == 0) && ((commode & ComMode.STREAM) != ComMode.STREAM)) {
                 SocketFamily[] fams = {};
                 if(!force4)
                     fams += SocketFamily.IPV6;
@@ -744,6 +745,7 @@ public class MWSerial : Object {
 							if(debug) {
 								MWPLog.message("bound: %s %d %d\n", fam.to_string(), fd, port);
 							}
+							commode |= ComMode.UDP;
 							break;
 						}
 					} catch (Error e) {
@@ -789,6 +791,7 @@ public class MWSerial : Object {
                         } else {
                             stype = SocketType.DATAGRAM;
                             sproto = SocketProtocol.UDP;
+							commode |= ComMode.UDP;
                         }
                         skt = new Socket (fam, stype, sproto);
                         if(skt != null) {
@@ -1161,26 +1164,24 @@ public class MWSerial : Object {
             tag = 0; // REMOVE will remove the iochannel watch
             return Source.REMOVE;
         } else if (fd != -1 && (cond & IOCondition.IN) != 0) {
-            if((commode & ComMode.BT) == ComMode.BT) {
-                res = Posix.recv(fd,devbuf,MemAlloc.DEV,0);
-                if(res == 0)
-                    return Source.CONTINUE;
-            } else if((commode & ComMode.STREAM) == ComMode.STREAM) {
-                res = Posix.read(fd,devbuf,MemAlloc.DEV);
-                if(res == 0) {
-                    if((commode & ComMode.TTY) != ComMode.TTY)
-                        serial_lost();
-                    return Source.CONTINUE;
-                }
-            } else {
-                try {
+			try {
+				if((commode & ComMode.UDP) == ComMode.UDP) {
                     res = skt.receive_from(out sockaddr, devbuf);
-                } catch(Error e) {
-                    res = 0;
-                }
-            }
+				} else {
+					size_t n;
+					gio.read_chars((char[])devbuf, out n);
+					res = (ssize_t)n;
+				}
+			} catch(Error e) {
+				MWPLog.message(":DBG: ioerror %s %x\n", e.message, commode);
+				res = 0;
+			}
 			if(res == 0) {
 				MWPLog.message(":DBG: read 0\n");
+				if((commode & ComMode.TTY) != ComMode.TTY) {
+					serial_lost();
+				}
+				return Source.CONTINUE;
 			}
             if(pmode == ProtoMode.CLI) {
                 csize = (uint16)res;
