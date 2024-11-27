@@ -2,9 +2,7 @@
 
 ## Introduction
 
-{{ mwp }} provides a UI for the Geozones function that is planned to appear in INAV 8.0.0.
-
-The technical details for this feature will be published as part of INAV 8.0.
+{{ mwp }} provides a UI for the Geozones function that first appeared in INAV 8.0.0. The technical details for this feature are published as part of INAV 8.0 [INAV Documentation](https://github.com/iNavFlight/inav/blob/master/docs/Geozones.md).
 
 !!! Note "Version Requirements"
 	The proposed INAV 8.0 implementation of GeoZones **requires** {{ mwp }} 24.11.14 or later.
@@ -25,7 +23,7 @@ Geozones provides a set of geographical shapes that the FC can navigate around, 
     - Poshold
     - RTH
 
-The effect these parameters have on FC behaviour will be made available once the Geozones function is publicly available in the INAV firmware.
+The effect these parameters have on FC behaviour are described in the [INAV Documentation](https://github.com/iNavFlight/inav/blob/master/docs/Geozones.md).
 
 ## Geozone Validity and Enforcement
 
