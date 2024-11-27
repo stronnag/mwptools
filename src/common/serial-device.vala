@@ -403,7 +403,7 @@ public class MWSerial : Object {
 	private string devname;
     private int fd=-1;
 	private int wrfd=-1;
-    private IOChannel io_read;
+    private IOChannel io_chan;
     private Socket skt;
     private SocketAddress sockaddr;
     public  States state {private set; get;}
@@ -619,7 +619,7 @@ public class MWSerial : Object {
                 result = 0;
                 available = true;
                 devname = "udp #%d".printf(outp);
-                setup_reader();
+                setup_reader(true);
             } catch (Error e) {
 				MWPLog.message("randomIP: %s\n", e.message);
 			}
@@ -707,21 +707,22 @@ public class MWSerial : Object {
             MwpSerial.set_speed(fd, (int)rate, null);
         }
         available = true;
-		setup_reader();
+		setup_reader(true);
     }
 
-    public void setup_reader() {
+    public void setup_reader(bool is_reader) {
         clear_counters();
         state = States.S_HEADER;
         try {
-            io_read = new IOChannel.unix_new(fd);
-            if(io_read.set_encoding(null) != IOStatus.NORMAL)
+            io_chan = new IOChannel.unix_new(fd);
+            if(io_chan.set_encoding(null) != IOStatus.NORMAL)
 				error("Failed to set encoding");
-			io_read.set_buffered(false);
-            tag = io_read.add_watch(IOCondition.IN|IOCondition.HUP|
-                                    IOCondition.NVAL|IOCondition.ERR,
-                                    device_read);
-
+			io_chan.set_buffered(false);
+			if(is_reader) {
+				tag = io_chan.add_watch(IOCondition.IN|IOCondition.HUP|
+										IOCondition.NVAL|IOCondition.ERR,
+										device_read);
+			}
         } catch(IOChannelError e) {
             error("IOChannel: %s", e.message);
         }
@@ -854,9 +855,9 @@ public class MWSerial : Object {
 		estr="";
         if(open_w(device, rate)) {
             if(fwd == false)
-                setup_reader();
+                setup_reader(true);
             else {
-                set_noblock();
+                setup_reader(false);
 			}
         } else  {
 			get_error_message(out estr);
