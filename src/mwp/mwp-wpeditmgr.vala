@@ -284,7 +284,7 @@ namespace EditWP {
 				if(chg != 0 || ll || lx != 0) {
 					MsnTools.clear_display();
 					MsnTools.renumber_mission(MissionManager.current());
-					MissionManager.visualise_mission();
+					MissionManager.visualise_mission(false);
 					dlg.setup_ll_listener(ei.no);
 				}
 			});
