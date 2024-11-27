@@ -2,9 +2,7 @@
 
 ## Introduction
 
-{{ mwp }} provides a UI for the Geozones function that is planned to appear in INAV 8.0.0. [INAV Documentation](https://github.com/iNavFlight/inav/blob/master/docs/Geozones.md).
-
-The technical details for this feature are published as part of INAV 8.0.
+{{ mwp }} provides a UI for the Geozones function that first appeared in INAV 8.0.0. The technical details for this feature are published as part of INAV 8.0 [INAV Documentation](https://github.com/iNavFlight/inav/blob/master/docs/Geozones.md).
 
 !!! Note "Version Requirements"
 	The proposed INAV 8.0 implementation of GeoZones **requires** {{ mwp }} 24.11.14 or later.
