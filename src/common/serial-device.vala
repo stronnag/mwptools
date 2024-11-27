@@ -725,9 +725,6 @@ public class MWSerial : Object {
     }
 
     private void setup_ip(string? host, uint16 port, string? rhost=null, uint16 rport = 0) {
-        if(MwpMisc.is_cygwin())
-            force4 = true;
-
         fd = -1;
         baudrate = 0;
 		if((host == null || host.length == 0) &&
@@ -1030,10 +1027,11 @@ public class MWSerial : Object {
         devname = "fd #%d".printf(_fd);
         fd = wrfd = _fd;
 		fwd =  false;
-        if(rate != -1)
+        if(rate != -1) {
             commode = ComMode.TTY|ComMode.STREAM;
-        if(rawfd)
-            commode = ComMode.FD|ComMode.STREAM;
+		} else {
+			commode = ComMode.FD|ComMode.STREAM;
+		}
         setup_fd(rate);
         return available;
     }
