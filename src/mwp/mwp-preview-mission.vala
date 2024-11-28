@@ -40,7 +40,7 @@ public class Previewer : Object {
 			MWPLog.message("Pipe file %s\n", e.message);
 		}
 #else
-		MwpSerial.cf_pipe(fds);
+		MwpPipe.pipe(fds);
 #endif
 		mprv.is_mr = false;
 		mprv.fd = fds[1];
