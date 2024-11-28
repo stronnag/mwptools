@@ -830,7 +830,7 @@ public class MWSerial : Object {
 
     private void set_noblock() {
 #if UNIX
-        Posix.fcntl(fd, Posix.F_SETFL, Posix.fcntl(fd, Posix.F_GETFL, 0) | Posix.O_NONBLOCK);
+        //Posix.fcntl(fd, Posix.F_SETFL, Posix.fcntl(fd, Posix.F_GETFL, 0) | Posix.O_NONBLOCK);
 #endif
     }
 
@@ -1148,6 +1148,7 @@ public class MWSerial : Object {
 
 	private bool thr_io() {
         ssize_t res = 0;
+		MWPLog.message(":DBG: thr_io mode %x\n", commode);
 		while (true) {
 			if ((commode & ComMode.UDP) == ComMode.UDP) {
 				try {
@@ -1168,7 +1169,7 @@ public class MWSerial : Object {
             }
 
 			if(res <= 0) {
-				//MWPLog.message(":DBG: read 0\n");
+				MWPLog.message(":DBG: read 0\n");
 				closing |= 1;
 				clearup();
 				if (available) {
