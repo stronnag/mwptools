@@ -321,7 +321,7 @@ char *get_error_text(int dummy, char *pBuf, size_t bufSize) {
     char *s = pTemp + retSize -1;
     while (s > pTemp && isspace((int)*s))
       *s-- = 0;
-    sprintf(pBuf, "%s (0x%x)", pTemp, GetLastError());
+    sprintf(pBuf, "%s (0x%lx)", pTemp, GetLastError());
     LocalFree((HLOCAL)pTemp);
   }
   return (pBuf);

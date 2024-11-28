@@ -1163,8 +1163,10 @@ public class MWSerial : Object {
 				} catch (Error e) {
 					res = 0;
 				}
+#if LINUX
             } else if((commode & ComMode.BT) == ComMode.BT) {
                 res = Posix.recv(fd, devbuf, MemAlloc.DEV, 0);
+#endif
 			} else {
 				res = Posix.read(fd, devbuf, MemAlloc.DEV);
             }
@@ -1752,6 +1754,7 @@ public class MWSerial : Object {
 			} catch(Error e) {
 				size = 0;
 			}
+#if LINUX
 		} else if((commode & ComMode.BT) == ComMode.BT) {
 			if((commode & ComMode.WEAKBLE) == ComMode.WEAKBLE) {
 				for(int n = (int)count; n > 0; ) {
@@ -1766,6 +1769,7 @@ public class MWSerial : Object {
 			} else {
 				size = Posix.send(wrfd, buf, count, 0);
 			}
+#endif
 		} else if((commode & ComMode.STREAM) == ComMode.STREAM) {
 			if((commode & ComMode.WEAK) == ComMode.WEAK) {
 				for(int n = (int)count; n > 0; ) {
