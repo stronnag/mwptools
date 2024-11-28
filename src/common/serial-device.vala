@@ -1148,7 +1148,6 @@ public class MWSerial : Object {
 
 	private bool thr_io() {
         ssize_t res = 0;
-		MWPLog.message(":DBG: thr_io mode %x\n", commode);
 		while (true) {
 			if ((commode & ComMode.UDP) == ComMode.UDP) {
 				try {
