@@ -387,102 +387,108 @@ class FCMgr :Object {
                 msp.close();
             });
 
-        msp.cli_event.connect((buf,len) => {
-                if(tid != 0) {
-                    Source.remove(tid);
-                    tid = 0;
-                }
-                if(sdump)
-                    Posix.write(1, buf, len);
+        msp.cli_event.connect(() => {
+				MWSerial.INAVEvent? m;
+				while((m = msp.msgq.try_pop()) != null) {
+					if(tid != 0) {
+						Source.remove(tid);
+						tid = 0;
+					}
+					if(sdump)
+						Posix.write(1, m.raw, m.len);
 
-                for(var j = 0; j <len; j++) {
-                    if(buf[j] != 13)
-                        inbuf[inp++] = buf[j];
-                }
+					for(var j = 0; j < m.len; j++) {
+						if(m.raw[j] != 13)
+							inbuf[inp++] = m.raw[j];
+					}
 
-                if(state == State.SETLINES &&
-                   ((string)inbuf).slice(linp,inp).contains("### ERROR:")) {
-					FileStream fs = FileStream.open ("/tmp/fcset-err.txt", "a");
-					fs.printf("Err: %s\n", ((string)inbuf).slice(linp,inp));
-					fs.flush();
-                    errors += lines[lp-1];
-                }
+					if(state == State.SETLINES &&
+					   ((string)inbuf).slice(linp,inp).contains("### ERROR:")) {
+						FileStream fs = FileStream.open ("/tmp/fcset-err.txt", "a");
+						fs.printf("Err: %s\n", ((string)inbuf).slice(linp,inp));
+						fs.flush();
+						errors += lines[lp-1];
+					}
 
-                linp = inp;
-                if(inp >= 9 && Memory.cmp(&inbuf[inp-9], "Rebooting".data, 9) == 0) {
-                    MWPLog.message("Rebooting (%s)\n", state.to_string());
-                    inp = linp = 0;
-                    msp.pmode = oldmode;
-                    if(state == State.EXIT)
-                        Timeout.add(2000, () => { ml.quit(); return false; });
-                    else {
-                        msp.pmode = MWSerial.ProtoMode.NORMAL;
-                        etid = Timeout.add_seconds(2, () => {
-                                try_connect(); return false;
-                            });
-                    }
-                } else if( inp > 3) {
-					if(inbuf[inp-1] == ' ' && inbuf[inp-2] == '#' &&
-					   (inbuf[inp-3] == '\n' || inbuf[inp-3] == '\r')) {
-						if(itest) {
-							var els = timer.elapsed();
-							if(lastid != -1) {
-								tstream.printf("%04d\t%6.3f\t%s\n", lastid, els, lines[lastid]);
-								lastid = -1;
-							}
-						}
-						if(state == State.SETLINES)
-							next_state();
+					linp = inp;
+					if(inp >= 9 && Memory.cmp(&inbuf[inp-9], "Rebooting".data, 9) == 0) {
+						MWPLog.message("Rebooting (%s)\n", state.to_string());
+						inp = linp = 0;
+						msp.pmode = oldmode;
+						if(state == State.EXIT)
+							Timeout.add(2000, () => { ml.quit(); return false; });
 						else {
-							tid = Timeout.add(500, () => {
-									tid = 0;
-									if(inp == linp)
-										next_state();
-									return false;
+							msp.pmode = MWSerial.ProtoMode.NORMAL;
+							etid = Timeout.add_seconds(2, () => {
+									try_connect(); return false;
 								});
+						}
+					} else if( inp > 3) {
+						if(inbuf[inp-1] == ' ' && inbuf[inp-2] == '#' &&
+						   (inbuf[inp-3] == '\n' || inbuf[inp-3] == '\r')) {
+							if(itest) {
+								var els = timer.elapsed();
+								if(lastid != -1) {
+									tstream.printf("%04d\t%6.3f\t%s\n", lastid, els, lines[lastid]);
+									lastid = -1;
+								}
+							}
+							if(state == State.SETLINES)
+								next_state();
+							else {
+								tid = Timeout.add(500, () => {
+										tid = 0;
+										if(inp == linp)
+											next_state();
+										return false;
+									});
+							}
 						}
 					}
 				}
             });
 
-        msp.serial_event.connect((cmd, raw, len, flags, err) => {
-                if(err == false) {
-                    switch(cmd) {
+		msp.inav_message.connect(()  => {
+				//				msp.serial_event.connect((cmd, raw, len, flags, err) => {
+				MWSerial.INAVEvent? m;
+				while((m = msp.msgq.try_pop()) != null) {
+					if(m.err == false) {
+						switch(m.cmd) {
                         case Msp.Cmds.API_VERSION:
-                        cancel_timers();
-                        if(trace == 0)
-                            next_state();
-                        break;
+							cancel_timers();
+							if(trace == 0)
+								next_state();
+							break;
 
-                        case Msp.Cmds.DEBUGMSG:
-                        MWPLog.message((string)raw);
-                        trace++;
-                        if(trace == 2)
-                            next_state();
-                        break;
+						case Msp.Cmds.DEBUGMSG:
+							MWPLog.message((string)m.raw);
+							trace++;
+							if(trace == 2)
+								next_state();
+							break;
 
                         case Msp.Cmds.CALIBRATE_ACC:
-                        Timeout.add_seconds(4, () => {
-                                MWPLog.message("Accelerometer calibration finished\n");
-                                msp.send_command(Msp.Cmds.EEPROM_WRITE,null, 0);
-                                if(noback)
-                                    ml.quit();
-                                else {
-                                    state = State.BACKUP;
-                                    next_state();
-                                }
-                                return false;
-                            });
-                        break;
+							Timeout.add_seconds(4, () => {
+									MWPLog.message("Accelerometer calibration finished\n");
+									msp.send_command(Msp.Cmds.EEPROM_WRITE,null, 0);
+									if(noback)
+										ml.quit();
+									else {
+										state = State.BACKUP;
+										next_state();
+									}
+									return false;
+								});
+							break;
 
                         case Msp.Cmds.FC_VERSION:
-                        fc_vers = raw[0] << 16 | raw[1] << 8 | raw[2];
-                        msp.send_command(Msp.Cmds.FC_VARIANT, null, 0);
-                        break;
+							fc_vers = m.raw[0] << 16 | m.raw[1] << 8 | m.raw[2];
+							msp.send_command(Msp.Cmds.FC_VARIANT, null, 0);
+							break;
 
                         case Msp.Cmds.FC_VARIANT:
-                        string fwid = (string)raw[0:4];
-                        switch(fwid) {
+							string fwid = (string)m.raw[0:4];
+							switch(fwid) {
                             case "INAV":
                                 fc = Fc.INAV;
                                 break;
@@ -492,18 +498,19 @@ class FCMgr :Object {
                             default:
                                 fc = Fc.UNKNOWN;
                                 break;
-                        }
+							}
 
-						if(mode == Mode.GET)
-							Idle.add(() => { start_cli(); return false; });
-						else
-							Idle.add(() => { start_restore(); return false;});
-                        break;
+							if(mode == Mode.GET)
+								Idle.add(() => { start_cli(); return false; });
+							else
+								Idle.add(() => { start_restore(); return false;});
+							break;
 
                         default:
-                        break;
-                    }
-                }
+							break;
+						}
+					}
+				}
             });
 
         msp.serial_lost.connect(() => {

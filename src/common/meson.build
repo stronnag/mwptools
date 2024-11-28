@@ -66,7 +66,7 @@ libargs = {
 libargs += { 'install_dir': [ get_option('prefix') / 'lib', true, true] }
 
 if dynalib
-  libargs += {  'version': '2.0.0', 'soversion': '2', }
+  libargs += {  'version': '3.0.0', 'soversion': '3', }
   libargs += { 'install_rpath': '$ORIGIN/../lib', }
   mwpvlib = both_libraries('mwpvlib', kwargs: libargs)
 else

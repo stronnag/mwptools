@@ -153,8 +153,11 @@ namespace Radar {
 					r.dev = new MWSerial();
 					r.dev.set_mode(MWSerial.Mode.SIM);
 					r.dev.set_pmask(MWSerial.PMask.INAV);
-					r.dev.serial_event.connect((s,cmd,raw,len,xflags,errs) => {
-							MspRadar.handle_radar(s, cmd,raw,len,xflags,errs);
+					r.dev.inav_message.connect(()  => {
+							MWSerial.INAVEvent? m;
+							while((m = r.dev.msgq.try_pop()) != null) {
+								MspRadar.handle_radar(r.dev, m.cmd,m.raw,m.len,m.flags,m.err);
+							}
 						});
 					radardevs += r;
 				}

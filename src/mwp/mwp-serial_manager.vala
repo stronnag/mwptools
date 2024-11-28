@@ -45,20 +45,32 @@ namespace Msp {
 				close_serial();
 			});
 
-        Mwp.msp.serial_event.connect((cmd,raw,len,xflags,errs) => {
-                Mwp.handle_serial(Mwp.msp, cmd,raw,len,xflags,errs);
+        Mwp.msp.inav_message.connect(() => {
+				MWSerial.INAVEvent? m;
+				while((m = Mwp.msp.msgq.try_pop()) != null) {
+					Mwp.handle_serial(Mwp.msp, m.cmd,m.raw,m.len,m.flags,m.err);
+				}
+			});
+
+		Mwp.msp.crsf_event.connect(() => {
+				MWSerial.INAVEvent? m;
+				while((m = Mwp.msp.msgq.try_pop()) != null) {
+					CRSF.ProcessCRSF(Mwp.msp, m.raw);
+				}
             });
 
-        Mwp.msp.crsf_event.connect((raw) => {
-				CRSF.ProcessCRSF(Mwp.msp, raw);
+        Mwp.msp.flysky_event.connect(() => {
+				MWSerial.INAVEvent? m;
+				while((m = Mwp.msp.msgq.try_pop()) != null) {
+					Flysky.ProcessFlysky(Mwp.msp, m.raw);
+				}
             });
 
-        Mwp.msp.flysky_event.connect((raw) => {
-				Flysky.ProcessFlysky(Mwp.msp, raw);
-            });
-
-        Mwp.msp.sport_event.connect((id,val) => {
-                Frsky.process_sport_message (Mwp.msp, (SportDev.FrID)id, val);
+        Mwp.msp.sport_event.connect(() => {
+				MWSerial.INAVEvent? m;
+				while((m = Mwp.msp.msgq.try_pop()) != null) {
+					Frsky.process_sport_message (Mwp.msp, m.raw);
+				}
             });
 
 		if(Mwp.serial != null) {
@@ -166,7 +178,7 @@ namespace Msp {
             MwpMenu.set_menu_state(Mwp.window, "navconfig", false);
             Mwp.duration = -1;
 			//craft.remove_marker();
-			//Mwp.init_have_home();
+			Mwp.init_have_home();
             Mwp.xsensor = 0;
             Mwp.clear_sensor_array();
         } else {
@@ -214,6 +226,7 @@ namespace Msp {
 
 	private void serial_complete_setup(string serdev, bool ostat) {
 		Mwp.window.conbutton.sensitive = true;
+		Mwp.hard_display_reset();
 		if (ostat == true) {
 			Mwp.xarm_flags=0xffff;
 			Mwp.lastrx = Mwp.lastok = Mwp.nticks;

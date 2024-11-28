@@ -238,8 +238,12 @@ namespace Mwp {
 				MspRadar.handle_radar(ser, cmd, raw, len, xflags, errs);
 				return true;
 			} else {
-				raw[len] = 0;
-				vname = (string)raw;
+				if(len > 0) {
+					raw[len] = 0;
+					vname = (string)raw;
+				} else {
+					vname = "no-name";
+				}
 				MWPLog.message("Model name: \"%s\"\n", vname);
                 Odo.view.set_name(vname);
 

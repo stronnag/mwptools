@@ -223,7 +223,7 @@ namespace Mwp {
 						cleanup_replay();
 						replayer = 0;
 						if(errlines.length > 0) {
-							StringBuilder sb = new StringBuilder("Replay errors\n");
+							StringBuilder sb = new StringBuilder("Replay Info:\n");
 							foreach (var l in errlines) {
 								sb.append_c('\t');
 								sb.append(l);
@@ -297,6 +297,7 @@ namespace Mwp {
 				set_pmask_poller(MWSerial.PMask.INAV);
 			}
             set_replay_menus(false);
+			Mwp.hard_display_reset();
             MwpMenu.set_menu_state(Mwp.window, "stop-replay", true);
             magcheck = delay; // only check for normal replays (delay == true)
             switch(replayer) {

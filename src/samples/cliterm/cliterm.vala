@@ -73,17 +73,23 @@ class ClITerm : Object {
 				}
 			}
 		}
-        msp.cli_event.connect((buf,len) => {
-                if(sendpass)
-                    ml.quit();
-                else
-                    Posix.write(1,buf,len);
-            });
+        msp.cli_event.connect(() => {
+				MWSerial.INAVEvent? m;
+				while((m = msp.msgq.try_pop()) != null) {
+					if(sendpass)
+						ml.quit();
+					else
+						Posix.write(1, m.raw, m.len);
+				}
+			});
 
-		msp.serial_event.connect((cmd, buf, len, flags, err) => {
-				if (!err && cmd == Msp.Cmds.FC_VERSION) {
-					inavvers = buf[0];
-					msp_init();
+		msp.inav_message.connect(() => {
+				MWSerial.INAVEvent? m;
+				while((m = msp.msgq.try_pop()) != null) {
+					if (!m.err && m.cmd == Msp.Cmds.FC_VERSION) {
+						inavvers = m.raw[0];
+						msp_init();
+					}
 				}
 			});
 
