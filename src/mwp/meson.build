@@ -76,7 +76,7 @@ mwpdeps = [deps,
           ]
 
 if host_machine.system() != 'windows'
-  deps += dependency('vte-2.91-gtk4')
+  mwpdeps += dependency('vte-2.91-gtk4')
 endif
 
 mwpsrcs += svyfiles

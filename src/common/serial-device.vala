@@ -403,7 +403,6 @@ public class MWSerial : Object {
 	private string devname;
     private int fd=-1;
 	private int wrfd=-1;
-    private IOChannel io_read;
     private Socket skt;
     private SocketAddress sockaddr;
     public  States state {private set; get;}
@@ -422,7 +421,6 @@ public class MWSerial : Object {
     public bool available {private set; get;}
     public bool is_main ;
     public bool force4 = false;
-    private uint tag;
     private char readdirn {set; get; default= '>';}
     private char writedirn {set; get; default= '<';}
     private bool errstate;
@@ -457,6 +455,8 @@ public class MWSerial : Object {
 	private BleSerial gs;
 #endif
 	public TrackData td;
+	public AsyncQueue<INAVEvent?> msgq;
+	private uint8 closing;
 
 	private const int WEAKSIZE = 1;
 
@@ -466,14 +466,17 @@ public class MWSerial : Object {
         DEV=2048
     }
 
+	[Flags]
     public enum ComMode {
-        TTY=1,
-        STREAM=2,
-        FD=4,
-        BT=8,
-		BLE=0x10,
-		WEAK=0x20,
-		WEAKBLE=0x40,
+        TTY,
+        STREAM,
+        FD,
+        BT,
+		BLE,
+		WEAK,
+		WEAKBLE,
+		UDP,
+		TCP
     }
 
     public enum Mode {
@@ -536,12 +539,20 @@ public class MWSerial : Object {
 		S_MPM_P = 600,
 	}
 
-    public signal void serial_event (Msp.Cmds event, uint8[]result, uint len, uint8 flags, bool err);
-    public signal void cli_event(uint8[]raw, uint len);
+	public struct INAVEvent {
+		public Msp.Cmds cmd;
+		public uint len;
+		public uint8 flags;
+		public bool err;
+		public uint8[]raw;
+	}
+
     public signal void serial_lost ();
-    public signal void sport_event(uint32 a, uint32 b);
-    public signal void flysky_event(uint8[]buf);
-    public signal void crsf_event(uint8[]raw);
+    public signal void inav_message();
+	public signal void crsf_event();
+    public signal void flysky_event();
+	public signal void cli_event();
+    public signal void sport_event();
 
     public static PMask name_to_pmask(string name) {
         switch(name.down()) {
@@ -702,75 +713,58 @@ public class MWSerial : Object {
 			if (rate > 0 && rate < 19200) {
 				commode |= ComMode.WEAK;
 			}
-            MwpSerial.set_speed(fd, (int)rate, null);
+            MwpSerial.set_speed(fd, (int)rate);
         }
         available = true;
 		setup_reader();
     }
 
-    public void setup_reader() {
+	public void setup_reader() {
         clear_counters();
         state = States.S_HEADER;
-        try {
-#if UNIX
-            io_read = new IOChannel.unix_new(fd);
-#else
-            if((commode & ComMode.TTY) == ComMode.TTY) {
-				io_read = new IOChannel.win32_new_fd(fd);
-			} else {
-				io_read = new IOChannel.win32_socket(fd);
-			}
-#endif
-            if(io_read.set_encoding(null) != IOStatus.NORMAL)
-				error("Failed to set encoding");
-            tag = io_read.add_watch(IOCondition.IN|IOCondition.HUP|
-                                    IOCondition.NVAL|IOCondition.ERR,
-                                    device_read);
-
-        } catch(IOChannelError e) {
-            error("IOChannel: %s", e.message);
-        }
-    }
+		msgq = new AsyncQueue<INAVEvent?>();
+		new Thread<bool>("reader", () => {
+				thr_io();
+				return false;
+			});
+	}
 
     private void setup_ip(string? host, uint16 port, string? rhost=null, uint16 rport = 0) {
-        if(MwpMisc.is_cygwin())
-            force4 = true;
-
         fd = -1;
         baudrate = 0;
-		if((host == null || host.length == 0) &&
-           ((commode & ComMode.STREAM) != ComMode.STREAM)) {
-                SocketFamily[] fams = {};
-                if(!force4)
-                    fams += SocketFamily.IPV6;
-                fams += SocketFamily.IPV4;
-                foreach(var fam in fams) {
-					try {
-						var sa = new InetSocketAddress (new InetAddress.any(fam),
+		if((host == null || host.length == 0) && ((commode & ComMode.STREAM) != ComMode.STREAM)) {
+			SocketFamily[] fams = {};
+			if(!force4)
+				fams += SocketFamily.IPV6;
+			fams += SocketFamily.IPV4;
+			foreach(var fam in fams) {
+				try {
+					var sa = new InetSocketAddress (new InetAddress.any(fam),
                                                     (uint16)port);
-						skt = new Socket (fam, SocketType.DATAGRAM, SocketProtocol.UDP);
-						if (skt != null) {
-							skt.bind (sa, true);
-							fd = skt.fd;
-							if(debug) {
-								MWPLog.message("bound: %s %d %d\n", fam.to_string(), fd, port);
-							}
-							break;
+					skt = new Socket (fam, SocketType.DATAGRAM, SocketProtocol.UDP);
+					if (skt != null) {
+						skt.bind (sa, true);
+						fd = skt.fd;
+						if(debug) {
+							MWPLog.message("bound: %s %d %d\n", fam.to_string(), fd, port);
 						}
-					} catch (Error e) {
-						MWPLog.message ("Bind %s\n", e.message);
+						commode |= ComMode.UDP;
+						break;
 					}
-                }
-                if(rhost != null && rport != 0) {
-					try {
-						var resolver = Resolver.get_default ();
-						var addresses = resolver.lookup_by_name (rhost, null);
-						var addr0 = addresses.nth_data (0);
-						sockaddr = new InetSocketAddress(addr0,rport);
-					} catch (Error e) {
-						MWPLog.message ("RBind %s\n", e.message);
-					}
-                }
+				} catch (Error e) {
+					MWPLog.message ("Bind %s\n", e.message);
+				}
+			}
+			if(rhost != null && rport != 0) {
+				try {
+					var resolver = Resolver.get_default ();
+					var addresses = resolver.lookup_by_name (rhost, null);
+					var addr0 = addresses.nth_data (0);
+					sockaddr = new InetSocketAddress(addr0,rport);
+				} catch (Error e) {
+					MWPLog.message ("RBind %s\n", e.message);
+				}
+			}
         } else {
             SocketProtocol sproto;
             SocketType stype;
@@ -797,20 +791,25 @@ public class MWSerial : Object {
                         if((commode & ComMode.STREAM) == ComMode.STREAM) {
                             stype = SocketType.STREAM;
                             sproto = SocketProtocol.TCP;
+							commode |= ComMode.TCP;
                         } else {
                             stype = SocketType.DATAGRAM;
                             sproto = SocketProtocol.UDP;
-                        }
+							commode |= ComMode.UDP;
+						}
                         skt = new Socket (fam, stype, sproto);
                         if(skt != null) {
                             fd = skt.fd;
-							MWPLog.message(":DBG: Get socket %d\n", fd);
                             if(fd != -1) {
                                 try {
-                                    if (sproto != SocketProtocol.UDP)
+                                    if (sproto != SocketProtocol.UDP) {
                                         skt.connect(sockaddr);
-                                    set_noblock();
-                                } catch (Error e) {
+										skt.set_blocking(true);
+									} else {
+										skt.set_blocking(false);
+									}
+									//set_noblock();
+								} catch (Error e) {
                                     MWPLog.message("connection fails %s\n", e.message);
                                     skt.close();
                                     fd = -1;
@@ -831,17 +830,10 @@ public class MWSerial : Object {
 
     private void set_noblock() {
 #if UNIX
-        Posix.fcntl(fd, Posix.F_SETFL, Posix.fcntl(fd, Posix.F_GETFL, 0) | Posix.O_NONBLOCK);
+        //Posix.fcntl(fd, Posix.F_SETFL, Posix.fcntl(fd, Posix.F_GETFL, 0) | Posix.O_NONBLOCK);
 #endif
     }
 
-/*
-  public bool open_sport(string device, out string estr) {
-  fwd = false;
-  MWPLog.message("SPORT: open %s\n", device);
-  return open(device, 0, out estr);
-  }
-*/
 	public void get_error_message(out string estr) {
 		estr = "";
 		uint8 [] sbuf = new uint8[1024];
@@ -862,11 +854,12 @@ public class MWSerial : Object {
 
 	public bool open(string device, uint rate, out string estr) {
 		estr="";
+		closing = 0;
         if(open_w(device, rate)) {
-            if(fwd == false)
+            if(fwd == false) {
                 setup_reader();
-            else {
-                set_noblock();
+			} else {
+				// set_noblock();
 			}
         } else  {
 			get_error_message(out estr);
@@ -1041,10 +1034,11 @@ public class MWSerial : Object {
         devname = "fd #%d".printf(_fd);
         fd = wrfd = _fd;
 		fwd =  false;
-        if(rate != -1)
+        if(rate != -1) {
             commode = ComMode.TTY|ComMode.STREAM;
-        if(rawfd)
-            commode = ComMode.FD|ComMode.STREAM;
+		} else {
+			commode = ComMode.FD|ComMode.STREAM;
+		}
         setup_fd(rate);
         return available;
     }
@@ -1054,13 +1048,8 @@ public class MWSerial : Object {
             close();
     }
 
-    public void close() {
-        available=false;
-        if(fd != -1) {
-            if(tag > 0) {
-                Source.remove(tag);
-                tag = 0;
-            }
+	public void close() {
+		if(available) {
             if((commode & ComMode.TTY) == ComMode.TTY) {
 				MwpSerial.close(fd);
 			} else if ((commode & ComMode.FD) == ComMode.FD) {
@@ -1078,17 +1067,29 @@ public class MWSerial : Object {
 			} else {
 				if (!skt.is_closed()) {
                     try {
+						if ((commode & ComMode.UDP) == 0) {
+							skt.shutdown(true, true);
+						}
                         skt.close();
                     } catch (Error e) {
                         warning ("sock close %s", e.message);
                     }
                 }
-                sockaddr=null;
 			}
-            fd = -1;
-			commode = 0;
 		}
+		available = false;
+		closing |= 2;
+		clearup();
     }
+
+	private void clearup() {
+		if(closing == 3) {
+			closing = 0;
+			fd = -1;
+			commode = 0;
+			sockaddr=null;
+		}
+	}
 
 	public async bool close_async() {
 		var thr = new Thread<bool> ("aclose",  () => {
@@ -1135,72 +1136,54 @@ public class MWSerial : Object {
         }
     }
 
-    private void show_cond(IOCondition cond) {
-        StringBuilder sb = new StringBuilder("");
-        sb.append_printf("Close %s : ", devname);
-        sb.append_c(' ');
-        for(var j = 0; j < 8; j++) {
-            IOCondition n = (IOCondition)(1 << j);
-            if((cond & n) == n) {
-                sb.append(n.to_string());
-                sb.append_c('|');
-            }
-        }
-        sb.truncate(sb.len-1);
-        sb.append_printf(" (%x)\n", cond);
-        MWPLog.message(sb.str);
-    }
-
 	private bool fr_publish(uint8 []buf) {
 		bool res = SportDev.fr_checksum(buf);
 		if(res) {
-			ushort id;
-			uint val;
-			SEDE.deserialise_u16(&buf[2], out id);
-			SEDE.deserialise_u32(&buf[4], out val);
-			sport_event((uint32)id,val);
+			var msg = INAVEvent(){cmd=0, len=0, flags=0, err=false, raw=buf};
+			msgq.push(msg);
+			Idle.add_once(() => { sport_event();});
 		}
 		return res;
 	}
 
-    private bool device_read(IOChannel gio, IOCondition cond) {
+	private bool thr_io() {
         ssize_t res = 0;
-		MWPLog.message("DBG: Dev Read %s\n", cond.to_string());
-        if((cond & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0) {
-            show_cond(cond);
-			//            available = false;
-            if(fd != -1)
-                serial_lost();
-            tag = 0; // REMOVE will remove the iochannel watch
-            return Source.REMOVE;
-        } else if (fd != -1 && (cond & IOCondition.IN) != 0) {
-            if((commode & ComMode.BT) == ComMode.BT) {
-#if UNIX
-                res = Posix.recv(fd,devbuf,MemAlloc.DEV,0);
-                if(res == 0)
-                    return Source.CONTINUE;
-#endif
-            } else if((commode & ComMode.STREAM) == ComMode.STREAM) {
-                res = Posix.read(fd,devbuf,MemAlloc.DEV);
-                if(res == 0) {
-                    if((commode & ComMode.TTY) != ComMode.TTY)
-                        serial_lost();
-                    return Source.CONTINUE;
-                }
-            } else {
-                try {
+		while (true) {
+			if ((commode & ComMode.TTY) == ComMode.TTY) {
+				res = MwpSerial.read(fd, devbuf, MemAlloc.DEV);
+			} else if ((commode & ComMode.UDP) == ComMode.UDP) {
+				try {
                     res = skt.receive_from(out sockaddr, devbuf);
                 } catch(Error e) {
                     res = 0;
                 }
+			} else if((commode & ComMode.TCP) == ComMode.TCP) {
+				try {
+					res = skt.receive(devbuf);
+				} catch (Error e) {
+					res = 0;
+				}
+            } else if((commode & ComMode.BT) == ComMode.BT) {
+                res = Posix.recv(fd, devbuf, MemAlloc.DEV, 0);
+			} else {
+				res = Posix.read(fd, devbuf, MemAlloc.DEV);
             }
-			if(res == 0) {
-				MWPLog.message(":DBG: read 0\n");
+
+			if(res <= 0) {
+				closing |= 1;
+				clearup();
+				if (available) {
+					Idle.add_once(() => { serial_lost(); });
+				}
+				return false;
 			}
-            if(pmode == ProtoMode.CLI) {
-                csize = (uint16)res;
-                cli_event(devbuf, csize);
-            } else {
+
+			if(pmode == ProtoMode.CLI) {
+				csize = (uint16)res;
+				var msg = INAVEvent(){cmd=0, len=csize, flags=0, err=false, raw=devbuf};
+				msgq.push(msg);
+				Idle.add_once(() => {cli_event();});
+			} else {
                 if(stime == 0)
                     stime =  GLib.get_monotonic_time();
                 ltime =  GLib.get_monotonic_time();
@@ -1218,7 +1201,10 @@ public class MWSerial : Object {
 						if(mpmres == MPM.Mtype.MPM_FRSKY) {
 							fr_publish(MPM.get_buffer());
 						} else if (mpmres == MPM.Mtype.MPM_FLYSKYAA) {
-							flysky_event(MPM.get_buffer());
+							var fbuf = MPM.get_buffer();
+							var msg = INAVEvent(){cmd=0, len=0, flags=0, err=false, raw=fbuf};
+							msgq.push(msg);
+							Idle.add_once(() => {flysky_event();});
 						}
 					} else {
 						switch(state) {
@@ -1310,7 +1296,9 @@ public class MWSerial : Object {
 									}
 									crsf_len = -1;
 								} else {
-									crsf_event(CRSF.crsf_buffer);
+									var msg = INAVEvent(){cmd=0, len=crsf_len, flags=0, err=false, raw=CRSF.crsf_buffer};
+									msgq.push(msg);
+									Idle.add_once(() => {crsf_event();});
 								}
 							}
 							if (crsf_len == -1) {
@@ -1472,8 +1460,11 @@ public class MWSerial : Object {
 							if(checksum  == devbuf[nc]) {
 								state = States.S_HEADER;
 								stats.msgs++;
-								if(cmd < Msp.Cmds.MSPV2 || cmd > Msp.Cmds.LTM_BASE)
-									serial_event(cmd, rxbuf, csize, xflags, errstate);
+								if(cmd < Msp.Cmds.MSPV2 || cmd > Msp.Cmds.LTM_BASE) {
+									var msg = INAVEvent(){cmd=cmd, len=csize, flags=xflags, err=errstate, raw=rxbuf[0:csize]};
+									msgq.push(msg);
+									Idle.add_once(() => { inav_message(); });
+								}
 								irxbufp = 0;
 							} else {
 								error_counter("MSP/CRC");
@@ -1553,7 +1544,9 @@ public class MWSerial : Object {
 							if(checksum2  == devbuf[nc]) {
 								state = (encap) ? States.S_CHECKSUM : States.S_HEADER;
 								stats.msgs++;
-								serial_event((Msp.Cmds)xcmd, rxbuf, csize, xflags, errstate);
+								var msg = INAVEvent(){cmd=xcmd, len=csize, flags=xflags, err=errstate, raw=rxbuf[0:csize]};
+								msgq.push(msg);
+								Idle.add_once(() => {inav_message();});
 								irxbufp = 0;
 							} else {
 								error_counter("MSP2/CRC");
@@ -1616,7 +1609,9 @@ public class MWSerial : Object {
 								rxmavsum |= (devbuf[nc] << 8);
 								if(rxmavsum == mavsum) {
 									stats.msgs++;
-									serial_event (cmd+Msp.Cmds.MAV_BASE, rxbuf, csize, 0, errstate);
+									var msg = INAVEvent(){cmd=cmd+Msp.Cmds.MAV_BASE, len=csize, flags=0, err=errstate, raw=rxbuf[0:csize]};
+									msgq.push(msg);
+									inav_message();
 									state = States.S_HEADER;
 								} else {
 									error_counter("Mav/CRC");
@@ -1699,8 +1694,9 @@ public class MWSerial : Object {
 							rxmavsum |= (devbuf[nc] << 8);
 							if(rxmavsum == mavsum) {
 								stats.msgs++;
-								serial_event (cmd+Msp.Cmds.MAV_BASE,
-											  rxbuf, csize, 0, errstate);
+								var msg = INAVEvent(){cmd=cmd+Msp.Cmds.MAV_BASE, len=csize, flags=0, err=errstate, raw=rxbuf[0:csize]};
+								msgq.push(msg);
+								inav_message();
 								if(mavsig == 0)
 									state = States.S_HEADER;
 								else
@@ -1726,7 +1722,6 @@ public class MWSerial : Object {
 				}
 			}
 		}
-		return Source.CONTINUE;
 	}
 
 	public uint16 mavlink_crc(uint16 acc, uint8 val) {
@@ -1738,9 +1733,8 @@ public class MWSerial : Object {
 	}
 
 	public ssize_t write(void *buf, size_t count) {
-		MWPLog.message("DBG: IOWrite mode  %x\n", commode);
 		ssize_t size = 0;
-		if(ro)
+		if(ro || !available)
 			return 0;
 
 		if(stime == 0 && pmode == ProtoMode.NORMAL)
@@ -1748,8 +1742,17 @@ public class MWSerial : Object {
 
 		stats.txbytes += count;
 
-		if((commode & ComMode.BT) == ComMode.BT) {
-#if UNIX
+		if(rawlog == true) {
+			log_raw('o',buf,(int)count);
+		}
+
+		if((commode & ComMode.UDP) == ComMode.UDP) {
+			try {
+				size = skt.send_to (sockaddr, ((uint8[])buf)[0:count]);
+			} catch(Error e) {
+				size = 0;
+			}
+		} else if((commode & ComMode.BT) == ComMode.BT) {
 			if((commode & ComMode.WEAKBLE) == ComMode.WEAKBLE) {
 				for(int n = (int)count; n > 0; ) {
 					var nc = (n > WEAKSIZE) ? WEAKSIZE : n;
@@ -1763,13 +1766,11 @@ public class MWSerial : Object {
 			} else {
 				size = Posix.send(wrfd, buf, count, 0);
 			}
-#endif
 		} else if((commode & ComMode.STREAM) == ComMode.STREAM) {
-			MWPLog.message("DBG: Stream %d %d\n", wrfd, (int)size);
 			if((commode & ComMode.WEAK) == ComMode.WEAK) {
 				for(int n = (int)count; n > 0; ) {
 					var nc = (n > WEAKSIZE) ? WEAKSIZE : n;
-					size += Posix.write(wrfd, buf, nc);
+					size += stream_write(buf, nc);
 					n -= nc;
 					buf = (void*)((uint8*)buf + nc);
 					if (n > 0) {
@@ -1777,30 +1778,24 @@ public class MWSerial : Object {
 					}
 				}
 			} else {
-            if((commode & ComMode.TTY) == ComMode.TTY) {
-				size = Posix.write(wrfd, buf, count);
-			} else {
-				uint8[]ubuf = new uint8[count];
-				for(var k = 0; k < count; k++) {
-					ubuf[k] = *(((uint8*)buf + k));
-				}
-				size = skt.send (ubuf);
+				size = stream_write(buf, count);
 			}
-			MWPLog.message("DBG: Write %d %d\n", wrfd, (int)size);
-			}
-		} else {
-			unowned uint8[] sbuf = (uint8[]) buf;
-			sbuf.length = (int)count;
-			try {
-				size = skt.send_to (sockaddr, sbuf);
-			} catch(Error e) {
-				size = 0;
-			}
-		}
-		if(rawlog == true) {
-			log_raw('o',buf,(int)count);
 		}
 		return size;
+	}
+
+	private ssize_t stream_write(void *buf, size_t count) {
+		if((commode & ComMode.TTY) == ComMode.TTY) {
+			return MwpSerial.write(fd, buf, count);
+		} else if((commode & ComMode.TCP) == ComMode.TCP) {
+			try {
+				return skt.send(((uint8[])buf)[0:count]);
+			} catch {
+				return 0;
+			}
+		} else {
+			return Posix.write(wrfd, buf, count);
+		}
 	}
 
 	public void send_ltm(uint8 cmd, void *data, size_t len) {
@@ -1912,8 +1907,6 @@ public class MWSerial : Object {
 	}
 
 	public size_t send_command(uint16 cmd, void *data, size_t len, bool sim=false) {
-		MWPLog.message(":DBG: send cmd %u %s %s\n", cmd,
-					   available.to_string(), ro.to_string());
 		if(available == true && !ro) {
 			char tmp = writedirn;
 			if (sim) // forces SIM mode (inav-radar)

@@ -8,7 +8,7 @@ endif
 
 paho = meson.get_compiler('c').find_library('paho-mqtt3cs', kwargs: pahoargs)
 
-clsrcs = files('btdev.c', 'get_locale_double.c', 'cserial.c', 'speech_wrapper.c')
+clsrcs = files('btdev.c', 'get_locale_double.c', 'rserial.c', 'speech_wrapper.c')
 if paho.found()
   clsrcs += 'paho_wrapper.c'
   clib_dep += paho
@@ -31,7 +31,7 @@ libargs = {
 }
 
 if dynalib
-  libargs += {  'version': '2.0.0', 'soversion': '2', }
+  libargs += {  'version': '3.0.0', 'soversion': '3', }
   mwpclib = both_libraries('mwpclib', kwargs: libargs)
 else
   mwpclib = static_library('mwpclib', kwargs: libargs)

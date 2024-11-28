@@ -300,24 +300,36 @@ namespace TelemTracker {
 					});
 			}
 
-			sd.dev.serial_event.connect((s,cmd,raw,len,xflags,errs) => {
-					if(cmd >= Msp.Cmds.LTM_BASE && cmd < Msp.Cmds.MAV_BASE) {
-						Mwp.handle_ltm(s, cmd, raw, len);
-					} else if (cmd >= Msp.Cmds.MAV_BASE && cmd < Msp.Cmds.MAV_BASE+256) {
-						Mwp.handle_mavlink(s, cmd, raw, len);
+			sd.dev.inav_message.connect(() => {
+					MWSerial.INAVEvent? m;
+					while((m = sd.dev.msgq.try_pop()) != null) {
+						if(m.cmd >= Msp.Cmds.LTM_BASE && m.cmd < Msp.Cmds.MAV_BASE) {
+							Mwp.handle_ltm(sd.dev, m.cmd, m.raw, m.len);
+						} else if (m.cmd >= Msp.Cmds.MAV_BASE && m.cmd < Msp.Cmds.MAV_BASE+256) {
+							Mwp.handle_mavlink(sd.dev, m.cmd, m.raw, m.len);
+						}
 					}
 				});
 
-			sd.dev.crsf_event.connect((raw) => {
-					CRSF.ProcessCRSF(sd.dev, raw);
+			sd.dev.crsf_event.connect(() => {
+					MWSerial.INAVEvent? m;
+					while((m = sd.dev.msgq.try_pop()) != null) {
+						CRSF.ProcessCRSF(sd.dev, m.raw);
+					}
 				});
 
-			sd.dev.flysky_event.connect((raw) => {
-					Flysky.ProcessFlysky(sd.dev, raw);
+			sd.dev.flysky_event.connect(() => {
+					MWSerial.INAVEvent? m;
+					while((m = sd.dev.msgq.try_pop()) != null) {
+						Flysky.ProcessFlysky(sd.dev, m.raw);
+					}
 				});
 
-			sd.dev.sport_event.connect((id,val) => {
-					Frsky.process_sport_message (sd.dev, (SportDev.FrID)id, val);
+			sd.dev.sport_event.connect(() => {
+					MWSerial.INAVEvent? m;
+					while((m = sd.dev.msgq.try_pop()) != null) {
+						Frsky.process_sport_message (sd.dev, m.raw);
+					}
 				});
 
 			sd.dev.serial_lost.connect(() => {

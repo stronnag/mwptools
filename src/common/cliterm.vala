@@ -66,17 +66,21 @@ public class CLITerm : Gtk.Window {
 	public void configure_serial (MWSerial _s, bool hash=false) {
         s = _s;
 		oldmode  =  s.pmode;
-        s.cli_event.connect((buf,len) => {
-                buf[len] = 0;
-                term.feed(buf[0:len]);
-                if(((string)buf).contains("Rebooting")) {
-                    term.feed("\r\n\n\x1b[1mEither close this window or type # to re-enter the CLI\x1b[0m\r\n".data);
-					reboot();
+        s.cli_event.connect(() => {
+				MWSerial.INAVEvent? m;
+				while((m = s.msgq.try_pop()) != null) {
+					m.raw[m.len] = 0;
+					term.feed(m.raw[0:m.len]);
+					if(((string)m.raw).contains("Rebooting")) {
+						term.feed("\r\n\n\x1b[1mEither close this window or type # to re-enter the CLI\x1b[0m\r\n".data);
+						reboot();
+					}
+					if (((string)m.raw).contains("Entering") || (m.raw[0] == '#')) {
+						enter_cli();
+					}
 				}
-				if (((string)buf).contains("Entering") || (buf[0] == '#')) {
-					enter_cli();
-				}
-            });
+			});
+
 		s.pmode = MWSerial.ProtoMode.CLI;
 		if(hash) {
 			uint8 c[1] = {'#'};

@@ -14,9 +14,6 @@
  *
  * (c) Jonathan Hudson <jh+mwptools@daria.co.uk>
  */
-#if !UNIX
-extern int cf_pipe(int* fds);
-#endif
 public class Previewer : Object {
 	private MissionPreviewer mprv;
 	private bool preview_running = false;
@@ -43,7 +40,7 @@ public class Previewer : Object {
 			MWPLog.message("Pipe file %s\n", e.message);
 		}
 #else
-		cf_pipe(fds);
+		MwpSerial.cf_pipe(fds);
 #endif
 		mprv.is_mr = false;
 		mprv.fd = fds[1];

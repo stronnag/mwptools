@@ -25,7 +25,11 @@ namespace Frsky {
         return imode;
     }
 
-	public void process_sport_message (MWSerial ser, SportDev.FrID id, uint32 val) {
+	public void process_sport_message (MWSerial ser, uint8[]buf) {
+		ushort id;
+		uint val;
+		SEDE.deserialise_u16(&buf[2], out id);
+		SEDE.deserialise_u32(&buf[4], out val);
 		if(!SportDev.active) {
 			Mwp.window.mmode.label = "S-PORT";
 			SportDev.active = true;

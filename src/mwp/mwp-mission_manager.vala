@@ -246,8 +246,9 @@ namespace MissionManager {
 		return _ms;
 	}
 
-	public void visualise_mission() {
-		zoom_to_mission();
+	public void visualise_mission(bool _zoom = true) {
+		if (_zoom)
+			zoom_to_mission();
 		if (HomePoint.hp != null) {
 			HomePoint.hp.opacity = 1.0;
 		}
