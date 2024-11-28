@@ -207,6 +207,8 @@ char *get_error_text(int errnum, char *buf, size_t buflen) {
 
 #else
 #include <windows.h>
+#include <time.h>
+
 __attribute__ ((unused))
 static void show_error(DWORD errval) {
   char errstr[1024];
