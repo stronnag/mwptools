@@ -713,7 +713,7 @@ public class MWSerial : Object {
 			if (rate > 0 && rate < 19200) {
 				commode |= ComMode.WEAK;
 			}
-            MwpSerial.set_speed(fd, (int)rate, null);
+            MwpSerial.set_speed(fd, (int)rate);
         }
         available = true;
 		setup_reader();
@@ -1149,7 +1149,9 @@ public class MWSerial : Object {
 	private bool thr_io() {
         ssize_t res = 0;
 		while (true) {
-			if ((commode & ComMode.UDP) == ComMode.UDP) {
+			if ((commode & ComMode.TTY) == ComMode.TTY) {
+				res = MwpSerial.read(fd, devbuf, MemAlloc.DEV);
+			} else if ((commode & ComMode.UDP) == ComMode.UDP) {
 				try {
                     res = skt.receive_from(out sockaddr, devbuf);
                 } catch(Error e) {
@@ -1784,7 +1786,9 @@ public class MWSerial : Object {
 	}
 
 	private ssize_t stream_write(void *buf, size_t count) {
-		if((commode & ComMode.TCP) == ComMode.TCP) {
+		if((commode & ComMode.TTY) == ComMode.TTY) {
+			return MwpSerial.write(fd, buf, count);
+		} else if((commode & ComMode.TCP) == ComMode.TCP) {
 			try {
 				return skt.send(((uint8[])buf)[0:count]);
 			} catch {

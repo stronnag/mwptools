@@ -1,36 +1,5 @@
 // MWP external C functions
 
-[CCode (cheader_filename = "mwpfuncs.h")]
-namespace MwpPipe {
-    [CCode (cname = "cf_pipe")]
-    int pipe(int *fds);
-    [CCode (cname = "cf_pipe_close")]
-    int close(int fd);
-}
-
-[CCode (cheader_filename = "mwpfuncs.h")]
-namespace MwpGL {
-    [CCode (cname = "get_glinfo")]
-	void glinfo(out string? vendor, out string? renderer);
-}
-
-[CCode (cheader_filename = "mwpfuncs.h")]
-namespace MwpSerial {
-    [CCode (cname = "flush_serial")]
-    void flush(int fd);
-	 [CCode (cname = "set_fd_speed")]
-    int set_speed(int fd, int rate, int* aspeed);
-    [CCode (cname= "open_serial")]
-    int open(string device, uint baudrate);
-    [CCode (cname = "set_timeout")]
-    void set_timeout(int fd, int tenths, int number);
-    [CCode (cname="close_serial")]
-    void close(int fd);
-    [CCode (cname="get_error_text")]
-    unowned string error_text(int err, char *buf, size_t len);
-    [CCode (cname="default_name")]
-    unowned string default_name();
-}
 
 [CCode (cheader_filename = "mwpfuncs.h")]
 namespace BTSocket {
@@ -100,4 +69,30 @@ namespace MwpMisc {
     [CCode (cname="get_native_path")]
     string get_native_path(string upath);
     public const int MWP_MAX_WP;
+}
+
+[CCode (cheader_filename = "rserial.h")]
+namespace MwpPipe {
+    [CCode (cname = "cf_pipe")]
+    int pipe(int *fds);
+}
+
+[CCode (cheader_filename = "rserial.h")]
+namespace MwpSerial {
+    [CCode (cname= "open_serial")]
+    int open(string device, uint baudrate);
+    [CCode (cname= "read_serial")]
+	ssize_t read(int fd, uint8 *buf, size_t buflen);
+    [CCode (cname= "write_serial")]
+	ssize_t write(int fd, uint8 *buf, size_t buflen);
+	[CCode (cname = "flush_serial")]
+    void flush(int fd);
+    [CCode (cname = "set_timeout")]
+    void set_timeout(int fd, int tenths, int number);
+    [CCode (cname = "set_fd_speed")]
+    void set_speed(int fd, int rate);
+    [CCode (cname="close_serial")]
+    void close(int fd);
+	[CCode (cname="get_error_text")]
+    unowned string error_text(int err, char *buf, size_t len);
 }
