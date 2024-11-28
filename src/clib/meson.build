@@ -31,7 +31,7 @@ libargs = {
 }
 
 if dynalib
-  libargs += {  'version': '2.0.0', 'soversion': '2', }
+  libargs += {  'version': '3.0.0', 'soversion': '3', }
   mwpclib = both_libraries('mwpclib', kwargs: libargs)
 else
   mwpclib = static_library('mwpclib', kwargs: libargs)
