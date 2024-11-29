@@ -331,7 +331,7 @@ char *get_error_text(int dummy, char *pBuf, size_t bufSize) {
 
 struct tm *localtime_r(const time_t *restrict timep, struct tm *r) {
   struct tm *v = localtime(timep);
-  r = calloc(sizeof(*v));
+  r = malloc(sizeof(*v));
   *r = *v;
   return r;
 }
