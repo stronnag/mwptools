@@ -4,7 +4,6 @@ mwpcommon = files('xmlio.vala',
 		  'json_io.vala',
                   'txtio.vala',
                  )
-#mwpcommon = files()
 
 vcommon = files( 'serial-device.vala',
 		'mwp_uriparser.vala',
@@ -19,6 +18,12 @@ vcommon = files( 'serial-device.vala',
 		'devman.vala',
                 'track_data.vala',
                )
+
+if build_machine.system() == 'windows'
+  vcommon += files('winspawn.vala', 'winproc.c')
+else
+  vcommon += files('posixspawn.vala')
+endif
 
 clicommon = ''
 

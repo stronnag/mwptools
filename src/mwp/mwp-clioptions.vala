@@ -75,17 +75,25 @@ namespace Cli {
 	}
 
 	private bool get_app_status(string app, out string bblhelp) {
-        bool ok = true;
-        try {
-			var bbl = new Subprocess(SubprocessFlags.STDERR_MERGE|SubprocessFlags.STDOUT_PIPE,
-									 app, "--version");
-			bbl.communicate_utf8(null, null, out bblhelp, null);
-			bbl.wait();
-        } catch (Error e) {
-			bblhelp = e.message;
-			ok = false;
+		var p = new ProcessLauncher();
+		var res = p.run({app, "--version"}, 1);
+		bblhelp="";
+		if(res) {
+			var sp = p.get_stdout_pipe();
+			IOChannel sout;
+			size_t slen;
+#if UNIX
+			sout = new IOChannel.unix_new(sp);
+#else
+			sout = ;new IOChannel.win32_new_fd(sp);
+#endif
+			try {
+				sout.read_to_end(out bblhelp, out slen);
+			} catch (Error e) {
+				res = false;
+			}
 		}
-        return ok;
+		return res;
 	}
 
 	private void parse_options() {
