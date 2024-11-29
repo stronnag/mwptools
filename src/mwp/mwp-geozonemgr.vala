@@ -765,7 +765,8 @@ public class GeoZoneManager {
 			} else {
 				vname = vname.replace(" ", "_");
 			}
-			var ts = Time.local(currtime).format("%F_%H%M%S");
+			var dt = new DateTime.from_unix_local(currtime);
+			var ts = dt.format("%F_%H%M%S");
 			var basen = "GeoZones-%s-%s.kml".printf(vname, ts);
 			var outfn = GLib.Path.build_filename(spath, basen);
 			MWPLog.message("Save KML %s\n", outfn);

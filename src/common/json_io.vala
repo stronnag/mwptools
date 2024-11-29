@@ -209,7 +209,8 @@ namespace JsonIO {
         builder.set_member_name ("save-date");
         time_t currtime;
         time_t(out currtime);
-        builder.add_string_value(Time.local(currtime).format("%FT%T%z"));
+		var dt = new DateTime.from_unix_local(currtime);
+        builder.add_string_value(dt.format("%FT%T%z"));
         builder.set_member_name ("cx");
         builder.add_double_value (ms.cx);
         builder.set_member_name ("cy");

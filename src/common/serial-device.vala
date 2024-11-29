@@ -1948,7 +1948,8 @@ public class MWSerial : Object {
 			time_t currtime;
 			time_t(out currtime);
 			string dstr = devname.delimit("""\:@/[]""", '_');
-			var fn  = "mwp.%s.%s.raw".printf(dstr, Time.local(currtime).format("%FT%H%M%S"));
+			var dt = new DateTime.from_unix_local(currtime);
+			var fn  = "mwp.%s.%s.raw".printf(dstr, dt.format("%FT%H%M%S"));
 			MWPLog.message("raw log for %s %s\n", devname, fn);
 			raws = Posix.open (fn, Posix.O_TRUNC|Posix.O_CREAT|Posix.O_WRONLY, 0640);
 			timer = new Timer ();

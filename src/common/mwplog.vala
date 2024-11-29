@@ -63,7 +63,8 @@ public class MWPLog : GLib.Object {
             if(logdir == null)
                 logdir = "./";
 
-            var fn = Path.build_filename(logdir, "mwp_stderr_%s.txt".printf(Time.local(currtime).format("%F")));
+			var dt = new DateTime.from_unix_local(currtime);
+            var fn = Path.build_filename(logdir, "mwp_stderr_%s.txt".printf(dt.format("%F")));
 
             fs = FileStream.open(fn,"a");
             if(fs == null) {

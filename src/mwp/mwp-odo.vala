@@ -203,10 +203,12 @@ namespace Odo {
 				}
 			}
 			var fn = GLib.Path.build_filename(spath, "mwp_summary_notes.txt");
-			var ts = Time.local(ntime).format("%F %T");
+			var dt = new DateTime.from_unix_local(ntime);
+			var ts = dt.format("%F %T");
 			var etm = "";
 			if (reason != "Armed" && atime != 0) {
-				etm= Time.local(atime).format(" (%T)");
+				var edt = new DateTime.from_unix_local(atime);
+				etm = edt.format(" (%T)");
 			}
 			var os = FileStream.open(fn, "a");
 			os.printf("## %s for \"%s\" %s%s\n\n", reason, cname, ts, etm);

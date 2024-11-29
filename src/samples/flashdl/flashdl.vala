@@ -115,7 +115,8 @@ public class Flashdl : Object {
                         efsize = esize(used);
                         time_t(out st);
                         if(fname == null)
-                            fname  = "BBL_%s.TXT".printf(Time.local(st).format("%F_%H%M%S"));
+							dt = new DateTime.from_unix_local(st);
+                            fname  = "BBL_%s.TXT".printf(dt.format("%F_%H%M%S"));
                         if (dname != null) {
                             if(!FileUtils.test (dname, FileTest.EXISTS))
                                 DirUtils.create_with_parents (dname, 0755);

@@ -311,7 +311,8 @@ namespace XmlIO {
 			time_t currtime;
 			time_t(out currtime);
 			char[] dbuf = new char[double.DTOSTR_BUF_SIZE];
-			subnode->new_prop ("save-date", Time.local(currtime).format("%FT%T%z"));
+			var dt = new DateTime.from_unix_local(currtime);
+			subnode->new_prop ("save-date", dt.format("%FT%T%z"));
 			subnode->new_prop ("zoom", ms.zoom.to_string());
 			subnode->new_prop ("cx", ms.cx.format(dbuf,"%.7f"));
 			subnode->new_prop ("cy", ms.cy.format(dbuf,"%.7f"));
