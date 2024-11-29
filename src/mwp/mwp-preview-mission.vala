@@ -40,7 +40,7 @@ public class Previewer : Object {
 			MWPLog.message("Unix Pipe %s\n", e.message);
 		}
 #else
-		MwoPipe.pipe(fds);
+		MwpPipe.pipe(fds);
 #endif
 
 		mprv.is_mr = false;
