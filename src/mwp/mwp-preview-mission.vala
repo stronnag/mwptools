@@ -36,22 +36,22 @@ public class Previewer : Object {
 #if UNIX
 		try {
 			GLib.Unix.open_pipe(fds, 0);
+			chn = new IOChannel.unix_new (fds[0]);
 		} catch (Error e) {
 			MWPLog.message("Pipe file %s\n", e.message);
 		}
+
 #else
 		MwpPipe.pipe(fds);
+		chn = new IOChannel.win32_new_fd(fds[0]);
 #endif
+		MWPLog.message(":DBG: Pipes %d %d\n", fds[0], fds[1]);
+
 		mprv.is_mr = false;
 		mprv.fd = fds[1];
-#if UNIX
-		chn = new IOChannel.unix_new (fds[0]);
-#else
-		chn = new IOChannel.win32_new_fd(fds[0]);
-
-#endif
 		try {
 			chn.set_encoding(null);
+			chn.set_buffered(false);
 		} catch {}
 
 		chn.add_watch(IOCondition.IN|IOCondition.HUP, (src, cond) => {

@@ -305,7 +305,7 @@ ssize_t write_serial(int fd, uint8_t*buffer, size_t buflen) {
      return (ssize_t)nb;
 }
 
-int cf_pipe(int *fds) { _pipe(fds, 4096, 0l); return 0; }
+int cf_pipe(int *fds) { _pipe(fds, 1024, _O_BINARY); return 0; }
 
 char *get_error_text(int dummy, char *pBuf, size_t bufSize) {
   DWORD retSize;

@@ -1,4 +1,4 @@
-project('mwptools', 'vala', 'c', version : '24.11.28', meson_version : '>= 1.4.0')
+project('mwptools', 'vala', 'c', version : '24.11.29', meson_version : '>= 1.4.0')
 
 nogo = get_option('nogo')
 force_s = get_option('force-static')
@@ -57,7 +57,7 @@ exargs = {
   'vala_args': [dopts, mwp_v_args ],
   'c_args': [mwp_c_args, dev_args, vcargs ],
   'install' : true,
-  'gui_app': true,
+  'win_subsystem': 'windows',
 }
 if dynalib
     exargs += { 'install_rpath': '$ORIGIN/../lib',}
