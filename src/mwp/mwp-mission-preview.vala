@@ -64,8 +64,8 @@ public class  MissionPreviewer : GLib.Object {
     private const double MSPEED = 10.0;
     private const double MHERTZ = 5.0; // nominal reporting rate
     private const double NM2METRES = 1852.0;
-	//    public signal void mission_replay_event(double lat, double lon, double cse);
-    //public signal void mission_replay_done();
+	public signal void mission_replay_event();
+    public signal void mission_replay_done();
 
 	public int fd = -1;
     private bool running = false;
@@ -97,6 +97,7 @@ public class  MissionPreviewer : GLib.Object {
 
     public void stop() {
         running = false;
+		mission_replay_done();
 		Posix.close(fd);
     }
 
@@ -115,6 +116,7 @@ public class  MissionPreviewer : GLib.Object {
 		if(fd != -1) {
 			double posn[3] = {lat, lon, cse};
 			Posix.write(fd, posn, 3*sizeof(double));
+			mission_replay_event();
 		}
 		Thread.usleep(MAXSLEEP);
     }
@@ -396,6 +398,7 @@ public class  MissionPreviewer : GLib.Object {
                 if(running)
                     iterate_mission();
 				Posix.close(fd);
+				mission_replay_done();
                 return 0;
             });
         return thr;

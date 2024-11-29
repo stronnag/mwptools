@@ -18,7 +18,6 @@ public class Previewer : Object {
 	private MissionPreviewer mprv;
 	private bool preview_running = false;
 	Thread<int> thr = null;
-	private IOChannel chn;
 	int fds[2];
 	Craft pcraft;
 	double posn[3];
@@ -33,39 +32,21 @@ public class Previewer : Object {
 	public void run() {
 		pcraft = new Craft("mpreview.svg");
         pcraft.new_craft(false);
-#if UNIX
-		try {
-			GLib.Unix.open_pipe(fds, 0);
-			chn = new IOChannel.unix_new (fds[0]);
-		} catch (Error e) {
-			MWPLog.message("Pipe file %s\n", e.message);
-		}
-
-#else
-		MwpPipe.pipe(fds);
-		chn = new IOChannel.win32_new_fd(fds[0]);
-#endif
-		MWPLog.message(":DBG: Pipes %d %d\n", fds[0], fds[1]);
 
 		mprv.is_mr = false;
 		mprv.fd = fds[1];
-		try {
-			chn.set_encoding(null);
-			chn.set_buffered(false);
-		} catch {}
 
-		chn.add_watch(IOCondition.IN|IOCondition.HUP, (src, cond) => {
-				if(cond == IOCondition.HUP) {
-					done();
-					return false;
-				}
-				var n = Posix.read(fds[0], posn, 3*sizeof(double));
-				if (n <= 0) {
-					done();
-					return false;
-				}
+		mprv.mission_replay_event.connect(() => {
+		      var n = Posix.read(fds[0], posn, 3*sizeof(double));
+			  if (n == 3*sizeof(double)) {
 				pcraft.set_lat_lon(posn[0], posn[1], posn[2]);
-				return true;
+			  } else {
+				  done();
+			  }
+			});
+
+		mprv.mission_replay_done.connect(() => {
+			done();
 			});
 
 		var ms = MissionManager.current();
