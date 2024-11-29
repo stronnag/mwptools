@@ -21,7 +21,6 @@ namespace Logger {
     internal FileStream os;
     internal double dtime;
     public int duration;
-	internal time_t currtime;
 
     internal bool verify_save_path(string path) {
         bool res;
@@ -35,14 +34,14 @@ namespace Logger {
     }
 
     public void start(string? save_path, string? _vname) {
-        time_t(out currtime);
+		var dt = new DateTime.now_local ();
 		string vname = _vname;
 		if (vname == null || vname.length == 0) {
 			vname="unknown";
 		} else {
 			vname = vname.replace(" ", "_");
 		}
-		var ts = Time.local(currtime).format("%F_%H%M%S");
+		var ts = dt.format("%F_%H%M%S");
 		var fn  = "mwp-%s-%s.log".printf(vname, ts);
         if(save_path != null && verify_save_path(save_path)) {
             fn = GLib.Path.build_filename(save_path, fn);
@@ -175,6 +174,7 @@ namespace Logger {
     }
 
     public string get_host_info(out string os) {
+		os="";
 #if UNIX
         string r=null;
         var dis = FileStream.open("/etc/os-release","r");
