@@ -97,8 +97,9 @@ public class  MissionPreviewer : GLib.Object {
 
     public void stop() {
         running = false;
-		mission_replay_done();
+		Idle.add_once(()=> {mission_replay_done();});;
 		Posix.close(fd);
+		Thread.exit(0);
     }
 
     private void outloc (double lat, double lon, double cse) {
@@ -116,7 +117,7 @@ public class  MissionPreviewer : GLib.Object {
 		if(fd != -1) {
 			double posn[3] = {lat, lon, cse};
 			Posix.write(fd, posn, 3*sizeof(double));
-			mission_replay_event();
+			Idle.add_once(() => { mission_replay_event(); });
 		}
 		Thread.usleep(MAXSLEEP);
     }
@@ -398,8 +399,9 @@ public class  MissionPreviewer : GLib.Object {
                 if(running)
                     iterate_mission();
 				Posix.close(fd);
-				mission_replay_done();
-                return 0;
+				Idle.add_once(()=> {mission_replay_done();});;
+				Thread.exit(0);
+				return 0;
             });
         return thr;
     }

@@ -33,20 +33,30 @@ public class Previewer : Object {
 		pcraft = new Craft("mpreview.svg");
         pcraft.new_craft(false);
 
+#if UNIX
+		try {
+			GLib.Unix.open_pipe(fds, 0);
+		} catch (Error e) {
+			MWPLog.message("Unix Pipe %s\n", e.message);
+		}
+#else
+		MWPPipe.pipe(fds);
+#endif
+
 		mprv.is_mr = false;
 		mprv.fd = fds[1];
 
 		mprv.mission_replay_event.connect(() => {
-		      var n = Posix.read(fds[0], posn, 3*sizeof(double));
-			  if (n == 3*sizeof(double)) {
-				pcraft.set_lat_lon(posn[0], posn[1], posn[2]);
-			  } else {
-				  done();
-			  }
+				var n = Posix.read(fds[0], posn, 3*sizeof(double));
+				if (n == 3*sizeof(double)) {
+					pcraft.set_lat_lon(posn[0], posn[1], posn[2]);
+				} else {
+					done();
+				}
 			});
 
 		mprv.mission_replay_done.connect(() => {
-			done();
+				done();
 			});
 
 		var ms = MissionManager.current();
