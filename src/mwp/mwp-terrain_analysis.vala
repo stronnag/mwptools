@@ -56,7 +56,6 @@ namespace TA {
 
 			pe_ok.clicked.connect(() => {
 					run_elevation_tool();
-					visible=false;
 				});
 
 			pe_close.clicked.connect(() => {
@@ -88,23 +87,6 @@ namespace TA {
 
 			transient_for = Mwp.window;
 			present();
-		}
-
-		private async string [] line_reader(DataInputStream inp)  throws Error {
-			string []cdlines = {};
-			for(;;) {
-				try {
-					var line = yield inp.read_line_async();
-					if (line == null) {
-						break;
-					} else {
-						cdlines += line;
-					}
-				} catch (Error e) {
-					return {};
-				}
-			}
-			return cdlines;
 		}
 
 		private void run_elevation_tool() {
@@ -147,66 +129,97 @@ namespace TA {
 
 			string []cdlines={};
 			string []errlines={};
-			try {
-				var subp = new Subprocess.newv(spawn_args, SubprocessFlags.STDOUT_PIPE| SubprocessFlags.STDERR_PIPE);
-				var outp = new DataInputStream(subp.get_stdout_pipe());
-				var errp = new DataInputStream(subp.get_stderr_pipe());
+			/*
 
-				line_reader.begin(outp, (obj,res) => {
-						try {
-							cdlines = line_reader.end(res);
-						} catch {};
-					});
+			  line_reader.begin(outp, (obj,res) => {
+			  try {
+			  cdlines = line_reader.end(res);
+			  } catch {};
+			  });
 
-				line_reader.begin(errp, (obj,res) => {
-						try {
-							errlines = line_reader.end(res);
-						} catch {};
-					});
+			  line_reader.begin(errp, (obj,res) => {
+			  try {
+			  errlines = line_reader.end(res);
+			  } catch {};
+			  });
 
-				var pid = subp.get_identifier();
-				if(pid != null) {
-					subp.wait_check_async.begin(null, (obj,res) => {
+			*/
+			var subp = new ProcessLauncher();
+			var res = subp.run_argv(spawn_args, ProcessLaunch.STDOUT|ProcessLaunch.STDERR);
+			if(res) {
+				var stdc = subp.get_stdout_iochan();
+				var errc = subp.get_stdout_iochan();
+
+				stdc.add_watch(IOCondition.IN|IOCondition.HUP|IOCondition.NVAL|IOCondition.ERR, (g,c) => {
+						var err = ((c & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0);
+						if(!err){
+							string line;
 							try {
-								var ok =  subp.wait_check_async.end(res);
-								if (!ok) {
-									StringBuilder sb = new StringBuilder("TA Plot errors\n");
-									foreach (var l in errlines) {
-										sb.append_c('\t');
-										sb.append(l);
-										sb.append_c('\n');
-									}
-									MWPLog.message(sb.str);
-								} else {
-								if (replname != null) {
-									MissionManager.open_mission_file(replname);
+								var sts = g.read_line (out line, null, null);
+								if (sts != IOStatus.NORMAL || line == null) {
+									return false;
 								}
-								FileUtils.unlink(outfn);
-								if(replname != null)
-									FileUtils.unlink(replname);
-
-								if (cdlines.length > 0) {
-									maxclimb = DStr.strtod(pe_climb.text, null);
-									maxdive = DStr.strtod(pe_dive.text, null);
-									if (altview != null) {
-										altview.close();
-										altview = null;
-									}
-									altview = new ScrollView("MWP Altitude Analysis");
-									altview.close_request.connect(() => {
-											altview = null;
-											return false;
-										});
-									altview.generate_climb_dive(cdlines, maxclimb, maxdive);
-								}
-								}
-							}  catch (Error e) {
-								MWPLog.message("TA %s\n", e.message);
+							} catch {
+								return false;
 							}
-						});
-				}
-			} catch (Error e) {
-				MWPLog.message ("TA plotter: %s\n", e.message);
+							cdlines += line.chomp();
+							} else {
+								return false;
+							}
+							return true;
+					});
+				errc.add_watch(IOCondition.IN|IOCondition.HUP|IOCondition.NVAL|IOCondition.ERR, (g,c) => {
+						var err = ((c & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0);
+						if(!err){
+							string line;
+							try {
+								var sts = g.read_line (out line, null, null);
+								if (sts != IOStatus.NORMAL || line == null) {
+									return false;
+								}
+							} catch {
+								return false;
+							}
+							errlines += line.chomp();
+						} else {
+							return false;
+						}
+						return true;
+					});
+				subp.complete.connect(() => {
+						var ok = subp.get_status(null);
+						if (!ok) {
+							StringBuilder sb = new StringBuilder("TA Plot errors\n");
+							foreach (var l in errlines) {
+								sb.append_c('\t');
+								sb.append(l);
+								sb.append_c('\n');
+							}
+							MWPLog.message(sb.str);
+						} else {
+							if (replname != null) {
+								MissionManager.open_mission_file(replname);
+							}
+							FileUtils.unlink(outfn);
+							if(replname != null)
+								FileUtils.unlink(replname);
+
+							if (cdlines.length > 0) {
+								maxclimb = DStr.strtod(pe_climb.text, null);
+								maxdive = DStr.strtod(pe_dive.text, null);
+								if (altview != null) {
+									altview.close();
+									altview = null;
+								}
+								altview = new ScrollView("MWP Altitude Analysis");
+								altview.close_request.connect(() => {
+										altview = null;
+										return false;
+									});
+								altview.generate_climb_dive(cdlines, maxclimb, maxdive);
+							}
+						}
+					});
 			}
 		}
 	}

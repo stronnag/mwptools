@@ -8,6 +8,7 @@ public enum ProcessLaunch {
 }
 
 extern int  parse_wstatus(int stst, out int? wsts);
+extern int pid_from_name(char *name);
 
 public class ProcessLauncher : Object {
 	public signal void complete();
@@ -94,5 +95,9 @@ public class ProcessLauncher : Object {
 
 	public static void resume(int pid) {
 		Posix.kill(pid, ProcessSignal.CONT);
+	}
+
+	public static int find_pid_from_name(string name) {
+		return pid_from_name(name);
 	}
 }

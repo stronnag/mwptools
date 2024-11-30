@@ -7,6 +7,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdbool.h>
+#include <tlhelp32.h>
+#include <fnmatch.h>
 
 #define BUFSIZE 2048
 
@@ -94,7 +96,6 @@ BOOL waitproc(HANDLE h, int *sts) {
   }
 }
 
-
 int proc_get_pid(HANDLE h) {
      return GetProcessId(h);
 }
@@ -105,4 +106,34 @@ void proc_kill (DWORD pid) {
 	  TerminateProcess(h, 1);
 	  CloseHandle(h);
      }
+}
+
+int pid_from_name(char *procname) {
+  HANDLE hSnapshot;
+  PROCESSENTRY32 pe;
+  int pid = -1;
+  BOOL hResult;
+
+  hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+  if (INVALID_HANDLE_VALUE == hSnapshot) return 0;
+
+  // initializing size: needed for using Process32First
+  pe.dwSize = sizeof(PROCESSENTRY32);
+
+  // info about first process encountered in a system snapshot
+  hResult = Process32First(hSnapshot, &pe);
+  // retrieve information about the processes
+  // and exit if unsuccessful
+  while (hResult) {
+    // if we find the process: return process ID
+    if (fnmatch(procname, pe.szExeFile, 0) == 0) {
+      pid = pe.th32ProcessID;
+      break;
+    }
+    hResult = Process32Next(hSnapshot, &pe);
+  }
+
+  // closes an open handle (CreateToolhelp32Snapshot)
+  CloseHandle(hSnapshot);
+  return pid;
 }

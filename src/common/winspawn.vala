@@ -11,6 +11,7 @@ extern void *create_win_process(char *cmd, int flags, int *spipe, int *epipe, in
 extern bool waitproc(void *h, int* sts);
 //extern int32 proc_get_pid(void* h);
 extern void proc_kill (int32 pid);
+extern int pid_from_name(char *procname);
 
 public class ProcessLauncher : Object {
 	private int spipe;
@@ -99,5 +100,15 @@ public class ProcessLauncher : Object {
 
 	public static void resume(int pid) {
 		MWPLog.message(":DBG: resume for %d\n", pid);
+	}
+
+	public static int find_pid_from_name(string name) {
+		string pname;
+		if(name.has_suffix(".exe")) {
+			pname = name;
+		} else {
+			pname = name + ".exe";
+		}
+		return pid_from_name(pname);
 	}
 }

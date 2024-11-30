@@ -274,14 +274,17 @@ namespace Utils {
     }
 
 	public void terminate_plots() {
-		try {
-			var kplt = new Subprocess(0, "pkill", "gnuplot");
-			kplt.wait_check_async.begin(null, (obj,res) => {
-					try {
-						kplt.wait_check_async.end(res);
-					}  catch {}
-				});
-		} catch {}
+		for(;;) {
+			int pid = ProcessLauncher.find_pid_from_name("gnuplot*");
+			if (pid > 0) {
+				ProcessLauncher.kill(pid);
+			} else {
+				break;
+			}
+		}
+#if DARWIN
+		new ProcessLauncher().run_command("pkill gunplot", ProcessLaunch.NONE);
+#endif
 	}
 
     public string mstempname(bool xlate = true) {

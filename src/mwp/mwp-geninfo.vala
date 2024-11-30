@@ -85,64 +85,68 @@ namespace Mwp {
 	}
 
 	public void get_gl_info() {
-		string strout;
+		string line;
 		string []glexes={"es2_info", "glxinfo"};
 		foreach (var s in glexes) {
 			bool found = (Environment.find_program_in_path(s) != null);
 			if(found) {
+				int nm = 0;
 				StringBuilder sb = new StringBuilder();
 				try {
-					strout = "";
-					var subp = new Subprocess(SubprocessFlags.STDOUT_PIPE, s);
-					subp.communicate_utf8(null, null, out strout, null);
-					if(subp.get_successful()) {
-						if(strout.length > 0) {
-							int nm = 0;
-							string glversion=null;
-							string glvendor=null;
-							string glrenderer=null;
-							var parts = strout.split("\n");
-							foreach (var p in parts) {
+					line = "";
+					var subp = new ProcessLauncher();
+					if (subp.run_argv({s}, ProcessLaunch.STDOUT)) {
+						var ioc = subp.get_stdout_iochan();
+						string glversion=null;
+						string glvendor=null;
+						string glrenderer=null;
+						for(;;) {
+							var sts = ioc.read_line (out line, null, null);
+							if (sts != IOStatus.NORMAL || line == null) {
+								break;
+							}
+							if(line.length > 0) {
 								if (s == "es2_info") {
-									if(p.has_prefix("GL_VERSION: ")) {
-										glversion = p["GL_VERSION: ".length:];
+									if(line.has_prefix("GL_VERSION: ")) {
+										glversion = line["GL_VERSION: ".length:];
 										nm++;
-									} else if(p.has_prefix("GL_RENDERER: ")) {
-										glrenderer = p["GL_RENDERER: ".length:];
+									} else if(line.has_prefix("GL_RENDERER: ")) {
+										glrenderer = line["GL_RENDERER: ".length:];
 										nm++;
-									} else if(p.has_prefix("GL_VENDOR: ")) {
-										glvendor = p["GL_VENDOR: ".length:];
+									} else if(line.has_prefix("GL_VENDOR: ")) {
+										glvendor = line["GL_VENDOR: ".length:];
 										nm++;
 									}
 								}  else {
-									if(p.has_prefix("    Version: ")) {
-										glversion = p["    Version: ".length:];
+									if(line.has_prefix("    Version: ")) {
+										glversion = line["    Version: ".length:];
 										nm++;
-									} else if(p.has_prefix("    Device: ")) {
-										glrenderer = p["    Device: ".length:];
+									} else if(line.has_prefix("    Device: ")) {
+										glrenderer = line["    Device: ".length:];
 										nm++;
-									} else if(p.has_prefix("    Vendor: ")) {
-										glvendor = p["    Vendor: ".length:];
+									} else if(line.has_prefix("    Vendor: ")) {
+										glvendor = line["    Vendor: ".length:];
 										nm++;
 									}
 								}
 							}
 							if(nm == 3) {
-								sb.append(glvendor);
+								sb.append(glvendor.chomp());
 								sb.append_c(' ');
-								sb.append(glrenderer);
+								sb.append(glrenderer.chomp());
 								sb.append_c(' ');
-								sb.append(glversion);
+								sb.append(glversion.chomp());
 								sb.append_printf(" (%s)", s);
 								MWPLog.message("GL: %s\n", sb.str);
 								break;
 							}
 						}
-						break;
 					}
 				} catch (Error e) {
 					MWPLog.message("%s : %s\n", s, e.message);
 				}
+				if(nm == 3)
+					break;
 			}
 		}
 	}

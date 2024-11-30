@@ -17,6 +17,10 @@ if host_machine.system() == 'freebsd'
   dopts += '--define=FREEBSD'
 endif
 
+if host_machine.system() == 'darwin'
+  dopts += '--define=DARWIN'
+endif
+
 if host_machine.system() != 'windows'
   dopts += '--define=UNIX'
 endif
