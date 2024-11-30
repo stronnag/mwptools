@@ -1,7 +1,7 @@
 
 extern void *create_win_process(char *cmd, int flags, int *spipe, int *epipe, int32 *pid);
 extern void waitproc(void *h);
-extern int32 proc_get_pid(void* h);
+//extern int32 proc_get_pid(void* h);
 extern void proc_kill (int32 pid);
 
 public class ProcessLauncher : Object {
@@ -25,7 +25,8 @@ public class ProcessLauncher : Object {
 	}
 
 	public signal void complete();
-	public bool run(string[]? argv, int flag) {
+
+	public bool run_argv(string[]? argv, int flag) {
 		var sb = new StringBuilder();
 		foreach(var a in argv) {
 			if(a.contains(" ")) {
@@ -38,9 +39,12 @@ public class ProcessLauncher : Object {
 			sb.append_c(' ');
 		}
 		var cmd = sb.str.strip();
+		return run_command(cmd, flag);
+	}
+
+	public bool run_command(string cmd, int flag) {
 		spipe=-1;
 		epipe=-1;
-
 		var res = create_win_process(cmd, flag, &spipe, &epipe, &pid);
 		if (res != null) {
 			new Thread<bool>("wwait", () => {

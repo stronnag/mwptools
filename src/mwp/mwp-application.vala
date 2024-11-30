@@ -185,6 +185,7 @@ namespace Mwp {
 
 	private static string? check_virtual(string? os) {
 		string hyper = null;
+#if UNIX
 		string cmd = null;
 		switch (os) {
 		case "Linux":
@@ -198,9 +199,11 @@ namespace Mwp {
 		if(cmd != null) {
 			try {
 				string strout="";
-				var subp = new Subprocess(SubprocessFlags.STDOUT_PIPE, cmd);
-				subp.communicate_utf8(null, null, out strout, null);
-				if(subp.get_successful()) {
+				size_t len;
+				var subp = new ProcessLauncher();
+				if (subp.run_argv({cmd}, 1)) {
+					var ioc = subp.get_stdout_iochan();
+					ioc.read_to_end(out strout, out len);
 					if(strout.length > 0) {
 						strout = strout.chomp();
 						if(os == "Linux")
@@ -212,30 +215,31 @@ namespace Mwp {
 						}
 					}
 				}
-				subp.wait(null);
 			} catch (Error e) {}
 			return hyper;
         }
 
 		try {
-			var subp = new Subprocess(SubprocessFlags.STDOUT_PIPE, "dmesg");
-			DataInputStream chn = new DataInputStream(subp.get_stdout_pipe());
-			string line;
-			size_t length = -1;
-			for(;;) {
-				line = chn.read_line (out length, null);
-				if(line == null) {
-					break;
-				}
-				line = line.chomp();
-				var index = line.index_of("Hypervisor");
-				if(index != -1) {
-					hyper = line.substring(index);
-					break;
+			var subp = new ProcessLauncher();
+			if (subp.run_argv({"dmesg"}, 1)) {
+				var ioc = subp.get_stdout_iochan();
+				string line;
+				size_t length = -1;
+				for(;;) {
+					ioc.read_line (out line, out length, null);
+					if(line == null) {
+						break;
+					}
+					line = line.chomp();
+					var index = line.index_of("Hypervisor");
+					if(index != -1) {
+						hyper = line.substring(index);
+						break;
+					}
 				}
 			}
-			subp.wait(null);
 		} catch (Error e) {}
+#endif
 		return hyper;
 	}
 
@@ -463,12 +467,7 @@ namespace Mwp {
 			dex = false;
 			Mwp.cleanup();
 			if(ready && Mwp.conf.atexit != null && Mwp.conf.atexit.length > 0) {
-				try {
-					string []exa;
-					Shell.parse_argv(Mwp.conf.atexit, out exa);
-					var subp = new Subprocess.newv(exa, SubprocessFlags.STDOUT_SILENCE);
-					subp.wait();
-				} catch {}
+				new ProcessLauncher().run_command(Mwp.conf.atexit, 1);
 			}
 		}
 	}

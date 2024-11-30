@@ -19,7 +19,16 @@ public class ProcessLauncher : Object {
 		return new IOChannel.unix_new(epipe);
 	}
 
-	public bool run(string[]? argv, int flags) {
+	public bool run_command(string cmd, int flags) {
+		string []exa;
+		try {
+			Shell.parse_argv(cmd, out exa);
+			return run_argv(exa, flags);
+		} catch {}
+		return false;
+	}
+
+	public bool run_argv(string[]? argv, int flags) {
 		spipe = -1;
 		epipe = -1;
 		SpawnFlags spfl = SpawnFlags.SEARCH_PATH | SpawnFlags.DO_NOT_REAP_CHILD;

@@ -331,13 +331,11 @@ namespace MapManager {
     }
 
     private int spawn_proxy(string cmd) {
-        string[]? argvp = null;
         int iport = 0;
 
         try {
-			Shell.parse_argv (cmd, out argvp);
 			var pl = new ProcessLauncher();
-			var res = pl.run(argvp, 1);
+			var res = pl.run_command(cmd, 1);
 			if(res) {
 				var sout = pl.get_stdout_iochan();
 				string? line = null;

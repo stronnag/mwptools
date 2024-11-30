@@ -76,7 +76,7 @@ namespace Cli {
 
 	private bool get_app_status(string app, out string bblhelp) {
 		var p = new ProcessLauncher();
-		var res = p.run({app, "--version"}, 1);
+		var res = p.run_argv({app, "--version"}, 1);
 		bblhelp="";
 		if(res) {
 			var sout = p.get_stdout_iochan();
