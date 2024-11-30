@@ -496,9 +496,7 @@ public class AudioThread : Object {
                     }
                 }
 				if (TTS.efdin != -1) {
-					try {
-						Posix.close(TTS.efdin);
-					} catch {}
+					Posix.close(TTS.efdin);
 					TTS.efdin = -1;
 				}
                 return 0;
