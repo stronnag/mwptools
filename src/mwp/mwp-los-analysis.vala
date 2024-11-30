@@ -143,7 +143,7 @@ public class LOSSlider : Adw.Window {
 	private int _margin;
 	private bool mlog;
 	private int incr;
-	private GLib.Subprocess? los;
+	private ProcessLauncher los;
 	public signal void new_margin(int m);
 
 	public void set_log(bool _mlog) {
@@ -297,9 +297,9 @@ public class LOSSlider : Adw.Window {
 					abutton.label = AUTO_LOS;
 					is_running = false;
 					if (los != null) {
-						try {
-							los.get_stdin_pipe().close();
-						} catch {}
+						var pid = los.get_pid();
+						Posix.close(los.get_stdin_pipe());
+						ProcessLauncher.kill(pid);
 					}
 				}
 			});
@@ -353,11 +353,9 @@ public class LOSSlider : Adw.Window {
 				new_margin(_margin);
 				is_running = false;
 				if (los != null) {
-					if (los != null) {
-						try {
-							los.get_stdin_pipe().close();
-						} catch {}
-					}
+					var pid = los.get_pid();
+					Posix.close(los.get_stdin_pipe());
+					ProcessLauncher.kill(pid);
 				}
 				LOSPoint.clear_all();
 				Utils.terminate_plots();
@@ -424,11 +422,8 @@ public class LOSSlider : Adw.Window {
 		}
 		LOSPoint.get_lospt(out lat, out lon, out alt);
 		var losstr = "%.8f,%.8f,%.0f\n".printf(lat, lon, alt);
-		try {
-			los.get_stdin_pipe().write(losstr.data);
-		} catch (Error e) {
-			MWPLog.message("LOS write %s\n", e.message);
-		}
+		var fd = los.get_stdin_pipe();
+		Posix.write(fd, losstr.data, losstr.data.length);
 	}
 
 	private void auto_reset() {
@@ -448,7 +443,6 @@ public class LOSSlider : Adw.Window {
 		if (_auto) {
 			spawn_args += "-no-graph";
 		}
-
 		spawn_args += "-localdem=%s".printf(DemManager.demdir);
 		spawn_args += "-margin=%d".printf(_margin);
         spawn_args += "-home=%.8f,%.8f".printf(	HomePoint.hp.latitude, HomePoint.hp.longitude);
@@ -457,80 +451,59 @@ public class LOSSlider : Adw.Window {
 			MWPLog.message("LOS DBG %s\n", string.joinv(" ",spawn_args));
 		}
 
-		bool ok = false;
-		try {
-			los = new Subprocess.newv(spawn_args, SubprocessFlags.STDOUT_PIPE|SubprocessFlags.STDIN_PIPE);
-			read_spipe(los.get_stdout_pipe());
-			los.wait_check_async.begin(null, (obj,res) => {
+		los = new ProcessLauncher();
+		var res = los.run_argv(spawn_args, ProcessLaunch.STDOUT|ProcessLaunch.STDIN);
+		if (res) {
+			var chan = los.get_stdout_iochan();
+			los.complete.connect(() => {
+					try{chan.shutdown(false);} catch {}
+				});
+			chan.add_watch (IOCondition.IN|IOCondition.HUP, (src, cond) => {
+					string line;
+					if (cond == IOCondition.HUP) {
+						return false;
+					}
 					try {
-						ok =  los.wait_check_async.end(res);
-						if (mlog) {
-							MWPLog.message("LOS DBG subp end %s\n", ok.to_string());
+						var eos = src.read_line (out line, null, null);
+						if(eos == IOStatus.EOF) {
+							return false;
 						}
-					}  catch (Error e) {
-						MWPLog.message("LOS subp %s\n", e.message);
+						if (line == null)
+							return false;
+						read_spipe(line);
+						return true;
+					} catch {
+						return false;
 					}
 				});
-		} catch (Error e) {
-			MWPLog.message("LOS subp %s\n", e.message);
 		}
-    }
-
-	void read_spipe(InputStream s) {
-		uint8  mbuf[10];
-		s.read_async.begin(mbuf, GLib.Priority.DEFAULT, null, (obj,res) => {
-				try {
-					var slen = s.read_async.end(res);
-					if (slen == 10) {
-						uint8 losc  = (uint8)int.parse(((string)mbuf)[0:1]);
-						double ldist = double.parse(((string)mbuf)[2:mbuf.length]);
-						if (!_auto || is_running) {
-							double lat,lon;
-							double alt;
-							LOSPoint.get_lospt(out lat, out lon, out alt);
-							Idle.add(() => {
-									LOSPoint.add_path(
-										HomePoint.hp.latitude,HomePoint.hp.longitude,
-										lat, lon, losc, ldist, incr);
-									return false;
-								});
-							if(_auto) {
-								var ppos = slider.get_value ();
-								ppos += incr;
-								if (ppos > 1000) {
-									slider.set_value(1000.0);
-									try {
-										los.get_stdin_pipe().close();
-									} catch (Error e) {
-										MWPLog.message("LOS e close %s\n", e.message);
-									}
-									auto_reset();
-								} else {
-									slider.set_value(ppos);
-									update_from_pos(ppos);
-									send_los_location();
-								}
-								read_spipe(s);
-							} else {
-								try {
-									los.get_stdin_pipe().close();
-								} catch (Error e) {
-									MWPLog.message("LOS p close %s\n", e.message);
-								}
-							}
-						}
-					} else {
-						try {
-							los.get_stdin_pipe().close();
-						} catch (Error e) {
-							MWPLog.message("LOS 0 close %s\n", e.message);
-						}
-						auto_reset();
-					}
-				} catch (Error e) {
-					MWPLog.message("LOS ra end %s\n", e.message);
-				}
-			});
 	}
 
+	void read_spipe(string line) {
+		uint8 losc  = (uint8)int.parse(line[0:1]);
+		double ldist = double.parse(line[2:]);
+		if (!_auto || is_running) {
+			double lat,lon;
+			double alt;
+			LOSPoint.get_lospt(out lat, out lon, out alt);
+			//			Idle.add_omce(() => {
+					LOSPoint.add_path(
+						HomePoint.hp.latitude,HomePoint.hp.longitude,
+						lat, lon, losc, ldist, incr);
+					//});
+			if(_auto) {
+				var ppos = slider.get_value ();
+				ppos += incr;
+				if (ppos > 1000) {
+					slider.set_value(1000.0);
+					Posix.close(los.get_stdin_pipe());
+					auto_reset();
+				} else {
+					slider.set_value(ppos);
+					update_from_pos(ppos);
+					send_los_location();
+				}
+			}
+		}
+	}
 }
