@@ -80,11 +80,11 @@ void waitproc(HANDLE h) {
     }
 }
 
-DWORD get_pid(HANDLE h) {
+DWORD proc_get_pid(HANDLE h) {
      return GetProcessId(h);
 }
 
-void kill (DWORD pid) {
+void proc_kill (DWORD pid) {
      HANDLE h = OpenProcess(PROCESS_TERMINATE, false, pid);
      if (h != NULL) {
 	  TerminateProcess(h, 1);

@@ -1,13 +1,14 @@
 
 extern void *create_win_process(char *cmd, int flags, int *spipe, int *epipe, int32 *pid);
 extern void waitproc(void *h);
-extern int32 get_pid(void* h);
-extern void kill (int32 pid);
+extern int32 proc_get_pid(void* h);
+extern void proc_kill (int32 pid);
 
 public class ProcessLauncher : Object {
 	private int spipe;
 	private int epipe;
 	private int32 pid;
+
 	public int get_stdout_pipe() {
 		return spipe;
 	}
@@ -58,8 +59,12 @@ public class ProcessLauncher : Object {
 			});
 	}
 
+	public int get_pid() {
+		return (int)pid;
+	}
+
 	public static void kill(int pid) {
-		kill((int32)pid);
+		proc_kill((int32)pid);
 	}
 
 	public static void suspend(int pid) {
