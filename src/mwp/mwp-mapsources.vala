@@ -335,7 +335,7 @@ namespace MapManager {
 
         try {
 			var pl = new ProcessLauncher();
-			var res = pl.run_command(cmd, 1);
+			var res = pl.run_command(cmd, ProcessLaunch.STDOUT);
 			if(res) {
 				var sout = pl.get_stdout_iochan();
 				string? line = null;

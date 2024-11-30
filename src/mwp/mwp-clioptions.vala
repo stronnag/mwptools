@@ -76,7 +76,7 @@ namespace Cli {
 
 	private bool get_app_status(string app, out string bblhelp) {
 		var p = new ProcessLauncher();
-		var res = p.run_argv({app, "--version"}, 1);
+		var res = p.run_argv({app, "--version"}, ProcessLaunch.STDOUT);
 		bblhelp="";
 		if(res) {
 			var sout = p.get_stdout_iochan();
@@ -257,16 +257,7 @@ namespace Cli {
         }
 
         if(Mwp.conf.atstart != null && Mwp.conf.atstart.length > 0) {
-            try {
-				string []exa;
-				Shell.parse_argv(Mwp.conf.atstart, out exa);
-				var subp = new Subprocess.newv(exa, SubprocessFlags.STDOUT_SILENCE);
-				subp.wait_async.begin(null, (obj,res) => {
-						try {
-							subp.wait_async.end(res);
-						} catch {}
-					});
-            } catch {};
+			new ProcessLauncher().run_command(Mwp.conf.atstart, 0);
         }
 
 		Mwp.msp.use_v2 = false;

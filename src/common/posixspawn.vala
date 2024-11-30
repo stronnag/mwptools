@@ -1,9 +1,18 @@
+[Flags]
+public enum ProcessLaunch {
+	STDIN,
+	STDOUT,
+	STDERR,
+	WAIT
+}
 
 public class ProcessLauncher : Object {
 	public signal void complete();
 	private int spipe;
 	private int epipe;
 	private Pid child_pid;
+	private int wait_status;
+
 	public int get_stdout_pipe() {
 		return spipe;
 	}
@@ -32,10 +41,10 @@ public class ProcessLauncher : Object {
 		spipe = -1;
 		epipe = -1;
 		SpawnFlags spfl = SpawnFlags.SEARCH_PATH | SpawnFlags.DO_NOT_REAP_CHILD;
-		if ((flags & 1) == 0) {
+		if (!(ProcessLaunch.STDOUT in flags)) {
 			spfl |= SpawnFlags.STDOUT_TO_DEV_NULL;
 		}
-		if ((flags & 2) == 0) {
+		if (!(ProcessLaunch.STDERR in flags)) {
 			spfl |= SpawnFlags.STDERR_TO_DEV_NULL;
 		}
 		try {
@@ -48,10 +57,15 @@ public class ProcessLauncher : Object {
 											null,
 											out spipe,
 											out epipe);
-			ChildWatch.add (child_pid, (pid, status) => {
-					Process.close_pid (pid);
-					complete();
+			if(ProcessLaunch.WAIT in flags) {
+				Posix.waitpid(child_pid, out wait_status, 0);
+			} else {
+				ChildWatch.add (child_pid, (pid, status) => {
+						Process.close_pid (pid);
+						wait_status = status;
+						complete();
 				});
+			}
 			return true;
 		} catch (Error e) {
 			print("%s\n", e.message);
@@ -61,6 +75,10 @@ public class ProcessLauncher : Object {
 
 	public int get_pid() {
 		return child_pid;
+	}
+
+	public int get_status() {
+		return wait_status;
 	}
 
 	public static void kill(int pid) {

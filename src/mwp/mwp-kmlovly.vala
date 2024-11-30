@@ -157,6 +157,7 @@ namespace Kml {
 			string path = null;
 			try {
 				td = DirUtils.make_tmp(path);
+
 				var subp = new Subprocess(SubprocessFlags.STDOUT_SILENCE, "unzip", kname, "-d", td);
 				subp.wait(null);
 				if (subp.get_successful()) {

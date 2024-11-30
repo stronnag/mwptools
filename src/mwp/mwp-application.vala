@@ -201,10 +201,10 @@ namespace Mwp {
 				string strout="";
 				size_t len;
 				var subp = new ProcessLauncher();
-				if (subp.run_argv({cmd}, 1)) {
+				if (subp.run_argv({cmd}, ProcessLaunch.STDOUT)) {
 					var ioc = subp.get_stdout_iochan();
-					ioc.read_to_end(out strout, out len);
-					if(strout.length > 0) {
+					var sts = ioc.read_to_end(out strout, out len);
+					if(sts == IOStatus.NORMAL && strout.length > 0) {
 						strout = strout.chomp();
 						if(os == "Linux")
 							hyper = strout;
@@ -221,13 +221,13 @@ namespace Mwp {
 
 		try {
 			var subp = new ProcessLauncher();
-			if (subp.run_argv({"dmesg"}, 1)) {
+			if (subp.run_argv({"dmesg"}, ProcessLaunch.STDOUT)) {
 				var ioc = subp.get_stdout_iochan();
 				string line;
 				size_t length = -1;
 				for(;;) {
-					ioc.read_line (out line, out length, null);
-					if(line == null) {
+					var sts = ioc.read_line (out line, out length, null);
+					if (sts != IOStatus.NORMAL || line == null) {
 						break;
 					}
 					line = line.chomp();
@@ -467,7 +467,7 @@ namespace Mwp {
 			dex = false;
 			Mwp.cleanup();
 			if(ready && Mwp.conf.atexit != null && Mwp.conf.atexit.length > 0) {
-				new ProcessLauncher().run_command(Mwp.conf.atexit, 1);
+				new ProcessLauncher().run_command(Mwp.conf.atexit, ProcessLaunch.WAIT);
 			}
 		}
 	}

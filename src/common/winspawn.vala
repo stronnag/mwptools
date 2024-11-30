@@ -1,3 +1,10 @@
+[Flags]
+public enum ProcessLaunch {
+	STDIN,
+	STDOUT,
+	STDERR,
+	WAIT
+}
 
 extern void *create_win_process(char *cmd, int flags, int *spipe, int *epipe, int32 *pid);
 extern void waitproc(void *h);
@@ -8,6 +15,7 @@ public class ProcessLauncher : Object {
 	private int spipe;
 	private int epipe;
 	private int32 pid;
+	private int wait_status;
 
 	public int get_stdout_pipe() {
 		return spipe;
@@ -47,11 +55,15 @@ public class ProcessLauncher : Object {
 		epipe=-1;
 		var res = create_win_process(cmd, flag, &spipe, &epipe, &pid);
 		if (res != null) {
-			new Thread<bool>("wwait", () => {
+			if (ProcessLaunch.WAIT in flag) {
 				waitproc(res);
-				windone();
-				return true;
-			});
+			} else {
+				new Thread<bool>("wwait", () => {
+						waitproc(res);
+						windone();
+						return true;
+					});
+			}
 		}
 		return (res != null);
 	}

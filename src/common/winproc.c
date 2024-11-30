@@ -50,11 +50,11 @@ HANDLE create_win_process(char *cmd, int flags, int *sout, int *eout, DWORD *pid
 			      &siStartInfo,  // STARTUPINFO pointer
 			      &piProcInfo);  // receives PROCESS_INFORMATION
 
-     if((flags & 1) == 1) {
+     if((flags & PROCESS_LAUNCH_STDOUT) == PROCESS_LAUNCH_STDOUT) {
 	  *sout = spipes[0];
 	  close(spipes[1]);
      }
-     if((flags & 2) == 2) {
+     if((flags & PROCESS_LAUNCH_STDERR) == PROCESS_LAUNCH_STDERR) {
 	  *eout = epipes[0];
 	  close(epipes[1]);
      }
