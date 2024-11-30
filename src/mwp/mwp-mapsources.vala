@@ -216,16 +216,14 @@ namespace BingMap {
 
 namespace MapManager {
     public string id = null;
-	private GLib.Subprocess[] proxypids;
+	private int [] proxypids;
 	private SoupProxy sp;
 	private bool ikill = false;
 
 	public void killall() {
 		ikill = true;
 		foreach(var p in proxypids) {
-#if UNIX
-			p.send_signal(ProcessSignal.TERM);
-#endif
+			ProcessLauncher.kill(p);
 		}
 		proxypids = {};
 	}
@@ -338,46 +336,40 @@ namespace MapManager {
 
         try {
 			Shell.parse_argv (cmd, out argvp);
-			var subp = new Subprocess.newv(argvp, SubprocessFlags.STDOUT_PIPE);
-            proxypids += subp;
-			DataInputStream ioc = new DataInputStream(subp.get_stdout_pipe());
-            string? line = null;
-            size_t len = 0;
-
-            line = ioc.read_line (out len, null);
-            if(line != null && len > 0) {
-				var parts = line.split("\t");
-				if (parts.length > 1) {
-					iport = int.parse(parts[1]);
-				}
-				if(parts[0] == "Port:") {
-					MWPLog.message("External proxy \"%s\" listening on :%d\n", cmd, iport);
-				} else {
-					StringBuilder sb = new StringBuilder("note: ");
-					sb.append(cmd);
-					if (parts.length == 3) {
-						sb.append_c(' ');
-						sb.append(parts[2]); // has LP
-						sb.append_c('\n');
-					} else {
-						sb.append(" unknown error\n"); // has LP
+			var pl = new ProcessLauncher();
+			var res = pl.run(argvp, 1);
+			if(res) {
+				var sout = pl.get_stdout_iochan();
+				string? line = null;
+				sout.read_line (out line, null, null);
+				if(line != null) {
+					var parts = line.split("\t");
+					if (parts.length > 1) {
+						iport = int.parse(parts[1]);
 					}
-					MWPLog.message(sb.str);
-				}
-			}
-
-			var pid = subp.get_identifier();
-			if(pid != null) {
-				subp.wait_check_async.begin(null, (obj,res) => {
-						try {
-							var ok =  subp.wait_check_async.end(res);
-							MWPLog.message("Map subprocess end %s %s\n", cmd, ok.to_string());
-						}  catch (Error e) {
-							if (!ikill) {
-								MWPLog.message("%s %s\n", cmd, e.message);
-							}
+					if(parts[0] == "Port:") {
+						MWPLog.message("External proxy \"%s\" listening on :%d\n", cmd, iport);
+					} else {
+						StringBuilder sb = new StringBuilder("note: ");
+						sb.append(cmd);
+						if (parts.length == 3) {
+							sb.append_c(' ');
+							sb.append(parts[2]); // has LP
+							sb.append_c('\n');
+						} else {
+							sb.append(" unknown error\n"); // has LP
 						}
-					});
+						MWPLog.message(sb.str);
+					}
+				}
+				var pid = pl.get_pid();
+				if(pid != 0) {
+					proxypids += pid;
+					pl.complete.connect(() => {
+							MWPLog.message("Terminated %s\n",cmd);
+
+						});
+				}
 			}
 		} catch {
             MWPLog.message("Failed to start external proxy %s\n", cmd);

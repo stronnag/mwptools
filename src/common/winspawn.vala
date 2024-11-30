@@ -58,84 +58,15 @@ public class ProcessLauncher : Object {
 			});
 	}
 
-	public void kill(int pid) {
+	public static void kill(int pid) {
 		kill((int32)pid);
 	}
 
-	public void suspend(int pid) {
+	public static void suspend(int pid) {
 		MWPLog.message(":DBG: suspend for %d\n", pid);
 	}
 
-	public void resume(int pid) {
+	public static void resume(int pid) {
 		MWPLog.message(":DBG: resume for %d\n", pid);
 	}
 }
-
-#if TEST
-static int main(string[]? args) {
-	if (args.length < 2)
-		return 0;
-
-	var p = new ProcessLauncher();
-	var m = new MainLoop();
-	p.complete.connect(() => {
-			Idle.add(() => {
-					m.quit();
-					return false;
-				});
-		});
-
-	Idle.add(() => {
-			if (p.run(args[1:], 3) == false) {
-				print("Failed to run %s\n", args[1]);
-				m.quit();
-			} else {
-				var epipe = p.get_stderr_pipe();
-				var spipe = p.get_stdout_pipe();
-				if (epipe != -1) {
-					IOChannel error = new IOChannel.win32_new_fd(epipe);
-					error.add_watch (IOCondition.IN|IOCondition.HUP, (s, cond) => {
-							try{
-								if (cond == IOCondition.HUP) {
-									return false;
-								}
-								string sb;
-								size_t slen;
-								s.read_to_end(out sb, out slen);
-								if (slen > 0) {
-									print("E: %s\n", sb);
-									return true;
-								} else {
-									return false;
-								}
-							} catch {}
-							return false;
-						});
-				}
-				if (spipe != -1) {
-					IOChannel sout = new IOChannel.win32_new_fd(spipe);
-					sout.add_watch (IOCondition.IN|IOCondition.HUP, (s, cond) => {
-							try{
-								if (cond == IOCondition.HUP) {
-									return false;
-								}
-								string sb;
-								size_t slen;
-								s.read_to_end(out sb, out slen);
-								if (slen > 0) {
-									print("S <%s>\n", sb);
-									return true;
-								} else {
-									return false;
-								}
-							} catch {}
-							return false;
-						});
-				}
-			}
-			return false;
-		});
-	m.run();
-	return 0;
-}
-#endif
