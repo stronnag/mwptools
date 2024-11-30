@@ -115,12 +115,11 @@ namespace TTS {
                 voice = "default";
 
             if(espawn != null) {
-                try {
-					var subp = new ProcessLauncher();
-					subp.run_command(espawn, ProcessLaunch.STDIN);
+				var subp = new ProcessLauncher();
+				if(subp.run_command(espawn, ProcessLaunch.STDIN)) {
 					efdin = subp.get_stdin_pipe();
-                } catch (Error e) {
-                    MWPLog.message("spawn \"%s\", %s\n", espawn, e.message);
+				} else {
+                    MWPLog.message("spawn failed for\"%s\", %s\n", espawn);
                 }
             } else {
                 si = MwpSpeech.init(voice);
