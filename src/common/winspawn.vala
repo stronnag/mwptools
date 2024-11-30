@@ -8,7 +8,7 @@ public enum ProcessLaunch {
 }
 
 extern void *create_win_process(char *cmd, int flags, int *spipe, int *epipe, int32 *pid);
-extern void waitproc(void *h);
+extern bool waitproc(void *h, int* sts);
 //extern int32 proc_get_pid(void* h);
 extern void proc_kill (int32 pid);
 
@@ -17,6 +17,7 @@ public class ProcessLauncher : Object {
 	private int epipe;
 	private int32 pid;
 	private int wait_status;
+	private bool pstatus;
 
 	public int get_stdout_pipe() {
 		return spipe;
@@ -34,6 +35,14 @@ public class ProcessLauncher : Object {
 	}
 
 	public signal void complete();
+
+
+	public bool get_status(int* s) {
+		if(s!=null) {
+			*s = wait_status;
+		}
+		return pstatus;
+	}
 
 	public bool run_argv(string[]? argv, int flag) {
 		var sb = new StringBuilder();
@@ -57,10 +66,10 @@ public class ProcessLauncher : Object {
 		var res = create_win_process(cmd, flag, &spipe, &epipe, &pid);
 		if (res != null) {
 			if (ProcessLaunch.WAIT in flag) {
-				waitproc(res);
+				pstatus = waitproc(res, &wait_status);
 			} else {
 				new Thread<bool>("wwait", () => {
-						waitproc(res);
+						pstatus = waitproc(res, &wait_status);
 						windone();
 						return true;
 					});

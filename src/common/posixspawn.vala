@@ -7,12 +7,18 @@ public enum ProcessLaunch {
 	WAIT = 80
 }
 
+extern int  parse_wstatus(int stst, out int? wsts);
+
 public class ProcessLauncher : Object {
 	public signal void complete();
 	private int spipe;
 	private int epipe;
 	private Pid child_pid;
 	private int wait_status;
+
+	public bool get_status(out int? sts) {
+		return (bool)parse_wstatus(wait_status, out sts);
+	}
 
 	public int get_stdout_pipe() {
 		return spipe;
@@ -76,10 +82,6 @@ public class ProcessLauncher : Object {
 
 	public int get_pid() {
 		return child_pid;
-	}
-
-	public int get_status() {
-		return wait_status;
 	}
 
 	public static void kill(int pid) {

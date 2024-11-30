@@ -81,14 +81,21 @@ HANDLE create_win_process(char *cmd, int flags, int *sout, int *eout, DWORD *pid
      return piProcInfo.hProcess;
 }
 
-void waitproc(HANDLE h) {
-     if(h != NULL) {
-	  WaitForSingleObject(h, INFINITE);
-	  CloseHandle(h);
+BOOL waitproc(HANDLE h, int *sts) {
+  if(h != NULL) {
+    WaitForSingleObject(h, INFINITE);
+    DWORD wait_status;
+    BOOL rv = GetExitCodeProcess(h, &wait_status);
+    CloseHandle(h);
+    if (sts != NULL) {
+      *sts = (int)wait_status;
     }
+    return rv;
+  }
 }
 
-DWORD proc_get_pid(HANDLE h) {
+
+int proc_get_pid(HANDLE h) {
      return GetProcessId(h);
 }
 
