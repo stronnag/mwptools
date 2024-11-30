@@ -1,9 +1,10 @@
 [Flags]
 public enum ProcessLaunch {
-	STDIN,
-	STDOUT,
-	STDERR,
-	WAIT
+	NONE = 0,
+	STDIN = 1,
+	STDOUT = 2,
+	STDERR = 4,
+	WAIT = 80
 }
 
 extern void *create_win_process(char *cmd, int flags, int *spipe, int *epipe, int32 *pid);

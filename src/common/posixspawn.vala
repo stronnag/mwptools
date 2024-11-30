@@ -1,9 +1,10 @@
 [Flags]
 public enum ProcessLaunch {
-	STDIN,
-	STDOUT,
-	STDERR,
-	WAIT
+	NONE = 0,
+	STDIN = 1,
+	STDOUT = 2,
+	STDERR = 4,
+	WAIT = 80
 }
 
 public class ProcessLauncher : Object {

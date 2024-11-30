@@ -10,6 +10,14 @@
 
 #define BUFSIZE 2048
 
+enum ProcessLaunch {
+  NONE = 0,
+  STDIN = 1,
+  STDOUT = 2,
+  STDERR = 4,
+  WAIT = 80
+};
+
 HANDLE create_win_process(char *cmd, int flags, int *sout, int *eout, DWORD *pid) {
      PROCESS_INFORMATION piProcInfo;
      STARTUPINFO siStartInfo;
@@ -21,11 +29,11 @@ HANDLE create_win_process(char *cmd, int flags, int *sout, int *eout, DWORD *pid
 
      *sout = -1;
      *eout = -1;
-     if((flags & 1) == 1) {
+     if((flags & ProcessLaunch.STDOUT) == ProcessLaunch.STDOUT) {
 	  _pipe(spipes, 4096,_O_BINARY);
 	  shandle = (HANDLE)_get_osfhandle(spipes[1]);
      }
-     if((flags & 2) == 2) {
+     if((flags & ProcessLaunch.STDERR) == ProcessLaunch.STDERR) {
 	  _pipe(epipes, 4096,_O_BINARY);
 	  ehandle = (HANDLE)_get_osfhandle(epipes[1]);
      }
