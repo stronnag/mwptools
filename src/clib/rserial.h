@@ -10,3 +10,4 @@ extern void close_serial(int fd);
 extern void flush_serial(int fd);
 extern int cf_pipe(int *fds);
 extern char *get_error_text(int dummy, char *pBuf, size_t bufSize);
+extern int set_fd_speed(int fd, int rate);
