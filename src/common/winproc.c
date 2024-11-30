@@ -281,6 +281,7 @@ HANDLE create_win_process(char *cmd, int flags, int *sout, int *eout, DWORD *pid
 }
 
 BOOL waitproc(HANDLE h, int *sts) {
+  BOOL rv = false;
   if(h != NULL) {
     WaitForSingleObject(h, INFINITE);
     DWORD wait_status;
@@ -289,8 +290,8 @@ BOOL waitproc(HANDLE h, int *sts) {
     if (sts != NULL) {
       *sts = (int)wait_status;
     }
-    return rv;
   }
+  return rv;
 }
 
 int proc_get_pid(HANDLE h) {
