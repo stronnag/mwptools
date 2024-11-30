@@ -129,34 +129,18 @@ namespace TA {
 
 			string []cdlines={};
 			string []errlines={};
-			/*
-
-			  line_reader.begin(outp, (obj,res) => {
-			  try {
-			  cdlines = line_reader.end(res);
-			  } catch {};
-			  });
-
-			  line_reader.begin(errp, (obj,res) => {
-			  try {
-			  errlines = line_reader.end(res);
-			  } catch {};
-			  });
-
-			*/
 			var subp = new ProcessLauncher();
 			var res = subp.run_argv(spawn_args, ProcessLaunch.STDOUT|ProcessLaunch.STDERR);
 			if(res) {
 				var stdc = subp.get_stdout_iochan();
 				var errc = subp.get_stdout_iochan();
-
 				stdc.add_watch(IOCondition.IN|IOCondition.HUP|IOCondition.NVAL|IOCondition.ERR, (g,c) => {
 						var err = ((c & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0);
 						if(!err){
 							string line;
 							try {
-								var sts = g.read_line (out line, null, null);
-								if (sts != IOStatus.NORMAL || line == null) {
+								g.read_line (out line, null, null);
+								if (line == null) {
 									return false;
 								}
 							} catch {
@@ -173,8 +157,8 @@ namespace TA {
 						if(!err){
 							string line;
 							try {
-								var sts = g.read_line (out line, null, null);
-								if (sts != IOStatus.NORMAL || line == null) {
+								g.read_line (out line, null, null);
+								if (line == null) {
 									return false;
 								}
 							} catch {
@@ -189,10 +173,20 @@ namespace TA {
 				subp.complete.connect(() => {
 						var ok = subp.get_status(null);
 						if (!ok) {
-							StringBuilder sb = new StringBuilder("TA Plot errors\n");
+							StringBuilder sb = new StringBuilder("gnuplot error: ");
+							string? sm = null;
+							try {
+								errc.read_to_end (out sm, null);
+							} catch {}
 							foreach (var l in errlines) {
 								sb.append_c('\t');
 								sb.append(l);
+								sb.append_c('\n');
+							}
+							if (sm != null) {
+								sb.append(sm);
+							}
+							if(errlines.length == 0) {
 								sb.append_c('\n');
 							}
 							MWPLog.message(sb.str);
@@ -220,6 +214,7 @@ namespace TA {
 							}
 						}
 					});
+			} else {
 			}
 		}
 	}
