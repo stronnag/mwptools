@@ -72,7 +72,7 @@ public class ProcessLauncher : Object {
 	public bool run_command(string cmd, int flag) {
 		spipe=-1;
 		epipe=-1;
-		var res = create_win_process(cmd, flag, &ipipe. &spipe, &epipe, &pid);
+		var res = create_win_process(cmd, flag, &ipipe, &spipe, &epipe, &pid);
 		if (res != null) {
 			if (ProcessLaunch.WAIT in flag) {
 				pstatus = waitproc(res, &wait_status);
