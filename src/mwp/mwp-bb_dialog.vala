@@ -369,7 +369,6 @@ namespace BBL {
 								return false;
 							if(line == null || len == 0)
 								return false;
-							MWPLog.message(":DBG: BBLFV: %s", line);
 							int idx=0, offset, size=0;
 							lines += line;
 							if(line.scanf(" %d %d %d", &idx, &offset, &size) == 3) {
@@ -392,7 +391,7 @@ namespace BBL {
 						}
 					});
 				subp.complete.connect(() => {
-						MWPLog.message(":DBG: BBLFV done\n");
+						try {errc.shutdown(false);} catch {};
 						if(!is_valid) {
 							StringBuilder sb = new StringBuilder("No valid log detected.\n");
 							if(lines.length > 0) {
@@ -455,7 +454,6 @@ namespace BBL {
 				return;
 			}
 			nidx = j+1;
-			MWPLog.message(":DBG: BBLSD %d / %d\n", nidx, maxidx);
 			var subp = new ProcessLauncher();
 			var res = subp.run_argv({Mwp.conf.blackbox_decode, "--stdout", "--index", nidx.to_string(), bblname.get_path()}, ProcessLaunch.STDERR);
 			if (res) {
@@ -522,6 +520,10 @@ namespace BBL {
 				string str = null;
 				size_t length = -1;
 				int ft=-1,ns=-1;
+
+				subp.complete.connect(() => {
+						try {stdc.shutdown(false);} catch {};
+					});
 
 				try {
 					for(;;) {
@@ -620,6 +622,11 @@ namespace BBL {
 				var res = subp.run_argv ({Mwp.conf.zone_detect, (string)cbuflat, (string)cbuflon}, ProcessLaunch.STDOUT);
 				if (res){
 					var chan = subp.get_stdout_iochan();
+
+					subp.complete.connect(() => {
+							try {chan.shutdown(false);} catch {};
+						});
+
 					IOStatus eos;
 					try {
 						for(;;) {

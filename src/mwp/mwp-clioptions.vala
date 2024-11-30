@@ -86,6 +86,7 @@ namespace Cli {
 			} catch (Error e) {
 				res = false;
 			}
+			try {sout.shutdown(false); } catch {}
 		}
 		return res;
 	}

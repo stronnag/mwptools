@@ -360,12 +360,12 @@ namespace MapManager {
 						MWPLog.message(sb.str);
 					}
 				}
+				try { sout.shutdown(false);} catch {}
 				var pid = pl.get_pid();
 				if(pid != 0) {
 					proxypids += pid;
 					pl.complete.connect(() => {
 							MWPLog.message("Terminated %s\n",cmd);
-
 						});
 				}
 			}

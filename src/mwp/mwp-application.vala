@@ -197,12 +197,15 @@ namespace Mwp {
 		}
 
 		if(cmd != null) {
-			try {
-				string strout="";
-				size_t len;
-				var subp = new ProcessLauncher();
-				if (subp.run_argv({cmd}, ProcessLaunch.STDOUT)) {
-					var ioc = subp.get_stdout_iochan();
+			string strout="";
+			size_t len;
+			var subp = new ProcessLauncher();
+			if (subp.run_argv({cmd}, ProcessLaunch.STDOUT)) {
+				var ioc = subp.get_stdout_iochan();
+				subp.complete.connect(() => {
+						try { ioc.shutdown(false); } catch {}
+					});
+				try {
 					var sts = ioc.read_to_end(out strout, out len);
 					if(sts == IOStatus.NORMAL && strout.length > 0) {
 						strout = strout.chomp();
@@ -214,18 +217,21 @@ namespace Mwp {
 								hyper = strout.substring(index+"kern.vm_guest: ".length);
 						}
 					}
-				}
-			} catch (Error e) {}
+				} catch (Error e) {}
+			}
 			return hyper;
         }
 
-		try {
-			var subp = new ProcessLauncher();
-			if (subp.run_argv({"dmesg"}, ProcessLaunch.STDOUT)) {
-				var ioc = subp.get_stdout_iochan();
-				string line;
-				size_t length = -1;
-				for(;;) {
+		var subp = new ProcessLauncher();
+		if (subp.run_argv({"dmesg"}, ProcessLaunch.STDOUT)) {
+			var ioc = subp.get_stdout_iochan();
+			string line;
+			size_t length = -1;
+			subp.complete.connect(() => {
+					try { ioc.shutdown(false); } catch {}
+				});
+			for(;;) {
+				try {
 					var sts = ioc.read_line (out line, out length, null);
 					if (sts != IOStatus.NORMAL || line == null) {
 						break;
@@ -236,9 +242,11 @@ namespace Mwp {
 						hyper = line.substring(index);
 						break;
 					}
+				} catch (Error e) {
+					break;
 				}
 			}
-		} catch (Error e) {}
+		}
 #endif
 		return hyper;
 	}

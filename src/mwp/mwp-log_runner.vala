@@ -205,6 +205,11 @@ namespace Mwp {
 		MWPLog.message("%s # pid=%u\n", sargs, LogPlay.child_pid);
 
 		subp.complete.connect(() => {
+				try {
+					cstdout.shutdown(false);
+					error.shutdown(false);
+				} catch {}
+
 				LogPlay.child_pid = 0;
 				if(tfile != null && tfile != MissionManager.last_file) {
                     FileUtils.unlink(tfile);

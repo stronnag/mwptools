@@ -171,6 +171,8 @@ namespace TA {
 						return true;
 					});
 				subp.complete.connect(() => {
+						try {stdc.shutdown(false);} catch {}
+						try {errc.shutdown(false);} catch {}
 						var ok = subp.get_status(null);
 						if (!ok) {
 							StringBuilder sb = new StringBuilder("gnuplot error: ");

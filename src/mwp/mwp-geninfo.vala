@@ -97,6 +97,10 @@ namespace Mwp {
 					var subp = new ProcessLauncher();
 					if (subp.run_argv({s}, ProcessLaunch.STDOUT)) {
 						var ioc = subp.get_stdout_iochan();
+						subp.complete.connect( () => {
+								try {ioc.shutdown(false);} catch {}
+							});
+
 						string glversion=null;
 						string glvendor=null;
 						string glrenderer=null;

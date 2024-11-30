@@ -209,52 +209,47 @@ namespace ETX {
 			present();
 		}
 
-		private async bool meta_reader(DataInputStream inp)  throws Error {
-			for(;;) {
-				try {
-					var line = yield inp.read_line_async();
-					if (line == null) {
-						break;
-					} else {
-						var parts = line.split(",");
-						if (parts.length == 7) {
-							int flags = int.parse(parts[5]);
-							if (flags != 0) {
-								int idx = int.parse(parts[0]);
-								int istart = int.parse(parts[3]);
-								int iend= int.parse(parts[4]);
-								int dura= int.parse(parts[5]);
-								var dtext="%02d:%02d".printf(dura/60, dura%60);
-								var b = new ETXEntry(idx, dtext, parts[2], iend-istart+1);
-								lstore.append(b);
-							}
-						}
-					}
-				} catch (Error e) {
-					return false;
-				}
-			}
-			return true;
-		}
-
 		private void get_etx_metas() {
-			try {
-				var subp = new Subprocess(SubprocessFlags.STDOUT_PIPE, "fl2ltm", "--metas", etxfile.get_path());
-				var dis = new DataInputStream(subp.get_stdout_pipe());
-				meta_reader.begin(dis, (obj,res) => {
+			var subp = new ProcessLauncher();
+			var res = subp.run_argv({"fl2ltm", "--metas",  etxfile.get_path()}, ProcessLaunch.STDOUT);
+			if(res) {
+				IOStatus eos = 0;
+				string line = "";
+				var chan = subp.get_stdout_iochan();
+				chan.add_watch (IOCondition.IN|IOCondition.HUP, (src, cond) => {
+						if (cond == IOCondition.HUP) {
+							return false;
+						}
 						try {
-							meta_reader.end(res);
-						} catch {};
+							eos = src.read_line (out line, null, null);
+							if(eos == IOStatus.EOF) {
+								return false;
+							}
+							if (line == null)
+								return false;
+
+							var parts = line.split(",");
+							if (parts.length == 7) {
+								int flags = int.parse(parts[5]);
+								if (flags != 0) {
+									int idx = int.parse(parts[0]);
+									int istart = int.parse(parts[3]);
+									int iend= int.parse(parts[4]);
+									int dura= int.parse(parts[5]);
+									var dtext="%02d:%02d".printf(dura/60, dura%60);
+									var b = new ETXEntry(idx, dtext, parts[2], iend-istart+1);
+									lstore.append(b);
+								}
+							}
+							return true;
+						} catch (Error e) {
+							return false;
+						}
 					});
-				var pid = subp.get_identifier();
-				if(pid != null) {
-					subp.wait_check_async.begin(null, (obj,res) => {
-							try {
-								subp.wait_check_async.end(res);
-							} catch {}
-						});
-				}
-			} catch (Error e) {}
+				subp.complete.connect(() => {
+						try { chan.shutdown(false); } catch {}
+					});
+			}
 		}
 	}
 }
