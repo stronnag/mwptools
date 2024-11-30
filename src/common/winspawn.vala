@@ -4,8 +4,7 @@ extern void waitproc(void *h);
 extern int32 get_pid(void* h);
 extern void kill (int32 pid);
 
-class ProcessLauncher : Object {
-
+public class ProcessLauncher : Object {
 	private int spipe;
 	private int epipe;
 	private int32 pid;
@@ -51,15 +50,15 @@ class ProcessLauncher : Object {
 			});
 	}
 
-	public kill(int pid) {
+	public void kill(int pid) {
 		kill((int32)pid);
 	}
 
-	public suspend(int pid) {
+	public void suspend(int pid) {
 		MWPLog.message(":DBG: suspend for %d\n", pid);
 	}
 
-	public resume(int pid) {
+	public void resume(int pid) {
 		MWPLog.message(":DBG: resume for %d\n", pid);
 	}
 }

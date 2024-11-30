@@ -1,4 +1,4 @@
-project('mwptools', 'vala', 'c', version : '24.11.29', meson_version : '>= 1.4.0')
+project('mwptools', 'vala', 'c', version : '24.11.30', meson_version : '>= 1.4.0')
 
 nogo = get_option('nogo')
 force_s = get_option('force-static')
