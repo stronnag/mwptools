@@ -354,7 +354,8 @@ namespace BBL {
 			valid = {};
 			maxidx = -1;
 			var subp = new ProcessLauncher();
-			var res = subp.run_argv({Mwp.conf.blackbox_decode, "--stdout", bblname.get_path()}, ProcessLaunch.STDERR);			string line = null;
+			var res = subp.run_argv({Mwp.conf.blackbox_decode, "--stdout", bblname.get_path()}, ProcessLaunch.STDERR);
+			string line = null;
             string [] lines = {}; // for the error path
             size_t len = 0;
 			if(res) {
@@ -367,7 +368,8 @@ namespace BBL {
 							if(eos == IOStatus.EOF)
 								return false;
 							if(line == null || len == 0)
-								return true;
+								return false;
+							MWPLog.message(":DBG: BBLFV: %s", line);
 							int idx=0, offset, size=0;
 							lines += line;
 							if(line.scanf(" %d %d %d", &idx, &offset, &size) == 3) {
