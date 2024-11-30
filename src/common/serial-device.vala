@@ -732,6 +732,10 @@ public class MWSerial : Object {
     private void setup_ip(string? host, uint16 port, string? rhost=null, uint16 rport = 0) {
         fd = -1;
         baudrate = 0;
+
+#if !UNIX // i.e.WINDOWS
+		force4 = true;
+#endif
 		if((host == null || host.length == 0) && ((commode & ComMode.STREAM) != ComMode.STREAM)) {
 			SocketFamily[] fams = {};
 			if(!force4)
@@ -745,7 +749,7 @@ public class MWSerial : Object {
 					if (skt != null) {
 						skt.bind (sa, true);
 						fd = skt.fd;
-						/*if(debug)*/ {
+						if(debug) {
 							MWPLog.message(":DBG: UDP bound: %s %d %d\n", fam.to_string(), fd, port);
 						}
 						commode |= ComMode.UDP;
