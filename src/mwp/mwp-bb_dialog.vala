@@ -392,6 +392,7 @@ namespace BBL {
 						}
 					});
 				subp.complete.connect(() => {
+						MWPLog.message(":DBG: BBLFV done\n");
 						if(!is_valid) {
 							StringBuilder sb = new StringBuilder("No valid log detected.\n");
 							if(lines.length > 0) {
@@ -454,6 +455,7 @@ namespace BBL {
 				return;
 			}
 			nidx = j+1;
+			MWPLog.message(":DBG: BBLSD %d / %d\n", nidx, maxidx);
 			var subp = new ProcessLauncher();
 			var res = subp.run_argv({Mwp.conf.blackbox_decode, "--stdout", "--index", nidx.to_string(), bblname.get_path()}, ProcessLaunch.STDERR);
 			if (res) {
@@ -468,7 +470,7 @@ namespace BBL {
 							if(eos == IOStatus.EOF)
 								return false;
 							if (line  == null || len == 0)
-								return true;
+								return false;
 							int n;
 							n = line.index_of("Log ");
 							if(n == 0) {
