@@ -10,6 +10,14 @@ public class ProcessLauncher : Object {
 		return epipe;
 	}
 
+	public IOChannel get_stdout_iochan() {
+		return new IOChannel.unix_new(spipe);
+	}
+
+	public IOChannel get_stderr_iochan() {
+		return new IOChannel.unix_new(epipe);
+	}
+
 	public bool run(string[]? argv, int flags) {
 		spipe = -1;
 		epipe = -1;

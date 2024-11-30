@@ -15,6 +15,14 @@ public class ProcessLauncher : Object {
 		return epipe;
 	}
 
+	public IOChannel get_stdout_iochan() {
+		return new IOChannel.win32_new_fd(spipe);
+	}
+
+	public IOChannel get_stderr_iochan() {
+		return new IOChannel.win32_new_fd(epipe);
+	}
+
 	public signal void complete();
 	public bool run(string[]? argv, int flag) {
 		var sb = new StringBuilder();

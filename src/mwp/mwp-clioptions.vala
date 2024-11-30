@@ -79,15 +79,9 @@ namespace Cli {
 		var res = p.run({app, "--version"}, 1);
 		bblhelp="";
 		if(res) {
-			var sp = p.get_stdout_pipe();
-			IOChannel sout;
-			size_t slen;
-#if UNIX
-			sout = new IOChannel.unix_new(sp);
-#else
-			sout = ;new IOChannel.win32_new_fd(sp);
-#endif
+			var sout = p.get_stdout_iochan();
 			try {
+				size_t slen;
 				sout.read_to_end(out bblhelp, out slen);
 			} catch (Error e) {
 				res = false;
