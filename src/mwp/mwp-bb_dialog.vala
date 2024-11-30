@@ -348,92 +348,63 @@ namespace BBL {
 			return nrow;
 		}
 
-		private async string [] err_reader(DataInputStream inp)  throws Error {
-			string []errlines = {};
-			for(;;) {
-				try {
-					var line = yield inp.read_line_async();
-					if (line == null) {
-						break;
-					} else {
-						errlines += line;
-					}
-				} catch (Error e) {
-					return {};
-				}
-			}
-			return errlines;
-		}
-
 		private void find_valid() {
 			is_valid = false;
 			is_broken = false;
 			valid = {};
 			maxidx = -1;
-			string [] errlines={};
-			try {
-				var subp = new Subprocess(SubprocessFlags.STDERR_PIPE|SubprocessFlags.STDOUT_SILENCE, Mwp.conf.blackbox_decode, "--stdout", bblname.get_path());
-				var dis = new DataInputStream(subp.get_stderr_pipe());
-				err_reader.begin(dis, (obj,res) => {
+			var subp = new ProcessLauncher();
+			var res = subp.run_argv({Mwp.conf.blackbox_decode, "--stdout", bblname.get_path()}, ProcessLaunch.STDERR);			string line = null;
+            string [] lines = {}; // for the error path
+            size_t len = 0;
+			if(res) {
+				var errc = subp.get_stderr_iochan();
+				errc.add_watch (IOCondition.IN|IOCondition.HUP, (src, cond) => {
 						try {
-							errlines = err_reader.end(res);
+							if (cond == IOCondition.HUP)
+								return false;
+							IOStatus eos = src.read_line (out line, out len, null);
+							if(eos == IOStatus.EOF)
+								return false;
+							if(line == null || len == 0)
+								return true;
 							int idx=0, offset, size=0;
-							foreach(var line in errlines) {
-								if(line.scanf(" %d %d %d", &idx, &offset, &size) == 3) {
-									if(size > BB_MINSIZE) {
-										is_valid = true;
-										valid += idx;
-									}  // else { valid += 0}; // really!!!
-									maxidx = idx;
-								} else if (line.has_prefix("WARNING: Missing expected metadata")) {
-									is_valid = false;
-									is_broken = true;
-									valid = {};
-									maxidx = 0;
-								} else if(line.has_prefix("Log 1 of")) {
-									valid += 1;
-									maxidx = 1;
+							lines += line;
+							if(line.scanf(" %d %d %d", &idx, &offset, &size) == 3) {
+								if(size > BB_MINSIZE) {
 									is_valid = true;
-								}
+									valid += idx;
+								}  // else { valid += 0}; // really!!!
+								maxidx = idx;
+							} else if(line.has_prefix("Log 1 of")) {
+								valid += 1;
+								maxidx = 1;
+								is_valid = true;
+								ProcessLauncher.kill(subp.get_pid());
+								return false;
 							}
-							if(!is_valid) {
-								StringBuilder sb = new StringBuilder("No valid log detected.\n");							if(errlines.length > 0) {
-									bool skip = is_broken;
-									sb.append("blackbox_decode says: ");
-									foreach(var l in errlines) {
-										if (is_broken) {
-											if (l.has_prefix("WARNING: ")) {
-												skip = false;
-												sb.append("\n<tt>");
-											}
-										}
-										if (!skip) {
-											l = l.strip();
-											if (l.length > 0) {
-												sb.append(l);
-											sb.append_c('\n');
-											}
-										}
-									}
-									if(is_broken) {
-										sb.append("</tt>");
-									}
-								}
-								set_normal(sb.str);
-							} else {
-								var tsslen = find_start_times();
-								spawn_decoder(0, tsslen);
+							return true;
+						} catch (Error e) {
+							MWPLog.message("BBL reader: %s\n", e.message);
+							return false;
+						}
+					});
+				subp.complete.connect(() => {
+						if(!is_valid) {
+							StringBuilder sb = new StringBuilder("No valid log detected.\n");
+							if(lines.length > 0) {
+								sb.append("blackbox_decode says: ");
+								foreach(var l in lines)
+									sb.append(l.strip());
 							}
-						} catch {};
+							set_normal(sb.str);
+						} else {
+							var tsslen = find_start_times();
+							spawn_decoder(0, tsslen);
+						}
 					});
-
-				subp.wait_check_async.begin(null, (obj,res) => {
-						try {
-							subp.wait_check_async.end(res);
-						} catch {}
-					});
-			} catch (Error e) {
-				show_child_err(e.message);
+			} else {
+				MWPLog.message("Failed to run %s\n", Mwp.conf.blackbox_decode);
 			}
 		}
 
@@ -473,39 +444,6 @@ namespace BBL {
 			}
 		}
 
-		private async bool item_reader(DataInputStream inp, int j, int tsslen)  throws Error {
-			for(;;) {
-				try {
-					var line = yield inp.read_line_async();
-					if (line == null) {
-						break;
-					} else {
-						int n;
-						n = line.index_of("Log ");
-						if(n == 0) {
-							n = line.index_of(" duration ");
-							if(n > 16) {
-								n += 10;
-								var len = line.length;
-								string dura = line.substring(n, (long)len - n -1);
-								string tsval;
-								if(tsslen > 0 && maxidx == tsslen)
-									tsval = get_formatted_time_stamp(j);
-								else
-									tsval = "Unknown";
-
-								var b = new BBLEntry(nidx, dura, tsval);
-								lstore.append(b);
-							}
-						}
-					}
-				} catch (Error e) {
-					return false;
-				}
-			}
-			return true;
-		}
-
 		private void spawn_decoder(int j, int tsslen) {
 			for(;j < maxidx && valid[j] == 0; j++)
 				;
@@ -514,26 +452,51 @@ namespace BBL {
 				return;
 			}
 			nidx = j+1;
-
-			try {
-				var subp = new Subprocess(SubprocessFlags.STDERR_PIPE|SubprocessFlags.STDOUT_SILENCE, Mwp.conf.blackbox_decode, "--stdout", "--index", nidx.to_string(), bblname.get_path());
-				var dis = new DataInputStream(subp.get_stderr_pipe());
-				item_reader.begin(dis, j, tsslen, (obj,res) => {
+			var subp = new ProcessLauncher();
+			var res = subp.run_argv({Mwp.conf.blackbox_decode, "--stdout", "--index", nidx.to_string(), bblname.get_path()}, ProcessLaunch.STDERR);
+			if (res) {
+				var errc = subp.get_stderr_iochan();
+				errc.add_watch (IOCondition.IN|IOCondition.HUP, (src, cond) => {
+						if (cond == IOCondition.HUP)
+							return false;
 						try {
-							var ok = item_reader.end(res);
-							if (ok) {
-								spawn_decoder(j+1, tsslen);
+							string line;
+							size_t len = 0;
+							IOStatus eos = src.read_line (out line, out len, null);
+							if(eos == IOStatus.EOF)
+								return false;
+							if (line  == null || len == 0)
+								return true;
+							int n;
+							n = line.index_of("Log ");
+							if(n == 0) {
+								n = line.index_of(" duration ");
+								if(n > 16) {
+									n += 10;
+									string dura = line.substring(n, (long)len - n -1);
+									string tsval;
+									if(tsslen > 0 && maxidx == tsslen)
+										tsval = get_formatted_time_stamp(j);
+									else
+										tsval = "Unknown";
+
+									var b = new BBLEntry(nidx, dura, tsval);
+									lstore.append(b);
+								}
 							}
-						} catch {}
+							return true;
+						} catch (Error e) {
+							MWPLog.message ("BBL reader: %s\n", e.message);
+							return false;
+						}
 					});
-
-				subp.wait_check_async.begin(null, (obj,res) => {
-						try {
-							subp.wait_check_async.end(res);
-						} catch {}
+				subp.complete.connect(() => {
+						try { errc.shutdown(false); } catch {}
+						ProcessLauncher.kill(subp.get_pid());
+						spawn_decoder(j+1, tsslen);
 					});
-			} catch (Error e) {
-				show_child_err(e.message);
+			} else {
+				MWPLog.message("BBL failed to spawn\n");
 			}
 		}
 
@@ -541,37 +504,29 @@ namespace BBL {
 			bb_items.label = label;
 		}
 
-		private void show_child_err(string e) {
-			var s = "Running blackbox_decode failed (is it on the PATH?)\n%s\n".printf(e);
-			MWPLog.message(s);
-			Utils.warning_box(s, Gtk.MessageType.WARNING);
-		}
-
-
 		private bool find_base_position(string filename, string index,
 										out double xlat, out double xlon) {
 			bool ok = false;
 			xlon = xlat = 0;
-			try {
-				var subp = new Subprocess(SubprocessFlags.STDOUT_PIPE|SubprocessFlags.STDERR_SILENCE, Mwp.conf.blackbox_decode, "--stdout", "--index", index, "--merge-gps", filename);
-				subp.wait_check_async.begin(null, (obj,res) => {
-						try {
-							subp.wait_check_async.end(res);
-						} catch {}
-					});
-
-				DataInputStream inp = new DataInputStream(subp.get_stdout_pipe());
+			var subp = new ProcessLauncher();
+			var res = subp.run_argv({Mwp.conf.blackbox_decode, "--stdout", "--index", index, "--merge-gps", filename}, ProcessLaunch.STDOUT);
+			if (res) {
+				var stdc = subp.get_stdout_iochan();
+				IOStatus eos;
 				int n = 0;
 				int latp = -1, lonp = -1, fixp = -1, typp = -1;
+				string str = null;
+				size_t length = -1;
 				int ft=-1,ns=-1;
 
 				try {
 					for(;;) {
-						var line = inp.read_line();
-						if (line == null) {
+						eos = stdc.read_line (out str, out length, null);
+						if (eos == IOStatus.EOF)
 							break;
-						}
-						var parts=line.split(",");
+						if(str == null || length == 0)
+							continue;
+						var parts=str.split(",");
 						if(n == 0) {
 							int j = 0;
 							foreach (var p in parts) {
@@ -589,9 +544,7 @@ namespace BBL {
 								j++;
 							}
 							if(latp == -1 || lonp == -1 || fixp == -1 || typp == -1) {
-#if UNIX
-								subp.send_signal(ProcessSignal.TERM);
-#endif
+								ProcessLauncher.kill(subp.get_pid());
 								break;
 							}
 						} else {
@@ -603,22 +556,19 @@ namespace BBL {
 									xlon = double.parse(parts[lonp]);
 									if(xlat != 0.0 && xlon != 0.0) {
 										ok = true;
-#if UNIX
-										subp.send_signal(ProcessSignal.TERM);
-#endif
+										ProcessLauncher.kill(subp.get_pid());
 										break;
 									}
 								}
 							}
-					}
+						}
 						n++;
 					}
-				} catch  {
-					ok = false;
+				} catch  (Error e) {
+					MWPLog.message("%s\n", e.message);
 				}
-			} catch (Error e) {
-				MWPLog.message("%s\n", e.message);
 			}
+
 			if (Rebase.is_valid()) {
 				Rebase.relocate(ref xlat, ref xlon);
 			}
@@ -662,17 +612,27 @@ namespace BBL {
 			lon.format(cbuflon, "%.6f");
 
 			if(Mwp.conf.zone_detect != null && Mwp.conf.zone_detect != "") {
-				try {
-					var subp = new Subprocess(SubprocessFlags.STDOUT_PIPE, Mwp.conf.zone_detect, (string)cbuflat, (string)cbuflon);
-					subp.communicate_utf8(null, null, out str, null);
-					if(subp.get_successful()) {
-						if(str.length > 0) {
-							MWPLog.message("%s %f %f : %s\n", Mwp.conf.zone_detect, lat, lon, str);
-							add_if_missing(str, true);
+				var subp = new ProcessLauncher();
+				var res = subp.run_argv ({Mwp.conf.zone_detect, (string)cbuflat, (string)cbuflon}, ProcessLaunch.STDOUT);
+				if (res){
+					var chan = subp.get_stdout_iochan();
+					IOStatus eos;
+					try {
+						for(;;) {
+							string s;
+							eos = chan.read_line (out s, null, null);
+							if (eos == IOStatus.EOF)
+								break;
+							if (s != null)
+								str = s.strip();
 						}
+					} catch  (Error e) {
+						MWPLog.message("GetTZ: %s\n", e.message);
 					}
-				} catch (Error e) {
-					MWPLog.message("%s\n", e.message);
+					if(str != null) {
+						MWPLog.message("%s %f %f : %s\n", Mwp.conf.zone_detect, lat, lon, str);
+						add_if_missing(str, true);
+					}
 				}
 			} else if(Mwp.conf.geouser != null && Mwp.conf.geouser != "") {
 				string uri = GURI.printf((string)cbuflat, (string)cbuflon, Mwp.conf.geouser);
@@ -711,98 +671,87 @@ namespace BBL {
 			}
 		}
 
-		private async bool bbox_reader(DataInputStream inp, out MapUtils.BoundingBox b)  throws Error {
-			b = {999, 999, -999, -999};
-			int latp = -1, lonp = -1, fixp = -1, typp = -1;
-			int ft=-1,ns=-1;
-			double lon = 0;
-			double lat = 0;
-			bool hdr = false;
-			bool ok = false;
-
-			var done = false;
-			for (;!done;) {
-				var str = yield inp.read_line_async();
-				if(str == null) {
-					break;
-				}
-				var parts=str.split(",");
-				if(hdr == false) {
-					hdr = true;
-					int j = 0;
-					foreach (var p in parts) {
-						var pp = p.strip();
-						if (pp == "GPS_fixType")
-							typp = j;
-						if (pp == "GPS_numSat")
-							fixp = j;
-						if (pp == "GPS_coord[0]")
-							latp = j;
-						else if(pp == "GPS_coord[1]") {
-							lonp = j;
-							break;
-						}
-						j++;
-					}
-					if(latp == -1 || lonp == -1 || fixp == -1 || typp == -1) {
-						ok = false;
-						done = true;
-					}
-				} else {
-					ok = true;
-					ft = int.parse(parts[typp]);
-					if(ft == 2) {
-						ns = int.parse(parts[fixp]);
-						if(ns > 5) {
-							lat = double.parse(parts[latp]);
-							lon = double.parse(parts[lonp]);
-							if(lat < b.minlat)
-								b.minlat = lat;
-							if(lat > b.maxlat)
-								b.maxlat = lat;
-							if(lon < b.minlon)
-								b.minlon = lon;
-							if(lon > b.maxlon)
-								b.maxlon = lon;
-						}
-					}
-				}
-			}
-			return ok;
-		}
-
 		public void find_bbox_box(string filename, uint index) {
-			MWPLog.message("Start find_bbox\n");
-			try {
-				var subp = new Subprocess(SubprocessFlags.STDOUT_PIPE|SubprocessFlags.STDERR_SILENCE, Mwp.conf.blackbox_decode, "--stdout", "--index", index.to_string(), "--merge-gps", filename);
-				var dis = new DataInputStream(subp.get_stdout_pipe());
-				subp.wait_async.begin(null, (obj,res) => {
-						try {
-							subp.wait_async.end(res);
-						} catch {}
-					});
+			Thread<int> thr = null;
+			thr = new Thread<int> (null, () => {
+					MapUtils.BoundingBox b = {999, 999, -999, -999};
+					var subp = new ProcessLauncher();
+					var res = subp.run_argv (
+						{Mwp.conf.blackbox_decode, "--stdout", "--index", index.to_string(), "--merge-gps", filename}, ProcessLaunch.STDOUT);
+					if (res){
+						var chan = subp.get_stdout_iochan();
+						int latp = -1, lonp = -1, fixp = -1, typp = -1;
+						string str = null;
+						size_t length = -1;
+						int ft=-1,ns=-1;
+						double lon = 0;
+						double lat = 0;
+						bool hdr = false;
 
-				bbox_reader.begin(dis, (obj,res) => {
 						try {
-							MapUtils.BoundingBox b = {};
-							var ok = bbox_reader.end(res, out b);
-							if (ok) {
-								if(b.minlat > -90 && b.maxlat < 90 && b.minlon > -180 && b.maxlon < 180) {
-									if (Rebase.is_valid()) {
-										Rebase.relocate(ref b.minlat, ref b.minlon);
-										Rebase.relocate(ref b.maxlat, ref b.maxlon);
+							var done = false;
+							for (;!done;) {
+								var eos = chan.read_line (out str, out length, null);
+								if (eos == IOStatus.EOF)
+									done = true;
+								if(str == null || length == 0)
+									continue;
+								var parts=str.split(",");
+								if(hdr == false) {
+									hdr = true;
+									int j = 0;
+									foreach (var p in parts) {
+										var pp = p.strip();
+										if (pp == "GPS_fixType")
+											typp = j;
+										if (pp == "GPS_numSat")
+											fixp = j;
+										if (pp == "GPS_coord[0]")
+											latp = j;
+										else if(pp == "GPS_coord[1]") {
+											lonp = j;
+											break;
+										}
+										j++;
 									}
-									rescale(b);
+									if(latp == -1 || lonp == -1 || fixp == -1 || typp == -1) {
+										ProcessLauncher.kill(subp.get_pid());
+										done = true;
+									}
+								} else {
+									ft = int.parse(parts[typp]);
+									if(ft == 2) {
+										ns = int.parse(parts[fixp]);
+										if(ns > 5) {
+											lat = double.parse(parts[latp]);
+											lon = double.parse(parts[lonp]);
+											if(lat < b.minlat)
+												b.minlat = lat;
+											if(lat > b.maxlat)
+												b.maxlat = lat;
+											if(lon < b.minlon)
+												b.minlon = lon;
+											if(lon > b.maxlon)
+												b.maxlon = lon;
+										}
+									}
 								}
 							}
-						} catch {}
-#if UNIX
-						subp.send_signal(ProcessSignal.TERM);
-#endif
-					});
-			} catch (Error e) {
-				MWPLog.message("find_bbox %s\n", e.message);
-			}
+						} catch  (Error e) {
+							print("BBL bbox: %s\n", e.message);
+						}
+						try { chan.shutdown(false); } catch {}
+						if(b.minlat > -90 && b.maxlat < 90 && b.minlon > -180 && b.maxlon < 180) {
+							if (Rebase.is_valid()) {
+								Rebase.relocate(ref b.minlat, ref b.minlon);
+								Rebase.relocate(ref b.maxlat, ref b.maxlon);
+							}
+							MainContext.@default().invoke(()=> { rescale(b); return false; });
+						}
+					}
+					MainContext.@default().invoke(()=> {thr.join(); return false;});
+					return 0;
+				});
 		}
 	}
 }
