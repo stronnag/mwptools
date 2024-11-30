@@ -10,13 +10,13 @@
 
 #define BUFSIZE 2048
 
-enum ProcessLaunch {
-  NONE = 0,
-  STDIN = 1,
-  STDOUT = 2,
-  STDERR = 4,
-  WAIT = 80
-};
+typedef enum  {
+  PROCESS_LAUNCH_NONE = 0,
+  PROCESS_LAUNCH_STDIN = 1,
+  PROCESS_LAUNCH_STDOUT = 2,
+  PROCESS_LAUNCH_STDERR = 4,
+  PROCESS_LAUNCH_WAIT = 80
+} ProcessLaunch;
 
 HANDLE create_win_process(char *cmd, int flags, int *sout, int *eout, DWORD *pid) {
      PROCESS_INFORMATION piProcInfo;
@@ -29,11 +29,11 @@ HANDLE create_win_process(char *cmd, int flags, int *sout, int *eout, DWORD *pid
 
      *sout = -1;
      *eout = -1;
-     if((flags & ProcessLaunch.STDOUT) == ProcessLaunch.STDOUT) {
+     if((((ProcessLaunch)flags) & PROCESS_LAUNCH_STDOUT) == PROCESS_LAUNCH_STDOUT) {
 	  _pipe(spipes, 4096,_O_BINARY);
 	  shandle = (HANDLE)_get_osfhandle(spipes[1]);
      }
-     if((flags & ProcessLaunch.STDERR) == ProcessLaunch.STDERR) {
+     if((((ProcessLaunch)flags) & PROCESS_LAUNCH_STDERR) == PROCESS_LAUNCH_STDERR) {
 	  _pipe(epipes, 4096,_O_BINARY);
 	  ehandle = (HANDLE)_get_osfhandle(epipes[1]);
      }
