@@ -457,10 +457,9 @@ namespace BBL {
 			nidx = j+1;
 			MWPLog.message(":DBG: BBLSD %d / %d\n", nidx, maxidx);
 			var subp = new ProcessLauncher();
-			var res = subp.run_argv({Mwp.conf.blackbox_decode, "--stdout", "--index", nidx.to_string(), bblname.get_path()}, ProcessLaunch.STDERR|ProcessLaunch.STDOUT);
+			var res = subp.run_argv({Mwp.conf.blackbox_decode, "--stdout", "--index", nidx.to_string(), bblname.get_path()}, ProcessLaunch.STDERR);
 			if (res) {
 				var errc = subp.get_stderr_iochan();
-				var stdc = subp.get_stdout_iochan();
 				errc.add_watch (IOCondition.IN|IOCondition.HUP, (src, cond) => {
 						if (cond == IOCondition.HUP)
 							return false;
@@ -495,7 +494,8 @@ namespace BBL {
 							return false;
 						}
 					});
-
+				/*
+				 * Windows hack ..
 				stdc.add_watch (IOCondition.IN|IOCondition.HUP, (src, cond) => {
 						if (cond == IOCondition.HUP)
 							return false;
@@ -509,7 +509,7 @@ namespace BBL {
 						} catch { return false; }
 						return true;
 					});
-
+				*/
 				subp.complete.connect(() => {
 						try { errc.shutdown(false); } catch {}
 						ProcessLauncher.kill(subp.get_pid());

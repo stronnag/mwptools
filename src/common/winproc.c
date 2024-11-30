@@ -217,6 +217,15 @@ int fnmatch (const char *pattern, const char *string, int flags) {
 }
 
 
+private HANDLE get_nul_handle() {
+  SECURITY_ATTRIBUTES secattr;
+  secattr.nLength = sizeof secattr;
+  secattr.lpSecurityDescriptor = NULL;
+  secattr.bInheritHandle = TRUE;
+  HANDLE hNULL = CreateFile(_T("NUL"), GENERIC_ALL, 0, &secattr, OPEN_EXISTING, 0, NULL);
+  reyurn hNULL;
+}
+
 HANDLE create_win_process(char *cmd, int flags, int *sinp,  int *sout, int *eout, DWORD *pid) {
      PROCESS_INFORMATION piProcInfo;
      STARTUPINFO siStartInfo;
@@ -233,16 +242,20 @@ HANDLE create_win_process(char *cmd, int flags, int *sinp,  int *sout, int *eout
      *sinp = -1;
 
      if((((ProcessLaunch)flags) & PROCESS_LAUNCH_STDIN) == PROCESS_LAUNCH_STDIN) {
-	  _pipe(ipipes, 4096,_O_BINARY);
-	  ihandle = (HANDLE)_get_osfhandle(ipipes[0]);
+       _pipe(ipipes, 4096,_O_BINARY);
+       ihandle = (HANDLE)_get_osfhandle(ipipes[0]);
      }
      if((((ProcessLaunch)flags) & PROCESS_LAUNCH_STDOUT) == PROCESS_LAUNCH_STDOUT) {
-	  _pipe(spipes, 4096,_O_BINARY);
-	  shandle = (HANDLE)_get_osfhandle(spipes[1]);
+       _pipe(spipes, 4096,_O_BINARY);
+       shandle = (HANDLE)_get_osfhandle(spipes[1]);
+     } else {
+       shandle = get_nul_handle();
      }
      if((((ProcessLaunch)flags) & PROCESS_LAUNCH_STDERR) == PROCESS_LAUNCH_STDERR) {
 	  _pipe(epipes, 4096,_O_BINARY);
 	  ehandle = (HANDLE)_get_osfhandle(epipes[1]);
+     } else {
+       ehandle = get_nul_handle();
      }
 
      memset(&piProcInfo, 0, sizeof(PROCESS_INFORMATION) );
