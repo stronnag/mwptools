@@ -222,7 +222,7 @@ void flush_serial(int fd) {
      PurgeComm(hfd, PURGE_RXABORT|PURGE_TXABORT|PURGE_RXCLEAR|PURGE_TXCLEAR);
 }
 
-void set_fd_speed(int fd, int baudrate) {
+int set_fd_speed(int fd, int baudrate) {
      HANDLE hfd = (HANDLE)_get_osfhandle(fd);
      DCB dcb = {0};
      BOOL res = FALSE;
@@ -234,7 +234,9 @@ void set_fd_speed(int fd, int baudrate) {
         dcb.Parity=NOPARITY;
 	dcb.BaudRate = baudrate;
 	res = SetCommState(hfd, &dcb);
-    }
+	return 0;
+     }
+     return -1;
 }
 
 void set_timeout(int fd, __attribute__ ((unused)) int p0, __attribute__ ((unused)) int p1) {
