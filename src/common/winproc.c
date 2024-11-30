@@ -217,17 +217,25 @@ int fnmatch (const char *pattern, const char *string, int flags) {
 }
 
 
-HANDLE create_win_process(char *cmd, int flags, int *sout, int *eout, DWORD *pid) {
+HANDLE create_win_process(char *cmd, int flags, int *sinp,  int *sout, int *eout, DWORD *pid) {
      PROCESS_INFORMATION piProcInfo;
      STARTUPINFO siStartInfo;
      bool bSuccess;
-     HANDLE shandle;
-     HANDLE ehandle;
+     HANDLE ihandle = NULL;
+     HANDLE shandle = NULL;
+     HANDLE ehandle = NULL;
+     int ipipes[2];
      int spipes[2];
      int epipes[2];
 
      *sout = -1;
      *eout = -1;
+     *sinp = -1;
+
+     if((((ProcessLaunch)flags) & PROCESS_LAUNCH_STDIN) == PROCESS_LAUNCH_STDIN) {
+	  _pipe(ipipes, 4096,_O_BINARY);
+	  ihandle = (HANDLE)_get_osfhandle(ipipes[0]);
+     }
      if((((ProcessLaunch)flags) & PROCESS_LAUNCH_STDOUT) == PROCESS_LAUNCH_STDOUT) {
 	  _pipe(spipes, 4096,_O_BINARY);
 	  shandle = (HANDLE)_get_osfhandle(spipes[1]);
@@ -244,6 +252,8 @@ HANDLE create_win_process(char *cmd, int flags, int *sout, int *eout, DWORD *pid
      siStartInfo.wShowWindow = SW_HIDE;
      siStartInfo.hStdError = ehandle;
      siStartInfo.hStdOutput = shandle;
+     siStartInfo.hStdInput = ihandle;
+
      siStartInfo.dwFlags |= STARTF_USESTDHANDLES|STARTF_USESHOWWINDOW;
 
      bSuccess = CreateProcess(NULL,
@@ -257,6 +267,10 @@ HANDLE create_win_process(char *cmd, int flags, int *sout, int *eout, DWORD *pid
 			      &siStartInfo,  // STARTUPINFO pointer
 			      &piProcInfo);  // receives PROCESS_INFORMATION
 
+     if((flags & PROCESS_LAUNCH_STDIN) == PROCESS_LAUNCH_STDIN) {
+	  *sinp = ipipes[1];
+	  close(ipipes[0]);
+     }
      if((flags & PROCESS_LAUNCH_STDOUT) == PROCESS_LAUNCH_STDOUT) {
 	  *sout = spipes[0];
 	  close(spipes[1]);
@@ -269,12 +283,15 @@ HANDLE create_win_process(char *cmd, int flags, int *sout, int *eout, DWORD *pid
      if (bSuccess ) {
 	  CloseHandle(piProcInfo.hThread);
      } else {
-	  if((flags & 1) == 1) {
-	       close(spipes[0]);
-	  }
-	  if((flags & 2) == 2) {
-	       close(epipes[1]);
-	  }
+       if((flags & PROCESS_LAUNCH_STDIN) == PROCESS_LAUNCH_STDIN) {
+	 close(ipipes[0]);
+       }
+       if((flags & PROCESS_LAUNCH_STDOUT) == PROCESS_LAUNCH_STDOUT) {
+	 close(spipes[1]);
+       }
+       if((flags & PROCESS_LAUNCH_STDERR) == PROCESS_LAUNCH_STDERR) {
+	 close(epipes[1]);
+       }
      }
      *pid =  piProcInfo.dwProcessId;
      return piProcInfo.hProcess;

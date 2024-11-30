@@ -12,6 +12,7 @@ extern int pid_from_name(char *name);
 
 public class ProcessLauncher : Object {
 	public signal void complete();
+	private int ipipe;
 	private int spipe;
 	private int epipe;
 	private Pid child_pid;
@@ -21,6 +22,9 @@ public class ProcessLauncher : Object {
 		return (bool)parse_wstatus(wait_status, out sts);
 	}
 
+	public int get_stdin_pipe() {
+		return ipipe;
+	}
 	public int get_stdout_pipe() {
 		return spipe;
 	}
@@ -30,6 +34,10 @@ public class ProcessLauncher : Object {
 
 	public IOChannel get_stdout_iochan() {
 		return new IOChannel.unix_new(spipe);
+	}
+
+	public IOChannel get_stdin_iochan() {
+		return new IOChannel.unix_new(ipipe);
 	}
 
 	public IOChannel get_stderr_iochan() {
@@ -48,6 +56,8 @@ public class ProcessLauncher : Object {
 	public bool run_argv(string[]? argv, int flags) {
 		spipe = -1;
 		epipe = -1;
+		ipipe = -1;
+
 		SpawnFlags spfl = SpawnFlags.SEARCH_PATH | SpawnFlags.DO_NOT_REAP_CHILD;
 		if (!(ProcessLaunch.STDOUT in flags)) {
 			spfl |= SpawnFlags.STDOUT_TO_DEV_NULL;
@@ -62,7 +72,7 @@ public class ProcessLauncher : Object {
 											spfl,
 											null,
 											out child_pid,
-											null,
+											out ipipe,
 											out spipe,
 											out epipe);
 			if(ProcessLaunch.WAIT in flags) {

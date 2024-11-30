@@ -7,7 +7,7 @@ public enum ProcessLaunch {
 	WAIT = 80
 }
 
-extern void *create_win_process(char *cmd, int flags, int *spipe, int *epipe, int32 *pid);
+extern void *create_win_process(char *cmd, int flags, int *ipipe, int *spipe, int *epipe, int32 *pid);
 extern bool waitproc(void *h, int* sts);
 //extern int32 proc_get_pid(void* h);
 extern void proc_kill (int32 pid);
@@ -15,16 +15,24 @@ extern int pid_from_name(char *procname);
 
 public class ProcessLauncher : Object {
 	private int spipe;
+	private int ipipe;
 	private int epipe;
 	private int32 pid;
 	private int wait_status;
 	private bool pstatus;
 
+	public int get_stdin_pipe() {
+		return ipipe;
+	}
 	public int get_stdout_pipe() {
 		return spipe;
 	}
 	public int get_stderr_pipe() {
 		return epipe;
+	}
+
+	public IOChannel get_stdin_iochan() {
+		return new IOChannel.win32_new_fd(ipipe);
 	}
 
 	public IOChannel get_stdout_iochan() {
@@ -64,7 +72,7 @@ public class ProcessLauncher : Object {
 	public bool run_command(string cmd, int flag) {
 		spipe=-1;
 		epipe=-1;
-		var res = create_win_process(cmd, flag, &spipe, &epipe, &pid);
+		var res = create_win_process(cmd, flag, &ipipe. &spipe, &epipe, &pid);
 		if (res != null) {
 			if (ProcessLaunch.WAIT in flag) {
 				pstatus = waitproc(res, &wait_status);

@@ -49,8 +49,8 @@ namespace TTS {
 	uint spktid = 0;
     private int si = 0;
     private bool mt_voice = false;
-	private GLib.OutputStream efdin=null;
-	private GLib.Subprocess epid = null;
+	private int efdin= -1;
+	private int epid = -1;
 	private uint8 spkamp = 0;
 	private string arm_msg = null;
 	private int lsat_t = 0;
@@ -109,18 +109,16 @@ namespace TTS {
 
 	private void audio_init (string? voice, bool use_en = false, string? espawn=null) {
         if(Mwp.vinit == false) {
-            efdin=null;
+            efdin=-1;
             Mwp.vinit = true;
             if(voice == null)
                 voice = "default";
 
             if(espawn != null) {
-                string []args;
                 try {
-					Shell.parse_argv(espawn, out args);
-					epid = new Subprocess.newv(args, SubprocessFlags.STDOUT_SILENCE|SubprocessFlags.STDIN_PIPE);
-					efdin = epid.get_stdin_pipe();
-
+					var subp = new ProcessLauncher();
+					subp.run_command(espawn, ProcessLaunch.STDIN);
+					efdin = subp.get_stdin_pipe();
                 } catch (Error e) {
                     MWPLog.message("spawn \"%s\", %s\n", espawn, e.message);
                 }
@@ -146,9 +144,9 @@ namespace TTS {
 			mt.message(TTS.Vox.DONE);
 			mt.thread.join ();
 			mt = null;
-			if(epid != null) {
-				epid.force_exit();
-				epid = null;
+			if(epid > 0) {
+				ProcessLauncher.kill(epid);
+				epid = -1;
 			}
 		}
     }
@@ -488,20 +486,21 @@ public class AudioThread : Object {
                             s = s.replace(",",".");
 						}
 						//						MWPLog.message(":DBG: Say %s\n", s);
-                        if(TTS.efdin != null) {
+                        if(TTS.efdin != -1) {
 							StringBuilder sb = new StringBuilder(s);
 							sb.append("\n\n");
-							TTS.efdin.write_all_async.begin(sb.str.data, Priority.DEFAULT,null);
+							var sdta = sb.str.data;
+							Posix.write(TTS.efdin, sdta, sdta.length);
                         } else {
                             MwpSpeech.say(s);
 						}
                     }
                 }
-				if (TTS.efdin != null) {
+				if (TTS.efdin != -1) {
 					try {
-						TTS.efdin.close();
+						Posix.close(TTS.efdin);
 					} catch {}
-					TTS.efdin = null;
+					TTS.efdin = -1;
 				}
                 return 0;
             });

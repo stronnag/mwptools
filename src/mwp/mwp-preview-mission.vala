@@ -73,7 +73,6 @@ public class Previewer : Object {
 
 	private void done() {
 		preview_running = false;
-		thr.join();
 		MwpMenu.set_menu_state(Mwp.window, "mxpreview", false);
 		Timeout.add_seconds(2,() => {
 				pcraft.park();
