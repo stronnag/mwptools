@@ -8,7 +8,6 @@
 #include <fcntl.h>
 #include <stdbool.h>
 #include <tlhelp32.h>
-#include <fnmatch.h>
 
 #define BUFSIZE 2048
 
@@ -19,8 +18,6 @@ typedef enum  {
   PROCESS_LAUNCH_STDERR = 4,
   PROCESS_LAUNCH_WAIT = 80
 } ProcessLaunch;
-
-
 
 /* Copyright (C) 1992 Free Software Foundation, Inc.
 This file is part of the GNU C Library.
