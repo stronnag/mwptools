@@ -260,16 +260,20 @@ namespace MapManager {
 			sp = new SoupProxy(offline);
 			try {
 				sp.listen_local(31897+ij, 0);
-				var u  = sp.get_uris();
-				port = u.nth_data(0).get_port ();
-			} catch { port = 0; }
+				//var u  = sp.get_uris();
+				//port = u.nth_data(0).get_port ();
+				port = 31897+ij;
+			} catch (Error e) {
+				MWPLog.message(":DBG: Proxy: %s\n", e.message);
+				port = 0;
+			}
 			if (port != 0) {
 				ms.url_template = "http://localhost:%u/%s/{z}/{x}/{y}.png".printf(port,ms.id);
 				var cdir = "http___localhost_%u_%s__z___x___y__png".printf(port, ms.id);
 				sp.set_cdir(cdir);
+				sources += ms;
+				sp.set_uri(BingMap.get_buri(ij));
 			}
-			sources += ms;
-			sp.set_uri(BingMap.get_buri(ij));
 		}
 
 		var have_mb = false;
