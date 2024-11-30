@@ -745,8 +745,8 @@ public class MWSerial : Object {
 					if (skt != null) {
 						skt.bind (sa, true);
 						fd = skt.fd;
-						if(debug) {
-							MWPLog.message("bound: %s %d %d\n", fam.to_string(), fd, port);
+						/*if(debug)*/ {
+							MWPLog.message(":DBG: UDP bound: %s %d %d\n", fam.to_string(), fd, port);
 						}
 						commode |= ComMode.UDP;
 						break;

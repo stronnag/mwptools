@@ -494,22 +494,6 @@ namespace BBL {
 							return false;
 						}
 					});
-				/*
-				 * Windows hack ..
-				stdc.add_watch (IOCondition.IN|IOCondition.HUP, (src, cond) => {
-						if (cond == IOCondition.HUP)
-							return false;
-						try {
-							string line;
-							IOStatus eos = src.read_line (out line, null, null);
-							if(eos == IOStatus.EOF)
-								return false;
-							if (line  == null)
-								return false;
-						} catch { return false; }
-						return true;
-					});
-				*/
 				subp.complete.connect(() => {
 						try { errc.shutdown(false); } catch {}
 						ProcessLauncher.kill(subp.get_pid());
