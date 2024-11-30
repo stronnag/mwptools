@@ -217,13 +217,12 @@ int fnmatch (const char *pattern, const char *string, int flags) {
 }
 
 
-static HANDLE get_nul_handle() {
+static HANDLE get_nul_handle(void) {
   SECURITY_ATTRIBUTES secattr;
   secattr.nLength = sizeof secattr;
   secattr.lpSecurityDescriptor = NULL;
   secattr.bInheritHandle = TRUE;
-  HANDLE hNULL = CreateFile(_T("NUL"), GENERIC_ALL, 0, &secattr, OPEN_EXISTING, 0, NULL);
-  reyurn hNULL;
+  return CreateFile(_T("NUL"), GENERIC_ALL, 0, &secattr, OPEN_EXISTING, 0, NULL);
 }
 
 HANDLE create_win_process(char *cmd, int flags, int *sinp,  int *sout, int *eout, DWORD *pid) {
