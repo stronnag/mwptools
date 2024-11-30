@@ -217,7 +217,7 @@ int fnmatch (const char *pattern, const char *string, int flags) {
 }
 
 
-private HANDLE get_nul_handle() {
+static HANDLE get_nul_handle() {
   SECURITY_ATTRIBUTES secattr;
   secattr.nLength = sizeof secattr;
   secattr.lpSecurityDescriptor = NULL;
