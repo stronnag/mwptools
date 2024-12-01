@@ -171,7 +171,6 @@ namespace Mwp {
 		string csline = null;
 		size_t len = 0;
 		size_t cslen = 0;
-		StringBuilder sb = new StringBuilder();
 
 		IOChannel error = subp.get_stderr_iochan();
 		IOChannel cstdout = subp.get_stdout_iochan();
@@ -184,7 +183,7 @@ namespace Mwp {
                             return false;
 					if(csline == null || cslen == 0)
 						return true;
-					MWPLog.message("<fl2tlm> %s", csline);
+					MWPLog.message("<%s> %s", args[0], csline);
 				} catch {}
 				return true;
 			});
@@ -198,7 +197,7 @@ namespace Mwp {
                             return false;
 					if(line == null || len == 0)
 						return true;
-					sb.append(line);
+					MWPLog.message("<%s> %s", args[0], line);
 				} catch {}
 				return true;
 			});
@@ -217,11 +216,6 @@ namespace Mwp {
 				Sticks.done();
 				cleanup_replay();
 				replayer = 0;
-				if (subp.get_status(null) == false) {
-					if(sb.str.length > 0) {
-						MWPLog.message("fl2ltm %s\n", sb.str);
-					}
-				}
 			});
 	}
 

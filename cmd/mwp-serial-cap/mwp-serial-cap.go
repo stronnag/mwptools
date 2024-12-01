@@ -179,6 +179,7 @@ func main() {
 			if err != nil {
 				log.Fatal(err)
 			}
+			fmt.Printf("mwp-serial-cap UDP connection %+v\n", conn.LocalAddr())
 			sd = conn
 		}
 	} else {

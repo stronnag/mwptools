@@ -477,6 +477,9 @@ namespace Mwp {
 			if(ready && Mwp.conf.atexit != null && Mwp.conf.atexit.length > 0) {
 				new ProcessLauncher().run_command(Mwp.conf.atexit, ProcessLaunch.WAIT);
 			}
+#if UNIX
+			Posix.kill(0, 15);
+#endif
 		}
 	}
 }

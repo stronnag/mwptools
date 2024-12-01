@@ -83,7 +83,7 @@ func check_device() (string, int) {
 		baud = *_baud
 	}
 	if name != "" {
-		log.Printf("Using device %s\n", name)
+		fmt.Fprintf(os.Stderr, "Using device %s\n", name)
 	}
 	return name, baud
 }
@@ -249,6 +249,7 @@ func main() {
 				if err != nil {
 					log.Fatal(err)
 				}
+				fmt.Fprintf(os.Stderr, "local UDP address %+v\n", conn.LocalAddr())
 				sd = conn
 			}
 		} else {

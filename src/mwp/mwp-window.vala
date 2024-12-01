@@ -46,6 +46,7 @@ namespace Mwp {
 			if(msp != null && msp.available) {
 				msp.close();
 			}
+			TTS.stop_audio();
 			MBus.svc.quit();
 			MapManager.killall();
 		}

@@ -628,8 +628,7 @@ public class MWSerial : Object {
                 result = 0;
                 available = true;
                 devname = "udp #%d".printf(outp);
-				var fam = xsa.get_family();
-				MWPLog.message(":DBG: random UDP addr (%s) %s\n", xsa.to_string(), fam.to_string());
+				MWPLog.message("random UDP addr %s\n", xsa.to_string());
 				setup_reader();
             } catch (Error e) {
 				MWPLog.message("randomIP: %s\n", e.message);
@@ -750,7 +749,7 @@ public class MWSerial : Object {
 						skt.bind (sa, true);
 						fd = skt.fd;
 						if(debug) {
-							MWPLog.message(":DBG: UDP bound: %s %d %d\n", fam.to_string(), fd, port);
+							MWPLog.message(":DBG: UDP bound: %s fd=%d\n", skt.get_local_address(), fd);
 						}
 						commode |= ComMode.UDP;
 						break;
@@ -1076,6 +1075,7 @@ public class MWSerial : Object {
 			} else {
 				if (!skt.is_closed()) {
                     try {
+						MWPLog.message(":DBG: close %s\n", skt.get_local_address().to_string());
 						if ((commode & ComMode.UDP) == 0) {
 							skt.shutdown(true, true);
 						}
