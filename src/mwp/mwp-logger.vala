@@ -205,7 +205,13 @@ namespace Logger {
         sb.append(u.machine);
         return sb.str;
 #else
-		return "on msys2 (probably, good luck)";
+		v = var v = Win32.get_windows_version();
+        var sb = new StringBuilder("Windows ");
+		var maj = v & 0xff;
+		var minor = ((v >> 8) && 0xff);
+		var buildid = (v >> 16);
+		sb.append_printf("%u.%u (%u) via msys2 (probably, good luck)", maj, minor, buildid);
+		return sb.str;
 #endif
     }
 

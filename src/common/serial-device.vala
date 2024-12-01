@@ -733,9 +733,6 @@ public class MWSerial : Object {
         fd = -1;
         baudrate = 0;
 
-#if !UNIX // i.e.WINDOWS
-		force4 = true;
-#endif
 		if((host == null || host.length == 0) && ((commode & ComMode.STREAM) != ComMode.STREAM)) {
 			SocketFamily[] fams = {};
 			if(!force4)
