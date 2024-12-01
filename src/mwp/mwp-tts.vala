@@ -500,9 +500,9 @@ public class AudioThread : Object {
 					Posix.close(TTS.efdin);
 					TTS.efdin = -1;
 				}
-				if(epid > 0) {
-					ProcessLauncher.kill(epid);
-					epid = -1;
+				if(TTS.epid > 0) {
+					ProcessLauncher.kill(TTS.epid);
+					TTS.epid = -1;
 				}
                 return 0;
             });
