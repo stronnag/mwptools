@@ -118,6 +118,7 @@ namespace TTS {
 				var subp = new ProcessLauncher();
 				if(subp.run_command(espawn, ProcessLaunch.STDIN)) {
 					efdin = subp.get_stdin_pipe();
+					epid = subp.get_pid();
 				} else {
                     MWPLog.message("spawn failed for\"%s\", %s\n", espawn);
                 }
@@ -143,10 +144,10 @@ namespace TTS {
 			mt.message(TTS.Vox.DONE);
 			mt.thread.join ();
 			mt = null;
-			if(epid > 0) {
-				ProcessLauncher.kill(epid);
-				epid = -1;
-			}
+		}
+		if(epid > 0) {
+			ProcessLauncher.kill(epid);
+			epid = -1;
 		}
     }
 
@@ -498,6 +499,10 @@ public class AudioThread : Object {
 				if (TTS.efdin != -1) {
 					Posix.close(TTS.efdin);
 					TTS.efdin = -1;
+				}
+				if(epid > 0) {
+					ProcessLauncher.kill(epid);
+					epid = -1;
 				}
                 return 0;
             });
