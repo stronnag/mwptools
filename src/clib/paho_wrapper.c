@@ -49,7 +49,7 @@ MQTTClient paho_wrapper_setup(const char *host, const char *cafile) {
     conn_opts.ssl = &ssl_opts;
   }
 
-  long rno = random();
+  long rno = rand();
   char clientid[16];
   sprintf(clientid, "_%08lx_", rno);
 
