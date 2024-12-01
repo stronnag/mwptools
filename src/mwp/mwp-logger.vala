@@ -205,7 +205,7 @@ namespace Logger {
         sb.append(u.machine);
         return sb.str;
 #else
-		v = var v = Win32.get_windows_version();
+		var v = Win32.get_windows_version();
         var sb = new StringBuilder("Windows ");
 		var maj = v & 0xff;
 		var minor = ((v >> 8) && 0xff);
