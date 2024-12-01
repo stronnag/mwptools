@@ -168,9 +168,14 @@ subdir('src/bbox-replay')
 if nogo == false and gook == true and gotrim != ''
   subdir('pkg/geo')
   subdir('cmd/mwp-plot-elevations')
+  exe=''
+  if build_machine.system() == 'windows'
+    exe='.exe'
+  endif
+
   mpe = custom_target(
     'mwp-plot-elevations',
-    output: 'mwp-plot-elevations',
+    output: 'mwp-plot-elevations'+exe,
     input: [mpe_files, geo_files],
     command: [ golang, 'build', gotrim, '-o', '@OUTPUT@', '-ldflags', '-w -s', mpe_dir ],
     build_by_default: true,
@@ -180,7 +185,7 @@ if nogo == false and gook == true and gotrim != ''
   subdir('cmd/flashgo')
   fgo = custom_target(
     'flashgo',
-    output: 'flashgo',
+    output: 'flashgo'+exe,
     input: [fgo_files],
     command: [ golang, 'build', gotrim, '-o', '@OUTPUT@', '-ldflags', '-w -s',  fgo_dir ],
     build_by_default: true,
@@ -189,8 +194,8 @@ if nogo == false and gook == true and gotrim != ''
 
   subdir('cmd/mwp-log-replay')
   log_replay = custom_target(
-    'mwp-log-replay',
-    output: 'mwp-log-replay',
+    'mwp-log-replay'
+    output: 'mwp-log-replay'+exe,
     command: [ golang, 'build', gotrim, '-o', '@OUTPUT@', '-ldflags', '-w -s',  mlr_dir ],
     build_by_default: true,
     input: mlr_files,
@@ -200,7 +205,7 @@ if nogo == false and gook == true and gotrim != ''
   subdir('cmd/mwp-serial-cap')
   serial_cap = custom_target(
     'mwp-serial-cap',
-    output: 'mwp-serial-cap',
+    output: 'mwp-serial-cap'+exe,
     command: [ golang, 'build', gotrim, '-o', '@OUTPUT@', '-ldflags', '-w -s',  msc_dir ],
     build_by_default: true,
     input: msc_files,
