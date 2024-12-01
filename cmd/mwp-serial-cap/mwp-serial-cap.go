@@ -142,10 +142,15 @@ func main() {
 		switch dd.proto {
 		case DevClass_TCP:
 			var conn net.Conn
+			tcpfam := "tcp6"
 			remote := fmt.Sprintf("%s:%d", dd.name, dd.port)
-			addr, err := net.ResolveTCPAddr("tcp", remote)
+			addr, err := net.ResolveTCPAddr(tcpfam, remote)
+			if err != nil {
+				tcpfam = "tcp"
+				addr, err = net.ResolveTCPAddr(tcpfam, remote)
+			}
 			if err == nil {
-				conn, err = net.DialTCP("tcp", nil, addr)
+				conn, err = net.DialTCP(tcpfam, nil, addr)
 			}
 			if err != nil {
 				log.Fatal(err)
@@ -154,13 +159,22 @@ func main() {
 		case DevClass_UDP:
 			var laddr, raddr *net.UDPAddr
 			var conn net.Conn
+			udpfam := "udp6"
 			if dd.name == "" {
-				laddr, err = net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", dd.name, dd.port))
+				laddr, err = net.ResolveUDPAddr(udpfam, fmt.Sprintf("%s:%d", dd.name, dd.port))
+				if err != nil {
+					udpfam := "udp"
+					laddr, err = net.ResolveUDPAddr(udpfam, fmt.Sprintf("%s:%d", dd.name, dd.port))
+				}
 			} else {
-				raddr, err = net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", dd.name, dd.port))
+				raddr, err = net.ResolveUDPAddr(udpfam, fmt.Sprintf("%s:%d", dd.name, dd.port))
+				if err != nil {
+					udpfam := "udp"
+					raddr, err = net.ResolveUDPAddr(udpfam, fmt.Sprintf("%s:%d", dd.name, dd.port))
+				}
 			}
 			if err == nil {
-				conn, err = net.DialUDP("udp", laddr, raddr)
+				conn, err = net.DialUDP(udpfam, laddr, raddr)
 			}
 			if err != nil {
 				log.Fatal(err)

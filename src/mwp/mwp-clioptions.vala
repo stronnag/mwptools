@@ -91,6 +91,12 @@ namespace Cli {
 		return res;
 	}
 
+#if UNIX
+	const int FL2LTMVERS = 10024;
+#else
+	const int FL2LTMVERS = 10026;
+#endif
+
 	private void parse_options() {
 		Mwp.gpsstats = {0, 0, 0, 0, 9999, 9999, 9999};
 		MWSerial.debug = ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.SERIAL) == Mwp.DEBUG_FLAGS.SERIAL);
@@ -167,7 +173,7 @@ namespace Cli {
 						}
 						if (vsum > 10000) {
 							Mwp.sticks_ok = true;
-							if (vsum >= 10024) {
+							if (vsum >= FL2LTMVERS) {
 								Mwp.bblosd_ok = true;
 								ok = true;
 							}
