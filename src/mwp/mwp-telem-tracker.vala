@@ -356,7 +356,7 @@ namespace TelemTracker {
 						pending(false);
 						if (ok) {
 							sd.dev.setup_reader();
-							MWPLog.message("start secondary reader %s\n", sd.name);
+							MWPLog.message("started secondary reader %s\n", sd.name);
 							if(Mwp.rawlog)
 								sd.dev.raw_logging(true);
 							sd.dev.set_pmask(sd.pmask);
@@ -365,7 +365,7 @@ namespace TelemTracker {
 							string fstr = null;
 							sd.dev.get_error_message(out fstr);
 							MWPLog.message("Secondary reader %s\n", fstr);
-							sd.inuse = true;
+							sd.inuse = false;
 						}
 					});
 			}
