@@ -165,13 +165,14 @@ endif
 
 subdir('src/bbox-replay')
 
+exe=''
+if build_machine.system() == 'windows'
+  exe='.exe'
+endif
+
 if nogo == false and gook == true and gotrim != ''
   subdir('pkg/geo')
   subdir('cmd/mwp-plot-elevations')
-  exe=''
-  if build_machine.system() == 'windows'
-    exe='.exe'
-  endif
 
   mpe = custom_target(
     'mwp-plot-elevations',
@@ -194,7 +195,7 @@ if nogo == false and gook == true and gotrim != ''
 
   subdir('cmd/mwp-log-replay')
   log_replay = custom_target(
-    'mwp-log-replay'
+    'mwp-log-replay',
     output: 'mwp-log-replay'+exe,
     command: [ golang, 'build', gotrim, '-o', '@OUTPUT@', '-ldflags', '-w -s',  mlr_dir ],
     build_by_default: true,
