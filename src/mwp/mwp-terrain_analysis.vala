@@ -177,9 +177,6 @@ namespace TA {
 						if (!ok) {
 							StringBuilder sb = new StringBuilder("gnuplot error: ");
 							string? sm = null;
-							try {
-								errc.read_to_end (out sm, null);
-							} catch {}
 							foreach (var l in errlines) {
 								sb.append_c('\t');
 								sb.append(l);
