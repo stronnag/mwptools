@@ -628,7 +628,9 @@ public class MWSerial : Object {
                 result = 0;
                 available = true;
                 devname = "udp #%d".printf(outp);
-                setup_reader();
+				var fam = xsa.get_family();
+				MWPLog.message(":DBG: random UDP addr (%s) %s\n", xsa.to_string(), fam.to_string());
+				setup_reader();
             } catch (Error e) {
 				MWPLog.message("randomIP: %s\n", e.message);
 			}
@@ -738,6 +740,7 @@ public class MWSerial : Object {
 			if(!force4)
 				fams += SocketFamily.IPV6;
 			fams += SocketFamily.IPV4;
+
 			foreach(var fam in fams) {
 				try {
 					var sa = new InetSocketAddress (new InetAddress.any(fam),
@@ -774,7 +777,12 @@ public class MWSerial : Object {
             var resolver = Resolver.get_default ();
             try {
                 addresses = resolver.lookup_by_name (host, null);
-            } catch (Error e) {
+				foreach (var address in addresses) {
+					sockaddr = new InetSocketAddress (address, port);
+					var fam = sockaddr.get_family();
+					MWPLog.message(":DBG: client addr (%s)\n", sockaddr.to_string(), fam.to_string());
+				}
+			} catch (Error e) {
                 MWPLog.message ("resolver: %s\n", e.message);
             }
 
