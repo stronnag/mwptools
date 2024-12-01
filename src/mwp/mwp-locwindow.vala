@@ -42,14 +42,22 @@ namespace Mwp {
 					return true;
 				});
 
+
+			p.places_changed.connect(() => {
+					load_places();
+				});
+
+
 			place_edit.clicked.connect(() => {
 					p.show();
 				});
 
 			places_dd.notify["selected"].connect(() => {
 					var n = places_dd.get_selected ();
-					golat.set_text(PosFormat.lat(pls[n].lat, Mwp.conf.dms));
-					golon.set_text(PosFormat.lon(pls[n].lon, Mwp.conf.dms));
+					if ((int)n >= 0) {
+						golat.set_text(PosFormat.lat(pls[n].lat, Mwp.conf.dms));
+						golon.set_text(PosFormat.lon(pls[n].lon, Mwp.conf.dms));
+					}
 				});
 
 			gotocan.clicked.connect (() => {
@@ -89,9 +97,18 @@ namespace Mwp {
 			}
 
 			var ni = ((Gtk.StringList)places_dd.model).get_n_items();
+
 			if(ni > 0) {
 				((Gtk.StringList)places_dd.model).splice(0, ni, null);
+				/*
+				for(var j = 0; j < ni; j++) {
+					var k = ni-1-j;
+					MWPLog.message(":DBG:DD remove %u %u\n", j, k);
+					((Gtk.StringList)places_dd.model).remove(k);
+				}
+				*/
 			}
+
 			foreach(var l in pls) {
 				((Gtk.StringList)places_dd.model).append(l.name);
 			}

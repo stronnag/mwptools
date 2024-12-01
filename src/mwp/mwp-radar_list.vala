@@ -594,7 +594,11 @@ namespace Radar {
 		}
 
 		private string format_last(RadarPlot r) {
-			return r.dt.format("%T");
+			if (r.dt != null) {
+				return r.dt.format("%T");
+			} else {
+				return "";
+			}
 		}
 
 		private string format_status(RadarPlot r) {

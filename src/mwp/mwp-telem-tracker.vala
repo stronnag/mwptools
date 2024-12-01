@@ -128,7 +128,7 @@ namespace TelemTracker {
 			string[] parts={};
 			uint8 pmask = MWSerial.PMask.AUTO;
 			SecDev s = null;
-
+			uint id = 0;
 			if (sname != null) {
 				parts = sname.split(",", 3);
 				var sparts = parts[0].split(" ",2);
@@ -148,16 +148,19 @@ namespace TelemTracker {
 					s = lstore.get_item(n) as SecDev;
 					if (s.name == devname || s.name == devalias) {
 						found = true;
+						id = n;
 						break;
 					}
 				}
 			}
 
 			if(!found) {
+				id = lstore.get_n_items();
 				s = new SecDev();
 				s.name = devname;
 				s.available = true;
 				s.inuse = false;
+				s.id = id;
 				if (parts.length == 3) {
 					s.alias = parts[2];
 				} else {
@@ -178,6 +181,15 @@ namespace TelemTracker {
 				s.dev = null;
 				s.pmask = pmask;
 				lstore.append(s);
+
+				s.notify["inuse"].connect((s, p) => {
+						if (((SecDev)s).inuse) {
+							start_reader((SecDev)s);
+						} else {
+							stop_reader((SecDev)s);
+						}
+					});
+
 			}
 			if(s != null && Mwp.msp != null) {
 				if (s.name == Mwp.msp.get_devname()) {
@@ -338,6 +350,7 @@ namespace TelemTracker {
 
 			if(! sd.dev.available) {
 				pending(true);
+				MWPLog.message(":DBG: Secreader start %s\n", sd.name);
 				sd.dev.open_async.begin(sd.name, 0,  (obj,res) => {
 						var ok = sd.dev.open_async.end(res);
 						pending(false);

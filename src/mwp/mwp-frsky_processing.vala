@@ -30,12 +30,14 @@ namespace Frsky {
 		uint val;
 		SEDE.deserialise_u16(&buf[2], out id);
 		SEDE.deserialise_u32(&buf[4], out val);
-		if(!SportDev.active) {
-			Mwp.window.mmode.label = "S-PORT";
-			SportDev.active = true;
-			Mwp.xnopoll = Mwp.nopoll;
-			Mwp.nopoll = true;
-			Mwp.serstate = Mwp.SERSTATE.TELEM;
+		if(ser.is_main) {
+			if(!SportDev.active) {
+				Mwp.window.mmode.label = "S-PORT";
+				SportDev.active = true;
+				Mwp.xnopoll = Mwp.nopoll;
+				Mwp.nopoll = true;
+				Mwp.serstate = Mwp.SERSTATE.TELEM;
+			}
 		}
 
         double r;
