@@ -254,50 +254,51 @@ namespace TelemTracker {
 				});
 
 				sd.dev.td.gps.notify["lon"].connect((s,p) => {
-					uint rk = (uint)(sd.id+256);
-					var ri = get_ri(rk);
-					ri.longitude = ((GPSData)s).lon;
-					Radar.upsert(rk, ri);
-					sd.ready |= Fields.LON;
-				});
+						uint rk = (uint)(sd.id+256);
+						var ri = get_ri(rk);
+						ri.longitude = ((GPSData)s).lon;
+						Radar.upsert(rk, ri);
+						sd.ready |= Fields.LON;
+						ri.lasttick = Mwp.nticks;
+						ri.dt = new DateTime.now_local();
+						update_ri(ri, sd);
+					});
 
 				sd.dev.td.gps.notify["gspeed"].connect((s,p) => {
-					uint rk = (uint)(sd.id+256);
-					var ri = get_ri(rk);
-					ri.speed = ((GPSData)s).gspeed;
-					Radar.upsert(rk, ri);
+						uint rk = (uint)(sd.id+256);
+						var ri = get_ri(rk);
+						ri.speed = ((GPSData)s).gspeed;
+						Radar.upsert(rk, ri);
 				});
 
 				sd.dev.td.gps.notify["cog"].connect((s,p) => {
-					uint rk = (uint)(sd.id+256);
-					var ri = get_ri(rk);
-					ri.heading = (uint16)((GPSData)s).cog;
-					Radar.upsert(rk, ri);
+						uint rk = (uint)(sd.id+256);
+						var ri = get_ri(rk);
+						ri.heading = (uint16)((GPSData)s).cog;
+						Radar.upsert(rk, ri);
 				});
 
 				sd.dev.td.alt.notify["alt"].connect((s,p) => {
-					uint rk = (uint)(sd.id+256);
-					var ri = get_ri(rk);
-					ri.altitude = ((AltData)s).alt;
-					Radar.upsert(rk, ri);
+						uint rk = (uint)(sd.id+256);
+						var ri = get_ri(rk);
+						ri.altitude = ((AltData)s).alt;
+						Radar.upsert(rk, ri);
 				});
 
 				sd.dev.td.rssi.notify["rssi"].connect((s,p) => {
-					uint rk = (uint)(sd.id+256);
-					var ri = get_ri(rk);
-					ri.lq = (uint8)(((RSSIData)s).rssi)*100/1023;
-					Radar.upsert(rk, ri);
+						uint rk = (uint)(sd.id+256);
+						var ri = get_ri(rk);
+						ri.lq = (uint8)(((RSSIData)s).rssi)*100/1023;
+						Radar.upsert(rk, ri);
 				});
-
 
 				sd.dev.td.state.notify["state"].connect((s,p) => {
-					uint rk = (uint)(sd.id+256);
-					var ri = get_ri(rk);
-					var sts = ((StateData)s).state;
-					ri.state = (sts == 0) ? Radar.Status.UNDEF : Radar.Status.ARMED;
-					Radar.upsert(rk, ri);
-				});
-
+						uint rk = (uint)(sd.id+256);
+						var ri = get_ri(rk);
+						var sts = ((StateData)s).state;
+						ri.state = (sts == 0) ? Radar.Status.UNDEF : Radar.Status.ARMED;
+						Radar.upsert(rk, ri);
+					});
 
 				sd.dev.td.gps.notify["nsats"].connect((s,p) => {
 						uint rk = (uint)(sd.id+256);
@@ -305,10 +306,7 @@ namespace TelemTracker {
 						var nsats = ((GPSData)s).nsats;
 						ri.posvalid = (nsats > 5);
 						sd.ready |= Fields.SAT;
-						ri.lasttick = Mwp.nticks;
-						ri.dt = new DateTime.now_local();
 						Radar.upsert(rk, ri);
-						update_ri(ri, sd);
 					});
 			}
 
@@ -374,8 +372,9 @@ namespace TelemTracker {
 		public void update_ri(Radar.RadarPlot ri, SecDev s)  {
 			uint rk = (uint)(s.id+256);
 			Radar.update(rk, false);
+			//			MWPLog.message(":DBG: Radar %u %s pv=%s ready=%x\n", ri.id, ri.name, ri.posvalid.to_string(), s.ready);
 			if (ri.posvalid && ((s.ready & (Fields.LAT|Fields.LON|Fields.SAT)) !=0)) {
-				s.ready &= ~(Fields.SAT);
+				s.ready &= ~(Fields.LON);
 				Radar.update_marker(rk);
 			}
 		}

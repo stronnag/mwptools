@@ -280,19 +280,21 @@ namespace Frsky {
 
 		case SportDev.FrID.T2_ID: // GPS info
 		case SportDev.FrID.GNSS:
+			uint8 ifix = 0;
+			var nsats = (uint8)(val % 100);
+			uint16 hdp;
+			hdp = (uint16)(val % 1000)/100;
+			// FIXME
+			uint8 gfix = (uint8)(val /1000);
+
+			if ((gfix & 1) == 1)
+				ifix = 3;
 			if(ser.is_main) {
-				uint8 ifix = 0;
-				Mwp._nsats = (uint8)(val % 100);
-				uint16 hdp;
-				hdp = (uint16)(val % 1000)/100;
 				if (SportDev.flags == 0) { // prefer FR_ID_ADC2_ID
 					SportDev.rhdop = Mwp.rhdop = 550 - (hdp * 50);
 					ser.td.gps.hdop = Mwp.rhdop / 100.0;
 				}
-				uint8 gfix = (uint8)(val /1000);
-
-				if ((gfix & 1) == 1)
-					ifix = 3;
+				Mwp._nsats = nsats;
 				if ((gfix & 2) == 2) {
 					if(Mwp.have_home == false && Mwp.armed != 0) {
 						if(Mwp.home_changed(ser.td.gps.lat, ser.td.gps.lon)) {
@@ -318,7 +320,6 @@ namespace Frsky {
 						MWPLog.message("SPORT: %s Ignoring (bogus?) set home, range > 500m: requested home position %f %f\n", id.to_string(), ser.td.gps.lat, ser.td.gps.lon);
 					}
 				}
-
 				if((Mwp._nsats == 0 && Mwp.nsats != 0) || (Mwp.nsats == 0 && Mwp._nsats != 0)) {
 					Mwp.nsats = Mwp._nsats;
 				}
@@ -326,9 +327,9 @@ namespace Frsky {
 				SportDev.fix = ifix;
 				Mwp.flash_gps();
 				Mwp.last_gps = Mwp.nticks;
-				ser.td.gps.fix = ifix;
-				ser.td.gps.nsats = Mwp.nsats;
 			}
+			ser.td.gps.fix = ifix;
+			ser.td.gps.nsats = nsats;
 			break;
 
 		case SportDev.FrID.RSSI_ID:
