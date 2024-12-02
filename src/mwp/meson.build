@@ -133,4 +133,11 @@ if soup3.found()
   dopts += '--define=MODERN_SOUP'
 endif
 
+if host_os == 'windows'
+  windows = import('windows')
+  mwpsrcs += windows.compile_resources('winres.rc')
+endif
+
+
+
 common_inc_dir += include_directories('.')

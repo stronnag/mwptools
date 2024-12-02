@@ -478,7 +478,7 @@ namespace Mwp {
 				new ProcessLauncher().run_command(Mwp.conf.atexit, ProcessLaunch.WAIT);
 			}
 #if UNIX
-			Posix.kill(0, 15);
+			//			Posix.kill(0, 15); // not sure ...
 #endif
 		}
 	}
