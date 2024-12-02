@@ -310,7 +310,7 @@ namespace TelemTracker {
 					});
 			}
 
-			sd.dev.inav_message.connect(() => {
+			sd.dev.serial_event.connect(() => {
 					MWSerial.INAVEvent? m;
 					while((m = sd.dev.msgq.try_pop()) != null) {
 						if(m.cmd >= Msp.Cmds.LTM_BASE && m.cmd < Msp.Cmds.MAV_BASE) {

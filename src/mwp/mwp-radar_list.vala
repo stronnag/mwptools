@@ -153,7 +153,7 @@ namespace Radar {
 					r.dev = new MWSerial();
 					r.dev.set_mode(MWSerial.Mode.SIM);
 					r.dev.set_pmask(MWSerial.PMask.INAV);
-					r.dev.inav_message.connect(()  => {
+					r.dev.serial_event.connect(()  => {
 							MWSerial.INAVEvent? m;
 							while((m = r.dev.msgq.try_pop()) != null) {
 								MspRadar.handle_radar(r.dev, m.cmd,m.raw,m.len,m.flags,m.err);
@@ -568,6 +568,9 @@ namespace Radar {
 		}
 
 		private string format_cat(RadarPlot r) {
+			if((r.source & RadarSource.M_INAV) != 0) {
+				return "B6";
+			}
 			return CatMap.to_category(r.etype);
 		}
 

@@ -83,7 +83,7 @@ class ClITerm : Object {
 				}
 			});
 
-		msp.inav_message.connect(() => {
+		msp.serial_event.connect(() => {
 				MWSerial.INAVEvent? m;
 				while((m = msp.msgq.try_pop()) != null) {
 					if (!m.err && m.cmd == Msp.Cmds.FC_VERSION) {

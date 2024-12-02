@@ -45,7 +45,7 @@ namespace Msp {
 				close_serial();
 			});
 
-        Mwp.msp.inav_message.connect(() => {
+        Mwp.msp.serial_event.connect(() => {
 				MWSerial.INAVEvent? m;
 				while((m = Mwp.msp.msgq.try_pop()) != null) {
 					Mwp.handle_serial(Mwp.msp, m.cmd,m.raw,m.len,m.flags,m.err);

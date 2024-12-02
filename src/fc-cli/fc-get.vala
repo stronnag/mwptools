@@ -448,7 +448,7 @@ class FCMgr :Object {
 				}
             });
 
-		msp.inav_message.connect(()  => {
+		msp.serial_event.connect(()  => {
 				//				msp.serial_event.connect((cmd, raw, len, flags, err) => {
 				MWSerial.INAVEvent? m;
 				while((m = msp.msgq.try_pop()) != null) {

@@ -548,7 +548,7 @@ public class MWSerial : Object {
 	}
 
     public signal void serial_lost ();
-    public signal void inav_message();
+    public signal void serial_event();
 	public signal void crsf_event();
     public signal void flysky_event();
 	public signal void cli_event();
@@ -1474,7 +1474,7 @@ public class MWSerial : Object {
 								if(cmd < Msp.Cmds.MSPV2 || cmd > Msp.Cmds.LTM_BASE) {
 									var msg = INAVEvent(){cmd=cmd, len=csize, flags=xflags, err=errstate, raw=rxbuf[0:csize]};
 									msgq.push(msg);
-									Idle.add_once(() => { inav_message(); });
+									Idle.add_once(() => { serial_event(); });
 								}
 								irxbufp = 0;
 							} else {
@@ -1557,7 +1557,7 @@ public class MWSerial : Object {
 								stats.msgs++;
 								var msg = INAVEvent(){cmd=xcmd, len=csize, flags=xflags, err=errstate, raw=rxbuf[0:csize]};
 								msgq.push(msg);
-								Idle.add_once(() => {inav_message();});
+								Idle.add_once(() => {serial_event();});
 								irxbufp = 0;
 							} else {
 								error_counter("MSP2/CRC");
@@ -1622,7 +1622,7 @@ public class MWSerial : Object {
 									stats.msgs++;
 									var msg = INAVEvent(){cmd=cmd+Msp.Cmds.MAV_BASE, len=csize, flags=0, err=errstate, raw=rxbuf[0:csize]};
 									msgq.push(msg);
-									inav_message();
+									serial_event();
 									state = States.S_HEADER;
 								} else {
 									error_counter("Mav/CRC");
@@ -1707,7 +1707,7 @@ public class MWSerial : Object {
 								stats.msgs++;
 								var msg = INAVEvent(){cmd=cmd+Msp.Cmds.MAV_BASE, len=csize, flags=0, err=errstate, raw=rxbuf[0:csize]};
 								msgq.push(msg);
-								inav_message();
+								serial_event();
 								if(mavsig == 0)
 									state = States.S_HEADER;
 								else
