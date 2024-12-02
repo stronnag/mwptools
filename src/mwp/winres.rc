@@ -1,8 +1,8 @@
 2 ICON "../../data/mwp.ico"
 
 1 VERSIONINFO
-FILEVERSION 0,0,0,0
-FILEVERSION 0,0,0,0
+FILEVERSION 24,12,02,0
+FILEVERSION 24,12,02,0
 FILEOS 0x40004
 FILETYPE 1
 {
@@ -12,12 +12,12 @@ FILETYPE 1
     {
       VALUE "CompanyName", "Stronnag MegaCorp"
       VALUE "FileDescription", "mwptools"
-      VALUE "FileVersion", "0.0.0"
+      VALUE "FileVersion", "24.12.02"
       VALUE "InternalName", "mwp"
-      VALUE "LegalCopyright", "Copyright (c) 2014-now Jonathan Hudson"
+      VALUE "LegalCopyright", "Copyright (c) 2014-2024 Jonathan Hudson"
       VALUE "OriginalFilename", "mwp.exe"
       VALUE "ProductName", "mwp"
-      VALUE "ProductVersion", "0.0.0"
+      VALUE "ProductVersion", "24.12.02"
       VALUE "Comment", "GPL3"
     }
   }

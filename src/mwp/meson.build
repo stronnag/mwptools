@@ -120,8 +120,10 @@ if xopts.length() > 0
 endif
 
 if host_machine.system() == 'windows'
-  mwp_v_args += '-X'
-  mwp_v_args += '-mwindows'
+#  mwp_v_args += '-X'
+#  mwp_v_args += '-mwindows'
+  windows = import('windows')
+  mwpsrcs += windows.compile_resources('winres.rc')
 endif
 
 if paho.found()
@@ -132,12 +134,5 @@ soup3 = dependency('libsoup-3.0', version: '>=3.4', required: false)
 if soup3.found()
   dopts += '--define=MODERN_SOUP'
 endif
-
-if host_os == 'windows'
-  windows = import('windows')
-  mwpsrcs += windows.compile_resources('winres.rc')
-endif
-
-
 
 common_inc_dir += include_directories('.')
