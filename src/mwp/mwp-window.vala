@@ -811,6 +811,10 @@ namespace Mwp {
 			app.set_accels_for_action ("win.flight-stats", { "<primary><shift>a" });
 			app.set_accels_for_action ("win.quit", { "<primary>q" });
 			MwpMenu.set_menu_state(Mwp.window, "followme", false);
+#if !UNIX
+        MwpMenu.set_menu_state(Mwp.window, "terminal", false);
+        MwpMenu.set_menu_state(Mwp.window, "vstream", false);
+#endif
 		}
 	}
 
@@ -873,7 +877,9 @@ namespace Mwp {
     public void reboot_status() {
 		var state = ((Mwp.msp != null && Mwp.msp.available && Mwp.armed == 0));
 		MwpMenu.set_menu_state(Mwp.window, "reboot", state);
+#if UNIX
         MwpMenu.set_menu_state(Mwp.window, "terminal", state);
+#endif
     }
 
     private void set_replay_menus(bool state) {

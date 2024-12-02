@@ -481,7 +481,9 @@ namespace Mwp {
 				if(have_fcvv == false) {
 					have_fcvv = true;
 					MwpMenu.set_menu_state(Mwp.window, "reboot", true);
+#if UNIX
 					MwpMenu.set_menu_state(Mwp.window, "terminal", true);
+#endif
 					vi.fc_vers = raw[0] << 16 | raw[1] << 8 | raw[2];
 					Safehome.manager.online_change(vi.fc_vers);
 

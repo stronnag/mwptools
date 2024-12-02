@@ -348,7 +348,6 @@ namespace TelemTracker {
 
 			if(! sd.dev.available) {
 				pending(true);
-				MWPLog.message(":DBG: Secreader start %s\n", sd.name);
 				sd.dev.open_async.begin(sd.name, 0,  (obj,res) => {
 						var ok = sd.dev.open_async.end(res);
 						pending(false);
@@ -372,7 +371,6 @@ namespace TelemTracker {
 		public void update_ri(Radar.RadarPlot ri, SecDev s)  {
 			uint rk = (uint)(s.id+256);
 			Radar.update(rk, false);
-			//			MWPLog.message(":DBG: Radar %u %s pv=%s ready=%x\n", ri.id, ri.name, ri.posvalid.to_string(), s.ready);
 			if (ri.posvalid && ((s.ready & (Fields.LAT|Fields.LON|Fields.SAT)) !=0)) {
 				s.ready &= ~(Fields.LON);
 				Radar.update_marker(rk);
