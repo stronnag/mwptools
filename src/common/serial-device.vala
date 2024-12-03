@@ -1069,7 +1069,10 @@ public class MWSerial : Object {
 
 	public void close() {
 		if(available) {
-            if((commode & ComMode.TTY) == ComMode.TTY) {
+			available = false;
+			MWPLog.message(":DBG: In closing, (%d)\n", closing);
+
+			if((commode & ComMode.TTY) == ComMode.TTY) {
 				MwpSerial.close(fd);
 			} else if ((commode & ComMode.FD) == ComMode.FD) {
                 Posix.close(fd);
@@ -1097,7 +1100,6 @@ public class MWSerial : Object {
                 }
 			}
 		}
-		available = false;
 		closing |= 2;
 		clearup();
     }
@@ -1169,10 +1171,13 @@ public class MWSerial : Object {
 #if UNIX
     private bool device_read(IOChannel gio, IOCondition cond) {
 		if((cond & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0) {
-			//            show_cond(cond);
-			//            available = false;
-            if(fd != -1)
-                serial_lost();
+            if(fd != -1) {
+				closing |= 1;
+				clearup();
+				if (available) {
+					Idle.add_once(() => { serial_lost(); });
+				}
+			}
             tag = 0; // REMOVE will remove the iochannel watch
             return Source.REMOVE;
         } else {
