@@ -17,6 +17,8 @@
 
 namespace BBL {
 	BBL.Window bbl;
+	MapUtils.BoundingBox bbox;
+
 	public void replay_bbl(string? s) {
 		bbl = new BBL.Window();
 		bbl.complete.connect(() => {
@@ -24,8 +26,8 @@ namespace BBL {
 			});
 
 		bbl.rescale.connect((b) => {
-				var z= MapUtils.evince_zoom(b);
-				MapUtils.centre_on(b.get_centre_latitude(), b.get_centre_longitude(), z);
+				var z= MapUtils.evince_zoom(bbox);
+				MapUtils.centre_on(bbox.get_centre_latitude(), bbox.get_centre_longitude(), z);
 				if(videofile != null && videofile != "") {
 					MWPLog.message("BBL videofile %s offset\n", videofile, nsecs);
 				}
@@ -111,7 +113,7 @@ namespace BBL {
 		private unowned Gtk.Button apply;
 
 		public signal void complete();
-		public signal void rescale(MapUtils.BoundingBox b);
+		public signal void rescale();
 
 		private void setup_factories() {
 			lstore = new GLib.ListStore(typeof(BBLEntry));
@@ -683,9 +685,9 @@ namespace BBL {
 		}
 
 		public void find_bbox_box(string filename, uint index) {
+			bbox = {999, 999, -999, -999};
 			Thread<int> thr = null;
 			thr = new Thread<int> (null, () => {
-					MapUtils.BoundingBox b = {999, 999, -999, -999};
 					var subp = new ProcessLauncher();
 					var res = subp.run_argv (
 						{Mwp.conf.blackbox_decode, "--stdout", "--index", index.to_string(), "--merge-gps", filename}, ProcessLaunch.STDOUT);
@@ -736,14 +738,14 @@ namespace BBL {
 										if(ns > 5) {
 											lat = double.parse(parts[latp]);
 											lon = double.parse(parts[lonp]);
-											if(lat < b.minlat)
-												b.minlat = lat;
-											if(lat > b.maxlat)
-												b.maxlat = lat;
-											if(lon < b.minlon)
-												b.minlon = lon;
-											if(lon > b.maxlon)
-												b.maxlon = lon;
+											if(lat < bbox.minlat)
+												bbox.minlat = lat;
+											if(lat > bbox.maxlat)
+												bbox.maxlat = lat;
+											if(lon < bbox.minlon)
+												bbox.minlon = lon;
+											if(lon > bbox.maxlon)
+												bbox.maxlon = lon;
 										}
 									}
 								}
@@ -752,15 +754,16 @@ namespace BBL {
 							print("BBL bbox: %s\n", e.message);
 						}
 						try { chan.shutdown(false); } catch {}
-						if(b.minlat > -90 && b.maxlat < 90 && b.minlon > -180 && b.maxlon < 180) {
+						if(bbox.minlat > -90 && bbox.maxlat < 90 && bbox.minlon > -180 && bbox.maxlon < 180) {
 							if (Rebase.is_valid()) {
-								Rebase.relocate(ref b.minlat, ref b.minlon);
-								Rebase.relocate(ref b.maxlat, ref b.maxlon);
+								Rebase.relocate(ref bbox.minlat, ref bbox.minlon);
+								Rebase.relocate(ref bbox.maxlat, ref bbox.maxlon);
 							}
-							MainContext.@default().invoke(()=> { rescale(b); return false; });
+							//							MainContext.@default().invoke(()=> { rescale(); return false; });
+							Idle.add_once(()=> { rescale();});
 						}
 					}
-					MainContext.@default().invoke(()=> {thr.join(); return false;});
+					//MainContext.@default().invoke(()=> {thr.join(); return false;});
 					return 0;
 				});
 		}
