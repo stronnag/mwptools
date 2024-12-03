@@ -726,12 +726,7 @@ public class MWSerial : Object {
         clear_counters();
         state = States.S_HEADER;
 		msgq = new AsyncQueue<INAVEvent?>();
-#if WINDOWS
-		new Thread<bool>("reader", () => {
-				thr_io();
-				return false;
-			});
-#else
+#if UNIX
 		try {
             io_chan = new IOChannel.unix_new(fd);
             if(io_chan.set_encoding(null) != IOStatus.NORMAL)
@@ -743,6 +738,11 @@ public class MWSerial : Object {
         } catch(IOChannelError e) {
             error("IOChannel: %s", e.message);
         }
+#else
+		new Thread<bool>("reader", () => {
+				thr_io();
+				return false;
+			});
 #endif
 	}
 
