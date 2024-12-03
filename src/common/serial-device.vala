@@ -1183,6 +1183,7 @@ public class MWSerial : Object {
 	private bool thr_io() {
 		while (	device_io())
 			;
+		return false;
 	}
 #endif
 	private bool device_io() {
