@@ -11,6 +11,8 @@ extern void *create_win_process(char *cmd, int flags, int *ipipe, int *spipe, in
 extern bool waitproc(void *h, int* sts);
 //extern int32 proc_get_pid(void* h);
 extern void proc_kill (int32 pid);
+extern void winsuspend (int32 pid);
+extern void winresume (int32 pid);
 extern int pid_from_name(char *procname);
 
 public class ProcessLauncher : Object {
@@ -104,10 +106,12 @@ public class ProcessLauncher : Object {
 
 	public static void suspend(int pid) {
 		MWPLog.message(":DBG: suspend for %d\n", pid);
+		winsuspend(pid);
 	}
 
 	public static void resume(int pid) {
 		MWPLog.message(":DBG: resume for %d\n", pid);
+		winresume(pid);
 	}
 
 	public static int find_pid_from_name(string name) {
