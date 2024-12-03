@@ -68,7 +68,6 @@ namespace SportDev {
         HOME_DIST  = 0x0420,
 		MODES      = 0x0470,
 		GNSS       = 0x0480,
-
     }
 
     private enum FrProto {
@@ -457,7 +456,10 @@ public class MWSerial : Object {
 	public TrackData td;
 	public AsyncQueue<INAVEvent?> msgq;
 	private uint8 closing;
-
+#if UNIX
+	private uint tag;
+    private IOChannel io_chan;
+#endif
 	private const int WEAKSIZE = 1;
 
 	public enum MemAlloc {
@@ -724,10 +726,24 @@ public class MWSerial : Object {
         clear_counters();
         state = States.S_HEADER;
 		msgq = new AsyncQueue<INAVEvent?>();
+#if WINDOWS
 		new Thread<bool>("reader", () => {
 				thr_io();
 				return false;
 			});
+#else
+		try {
+            io_chan = new IOChannel.unix_new(fd);
+            if(io_chan.set_encoding(null) != IOStatus.NORMAL)
+				error("Failed to set encoding");
+			io_chan.set_buffered(false);
+			tag = io_chan.add_watch(IOCondition.IN|IOCondition.HUP|
+									IOCondition.NVAL|IOCondition.ERR,
+									device_read);
+        } catch(IOChannelError e) {
+            error("IOChannel: %s", e.message);
+        }
+#endif
 	}
 
     private void setup_ip(string? host, uint16 port, string? rhost=null, uint16 rport = 0) {
@@ -776,11 +792,6 @@ public class MWSerial : Object {
             var resolver = Resolver.get_default ();
             try {
                 addresses = resolver.lookup_by_name (host, null);
-				foreach (var address in addresses) {
-					sockaddr = new InetSocketAddress (address, port);
-					var fam = sockaddr.get_family();
-					MWPLog.message(":DBG: client addr (%s)\n", sockaddr.to_string(), fam.to_string());
-				}
 			} catch (Error e) {
                 MWPLog.message ("resolver: %s\n", e.message);
             }
@@ -790,7 +801,7 @@ public class MWSerial : Object {
                     foreach (var address in addresses) {
                         sockaddr = new InetSocketAddress (address, port);
                         var fam = sockaddr.get_family();
-						if(true) {
+						if(debug) {
 							MWPLog.message("sockaddr try %s (%s)\n", sockaddr.to_string(), fam.to_string());
 						}
                         if(force4 && fam != SocketFamily.IPV4)
@@ -838,7 +849,7 @@ public class MWSerial : Object {
 
     private void set_noblock() {
 #if UNIX
-        //Posix.fcntl(fd, Posix.F_SETFL, Posix.fcntl(fd, Posix.F_GETFL, 0) | Posix.O_NONBLOCK);
+        Posix.fcntl(fd, Posix.F_SETFL, Posix.fcntl(fd, Posix.F_GETFL, 0) | Posix.O_NONBLOCK);
 #endif
     }
 
@@ -867,7 +878,7 @@ public class MWSerial : Object {
             if(fwd == false) {
                 setup_reader();
 			} else {
-				// set_noblock();
+				set_noblock();
 			}
         } else  {
 			get_error_message(out estr);
@@ -1075,7 +1086,7 @@ public class MWSerial : Object {
 			} else {
 				if (!skt.is_closed()) {
                     try {
-						MWPLog.message(":DBG: close %s\n", skt.get_local_address().to_string());
+						//						MWPLog.message(":DBG: close %s\n", skt.get_local_address().to_string());
 						if ((commode & ComMode.UDP) == 0) {
 							skt.shutdown(true, true);
 						}
@@ -1155,9 +1166,35 @@ public class MWSerial : Object {
 		return res;
 	}
 
+#if UNIX
+    private bool device_read(IOChannel gio, IOCondition cond) {
+		if((cond & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0) {
+			//            show_cond(cond);
+			//            available = false;
+            if(fd != -1)
+                serial_lost();
+            tag = 0; // REMOVE will remove the iochannel watch
+            return Source.REMOVE;
+        } else {
+			return device_io();
+		}
+    }
+#else
 	private bool thr_io() {
+		while (	device_io())
+			;
+	}
+#endif
+	private bool device_io() {
         ssize_t res = 0;
-		while (true) {
+#if LINUX
+		if((commode & ComMode.BT) == ComMode.BT) {
+			res = Posix.recv(fd, devbuf, MemAlloc.DEV, 0);
+			if (res < 0) {
+				Posix.perror("BLE");
+			}
+		} else
+#endif
 			if ((commode & ComMode.TTY) == ComMode.TTY) {
 				res = MwpSerial.read(fd, devbuf, MemAlloc.DEV);
 			} else if ((commode & ComMode.UDP) == ComMode.UDP) {
@@ -1172,14 +1209,9 @@ public class MWSerial : Object {
 				} catch (Error e) {
 					res = 0;
 				}
-#if LINUX
-            } else if((commode & ComMode.BT) == ComMode.BT) {
-                res = Posix.recv(fd, devbuf, MemAlloc.DEV, 0);
-#endif
 			} else {
 				res = Posix.read(fd, devbuf, MemAlloc.DEV);
             }
-
 			if(res <= 0) {
 				closing |= 1;
 				clearup();
@@ -1732,8 +1764,9 @@ public class MWSerial : Object {
 					}
 				}
 			}
-		}
+			return true;
 	}
+
 
 	public uint16 mavlink_crc(uint16 acc, uint8 val) {
 		uint8 tmp;
