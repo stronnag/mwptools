@@ -1070,8 +1070,6 @@ public class MWSerial : Object {
 	public void close() {
 		if(available) {
 			available = false;
-			MWPLog.message(":DBG: In closing, (%d)\n", closing);
-
 			if((commode & ComMode.TTY) == ComMode.TTY) {
 				MwpSerial.close(fd);
 			} else if ((commode & ComMode.FD) == ComMode.FD) {
