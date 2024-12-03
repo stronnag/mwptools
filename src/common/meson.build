@@ -20,7 +20,7 @@ vcommon = files( 'serial-device.vala',
                )
 
 if build_machine.system() == 'windows'
-  vcommon += files('winspawn.vala', 'winproc.c')
+  vcommon += files('winspawn.vala', 'winproc.c', 'win_suspend_resume.c')
 else
   vcommon += files('posixspawn.vala', 'posix_psmisc.c')
 endif
