@@ -232,6 +232,7 @@ namespace Msp {
 			Mwp.lastrx = Mwp.lastok = Mwp.nticks;
 			Mwp.init_state();
 			Mwp.init_sstats();
+			Battery.bat_annul();
 			MWPLog.message("Connected %s (nopoll %s)\n", serdev, Mwp.nopoll.to_string());
 			Mwp.set_replay_menus(false);
 			if(Mwp.rawlog == true) {
