@@ -77,12 +77,13 @@ mwpdeps = [deps,
 
 if host_machine.system() != 'windows'
   mwpdeps += dependency('vte-2.91-gtk4')
-else
-  mwpsrcs += files('wincomcheck.vala')
+endif
+
+if host_machine.system() != 'linux'
+  mwpsrcs += files('serial_watcher.vala')
 endif
 
 mwpsrcs += svyfiles
-
 
 protoc = dependency('libprotobuf-c', required: false)
 if protoc.found()

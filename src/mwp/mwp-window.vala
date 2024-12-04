@@ -444,9 +444,9 @@ namespace Mwp {
 					}
 					MwpMenu.set_menu_state(Mwp.window, "followme", mstate);
 				});
-#if !UNIX
-			var wsw = new SerialWatcher();
-			wsw.run();
+#if !LINUX
+			var swatcher = new SerialWatcher();
+			swatcher.run();
 #endif
 		}
 
