@@ -228,14 +228,12 @@ static HANDLE check_handle_from_fd(int fd) {
 }
 
 void flush_serial(int fd) {
-//     HANDLE hfd = (HANDLE)_get_osfhandle(fd);
      HANDLE hfd = check_handle_from_fd(fd);
      PurgeComm(hfd, PURGE_RXABORT|PURGE_TXABORT|PURGE_RXCLEAR|PURGE_TXCLEAR);
 }
 
 int set_fd_speed(int fd, int baudrate) {
      HANDLE hfd = check_handle_from_fd(fd);
-//     HANDLE hfd = (HANDLE)_get_osfhandle(fd);
      DCB dcb = {0};
      BOOL res = FALSE;
 
@@ -252,7 +250,6 @@ int set_fd_speed(int fd, int baudrate) {
 }
 
 void set_timeout(int fd, __attribute__ ((unused)) int p0, __attribute__ ((unused)) int p1) {
-//     HANDLE hfd = (HANDLE)_get_osfhandle(fd);
      HANDLE hfd = check_handle_from_fd(fd);
      COMMTIMEOUTS ctout;
      GetCommTimeouts(hfd, &ctout);
@@ -295,7 +292,6 @@ void close_serial(int fd) {
 }
 
 ssize_t read_serial(int fd, uint8_t*buffer, size_t buflen) {
-//     HANDLE hfd = (HANDLE)_get_osfhandle(fd);
      HANDLE hfd = check_handle_from_fd(fd);
      DWORD nb= 0;
      OVERLAPPED ovl={0};
@@ -314,7 +310,6 @@ ssize_t read_serial(int fd, uint8_t*buffer, size_t buflen) {
 }
 
 ssize_t write_serial(int fd, uint8_t*buffer, size_t buflen) {
-//     HANDLE hfd = (HANDLE)_get_osfhandle(fd);
      HANDLE hfd = check_handle_from_fd(fd);
      DWORD nb= 0;
      OVERLAPPED ovl={0};

@@ -42,6 +42,18 @@ int check_insert_name(char *s) {
   if(strstr(s, "USBSER") != NULL) {
     return 1;
   }
+  //                       012345678..
+  char *modem = strstr(s, "BthModem");
+  if (modem != NULL) {
+       if(*(modem+8) != 0) {
+	    int id = atoi(modem+8);
+	    if ((id & 1) == 0) {
+		 return -1;
+	    } else {
+		 return 0;
+	    }
+       }
+  }
   return -1;
 }
 

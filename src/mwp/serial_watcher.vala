@@ -10,9 +10,9 @@ namespace Mwp {
 					var devs = check_ports();
 					if (devs != null) {
 						for (var sptr = devs; *sptr != null; sptr++) {
-							if(check_insert_name(*sptr) == -1) {
-								Mwp.append_combo(Mwp.dev_combox, (string)*sptr);
-							} else {
+							var addme = check_insert_name(*sptr);
+							if (addme == 1) {
+								Mwp.append_combo(Mwp.dev_combox, (string)*sptr);							} else if (addme == -1) {
 								Mwp.prepend_combo(Mwp.dev_combox, (string)*sptr);
 							}
 						}
