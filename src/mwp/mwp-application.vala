@@ -28,12 +28,9 @@ namespace Mwp {
 
 	private string serial;
     private bool mkcon = false;
-    private bool autocon;
 	private bool zznopoll = false; // Absoluely NOPOLL from user!
     private bool no_trail = false;
     public bool rawlog = false;
-    private bool set_fs;
-    private bool no_max = false;
     private bool force_mag = false;
     private bool force_nc = false;
     private int dmrtype=0;
@@ -64,7 +61,7 @@ namespace Mwp {
 	public double clon;
 
 	const OptionEntry[] options = {
-		{ "auto-connect", 'a', 0, OptionArg.NONE, null, "auto-connect to first device (sets auto flag)", null},
+		{ "auto-connect", 'a', 0, OptionArg.NONE, null, "Legacy, ignored)", null},
 		{ "build-id", 0, 0, OptionArg.NONE, null, "show build id", null},
 		{ "centre", 0, 0, OptionArg.STRING, null, "Centre position (lat lon or named place)", "position"},
 		{ "centre-on-home", 'H', 0, OptionArg.NONE, null, "Centre on home", null},
@@ -72,12 +69,12 @@ namespace Mwp {
 		{ "connect", 'c', 0, OptionArg.NONE, null, "connect to first device (does not set auto flag)", null},
 		{ "debug-flags", 0, 0, OptionArg.INT, null, "Debug flags (mask)", null},
 		{ "device", 'd', 0, OptionArg.STRING, null, "Serial device", "device-name"},
-		{ "dont-maximise", 0, 0, OptionArg.NONE, null, "don't maximise the window", null},
+		{ "dont-maximise", 0, 0, OptionArg.NONE, null, "Legacy, ignored", null},
 		{ "force-mag", 0, 0, OptionArg.NONE, null, "force mag for vehicle direction", null},
 		{ "force-type", 't', 0, OptionArg.INT, null, "Model type", "type-code_no"},
 		{ "force4", '4', 0, OptionArg.NONE, null, "Force ipv4", null},
 		{ "forward-to", 0, 0, OptionArg.STRING, null, "forward telemetry to", "device-name"},
-		{ "full-screen", 0, 0, OptionArg.NONE, null, "open full screen", null},
+		{ "full-screen", 0, 0, OptionArg.NONE, null, "Legacy, ignored", null},
 		{ "kmlfile", 'k', 0, OptionArg.STRING, null, "KML file", "file-name"},
 		{ "mission", 'm', 0, OptionArg.STRING, null, "Mission file", "file-name"},
 		{ "mod-points", 'M', 0, OptionArg.INT, null, "Modulo points to show in GPS trail", "N"},
@@ -434,12 +431,9 @@ namespace Mwp {
 				o.lookup("serial-device", "s", ref serial);
 				o.lookup("device", "s", ref serial);
 				o.lookup("connect", "b", ref mkcon);
-				o.lookup("auto-connect", "b", ref autocon);
 				o.lookup("no-poll", "b", ref zznopoll);
 				o.lookup("no-trail", "b", ref no_trail);
 				o.lookup("raw-log", "b", ref rawlog);
-				o.lookup("full-screen", "b", ref set_fs);
-				o.lookup("dont-maximise", "b", ref no_max);
 				o.lookup("force-mag", "b", ref force_mag);
 				o.lookup("force-nav", "b", ref force_nc);
 				o.lookup("force-type", "i", ref dmrtype);

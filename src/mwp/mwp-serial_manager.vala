@@ -21,7 +21,6 @@ namespace Mwp  {
 	MWSerial msp;
 	Forwarder fwddev;
 	bool mqtt_available;
-	int autocount;
 #if MQTT
     MwpMQTT mqtt;
 #endif
@@ -31,7 +30,6 @@ namespace Mwp  {
 namespace Msp {
 	public void init(TrackDataSet v=0xff) {
 		Mwp.mqtt_available = false;
-		Mwp.autocount= 0;
 		Mwp.msp = new MWSerial();
         Mwp.lastp = new Timer();
 		Mwp.lastp.start();
@@ -260,14 +258,11 @@ namespace Msp {
 		} else {
 			string estr = null;
 			Mwp.msp.get_error_message(out estr);
-			if (Mwp.autocon == false || Mwp.autocount == 0) {
-				Utils.warning_box("""Unable to open serial device:
+			Utils.warning_box("""Unable to open serial device:
 Error: <i>%s</i>
 
 * Check that <u>%s</u> is available / connected.
 * Please verify you are a member of the owning group, typically 'dialout' or 'uucp'""".printf(estr, serdev), 0);
-		   }
- 		   Mwp.autocount = ((Mwp.autocount + 1) % 12);
 		}
 		Mwp.reboot_status();
 	}
@@ -291,7 +286,6 @@ Error: <i>%s</i>
 			Mwp.mqtt_available = ostat = mqtt.setup(serdev);
 			Mwp.rawlog = false;
 			Mwp.nopoll = true;
-			Mwp.window.autocon.active = false;
 			Mwp.serstate = Mwp.SERSTATE.TELEM;
 			serial_complete_setup(serdev, ostat);
 #else
@@ -314,18 +308,16 @@ Error: <i>%s</i>
     }
 
 	private void try_reopen(string devname) {
-        if(!Mwp.autocon) {
-			Timeout.add(2000, () => {
-					var serdev = Mwp.dev_entry.text.split(" ")[0];
-					if (serdev != devname) {
-						return true;
-					}
-					if (!Mwp.msp.available) {
-						connect_serial();
-					}
-					return false;
-				});
-		}
+		Timeout.add(2000, () => {
+				var serdev = Mwp.dev_entry.text.split(" ")[0];
+				if (serdev != devname) {
+					return true;
+				}
+				if (!Mwp.msp.available) {
+					connect_serial();
+				}
+				return false;
+			});
 	}
 
 	private void set_pmask_poller(MWSerial.PMask pmask) {

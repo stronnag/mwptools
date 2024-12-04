@@ -589,8 +589,25 @@
 
     <key name="p-pane-width" type="i">
       <default>0</default>
-      <summary>Private setting</summary>
+      <summary>Internal setting</summary>
       <description>Please do not change this unless you appreciate the consequences</description>
+    </key>
+
+    <key name="p-width" type="i">
+      <default>1280</default>
+      <summary>Internal setting</summary>
+    </key>
+    <key name="p-height" type="i">
+      <summary>Internal setting</summary>
+      <default>720</default>
+    </key>
+    <key name="p-is-maximised" type="b">
+      <summary>Internal setting</summary>
+      <default>true</default>
+    </key>
+    <key name="p-is-fullscreen" type="b">
+      <summary>Internal setting</summary>
+      <default>false</default>
     </key>
 
     <key name="ga-range" type="i">
@@ -652,8 +669,6 @@
         Adjustment factor for HiDpi touch screens (0 disable, often 1.5 or 2.0).
       </description>
     </key>
-
-
 
   </schema>
 </schemalist>

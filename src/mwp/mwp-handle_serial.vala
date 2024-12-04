@@ -272,7 +272,6 @@ namespace Mwp {
 
     private void init_state() {
 		serial_reset();
-        autocount = 0;
         nsats = 0;
         clear_sensor_array();
         last_ltmf = 0xff;

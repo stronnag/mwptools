@@ -74,8 +74,8 @@ namespace Mwp {
 		internal unowned Gtk.ToggleButton wpeditbutton;
 		[GtkChild]
 		internal unowned Gtk.Button conbutton;
-		[GtkChild]
-		internal unowned  Gtk.CheckButton autocon;
+		//[GtkChild]
+		//		internal unowned  Gtk.CheckButton autocon;
 		[GtkChild]
 		internal unowned Gtk.Label gpslab;
 		[GtkChild]
@@ -249,7 +249,6 @@ namespace Mwp {
 			scwindow = new Mwp.SCWindow();
 			GstDev.init();
 
-
 			conbutton.clicked.connect(() => {
 					Msp.handle_connect();
 				});
@@ -282,19 +281,7 @@ namespace Mwp {
 		}
 
 		private void show_window() {
-			int init_w;
-			int init_h;
-			Gdk.Rectangle r;
-			Misc.get_primary_size(out r);
-			init_w = r.width;
-			init_h = r.height;
-			if (!no_max) {
-				maximize();
-			} else {
-				init_w = (init_w*conf.window_scale)/100;
-				init_h = (init_h*conf.window_scale)/100;
-			}
-			set_default_size(init_w, init_h);
+
 			DemManager.init();
 
 			Gis.init();
@@ -395,7 +382,7 @@ namespace Mwp {
 				if (conf.p_pane_width > 0) {
 					fw = conf.p_pane_width;
 				}
-				pane.position = init_w - fw;
+				pane.position = window.default_width - fw;
 				pane.shrink_end_child = false;
 				pane.resize_end_child = false;
 				toaster.set_child(pane);

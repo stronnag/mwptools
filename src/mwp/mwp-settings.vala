@@ -109,7 +109,6 @@ public class MWPSettings : GLib.Object {
 	public int ident_limit  {get; set; default=60;}
 	public double touch_factor {get; set; default=0.0;}
 	public int p_pane_width {get; set; default=0;}
-	public signal void settings_update (string s);
 
 	construct {
         var uc = Environment.get_user_data_dir();
@@ -203,7 +202,13 @@ public class MWPSettings : GLib.Object {
 		settings.bind("wp-spotlight", this, "wp-spotlight", SettingsBindFlags.DEFAULT);
 		settings.bind("wp-text-style", this, "wp-text", SettingsBindFlags.DEFAULT);
 		settings.bind("zone-detect", this, "zone-detect", SettingsBindFlags.DEFAULT);
-		settings.bind("p-pane-width", this, "p-pane-width", SettingsBindFlags.DEFAULT);
+
+		settings.bind("p-width", Mwp.window, "default-width", SettingsBindFlags.DEFAULT);
+		settings.bind("p-height", Mwp.window, "default-height", SettingsBindFlags.DEFAULT);
+		settings.bind("p-is-maximised", Mwp.window, "maximized", SettingsBindFlags.DEFAULT);
+		settings.bind("p-is-fullscreen", Mwp.window, "fullscreened", SettingsBindFlags.DEFAULT);
+
+
 	}
 
     public MWPSettings() {
@@ -226,12 +231,6 @@ public class MWPSettings : GLib.Object {
 		}
 		if(p_speed > 3) {
 			p_distance = 0;
-		}
-		if(window_scale < 50) {
-			window_scale = 500;
-		}
-		if(window_scale > 100) {
-			window_scale = 100;
 		}
 		if(missionpath == null || missionpath == "") {
 			missionpath = Environment.get_home_dir();
