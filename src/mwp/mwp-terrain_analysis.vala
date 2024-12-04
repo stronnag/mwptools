@@ -133,7 +133,7 @@ namespace TA {
 			var res = subp.run_argv(spawn_args, ProcessLaunch.STDOUT|ProcessLaunch.STDERR);
 			if(res) {
 				var stdc = subp.get_stdout_iochan();
-				var errc = subp.get_stdout_iochan();
+				var errc = subp.get_stderr_iochan();
 				stdc.add_watch(IOCondition.IN|IOCondition.HUP|IOCondition.NVAL|IOCondition.ERR, (g,c) => {
 						var err = ((c & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0);
 						if(!err){
@@ -173,19 +173,11 @@ namespace TA {
 				subp.complete.connect(() => {
 						try {stdc.shutdown(false);} catch {}
 						try {errc.shutdown(false);} catch {}
-						var ok = subp.get_status(null);
-						if (!ok) {
+						if(errlines.length > 0) {
 							StringBuilder sb = new StringBuilder("gnuplot error: ");
-							string? sm = null;
 							foreach (var l in errlines) {
 								sb.append_c('\t');
 								sb.append(l);
-								sb.append_c('\n');
-							}
-							if (sm != null) {
-								sb.append(sm);
-							}
-							if(errlines.length == 0) {
 								sb.append_c('\n');
 							}
 							MWPLog.message(sb.str);
@@ -214,6 +206,7 @@ namespace TA {
 						}
 					});
 			} else {
+				MWPLog.message("Failed to launch 'gnoplot'\n");
 			}
 		}
 	}
