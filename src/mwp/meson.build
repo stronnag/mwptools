@@ -77,6 +77,8 @@ mwpdeps = [deps,
 
 if host_machine.system() != 'windows'
   mwpdeps += dependency('vte-2.91-gtk4')
+else
+  mwpsrcs += files('wincomcheck.vala')
 endif
 
 mwpsrcs += svyfiles
