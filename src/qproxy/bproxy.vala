@@ -137,6 +137,23 @@ public class BProxy : Soup.Server {
 			port = uint.parse(args[1]);
 		}
         var loop = new MainLoop();
+		Idle.add_once(() => {
+		IOChannel io_chan;
+#if UNIX
+		io_chan = new IOChannel.unix_new(stdin.fileno());
+#else
+		io_chan = new IOChannel.win32_new_fd(stdin.fileno());
+#endif
+		try {io_chan.set_encoding(null); } catch {}
+		io_chan.set_buffered(false);
+		io_chan.add_watch(IOCondition.IN|IOCondition.HUP|
+						  IOCondition.NVAL|IOCondition.ERR, (chan, cond) => {
+							  if((cond & IOCondition.HUP|IOCondition.NVAL|IOCondition.ERR) != 0) {
+								  loop.quit();
+							  }
+							  return true;
+						  });
+			});
         var b = new BProxy();
 		try {
             b.listen_local(port, 0);
@@ -146,6 +163,6 @@ public class BProxy : Soup.Server {
         } catch (Error e) {
             stdout.printf ("Error:\t%u\t<%s>\n", port, e.message);
         }
-        return 0;
+		return 0;
     }
 }
