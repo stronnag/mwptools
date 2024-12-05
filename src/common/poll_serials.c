@@ -110,6 +110,80 @@ int check_delete_name(char *s) {
 #endif
 
 #ifdef __APPLE__
+#include <string.h>
+#include <strings.h>
+#include <dirent.h>
+
+char ** check_ports() {
+   DIR* dir;
+  struct dirent* ent;
+  char* endptr;
+  char **devs = NULL;
+
+  if (!(dir = opendir("/dev"))) {
+    perror("can't open /dev");
+    return NULL;
+  }
+
+  int n = 0;
+  while((ent = readdir(dir)) != NULL) {
+
+    if(strncasecmp(ent->d_name, "cu.usb", 6) == 0) {
+      n++;
+      continue;
+    }
+
+    if(strncasecmp(ent->d_name, "cu.bluetooth", 12) == 0) {
+      if (strstr(ent->d_name, "modem") != NULL) {
+	n++;
+      }
+    }
+  }
+  closedir(dir);
+
+  if(n  > 0) {
+    int j = 0;
+    devs = calloc(n+1, sizeof(char*));
+    if (!(dir = opendir("/dev"))) {
+      perror("can't open /dev");
+      return devs;
+    }
+
+    while((ent = readdir(dir)) != NULL) {
+      if(strncasecmp(ent->d_name, "cu.usb", 6) == 0) {
+	char *element = malloc(strlen(ent->d_name)+6);
+	strcpy(element, "/dev/");
+	strcat(element, ent->d_name);
+	devs[j] = element;
+	j++;
+	continue;
+      }
+
+      if(strncmp(ent->d_name, "cu.bluetooth", 12) == 0) {
+	if (strstr(ent->d_name, "modem") != NULL) {
+	  char *element = malloc(strlen(ent->d_name)+6);
+	  strcpy(element, "/dev/");
+	  strcat(element, ent->d_name);
+	  devs[j] = element;
+	  j++;
+	}
+      }
+    }
+    closedir(dir);
+  }
+  return devs;
+}
+
+int check_delete_name(char *s) {
+  return 0;
+}
+
+int check_insert_name(char *s) {
+  return 1;
+}
+#endif
+
+#if defined (TESTMEHARDER) && defined( __linux__)
 #define _GNU_SOURCE
 #include <string.h>
 #include <dirent.h>
@@ -127,15 +201,13 @@ char ** check_ports() {
 
   int n = 0;
   while((ent = readdir(dir)) != NULL) {
-    if(strnicmp(ent->d_name, "cu.usb", 6) == 0) {
+    if(strncasecmp(ent->d_name, "ttyUSB", 6) == 0) {
       n++;
       continue;
     }
 
-    if(strnicmp(ent->d_name, "cu.bluetooth", 12) == 0) {
-      if (strcasestr(ent->d_name, "modem") != NULL) {
-	n++;
-      }
+    if(strncasecmp(ent->d_name, "ttyACM", 6) == 0) {
+      n++;
     }
   }
   closedir(dir);
@@ -149,19 +221,21 @@ char ** check_ports() {
     }
 
     while((ent = readdir(dir)) != NULL) {
-      if(strnicmp(ent->d_name, "cu.usb", 6) == 0) {
-	char *element = strdup(ent->d_name);
+      if(strncasecmp(ent->d_name, "ttyUSB", 6) == 0) {
+	char *element = malloc(strlen(ent->d_name)+6);
+	strcpy(element, "/dev/");
+	strcat(element, ent->d_name);
 	devs[j] = element;
 	j++;
 	continue;
       }
 
-      if(strnicmp(ent->d_name, "cu.bluetooth", 12) == 0) {
-	if (strcasestr(ent->d_name, "modem") != NULL) {
-	  char *element = strdup(ent->d_name);
-	  devs[j] = element;
-	  j++;
-	}
+      if(strncasecmp(ent->d_name, "ttyACM", 6) == 0) {
+	char *element = strdup(ent->d_name);
+	strcpy(element, "/dev/");
+	strcat(element, ent->d_name);
+	devs[j] = element;
+	j++;
       }
     }
     closedir(dir);
@@ -170,7 +244,7 @@ char ** check_ports() {
 }
 
 int check_delete_name(char *s) {
-  return -1;
+  return 0;
 }
 
 int check_insert_name(char *s) {
