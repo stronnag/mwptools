@@ -183,21 +183,21 @@ namespace Mwp {
 	private static string? check_virtual(string? os) {
 		string hyper = null;
 #if UNIX
-		string cmd = null;
+		string []cmd = {};
 		switch (os) {
 		case "Linux":
-			cmd = "systemd-detect-virt";
+			cmd = {"systemd-detect-virt"};
 			break;
 		case "FreeBSD":
-			cmd = "sysctl kern.vm_guest";
+			cmd = {"sysctl", "-n", "kern.vm_guest"};
 			break;
 		}
 
-		if(cmd != null) {
+		if(cmd.length > 0) {
 			string strout="";
 			size_t len;
 			var subp = new ProcessLauncher();
-			if (subp.run_argv({cmd}, ProcessLaunch.STDOUT)) {
+			if (subp.run_argv(cmd, ProcessLaunch.STDOUT)) {
 				var ioc = subp.get_stdout_iochan();
 				subp.complete.connect(() => {
 						try { ioc.shutdown(false); } catch {}
@@ -206,13 +206,7 @@ namespace Mwp {
 					var sts = ioc.read_to_end(out strout, out len);
 					if(sts == IOStatus.NORMAL && strout.length > 0) {
 						strout = strout.chomp();
-						if(os == "Linux")
-							hyper = strout;
-						else {
-							var index = strout.index_of("kern.vm_guest: ");
-							if(index != -1)
-								hyper = strout.substring(index+"kern.vm_guest: ".length);
-						}
+                        hyper = strout;
 					}
 				} catch (Error e) {}
 			}
