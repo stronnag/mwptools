@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <string.h>
 #include <stdlib.h>
 
 #ifdef _WIN64
 #include <windows.h>
+#include <string.h>
 
 char ** check_ports() {
   HKEY h;
@@ -72,6 +72,7 @@ int check_delete_name(char *s) {
 #endif
 #ifdef __FreeBSD__
 #include <sys/stat.h>
+#include <string.h>
 char ** check_ports() {
   char **devs = NULL;
   char name[32];
@@ -109,9 +110,65 @@ int check_delete_name(char *s) {
 #endif
 
 #ifdef __APPLE__
+#define _GNU_SOURCE
+#include <string.h>
+#include <dirent.h>
+
 char ** check_ports() {
-  return NULL;
+   DIR* dir;
+  struct dirent* ent;
+  char* endptr;
+  char **devs = NULL;
+
+  if (!(dir = opendir("/dev"))) {
+    perror("can't open /dev");
+    return NULL;
+  }
+
+  int n = 0;
+  while((ent = readdir(dir)) != NULL) {
+    if(strnicmp(ent->d_name, "cu.usb", 6) == 0) {
+      n++;
+      continue;
+    }
+
+    if(strnicmp(ent->d_name, "cu.bluetooth", 12) == 0) {
+      if (strcasestr(ent->d_name, "modem") != NULL) {
+	n++;
+      }
+    }
+  }
+  closedir(dir);
+
+  if(n  > 0) {
+    int j = 0;
+    devs = calloc(n+1, sizeof(char*));
+    if (!(dir = opendir("/dev"))) {
+      perror("can't open /dev");
+      return devs;
+    }
+
+    while((ent = readdir(dir)) != NULL) {
+      if(strnicmp(ent->d_name, "cu.usb", 6) == 0) {
+	char *element = strdup(ent->d_name);
+	devs[j] = element;
+	j++;
+	continue;
+      }
+
+      if(strnicmp(ent->d_name, "cu.bluetooth", 12) == 0) {
+	if (strcasestr(ent->d_name, "modem") != NULL) {
+	  char *element = strdup(ent->d_name);
+	  devs[j] = element;
+	  j++;
+	}
+      }
+    }
+    closedir(dir);
+  }
+  return devs;
 }
+
 int check_delete_name(char *s) {
   return -1;
 }
