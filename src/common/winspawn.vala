@@ -47,11 +47,8 @@ public class ProcessLauncher : Object {
 
 	public signal void complete();
 
-
-	public bool get_status(int* s) {
-		if(s!=null) {
-			*s = wait_status;
-		}
+	public bool get_status(out int? s) {
+		s = wait_status;
 		return pstatus;
 	}
 

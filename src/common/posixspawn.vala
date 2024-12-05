@@ -7,7 +7,7 @@ public enum ProcessLaunch {
 	WAIT = 80
 }
 
-extern int  parse_wstatus(int stst, out int? wsts);
+extern int  parse_wstatus(int stst, int* wsts);
 extern int pid_from_name(char *name);
 
 public class ProcessLauncher : Object {
@@ -19,7 +19,10 @@ public class ProcessLauncher : Object {
 	private int wait_status;
 
 	public bool get_status(out int? sts) {
-		return (bool)parse_wstatus(wait_status, out sts);
+		int _sts = -1;
+		var res = parse_wstatus(wait_status, &_sts);
+		sts = _sts;
+		return (bool) res;
 	}
 
 	public int get_stdin_pipe() {

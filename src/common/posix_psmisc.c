@@ -42,7 +42,7 @@ pid_t pid_from_name(const char* name) {
   return -1;
 }
 
-gint  parse_wstatus(gint sts, gint *wsts) {
+int  parse_wstatus(int sts, int *wsts) {
   int _wsts = 0;
   int res = WIFEXITED(sts);
   if (res == 1) {

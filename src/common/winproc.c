@@ -314,7 +314,11 @@ BOOL waitproc(HANDLE h, int *sts) {
   if(h != NULL) {
     WaitForSingleObject(h, INFINITE);
     DWORD wait_status;
-    BOOL rv = GetExitCodeProcess(h, &wait_status);
+    rv = GetExitCodeProcess(h, &wait_status);
+    //    if((int)rv == 0) {
+    //DWORD errc = GetLastError();
+    //fprintf(stderr, ":DBG: ERROR errc %lx\n", errc);
+    //}
     CloseHandle(h);
     if (sts != NULL) {
       *sts = (int)wait_status;

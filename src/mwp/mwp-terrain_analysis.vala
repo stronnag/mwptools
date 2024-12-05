@@ -173,15 +173,10 @@ namespace TA {
 				subp.complete.connect(() => {
 						try {stdc.shutdown(false);} catch {}
 						try {errc.shutdown(false);} catch {}
-						if(errlines.length > 0) {
-							StringBuilder sb = new StringBuilder("gnuplot error: ");
-							foreach (var l in errlines) {
-								sb.append_c('\t');
-								sb.append(l);
-								sb.append_c('\n');
-							}
-							MWPLog.message(sb.str);
-						} else {
+						int sts = 0;
+						var ok = subp.get_status(out sts);
+
+						if(ok) {
 							if (replname != null) {
 								MissionManager.open_mission_file(replname);
 							}
@@ -203,6 +198,14 @@ namespace TA {
 									});
 								altview.generate_climb_dive(cdlines, maxclimb, maxdive);
 							}
+						} else if(errlines.length > 0) {
+							StringBuilder sb = new StringBuilder("gnuplot error: ");
+							foreach (var l in errlines) {
+								sb.append_c('\t');
+								sb.append(l);
+								sb.append_c('\n');
+							}
+							MWPLog.message(sb.str);
 						}
 					});
 			} else {

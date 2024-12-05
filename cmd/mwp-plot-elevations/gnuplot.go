@@ -13,6 +13,7 @@ import (
 func getGnuplotCaps() int {
 	ttypes := 0
 	cmd := exec.Command("gnuplot", "-e", "set terminal")
+	SetSilentProcess(cmd)
 	out, err := cmd.CombinedOutput()
 	if err == nil {
 		if strings.Contains(string(out), " qt ") {
