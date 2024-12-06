@@ -334,27 +334,29 @@ ssize_t write_serial(int fd, uint8_t*buffer, size_t buflen) {
 int cf_pipe(int *fds) { _pipe(fds, 1024, _O_BINARY); return 0; }
 
 char *get_error_text(int dummy, char *pBuf, size_t bufSize) {
-  /*
-  DWORD retSize;
-  LPTSTR pTemp = NULL;
-  if (bufSize < 16) {
-    if (bufSize > 0) {
+  DWORD lerr = GetLastError();
+  if (lerr != ERROR_SUCCESS) {
+    DWORD retSize;
+    LPTSTR pTemp = NULL;
+    if (bufSize < 16) {
+      if (bufSize > 0) {
+	pBuf[0] = '\0';
+      }
+      return (pBuf);
+    }
+    retSize = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ARGUMENT_ARRAY, NULL, lerr, LANG_NEUTRAL, (LPTSTR)&pTemp, 0, NULL);
+    if (!retSize || pTemp == NULL) {
       pBuf[0] = '\0';
+    } else {
+      char *s = pTemp + retSize -1;
+      while (s > pTemp && isspace((int)*s))
+	*s-- = 0;
+      sprintf(pBuf, "%s (0x%lx)", pTemp, GetLastError());
+      LocalFree((HLOCAL)pTemp);
     }
     return (pBuf);
-  }
-  retSize = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ARGUMENT_ARRAY, NULL, GetLastError(), LANG_NEUTRAL, (LPTSTR)&pTemp, 0, NULL);
-  if (!retSize || pTemp == NULL) {
-    pBuf[0] = '\0';
   } else {
-    char *s = pTemp + retSize -1;
-    while (s > pTemp && isspace((int)*s))
-      *s-- = 0;
-    sprintf(pBuf, "%s (0x%lx)", pTemp, GetLastError());
-    LocalFree((HLOCAL)pTemp);
+    return "windows ... anything could have gone wrong. We have no idea";
   }
-  return (pBuf);
-  */
-  return "windows ... anything could have gone wrong. We have no idea";
 }
 #endif
