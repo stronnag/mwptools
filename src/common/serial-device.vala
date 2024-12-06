@@ -849,7 +849,9 @@ public class MWSerial : Object {
 
     private void set_noblock() {
 #if UNIX
-        Posix.fcntl(fd, Posix.F_SETFL, Posix.fcntl(fd, Posix.F_GETFL, 0) | Posix.O_NONBLOCK);
+		try {
+			Unix.set_fd_nonblocking(fd, true);
+		} catch {};
 #endif
     }
 

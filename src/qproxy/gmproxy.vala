@@ -17,7 +17,7 @@
 
 /************************************************************************
  *
- * gmproxy is a champlain proxy for a well known proprietary map service
+ * gmproxy is a proxy for a well known proprietary map service
  *
  * If a definiton appears in sources.json, a proxy will be started
  * where the definiton includes a 'spawn' line.
@@ -161,14 +161,12 @@ public class GMProxy : Soup.Server {
             Posix.Stat st;
             var parts = path.split("/");
             var np = parts.length;
-            var fnstr = GLib.Path.build_filename(
-                Environment.get_home_dir(),
-				".cache",
-				cache_dir,
-                parts[np-4],
-                parts[np-3],
-                parts[np-2],
-                parts[np-1]);
+            var fnstr = GLib.Path.build_filename(Environment.get_user_cache_dir(),
+												 cache_dir,
+												 parts[np-4],
+												 parts[np-3],
+												 parts[np-2],
+												 parts[np-1]);
 
             if(Posix.stat(fnstr, out st) == 0) {
                 ok = true;

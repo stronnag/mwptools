@@ -37,6 +37,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <errno.h>
+#include <glib-unix.h>
 
 #ifdef __linux__
 #include <asm/termbits.h>
@@ -197,7 +198,10 @@ ssize_t write_serial(int fd, uint8_t*buffer, size_t buflen) {
   return write(fd, buffer, buflen);
 }
 
-int cf_pipe(int *fds) { return pipe(fds); }
+int cf_pipe(int *fds) {
+  gboolean res = g_unix_open_pipe (fds, O_CLOEXEC|O_NONBLOCK, NULL);
+  return (res == TRUE) ? 0 : -1;
+}
 
 char *get_error_text(int errnum, char *buf, size_t buflen) {
   *buf = 0;
