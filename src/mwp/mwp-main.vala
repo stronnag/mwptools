@@ -24,11 +24,17 @@ int main (string[] args) {
     bool rtn = false;
     foreach(var a in args) {
 		if (a == "--version" || a == "-v") {
-			stdout.printf("%s ", MwpVers.get_id());
+			if(rtn) {
+				stdout.putc(' ');
+			}
+			stdout.printf("%s", MwpVers.get_id());
 			rtn = true;
 		}
 		if (a == "--build-id") {
-			stdout.printf("%s ", MwpVers.get_build());
+			if(rtn) {
+				stdout.putc(' ');
+			}
+			stdout.printf("%s", MwpVers.get_build());
 			rtn = true;
 		}
 		sb.append(a);
