@@ -100,6 +100,7 @@ namespace Mwp {
 		GCSLOC,		// 256
 		LOSANA,		// 512
 		RDRLIST,	// 1024
+		MAPS,       // 2048
     }
 
 	[Flags]

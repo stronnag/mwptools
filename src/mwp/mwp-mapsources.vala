@@ -114,19 +114,17 @@ public class SoupProxy : Soup.Server {
             return;
         }
         var method = msg.get_method();
+		if(Mwp.DEBUG_FLAGS.MAPS in Mwp.debug_flags) {
+			MWPLog.message(":DBG: Method %s\n", method);
+		}
         if (method == "HEAD") {
             bool ok = false;
             Posix.Stat st;
             var parts = path.split("/");
             var np = parts.length;
-            var fnstr = GLib.Path.build_filename(
-                Environment.get_home_dir(),
-                ".cache/shumate",
-				cdir,
-                parts[np-3],
-                parts[np-2],
-                parts[np-1]);
-
+            var fnstr = GLib.Path.build_filename(Environment.get_user_cache_dir(),
+												 "shumate", cdir,
+												 parts[np-3], parts[np-2], parts[np-1]);
             if(Posix.stat(fnstr, out st) == 0) {
                 ok = true;
                 var dt = new DateTime.from_unix_utc(st.st_mtime);
@@ -142,6 +140,10 @@ public class SoupProxy : Soup.Server {
             }
         } else if (method == "GET") {
 			var xpath = rewrite_path(path);
+			if(Mwp.DEBUG_FLAGS.MAPS in Mwp.debug_flags) {
+					MWPLog.message(":DBG: URI %s\n", xpath);
+			}
+
 			var message = new Soup.Message ("GET", xpath);
 			message.get_request_headers().append("User-Agent",make_ua());
 			try {
@@ -193,10 +195,13 @@ namespace EsriWorld {
 
 namespace BingMap {
 	public string get_buri(int i) {
+		//"https://t.ssl.ak.tiles.virtualearth.net/tiles/a{q}.jpeg?g=14826&n=z&prx=1";
+		//buri = "http://ecn.t%d.tiles.virtualearth.net/tiles/a#Q#.jpeg?g=563&mkt=en";
+
 		if (i == 0) {
-			return "https://t.ssl.ak.tiles.virtualearth.net/tiles/a{q}.jpeg?g=14826&n=z&prx=1";
+			return "http://ecn.t%d.tiles.virtualearth.net/tiles/a{q}.jpeg?g=563&mkt=en";
 		} else {
-			return "https://t.ssl.ak.tiles.virtualearth.net/tiles/h{q}.jpeg?g=14826&n=z&prx=1";
+			return "http://ecn.t%d.tiles.virtualearth.net/tiles/h{q}.jpeg?g=563&mkt=en";
 		}
 	}
 
