@@ -334,6 +334,7 @@ ssize_t write_serial(int fd, uint8_t*buffer, size_t buflen) {
 int cf_pipe(int *fds) { _pipe(fds, 1024, _O_BINARY); return 0; }
 
 char *get_error_text(int dummy, char *pBuf, size_t bufSize) {
+  /*
   DWORD retSize;
   LPTSTR pTemp = NULL;
   if (bufSize < 16) {
@@ -353,5 +354,7 @@ char *get_error_text(int dummy, char *pBuf, size_t bufSize) {
     LocalFree((HLOCAL)pTemp);
   }
   return (pBuf);
+  */
+  return "windows ... anything could have gone wrong. We have no idea";
 }
 #endif
