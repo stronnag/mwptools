@@ -198,8 +198,11 @@ namespace TA {
 									});
 								altview.generate_climb_dive(cdlines, maxclimb, maxdive);
 							}
-						} else if(errlines.length > 0) {
-							StringBuilder sb = new StringBuilder("gnuplot error: ");
+						} else {
+							MWPLog.message("gnuplot status %d (%x)\n", (int)sts, (int)sts);
+						}
+						if(errlines.length > 0) {
+							StringBuilder sb = new StringBuilder("gnuplot reports: ");
 							foreach (var l in errlines) {
 								sb.append_c('\t');
 								sb.append(l);
@@ -209,7 +212,7 @@ namespace TA {
 						}
 					});
 			} else {
-				MWPLog.message("Failed to launch 'gnoplot'\n");
+				MWPLog.message("Failed to launch 'mwp-plot-elevations'\n");
 			}
 		}
 	}

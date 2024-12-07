@@ -143,7 +143,6 @@ func (mm *MultiMission) to_mission(mi int) *Mission {
 	m.Comment = mm.Comment
 	m.Metadata = mm.Segment[mi].Metadata
 	m.MissionItems = mm.Segment[mi].MissionItems
-	//      fmt.Fprintf(os.Stderr, "%#v\n", m)
 	return m
 }
 

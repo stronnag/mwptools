@@ -12,6 +12,8 @@ import (
 
 func getGnuplotCaps() int {
 	ttypes := 0
+	p, err := exec.LookPath("gnuplot")
+	fmt.Fprintf(os.Stderr, "Gnuplot is %s\n", p)
 	cmd := exec.Command("gnuplot", "-e", "set terminal")
 	SetSilentProcess(cmd)
 	out, err := cmd.CombinedOutput()
@@ -25,9 +27,13 @@ func getGnuplotCaps() int {
 		if strings.Contains(string(out), " x11 ") {
 			ttypes |= 4
 		}
+		if strings.Contains(string(out), " windows ") {
+			ttypes |= 8
+		}
 	} else {
 		panic(err)
 	}
+	fmt.Fprintf(os.Stderr, "Gnuplot terminal is %d\n", ttypes)
 	return ttypes
 }
 
@@ -60,6 +66,8 @@ func Gnuplot_mission(mpts []Point, gnd []int, spt bool, los int) int {
 	termstr := ""
 	if (ttypes & 1) == 1 {
 		termstr = "qt"
+	} else if (ttypes & 8) == 8 {
+		termstr = "windows"
 	} else if (ttypes & 2) == 2 {
 		termstr = "wxt"
 	} else if (ttypes & 4) == 4 {
@@ -175,10 +183,13 @@ replot`)
 	}
 	w.Close()
 	gp := exec.Command("gnuplot", "-p", pfname)
+	SetSilentProcess(gp)
 	err = gp.Run()
 	if err != nil {
-		log.Fatalf("gnuplot failed with %s\n", err)
+		fmt.Fprintf(os.Stderr, "gnuplot failed with %+v\n", err)
 		return -1
 	}
+	fmt.Fprint(os.Stderr, "gnuplot pid <%+v>\n", gp.Process.Pid)
+	fmt.Fprint(os.Stderr, "gnuplot eof\n")
 	return gp.Process.Pid
 }

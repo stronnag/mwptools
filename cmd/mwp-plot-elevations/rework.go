@@ -82,7 +82,7 @@ func Rework(mpts []Point, gnd []int) {
 					}
 					mpts[n+1].Set = WP_UPDATED
 
-					fmt.Fprintf(os.Stderr, "WP %d adj %d mz = %d, az = %d, xz = %d, gz=%d Set %d\n",
+					//fmt.Fprintf(os.Stderr, "WP %d adj %d mz = %d, az = %d, xz = %d, gz=%d Set %d\n",
 						n, xadj, mpts[n].Mz, mpts[n].Az, mpts[n].Xz, mpts[n].Gz, mpts[n].Set)
 				*/
 			}
