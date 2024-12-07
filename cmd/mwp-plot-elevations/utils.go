@@ -34,18 +34,19 @@ type Point struct {
 }
 
 type Options struct {
-	Homepos string
-	Svgfile string
-	Output  string
-	Rthalt  int
-	Margin  int
-	Sanity  int
-	P3      int
-	Noplot  bool
-	Noalts  bool
-	Upland  bool
-	Dump    bool
-	Keep    bool
+	Homepos   string
+	Svgfile   string
+	Output    string
+	Rthalt    int
+	Margin    int
+	Sanity    int
+	P3        int
+	Noplot    bool
+	Nognuplot bool
+	Noalts    bool
+	Upland    bool
+	Dump      bool
+	Keep      bool
 }
 
 func Dump_data(mpts []Point, fn string) {

@@ -4,7 +4,8 @@ public enum ProcessLaunch {
 	STDIN = 1,
 	STDOUT = 2,
 	STDERR = 4,
-	WAIT = 80
+	WAIT = 8,
+	WINSPECIAL= 10
 }
 
 extern int  parse_wstatus(int stst, int* wsts);

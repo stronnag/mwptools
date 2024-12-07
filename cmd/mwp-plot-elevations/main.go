@@ -63,6 +63,7 @@ func main() {
 	flag.IntVar(&Conf.P3, "force-alt", -1, "Force Altitude Mode (-1=from mission, 0=Relative, 1=Absolute")
 	flag.IntVar(&Conf.Margin, "margin", Conf.Margin, "Clearance margin (m)")
 	flag.BoolVar(&Conf.Noplot, "no-graph", false, "No interactive plot")
+	flag.BoolVar(&Conf.Nognuplot, "no-gnuplot", false, "No interactive plot, keep file")
 	flag.BoolVar(&Conf.Upland, "upland", false, "Update landing elevation offset")
 	flag.BoolVar(&Conf.Noalts, "no-mission-alts", false, "Ignore extant mission altitudes")
 	flag.BoolVar(&Conf.Dump, "dump", false, "Dump  internal data, exit")

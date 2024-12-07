@@ -4,7 +4,8 @@ public enum ProcessLaunch {
 	STDIN = 1,
 	STDOUT = 2,
 	STDERR = 4,
-	WAIT = 80
+	WAIT = 8,
+	WINSPECIAL= 10
 }
 
 extern void *create_win_process(char *cmd, int flags, int *ipipe, int *spipe, int *epipe, int32 *pid);

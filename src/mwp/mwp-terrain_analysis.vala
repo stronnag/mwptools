@@ -92,35 +92,32 @@ namespace TA {
 		private void run_elevation_tool() {
 			var outfn = Utils.mstempname();
 			string replname = null;
-			string[] spawn_args = {"mwp-plot-elevations"};
+			string[] spawn_args = {"mwp-plot-elevations", "-no-gnuplot", "-no-mission-alts"};
 			var ms = MissionManager.current();
 			MissionManager.validate_elevations(ms);
-			// FIXME : check when old windows kill was done.
-
 			spawn_args += "-localdem=%s".printf(DemManager.demdir);
-			spawn_args += "--no-mission-alts";
-			spawn_args += "--home=%.8f,%.8f".printf(HomePoint.hp.latitude, HomePoint.hp.longitude);
+			spawn_args += "-home=%.8f,%.8f".printf(HomePoint.hp.latitude, HomePoint.hp.longitude);
 
 			margin_alt = int.parse(pe_clearance.text);
 			if (margin_alt != 0) {
-				spawn_args += "--margin=%d".printf(margin_alt);
+				spawn_args += "-margin=%d".printf(margin_alt);
 			}
 			rth_alt = int.parse(pe_rthalt.text);
 			if (rth_alt != 0) {
-				spawn_args += "--rth-alt=%d".printf(rth_alt);
+				spawn_args += "-rth-alt=%d".printf(rth_alt);
 			}
 
 			if (pe_replace.active) {
 				replname = Utils.mstempname();
-				spawn_args += "--output=%s".printf(replname);
+				spawn_args += "-output=%s".printf(replname);
 			}
 
 			if (pe_land.active) {
-				spawn_args += "--upland";
+				spawn_args += "-upland";
 			}
 			var altid = (int)pe_altmode.get_selected();
 			if (altid != 0) {
-				spawn_args += "--force-alt=%d".printf(altid-1);
+				spawn_args += "-force-alt=%d".printf(altid-1);
 			}
 
 			XmlIO.to_xml_file(outfn, {ms});
@@ -175,8 +172,24 @@ namespace TA {
 						try {errc.shutdown(false);} catch {}
 						int sts = 0;
 						var ok = subp.get_status(out sts);
-
 						if(ok) {
+							Idle.add_once(() => {
+									var pid = subp.get_pid();
+									MWPLog.message(":DBG: gnuplot %d\n", pid);
+									var gdir = Path.build_filename(Environment.get_tmp_dir(), ".mplot_%d".printf(pid));
+									var fn = Path.build_filename(gdir, "mwpmission.plt");
+									var file = File.new_for_path(fn);
+									if (file.query_exists ()) {
+										var gsubp = new ProcessLauncher();
+										var gres = gsubp.run_argv({"gnuplot", "-p", fn}, 0);
+										if(gres) {
+											gsubp.complete.connect(() => {
+													MWPLog.message("gnuplot exit\n");
+													Utils.rmrf(gdir);
+												});
+										}
+									}
+								});
 							if (replname != null) {
 								MissionManager.open_mission_file(replname);
 							}

@@ -16,7 +16,8 @@ typedef enum  {
   PROCESS_LAUNCH_STDIN = 1,
   PROCESS_LAUNCH_STDOUT = 2,
   PROCESS_LAUNCH_STDERR = 4,
-  PROCESS_LAUNCH_WAIT = 80
+  PROCESS_LAUNCH_WAIT = 8,
+  PROCESS_LAUNCH_WINSPECIAL = 10,
 } ProcessLaunch;
 
 /* Copyright (C) 1992 Free Software Foundation, Inc.
@@ -268,12 +269,17 @@ HANDLE create_win_process(char *cmd, int flags, int *sinp,  int *sout, int *eout
 
      siStartInfo.dwFlags |= STARTF_USESTDHANDLES|STARTF_USESHOWWINDOW;
 
+     DWORD cflags = 0;
+     if((((ProcessLaunch)flags) & PROCESS_LAUNCH_WINSPECIAL) == PROCESS_LAUNCH_WINSPECIAL) {
+       cflags = DETACHED_PROCESS|CREATE_BREAKAWAY_FROM_JOB;
+     }
+
      bSuccess = CreateProcess(NULL,
 			      cmd,     // command line
 			      NULL,          // process security attributes
 			      NULL,          // primary thread security attributes
 			      TRUE,          // handles are inherited
-			      0,             // creation flags
+			      cflags,        // creation flags
 			      NULL,          // use parent's environment
 			      NULL,          // current directory
 			      &siStartInfo,  // STARTUPINFO pointer

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -12,8 +11,6 @@ import (
 
 func getGnuplotCaps() int {
 	ttypes := 0
-	p, err := exec.LookPath("gnuplot")
-	fmt.Fprintf(os.Stderr, "Gnuplot is %s\n", p)
 	cmd := exec.Command("gnuplot", "-e", "set terminal")
 	SetSilentProcess(cmd)
 	out, err := cmd.CombinedOutput()
@@ -33,7 +30,6 @@ func getGnuplotCaps() int {
 	} else {
 		panic(err)
 	}
-	fmt.Fprintf(os.Stderr, "Gnuplot terminal is %d\n", ttypes)
 	return ttypes
 }
 
@@ -45,19 +41,22 @@ func Gnuplot_mission(mpts []Point, gnd []int, spt bool, los int) int {
 	if Conf.Svgfile != "" {
 		req |= 2
 	}
+	if Conf.Nognuplot == true {
+		req |= 4
+	}
 	if req == 0 {
 		return -1
 	}
+
 	np := len(mpts)
 	mr := mpts[np-1].D
 	np = len(gnd)
 	ddif := mr / float64(np-1)
 	minz := 99999
 
-	tmpdir, err := ioutil.TempDir("", ".mplot")
-	if Conf.Keep == false {
-		defer os.RemoveAll(tmpdir)
-	}
+	tmpext := fmt.Sprintf(".mplot_%d", os.Getpid())
+	tmpdir := filepath.Join(os.TempDir(), tmpext)
+	err := os.Mkdir(tmpdir, 0o755)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -100,7 +99,9 @@ func Gnuplot_mission(mpts []Point, gnd []int, spt bool, los int) int {
 		}
 	}
 	w.Close()
+
 	pfname := filepath.Join(tmpdir, "mwpmission.plt")
+
 	w, _ = os.Create(pfname)
 	w.WriteString(`#!/usr/bin/gnuplot -p
 set bmargin 8
@@ -182,14 +183,15 @@ set output
 replot`)
 	}
 	w.Close()
-	gp := exec.Command("gnuplot", "-p", pfname)
-	SetSilentProcess(gp)
-	err = gp.Run()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "gnuplot failed with %+v\n", err)
-		return -1
+
+	if Conf.Nognuplot == false {
+		gp := exec.Command("gnuplot", "-p", pfname)
+		SetSilentProcess(gp)
+		err = gp.Start()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "gnuplot failed with %+v\n", err)
+			return -1
+		}
 	}
-	fmt.Fprint(os.Stderr, "gnuplot pid <%+v>\n", gp.Process.Pid)
-	fmt.Fprint(os.Stderr, "gnuplot eof\n")
-	return gp.Process.Pid
+	return 0
 }

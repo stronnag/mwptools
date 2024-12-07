@@ -231,6 +231,25 @@ namespace SportDev {
 }
 
 namespace Utils {
+	public void rmrf(string dname) {
+		try {
+			var dir = File.new_for_path(dname);
+			FileEnumerator enumerator = dir.enumerate_children ("standard::*", FileQueryInfoFlags.NOFOLLOW_SYMLINKS, null);
+			FileInfo info = null;
+			while (((info = enumerator.next_file (null)) != null)) {
+				if (info.get_file_type () == FileType.DIRECTORY) {
+					var tname = Path.build_filename(dname, info.get_name ());
+					rmrf(tname);
+				}
+				var df = File.new_build_filename(dname, info.get_name ());
+				df.@delete(null);
+			}
+			dir.@delete(null);
+		} catch (Error e) {
+			MWPLog.message("rmrf %s\n", e.message);
+		}
+	}
+
 	public int get_row_at(Gtk.Widget w, double y) {
 		// from  https://discourse.gnome.org/t/gtk4-finding-a-row-data-on-gtkcolumnview/8465
 		var  child = w.get_first_child();

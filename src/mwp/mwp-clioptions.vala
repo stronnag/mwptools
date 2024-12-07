@@ -117,8 +117,9 @@ namespace Cli {
 		var pnf = 0;
         foreach (var s in ext_apps) {
             if (s != null) {
-                appsts[si] = (Environment.find_program_in_path(s) != null);
-                if (appsts[si] == false) {
+				var ppath = Environment.find_program_in_path(s);
+                appsts[si] = (ppath != null);
+				if (appsts[si] == false) {
 					StringBuilder vsb = new StringBuilder();
 					vsb.append_printf("Failed to find \"%s\" on $PATH", s);
 					if(si == 0 || si > 4) {
@@ -127,6 +128,8 @@ namespace Cli {
 					vsb.append_c('\n');
 					MWPLog.message(vsb.str);
 					pnf += 1;
+				} else {
+					MWPLog.message(":DBG: Path %s => %s\n", s, ppath);
 				}
             }
             si++;
@@ -202,6 +205,11 @@ namespace Cli {
 		Mwp.x_fl2ltm = Mwp.x_otxlog = appsts[6];
 		Mwp.x_aplog = appsts[7];
         Mwp.x_rawreplay = appsts[8];
+
+		if(Mwp.x_plot_elevations_rb == false) {
+			MWPLog.message(":DBG: No TA for you!\n");
+			MwpMenu.set_menu_state(Mwp.window, "mta", false);
+		}
 
         XmlIO.uc = Mwp.conf.ucmissiontags;
         XmlIO.meta = Mwp.conf.missionmetatag;
