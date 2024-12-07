@@ -647,6 +647,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Configuration Files">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#platform-differences" class="md-nav__link">
+    <span class="md-ellipsis">
+      Platform differences
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1403,6 +1418,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Configuration Files">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#platform-differences" class="md-nav__link">
+    <span class="md-ellipsis">
+      Platform differences
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1657,11 +1687,30 @@
 <td>256</td>
 <td>GCS Location</td>
 </tr>
+<tr>
+<td>512</td>
+<td>Line of sight</td>
+</tr>
+<tr>
+<td>1024</td>
+<td>Radar</td>
+</tr>
+<tr>
+<td>2048</td>
+<td>Maps</td>
+</tr>
 </tbody>
 </table>
-<p>Values may be added together (so 511 means all).</p>
+<p>Values may be ORd together (so 4095 means all).</p>
 <h2 id="configuration-files">Configuration Files<a class="headerlink" href="#configuration-files" title="Permanent link">#</a></h2>
-<p><a href="https://github.com/stronnag/mwptools">mwp</a> configuration files are stored in a standard directory <code>$HOME/.config/mwp</code>. This directory is created on first invocation if it does not exist. The following files may be found there:</p>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> configuration files are stored in a standard directory <code>$HOME/.config/mwp</code>. This directory is created on first invocation if it does not exist.</p>
+<h3 id="platform-differences">Platform differences<a class="headerlink" href="#platform-differences" title="Permanent link">#</a></h3>
+<ul>
+<li>POSIX XDG compliance :  User Configuration directory (<code>$XDG_CONFIG_HOME</code>)</li>
+<li>POSIX fallback : <code>$HOME/.config</code></li>
+<li>Windows / Msys : <code>$LOCALAPPDATA</code> / <code>%LOCALAPPDATA%</code> / <code>$Env:LOCALAPPDATA</code></li>
+</ul>
+<p>The following files may be found in the <code>mwp</code> directory:</p>
 <h2 id="cmdopts"><code>cmdopts</code><a class="headerlink" href="#cmdopts" title="Permanent link">#</a></h2>
 <p>The file <code>cmdopts</code> contains command line options that the user wishes to apply permanently (and conveniently when run from a launcher icon rather than the command line).</p>
 <p>The file contains CLI options exactly as would be issued from the terminal. Options may be on separate lines, and blank lines and line prefixed with a hash '#' are ignored. For example:</p>
@@ -1686,6 +1735,7 @@ MWP_BLACK_TILE=/home/jrh/.config/mwp/mars.png
 <li>Maps for Free Relief</li>
 <li>Bing Maps (no API key required, for as long as the service remains available).</li>
 <li>MapBox (requires API key)</li>
+<li>ESRI Clarity</li>
 </ul>
 <h3 id="mapbox-api-key-management">Mapbox API Key management<a class="headerlink" href="#mapbox-api-key-management" title="Permanent link">#</a></h3>
 <p>In preparation for the announced removal of the Bing Maps service, <code>mwp</code> adds a <code>MapBox</code> entry where the user has acquired a <a href="https://mapbox.com/">Mapbox API key</a>.</p>
@@ -2161,10 +2211,34 @@ $ gsettings set org.stronnag.mwp log-save-path ~/flight-logs/
 <td>3</td>
 </tr>
 <tr>
+<td>p-height</td>
+<td>Internal setting</td>
+<td></td>
+<td>720</td>
+</tr>
+<tr>
+<td>p-is-fullscreen</td>
+<td>Internal setting</td>
+<td></td>
+<td>false</td>
+</tr>
+<tr>
+<td>p-is-maximised</td>
+<td>Internal setting</td>
+<td></td>
+<td>true</td>
+</tr>
+<tr>
 <td>p-pane-width</td>
-<td>Private setting</td>
+<td>Internal setting</td>
 <td>Please do not change this unless you appreciate the consequences</td>
 <td>0</td>
+</tr>
+<tr>
+<td>p-width</td>
+<td>Internal setting</td>
+<td></td>
+<td>1280</td>
 </tr>
 <tr>
 <td>poll-timeout</td>

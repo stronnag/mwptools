@@ -1571,6 +1571,7 @@
 <p>For Fedora, the is a also a documented list of packages.</p>
 <p>For Arch, the <code>PKGBLD</code> lists the required packages.</p>
 <p>For MacOS, use Homebrew to install required packages, having evinced the names from one of the Linux guides.</p>
+<p>For Windows (MSys2), see <a href="https://github.com/stronnag/mwptools/discussions/182">Github discussion #182</a> for dependencies and workarounds).</p>
 <p>For any other distribution / platform / OS, any of the above documents should give you an idea of the packages required, typically:</p>
 <ul>
 <li>Gtk4 (4.14)</li>
@@ -1676,9 +1677,9 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="df11", MODE="0660
 </tbody>
 </table>
 <h3 id="libraries">Libraries<a class="headerlink" href="#libraries" title="Permanent link">#</a></h3>
-<pre><code>$prefix/lib/libmwpclib.*so.2.0.0
+<pre><code>$prefix/lib/libmwpclib.*so.x.0.0
 $prefix/lib/libmwpclib.a
-$prefix/lib/libmwpvlib.*so.2.0.0
+$prefix/lib/libmwpvlib.*so.x.0.0
 $prefix/lib/libmwpclib.a
 </code></pre>
 <div class="admonition note">
