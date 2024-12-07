@@ -94,7 +94,6 @@ class ClITerm : Object {
 			});
 
 		msp.serial_lost.connect(() => {
-				stderr.printf("\n LOST SERIAL **\n");
 				ml.quit();
 			});
 
