@@ -85,7 +85,7 @@ if dynalib
 endif
 executable('gmproxy', kwargs: exargs)
 
-if host_machine.system() != 'windows'
+#if host_machine.system() != 'windows'
 exargs = {
   'sources': [clisrcs ],
   'dependencies': [ clideps ],
@@ -100,7 +100,7 @@ if dynalib
     exargs += { 'install_rpath': '$ORIGIN/../lib',}
 endif
 executable('cliterm', kwargs: exargs)
-endif
+#endif
 
 exargs = {
   'sources': [fcsrcs, fccommon ],
