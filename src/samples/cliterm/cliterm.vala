@@ -247,13 +247,13 @@ class ClITerm : Object {
 		new Thread<bool>("wincon", () => {
 				while(true) {
 					var c = winrawchar();
-					if(c == -1) {
+					if(c < 5) {
 						ml.quit();
 						return false;
 					} else {
-						Idle.add_once(() => {
+						//Idle.add_once(() => {
 								process_input((uchar)c);
-							});
+								//	});
 					}
 				}
 				return true;
@@ -267,7 +267,7 @@ class ClITerm : Object {
 				msp.write(eol.data,eol.length);
 			} else {
 				uint8 buf[2];
-				buf[1] = c;
+				buf[0] = c;
 				msp.write(buf,1);
 			}
 		}
