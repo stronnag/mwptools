@@ -1,3 +1,7 @@
+#if !UNIX
+extern int winrawchar();
+#endif
+
 private static int baud = 115200;
 private static string eolmstr;
 private static string dev;
@@ -32,7 +36,9 @@ class ClITerm : Object {
     private string eol;
     private bool sendpass = false;
 	private uint8 inavvers;
+#if UNIX
 	private Posix.termios oldtio = Posix.termios();
+#endif
 
 	public ClITerm() {
 	}
@@ -210,12 +216,12 @@ class ClITerm : Object {
 	}
 
     public void run() {
+#if UNIX
         Posix.termios newtio = {0};
         Posix.tcgetattr (0, out newtio);
         oldtio = newtio;
         Posix.cfmakeraw(ref newtio);
         Posix.tcsetattr(0, Posix.TCSANOW, newtio);
-
         try {
             var io_read = new IOChannel.unix_new(0);
             if(io_read.set_encoding(null) != IOStatus.NORMAL)
@@ -224,29 +230,54 @@ class ClITerm : Object {
 				uint8 buf[2];
 				ssize_t rc = -1;
 				var err = ((c & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0);
-				if (!err)
+				if (!err) {
 					rc = Posix.read(0, buf, 1);
+				}
 				if (err || buf[0] == 3 || rc <0) {
 					ml.quit();
 					return false;
 				}
-				if (msp.available) {
-					if(buf[0] == 13 && eolm != 0) {
-						msp.write(eol.data,eol.length);
-					} else {
-						msp.write(buf,1);
-					}
-				}
+				process_input(c);
 				return true;
 			});
 		} catch(IOChannelError e) {
 			error("IOChannel: %s", e.message);
 		}
-
+#else
+		new Thread<bool>("wincon", () => {
+				while(true) {
+					var c = winrawchar();
+					if(c == -1) {
+						ml.quit();
+						return false;
+					} else {
+						Idle.add_once(() => {
+								process_input((uchar)c);
+							});
+					}
+				}
+				return true;
+			});
+#endif
 	}
+
+	private void process_input(uchar c) {
+		if (msp.available) {
+			if(c == 13 && eolm != 0) {
+				msp.write(eol.data,eol.length);
+			} else {
+				uint8 buf[2];
+				buf[1] = c;
+				msp.write(buf,1);
+			}
+		}
+	}
+
 	public void shutdown() {
 		msp.close();
+#if UNIX
 		Posix.tcsetattr(0, Posix.TCSANOW, oldtio);
+#endif
 	}
 
 	public static string[]? set_def_args() {
