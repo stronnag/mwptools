@@ -18,6 +18,8 @@ For Arch, the `PKGBLD` lists the required packages.
 
 For MacOS, use Homebrew to install required packages, having evinced the names from one of the Linux guides.
 
+For Windows (MSys2), see [Github discussion #182](https://github.com/stronnag/mwptools/discussions/182) for dependencies and workarounds).
+
 For any other distribution / platform / OS, any of the above documents should give you an idea of the packages required, typically:
 
 * Gtk4 (4.14)
@@ -98,9 +100,9 @@ The user needs to have read / write permissions on the serial port in order to c
 
 ### Libraries
 
-    $prefix/lib/libmwpclib.*so.2.0.0
+    $prefix/lib/libmwpclib.*so.x.0.0
 	$prefix/lib/libmwpclib.a
-    $prefix/lib/libmwpvlib.*so.2.0.0
+    $prefix/lib/libmwpvlib.*so.x.0.0
     $prefix/lib/libmwpclib.a
 
 

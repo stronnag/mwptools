@@ -39,12 +39,23 @@ The `--debug-flags` option takes a numeric value defines areas where additional 
 | 64    | SERIAL |
 | 128   | VIDEO |
 | 256   | GCS Location |
+| 512   | Line of sight |
+| 1024  | Radar |
+| 2048  | Maps |
 
-Values may be added together (so 511 means all).
+Values may be ORd together (so 4095 means all).
 
 ## Configuration Files
 
-{{ mwp }} configuration files are stored in a standard directory `$HOME/.config/mwp`. This directory is created on first invocation if it does not exist. The following files may be found there:
+{{ mwp }} configuration files are stored in a standard directory `$HOME/.config/mwp`. This directory is created on first invocation if it does not exist.
+
+### Platform differences
+
+* POSIX XDG compliance :  User Configuration directory (`$XDG_CONFIG_HOME`)
+* POSIX fallback : `$HOME/.config`
+* Windows / Msys : `$LOCALAPPDATA` / `%LOCALAPPDATA%` / `$Env:LOCALAPPDATA`
+
+The following files may be found in the `mwp` directory:
 
 ## `cmdopts`
 
@@ -77,6 +88,7 @@ The environment is set before any GTK / UI calls are made.
 * Maps for Free Relief
 * Bing Maps (no API key required, for as long as the service remains available).
 * MapBox (requires API key)
+* ESRI Clarity
 
 ### Mapbox API Key management
 
@@ -273,7 +285,11 @@ This *may* not be installed by default, but should be available via the OS packa
 | mission-path | Directory for mission files | Directory for mission files, default = current directory | "" |
 | msp2-adsb | MSP2_ADSB_VEHICLE_LIST usage | Options for requesting MSP2_ADSB_VEHICLE_LIST. "off": never request, "on:" always request, "auto:" heuristic based on serial settings / bandwidth | "off" |
 | osd-mode | Data items overlaid on the map | 0 = none, 1 = current WP/Max WP, 2 = next WP distance and course. This is a mask, so 3 means both OSD items. | 3 |
-| p-pane-width | Private setting | Please do not change this unless you appreciate the consequences | 0 |
+| p-height | Internal setting |  | 720 |
+| p-is-fullscreen | Internal setting |  | false |
+| p-is-maximised | Internal setting |  | true |
+| p-pane-width | Internal setting | Please do not change this unless you appreciate the consequences | 0 |
+| p-width | Internal setting |  | 1280 |
 | poll-timeout | Poll messages timeout (ms) | Timeout in milliseconds for telemetry poll messages. Note that timer loop has a resolution of 100ms. | 900 |
 | pos-is-centre | Determines position label content | Whether the position label is the centre or pointer location | false |
 | radar-alert-altitude | Altitude below which ADS-B alerts may be generated | Target altitude (metres) below which ADS-B proximity alerts may be generated. Requires that 'radar-alert-range' is also set (non-zero). Setting to 0 disables. Note that ADS-B altitudes are AMSL (or geoid). | 0 |

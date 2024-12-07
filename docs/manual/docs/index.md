@@ -65,7 +65,7 @@ Log replay requires tools from the [flightlog2x](https://github.com/stronnag/bbl
 
 ## Platforms and OS
 
-The tools are designed to be portable and as far as possible platform and architecture agnostic. The suite is developed on Arch Linux and is tested on Debian (Trixie / Sid), Alpine (Edge), Fedora (current)  and FreeBSD (current release). Being able to satisfy the required dependencies is more important than the actual distro / OS / platform.
+The tools are designed to be portable and as far as possible platform and architecture agnostic. The suite is developed on Arch Linux and is tested on Debian (Trixie / Sid), Alpine (Edge), Fedora (current)  and FreeBSD (current release). Being able to satisfy the required dependencies is more important than the actual distro / OS / platform. mwptools also runs on proprietary OS such as MacOS and Windows.
 
 ## Build and installation
 
