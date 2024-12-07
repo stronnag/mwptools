@@ -236,7 +236,7 @@ class ClITerm : Object {
 					ml.quit();
 					return false;
 				}
-				process_input(c);
+				process_input(buf[0]);
 				return true;
 			});
 		} catch(IOChannelError e) {
@@ -246,16 +246,19 @@ class ClITerm : Object {
 		new Thread<bool>("wincon", () => {
 				while(true) {
 					var c = winrawchar();
+					if (c == 0) {
+						winrawchar();
+						continue;
+					}
 					if(c < 5) {
 						ml.quit();
 						return false;
 					} else {
-						//Idle.add_once(() => {
+						Idle.add_once(() => {
 								process_input((uchar)c);
-								//	});
+							});
 					}
 				}
-				return true;
 			});
 #endif
 	}
