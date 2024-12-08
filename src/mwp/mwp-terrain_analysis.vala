@@ -90,6 +90,7 @@ namespace TA {
 		}
 
 		private void run_elevation_tool() {
+			pe_ok.sensitive=false;
 			var outfn = Utils.mstempname();
 			string replname = null;
 			string[] spawn_args = {"mwp-plot-elevations", "-no-gnuplot", "-no-mission-alts"};
@@ -168,6 +169,7 @@ namespace TA {
 						return true;
 					});
 				subp.complete.connect(() => {
+						pe_ok.sensitive=true;
 						try {stdc.shutdown(false);} catch {}
 						try {errc.shutdown(false);} catch {}
 						int sts = 0;
@@ -175,7 +177,6 @@ namespace TA {
 						if(ok) {
 							Idle.add_once(() => {
 									var pid = subp.get_pid();
-									MWPLog.message(":DBG: gnuplot %d\n", pid);
 									var gdir = Path.build_filename(Environment.get_tmp_dir(), ".mplot_%d".printf(pid));
 									var fn = Path.build_filename(gdir, "mwpmission.plt");
 									var file = File.new_for_path(fn);
@@ -184,7 +185,6 @@ namespace TA {
 										var gres = gsubp.run_argv({"gnuplot", "-p", fn}, 0);
 										if(gres) {
 											gsubp.complete.connect(() => {
-													MWPLog.message("gnuplot exit\n");
 													Utils.rmrf(gdir);
 												});
 										}
@@ -226,6 +226,7 @@ namespace TA {
 					});
 			} else {
 				MWPLog.message("Failed to launch 'mwp-plot-elevations'\n");
+				pe_ok.sensitive=true;
 			}
 		}
 	}
