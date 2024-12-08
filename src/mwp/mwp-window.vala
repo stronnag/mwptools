@@ -324,14 +324,24 @@ namespace Mwp {
 					set_pos_label(Mwp.current_lat, Mwp.current_lon);
 				});
 
+
+			double clx = 0, cly=0;
+
 			var gestc = new Gtk.GestureClick(); // Gtk.GestureLongPress();
+			gestc.released.connect((n, x, y) => {
+					if(Math.fabs(x - clx) < 5 && Math.fabs(y-cly) < 5) {
+						if(wpeditbutton.active) {
+							gestc.set_state(Gtk.EventSequenceState.CLAIMED);
+							double lat, lon;
+							Gis.map.viewport.widget_coords_to_location(Gis.base_layer, x,y,out lat, out lon);
+							MissionManager.insert_new(lat, lon);
+						}
+					}
+				});
 			gestc.pressed.connect((n, x, y) => {
-					if(wpeditbutton.active) {
-						gestc.set_state(Gtk.EventSequenceState.CLAIMED);
-						double lat, lon;
-						Gis.map.viewport.widget_coords_to_location(Gis.base_layer, x,y,out lat, out lon);
-						MissionManager.insert_new(lat, lon);
-					} else if(Measurer.active) {
+					clx = x;
+					cly = y;
+					if(Measurer.active) {
 						gestc.set_state(Gtk.EventSequenceState.CLAIMED);
 						double lat, lon;
 						Gis.map.viewport.widget_coords_to_location(Gis.base_layer, x, y, out lat, out lon);
