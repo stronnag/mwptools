@@ -317,6 +317,7 @@ namespace Mwp {
 
 			var evtcm = new Gtk.EventControllerMotion();
 			Gis.map.add_controller(evtcm);
+
 			evtcm.motion.connect((x,y) => {
 					Gis.map.viewport.widget_coords_to_location(Gis.base_layer, x, y,
 															   out Mwp.current_lat,
@@ -325,33 +326,32 @@ namespace Mwp {
 				});
 
 
-			double clx = 0, cly=0;
+			double _sx = 0;
+			double _sy = 0;
+			var gestd = new Gtk.GestureDrag();
+			Gis.map.add_controller(gestd);
+			gestd.drag_begin.connect((x,y) => {
+					_sx = x;
+					_sy = y;
+				});
 
-			var gestc = new Gtk.GestureClick(); // Gtk.GestureLongPress();
-			gestc.released.connect((n, x, y) => {
-					if(Math.fabs(x - clx) < 5 && Math.fabs(y-cly) < 5) {
-						if(wpeditbutton.active) {
-							gestc.set_state(Gtk.EventSequenceState.CLAIMED);
-							double lat, lon;
-							Gis.map.viewport.widget_coords_to_location(Gis.base_layer, x,y,out lat, out lon);
+			gestd.drag_end.connect((x,y) => {
+					if(Math.fabs(x) < 2 && Math.fabs(y) < 2) {
+						double lat, lon;
+						if (wpeditbutton.active) {
+							Gis.map.viewport.widget_coords_to_location(Gis.base_layer, _sx, _sy, out lat, out lon);
 							MissionManager.insert_new(lat, lon);
+
+						} else if(Measurer.active) {
+							Gis.map.viewport.widget_coords_to_location(Gis.base_layer, _sx, _sy, out lat, out lon);
+							dmeasure.add_point(lat, lon);
 						}
 					}
 				});
-			gestc.pressed.connect((n, x, y) => {
-					clx = x;
-					cly = y;
-					if(Measurer.active) {
-						gestc.set_state(Gtk.EventSequenceState.CLAIMED);
-						double lat, lon;
-						Gis.map.viewport.widget_coords_to_location(Gis.base_layer, x, y, out lat, out lon);
-						dmeasure.add_point(lat, lon);
-					}
-				});
+
 			Battery.init();
 			hwstatus[0] = 1; // Assume OK
 			Msp.init();
-			Gis.map.add_controller(gestc);
 
 			int fw,fh;
 			check_pango_size(this, "Monospace", "_00:00:00.0N 000.00.00.0W_", out fw, out fh);
