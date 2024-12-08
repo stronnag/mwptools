@@ -234,6 +234,9 @@ namespace Utils {
 	public void rmrf(string dname) {
 		try {
 			var dir = File.new_for_path(dname);
+			if(!dir.query_exists()) {
+				return;
+			}
 			FileEnumerator enumerator = dir.enumerate_children ("standard::*", FileQueryInfoFlags.NOFOLLOW_SYMLINKS, null);
 			FileInfo info = null;
 			while (((info = enumerator.next_file (null)) != null)) {

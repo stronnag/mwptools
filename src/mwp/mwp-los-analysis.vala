@@ -10,7 +10,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
  *
  * (c) Jonathan Hudson <jh+mwptools@daria.co.uk>
  */
@@ -145,6 +145,7 @@ public class LOSSlider : Adw.Window {
 	private int incr;
 	private ProcessLauncher los;
 	public signal void new_margin(int m);
+	internal string[] tempdirs;
 
 	public void set_log(bool _mlog) {
 		mlog = _mlog;
@@ -235,6 +236,7 @@ public class LOSSlider : Adw.Window {
 	}
 
 	public LOSSlider (int lmargin) {
+		tempdirs = {};
 		_can_auto = true;
 		_margin = lmargin;
 		this.title = "LOS Analysis";
@@ -360,6 +362,7 @@ public class LOSSlider : Adw.Window {
 				LOSPoint.clear_all();
 				Utils.terminate_plots();
 				set_marker_state(true);
+				TAClean.clean_tmps(tempdirs);
 				return false;
 			});
 		this.set_content(box);
@@ -455,6 +458,9 @@ public class LOSSlider : Adw.Window {
 		var res = los.run_argv(spawn_args, ProcessLaunch.STDOUT|ProcessLaunch.STDIN);
 		if (res) {
 			var chan = los.get_stdout_iochan();
+			var pid = los.get_pid();
+			var gdir = TAClean.get_tmp(pid);
+			tempdirs += gdir;
 			los.complete.connect(() => {
 					try{chan.shutdown(false);} catch {}
 				});
