@@ -16,6 +16,9 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+
+#define GENERR "Operation failed: the log may have more detail"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -204,10 +207,19 @@ int cf_pipe(int *fds) {
 }
 
 char *get_error_text(int errnum, char *buf, size_t buflen) {
-  *buf = 0;
-  strerror_r(errnum, buf, buflen);
+  if(errnum != 0) {
+    *buf = 0;
+    strerror_r(errnum, buf, buflen);
+  } else {
+    strcpy(GENERR, buf);
+  }
   return buf;
 }
+
+int get_error_number() {
+  return errno;
+}
+
 
 #else
 #include <windows.h>
@@ -333,8 +345,11 @@ ssize_t write_serial(int fd, uint8_t*buffer, size_t buflen) {
 
 int cf_pipe(int *fds) { _pipe(fds, 1024, _O_BINARY); return 0; }
 
-char *get_error_text(int dummy, char *pBuf, size_t bufSize) {
-  DWORD lerr = GetLastError();
+int get_error_number() {
+  return (int)GetLastError();
+}
+
+char *get_error_text(int lerr, char *pBuf, size_t bufSize) {
   if (lerr != ERROR_SUCCESS) {
     DWORD retSize;
     LPTSTR pTemp = NULL;
@@ -351,12 +366,12 @@ char *get_error_text(int dummy, char *pBuf, size_t bufSize) {
       char *s = pTemp + retSize -1;
       while (s > pTemp && isspace((int)*s))
 	*s-- = 0;
-      sprintf(pBuf, "%s (0x%lx)", pTemp, GetLastError());
+      sprintf(pBuf, "%s (0x%x)", pTemp, lerr);
       LocalFree((HLOCAL)pTemp);
     }
-    return (pBuf);
   } else {
-    return "windows ... anything could have gone wrong. We have no idea";
+    strcpy(GENERR, pBuf);
   }
+  return (pBuf);
 }
 #endif

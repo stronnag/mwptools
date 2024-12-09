@@ -11,3 +11,4 @@ extern void flush_serial(int fd);
 extern char *get_error_text(int dummy, char *pBuf, size_t bufSize);
 extern int set_fd_speed(int fd, int rate);
 extern int cf_pipe(int *fds);
+extern int get_error_number();

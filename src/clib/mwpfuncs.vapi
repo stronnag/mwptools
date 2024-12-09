@@ -95,4 +95,6 @@ namespace MwpSerial {
     void close(int fd);
 	[CCode (cname="get_error_text")]
     unowned string error_text(int err, char *buf, size_t len);
+	[CCode (cname="get_error_number")]
+	int get_error_number();
 }
