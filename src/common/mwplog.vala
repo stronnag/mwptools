@@ -64,16 +64,14 @@ public class MWPLog : GLib.Object {
             if(logdir == null)
                 logdir = "./";
 
-			/*
 #if !UNIX
 			logdir = Path.build_filename(logdir,"mwp");
 #endif
-
 			try {
 				File dir = File.new_for_path(logdir);
 				dir.make_directory_with_parents ();
 			} catch {}
-			*/
+
 			var dt = new DateTime.from_unix_local(currtime);
             var fn = Path.build_filename(logdir, "mwp_stderr_%s.txt".printf(dt.format("%F")));
 
