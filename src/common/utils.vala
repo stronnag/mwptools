@@ -17,6 +17,27 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+
+namespace UserDirs {
+	public string? get_default() {
+		string? logdir=null;
+		if ((logdir = Environment.get_variable ("MWP_LOG_DIR")) == null) {
+			logdir = Environment.get_user_special_dir(UserDirectory.DOCUMENTS);
+			if(logdir == null)
+				logdir = "./";
+#if !UNIX
+			logdir = Path.build_filename(logdir,"mwp");
+#endif
+		}
+		try {
+			File dir = File.new_for_path(logdir);
+			dir.make_directory_with_parents ();
+		} catch {}
+		return logdir;
+	}
+}
+
+
 public class MWPUtils : Object {
 	private static string? appname=null;
 

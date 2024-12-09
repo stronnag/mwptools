@@ -56,21 +56,8 @@ public class MWPLog : GLib.Object {
 			if (Posix.fstat(stderr.fileno(), out st) == 0) {
 				echo = ((st.st_mode & (Posix.S_IFCHR|Posix.S_IFIFO)) != 0);
 			}
-			string logdir;
-            if ((logdir = Environment.get_variable ("MWP_LOG_DIR")) == null) {
-                logdir = Environment.get_user_special_dir(UserDirectory.DOCUMENTS);
-			}
 
-            if(logdir == null)
-                logdir = "./";
-
-#if !UNIX
-			logdir = Path.build_filename(logdir,"mwp");
-#endif
-			try {
-				File dir = File.new_for_path(logdir);
-				dir.make_directory_with_parents ();
-			} catch {}
+			string logdir = UserDirs.get_default();
 
 			var dt = new DateTime.from_unix_local(currtime);
             var fn = Path.build_filename(logdir, "mwp_stderr_%s.txt".printf(dt.format("%F")));

@@ -233,16 +233,16 @@ public class MWPSettings : GLib.Object {
 			p_distance = 0;
 		}
 		if(missionpath == null || missionpath == "") {
-			missionpath = Environment.get_home_dir();
+			missionpath = UserDirs.get_default();
 		}
 		if(kmlpath == null || kmlpath == "") {
-			kmlpath = Environment.get_home_dir();
+			kmlpath = UserDirs.get_default();
 		}
 		if(logpath == null || logpath == "") {
-			logpath = Environment.get_home_dir();
+			logpath = UserDirs.get_default();
 		}
 		if(logsavepath == null || logsavepath == "") {
-			logsavepath = Environment.get_home_dir();
+			logsavepath = UserDirs.get_default();
 		}
 	}
 }
