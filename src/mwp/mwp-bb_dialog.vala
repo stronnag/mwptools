@@ -15,6 +15,11 @@
  * (c) Jonathan Hudson <jh+mwptools@daria.co.uk>
  */
 
+namespace BBLError {
+	bool warn;
+	string []lines;
+}
+
 namespace BBL {
 	BBL.Window bbl;
 	MapUtils.BoundingBox bbox;
@@ -351,6 +356,9 @@ namespace BBL {
 		}
 
 		private void find_valid() {
+			BBLError.warn = false;
+			BBLError.lines = {};
+
 			is_valid = false;
 			is_broken = false;
 			valid = {};
@@ -358,7 +366,7 @@ namespace BBL {
 			var subp = new ProcessLauncher();
 			var res = subp.run_argv({Mwp.conf.blackbox_decode, "--stdout", bblname.get_path()}, ProcessLaunch.STDERR);
 			string line = null;
-            string [] lines = {}; // for the error path
+			//            string [] lines = {}; // for the error path
             size_t len = 0;
 			if(res) {
 				var errc = subp.get_stderr_iochan();
@@ -372,12 +380,11 @@ namespace BBL {
 							if(line == null || len == 0)
 								return false;
 							int idx=0, offset, size=0;
-							lines += line;
 							if(line.scanf(" %d %d %d", &idx, &offset, &size) == 3) {
 								if(size > BB_MINSIZE) {
 									is_valid = true;
 									valid += idx;
-								}  // else { valid += 0}; // really!!!
+								}
 								maxidx = idx;
 							} else if(line.has_prefix("Log 1 of")) {
 								valid += 1;
@@ -395,13 +402,16 @@ namespace BBL {
 				subp.complete.connect(() => {
 						try {errc.shutdown(false);} catch {};
 						if(!is_valid) {
+							/*
 							StringBuilder sb = new StringBuilder("No valid log detected.\n");
 							if(lines.length > 0) {
 								sb.append("blackbox_decode says: ");
-								foreach(var l in lines)
+								foreach(var l in lines) {
 									sb.append(l.strip());
+								}
 							}
-							set_normal(sb.str);
+							*/
+							set_normal("No valid log detected.\n");
 						} else {
 							var tsslen = find_start_times();
 							spawn_decoder(0, tsslen);
@@ -453,6 +463,33 @@ namespace BBL {
 				;
 			if(j == maxidx) {
 				set_normal("File contains %d %s".printf(maxidx, (maxidx == 1) ? "entry" : "entries"));
+				if (BBLError.warn) {
+					string title = "<b>Damaged Log</b>";
+					StringBuilder sb = new StringBuilder();
+					foreach(var l in BBLError.lines) {
+						sb.append(l.chug());
+					}
+					sb.append("\nThe log may not replay correctly, if at all");
+					var sw = new Gtk.ScrolledWindow();
+					var l = new Gtk.TextView();
+					l.create_buffer();
+					l.buffer.set_text(sb.str);
+					l.editable = false;
+					int fw,fh;
+					Utils.check_pango_size(l, "Sans", sb.str, out fw, out fh);
+					fw += 4;
+					fh += 4;
+					if(fw > 600)
+						fw = 600;
+					if(fh > 480)
+						fh = 480;
+					l.width_request = fw;
+					l.height_request = fh;
+					sw.set_child(l);
+					sw.propagate_natural_height = true;
+					sw.propagate_natural_width = true;
+					Utils.warning_box(title, 0, this, sw);
+				}
 				return;
 			}
 			nidx = j+1;
@@ -487,6 +524,15 @@ namespace BBL {
 									var b = new BBLEntry(nidx, dura, tsval);
 									lstore.append(b);
 								}
+							} else if(line.has_prefix("WARNING:")) {
+								if (BBLError.warn) {
+									BBLError.lines += "\u200b\n"; //zero-width space to force NL
+								}
+								BBLError.lines += "WARNING: Log segment #%d is corrupt\n".printf(nidx);
+								BBLError.warn = true;
+							} else if (line.contains("Warning:") || line.contains("Error:")) {
+								BBLError.lines += line;
+								BBLError.warn = true;
 							}
 							return true;
 						} catch (Error e) {

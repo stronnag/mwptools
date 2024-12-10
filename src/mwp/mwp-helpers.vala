@@ -342,6 +342,15 @@ namespace Utils {
                 });
 		}
 	}
+
+	void check_pango_size(Gtk.Widget w, string fname, string str, out int fw, out int fh) {
+		var font = new Pango.FontDescription().from_string(fname);
+		var context = w.get_pango_context();
+		var layout = new Pango.Layout(context);
+		layout.set_font_description(font);
+		layout.set_text(str,  -1);
+		layout.get_pixel_size(out fw, out fh);
+	}
 }
 
 namespace  UpdateFile {
