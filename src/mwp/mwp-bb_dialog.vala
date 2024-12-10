@@ -577,7 +577,6 @@ namespace BBL {
 					stdc.set_encoding(null);
 					for(;;) {
 						eos = stdc.read_line (out str, out length, null);
-						MWPLog.message("DBG: fbp %s\n", str);
 						if (eos == IOStatus.EOF)
 							break;
 						if(str == null || length == 0)
@@ -750,6 +749,7 @@ namespace BBL {
 						bool hdr = false;
 
 						try {
+							chan.set_encoding(null);
 							var done = false;
 							for (;!done;) {
 								var eos = chan.read_line (out str, out length, null);
