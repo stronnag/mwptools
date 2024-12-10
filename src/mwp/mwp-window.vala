@@ -814,7 +814,6 @@ namespace Mwp {
 			MwpMenu.set_menu_state(Mwp.window, "followme", false);
 #if !UNIX
         MwpMenu.set_menu_state(Mwp.window, "terminal", false);
-        MwpMenu.set_menu_state(Mwp.window, "vstream", false);
 #endif
 		}
 	}
