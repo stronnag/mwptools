@@ -574,8 +574,10 @@ namespace BBL {
 					});
 
 				try {
+					stdc.set_encoding(null);
 					for(;;) {
 						eos = stdc.read_line (out str, out length, null);
+						MWPLog.message("DBG: fbp %s\n", str);
 						if (eos == IOStatus.EOF)
 							break;
 						if(str == null || length == 0)
@@ -619,7 +621,7 @@ namespace BBL {
 						n++;
 					}
 				} catch  (Error e) {
-					MWPLog.message("%s\n", e.message);
+					MWPLog.message("BBL fbp (%d): %s\n", n, e.message);
 				}
 			}
 
