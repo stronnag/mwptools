@@ -22,10 +22,14 @@ namespace UserDirs {
 	public string? get_default() {
 		string? logdir=null;
 		if ((logdir = Environment.get_variable ("MWP_LOG_DIR")) == null) {
+#if UNIX
+			logdir = Environment.get_home_dir();
+			if(logdir == null)
+				logdir = "./";
+#else
 			logdir = Environment.get_user_special_dir(UserDirectory.DOCUMENTS);
 			if(logdir == null)
 				logdir = "./";
-#if !UNIX
 			logdir = Path.build_filename(logdir,"mwp");
 #endif
 		}
