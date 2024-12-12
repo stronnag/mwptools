@@ -119,23 +119,29 @@ public class V4L2_dialog : Adw.Window {
 	public signal void response(int id);
 
 	public V4L2_dialog(Gtk.DropDown viddev_c) {
+		rb0 = null;
 		transient_for = Mwp.window;
 		var box = new Gtk.Box(Gtk.Orientation.VERTICAL,2);
 		var header_bar = new Adw.HeaderBar();
 		box.append(header_bar);
 		set_icon_name("mwp_icon");
 		title = "Select Video Source";
-
 		rb0  = new Gtk.CheckButton.with_label ("Webcams");
 		rb1 = new Gtk.CheckButton.with_label ("URI");
-		rb0.active = true;
+		rb1.active = true;
 		rb0.set_group(rb1);
+#if !UNIX
+		rb0.sensitive = false;
+		viddev_c.sensitive = false;
+#endif
 		e = new Gtk.Entry();
 		e.placeholder_text = "http://daria.co.uk/stream.mp4";
 		e.input_purpose = Gtk.InputPurpose.URL;
 		var grid = new Gtk.Grid();
-		grid.attach(rb0, 0, 0);
-		grid.attach(viddev_c, 1, 0);
+		if(rb0 != null) {
+			grid.attach(rb0, 0, 0);
+			grid.attach(viddev_c, 1, 0);
+		}
 		grid.attach(rb1, 0, 1);
 		grid.attach(e, 1, 1);
 
@@ -166,7 +172,7 @@ public class V4L2_dialog : Adw.Window {
 
 	public int result(out string uri) {
 		uri=null;
-		if (rb0.active) {
+		if (rb0 != null && rb0.active) {
             return 0;
         } else {
             uri = e.text;
