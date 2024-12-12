@@ -974,6 +974,27 @@
   
   
     <li class="md-nav__item">
+      <a href="../mwp-text-to-speech/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Mwp text to speech
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../Fly-By-Home-waypoints-%28inav-4-new-feature%29/" class="md-nav__link">
         
   
@@ -1231,27 +1252,6 @@
   
   <span class="md-ellipsis">
     Ardupilot log replay
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../Flite-text-to-speech/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Flite text to speech
   </span>
   
 
@@ -1634,7 +1634,8 @@
 <p>Command line options provide a 'per instantiation' means to control <a href="https://github.com/stronnag/mwptools">mwp</a> behaviour; the current set of command line options may be viewed by running <a href="https://github.com/stronnag/mwptools">mwp</a> from the command line with the single option <code>--help</code>:</p>
 <pre><code>$ mwp --help
 </code></pre>
-<p>Where it is required to give permanence to command line options, they can be added to the configuration file <code>$HOME/.config/mwp/cmdopts</code>, which is described in more detail in the following section.</p>
+<p>Where it is required to give permanence to command line options, they can be added to the configuration file <code>$HOME/.config/mwp/cmdopts</code> (on Windows <code>$LOCALAPPDATA/mwp/cmdopts</code>), which is described in more detail in the following section.</p>
+<p>Note that the documentation will habitually refer to the configuration base directory as <code>~/.config</code> as that is where it is found on the majority of OS; if you're using Windows, please adjust as necessary.</p>
 <p>You can also use a system-wide "cmdopts" file, <code>/etc/default/mwp</code>. If this flie exists, it will read before the user's file.</p>
 <ul>
 <li>For singular options, any option in the user file will override the system file</li>

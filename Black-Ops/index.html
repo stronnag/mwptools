@@ -709,6 +709,27 @@
   
   
     <li class="md-nav__item">
+      <a href="../mwp-text-to-speech/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Mwp text to speech
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../Fly-By-Home-waypoints-%28inav-4-new-feature%29/" class="md-nav__link">
         
   
@@ -1049,27 +1070,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../Flite-text-to-speech/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Flite text to speech
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../mwp-Dbus-API/" class="md-nav__link">
         
   
@@ -1248,12 +1248,12 @@ sudo cp broxy /usr/bin
 <p>First of all, ensure that the <code>map-sources</code> setting is enabled:</p>
 <pre><code>$ gsettings get org.stronnag.mwp map-sources
 'sources.json'
-# here this set to a file sources.json (in ~/.config/mwp/)
+# here this set to a file sources.json (in the configuraion directory ~/.config/mwp/ / $LOCALAPPDATA/mwp)
 </code></pre>
 <p>if this is not set, then set it:</p>
 <pre><code>$ gsettings set org.stronnag.mwp map-sources 'sources.json'
 </code></pre>
-<p>Now we need to edit the file <code>~/.config/mwp/sources.json</code>, there is a sample file in <code>mwptools/samples/sources.json</code>. you file needs a stanza like:</p>
+<p>Now we need to edit the configuration file <code>sources.json</code>, there is a sample file in <code>mwptools/samples/sources.json</code>. you file needs a stanza like:</p>
 <pre><code>{
  "id": "Black",
  "name": "Black Tiles",
@@ -1266,7 +1266,7 @@ sudo cp broxy /usr/bin
  "spawn" : "bproxy",
 }
 </code></pre>
-<p>So a minimal <code>~/.config/mwp/sources.json</code> looks like:</p>
+<p>So a minimal <code>sources.json</code> looks like:</p>
 <pre><code>{
    "sources" : [
       {
@@ -1295,7 +1295,7 @@ sudo cp broxy /usr/bin
 <pre><code># put this in e.g. ~/.bashrc to make it permanent
 export MWP_BLACK_TILE=~/.config/mwp/mytile.png
 </code></pre>
-<p>The environment variable may instead be added to <a href="../mwp-Configuration/#cmdopts"><code>~/.config/mwp/cmdopts</code></a>.</p>
+<p>The environment variable may instead be added to <a href="../mwp-Configuration/#cmdopts"><code>cmdopts</code></a>.</p>
 <p>For example:</p>
 <p><img alt="Fly me to the Mars" src="../images/user-tile.png" width="50%" /></p>
 
