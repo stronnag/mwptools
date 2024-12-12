@@ -114,12 +114,12 @@ namespace Mwp {
 	[Flags]
     private enum Player {
         NONE = 0,
-        MWP,
-        BBOX,
-        OTX,
-        FL2LTM,
-        RAW,
-        FAST_MASK = 128,
+        MWP = 1,
+        BBOX = 2,
+        OTX = 4,
+        FL2LTM = 8,
+        RAW = 0x10,
+        FAST_MASK = 0x80,
         MWP_FAST = MWP |FAST_MASK,
         BBOX_FAST = BBOX|FAST_MASK,
         OTX_FAST = OTX|FAST_MASK,

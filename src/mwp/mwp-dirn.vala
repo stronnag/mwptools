@@ -16,6 +16,12 @@
  */
 
 namespace Direction {
+	[Flags]
+	public enum Update {
+		COG,
+		YAW
+	}
+
 	[GtkTemplate (ui = "/org/stronnag/mwp/dirn.ui")]
 	public class View : Gtk.Box {
 		[GtkChild]
@@ -24,14 +30,17 @@ namespace Direction {
 		private unowned Gtk.Label cog;
 
 		public View() {
-			Mwp.msp.td.gps.notify["cog"].connect((s,p) => {
-					set_cog(((GPSData)s).cog);
-            });
-			Mwp.msp.td.atti.notify["yaw"].connect((s,p) => {
-					set_heading(((AttiData)s).yaw);
-            });
-
 		}
+
+		public void update(Update what) {
+			if(Update.COG in what) {
+				set_cog(Mwp.msp.td.gps.cog);
+            }
+			if (Update.YAW in what) {
+				set_heading(Mwp.msp.td.atti.yaw);
+		    }
+		}
+
 		private void set_cog (double _cog) {
 			cog.label = "<span size='200%%' font='monospace'>%03.0f°</span>".printf(_cog);
 		}

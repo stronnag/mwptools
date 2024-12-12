@@ -161,6 +161,7 @@ namespace Mwp {
 		if (!res) {
 			return;
 		}
+		MwpMisc.start_cpu_stats();
 		LogPlay.child_pid = subp.get_pid();
 
 		if((replayer & (Player.RAW|Player.MWP)) == 0) {
@@ -206,6 +207,10 @@ namespace Mwp {
 		MWPLog.message("%s # pid=%u\n", sargs, LogPlay.child_pid);
 
 		subp.complete.connect(() => {
+				double cpu0=0, cpu1=0;
+				if (MwpMisc.end_cpu_stats(&cpu0, &cpu1) == 0) {
+					MWPLog.message("FYI: CPU: on core: %.2f%%, system: %.2f%%\n", cpu0, cpu1);
+				}
 				try {
 					cstdout.shutdown(false);
 					error.shutdown(false);

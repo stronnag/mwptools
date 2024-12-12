@@ -16,6 +16,18 @@
  */
 
 namespace FlightBox {
+	[Flags]
+	public enum Update {
+		LAT,
+		LON,
+		ALT,
+		YAW,
+		SPEED,
+		RANGE,
+		BEARING,
+		GPS
+	}
+
 	[GtkTemplate (ui = "/org/stronnag/mwp/fb.ui")]
 	public class View : Gtk.Box {
 		[GtkChild]
@@ -35,52 +47,39 @@ namespace FlightBox {
 		[GtkChild]
 		private unowned Gtk.Label sats;
 
-		public View() {
-			// GPSdata
-			Mwp.msp.td.gps.notify["lat"].connect((s,p) => {
-					set_latitude(((GPSData)s).lat);
-            });
-			Mwp.msp.td.gps.notify["lon"].connect((s,p) => {
-					set_longitude(((GPSData)s).lon);
-            });
-			Mwp.msp.td.alt.notify["alt"].connect((s,p) => {
-					set_altitude(((AltData)s).alt);
-            });
-			Mwp.msp.td.gps.notify["gspeed"].connect((s,p) => {
-					set_speed(((GPSData)s).gspeed);
-            });
+		public View() {}
 
-			Mwp.msp.td.gps.notify["hdop"].connect((s,p) => {
-					set_gps(((GPSData)s).hdop,
-							((GPSData)s).nsats,
-							((GPSData)s).fix);
-				});
-			Mwp.msp.td.gps.notify["nsats"].connect((s,p) => {
-					set_gps(((GPSData)s).hdop,
-							((GPSData)s).nsats,
-							((GPSData)s).fix);
-				});
-			Mwp.msp.td.gps.notify["fix"].connect((s,p) => {
-					set_gps(((GPSData)s).hdop,
-							((GPSData)s).nsats,
-							((GPSData)s).fix);
-				});
+		public void update(Update what) {
+			if(Update.LAT in what) {
+				set_latitude(Mwp.msp.td.gps.lat);
+			}
+			if(Update.LON in what) {
+				set_longitude(Mwp.msp.td.gps.lon);
+			}
+			if(Update.ALT in what) {
+				set_altitude(Mwp.msp.td.alt.alt);
+			}
 
-			// Compdata
-			Mwp.msp.td.comp.notify["range"].connect((s,p) => {
-					set_range(((CompData)s).range);
-            });
+			if(Update.SPEED in what) {
+				set_speed(Mwp.msp.td.gps.gspeed);
+			}
 
-			Mwp.msp.td.comp.notify["bearing"].connect((s,p) => {
-					set_bearing(((CompData)s).bearing);
-            });
-			// Atti
-			Mwp.msp.td.atti.notify["yaw"].connect((s,p) => {
-					set_heading(((AttiData)s).yaw);
-            });
+			if(Update.GPS in what) {
+				set_gps(Mwp.msp.td.gps.hdop, Mwp.msp.td.gps.nsats, Mwp.msp.td.gps.fix);
+			}
+
+			if(Update.RANGE in what) {
+				set_range(Mwp.msp.td.comp.range);
+			}
+			if(Update.BEARING in what) {
+				set_bearing(Mwp.msp.td.comp.bearing);
+			}
+
+			if(Update.YAW in what) {
+				set_heading(Mwp.msp.td.atti.yaw);
+            }
 		}
 
-		// GPSData
 		private void set_latitude (double lat) {
 			var s = PosFormat.lat(lat, Mwp.conf.dms);
 			latitude.label = "<span size=\"150%%\" font=\"monospace\">%s</span>".printf(s);

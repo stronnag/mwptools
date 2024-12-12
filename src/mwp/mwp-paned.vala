@@ -16,6 +16,19 @@
  */
 
 namespace Panel {
+	[Flags]
+	public enum View {
+		VISIBLE,
+		DIRN,
+		FVIEW,
+		AHI,
+		RSSI,
+		VOLTS,
+		VARIO
+	}
+
+	View status;
+
 	Direction.View dirnv;
 	FlightBox.View fboxv;
 	AHI.View ahiv;
@@ -23,7 +36,7 @@ namespace Panel {
 	Voltage.View powerv;
 	Vario.View vario;
 
-	class Box: Gtk.Frame {
+	public class Box: Gtk.Frame {
 		private Gtk.Paned v;    // master paned
 		private Gtk.Paned v0;    // Vertical split paned
 		private Gtk.Paned v1;    // Vertical split paned
@@ -204,33 +217,76 @@ namespace Panel {
 			return ok;
 		}
 
+		public void update(Panel.View s, int stuff=0) {
+			switch (s) {
+			case Panel.View.AHI:
+				if (ahiv != null) {
+					ahiv.update(stuff);
+				}
+				break;
+			case Panel.View.RSSI:
+				if (rssiv != null) {
+					rssiv.update(stuff);
+				}
+				break;
+			case Panel.View.DIRN:
+				if (dirnv != null) {
+					dirnv.update(stuff);
+				}
+				break;
+			case Panel.View.FVIEW:
+				if(fboxv != null) {
+					fboxv.update(stuff);
+				}
+				break;
+			case Panel.View.VOLTS:
+				if (powerv != null) {
+					powerv.update(stuff);
+				}
+				break;
+			case Panel.View.VARIO:
+				if(vario != null) {
+					vario.update(stuff);
+				}
+				break;
+			default:
+				break;
+			}
+		}
+
 		private void load_widget(string name, int row, int col, int sz=-1) {
 			Gtk.Widget? w = null;
 			switch (name) {
 			case "ahi":
 				ahiv = new AHI.View();
 				w = ahiv;
+				Panel.status |= Panel.View.AHI;
 				break;
 			case "rssi":
 				rssiv = new RSSI.View();
 				w = rssiv;
+				Panel.status |= Panel.View.RSSI;
 				break;
 			case "dirn":
 				dirnv = new Direction.View();
 				w = dirnv;
+				Panel.status |= Panel.View.DIRN;
 				break;
 			case "flight":
 				fboxv = new FlightBox.View();
 				w = fboxv;
+				Panel.status |= Panel.View.FVIEW;
 				break;
 			case "volts":
 				powerv = new Voltage.View();
 				w = powerv;
+				Panel.status |= Panel.View.VOLTS;
 				break;
 			case "vario":
 				vario = new Vario.View();
 				vario.update(0);
 				w = vario;
+				Panel.status |= Panel.View.VARIO;
 				break;
 			}
 			if(w != null) {
@@ -336,6 +392,7 @@ namespace Panel {
 		}
 
 		public void init() {
+			Panel.status = Panel.View.VISIBLE;
 			read_panel_config();
 			read_paned_config();
 			validate();

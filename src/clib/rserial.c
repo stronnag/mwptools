@@ -42,6 +42,10 @@
 #include <errno.h>
 #include <glib-unix.h>
 
+#include <sys/time.h>
+#include <time.h>
+
+
 #ifdef __linux__
 #include <asm/termbits.h>
 #ifndef TCGETS2
@@ -54,6 +58,40 @@
 #ifdef __APPLE__
 #include <IOKit/serial/ioss.h>
 #endif
+
+static inline void timespec_diff(struct timespec *a, struct timespec *b,
+    struct timespec *result) {
+    result->tv_sec  = a->tv_sec  - b->tv_sec;
+    result->tv_nsec = a->tv_nsec - b->tv_nsec;
+    if (result->tv_nsec < 0) {
+        --result->tv_sec;
+        result->tv_nsec += 1000000000L;
+    }
+}
+
+static clock_t clk0;
+static struct timespec tp0;
+
+void start_cpu_stats() {
+  clock_gettime(CLOCK_MONOTONIC, &tp0);
+  clk0 = clock();
+}
+
+int end_cpu_stats(double *cpu0, double* cpu1) {
+  clock_t clk1 = clock();
+  struct timespec tp1;
+  clock_gettime(CLOCK_MONOTONIC, &tp1);
+  long ncpu = sysconf(_SC_NPROCESSORS_ONLN);
+  struct timespec td;
+  timespec_diff(&tp1, &tp0, &td);
+  double utd;
+  double ctd;
+  utd = (double)(clk1-clk0)/CLOCKS_PER_SEC;
+  ctd = (td.tv_sec + (double)td.tv_nsec/1000000000);
+  *cpu0 =  100.0*utd/ctd;
+  *cpu1 = *cpu0/ncpu;
+  return 0;
+}
 
 void flush_serial(int fd) {
 #ifdef __linux__
@@ -373,5 +411,14 @@ char *get_error_text(int lerr, char *pBuf, size_t bufSize) {
     strcpy(GENERR, pBuf);
   }
   return (pBuf);
+}
+
+void start_cpu_stats() {
+}
+
+int end_cpu_stats(double *cpu0, double* cpu1) {
+  *cpu0=-1.0;
+  *cpu1=-1.0;
+  return -1;
 }
 #endif

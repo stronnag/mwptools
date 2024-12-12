@@ -24,7 +24,7 @@ namespace Raw {
 	public void replay_raw(string? s) {
 		raw = new Raw.Window();
 		raw.complete.connect(() => {
-				Mwp.run_replay(rawfile.get_path(), false, Mwp.Player.RAW, Raw.delay);
+				Mwp.run_replay(rawfile.get_path(), true, Mwp.Player.RAW, Raw.delay);
 			});
 		raw.run(s);
 	}
