@@ -26,6 +26,9 @@ namespace Flysky {
 	}
 
 	private void processFlysky_telem(MWSerial ser, Flysky.Telem t) {
+		int fvup = 0;
+		int ttup = 0;
+
 		if ((t.mask & (1 << Flysky.Func.VBAT)) != 0) {
 			Battery.curr.ampsok = true;
 			Battery.curr.centiA =  (uint16)t.curr;
@@ -66,22 +69,55 @@ namespace Flysky {
 			var cse = Mwp.calc_cse_dist_delta(dlat, dlon, out ddm);
 			var spd = (double)(rg.gps_speed/100.0);
 
-			ser.td.gps.lat = dlat;
-			ser.td.gps.lon = dlon;
-			ser.td.gps.cog = t.heading;
-			ser.td.gps.alt = t.alt;
-			ser.td.gps.gspeed = t.speed;
-			ser.td.gps.nsats = (uint8)nsat;
-			ser.td.gps.fix = (uint8)fix;
+			if(Math.fabs(ser.td.gps.lat - dlat) > 1e-6) {
+				fvup |= FlightBox.Update.LAT;
+				ttup |= TelemTracker.Fields.LAT;
+				ser.td.gps.lat = dlat;
+			}
 
-			ser.td.atti.yaw = (int)cse;
+			if (Math.fabs(ser.td.gps.lon - dlon) > 1e-6) {
+				fvup |= FlightBox.Update.LON;
+				ttup |= TelemTracker.Fields.LON;
+				ser.td.gps.lon = dlon;
+			}
+
+			if(Math.fabs(ser.td.alt.alt - t.alt) > 1.0) {
+				ser.td.gps.alt = t.alt;
+				ser.td.alt.alt = t.alt;
+				fvup |= FlightBox.Update.ALT;
+				ttup |= TelemTracker.Fields.ALT;
+			}
+
+			if(Math.fabs(ser.td.gps.gspeed - t.speed) > 0.1) {
+				ser.td.gps.gspeed = t.speed;
+				fvup |= FlightBox.Update.SPEED;
+				ttup |= TelemTracker.Fields.SPD;
+			}
+
+			if(ser.td.gps.nsats != (uint8)nsat || ser.td.gps.fix != (uint8)fix) {
+				ser.td.gps.nsats = (uint8)nsat;
+				ser.td.gps.fix = (uint8)fix;
+				fvup |= FlightBox.Update.GPS;
+				ttup |= TelemTracker.Fields.SAT;
+			}
+
+			if(ser.td.atti.yaw != (int)cse) {
+				ser.td.atti.yaw = (int)cse;
+				fvup |= FlightBox.Update.YAW;
+				Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.YAW);
+			}
+
+			if(ser.td.gps.cog != t.heading) {
+				ser.td.gps.cog = t.heading;
+				Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.COG);
+			}
 
 			if (fix > 0) {
 				if(Mwp.armed == 1) {
 					if(ser.is_main) {
 						Mwp.mhead = (int16)t.heading;
 						Mwp.nsats = (uint8)nsat;
-						Mwp.sat_coverage();
+						//Mwp.sat_coverage();
 						Mwp._nsats = (uint8)nsat;
 						Mwp.update_odo(spd, ddm);
 						if(Mwp.have_home == false && (nsat > 5) && (t.ilat != 0 && t.ilon != 0) ) {
@@ -108,8 +144,15 @@ namespace Flysky {
 		}
 
 		if((t.mask & (1 << Flysky.Func.HOMEDIRN|Flysky.Func.HOMEDIST)) != 0) {
-			ser.td.comp.range = t.homedist;
-			ser.td.comp.bearing = t.homedirn;
+			if(ser.is_main) {
+				if (ser.td.comp.range != t.homedist) {
+					ser.td.comp.range = t.homedist;
+					fvup |= FlightBox.Update.RANGE;
+				}
+				if(ser.td.comp.bearing != t.homedirn) {
+					ser.td.comp.bearing = t.homedirn;
+				}
+			}
 		}
 
 		if ((t.mask & (1 << Flysky.Func.STATUS)) != 0) {
@@ -226,6 +269,15 @@ namespace Flysky {
 				if(Mwp.want_special != 0 /* && have_home*/) {
 					Mwp.process_pos_states(Mwp.xlat,Mwp.xlon, 0, "Flysky");
 				}
+			}
+		}
+		if(ser.is_main) {
+			if(fvup != 0) {
+				Mwp.panelbox.update(Panel.View.FVIEW, fvup);
+			}
+		} else {
+			if (ttup != 0) {
+				TelemTracker.ttrk.update(ser, ttup);
 			}
 		}
 	}

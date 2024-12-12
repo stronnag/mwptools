@@ -28,13 +28,14 @@ namespace Mwp  {
 }
 
 namespace Msp {
-	public void init(TrackDataSet v=0xff) {
+	public void init() {
+		MWPLog.message(":DBG: MSP INIT\n");
 		Mwp.mqtt_available = false;
 		Mwp.msp = new MWSerial();
         Mwp.lastp = new Timer();
 		Mwp.lastp.start();
 		Mwp.msp.is_main = true;
-		Mwp.msp.td = new TrackData(v);
+		Mwp.msp.td = {};
 		Mwp.mq = new Queue<Mwp.MQI?>();
         Mwp.lastmsg = Mwp.MQI(); //{cmd = Msp.Cmds.INVALID};
 		Mwp.csdq = new Queue<string>();

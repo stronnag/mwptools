@@ -75,8 +75,12 @@ namespace CRSF {
 		uint8 *ptr = &buffer[3];
 		uint32 val32;
 		uint16 val16;
+
+
 		switch(id) {
 		case CRSF.GPS_ID:
+			int fvup = 0;
+			int ttup = 0;
 			ptr= SEDE.deserialise_u32(ptr, out val32);  // Latitude (deg * 1e7)
 			int32 lat = (int32)__builtin_bswap32(val32);
 			ptr= SEDE.deserialise_u32(ptr, out val32); // Longitude (deg * 1e7)
@@ -112,27 +116,45 @@ namespace CRSF {
 				Rebase.relocate(ref dlat, ref dlon);
 			}
 
-			//alt *= 100;
-			ser.td.gps.lat = dlat;
-			ser.td.gps.lon = dlon;
-			ser.td.gps.gspeed = gspeed;
-			ser.td.gps.cog = hdg;
-			ser.td.gps.alt = alt;
-			ser.td.alt.alt = alt;
-			ser.td.gps.fix = CRSF.teledata.fix;
-			ser.td.gps.nsats = nsat;
-
 			Mwp.calc_cse_dist_delta(dlat, dlon, out ddm);
 
-			MSP_ALTITUDE al = MSP_ALTITUDE();
-			al.estalt = alt;
-			double dv;
-			if (Mwp.calc_vario(al.estalt, out dv)) {
-				ser.td.alt.vario = dv;
+			if(Math.fabs(dlat - ser.td.gps.lat) > 1e-6) {
+				ser.td.gps.lat = dlat;
+				fvup |= FlightBox.Update.LAT;
+				ttup |= TelemTracker.Fields.LAT;
 			}
-			al.vario = (int16)dv;
+			if(Math.fabs(dlon - ser.td.gps.lon) > 1e-6) {
+				ser.td.gps.lon = dlon;
+				fvup |= FlightBox.Update.LON;
+				ttup |= TelemTracker.Fields.LON;
+			}
+
+			if(Math.fabs(ser.td.alt.alt - alt) > 1.0) {
+				ser.td.gps.alt = alt;
+				ser.td.alt.alt = alt;
+				fvup |= FlightBox.Update.ALT;
+				ttup |= TelemTracker.Fields.ALT;
+			}
+
+			if(Math.fabs(ser.td.gps.gspeed - gspeed) > 0.1) {
+				ser.td.gps.gspeed = gspeed;
+				fvup |= FlightBox.Update.SPEED;
+				ttup |= TelemTracker.Fields.SPD;
+			}
+
+			if(ser.td.gps.nsats != nsat) {
+				ser.td.gps.fix = CRSF.teledata.fix;
+				ser.td.gps.nsats = nsat;
+				fvup |= FlightBox.Update.GPS;
+				ttup |= TelemTracker.Fields.SAT;
+			}
+
 			if (CRSF.teledata.fix > 0) {
 				if(ser.is_main) {
+					if(ser.td.gps.cog != hdg) {
+						ser.td.gps.cog = hdg;
+						Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.COG);
+					}
 					Mwp.nsats = nsat;
 					Mwp.sat_coverage();
 					Mwp._nsats = nsat;
@@ -140,6 +162,11 @@ namespace CRSF {
 					Mwp.flash_gps();
 					if(Mwp.armed == 1) {
 						if(HomePoint.is_valid()) {
+							double dv;
+							if (Mwp.calc_vario(alt, out dv)) {
+								ser.td.alt.vario = dv;
+								Mwp.panelbox.update(Panel.View.VARIO, Vario.Update.VARIO);
+							}
 							if(nsat >= Mwp.msats) {
 								if(Mwp.pos_valid(dlat, dlon)) {
 									double range,brg;
@@ -150,8 +177,14 @@ namespace CRSF {
 										var cg = MSP_COMP_GPS();
 										cg.range = (uint16)Math.lround(range*1852);
 										cg.direction = (int16)Math.lround(brg);
-										ser.td.comp.range =  cg.range;
-										ser.td.comp.bearing =  cg.direction;
+										if(Math.fabs(ser.td.comp.range -  cg.range) > 1.0) {
+											ser.td.comp.range =  cg.range;
+											fvup |= FlightBox.Update.RANGE;
+										}
+										if(Math.fabs(ser.td.comp.bearing - cg.direction) > 1.0) {
+											ser.td.comp.bearing =  cg.direction;
+											fvup = FlightBox.Update.BEARING;
+										}
 										Mwp.update_odo(gspeed, ddm);
 									}
 								}
@@ -163,12 +196,20 @@ namespace CRSF {
 							Mwp.want_special |= Mwp.POSMODE.HOME;
 							MBus.update_home();
 						}
-
 					}
 					Mwp.update_pos_info();
 					if(Mwp.want_special != 0) {
 						Mwp.process_pos_states(dlat, dlon, ser.td.alt.alt, "CRSF");
 					}
+				}
+			}
+			if(ser.is_main) {
+				if(fvup != 0) {
+					Mwp.panelbox.update(Panel.View.FVIEW, fvup);
+				}
+			} else {
+				if (ttup != 0) {
+					TelemTracker.ttrk.update(ser, ttup);
 				}
 			}
 			break;
@@ -213,31 +254,41 @@ namespace CRSF {
 			ser.td.alt.alt = CRSF.teledata.alt;
 			break;
 		case CRSF.ATTI_ID:
+			ptr= SEDE.deserialise_u16(ptr, out val16);  // Pitch radians *10000
+			double pitch = 0;
+			pitch = ((int16)__builtin_bswap16(val16)) * CRSF.ATTITODEG;
+			ptr= SEDE.deserialise_u16(ptr, out val16);  // Roll radians *10000
+			double roll = 0;
+			roll = ((int16)__builtin_bswap16(val16)) * CRSF.ATTITODEG;
+			ptr= SEDE.deserialise_u16(ptr, out val16);  // radians *10000
+			double yaw = 0;
+			yaw = ((int16)__builtin_bswap16(val16)) * CRSF.ATTITODEG;
+			if (yaw < 0) {
+				yaw += 360;
+			}
+			bool fvup = (ser.td.atti.yaw != (int)yaw);
+			ser.td.atti.yaw = (int)yaw;
 			if(ser.is_main) {
-				ptr= SEDE.deserialise_u16(ptr, out val16);  // Pitch radians *10000
-				double pitch = 0;
-				pitch = ((int16)__builtin_bswap16(val16)) * CRSF.ATTITODEG;
-				ptr= SEDE.deserialise_u16(ptr, out val16);  // Roll radians *10000
-				double roll = 0;
-				roll = ((int16)__builtin_bswap16(val16)) * CRSF.ATTITODEG;
-				ptr= SEDE.deserialise_u16(ptr, out val16);  // Roll radians *10000
-				double yaw = 0;
-				yaw = ((int16)__builtin_bswap16(val16)) * CRSF.ATTITODEG;
-				//			yaw = ((yaw + 180) % 360);
-				//			stdout.printf("Pitch %.1f, Roll %.1f, Yaw %.1f\n", pitch, roll, yaw);
+				CRSF.teledata.yaw = Mwp.mhead = (int16)yaw ;
 				CRSF.teledata.pitch = (int16)pitch;
 				CRSF.teledata.roll = (int16)roll;
-				CRSF.teledata.yaw = Mwp.mhead = (int16)yaw ;
-				if (Mwp.mhead < 0) {
-					Mwp.mhead += 360;
-				}
 				LTM_AFRAME af = LTM_AFRAME();
 				af.pitch = CRSF.teledata.pitch;
 				af.roll = CRSF.teledata.roll;
-				af.heading = Mwp.mhead;
-				ser.td.atti.yaw = Mwp.mhead;
+				af.heading = (int16)yaw;
+				if(ser.td.atti.angy != CRSF.teledata.pitch || ser.td.atti.angx != CRSF.teledata.roll) {
+					Mwp.panelbox.update(Panel.View.AHI, AHI.Update.AHI);
+				}
 				ser.td.atti.angy = CRSF.teledata.pitch;
 				ser.td.atti.angx = CRSF.teledata.roll;
+				if(fvup) {
+					Mwp.panelbox.update(Panel.View.FVIEW, FlightBox.Update.YAW);
+					Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.YAW);
+				}
+			} else {
+				if(fvup) {
+					TelemTracker.ttrk.update(ser, TelemTracker.Fields.CSE);
+				}
 			}
 			break;
 		case CRSF.FM_ID:
@@ -439,7 +490,15 @@ namespace CRSF {
 				CRSF.teledata.rssi = 1023*ptr[2]/100;
 				RSSI.set_title(RSSI.Title.LQ);
 			}
+			bool rssiup = (ser.td.rssi.rssi != CRSF.teledata.rssi);
 			ser.td.rssi.rssi = CRSF.teledata.rssi;
+			if(rssiup) {
+				if(ser.is_main) {
+					Mwp.panelbox.update(Panel.View.RSSI, RSSI.Update.RSSI);
+				} else {
+					TelemTracker.ttrk.update(ser, TelemTracker.Fields.RSSI);
+				}
+			}
 			break;
 
 		case CRSF.DEV_ID:

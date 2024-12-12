@@ -27,15 +27,15 @@ public enum TrackDataSet {
 	STATE,
 }
 
-public class  GPSData : Object {
-	public double lat {get; construct set;}
-	public double lon {get; construct set;}
-	public double alt {get; construct set;}
-	public double hdop {get; construct set;}
-	public double cog {get; construct set;}
-	public double gspeed {get; construct set;}
-	public uint8 nsats {get; construct set;}
-	public uint8 fix {get; construct set;}
+public struct GPSData {
+	public double lat ;
+	public double lon ;
+	public double alt ;
+	public double hdop ;
+	public double cog ;
+	public double gspeed ;
+	public uint8 nsats ;
+	public uint8 fix ;
 	public void annul() {
 		lat = 0.0;
 		lon = 0.0;
@@ -48,10 +48,10 @@ public class  GPSData : Object {
 	}
 }
 
-public class OriginData : Object{
-	public double lat {get; construct set;}
-	public double lon {get; construct set;}
-	public double alt {get; construct set;}
+public struct OriginData {
+	public double lat ;
+	public double lon ;
+	public double alt ;
 	public void annul() {
 		lat = 0.0;
 		lon = 0.0;
@@ -59,28 +59,28 @@ public class OriginData : Object{
 	}
 }
 
-public class  CompData : Object {
-	public int  range {get; construct set;}
-	public int  bearing {get; construct set;}
+public struct CompData {
+	public int  range ;
+	public int  bearing ;
 	public void annul() {
 		range = 0;
 		bearing = 0;
 	}
 }
 
-public class  AltData : Object {
-	public double alt {get; construct set;}   // m
-	public double vario {get; construct set;} // m/s
+public struct AltData {
+	public double alt ; // {get; construct set;}   // m
+	public double vario ; // {get; construct set;} // m/s
 	public void annul() {
 		alt = 0;
 		vario = 0;
 	}
 }
 
-public class  AttiData : Object {
-	public int angx {get; construct set;}
-	public int angy {get; construct set;}
-	public int yaw {get; construct set;}
+public struct AttiData {
+	public int angx ;
+	public int angy ;
+	public int yaw ;
 	public void annul() {
 		angx = 0;
 		angy = 0;
@@ -88,26 +88,27 @@ public class  AttiData : Object {
 	}
 }
 
-public class PowerData : Object{
-	public float volts {get; construct set;}
-	//	public double amps {get; construct set;}
+public struct  PowerData {
+	public float volts ;
+	public int mah ;
 	public void annul() {
 		volts = 0;
+		mah = 0;
 	}
 }
 
-public class RSSIData :Object {
-	public int rssi {get; construct set;}
+public struct RSSIData  {
+	public int rssi ;
 	public void annul() {
 		rssi = 0;
 	}
 }
 
-public class StateData :Object {
-	public uint8 state {get; construct set;}
-	public uint8 navmode {get; construct set;}
-	public uint8 ltmstate {get; construct set;}
-	public uint8 wpno {get; construct set;}
+public struct StateData {
+	public uint8 state ;
+	public uint8 navmode ;
+	public uint8 ltmstate ;
+	public uint8 wpno ;
 	public void annul() {
 		state = 0;
 		navmode = 0;
@@ -116,7 +117,7 @@ public class StateData :Object {
 	}
 }
 
-public class TrackData : Object {
+public struct TrackData {
 	public GPSData gps;
 	public OriginData origin;
 	public CompData comp;
@@ -125,31 +126,4 @@ public class TrackData : Object {
 	public AltData alt;
 	public AttiData atti;
 	public StateData state;
-
-	public  TrackData (TrackDataSet v = 0xff) {
-		if( TrackDataSet.GPS in v) {
-			gps = new GPSData();
-		}
-		if( TrackDataSet.ORIGIN in v) {
-			origin = new OriginData();
-		}
-		if( TrackDataSet.COMP in v) {
-			comp = new CompData();
-		}
-		if( TrackDataSet.POWER in v) {
-			power = new PowerData();
-		}
-		if( TrackDataSet.RSSI in v) {
-			rssi = new RSSIData();
-		}
-		if( TrackDataSet.ALT in v) {
-			alt = new AltData();
-		}
-		if( TrackDataSet.ATTI in v) {
-			atti = new AttiData();
-		}
-		if( TrackDataSet.STATE in v) {
-			state = new StateData();
-		}
-	}
 }

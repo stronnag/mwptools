@@ -15,8 +15,12 @@
  * (c) Jonathan Hudson <jh+mwptools@daria.co.uk>
  */
 
-
 namespace Vario {
+	[Flags]
+	public enum Update {
+		VARIO
+	}
+
 	public class View : Gtk.Box {
 		private Gtk.Image vimage;
 		private Gtk.Label vlabel;
@@ -55,13 +59,16 @@ namespace Vario {
 			this.append(vimage);
 			this.append(vlabel);
 			lastt = null;
-			Mwp.msp.td.alt.notify["vario"].connect((s,p) => {
-					var v = ((AltData)s).vario;
-					update(v);
-				});
 		}
 
-		public void update(double vs) {
+		public void update(Update what) {
+			if (Update.VARIO in what) {
+				var v = Mwp.msp.td.alt.vario;
+				update_vario(v);
+			}
+		}
+
+		private void update_vario(double vs) {
 			Gdk.Texture t;
 			if (vs > 0) {
 				t =up;

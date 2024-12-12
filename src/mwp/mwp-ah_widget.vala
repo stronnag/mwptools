@@ -41,7 +41,12 @@ using Gtk;
  * http://robotics.ccny.cuny.edu
  */
 namespace AHI {
-public class View : Gtk.Widget {
+	[Flags]
+	public enum Update {
+		AHI
+	}
+
+	public class View : Gtk.Widget {
 	public  double _x;
 	public  double _y;
 	public  double _radius;
@@ -59,16 +64,6 @@ public class View : Gtk.Widget {
 		oldx = 0;
 		oldy = 0;
 		set_opacity (1.0);
-
-		Mwp.msp.td.atti.notify["angx"].connect((s,p) => {
-				oldx = ((AttiData)s).angx;
-				update(oldx, oldy);
-            });
-		Mwp.msp.td.atti.notify["angy"].connect((s,p) => {
-				oldy = ((AttiData)s).angy;
-				update(oldx, oldy);
-            });
-
 		queue_draw();
 	}
 
@@ -482,7 +477,13 @@ public class View : Gtk.Widget {
             draw_upper_base(cr);
         }
 
-        public void update(int roll, int pitch) {
+		public void update (Update what) {
+			if(Update.AHI in what) {
+				update_ahi(Mwp.msp.td.atti.angx, Mwp.msp.td.atti.angy);
+            }
+		}
+
+        private void update_ahi(int roll, int pitch) {
             if(roll > 360)
                 roll = 360;
             if(roll < 0)
@@ -497,5 +498,5 @@ public class View : Gtk.Widget {
 			_trans_y = (double)pitch;
             queue_draw();
         }
-}
+	}
 }

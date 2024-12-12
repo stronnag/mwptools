@@ -451,12 +451,12 @@ public class MWSerial : Object {
 	private string errstr =null;
 	private DevMask dtype;
 	public static bool debug;
+	public TrackData td;
+	public AsyncQueue<INAVEvent?> msgq;
+	internal int closing;
 #if LINUX
 	private BleSerial gs;
 #endif
-	public TrackData td;
-	public AsyncQueue<INAVEvent?> msgq;
-	private uint8 closing;
 #if UNIX
 	private uint tag;
     private IOChannel io_chan;
@@ -1567,7 +1567,7 @@ public class MWSerial : Object {
 								state = States.S_HEADER;
 								stats.msgs++;
 								if(cmd < Msp.Cmds.MSPV2 || cmd > Msp.Cmds.LTM_BASE) {
-									var msg = INAVEvent(){cmd=cmd, len=csize, flags=xflags, err=errstate, raw=rxbuf[0:csize]};
+									var msg = INAVEvent(){cmd=cmd, len=csize, flags=xflags, err=errstate, raw=rxbuf[0:csize+4]};
 									msgq.push(msg);
 #if UNIX
 									serial_event();
@@ -1654,7 +1654,7 @@ public class MWSerial : Object {
 							if(checksum2  == devbuf[nc]) {
 								state = (encap) ? States.S_CHECKSUM : States.S_HEADER;
 								stats.msgs++;
-								var msg = INAVEvent(){cmd=xcmd, len=csize, flags=xflags, err=errstate, raw=rxbuf[0:csize]};
+								var msg = INAVEvent(){cmd=xcmd, len=csize, flags=xflags, err=errstate, raw=rxbuf[0:csize+4]};
 								msgq.push(msg);
 #if UNIX
 								serial_event();
@@ -1723,7 +1723,7 @@ public class MWSerial : Object {
 								rxmavsum |= (devbuf[nc] << 8);
 								if(rxmavsum == mavsum) {
 									stats.msgs++;
-									var msg = INAVEvent(){cmd=cmd+Msp.Cmds.MAV_BASE, len=csize, flags=0, err=errstate, raw=rxbuf[0:csize]};
+									var msg = INAVEvent(){cmd=cmd+Msp.Cmds.MAV_BASE, len=csize, flags=0, err=errstate, raw=rxbuf[0:csize+4]};
 									msgq.push(msg);
 									serial_event();
 									state = States.S_HEADER;
@@ -1808,7 +1808,7 @@ public class MWSerial : Object {
 							rxmavsum |= (devbuf[nc] << 8);
 							if(rxmavsum == mavsum) {
 								stats.msgs++;
-								var msg = INAVEvent(){cmd=cmd+Msp.Cmds.MAV_BASE, len=csize, flags=0, err=errstate, raw=rxbuf[0:csize]};
+								var msg = INAVEvent(){cmd=cmd+Msp.Cmds.MAV_BASE, len=csize, flags=0, err=errstate, raw=rxbuf[0:csize+4]};
 								msgq.push(msg);
 								serial_event();
 								if(mavsig == 0)
