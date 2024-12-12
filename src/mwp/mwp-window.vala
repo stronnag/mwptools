@@ -687,6 +687,10 @@ namespace Mwp {
 			check_mission_clean(area_planner);
 		}
 
+		private void launch_vidwin() {
+			VideoMan.load_v4l2_video();
+		}
+
 		private void area_planner() {
 			do_mission_clear();
 			var s = new Survey.Dialog();
@@ -745,7 +749,7 @@ namespace Mwp {
 				{"replay-etx-log", launch_etx},
 				{"replay-raw-log", launch_raw},
 				{"replay-mwp-log", launch_json},
-				{"vstream", VideoMan.load_v4l2_video},
+				{"vstream", launch_vidwin},
 				{"ttrack-view", show_ttracker},
 				{"flight-stats", show_odo},
 				{"stop-replay", stop_replay},

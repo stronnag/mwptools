@@ -53,7 +53,7 @@ namespace VideoMan {
 					}
 				}
 				vid_dialog.close();
-
+				vid_dialog = null;
 				if (res != -1) {
 					var vp = new VideoPlayer(uri);
 					vp.present();
@@ -77,8 +77,12 @@ public class VideoPlayer : Adw.Window {
 		default_height = 480;
 		var header_bar = new Adw.HeaderBar();
 		vbox.append(header_bar);
-
-		var f = File.new_for_uri(uri);
+		File f;
+		if(uri.contains("://")) {
+			f = File.new_for_uri(uri);
+		} else {
+			f = File.new_for_path(uri);
+		}
 		mf = Gtk.MediaFile.for_file(f);
 		var v = new Gtk.Video.for_media_stream(mf);
 		v.vexpand = true;
@@ -138,8 +142,13 @@ public class V4L2_dialog : Adw.Window {
 		e.placeholder_text = "http://daria.co.uk/stream.mp4";
 		e.input_purpose = Gtk.InputPurpose.URL;
 		var grid = new Gtk.Grid();
+		box.append(grid);
+
 		if(rb0 != null) {
 			grid.attach(rb0, 0, 0);
+		}
+
+		if (viddev_c != null) {
 			grid.attach(viddev_c, 1, 0);
 		}
 		grid.attach(rb1, 0, 1);
@@ -164,7 +173,6 @@ public class V4L2_dialog : Adw.Window {
 				response(0);
 			});
 
-		box.append(grid);
 		grid.vexpand = true;
 		box.append(bbox);
 		set_content(box);

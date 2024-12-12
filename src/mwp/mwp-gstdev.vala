@@ -31,7 +31,7 @@ namespace GstDev {
 	}
 
 	public void init() {
-		sl = new Gtk.StringList({});
+		sl = new Gtk.StringList({"(None)"});
 		viddevs = new List<GstMonitor.VideoDev?> ();
 		CompareFunc<GstMonitor.VideoDev?>  devname_comp = (a,b) =>  {
 			return strcmp(a.devicename, b.devicename);

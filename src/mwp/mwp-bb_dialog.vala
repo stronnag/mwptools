@@ -34,7 +34,7 @@ namespace BBL {
 				var z= MapUtils.evince_zoom(bbox);
 				MapUtils.centre_on(bbox.get_centre_latitude(), bbox.get_centre_longitude(), z);
 				if(videofile != null && videofile != "") {
-					MWPLog.message("BBL videofile %s offset\n", videofile, nsecs);
+					MWPLog.message("BBL videofile %s offset=%d\n", videofile, nsecs);
 				}
 				if(speedup) {
 					videofile = null;

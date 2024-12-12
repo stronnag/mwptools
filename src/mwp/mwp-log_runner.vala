@@ -143,8 +143,7 @@ namespace Mwp {
 		string sargs = string.joinv(" ",args);
 
 		if((replayer & Player.BBOX) != 0  && BBL.videofile != null && BBLV.vp == null) {
-			var furi = "file://%s".printf(BBL.videofile);
-			BBLV.vp = new VideoPlayer(furi);
+			BBLV.vp = new VideoPlayer(BBL.videofile);
 			BBLV.vp.play_state.connect((ps) => {
 					if(ps == replay_paused) {
 						handle_replay_pause(true);
