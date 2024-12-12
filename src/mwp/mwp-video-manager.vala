@@ -16,6 +16,12 @@
  */
 
 namespace VideoMan {
+	public enum State {
+		PLAYING=1,
+		ENDED=2,
+		PAUSED=3
+	}
+
 	public void load_v4l2_video() {
 		string uri = null;
 		int res = -1;
@@ -66,7 +72,7 @@ namespace VideoMan {
 public class VideoPlayer : Adw.Window {
 	private  Gtk.MediaFile mf;
 
-	public signal void play_state(bool state);
+	public signal void play_state(VideoMan.State st);
 
 	public VideoPlayer(string  uri) {
 		var vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
@@ -87,7 +93,15 @@ public class VideoPlayer : Adw.Window {
 		var v = new Gtk.Video.for_media_stream(mf);
 		v.vexpand = true;
 		mf.notify["playing"].connect(() => {
-				play_state(mf.playing);
+				VideoMan.State st;
+				if (mf.ended) {
+					st = VideoMan.State.ENDED;
+				} else if (mf.playing) {
+					st = VideoMan.State.PLAYING;
+				} else {
+					st = VideoMan.State.PAUSED;
+				}
+				play_state(st);
 			});
 
 		vbox.append(v);

@@ -32,8 +32,9 @@ namespace Mwp {
 
     private void handle_replay_pause(bool from_vid=false) {
         magcheck = false;
+        replay_paused = !replay_paused;
 
-        if(replay_paused) { // ProcessSignal.CONT;
+        if(!replay_paused) { // ProcessSignal.CONT;
             time_t now;
             time_t (out now);
             armtime += (now - pausetm);
@@ -42,10 +43,9 @@ namespace Mwp {
         }
 		if(!from_vid) {
 			if(BBLV.vp != null) {
-				BBLV.vp.set_playing(replay_paused);
+				BBLV.vp.set_playing(!replay_paused);
 			}
 		}
-        replay_paused = !replay_paused;
         if((replayer & (Player.BBOX|Player.OTX|Player.RAW)) != 0 && LogPlay.child_pid != 0) {
 			if(!replay_paused) {
 				ProcessLauncher.resume(LogPlay.child_pid);
@@ -145,8 +145,11 @@ namespace Mwp {
 		if((replayer & Player.BBOX) != 0  && BBL.videofile != null && BBLV.vp == null) {
 			BBLV.vp = new VideoPlayer(BBL.videofile);
 			BBLV.vp.play_state.connect((ps) => {
-					if(ps == replay_paused) {
-						handle_replay_pause(true);
+					if (ps != VideoMan.State.ENDED) {
+						bool vps = (ps == VideoMan.State.PLAYING);
+						if(vps == replay_paused) {
+							handle_replay_pause(true);
+						}
 					}
 				});
 			BBLV.vp.present();

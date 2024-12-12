@@ -755,7 +755,7 @@ namespace Mwp {
 				{"stop-replay", stop_replay},
 				{"hardreset", do_hard_reset},
 				{"clearmission", do_mission_clear},
-				{"pausemission", do_mission_pause},
+				{"pausereplay", do_replay_pause},
 				{"upload-mission", do_mission_upload},
 				{"upload-missions",do_missions_upload},
 				{"download-mission", do_download_mission},
@@ -800,8 +800,7 @@ namespace Mwp {
 			app.set_accels_for_action ("win.dmeasure", { "<primary>d" });
 			app.set_accels_for_action ("win.hardreset", { "<primary>i" });
 			app.set_accels_for_action ("win.clearmission", { "<primary>z" });
-			app.set_accels_for_action ("win.pausemission", { "space" });
-
+			app.set_accels_for_action ("win.pausereplay", { "space" });
 			app.set_accels_for_action ("win.go-home", { "<primary>h" });
 			app.set_accels_for_action ("win.toggle-fs", { "F11" });
 			app.set_accels_for_action ("win.handle-connect", { "<primary><shift>c" });
@@ -834,7 +833,7 @@ namespace Mwp {
 		}
 	}
 
-	private void do_mission_pause() {
+	private void do_replay_pause() {
 		if(replayer != Player.NONE) {
 			handle_replay_pause();
 		}
