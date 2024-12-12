@@ -23,6 +23,7 @@ namespace Battery {
 	public CurrData curr;
 	private int icol;
 	private int licol;
+	private bool update;
 
 	public void init () {
 		vcol = new VCol();
@@ -54,6 +55,7 @@ namespace Battery {
             curr.mah = an.mahdraw;
             if(curr.centiA != 0 || curr.mah != 0) {
                 curr.ampsok = true;
+				Battery.update = true;
                 if (curr.centiA > Odo.stats.amps)
                     Odo.stats.amps = curr.centiA;
             }
@@ -102,20 +104,27 @@ namespace Battery {
             if (icol > 4)
                 icol = 3;
 
-			Mwp.msp.td.power.volts = vf;
-
-			if(icol != licol) {
-				licol = icol;
-			}
-			if(vcol.levels[icol].reached == false) {
-                vcol.levels[icol].reached = true;
-                if(vcol.levels[icol].audio != null) {
-                    if(Mwp.replayer == Mwp.Player.NONE)
-                        Audio.play_alarm_sound(vcol.levels[icol].audio);
-                    else
-                        MWPLog.message("battery alarm %.1f\n", vf);
-                }
+			if (Math.fabs(Mwp.msp.td.power.volts - vf) > 0.1) {
+				Battery.update = false;
+				Mwp.msp.td.power.volts = vf;
+				Mwp.panelbox.update(Panel.View.VOLTS, Voltage.Update.VOLTS);
+				if(icol != licol) {
+					licol = icol;
+				}
+				if(vcol.levels[icol].reached == false) {
+					vcol.levels[icol].reached = true;
+					if(vcol.levels[icol].audio != null) {
+						if(Mwp.replayer == Mwp.Player.NONE)
+							Audio.play_alarm_sound(vcol.levels[icol].audio);
+						else
+							MWPLog.message("battery alarm %.1f\n", vf);
+					}
+				}
             }
-        }
+			if (Battery.update) {
+				Battery.update = false;
+				Mwp.panelbox.update(Panel.View.VOLTS, Voltage.Update.CURR);
+			}
+		}
 	}
 }

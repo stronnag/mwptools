@@ -16,4 +16,7 @@ extern const char * get_id();
 extern const char * get_build_host();
 extern const char * get_build_compiler();
 
+extern void start_cpu_stats();
+extern int end_cpu_stats(double *cpu0, double* cpu1);
+
 #define MWP_MISC_MWP_MAX_WP 60

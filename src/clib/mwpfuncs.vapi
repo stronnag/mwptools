@@ -69,6 +69,12 @@ namespace MwpMisc {
     [CCode (cname="get_native_path")]
     string get_native_path(string upath);
     public const int MWP_MAX_WP;
+
+    [CCode (cname="start_cpu_stats")]
+	void start_cpu_stats();
+
+    [CCode (cname="end_cpu_stats")]
+	int end_cpu_stats(double *cpu0, double* cpu1);
 }
 
 [CCode (cheader_filename = "rserial.h")]

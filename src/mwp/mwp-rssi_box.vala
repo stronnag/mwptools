@@ -16,6 +16,11 @@
  */
 
 namespace RSSI {
+	[Flags]
+	public enum Update {
+		RSSI
+	}
+
 	public enum Title {
 		RSSI,
 		LQ
@@ -37,11 +42,12 @@ namespace RSSI {
 		[GtkChild]
 		private unowned Gtk.ProgressBar pbar;
 
-		public View() {
-			Mwp.msp.td.rssi.notify["rssi"].connect((s,p) => {
-					var v = ((RSSIData)s).rssi;
-					update_r(v);
-            });
+		public View() {	}
+
+		public void update(Update what) {
+			if(Update.RSSI in what) {
+				update_r(Mwp.msp.td.rssi.rssi);
+            }
 		}
 
 		private void update_r(int rv) {

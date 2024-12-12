@@ -25,6 +25,7 @@ namespace Mwp {
 	Gtk.Entry dev_entry;
 	DevManager devman;
 	public Mwp.Window window;
+	public Panel.Box panelbox;
 	public Adw.ToastOverlay toaster;
 	public StrIntStore amis;
 	double current_lat;
@@ -372,6 +373,7 @@ namespace Mwp {
 #endif
 			}
 
+			panelbox = new Panel.Box();
 			if(pane_type == 1) {
 				Adw.OverlaySplitView split_view = new 	Adw.OverlaySplitView();
 				split_view.vexpand = true;
@@ -383,11 +385,11 @@ namespace Mwp {
 				split_view.sidebar_width_unit = Adw.LengthUnit.SP;
 				split_view.min_sidebar_width = fw;
 				split_view.content = Gis.overlay;
-				split_view.sidebar = new Panel.Box();
+				split_view.sidebar = panelbox;
 			} else {
 				Gtk.Paned pane = new Gtk.Paned(Gtk.Orientation.HORIZONTAL);
 				pane.set_start_child(Gis.overlay);
-				pane.set_end_child(new Panel.Box());
+				pane.set_end_child(panelbox);
 				pane.wide_handle = true;
 				if (conf.p_pane_width > 0) {
 					fw = conf.p_pane_width;
@@ -432,19 +434,20 @@ namespace Mwp {
 			gzr = new GeoZoneManager();
 			gzedit = new GZEdit();
 			set_initial_states();
-			msp.td.state.notify["ltmstate"].connect((s,p) => {
-					bool mstate = false;
-					if(msp.available) {
-						if(serstate == SERSTATE.POLLER) {
-							mstate = (((StateData)s).ltmstate ==  Msp.Ltm.POSHOLD);
-						}
-					}
-					MwpMenu.set_menu_state(Mwp.window, "followme", mstate);
-				});
 #if !LINUX
 			var swatcher = new SerialWatcher();
 			swatcher.run();
 #endif
+		}
+
+		public void update_state() {
+			bool mstate = false;
+			if(msp.available) {
+				if(serstate == SERSTATE.POLLER) {
+					mstate = (msp.td.state.ltmstate ==  Msp.Ltm.POSHOLD);
+				}
+				MwpMenu.set_menu_state(Mwp.window, "followme", mstate);
+			}
 		}
 
 		private void set_initial_states() {

@@ -29,12 +29,12 @@ namespace TelemTracker {
 	}
 
 	[Flags]
-	private enum Fields {
+	public enum Fields {
 		LAT,
 		LON,
 		SAT,
 		ALT,
-		FIX,
+		RSSI,
 		SPD,
 		CSE,
 		STS,
@@ -239,75 +239,76 @@ namespace TelemTracker {
 			remove(sname);
 		}
 
+		public void update (MWSerial mws, TelemTracker.Fields what) {
+			var ni = lstore.get_n_items();
+			SecDev sd = null;
+			for(var j = 0; j < ni; j++) {
+				var s = lstore.get_item(j) as SecDev;
+				if(s.dev == mws) {
+					sd = s;
+					break;
+				}
+			}
+			if (sd != null) {
+				uint rk = (uint)(sd.id+256);
+				var ri = get_ri(rk);
+
+				if(Fields.LAT in what) {
+					ri.latitude = sd.dev.td.gps.lat;
+					Radar.upsert(rk, ri);
+					sd.ready |= Fields.LAT;
+				}
+
+				if(Fields.LON in what) {
+					ri.longitude = sd.dev.td.gps.lon;
+					Radar.upsert(rk, ri);
+					sd.ready |= Fields.LON;
+					ri.lasttick = Mwp.nticks;
+					ri.dt = new DateTime.now_local();
+					update_ri(ri, sd);
+				}
+
+				if(Fields.SPD in what) {
+					ri.speed = sd.dev.td.gps.gspeed;
+					Radar.upsert(rk, ri);
+				}
+
+				if(Fields.SPD in what) {
+					ri.heading = (uint16)(sd.dev.td.gps.cog);
+					Radar.upsert(rk, ri);
+				}
+
+				if(Fields.ALT in what) {
+					ri.altitude = sd.dev.td.alt.alt;
+					Radar.upsert(rk, ri);
+				}
+
+				if(Fields.SAT in what) {
+					var nsats = sd.dev.td.gps.nsats;
+					ri.posvalid = (nsats > 5);
+					sd.ready |= Fields.SAT;
+					Radar.upsert(rk, ri);
+				}
+
+				if(Fields.STS in what) {
+					var sts = sd.dev.td.state.state;
+					ri.state = (sts == 0) ? Radar.Status.UNDEF : Radar.Status.ARMED;
+					Radar.upsert(rk, ri);
+				}
+
+				if(Fields.RSSI in what) {
+					var rssi = sd.dev.td.rssi.rssi;
+					ri.lq = (uint8)(rssi*100/1023);
+					Radar.upsert(rk, ri);
+				}
+			}
+		}
+
 		public void start_reader(SecDev sd) {
 			if (sd.dev == null) {
 				sd.dev = new MWSerial();
-				sd.dev.td = new TrackData(0xff);
+				sd.dev.td = {};
 				sd.ready = 0;
-
-				sd.dev.td.gps.notify["lat"].connect((s,p) => {
-						uint rk = (uint)(sd.id+256);
-						var ri = get_ri(rk);
-						ri.latitude = ((GPSData)s).lat;
-						Radar.upsert(rk, ri);
-						sd.ready |= Fields.LAT;
-				});
-
-				sd.dev.td.gps.notify["lon"].connect((s,p) => {
-						uint rk = (uint)(sd.id+256);
-						var ri = get_ri(rk);
-						ri.longitude = ((GPSData)s).lon;
-						Radar.upsert(rk, ri);
-						sd.ready |= Fields.LON;
-						ri.lasttick = Mwp.nticks;
-						ri.dt = new DateTime.now_local();
-						update_ri(ri, sd);
-					});
-
-				sd.dev.td.gps.notify["gspeed"].connect((s,p) => {
-						uint rk = (uint)(sd.id+256);
-						var ri = get_ri(rk);
-						ri.speed = ((GPSData)s).gspeed;
-						Radar.upsert(rk, ri);
-				});
-
-				sd.dev.td.gps.notify["cog"].connect((s,p) => {
-						uint rk = (uint)(sd.id+256);
-						var ri = get_ri(rk);
-						ri.heading = (uint16)((GPSData)s).cog;
-						Radar.upsert(rk, ri);
-				});
-
-				sd.dev.td.alt.notify["alt"].connect((s,p) => {
-						uint rk = (uint)(sd.id+256);
-						var ri = get_ri(rk);
-						ri.altitude = ((AltData)s).alt;
-						Radar.upsert(rk, ri);
-				});
-
-				sd.dev.td.rssi.notify["rssi"].connect((s,p) => {
-						uint rk = (uint)(sd.id+256);
-						var ri = get_ri(rk);
-						ri.lq = (uint8)(((RSSIData)s).rssi)*100/1023;
-						Radar.upsert(rk, ri);
-				});
-
-				sd.dev.td.state.notify["state"].connect((s,p) => {
-						uint rk = (uint)(sd.id+256);
-						var ri = get_ri(rk);
-						var sts = ((StateData)s).state;
-						ri.state = (sts == 0) ? Radar.Status.UNDEF : Radar.Status.ARMED;
-						Radar.upsert(rk, ri);
-					});
-
-				sd.dev.td.gps.notify["nsats"].connect((s,p) => {
-						uint rk = (uint)(sd.id+256);
-						var ri = get_ri(rk);
-						var nsats = ((GPSData)s).nsats;
-						ri.posvalid = (nsats > 5);
-						sd.ready |= Fields.SAT;
-						Radar.upsert(rk, ri);
-					});
 			}
 
 			sd.dev.serial_event.connect(() => {

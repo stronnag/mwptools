@@ -16,6 +16,12 @@
  */
 
 namespace Voltage {
+	[Flags]
+	public enum Update {
+		VOLTS,
+		CURR
+	}
+
 	[GtkTemplate (ui = "/org/stronnag/mwp/voltage.ui")]
 	public class View : Gtk.Box {
 		[GtkChild]
@@ -30,12 +36,21 @@ namespace Voltage {
 		public View() {
 			load_css();
 			fuelunits= {"", "%", "mAh", "mWh"};
-			Mwp.msp.td.power.notify["volts"].connect((s,p) => {
-					var v = ((PowerData)s).volts;
-					update_v(v);
-            });
 			licol = -1;
 			update_v(0.0f);
+			ampslabel.visible=false;
+			mahlabel.visible=false;
+			ampslabel.set_label("");
+			mahlabel.set_label("");
+		}
+
+		public void update(Update what) {
+			if (Update.VOLTS in what) {
+				update_v(Mwp.msp.td.power.volts);
+            }
+			if (Update.CURR in what) {
+				update_c();
+            }
 		}
 
 		private void load_css() {
@@ -57,7 +72,7 @@ namespace Voltage {
 			}
 		}
 
-		public void update_v(float volts) {
+		private void update_v(float volts) {
 			var vstr = "%.1f".printf(volts);
 			int icol = Battery.icol;
 			if(icol != licol) {
@@ -68,7 +83,12 @@ namespace Voltage {
 				lsc.add_class(Battery.vcol.levels[icol].colour);
 				licol = icol;
 			}
-			if (icol == -1 || Battery.curr.ampsok == false) {
+			var vs = "<span font='monospace' size='600%%'>%sv</span>".printf(vstr);
+			voltlabel.set_label(vs);
+		}
+
+		private void update_c() {
+			if (Battery.icol == -1 || Battery.curr.ampsok == false) {
 				ampslabel.visible=false;
 				mahlabel.visible=false;
 				ampslabel.set_label("");
@@ -91,8 +111,6 @@ namespace Voltage {
 					mahlabel.set_label("");
 				}
 			}
-			var vs = "<span font='monospace' size='600%%'>%sv</span>".printf(vstr);
-			voltlabel.set_label(vs);
 			if(Battery.curr.ampsok) {
 				ampslabel.visible=true;
 				mahlabel.visible=true;

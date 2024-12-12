@@ -451,12 +451,12 @@ public class MWSerial : Object {
 	private string errstr =null;
 	private DevMask dtype;
 	public static bool debug;
+	public TrackData td;
+	public AsyncQueue<INAVEvent?> msgq;
+	internal int closing;
 #if LINUX
 	private BleSerial gs;
 #endif
-	public TrackData td;
-	public AsyncQueue<INAVEvent?> msgq;
-	private uint8 closing;
 #if UNIX
 	private uint tag;
     private IOChannel io_chan;

@@ -976,13 +976,23 @@ namespace Mwp {
 			break;
 
 		case Msp.Cmds.COMP_GPS:
+			int fvup = 0;
 			MSP_COMP_GPS cg = MSP_COMP_GPS();
 			uint8* rp;
 			rp = SEDE.deserialise_u16(raw, out cg.range);
 			rp = SEDE.deserialise_i16(rp, out cg.direction);
 			cg.update = *rp;
-			ser.td.comp.range = (int)cg.range;
-			ser.td.comp.bearing = (int)cg.direction;
+			if ((int)cg.range != ser.td.comp.range) {
+				ser.td.comp.range = (int)cg.range;
+				fvup |= FlightBox.Update.RANGE;
+			}
+			if(ser.td.comp.bearing != (int)cg.direction) {
+				ser.td.comp.bearing = (int)cg.direction;
+				fvup |= FlightBox.Update.BEARING;
+			}
+			if(fvup != 0) {
+				Mwp.panelbox.update(Panel.View.FVIEW, fvup);
+			}
 			if(Logger.is_logging) {
 				Logger.comp_gps(cg.direction, cg.range, 1);
 			}
@@ -1012,8 +1022,14 @@ namespace Mwp {
 				at.angy = -at.angy;
 				ser.td.atti.angx = at.angx;
 				ser.td.atti.angy = at.angy;
+				Mwp.panelbox.update(Panel.View.AHI, AHI.Update.AHI);
 			}
-			ser.td.atti.yaw = mhead;
+			bool yawup = (ser.td.atti.yaw != mhead);
+			if(yawup) {
+				ser.td.atti.yaw = mhead;
+				Mwp.panelbox.update(Panel.View.FVIEW, FlightBox.Update.YAW);
+				Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.YAW);
+			}
 			if(Logger.is_logging) {
 				Logger.attitude(at.angx, at.angy, mhead);
 			}
@@ -1024,8 +1040,20 @@ namespace Mwp {
 			  MSP_ALTITUDE al = MSP_ALTITUDE();
 			  rp = SEDE.deserialise_i32(raw, out al.estalt);
 			  SEDE.deserialise_i16(rp, out al.vario);
-			  ser.td.alt.alt = (double)al.estalt/100.0;
-			  ser.td.alt.vario = (double)al.vario/100.0;
+			  double dv = al.vario/100.0;
+			  double dea = (double)al.estalt/100.0;
+
+			  var altup = (Math.fabs(ser.td.alt.alt - dea) > 1.0);
+			  var varup = (Math.fabs(ser.td.alt.vario - dv) > 1.0);
+
+			  if(varup) {
+				  ser.td.alt.vario = dv;
+				  Mwp.panelbox.update(Panel.View.VARIO, Vario.Update.VARIO);
+			  }
+			  if(altup) {
+				  ser.td.alt.alt = dea;
+				  Mwp.panelbox.update(Panel.View.FVIEW, FlightBox.Update.ALT);
+			  }
 			  if(Logger.is_logging) {
 				   Logger.altitude(ser.td.alt.alt, ser.td.alt.vario);
 			  }
@@ -1038,7 +1066,11 @@ namespace Mwp {
 			SEDE.deserialise_u32(raw+9, out an.mahdraw);
 			SEDE.deserialise_u16(raw+22, out an.rssi);
 			Battery.process_msp_analog(an);
-			ser.td.rssi.rssi = an.rssi;
+			var rssiup = (ser.td.rssi.rssi != an.rssi);
+			if(rssiup) {
+				ser.td.rssi.rssi = an.rssi;
+				Mwp.panelbox.update(Panel.View.RSSI, RSSI.Update.RSSI);
+			}
 			break;
 
 		case Msp.Cmds.ANALOG:
@@ -1053,18 +1085,23 @@ namespace Mwp {
 			SEDE.deserialise_i16(raw+3, out an.rssi);
 			SEDE.deserialise_i16(raw+5, out an.amps);
 			Battery.process_msp_analog(an);
-			ser.td.rssi.rssi = an.rssi;
+			var rssiup = (ser.td.rssi.rssi != an.rssi);
+			if(rssiup) {
+				ser.td.rssi.rssi = an.rssi;
+				Mwp.panelbox.update(Panel.View.RSSI, RSSI.Update.RSSI);
+			}
 			break;
 
 		case Msp.Cmds.RAW_GPS:
 			if (xflags == '<') {
 				MspRadar.handle_radar(ser, cmd, raw, len, xflags, errs);
 			} else {
+				int fvup = 0;
 				MSP_RAW_GPS rg = MSP_RAW_GPS();
 				uint8* rp = raw;
+
 				rg.gps_fix = *rp++;
 				flash_gps();
-
 				nsats = rg.gps_numsat = *rp++;
 				rp = SEDE.deserialise_i32(rp, out rg.gps_lat);
 				rp = SEDE.deserialise_i32(rp, out rg.gps_lon);
@@ -1082,19 +1119,38 @@ namespace Mwp {
 				if(Rebase.is_valid()) {
 					Rebase.relocate(ref lat,ref lon);
 				}
-				ser.td.gps.lat = lat;
-				ser.td.gps.lon = lon;
-				ser.td.gps.alt =  rg.gps_altitude;
-				ser.td.gps.gspeed = rg.gps_speed/100.0;
-				ser.td.gps.alt = rg.gps_altitude;
-				ser.td.gps.nsats = rg.gps_numsat;
-				ser.td.gps.cog = rg.gps_ground_course/10.0;
+
+				if(Math.fabs(lat - ser.td.gps.lat) > 1e-6) {
+					ser.td.gps.lat = lat;
+					fvup |= FlightBox.Update.LAT;
+				}
+				if(Math.fabs(lon - ser.td.gps.lon) > 1e-6) {
+					ser.td.gps.lon = lon;
+					fvup |= FlightBox.Update.LON;
+				}
+
+				if(Math.fabs(ser.td.alt.alt - rg.gps_altitude) > 1.0) {
+					ser.td.gps.alt =  rg.gps_altitude;
+					//fvup |= FlightBox.Update.ALT;
+				}
+
+				double gspd = rg.gps_speed/100.0;
+				if(Math.fabs(ser.td.gps.gspeed - gspd) > 0.1) {
+					ser.td.gps.gspeed = gspd;
+					fvup |= FlightBox.Update.SPEED;
+				}
+
+				var dcog = rg.gps_ground_course/10.0;
+				var cogup = (Math.fabs(ser.td.gps.cog -  dcog) > 1.0);
+				if (cogup) {
+					ser.td.gps.cog = dcog;
+					Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.COG);
+				}
 
 				if(Logger.is_logging) {
 					Logger.raw_gps(lat, lon, ser.td.gps.cog, ser.td.gps.gspeed,
 								   rg.gps_altitude, rg.gps_fix, rg.gps_numsat, rg.gps_hdop);
 				}
-
 
 				if(rg.gps_fix != 0) {
 					if(replayer == Player.NONE) {
@@ -1104,7 +1160,16 @@ namespace Mwp {
 						last_gps = nticks;
 					}
 				}
-				ser.td.gps.fix = rg.gps_fix;
+
+				if((ser.td.gps.fix != rg.gps_fix) || (ser.td.gps.nsats != rg.gps_numsat)) {
+					ser.td.gps.fix = rg.gps_fix;
+					ser.td.gps.nsats = rg.gps_numsat;
+					fvup |= FlightBox.Update.GPS;
+				}
+
+				if(fvup != 0) {
+					Mwp.panelbox.update(Panel.View.FVIEW, fvup);
+				}
 
 				if (rg.gps_fix > 0) {
 					if (vi.fc_api >= APIVERS.mspV2 && vi.fc_vers >= FCVERS.hasTZ) {
@@ -1647,17 +1712,18 @@ namespace Mwp {
                     craft.set_normal();
                 }
 
-				msp.td.state.ltmstate = ltmflags;
 				if(ltmflags != last_ltmf) {
+					msp.td.state.ltmstate = ltmflags;
 					if (ltmflags !=  Msp.Ltm.POSHOLD &&
 						ltmflags !=  Msp.Ltm.WAYPOINTS &&
 						ltmflags !=  Msp.Ltm.RTH &&
 						ltmflags !=  Msp.Ltm.LAND) { // handled by NAV_STATUS
 						TTS.say(TTS.Vox.LTM_MODE);
 					}
+					Mwp.window.update_state();
 					last_ltmf = ltmflags;
 				}
-                if (want_special != 0) {
+				if (want_special != 0) {
                     var lmstr = Msp.ltm_mode(ltmflags);
                     Mwp.window.fmode.set_label(lmstr);
                 }

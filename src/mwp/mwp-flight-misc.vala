@@ -26,10 +26,9 @@ namespace Mwp {
 	double lvticks=0;
 	double lfdiff = 0.0;
 
-	// ealt in cm. returns cm/sec
     private bool calc_vario(int ealt, out double fdiff) {
         fdiff = lfdiff;
-        if((replayer & (Player.BBOX_FAST)) != Player.FAST_MASK) {
+        if((replayer & Player.FAST_MASK) != Player.FAST_MASK) {
 			var lv = lastp.elapsed();
 			var et  =  lv - lvticks;
 			if (et > 0.5) {
@@ -55,7 +54,7 @@ namespace Mwp {
     }
 
     private void sat_coverage() {
-        uint8 scflags = 0;
+        uint8 scflags = SAT_FLAGS.NONE;
         if(nsats != _nsats) {
             if(nsats < msats) {
                 if(nsats < _nsats) {
@@ -70,6 +69,7 @@ namespace Mwp {
                     scflags = SAT_FLAGS.NEEDED;
                 }
             }
+			_nsats = nsats;
         }
 
         if((scflags == 0) && ((lastrx - last_ga) > SATINTVL)) {
@@ -80,7 +80,7 @@ namespace Mwp {
             gps_alert(scflags);
 			MBus.update_fix();
         }
-    }
+	}
 
 	private void handle_n_frame(MWSerial ser, Msp.Cmds cmd, uint8[] raw) {
 			MSP_NAV_STATUS ns = MSP_NAV_STATUS();

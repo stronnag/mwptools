@@ -91,18 +91,43 @@ namespace Mwp {
 				Rebase.relocate(ref lat,ref lon);
 			}
 			gf.alt /= 100;
-
-			ser.td.gps.lat = lat;
-			ser.td.gps.lon = lon;
-			ser.td.gps.gspeed = gf.speed;
-			ser.td.alt.alt = gf.alt; // cm
 			var fix = (gf.sats & 3);
 			var lsats = (gf.sats >> 2);
-			ser.td.gps.nsats = lsats;
-			ser.td.gps.fix = fix;
 			double ddm;
 			var cse = calc_cse_dist_delta(lat, lon, out ddm);
-			ser.td.gps.cog = cse;
+			int fvup = 0;
+			int ttup = 0;
+			if(Math.fabs(lat - ser.td.gps.lat) > 1e-6) {
+				fvup |= FlightBox.Update.LAT;
+				ttup |= TelemTracker.Fields.LAT;
+				ser.td.gps.lat = lat;
+			}
+			if(Math.fabs(lon - ser.td.gps.lon) > 1e-6) {
+				fvup |= FlightBox.Update.LON;
+				ttup |= TelemTracker.Fields.LON;
+				ser.td.gps.lon = lon;
+			}
+
+			if(Math.fabs(ser.td.alt.alt - gf.alt) > 1.0) {
+				fvup |= FlightBox.Update.ALT;
+				ttup |= TelemTracker.Fields.ALT;
+				ser.td.alt.alt = gf.alt;
+				ser.td.gps.alt = gf.alt;
+			}
+
+			if(Math.fabs(ser.td.gps.gspeed - gf.speed) > 0.1) {
+				fvup |= FlightBox.Update.SPEED;
+				ttup |= TelemTracker.Fields.SPD;
+				ser.td.gps.gspeed = gf.speed;
+			}
+
+			if(ser.td.gps.nsats != lsats || ser.td.gps.fix != fix) {
+				fvup |= FlightBox.Update.GPS;
+				ttup |= TelemTracker.Fields.SAT;
+				ser.td.gps.nsats = lsats;
+				ser.td.gps.fix = fix;
+			}
+
 			if(fix > 0) {
 				if(ser.is_main) {
 					flash_gps();
@@ -112,6 +137,7 @@ namespace Mwp {
 					double dv;
 					if(calc_vario(gf.alt, out dv)) {
 						ser.td.alt.vario = dv;
+						Mwp.panelbox.update(Panel.View.VARIO, Vario.Update.VARIO);
 					}
 					al.vario = (int16)dv;
 					if (Logger.is_logging) {
@@ -135,9 +161,15 @@ namespace Mwp {
 										var cg = MSP_COMP_GPS();
 										cg.range = (uint16)Math.lround(range*1852);
 										cg.direction = (int16)Math.lround(brg);
-										ser.td.comp.range =  cg.range;
-										ser.td.comp.bearing =  cg.direction;
 										update_odo((double)gf.speed, ddm);
+										if(Math.fabs(ser.td.comp.range -  cg.range) > 1.0) {
+											ser.td.comp.range =  cg.range;
+											fvup |= FlightBox.Update.RANGE;
+										}
+										if(Math.fabs(ser.td.comp.bearing - cg.direction) > 1.0) {
+											ser.td.comp.bearing =  cg.direction;
+											fvup = FlightBox.Update.BEARING;
+										}
 										if(Logger.is_logging) {
 											Logger.comp_gps(cg.direction, cg.range, 1);
 										}
@@ -149,17 +181,23 @@ namespace Mwp {
 								MWPLog.message("No home position yet\n");
 							}
 						}
-						if((sensor & Msp.Sensors.MAG) == Msp.Sensors.MAG && last_nmode != 3 && magcheck && magtime > 0 && magdiff > 0) {
+						if((sensor & Msp.Sensors.MAG) == Msp.Sensors.MAG && last_nmode != 3) {
 							int gcse = (int)cse;
 							if(last_ltmf != Msp.Ltm.POSHOLD && last_ltmf != Msp.Ltm.LAND) {
 								if(gf.speed > 3) {
-									if(get_heading_diff(gcse, mhead) > magdiff) {
-										if(magdt == -1) {
-											magdt = (int)duration;
+									if(Math.fabs(cse-ser.td.gps.cog) > 1) {
+										ser.td.gps.cog = cse;
+										Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.COG);
+									}
+									if(magcheck && magtime > 0 && magdiff > 0) {
+										if(get_heading_diff(gcse, mhead) > magdiff) {
+											if(magdt == -1) {
+												magdt = (int)duration;
+											}
+										} else if (magdt != -1) {
+											magdt = -1;
+											Gis.map_hide_warning();
 										}
-									} else if (magdt != -1) {
-										magdt = -1;
-										Gis.map_hide_warning();
 									}
 								} else if (magdt != -1) {
 									magdt = -1;
@@ -177,6 +215,16 @@ namespace Mwp {
 					if(want_special != 0) {
 						process_pos_states(lat, lon, gf.alt/100.0, "GFrame");
 					}
+				}
+			}
+
+			if(ser.is_main) {
+				if(fvup != 0) {
+					Mwp.panelbox.update(Panel.View.FVIEW, fvup);
+				}
+			} else {
+				if (ttup != 0) {
+					TelemTracker.ttrk.update(ser, ttup);
 				}
 			}
 			break;
@@ -205,15 +253,18 @@ namespace Mwp {
 			break;
 
 		case Msp.Cmds.TA_FRAME:
+			LTM_AFRAME af = LTM_AFRAME();
+			uint8* rp;
+			rp = SEDE.deserialise_i16(raw, out af.pitch);
+			rp = SEDE.deserialise_i16(rp, out af.roll);
+			rp = SEDE.deserialise_i16(rp, out af.heading);
+			var h = af.heading;
+			if(h < 0) {
+				h += 360;
+			}
+			bool fvup = (Math.fabs(ser.td.atti.yaw - h) > 1.0);
+			ser.td.atti.yaw = h;
 			if(ser.is_main) {
-				LTM_AFRAME af = LTM_AFRAME();
-				uint8* rp;
-				rp = SEDE.deserialise_i16(raw, out af.pitch);
-				rp = SEDE.deserialise_i16(rp, out af.roll);
-				rp = SEDE.deserialise_i16(rp, out af.heading);
-				var h = af.heading;
-				if(h < 0)
-					h += 360;
 				mhead = h;
 				var vdiff = (af.roll != Atti._sx) || (af.pitch != Atti._sy);
 				if(vdiff) {
@@ -229,8 +280,16 @@ namespace Mwp {
 					if(Logger.is_logging) {
 						Logger.attitude(af.roll, af.pitch, mhead);
 					}
+					Mwp.panelbox.update(Panel.View.AHI, AHI.Update.AHI);
 				}
-				ser.td.atti.yaw = mhead;
+				if(fvup) {
+					Mwp.panelbox.update(Panel.View.FVIEW, FlightBox.Update.YAW);
+					Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.YAW);
+				}
+			} else {
+				if(fvup) {
+					TelemTracker.ttrk.update(ser, TelemTracker.Fields.CSE);
+				}
 			}
 			break;
 
@@ -242,12 +301,16 @@ namespace Mwp {
 				sf.rssi = *rp++;
 				sf.airspeed = *rp++;
 				sf.flags = *rp++;
-				ser.td.state.state = (sf.flags & 3);
-				ser.td.rssi.rssi = sf.rssi * 1023 / 255; // scaled
+				bool rssiup = false;
+				var srssi = sf.rssi * 1023 / 255; // scaled
+				if (srssi != ser.td.rssi.rssi) {
+					rssiup = true;
+					ser.td.rssi.rssi = srssi;
+				}
 
 				if (ser.is_main) {
+					ser.td.state.state = (sf.flags & 3);
 					uint8 ltmflags = sf.flags >> 2;
-					ser.td.state.ltmstate = ltmflags;
 					uint64 mwflags = 0;
 					uint8 saf = sf.flags & 1;
 					bool failsafe = ((sf.flags & 2)  == 2);
@@ -298,6 +361,8 @@ namespace Mwp {
 					var xws = want_special;
 					var mchg = (ltmflags != last_ltmf);
 					if(mchg) {
+						ser.td.state.ltmstate = ltmflags;
+						Mwp.window.update_state();
 						if (ltmflags !=  Msp.Ltm.POSHOLD &&
 							ltmflags !=  Msp.Ltm.WAYPOINTS &&
 							ltmflags !=  Msp.Ltm.RTH &&
@@ -341,17 +406,18 @@ namespace Mwp {
 					}
 					uint16 mah = sf.vcurr;
 					uint16 ivbat = (sf.vbat + 50) / 10;
-
+					Battery.update = false;
 					if (((replayer & Player.BBOX) == Player.BBOX) && Battery.curr.bbla > 0) {
 						Battery.curr.ampsok = true;
 						Battery.curr.centiA = Battery.curr.bbla;
 						if (mah > Battery.curr.mah) {
 							Battery.curr.mah = mah;
+							Battery.update = true;
 						}
 					} else if (replayer == Player.MWP_FAST || replayer == Player.OTX_FAST) {
 						Battery.curr.ampsok = true;
 						Battery.curr.mah = mah;
-						// navstatus.current(curr, 2); FIXME
+						Battery.update = true;
 					} else if (Battery.curr.lmah == 0) {
 						Battery.curr.lmahtm = nticks;
 						Battery.curr.lmah = mah;
@@ -378,6 +444,7 @@ namespace Mwp {
 							}
 							Battery.curr.lmahtm = mahtm;
 							Battery.curr.lmah = mah;
+							Battery.update = true;
 						}
 						else if (Battery.curr.lmah - mah > 100) {
 							MWPLog.message("Negative energy usage %u %u\n", Battery.curr.lmah, mah);
@@ -392,6 +459,13 @@ namespace Mwp {
 						Logger.ltm_sframe(sf, b.str);
 					}
 					Battery.set_bat_stat(ivbat);
+				}
+				if(rssiup) {
+					if(ser.is_main) {
+						Mwp.panelbox.update(Panel.View.RSSI, RSSI.Update.RSSI);
+					} else {
+						TelemTracker.ttrk.update(ser, TelemTracker.Fields.RSSI);
+					}
 				}
 			break;
 		case Msp.Cmds.Tq_FRAME:
