@@ -16,7 +16,9 @@ Command line options provide a 'per instantiation' means to control {{ mwp }} be
 
     $ mwp --help
 
-Where it is required to give permanence to command line options, they can be added to the configuration file `$HOME/.config/mwp/cmdopts`, which is described in more detail in the following section.
+Where it is required to give permanence to command line options, they can be added to the configuration file `$HOME/.config/mwp/cmdopts` (on Windows `$LOCALAPPDATA/mwp/cmdopts`), which is described in more detail in the following section.
+
+Note that the documentation will habitually refer to the configuration base directory as `~/.config` as that is where it is found on the majority of OS; if you're using Windows, please adjust as necessary.
 
 You can also use a system-wide "cmdopts" file, `/etc/default/mwp`. If this flie exists, it will read before the user's file.
 

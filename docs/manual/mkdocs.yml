@@ -92,6 +92,7 @@ nav:
       - mwp-telemetry-tracker.md
       - mwp-area-planner.md
       - mwp_video_player.md
+      - mwp-text-to-speech.md
       - Fly-By-Home-waypoints-(inav-4-new-feature).md
       - Black-Ops.md
       - mwp-follow-me.md
@@ -103,7 +104,6 @@ nav:
       - mqtt---bulletgcss-telemetry.md
       - Support-for-inav-3.0-WP-features.md
       - Replaying-Ardupilot-logs.md
-      - Flite-text-to-speech.md
       - mwp-Dbus-API.md
       - mwp_support.md
       - mwp-miscellaneous-tools.md

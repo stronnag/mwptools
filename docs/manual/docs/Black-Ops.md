@@ -27,13 +27,13 @@ First of all, ensure that the `map-sources` setting is enabled:
 
     $ gsettings get org.stronnag.mwp map-sources
     'sources.json'
-    # here this set to a file sources.json (in ~/.config/mwp/)
+    # here this set to a file sources.json (in the configuraion directory ~/.config/mwp/ / $LOCALAPPDATA/mwp)
 
 if this is not set, then set it:
 
     $ gsettings set org.stronnag.mwp map-sources 'sources.json'
 
-Now we need to edit the file `~/.config/mwp/sources.json`, there is a sample file in `mwptools/samples/sources.json `. you file needs a stanza like:
+Now we need to edit the configuration file `sources.json`, there is a sample file in `mwptools/samples/sources.json `. you file needs a stanza like:
 
     {
      "id": "Black",
@@ -46,7 +46,7 @@ Now we need to edit the file `~/.config/mwp/sources.json`, there is a sample fil
      "projection": "MERCATOR",
      "spawn" : "bproxy",
     }
-So a minimal `~/.config/mwp/sources.json` looks like:
+So a minimal `sources.json` looks like:
 
     {
        "sources" : [
@@ -80,7 +80,7 @@ The full path is provided in the environment variable `MWP_BLACK_TILE`, e.g.
     # put this in e.g. ~/.bashrc to make it permanent
     export MWP_BLACK_TILE=~/.config/mwp/mytile.png
 
-The environment variable may instead be added to [`~/.config/mwp/cmdopts`](mwp-Configuration.md#cmdopts).
+The environment variable may instead be added to [`cmdopts`](mwp-Configuration.md#cmdopts).
 
 For example:
 
