@@ -181,14 +181,16 @@ namespace Mwp {
 								MWPLog.message("No home position yet\n");
 							}
 						}
+
+						if(Math.fabs(cse-ser.td.gps.cog) > 1) {
+							ser.td.gps.cog = cse;
+							Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.COG);
+						}
+
 						if((sensor & Msp.Sensors.MAG) == Msp.Sensors.MAG && last_nmode != 3) {
 							int gcse = (int)cse;
 							if(last_ltmf != Msp.Ltm.POSHOLD && last_ltmf != Msp.Ltm.LAND) {
 								if(gf.speed > 3) {
-									if(Math.fabs(cse-ser.td.gps.cog) > 1) {
-										ser.td.gps.cog = cse;
-										Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.COG);
-									}
 									if(magcheck && magtime > 0 && magdiff > 0) {
 										if(get_heading_diff(gcse, mhead) > magdiff) {
 											if(magdt == -1) {
