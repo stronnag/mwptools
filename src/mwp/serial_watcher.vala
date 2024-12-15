@@ -13,9 +13,9 @@ namespace Mwp {
 							if (Mwp.find_combo(Mwp.dev_combox, (string)*sptr) == -1) {
 								var addme = check_insert_name(*sptr);
 								if (addme == 1) {
-									Mwp.append_combo(Mwp.dev_combox, (string)*sptr);
-								} else if (addme == -1) {
 									Mwp.prepend_combo(Mwp.dev_combox, (string)*sptr);
+								} else if (addme == -1) {
+									Mwp.append_combo(Mwp.dev_combox, (string)*sptr);
 								}
 							}
 						}
