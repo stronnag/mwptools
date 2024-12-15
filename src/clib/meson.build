@@ -10,8 +10,12 @@ paho = meson.get_compiler('c').find_library('paho-mqtt3cs', kwargs: pahoargs)
 
 clsrcs = files('btdev.c', 'get_locale_double.c', 'rserial.c', 'speech_wrapper.c')
 if paho.found()
-  clsrcs += 'paho_wrapper.c'
+  clsrcs += files('paho_wrapper.c')
   clib_dep += paho
+endif
+
+if build_machine.system() != 'linux'
+  clsrcs += files('poll_serials.c')
 endif
 
 common_inc_dir += [include_directories('.'), include_directories('../common')]

@@ -19,4 +19,8 @@ extern const char * get_build_compiler();
 extern void start_cpu_stats();
 extern int end_cpu_stats(double *cpu0, double* cpu1);
 
+extern char** check_ports();
+extern int check_insert_name(char *s);
+extern int check_delete_name(char *s);
+
 #define MWP_MISC_MWP_MAX_WP 60

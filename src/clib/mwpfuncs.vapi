@@ -75,6 +75,15 @@ namespace MwpMisc {
 
     [CCode (cname="end_cpu_stats")]
 	int end_cpu_stats(double *cpu0, double* cpu1);
+
+    [CCode (cname="check_ports")]
+	char** check_ports();
+
+    [CCode (cname="check_insert_name")]
+	int check_insert_name(char *s);
+
+    [CCode (cname="check_delete_name")]
+	int check_delete_name(char *s);
 }
 
 [CCode (cheader_filename = "rserial.h")]
