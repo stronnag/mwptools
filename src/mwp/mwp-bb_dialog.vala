@@ -528,7 +528,7 @@ namespace BBL {
 								if (BBLError.warn) {
 									BBLError.lines += "\u200b\n"; //zero-width space to force NL
 								}
-								BBLError.lines += "NOTICE: Log segment #%d is corrupt\n".printf(nidx);
+								BBLError.lines += "NOTICE: Log segment #%d is damaged or ancient\n".printf(nidx);
 								BBLError.warn = true;
 							} else if (line.contains("Warning:") || line.contains("Error:")) {
 								BBLError.lines += line;
