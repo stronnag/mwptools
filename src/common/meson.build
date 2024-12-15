@@ -25,10 +25,6 @@ else
   vcommon += files('posixspawn.vala', 'posix_psmisc.c')
 endif
 
-if build_machine.system() != 'linux'
-  vcommon += files('poll_serials.c')
-endif
-
 clicommon = ''
 
 fccommon = files( 'mwptermcap.vala')
