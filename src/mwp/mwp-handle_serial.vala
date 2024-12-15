@@ -507,7 +507,7 @@ namespace Mwp {
 		if (conf.manage_power && inhibit_cookie == 0) {
 			inhibit_cookie = Mwp.window.application.inhibit(Mwp.window, Gtk.ApplicationInhibitFlags.IDLE|Gtk.ApplicationInhibitFlags.SUSPEND,"mwp telem");
 			dtnotify.send_notification("mwp", "Inhibiting screen/idle/suspend");
-			MWPLog.message("Managing screen idle and suspend\n");
+			MWPLog.message("Managing screen idle and suspend (%x)\n", inhibit_cookie);
 		}
 		Mwp.window.mmode.label = mtype;
 		serstate = SERSTATE.TELEM;
