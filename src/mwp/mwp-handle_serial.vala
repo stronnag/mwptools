@@ -303,15 +303,15 @@ namespace Mwp {
                 msp.send_command((uint16)lastmsg.cmd, lastmsg.data, lastmsg.len);
             } else
                 run_queue();
-        }
+		}
     }
 
      void  run_queue() {
         if((replayer & (Player.BBOX|Player.OTX|Player.RAW)) != 0) {
             mq.clear();
         } else if(msp.available && !mq.is_empty()) {
-            lastmsg = mq.pop_head();
-            msp.send_command((uint16)lastmsg.cmd, lastmsg.data, lastmsg.len);
+			lastmsg = mq.pop_head();
+			msp.send_command((uint16)lastmsg.cmd, lastmsg.data, lastmsg.len);
         }
     }
 
@@ -490,6 +490,7 @@ namespace Mwp {
     }
 
     private void reset_poller() {
+		MWPLog.message(":DBG: Reset Poller\n");
 		if(starttasks == 0) {
 			lastok = nticks;
 			if(serstate != SERSTATE.NONE && serstate != SERSTATE.TELEM) {
@@ -571,12 +572,16 @@ namespace Mwp {
         } else {
 			seenMSP = true;
 			telem = false;
+			last_tm = 0;
 			handled = Mwp.handle_msp(ser, cmd, raw, len, xflags, errs);
 		}
-		if(telem && last_tm == 0) {
-			telem_init(cmd);
+		if(telem) {
+			if(last_tm == 0) {
+				telem_init(cmd);
+			} else {
+				last_tm = nticks;
+			}
 		}
-
 		if(!handled) {
 			show_unhandled(cmd, raw, len);
         }

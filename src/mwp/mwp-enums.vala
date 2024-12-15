@@ -29,8 +29,8 @@ namespace Mwp {
 
 	const uint TIMINTVL     = 100;              // 100 milliseconds
 	const uint STATINTVL    = ( 1000/TIMINTVL); //  1 sec, status update
-	const uint MAVINTVL     = ( 2000/TIMINTVL); //  2 sec, push telemetry t/o
 	const uint USATINTVL    = ( 2000/TIMINTVL); //  2 sec, change in sats message
+	const uint MAVINTVL     = ( 2500/TIMINTVL); //  2.5 sec, push telemetry t/o
 	const uint CRITINTVL    = ( 3000/TIMINTVL); //  3 sec, GPS critical message
 	const uint UUSATINTVL   = ( 4000/TIMINTVL); //  4 sec, change in sats message
 	const uint NODATAINTVL  = ( 5000/TIMINTVL); //  5 sec, no data warning
@@ -82,7 +82,7 @@ namespace Mwp {
 		SET_WP,
 		EXTRA_WP,
 		MISC_BULK,
-        TELEM = 128,
+        TELEM,
         TELEM_SP,
     }
 

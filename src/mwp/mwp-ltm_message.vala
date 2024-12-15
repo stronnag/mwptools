@@ -16,11 +16,11 @@
  */
 
 namespace Mwp {
+
 	bool handle_ltm(MWSerial ser, Msp.Cmds cmd, uint8[]raw, uint len) {
 		bool handled = true;
 		lastrx = nticks;
 		Mwp.window.mmode.label = "LTM";
-
 		switch(cmd) {
 		case Msp.Cmds.TO_FRAME:
 			LTM_OFRAME of = LTM_OFRAME();

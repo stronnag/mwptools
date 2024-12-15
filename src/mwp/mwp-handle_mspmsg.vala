@@ -1601,10 +1601,6 @@ namespace Mwp {
                 want_special = 0;
                 MWPLog.message("%s %s\n", Mwp.window.verlab.label, Mwp.window.typlab.label);
 
-                if(replayer == Player.NONE) {
-                    MWPLog.message("switch val == %08x (%08x)\n", bxflag, lmask);
-                }
-
                 var reqsize = build_pollreqs();
                 var nreqs = requests.length;
                     // data we send, response is structs + this
