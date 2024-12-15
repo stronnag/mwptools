@@ -776,7 +776,9 @@ namespace Mwp {
 				{"audio-test", test_audio},
 				{"prefs", run_prefs},
 				{"toggle-fs", toggle_fs},
+				{"go-base", go_base},
 				{"go-home", go_home},
+				{"toggle-home", toggle_home},
 				{"handle-connect", Msp.handle_connect},
 				{"show-serial-stats", show_serial_stats},
 				{"areap", run_area_planner},
@@ -804,7 +806,9 @@ namespace Mwp {
 			app.set_accels_for_action ("win.hardreset", { "<primary>i" });
 			app.set_accels_for_action ("win.clearmission", { "<primary>z" });
 			app.set_accels_for_action ("win.pausereplay", { "space" });
+			app.set_accels_for_action ("win.go-base", { "<primary>b" });
 			app.set_accels_for_action ("win.go-home", { "<primary>h" });
+			app.set_accels_for_action ("win.toggle-home", { "<primary><shift>h" });
 			app.set_accels_for_action ("win.toggle-fs", { "F11" });
 			app.set_accels_for_action ("win.handle-connect", { "<primary><shift>c" });
 			app.set_accels_for_action ("win.show-serial-stats", { "<primary>s" });
@@ -824,8 +828,22 @@ namespace Mwp {
 		}
 	}
 
-	private void go_home() {
+	private void go_base() {
 		MapUtils.centre_on(Mwp.conf.latitude, Mwp.conf.longitude);
+	}
+	private void go_home() {
+		if(HomePoint.is_valid()) {
+			MapUtils.centre_on(HomePoint.hp.latitude, HomePoint.hp.longitude);
+		} else toggle_home();
+	}
+	private void toggle_home() {
+		if(HomePoint.is_valid()) {
+			HomePoint.try_hide();
+		} else {
+			double clat, clon;
+			MapUtils.get_centre_location(out clat, out clon);
+			HomePoint.set_home(clat, clon);
+		}
 	}
 
 	private void toggle_fs() {
