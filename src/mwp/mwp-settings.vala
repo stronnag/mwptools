@@ -180,6 +180,7 @@ public class MWPSettings : GLib.Object {
 		settings.bind("mission-path", this, "missionpath", SettingsBindFlags.DEFAULT);
 		settings.bind("mission-meta-tag", this, "missionmetatag", SettingsBindFlags.DEFAULT);
 		settings.bind("osd-mode", this, "osd-mode", SettingsBindFlags.DEFAULT);
+		settings.bind("p-pane-width", this, "p-pane-width", SettingsBindFlags.DEFAULT);
 		settings.bind("poll-timeout", this, "polltimeout", SettingsBindFlags.DEFAULT);
 		settings.bind("pos-is-centre", this, "pos-is-centre", SettingsBindFlags.DEFAULT);
 		settings.bind("radar-list-max-altitude", this, "radar-alert-altitude", SettingsBindFlags.DEFAULT);

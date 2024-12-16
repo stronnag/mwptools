@@ -414,6 +414,8 @@ namespace Mwp {
 							pevtck.leave.connect(() => {
 									var ww = window.get_width();
 									conf.p_pane_width = ww - pane.position;
+									MWPLog.message(":DBG: leave paned ww=%d ppos=%d pw=%d\n",
+												   ww, pane.position, conf.p_pane_width);
 								});
 							break;
 						}
