@@ -18,6 +18,10 @@ if build_machine.system() != 'linux'
   clsrcs += files('poll_serials.c')
 endif
 
+if build_machine.system() == 'windows'
+  clsrcs = files('winidle.c')
+endif
+
 common_inc_dir += [include_directories('.'), include_directories('../common')]
 
 clib_cargs=[]

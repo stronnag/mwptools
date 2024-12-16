@@ -48,6 +48,9 @@ namespace Mwp {
 				msp.close();
 			}
 			TTS.stop_audio();
+			if (inhibit_cookie != 0) {
+				MwpIdle.uninhibit(inhibit_cookie);
+			}
 			MBus.svc.quit();
 			MapManager.killall();
 		}

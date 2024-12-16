@@ -58,6 +58,7 @@ mwpsrcs = files('mwp-about.vala', 'mwp-ah_widget.vala',
                 'mwp-combox.vala',
                 'mwp-gpsstats.vala',
                 'mwp-gzmisc.vala',
+                'mwp-idler.vala',
                )
 
 mwpdeps = [deps,

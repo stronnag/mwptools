@@ -136,10 +136,8 @@ namespace Msp {
 		Mwp.csdq.clear();
 
         if(Mwp.inhibit_cookie != 0) {
-            Mwp.window.application.uninhibit(Mwp.inhibit_cookie);
+			MwpIdle.uninhibit(Mwp.inhibit_cookie);
             Mwp.inhibit_cookie = 0;
-            Mwp.dtnotify.send_notification("mwp", "Unhibit screen/idle/suspend");
-            MWPLog.message("Not managing screen / power settings\n");
         }
 		//        map_hide_wp(); // FIXME
         if(Mwp.replayer == Mwp.Player.NONE) {

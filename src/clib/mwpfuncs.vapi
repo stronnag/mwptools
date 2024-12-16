@@ -113,3 +113,12 @@ namespace MwpSerial {
 	[CCode (cname="get_error_number")]
 	int get_error_number();
 }
+
+[CCode (cheader_filename = "winidle.h")]
+namespace WinIdle {
+	[CCode (cname="inhibit")]
+	uint inhibit();
+
+	[CCode (cname="uninhibit")]
+	void uninhibit(uint c);
+}
