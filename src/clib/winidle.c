@@ -1,5 +1,4 @@
 #include <windows.h>
-#include <stdint.h>
 
 static unsigned int mPrevScreenSaver;
 
@@ -14,21 +13,3 @@ unsigned int inhibit(void) {
   SystemParametersInfo(SPI_SETSCREENSAVETIMEOUT, FALSE, NULL, 0);
   return cookie;
 }
-
-#if TEST
-#include <stdio.h>
-#include <unistd.h>
-
-int main(int argc, char**argv) {
-  int isleep = 120;
-
-  if(argc > 1) {
-    isleep = atoi(argv[1]);
-  }
-
-  unsigned int cookie = inhibit();
-  printf("cookie = %u\n", cookie);
-  sleep(isleep);
-  printf("uninhibit() %x\n", mPrevScreenSaver);
-}
-#endif

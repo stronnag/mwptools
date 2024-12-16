@@ -48,8 +48,10 @@ namespace Mwp {
 		}
         if((replayer & (Player.BBOX|Player.OTX|Player.RAW)) != 0 && LogPlay.child_pid != 0) {
 			if(!replay_paused) {
+				MWPLog.message("Resuming %d\n", LogPlay.child_pid);
 				ProcessLauncher.resume(LogPlay.child_pid);
 			} else {
+				MWPLog.message("Suspending %d\n", LogPlay.child_pid);
 				ProcessLauncher.suspend(LogPlay.child_pid);
 			}
         } else if(thr != null) {

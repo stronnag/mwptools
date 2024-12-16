@@ -58,8 +58,10 @@ namespace Mwp {
                 init_have_home(); // FIXME
 				Mwp.craft.new_craft(!no_trail, stack_size, mod_points);
                 MWPLog.message("Craft is armed, special=%x\n", want_special);
+#if UNIX
 				Mwp.window.armed_spinner.set_visible(true);
 				Mwp.window.armed_spinner.start();
+#endif
                 check_mission_home();
 
 				if(BBLV.vp != null) {

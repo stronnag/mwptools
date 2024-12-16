@@ -19,7 +19,7 @@ if build_machine.system() != 'linux'
 endif
 
 if build_machine.system() == 'windows'
-  clsrcs = files('winidle.c')
+  clsrcs += files('winidle.c')
 endif
 
 common_inc_dir += [include_directories('.'), include_directories('../common')]

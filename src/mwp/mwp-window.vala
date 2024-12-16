@@ -807,7 +807,7 @@ namespace Mwp {
 			app.set_accels_for_action ("win.mission-open", { "<primary>m" });
 			app.set_accels_for_action ("win.dmeasure", { "<primary>d" });
 			app.set_accels_for_action ("win.hardreset", { "<primary>i" });
-			app.set_accels_for_action ("win.clearmission", { "<primary>z" });
+			app.set_accels_for_action ("win.clearmission", { "<primary>c" });
 			app.set_accels_for_action ("win.pausereplay", { "space" });
 			app.set_accels_for_action ("win.go-base", { "<primary>b" });
 			app.set_accels_for_action ("win.go-home", { "<primary>h" });

@@ -1,4 +1,2 @@
-#include <stdint.h>
-
-extern u_int inhibit(void);
-extern void  inhibit(u_int);
+extern unsigned int inhibit(void);
+extern void uninhibit(unsigned int cookie);
