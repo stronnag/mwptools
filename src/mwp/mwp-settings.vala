@@ -22,7 +22,7 @@ public class MWPSettings : GLib.Object {
     public double latitude {get; set; default=0.0;}
     public double longitude {get; set; default=0.0;}
     public uint loiter {get; set; default=30;}
-    public uint altitude {get; set; default=20;}
+    public int altitude {get; set; default=20;}
     public double nav_speed {get; set; default=2.5;}
     public uint zoom {get; set; default=12;}
     public string? defmap {get; set; default="";}

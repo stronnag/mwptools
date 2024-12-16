@@ -81,7 +81,7 @@
       </description>
     </key>
 
-    <key name="default-altitude" type="u">
+    <key name="default-altitude" type="i">
       <default>20</default>
       <summary>Default altitude</summary>
       <description>
