@@ -8,7 +8,7 @@ endif
 
 paho = meson.get_compiler('c').find_library('paho-mqtt3cs', kwargs: pahoargs)
 
-clsrcs = files('btdev.c', 'get_locale_double.c', 'rserial.c', 'speech_wrapper.c')
+clsrcs = files('btdev.c', 'get_locale_double.c', 'rserial.c', 'speech_wrapper.c', 'getloc.c')
 if paho.found()
   clsrcs += files('paho_wrapper.c')
   clib_dep += paho

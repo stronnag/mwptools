@@ -1,5 +1,10 @@
 // MWP external C functions
 
+[CCode (cheader_filename = "getloc.h")]
+namespace UserLocale {
+    [CCode (cname="get_user_locale")]
+    string get_name();
+}
 
 [CCode (cheader_filename = "mwpfuncs.h")]
 namespace BTSocket {

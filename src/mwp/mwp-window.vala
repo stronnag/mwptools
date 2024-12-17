@@ -230,11 +230,21 @@ namespace Mwp {
 			return ok;
 		}
 
+		private void show_locale() {
+			var ulocale = UserLocale.get_name();
+			char latbuf[16];
+			char lonbuf[16];
+			var lat = Mwp.conf.latitude;
+			var lon = Mwp.conf.longitude;
+			MWPLog.message("Locale: %s (%s %s / %.3f %.3f)\n", ulocale, lat.format(latbuf, "%.3f"), lon.format(lonbuf, "%.3f"), lat, lon);
+		}
+
 		private void init_basics() {
 			conf = new MWPSettings();
 			if(conf.uilang == "en") {
 				Intl.setlocale(LocaleCategory.NUMERIC, "C");
 			}
+			show_locale();
 			TelemTracker.init();
 			devman = new DevManager(conf.bluez_disco);
 			devman.device_added.connect((dd) => {

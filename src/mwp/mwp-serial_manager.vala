@@ -29,7 +29,6 @@ namespace Mwp  {
 
 namespace Msp {
 	public void init() {
-		MWPLog.message(":DBG: MSP INIT\n");
 		Mwp.mqtt_available = false;
 		Mwp.msp = new MWSerial();
         Mwp.lastp = new Timer();
