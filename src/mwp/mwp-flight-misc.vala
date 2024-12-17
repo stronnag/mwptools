@@ -494,8 +494,7 @@ namespace Mwp {
 			rhdop = 10000;
 			init_have_home();
 
-			//			Mwp.window.armed_spinner.stop();
-			//Mwp.window.armed_spinner.visible=false;
+			Mwp.window.armed_spinner.visible=false;
 
 			if (conf.audioarmed == true)
 				Mwp.window.audio_cb.active = false;

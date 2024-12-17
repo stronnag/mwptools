@@ -58,10 +58,7 @@ namespace Mwp {
                 init_have_home(); // FIXME
 				Mwp.craft.new_craft(!no_trail, stack_size, mod_points);
                 MWPLog.message("Craft is armed, special=%x\n", want_special);
-				/*
 				Mwp.window.armed_spinner.set_visible(true);
-				Mwp.window.armed_spinner.start();
-				*/
                 check_mission_home();
 
 				if(BBLV.vp != null) {
@@ -100,8 +97,7 @@ namespace Mwp {
 					Odo.view.add_summary_event("Disarmed");
 				}
                 MWPLog.message("Disarmed %s\n", reason);
-				//				Mwp.window.armed_spinner.stop();
-				//Mwp.window.armed_spinner.set_visible(false);
+				Mwp.window.armed_spinner.set_visible(false);
                 MwpMenu.set_menu_state(Mwp.window, "followme", false);
                 duration = -1;
                 armtime = 0;

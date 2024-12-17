@@ -99,7 +99,7 @@ namespace Mwp {
 		[GtkChild]
 		internal unowned Gtk.Label validatelab;
 		[GtkChild]
-		internal unowned Gtk.Spinner armed_spinner;
+		internal unowned Gtk.Image armed_spinner;
 		[GtkChild]
 		internal unowned Gtk.Label statusbar1;
 		[GtkChild]

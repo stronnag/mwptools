@@ -34,7 +34,7 @@ namespace HomePoint {
 	}
 
 	public void try_hide() {
-		if (MissionManager.mdx == -1) {
+		/*if (MissionManager.mdx == -1)*/ {
 			if(hp != null)
 				hp.visible=false;
 		}
