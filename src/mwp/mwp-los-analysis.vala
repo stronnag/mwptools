@@ -462,7 +462,7 @@ public class LOSSlider : Adw.Window {
         spawn_args += "-home=%.8f,%.8f".printf(	HomePoint.hp.latitude, HomePoint.hp.longitude);
 		spawn_args += "-stdin";
 		if (mlog) {
-			MWPLog.message("LOS child %s\n", string.joinv(" ",spawn_args));
+			MWPLog.message(":DBG: LOS spawn %s\n", string.joinv(" ",spawn_args));
 		}
 
 		los = new ProcessLauncher();
