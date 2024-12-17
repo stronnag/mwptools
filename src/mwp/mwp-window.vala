@@ -48,6 +48,9 @@ namespace Mwp {
 				msp.close();
 			}
 			TTS.stop_audio();
+			if (inhibit_cookie != 0) {
+				MwpIdle.uninhibit(inhibit_cookie);
+			}
 			MBus.svc.quit();
 			MapManager.killall();
 		}
@@ -96,7 +99,7 @@ namespace Mwp {
 		[GtkChild]
 		internal unowned Gtk.Label validatelab;
 		[GtkChild]
-		internal unowned Gtk.Spinner armed_spinner;
+		internal unowned Gtk.Image armed_spinner;
 		[GtkChild]
 		internal unowned Gtk.Label statusbar1;
 		[GtkChild]
@@ -227,11 +230,21 @@ namespace Mwp {
 			return ok;
 		}
 
+		private void show_locale() {
+			var ulocale = UserLocale.get_name();
+			char latbuf[16];
+			char lonbuf[16];
+			var lat = Mwp.conf.latitude;
+			var lon = Mwp.conf.longitude;
+			MWPLog.message("Locale: %s (%s %s / %.3f %.3f)\n", ulocale, lat.format(latbuf, "%.3f"), lon.format(lonbuf, "%.3f"), lat, lon);
+		}
+
 		private void init_basics() {
 			conf = new MWPSettings();
 			if(conf.uilang == "en") {
 				Intl.setlocale(LocaleCategory.NUMERIC, "C");
 			}
+			show_locale();
 			TelemTracker.init();
 			devman = new DevManager(conf.bluez_disco);
 			devman.device_added.connect((dd) => {
@@ -411,6 +424,8 @@ namespace Mwp {
 							pevtck.leave.connect(() => {
 									var ww = window.get_width();
 									conf.p_pane_width = ww - pane.position;
+									MWPLog.message(":DBG: leave paned ww=%d ppos=%d pw=%d\n",
+												   ww, pane.position, conf.p_pane_width);
 								});
 							break;
 						}
@@ -804,7 +819,7 @@ namespace Mwp {
 			app.set_accels_for_action ("win.mission-open", { "<primary>m" });
 			app.set_accels_for_action ("win.dmeasure", { "<primary>d" });
 			app.set_accels_for_action ("win.hardreset", { "<primary>i" });
-			app.set_accels_for_action ("win.clearmission", { "<primary>z" });
+			app.set_accels_for_action ("win.clearmission", { "<primary>c" });
 			app.set_accels_for_action ("win.pausereplay", { "space" });
 			app.set_accels_for_action ("win.go-base", { "<primary>b" });
 			app.set_accels_for_action ("win.go-home", { "<primary>h" });

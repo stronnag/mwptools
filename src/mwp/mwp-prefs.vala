@@ -220,14 +220,14 @@ namespace Prefs {
 					Mwp.conf.longitude = d;
 				}
 
-				uint u = (uint)InputParser.get_scaled_int(defalt.text);
+				int u = (int)InputParser.get_scaled_int(defalt.text);
 				if(u != Mwp.conf.altitude) {
 					Mwp.conf.altitude = u;
 				}
 
-				u = uint.parse(defloiter.text);
-				if(u != Mwp.conf.loiter) {
-					Mwp.conf.loiter = u;
+				uint v = uint.parse(defloiter.text);
+				if(v != Mwp.conf.loiter) {
+					Mwp.conf.loiter = v;
 				}
 
 				d = InputParser.get_scaled_real(defspeed.text, "s");
@@ -235,10 +235,10 @@ namespace Prefs {
 					Mwp.conf.nav_speed = d;
 				}
 
-				u = uint.parse(defzoom.text);
+				v = uint.parse(defzoom.text);
 				if(u != Mwp.conf.zoom) {
-					Mwp.conf.zoom = u;
-					Mwp.set_zoom_sanely(u);
+					Mwp.conf.zoom = v;
+					Mwp.set_zoom_sanely(v);
 				}
 
 				i = int.parse(defspkint.text);

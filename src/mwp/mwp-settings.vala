@@ -22,7 +22,7 @@ public class MWPSettings : GLib.Object {
     public double latitude {get; set; default=0.0;}
     public double longitude {get; set; default=0.0;}
     public uint loiter {get; set; default=30;}
-    public uint altitude {get; set; default=20;}
+    public int altitude {get; set; default=20;}
     public double nav_speed {get; set; default=2.5;}
     public uint zoom {get; set; default=12;}
     public string? defmap {get; set; default="";}
@@ -180,6 +180,7 @@ public class MWPSettings : GLib.Object {
 		settings.bind("mission-path", this, "missionpath", SettingsBindFlags.DEFAULT);
 		settings.bind("mission-meta-tag", this, "missionmetatag", SettingsBindFlags.DEFAULT);
 		settings.bind("osd-mode", this, "osd-mode", SettingsBindFlags.DEFAULT);
+		settings.bind("p-pane-width", this, "p-pane-width", SettingsBindFlags.DEFAULT);
 		settings.bind("poll-timeout", this, "polltimeout", SettingsBindFlags.DEFAULT);
 		settings.bind("pos-is-centre", this, "pos-is-centre", SettingsBindFlags.DEFAULT);
 		settings.bind("radar-list-max-altitude", this, "radar-alert-altitude", SettingsBindFlags.DEFAULT);

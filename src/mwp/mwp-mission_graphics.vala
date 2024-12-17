@@ -220,6 +220,8 @@ namespace MsnTools {
 		var mi = new MissionItem();
 		mi.lat = lat;
 		mi.lon = lon;
+		mi.alt = (int)Mwp.conf.altitude;
+		mi.param1 = (int)(100*Mwp.conf.nav_speed);
 		mi.action = Msp.Action.WAYPOINT;
 		m.points.resize((int)m.npoints+1);
 		m.points[m.npoints] = mi;

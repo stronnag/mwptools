@@ -350,10 +350,9 @@ namespace Mwp {
 								idcount = 0;
                                 queue_cmd(Msp.Cmds.IDENT,null,0);
                                 if(inhibit_cookie != 0) {
-                                    Mwp.window.application.uninhibit(inhibit_cookie);
+									MWPLog.message("Not managing screen / power settings\n");
+									MwpIdle.uninhibit(inhibit_cookie);
                                     inhibit_cookie = 0;
-                                    dtnotify.send_notification("mwp", "Unhibit screen/idle/suspend");
-                                    MWPLog.message("Not managing screen / power settings\n");
                                 }
                                 run_queue();
                             } else if ((nticks - lastok) > tlimit ) {
@@ -506,8 +505,7 @@ namespace Mwp {
 		var mstr = "%s telemetry".printf(mtype);
 		MWPLog.message("%s\n", mstr);
 		if (conf.manage_power && inhibit_cookie == 0) {
-			inhibit_cookie = Mwp.window.application.inhibit(Mwp.window, Gtk.ApplicationInhibitFlags.IDLE|Gtk.ApplicationInhibitFlags.SUSPEND,"mwp telem");
-			dtnotify.send_notification("mwp", "Inhibiting screen/idle/suspend");
+			inhibit_cookie = MwpIdle.inhibit();
 			MWPLog.message("Managing screen idle and suspend (%x)\n", inhibit_cookie);
 		}
 		Mwp.window.mmode.label = mtype;

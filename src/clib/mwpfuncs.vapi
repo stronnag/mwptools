@@ -1,5 +1,10 @@
 // MWP external C functions
 
+[CCode (cheader_filename = "getloc.h")]
+namespace UserLocale {
+    [CCode (cname="get_user_locale")]
+    string get_name();
+}
 
 [CCode (cheader_filename = "mwpfuncs.h")]
 namespace BTSocket {
@@ -112,4 +117,13 @@ namespace MwpSerial {
     unowned string error_text(int err, char *buf, size_t len);
 	[CCode (cname="get_error_number")]
 	int get_error_number();
+}
+
+[CCode (cheader_filename = "winidle.h")]
+namespace WinIdle {
+	[CCode (cname="inhibit")]
+	uint inhibit();
+
+	[CCode (cname="uninhibit")]
+	void uninhibit(uint c);
 }

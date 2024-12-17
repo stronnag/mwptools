@@ -18,10 +18,10 @@
 public class LOSPoint : Object {
 	private static Shumate.MarkerLayer fmlayer;
 	private static Shumate.PathLayer []players;
-    private static MWPLabel fmpt;
-	private static double xlat;
-	private static double xlon;
-	private static double xalt;
+    internal static MWPLabel fmpt;
+	internal static double xlat;
+	internal static double xlon;
+	internal static double xalt;
 	public static bool is_init ;
 
 	public static void init() {
@@ -294,6 +294,9 @@ public class LOSSlider : Adw.Window {
 					if ((astate & (Gdk.ModifierType.SHIFT_MASK|Gdk.ModifierType.CONTROL_MASK)) != 0) {
 						incr = 2;
 					}
+					if(mlog) {
+						MWPLog.message(":DBG: Auto LOS from %d\n", ppos);
+					}
 					auto_run((int)ppos);
 				} else {
 					abutton.label = AUTO_LOS;
@@ -375,8 +378,16 @@ public class LOSSlider : Adw.Window {
 		Mwp.window.wpeditbutton.active = false;
 		mt = new MissionPreviewer();
 		mt.is_mr = true; // otherwise, gets confused by POSHOLD
-		plist =  mt.check_mission(MissionManager.current(), false);
+		ms.update_meta();
+		if(mlog) {
+			var str = ms.dump();
+			MWPLog.message(":DBG: Los %s\n", str);
+		}
+		plist =  mt.check_mission(ms, false);
 		maxd =  plist[plist.length-1].dist;
+		if(mlog) {
+			MWPLog.message(":DBG: Path %.1f %d\n", maxd, plist.length);
+		}
 		LOSPoint.show_los(true);
 		var pct = 0;
 		if (_auto == false) {
@@ -424,7 +435,9 @@ public class LOSSlider : Adw.Window {
 			update_from_pos(incr);
 		}
 		LOSPoint.get_lospt(out lat, out lon, out alt);
-		var losstr = "%.8f,%.8f,%.0f\n".printf(lat, lon, alt);
+		char cbuflat[16];
+		char cbuflon[16];
+		var losstr = "%s,%s,%d\n".printf(lat.format(cbuflat, "%.8f"), lon.format(cbuflon, "%.8f"), (int)alt);
 		var fd = los.get_stdin_pipe();
 		Posix.write(fd, losstr.data, losstr.data.length);
 	}
@@ -446,12 +459,17 @@ public class LOSSlider : Adw.Window {
 		if (_auto) {
 			spawn_args += "-no-graph";
 		}
+
+		char cbuflat[16];
+		char cbuflon[16];
+
 		spawn_args += "-localdem=%s".printf(DemManager.demdir);
 		spawn_args += "-margin=%d".printf(_margin);
-        spawn_args += "-home=%.8f,%.8f".printf(	HomePoint.hp.latitude, HomePoint.hp.longitude);
+        spawn_args += "-home=%s,%s".printf(	HomePoint.hp.latitude.format(cbuflat, "%.8f"),
+											HomePoint.hp.longitude.format(cbuflon, "%.8f"));
 		spawn_args += "-stdin";
 		if (mlog) {
-			MWPLog.message("LOS DBG %s\n", string.joinv(" ",spawn_args));
+			MWPLog.message(":DBG: LOS spawn %s\n", string.joinv(" ",spawn_args));
 		}
 
 		los = new ProcessLauncher();
@@ -466,7 +484,7 @@ public class LOSSlider : Adw.Window {
 				});
 			chan.add_watch (IOCondition.IN|IOCondition.HUP, (src, cond) => {
 					string line;
-					if (cond == IOCondition.HUP) {
+					if (cond != IOCondition.IN) {
 						return false;
 					}
 					try {
@@ -492,11 +510,10 @@ public class LOSSlider : Adw.Window {
 			double lat,lon;
 			double alt;
 			LOSPoint.get_lospt(out lat, out lon, out alt);
-			//			Idle.add_omce(() => {
-					LOSPoint.add_path(
-						HomePoint.hp.latitude,HomePoint.hp.longitude,
-						lat, lon, losc, ldist, incr);
-					//});
+			if(mlog) {
+				MWPLog.message(":DBG: h=(%f,%f) m=(%f,%f) %d %.2f %d\n", HomePoint.hp.latitude,HomePoint.hp.longitude, lat, lon, losc, ldist, incr);
+			}
+			LOSPoint.add_path(HomePoint.hp.latitude,HomePoint.hp.longitude, 	lat, lon, losc, ldist, incr);
 			if(_auto) {
 				var ppos = slider.get_value ();
 				ppos += incr;

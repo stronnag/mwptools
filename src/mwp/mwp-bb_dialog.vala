@@ -651,6 +651,12 @@ namespace BBL {
 						tz = new TimeZone.identifier(tzstr);
 					} catch (Error e) {
 						MWPLog.message("TZ id failed %s %s\n", tzstr, e.message);
+						tzstr = ts.substring(23,6);
+						try {
+							tz = new TimeZone.identifier(tzstr);
+						} catch (Error e) {
+							MWPLog.message(":DBG: Broken timezone db %s\n", e.message);
+						}
 					}
 					tss = (dt.to_timezone(tz)).format("%F %T %Z");
 				}
@@ -661,6 +667,7 @@ namespace BBL {
 		const string GURI="http://api.geonames.org/timezoneJSON?lat=%s&lng=%s&username=%s";
 		private void get_tz(double lat, double lon) {
 			string str = null;
+			string gmo = null;
 			char cbuflat[16];
 			char cbuflon[16];
 			lat.format(cbuflat, "%.6f");
@@ -706,17 +713,18 @@ namespace BBL {
 							var parser = new Json.Parser ();
 							parser.load_from_data (s);
 							var item = parser.get_root ().get_object ();
-							if (item.has_member("timezoneId"))
+							if (item.has_member("timezoneId")) {
 								str = item.get_string_member ("timezoneId");
-							else if (item.has_member("gmtOffset")) {
+							}
+							if (item.has_member("gmtOffset")) {
 								var gmtd = item.get_double_member ("gmtOffset");
 								int gmth = (int)gmtd;
 								int gmtm = (int)((gmtd - gmth)*60.0);
-								str = "%+03d:%02d".printf(gmth, gmtm);
+								gmo = "%+03d%02d".printf(gmth, gmtm);
 							}
 
 							if(str != null) {
-								MWPLog.message("Geonames %f %f %s\n", lat, lon, str);
+								MWPLog.message("Geonames %f %f [%s %s]\n", lat, lon, str, gmo);
 								add_if_missing(str, true);
 							} else {
 								MWPLog.message("Geonames: <%s>\n", uri);

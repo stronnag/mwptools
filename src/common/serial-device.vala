@@ -460,6 +460,8 @@ public class MWSerial : Object {
 #if UNIX
 	private uint tag;
     private IOChannel io_chan;
+#else
+	private bool foad;
 #endif
 	private const int WEAKSIZE = 1;
 
@@ -727,9 +729,6 @@ public class MWSerial : Object {
         clear_counters();
         state = States.S_HEADER;
 		msgq = new AsyncQueue<INAVEvent?>();
-		if ((commode & ComMode.UDP) == ComMode.UDP) {
-			skt.timeout = 2;
-		}
 #if UNIX
 		try {
             io_chan = new IOChannel.unix_new(fd);
@@ -741,6 +740,10 @@ public class MWSerial : Object {
             error("IOChannel: %s", e.message);
         }
 #else
+		if ((commode & ComMode.UDP) == ComMode.UDP) {
+			skt.timeout = 1;
+		}
+		foad = false;
 		new Thread<bool>("reader", () => {
 				MWPLog.message(":DBG: Open I/O thread\n");
 				thr_io();
@@ -1104,6 +1107,7 @@ public class MWSerial : Object {
 				}
 #endif
 			} else {
+				MWPLog.message(":DBG: Close for socket closed=%s\n", skt.is_closed().to_string());
 				if (!skt.is_closed()) {
                     try {
 						if ((commode & ComMode.UDP) == 0) {
@@ -1118,9 +1122,13 @@ public class MWSerial : Object {
 		}
 		closing |= 2;
 		clearup();
+#if !UNIX
+		foad = true;
+#endif
     }
 
 	private void clearup() {
+		MWPLog.message(":DBG: clearup closing %x\n", closing);
 		if(closing == 3) {
 			closing = 0;
 			fd = -1;
@@ -1212,14 +1220,13 @@ public class MWSerial : Object {
 				try {
 					skt.condition_wait(wcond);
 				} catch (Error e){
-					MWPLog.message(":DBG: WCond : %s\n", e.message);
+					MWPLog.message(":DBG: WCond : %s foad: %s\n", e.message, foad.to_string());
  				}
 				var cond = skt.condition_check(wcond);
 				if(IOCondition.IN in cond) {
 					res = device_io();
-				} else {
+				} else if (foad) {
 					closing |= 1;
-					MWPLog.message(":DBG: W64 Cond is %x, cleanup %x\n", cond, closing);
 					clearup();
 					if (available) {
 						serial_lost();
@@ -1248,11 +1255,10 @@ public class MWSerial : Object {
 			} else if ((commode & ComMode.UDP) == ComMode.UDP) {
 				try {
 					res = skt.receive_from(out sockaddr, devbuf);
-					if (res < 0) {
-						MWPLog.message("Received res err %d\n", res);
+					if (res <= 0) {
+						MWPLog.message("Received 0 or less %d\n", res);
 					}
 				} catch(Error e) {
-
                     res = 0;
                 }
 			} else if((commode & ComMode.TCP) == ComMode.TCP) {

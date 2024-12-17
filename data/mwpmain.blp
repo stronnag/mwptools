@@ -306,10 +306,12 @@ template $MwpWindow: Adw.ApplicationWindow {
             hexpand: false;
           }
 
-          Gtk.Spinner armed_spinner {
+	  Gtk.Image armed_spinner  {
+            icon-name: "dialog-warning-symbolic";
             halign: fill;
             hexpand: false;
-          }
+	    visible: false;
+	  }
 
           Gtk.Label validatelab {
             label: " ";

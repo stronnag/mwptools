@@ -487,38 +487,40 @@ namespace Mwp {
 				//wpmgr.wps = {};
 			}
         }
-        init_sstats();
-        armed = 0;
-        rhdop = 10000;
-        init_have_home();
-        Mwp.window.armed_spinner.stop();
-        Mwp.window.armed_spinner.visible=false;
-        if (conf.audioarmed == true)
-            Mwp.window.audio_cb.active = false;
-        if(conf.logarmed == true)
-            Mwp.window.logger_cb.active=false;
 
-		Battery.set_bat_stat(0);
-		msp.td.gps.annul();
-		msp.td.atti.annul();
-		msp.td.alt.annul();
-		msp.td.power.annul();
-		msp.td.rssi.annul();
-		msp.td.comp.annul();
-		msp.td.origin.annul();
+		if (replayer  == 0) {
+			init_sstats();
+			armed = 0;
+			rhdop = 10000;
+			init_have_home();
 
-		duration = -1;
-		craft.remove_all();
-		RangeCircles.remove_rings();
-        xsensor = 0;
-        //clear_sensor_array();
+			Mwp.window.armed_spinner.visible=false;
+
+			if (conf.audioarmed == true)
+				Mwp.window.audio_cb.active = false;
+			if(conf.logarmed == true)
+				Mwp.window.logger_cb.active=false;
+
+			Battery.set_bat_stat(0);
+			msp.td.gps.annul();
+			msp.td.atti.annul();
+			msp.td.alt.annul();
+			msp.td.power.annul();
+			msp.td.rssi.annul();
+			msp.td.comp.annul();
+			msp.td.origin.annul();
+
+			craft.remove_all();
+			RangeCircles.remove_rings();
+			xsensor = 0;
+		}
+			//clear_sensor_array();
 		if(Kml.kmls != null) {
-			Kml.remove_all();
+				Kml.remove_all();
 		}
 
 		if ((ms == null || ms.npoints == 0) && !Mwp.window.wpeditbutton.active) {
 			HomePoint.try_hide();
 		}
-
     }
 }
