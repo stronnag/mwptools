@@ -167,9 +167,9 @@ public class Mission : GLib.Object {
         maxx=-180;
         miny=90;
         minx=180;
+        maxalt = -2147483648;
         cx = cy = 0;
         zoom = 0;
-        maxalt = -2147483647;
         dist = -1;
         et = -1;
         lt = -1;
@@ -255,39 +255,54 @@ public class Mission : GLib.Object {
         return true;
     }
 
-    public void dump(int maxwp) {
-        if(version != null)
-            stdout.printf("Version: %s\n",version);
+    public string dump(bool td = false) {
+		StringBuilder sb = new StringBuilder("Mission:\n");
+		if(version != null)
+            sb.append_printf("\tVersion: %s\n",version);
 		foreach (var m in points) {
-			stdout.printf ("%d %s %f %f %u p1=%d p2=%d p3=%d flg=%0x\n",
+			sb.append_printf ("\t%d %s %f %f %u p1=%d p2=%d p3=%d flg=%0x\n",
 						   m.no,
 						   Msp.get_wpname(m.action),
 						   m.lat, m.lon, m.alt,
 						   m.param1, m.param2, m.param3, m.flag);
 		}
-		stdout.printf("lon (x)  min,max %f %f\n", minx, maxx);
-		stdout.printf("lat (y) min,max %f %f\n", miny, maxy);
-		stdout.printf("cy cx %f %f %d\n", cy, cx, (int)zoom);
+		sb.append_printf("\tlon (x)  min,max %f %f\n", minx, maxx);
+		sb.append_printf("\tlat (y) min,max %f %f\n", miny, maxy);
+		sb.append_printf("\tcy cx %f %f %d\n", cy, cx, (int)zoom);
 		if(dist != -1) {
-			stdout.printf("distance %.1f m\n", dist);
-			stdout.printf("flight time %d s\n", et);
+			sb.append_printf("\tdistance %.1f m\n", dist);
+		}
+		if(td) {
+			sb.append_printf("\tflight time %d s\n", et);
 			if(lt != -1)
-				stdout.printf("loiter time %d s\n", lt);
+				sb.append_printf("\tloiter time %d s\n", lt);
 			if(nspeed == 0 && dist > 0 && et > 0)
 				nspeed = dist / (et - 3*points.length);
-			stdout.printf("speed %.1f m/s\n", nspeed);
+			sb.append_printf("\tspeed %.1f m/s\n", nspeed);
+			if(maxalt != 0x80000000) {
+				sb.append_printf("\tmax altitude %d\n", maxalt);
+			}
 		}
-		if(maxalt != 0x80000000)
-			stdout.printf("max altitude %d\n", maxalt);
-		stdout.printf("Mission is %svalid\n", (is_valid(maxwp) == true) ? "" : "in");
+
+		sb.append_printf("\thp %f %f %d\n", HomePoint.lat(), HomePoint.lon(), (int)HomePoint.is_valid());
+		sb.append_printf("\tvalidity %d,%d\n", (int)is_valid(120), (int)MissionManager.is_dirty);
+		return sb.str;
 	}
 
 	public void update_meta(bool use_hp=true) {
 		npoints = points.length;
+        maxy=-90;
+        maxx=-180;
+        miny=90;
+        minx=180;
+        maxalt = -2147483648;
 		if (npoints > 0) {
 			points[npoints-1].flag = 0xa5;
 			for(var i = 0; i < npoints; i++) {
 				check_wp_sanity(ref points[i]);
+				if (points[i].alt > maxalt) {
+					maxalt = points[i].alt;
+				}
 			}
 			cy = (maxy + miny) / 2.0;
 			cx = (maxx + minx) / 2.0;

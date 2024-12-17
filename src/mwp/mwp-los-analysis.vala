@@ -376,8 +376,15 @@ public class LOSSlider : Adw.Window {
 		mt = new MissionPreviewer();
 		mt.is_mr = true; // otherwise, gets confused by POSHOLD
 		ms.update_meta();
+		if(mlog) {
+			var str = ms.dump();
+			MWPLog.message(":DBG: Los %s\n", str);
+		}
 		plist =  mt.check_mission(ms, false);
 		maxd =  plist[plist.length-1].dist;
+		if(mlog) {
+			MWPLog.message(":DBG: Path %.1f %d\n", maxd, plist.length);
+		}
 		LOSPoint.show_los(true);
 		var pct = 0;
 		if (_auto == false) {
@@ -452,7 +459,7 @@ public class LOSSlider : Adw.Window {
         spawn_args += "-home=%.8f,%.8f".printf(	HomePoint.hp.latitude, HomePoint.hp.longitude);
 		spawn_args += "-stdin";
 		if (mlog) {
-			MWPLog.message("LOS DBG %s\n", string.joinv(" ",spawn_args));
+			MWPLog.message("LOS child %s\n", string.joinv(" ",spawn_args));
 		}
 
 		los = new ProcessLauncher();
@@ -493,10 +500,10 @@ public class LOSSlider : Adw.Window {
 			double lat,lon;
 			double alt;
 			LOSPoint.get_lospt(out lat, out lon, out alt);
-			//print("***** %f %f %d %.2f %d\n", lat, lon, losc, ldist, incr);
-			LOSPoint.add_path(
-						HomePoint.hp.latitude,HomePoint.hp.longitude,
-						lat, lon, losc, ldist, incr);
+			if(mlog) {
+				MWPLog.message(":DBG: h=(%f,%f) m=(%f,%f) %d %.2f %d\n", HomePoint.hp.latitude,HomePoint.hp.longitude, lat, lon, losc, ldist, incr);
+			}
+			LOSPoint.add_path(HomePoint.hp.latitude,HomePoint.hp.longitude, 	lat, lon, losc, ldist, incr);
 			if(_auto) {
 				var ppos = slider.get_value ();
 				ppos += incr;
