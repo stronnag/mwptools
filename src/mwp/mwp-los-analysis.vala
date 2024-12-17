@@ -294,6 +294,9 @@ public class LOSSlider : Adw.Window {
 					if ((astate & (Gdk.ModifierType.SHIFT_MASK|Gdk.ModifierType.CONTROL_MASK)) != 0) {
 						incr = 2;
 					}
+					if(mlog) {
+						MWPLog.message(":DBG: Auto LOS from %d\n", ppos);
+					}
 					auto_run((int)ppos);
 				} else {
 					abutton.label = AUTO_LOS;
