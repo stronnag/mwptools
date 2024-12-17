@@ -435,7 +435,9 @@ public class LOSSlider : Adw.Window {
 			update_from_pos(incr);
 		}
 		LOSPoint.get_lospt(out lat, out lon, out alt);
-		var losstr = "%.8f,%.8f,%.0f\n".printf(lat, lon, alt);
+		char cbuflat[16];
+		char cbuflon[16];
+		var losstr = "%s,%s,%d\n".printf(lat.format(cbuflat, "%.8f"), lon.format(cbuflon, "%.8f"), (int)alt);
 		var fd = los.get_stdin_pipe();
 		Posix.write(fd, losstr.data, losstr.data.length);
 	}
@@ -457,9 +459,14 @@ public class LOSSlider : Adw.Window {
 		if (_auto) {
 			spawn_args += "-no-graph";
 		}
+
+		char cbuflat[16];
+		char cbuflon[16];
+
 		spawn_args += "-localdem=%s".printf(DemManager.demdir);
 		spawn_args += "-margin=%d".printf(_margin);
-        spawn_args += "-home=%.8f,%.8f".printf(	HomePoint.hp.latitude, HomePoint.hp.longitude);
+        spawn_args += "-home=%s,%s".printf(	HomePoint.hp.latitude.format(cbuflat, "%.8f"),
+											HomePoint.hp.longitude.format(cbuflon, "%.8f"));
 		spawn_args += "-stdin";
 		if (mlog) {
 			MWPLog.message(":DBG: LOS spawn %s\n", string.joinv(" ",spawn_args));
