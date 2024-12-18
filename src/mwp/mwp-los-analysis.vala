@@ -303,7 +303,6 @@ public class LOSSlider : Adw.Window {
 					is_running = false;
 					if (los != null) {
 						var pid = los.get_pid();
-						Posix.close(los.get_stdin_pipe());
 						ProcessLauncher.kill(pid);
 					}
 				}
@@ -359,7 +358,7 @@ public class LOSSlider : Adw.Window {
 				is_running = false;
 				if (los != null) {
 					var pid = los.get_pid();
-					Posix.close(los.get_stdin_pipe());
+					//					Posix.close(los.get_stdin_pipe());
 					ProcessLauncher.kill(pid);
 				}
 				LOSPoint.clear_all();
@@ -509,17 +508,19 @@ public class LOSSlider : Adw.Window {
 		if (!_auto || is_running) {
 			double lat,lon;
 			double alt;
+			var ppos = slider.get_value ();
 			LOSPoint.get_lospt(out lat, out lon, out alt);
 			if(mlog) {
-				MWPLog.message(":DBG: h=(%f,%f) m=(%f,%f) %d %.2f %d\n", HomePoint.hp.latitude,HomePoint.hp.longitude, lat, lon, losc, ldist, incr);
+				MWPLog.message(":DBG: h=(%f,%f) m=(%f,%f) %d %.2f %d (%.1f)\n", HomePoint.hp.latitude,HomePoint.hp.longitude, lat, lon, losc, ldist, incr, ppos/10.0);
 			}
 			LOSPoint.add_path(HomePoint.hp.latitude,HomePoint.hp.longitude, 	lat, lon, losc, ldist, incr);
 			if(_auto) {
-				var ppos = slider.get_value ();
 				ppos += incr;
 				if (ppos > 1000) {
 					slider.set_value(1000.0);
-					Posix.close(los.get_stdin_pipe());
+					//					Posix.close(los.get_stdin_pipe());
+					var pid = los.get_pid();
+					ProcessLauncher.kill(pid);
 					auto_reset();
 				} else {
 					slider.set_value(ppos);

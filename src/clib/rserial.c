@@ -314,26 +314,30 @@ void set_timeout(int fd, __attribute__ ((unused)) int p0, __attribute__ ((unused
 }
 
 int open_serial(const char *device, int baudrate) {
-     HANDLE hfd = CreateFile(device,
-			     GENERIC_READ|GENERIC_WRITE,
-			     0,
-			     NULL,
-			     OPEN_EXISTING,
-			     FILE_FLAG_OVERLAPPED,
-			     NULL);
+  SECURITY_ATTRIBUTES secattr;
+  secattr.nLength = sizeof secattr;
+  secattr.lpSecurityDescriptor = NULL;
+  secattr.bInheritHandle = FALSE;
+  HANDLE hfd = CreateFile(device,
+			  GENERIC_READ|GENERIC_WRITE,
+			  0,
+			  &secattr,
+			  OPEN_EXISTING,
+			  FILE_FLAG_OVERLAPPED,
+			  NULL);
 
-     int fd = -1;
-     if(hfd != INVALID_HANDLE_VALUE) {
-	  u_long ft = GetFileType(hfd);
-          if(ft != 0) {
+  int fd = -1;
+  if(hfd != INVALID_HANDLE_VALUE) {
+    u_long ft = GetFileType(hfd);
+    if(ft != 0) {
                fd = _open_osfhandle ((intptr_t)hfd, O_RDWR);
-          } else {
-               fd = 0x4000000 + (int)(intptr_t)hfd;
-          }
-	  set_timeout(fd, 0, 0);
-	  set_fd_speed(fd, baudrate);
-     }
-     return fd;
+    } else {
+      fd = 0x4000000 + (int)(intptr_t)hfd;
+    }
+    set_timeout(fd, 0, 0);
+    set_fd_speed(fd, baudrate);
+  }
+  return fd;
 }
 
 void close_serial(int fd) {
