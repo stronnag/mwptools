@@ -58,27 +58,29 @@ namespace Mwp {
         if(nsats != _nsats) {
             if(nsats < msats) {
                 if(nsats < _nsats) {
-                    scflags = SAT_FLAGS.URGENT|SAT_FLAGS.BEEP;
-                } else if((lastrx - last_ga) > USATINTVL) {
+                    //scflags = SAT_FLAGS.URGENT|SAT_FLAGS.BEEP;
+                } else if((lastrx - last_gps) > USATINTVL) {
                     scflags = SAT_FLAGS.URGENT;
                 }
             } else {
                 if(nsats < msats)
                     scflags = SAT_FLAGS.URGENT;
-                else if((lastrx - last_ga) > UUSATINTVL) {
-                    scflags = SAT_FLAGS.NEEDED;
-                }
+                //else if((lastrx - last_ga) > UUSATINTVL) {
+				//	reason = 1;
+                //    scflags = SAT_FLAGS.NEEDED;
+                //}
             }
 			_nsats = nsats;
-        }
-
-        if((scflags == 0) && ((lastrx - last_ga) > SATINTVL)) {
-            scflags = SAT_FLAGS.NEEDED;
-        }
-
-        if(scflags != SAT_FLAGS.NONE) {
-            gps_alert(scflags);
 			MBus.update_fix();
+        }
+
+		//        if((scflags == 0) && ((lastrx - last_ga) > SATINTVL)) {
+		//	reason = 2;
+        //    scflags = SAT_FLAGS.NEEDED;
+        //}
+        if(scflags != SAT_FLAGS.NONE) {
+			MWPLog.message(":DBG: gps alert %x\n", scflags);
+            gps_alert(scflags);
         }
 	}
 
