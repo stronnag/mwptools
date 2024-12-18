@@ -14,8 +14,8 @@
 ### How, where
 
 * [**GitHub Issues preferred**](https://github.com/stronnag/mwptools/issues)
-* INAV discord (`#off-topic`)
-    * Most likely you will be requested to raise a [GitHub Issue](https://github.com/stronnag/mwptools/issues) for non-trivial cases or if there is an [Information requirement](#information-requirements). Hint, you can easily cut out the middle-man here.
+* [irc.libera.chat #mwptools](ircs://irc.libera.chat/mwptools)
+* Most likely you will be requested to raise a [GitHub Issue](https://github.com/stronnag/mwptools/issues) for non-trivial cases or if there is an [Information requirement](#information-requirements). Hint, you can easily cut out the middle-man here.
 * Ensure you're running the latest `master` version.
 * See also [Information requirements](#information-requirements). Without this information, it is unlikely that any, non-trivial, support can be given.
 
@@ -28,9 +28,15 @@
 * FreeBSD latest `RELEASE`
 * Supported Desktop Enviroment / Window Managers: basically must comply with XDG standards, specifically GNOME, KDE, xfce, LXqt, labwc, wayfire.
 
+#### Tolerated OS
+
+* Windows (via Msys2)
+* MacOS (Homebrew)
+
 ### Supported infrastructure
 
 * Native hardware (x64_x86, ia32, aarch64, riscv64).
+* Open source OS
 * Non-proprietary video driver.
 * qemu/kvm virtualised instances.
 * Little endian (big endian never tested).
