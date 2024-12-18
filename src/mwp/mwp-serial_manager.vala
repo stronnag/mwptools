@@ -209,7 +209,21 @@ namespace Msp {
 		Mwp.window.typlab.set_label("");
 		Mwp.window.mmode.set_label("");
 		MwpMenu.set_menu_state(Mwp.window, "followme", false);
+#if !UNIX
+		set_analytics_state(true);
+#endif
 	}
+
+	private void set_analytics_state(bool state) {
+		string[] als = {"mta", "mlosa"};
+		foreach (var a in als) {
+			if(state) {
+				state = (state && Mwp.x_plot_elevations_rb);
+			}
+			MwpMenu.set_menu_state(Mwp.window, a, state);
+		}
+	}
+
 
 	private uint8 pmask_to_mask(uint j) {
 		switch(j) {
@@ -221,6 +235,9 @@ namespace Msp {
 	}
 
 	private void serial_complete_setup(string serdev, bool ostat) {
+#if !UNIX
+		set_analytics_state(false);
+#endif
 		Mwp.window.conbutton.sensitive = true;
 		Mwp.hard_display_reset();
 		if (ostat == true) {
