@@ -222,7 +222,7 @@ static HANDLE get_nul_handle(void) {
   SECURITY_ATTRIBUTES secattr;
   secattr.nLength = sizeof secattr;
   secattr.lpSecurityDescriptor = NULL;
-  secattr.bInheritHandle = TRUE;
+  secattr.bInheritHandle = FALSE;
   return CreateFile(_T("NUL"), GENERIC_ALL, 0, &secattr, OPEN_EXISTING, 0, NULL);
 }
 
