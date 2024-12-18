@@ -86,9 +86,9 @@ The following tables summarise the available menu options. Where usage is not ob
 
 ## Map and Mission Settings (2)
 
-A number of different map provides are available. {{ mwp }} offers the mapping library (`libshumate`) defaults, MapBox, Bing Map, and [user defined options](mwp-Configuration.md#sourcesjson), for example [anonymous maps](Black-Ops.md).
+A number of different map provides are available. {{ mwp }} offers the mapping library (`libshumate`) defaults, MapBox, Bing Map, and [user defined options](mwp-Configuration.md/#additional-map-sources-sourcesjson), for example [anonymous maps](Black-Ops.md).
 
-Note that Bing Maps is deprecated, and MapBox will only be offered if the user has supplied a MapBox API key.
+Note that Bing Maps is deprecated by Microsoft, and MapBox will only be offered if the user has supplied a MapBox API key.
 
 The zoom level may be selected from the control here, or by zooming the map with the mouse wheel.
 

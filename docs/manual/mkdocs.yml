@@ -96,8 +96,9 @@ nav:
       - Fly-By-Home-waypoints-(inav-4-new-feature).md
       - Black-Ops.md
       - mwp-follow-me.md
-  - 'Build and Install':
+  - 'Build and Install / OS Specific':
       - Building-with-meson-and-ninja.md
+      - 'Windows (MSys2)' : mwp-windows-msys.md
   - Miscellaneous:
       - mwp-Power-and-screen-management.md
       - inav-4.0-multi-missions.md

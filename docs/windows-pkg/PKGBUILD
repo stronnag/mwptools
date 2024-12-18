@@ -1,0 +1,70 @@
+# Maintainer: Jonathan Hudson <jh+mwptools@daria.co.uk>
+
+_pkgname=mwptools
+_realname=mwptools
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=24.12.10.r1.d0011eda
+pkgrel=1
+pkgdesc='mission planner for INAV and MultiWii'
+arch=('any')
+mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
+url='https://github.com/stronnag/mwptools'
+source=("$_pkgname::git+$url#development")
+license=('GPL-3.0-or-later')
+makedepends=('git' 
+             "${MINGW_PACKAGE_PREFIX}-gcc"
+             "${MINGW_PACKAGE_PREFIX}-binutils"
+             "${MINGW_PACKAGE_PREFIX}-vala"
+	     "${MINGW_PACKAGE_PREFIX}-meson"
+	     "${MINGW_PACKAGE_PREFIX}-go"
+	     "${MINGW_PACKAGE_PREFIX}-blueprint-compiler")
+depends=("${MINGW_PACKAGE_PREFIX}-gtk4"
+	 "${MINGW_PACKAGE_PREFIX}-gstreamer"
+	 "${MINGW_PACKAGE_PREFIX}-gtk4-media-gstreamer"
+	 "${MINGW_PACKAGE_PREFIX}-cairo"
+	 "${MINGW_PACKAGE_PREFIX}-pango"
+	 "${MINGW_PACKAGE_PREFIX}-libxml2"
+	 "${MINGW_PACKAGE_PREFIX}-mosquitto"
+	 "${MINGW_PACKAGE_PREFIX}-libshumate"
+	 "${MINGW_PACKAGE_PREFIX}-libadwaita"
+	 "${MINGW_PACKAGE_PREFIX}-libsoup3"
+	 "${MINGW_PACKAGE_PREFIX}-libsecret")
+optdepends=('blackbox-tools-git: Replay Blackbox files (AUR)'
+	    "${MINGW_PACKAGE_PREFIX}-protobuf-c: enable protobuf-c for readsb/ADSB"
+	    "${MINGW_PACKAGE_PREFIX}-gnuplot: Mission Elevation plots"
+	    "${MINGW_PACKAGE_PREFIX}-ruby: Various analysis tools"
+	    "${MINGW_PACKAGE_PREFIX}-paho-mqtt-c-git: Alternative MQTT library (AUR)"
+	    "${MINGW_PACKAGE_PREFIX}-espeak: speech synth"
+	    "${MINGW_PACKAGE_PREFIX}-espeak-ng-espeak: espeak alternative"
+	    "${MINGW_PACKAGE_PREFIX}-speech-dispatcher: espeak alternative"
+	    "${MINGW_PACKAGE_PREFIX}-flite: espeak alternative"
+  )
+provides=("$_pkgname")
+conflicts=("$_pkgname")
+source=("$_pkgname::git+$url#branch=development")
+sha512sums=('SKIP')
+
+pkgver() {
+  cd "${srcdir}/${_pkgname}"
+  printf "%s" "$(git describe --long --tags | sed 's/\([^-]*-\)g/r\1/;s/-/./g')"
+}
+
+build() {
+  cd $_pkgname
+
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+  ${MINGW_PREFIX}/bin/meson.exe setup \
+    --prefix=${MINGW_PREFIX} \
+    --wrap-mode=nodownload \
+    --default-library=both \
+    --buildtype=plain \
+    build
+
+  ${MINGW_PREFIX}/bin/ninja -C build
+}
+
+package() {
+  cd $_pkgname
+  DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/ninja -C build install
+}
