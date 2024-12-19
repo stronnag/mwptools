@@ -87,6 +87,10 @@ Otherwise it is necessary to build and install [`mwp-log-replay`](https://github
 
 Raw logs containing MSP, LTM, MAVLink, CRSF and MPM Smartport and IBUS messages can be replayed.
 
+## Pause / Resume
+
+The playing state may be toggled with the **space** bar. If a [video is associated with the blackbox replay](mwp_video_player.md), then pausing the video will pause the blackbox replay and vice-versa.
+
 ## Display of RC Stick positions
 
 Where such data is available (Blackbox, OTX/ETX logs), {{ mwp }} can display the position of the 'sticks'. This is displayed in the bottom right corner of the map.

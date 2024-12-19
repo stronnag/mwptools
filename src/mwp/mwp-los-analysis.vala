@@ -143,7 +143,8 @@ public class LOSSlider : Adw.Window {
 	private int _margin;
 	private bool mlog;
 	private int incr;
-	private ProcessLauncher los;
+	internal ProcessLauncher los;
+	internal int lospid;
 	public signal void new_margin(int m);
 	internal string[] tempdirs;
 
@@ -302,8 +303,7 @@ public class LOSSlider : Adw.Window {
 					abutton.label = AUTO_LOS;
 					is_running = false;
 					if (los != null) {
-						var pid = los.get_pid();
-						ProcessLauncher.kill(pid);
+						ProcessLauncher.kill(lospid);
 					}
 				}
 			});
@@ -357,9 +357,7 @@ public class LOSSlider : Adw.Window {
 				new_margin(_margin);
 				is_running = false;
 				if (los != null) {
-					var pid = los.get_pid();
-					//					Posix.close(los.get_stdin_pipe());
-					ProcessLauncher.kill(pid);
+					ProcessLauncher.kill(lospid);
 				}
 				LOSPoint.clear_all();
 				Utils.terminate_plots();
@@ -475,8 +473,8 @@ public class LOSSlider : Adw.Window {
 		var res = los.run_argv(spawn_args, ProcessLaunch.STDOUT|ProcessLaunch.STDIN);
 		if (res) {
 			var chan = los.get_stdout_iochan();
-			var pid = los.get_pid();
-			var gdir = TAClean.get_tmp(pid);
+			lospid = los.get_pid();
+			var gdir = TAClean.get_tmp(lospid);
 			tempdirs += gdir;
 			los.complete.connect(() => {
 					try{chan.shutdown(false);} catch {}
@@ -518,10 +516,14 @@ public class LOSSlider : Adw.Window {
 				ppos += incr;
 				if (ppos > 1000) {
 					slider.set_value(1000.0);
-					//					Posix.close(los.get_stdin_pipe());
-					var pid = los.get_pid();
-					ProcessLauncher.kill(pid);
+					if(mlog) {
+						MWPLog.message(":DBG: Ending LOS child\n");
+					}
+					ProcessLauncher.kill(lospid);
 					auto_reset();
+					if(mlog) {
+						MWPLog.message(":DBG: Ended LOS child\n");
+					}
 				} else {
 					slider.set_value(ppos);
 					update_from_pos(ppos);

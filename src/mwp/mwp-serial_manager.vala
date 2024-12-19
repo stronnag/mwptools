@@ -214,7 +214,11 @@ namespace Msp {
 #endif
 	}
 
+#if !UNIX
 	private void set_analytics_state(bool state) {
+		if(Environment.get_variable("MWP_ALLOW_LOSA") != null) {
+			return;
+		}
 		string[] als = {"mta", "mlosa"};
 		foreach (var a in als) {
 			if(state) {
@@ -223,7 +227,7 @@ namespace Msp {
 			MwpMenu.set_menu_state(Mwp.window, a, state);
 		}
 	}
-
+#endif
 
 	private uint8 pmask_to_mask(uint j) {
 		switch(j) {
