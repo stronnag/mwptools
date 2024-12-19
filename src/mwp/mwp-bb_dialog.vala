@@ -23,6 +23,7 @@ namespace BBLError {
 namespace BBL {
 	BBL.Window bbl;
 	MapUtils.BoundingBox bbox;
+	Utils.Warning_box wb;
 
 	public void replay_bbl(string? s) {
 		bbl = new BBL.Window();
@@ -488,7 +489,8 @@ namespace BBL {
 					sw.set_child(l);
 					sw.propagate_natural_height = true;
 					sw.propagate_natural_width = true;
-					Utils.warning_box(title, 0, this, sw);
+					wb = new Utils.Warning_box(title, 0, this, sw);
+					wb.present();
 				}
 				return;
 			}
@@ -815,11 +817,9 @@ namespace BBL {
 								Rebase.relocate(ref bbox.minlat, ref bbox.minlon);
 								Rebase.relocate(ref bbox.maxlat, ref bbox.maxlon);
 							}
-							//							MainContext.@default().invoke(()=> { rescale(); return false; });
-							Idle.add_once(()=> { rescale();});
+							Idle.add(()=> { rescale();return false;});
 						}
 					}
-					//MainContext.@default().invoke(()=> {thr.join(); return false;});
 					return 0;
 				});
 		}

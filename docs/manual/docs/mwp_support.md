@@ -28,7 +28,7 @@
 * FreeBSD latest `RELEASE`
 * Supported Desktop Enviroment / Window Managers: basically must comply with XDG standards, specifically GNOME, KDE, xfce, LXqt, labwc, wayfire.
 
-#### Tolerated OS
+#### Tolerated / Unsupported OS
 
 * Windows (via Msys2)
 * MacOS (Homebrew)
@@ -36,7 +36,7 @@
 ### Supported infrastructure
 
 * Native hardware (x64_x86, ia32, aarch64, riscv64).
-* Open source OS
+* Open source OS (Linux or FreeBSD)
 * Non-proprietary video driver.
 * qemu/kvm virtualised instances.
 * Little endian (big endian never tested).

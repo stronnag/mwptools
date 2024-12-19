@@ -90,9 +90,10 @@ namespace Radar {
 				});
 			rp.enter.connect((x,y) => {
 					rp.extra.visible=true;
-					tt_timer = Timeout.add_seconds_once(30, () => {
+					tt_timer = Timeout.add_seconds(30, () => {
 							tt_timer = 0;
 							rp.extra.visible=false;
+							return false;
 						});
 				});
             rp.set_selectable(false);

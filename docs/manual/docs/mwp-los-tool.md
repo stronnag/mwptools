@@ -72,7 +72,7 @@ It is important to note that Area LOS is performed at 1% increments of the [naiv
 
 ![Bad LOS](images/fail-los.png)
 
-If you press a modifier (Shift or Control) while invoking "Area LOS", you get 0.1% increments, which may be used to investigate small segments (it will be slow ... and resource intensive). Here a detailed analysis has been run from 33.6% to 34.6% which captures the instance of complete loss of LOS.
+If you press a modifier (Shift or Control) while invoking "Area LOS", you get 0.2% increments, which may be used to investigate small segments (it will be slow ... and resource intensive). Here a detailed analysis has been run from 33.6% to 34.6% which captures the instance of complete loss of LOS.
 
 ![Auto_no LOS](images/auto-bad-los.png)
 

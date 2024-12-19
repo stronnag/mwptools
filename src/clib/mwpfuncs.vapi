@@ -127,3 +127,8 @@ namespace WinIdle {
 	[CCode (cname="uninhibit")]
 	void uninhibit(uint c);
 }
+
+#if !UNIX
+[CCode (cheader_filename = "winerror.h")]
+public const int ERROR_TIMEOUT;
+#endif

@@ -81,6 +81,8 @@ public class GeoZoneManager {
 	private int8 _nextz;
 	private int8 _nextv;
 
+	internal Utils.Warning_box wb;
+
 	public void reset() {
 		for(var k = 0; k < MAXGZ; k++) {
 			zs[k].type = GZType.Unused;
@@ -246,7 +248,8 @@ public class GeoZoneManager {
 				var s = "<b>Zone %d fails vertex validation</b>".printf(i);
 				StringBuilder sb = new StringBuilder(s);
 				sb.append("\nmwp's geozone local cache has been cleared\nYou may wish to upload this to reset the FC's geozone database");
-				Utils.warning_box(sb.str);
+				wb = new Utils.Warning_box(sb.str);
+				wb.present();
 			}
 		}
 		return ok;

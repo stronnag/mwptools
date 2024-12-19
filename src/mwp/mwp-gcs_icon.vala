@@ -193,8 +193,9 @@ namespace Gpsd {
 					try {
 						var ares = this.read_gps.end(res);
 						if (!ares) {
-							Timeout.add_seconds_once(30, () => {
+							Timeout.add_seconds(30, () => {
 									try_gps_read();
+									return false;
 								});
 						}
 					} catch {}

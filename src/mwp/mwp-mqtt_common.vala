@@ -42,7 +42,7 @@ public class MwpMQTT : Object {
     public bool active = false;
     public bool available = false;
     private Thread<int> thr;
-    private uint8 send_once = 0;
+    private uint8 one_send = 0;
     private uint8 bltvers = 2;
 
         //private bool wppub ;
@@ -64,7 +64,7 @@ public class MwpMQTT : Object {
         nframe = MSP_NAV_STATUS();
         wpcount = 0;
         wpvalid = 0;
-        send_once = 0;
+        one_send = 0;
     }
 
     public signal void mqtt_mission(MSP_WP[] wps, int nwp);
@@ -168,7 +168,7 @@ public class MwpMQTT : Object {
                         tmp = sframe.flags & 0xfe;
                         sframe.flags = tmp | armed;
                         if (armed == 0) {
-                            send_once = 0;
+                            one_send = 0;
                             durat = 0;
                         }
                         break;
@@ -229,12 +229,12 @@ public class MwpMQTT : Object {
                         wpvalid = (uint8)int.parse(attrs[1]);
                         if (wpvalid == 1 && wpcount > 0) {
                             if (wps[wpcount -1].flag == 0xa5) {
-                                if ((send_once & 2) == 0) {
+                                if ((one_send & 2) == 0) {
                                     Idle.add(() => {
                                             mqtt_mission(wps, (int)wpcount);
                                             return false;
                                         });
-                                    send_once |= 2;
+                                    one_send |= 2;
                                 }
                             }
                         }
@@ -243,9 +243,9 @@ public class MwpMQTT : Object {
                         wpcount = (uint8)int.parse(attrs[1]);
                         break;
                     case "cs":
-                        if ((send_once & 1) == 0) {
+                        if ((one_send & 1) == 0) {
                             Idle.add(() => { mqtt_craft_name(attrs[1]); return false; });
-                            send_once |= 1;
+                            one_send |= 1;
                         }
                         break;
                     case "ont":

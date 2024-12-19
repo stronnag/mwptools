@@ -60,6 +60,8 @@ namespace Mwp {
 	public double clat;
 	public double clon;
 
+	static bool dex;
+
 	const OptionEntry[] options = {
 		{ "auto-connect", 'a', 0, OptionArg.NONE, null, "Legacy, ignored)", null},
 		{ "build-id", 0, 0, OptionArg.NONE, null, "show build id", null},
@@ -335,6 +337,7 @@ namespace Mwp {
 		}
 #endif
 		public override void activate () {
+			dex = true;
 #if UNIX
 			if((Posix.geteuid() == 0 || Posix.getuid() == 0)) {
 				MWPLog.message("Cowardly refusing to run as root ... for your own safety\n");
@@ -399,7 +402,17 @@ namespace Mwp {
 		private int _command_line (ApplicationCommandLine command_line) {
 			string[] args = command_line.get_arguments ();
 			foreach (var a in args[1:args.length]) {
-				extra_files.append_val(a);
+				bool add_arg=true;
+				if(a.has_prefix("MWP")) {
+					var parts = a.split("=");
+					if (parts.length == 2) {
+						Environment.set_variable(parts[0], parts[1], true);
+						add_arg=false;
+					}
+				}
+				if(add_arg) {
+					extra_files.append_val(a);
+				}
 			}
 			var o = command_line.get_options_dict();
 			set_opts_from_dict(o);
@@ -456,7 +469,6 @@ namespace Mwp {
 		}
 	}
 
-	static bool dex = true;
 	public void do_exit_tasks() {
 		if (dex) {
 			MWPLog.message("Cleaning up ...\n");

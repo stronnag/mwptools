@@ -223,22 +223,23 @@ public class GMProxy : Soup.Server {
         }
 
 		var loop = new MainLoop();
-		Idle.add_once(() => {
-		IOChannel io_chan;
+		Idle.add(() => {
+				IOChannel io_chan;
 #if UNIX
-		io_chan = new IOChannel.unix_new(stdin.fileno());
+				io_chan = new IOChannel.unix_new(stdin.fileno());
 #else
-		io_chan = new IOChannel.win32_new_fd(stdin.fileno());
+				io_chan = new IOChannel.win32_new_fd(stdin.fileno());
 #endif
-		try {io_chan.set_encoding(null); } catch {}
-		io_chan.set_buffered(false);
-		io_chan.add_watch(IOCondition.IN|IOCondition.HUP|
-						  IOCondition.NVAL|IOCondition.ERR, (chan, cond) => {
-							  if((cond & IOCondition.HUP|IOCondition.NVAL|IOCondition.ERR) != 0) {
-								  loop.quit();
-							  }
-							  return true;
-						  });
+				try {io_chan.set_encoding(null); } catch {}
+				io_chan.set_buffered(false);
+				io_chan.add_watch(IOCondition.IN|IOCondition.HUP|
+								  IOCondition.NVAL|IOCondition.ERR, (chan, cond) => {
+									  if((cond & IOCondition.HUP|IOCondition.NVAL|IOCondition.ERR) != 0) {
+										  loop.quit();
+									  }
+									  return true;
+								  });
+				return false;
 			});
 		var o = new GMProxy();
         try {

@@ -116,7 +116,7 @@ namespace Mwp {
                     Mwp.window.logger_cb.active=false;
                 }
                 reboot_status();
-            }
+			}
         }
         larmed = armed;
         return changed;

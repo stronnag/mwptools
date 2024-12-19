@@ -265,8 +265,9 @@ namespace Mwp {
 
     private void flash_gps() {
         Mwp.window.gpslab.label = "<span foreground = '%s'>⬤</span>".printf(conf.led);
-        Timeout.add_once(25, () => {
+        Timeout.add(25, () => {
                 Mwp.window.gpslab.set_label("◯");
+				return false;
             });
     }
 

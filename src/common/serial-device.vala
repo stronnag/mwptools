@@ -743,6 +743,11 @@ public class MWSerial : Object {
 		if ((commode & ComMode.UDP) == ComMode.UDP) {
 			skt.timeout = 1;
 		}
+		if ((commode & ComMode.TTY) == ComMode.TTY) {
+			MwpSerial.set_timeout(fd, 0, 5);
+		}
+
+
 		foad = false;
 		new Thread<bool>("reader", () => {
 				MWPLog.message(":DBG: Open I/O thread\n");
@@ -1191,7 +1196,7 @@ public class MWSerial : Object {
 #if UNIX
 			sport_event();
 #else
-			Idle.add_once(() => { sport_event();});
+			Idle.add(() => { sport_event(); return false;});
 #endif
 		}
 		return res;
@@ -1225,33 +1230,46 @@ public class MWSerial : Object {
 				var cond = skt.condition_check(wcond);
 				if(IOCondition.IN in cond) {
 					res = device_io();
-				} else if (foad) {
-					closing |= 1;
-					clearup();
-					if (available) {
-						serial_lost();
-					}
-					res = false;
 				}
 			} else {
 				res = device_io();
+			}
+			if (foad) {
+				closing |= 1;
+				clearup();
+				if (available) {
+					serial_lost();
+				}
+				res = false;
 			}
 		} while (res);
 		return res;
 	}
 #endif
 	private bool device_io() {
-		size_t res = 0;
+		ssize_t res = 0;
 #if LINUX
 		if((commode & ComMode.BT) == ComMode.BT) {
 			res = Posix.recv(fd, devbuf, MemAlloc.DEV, 0);
-			if (res < 0) {
-				Posix.perror("BLE");
+			if (res <= 0) {
+				lasterr = Posix.errno;
+				if (lasterr == 0 || lasterr == Posix.EAGAIN || lasterr == Posix.EINTR) {
+					return true;
+				}
 			}
 		} else
 #endif
 			if ((commode & ComMode.TTY) == ComMode.TTY) {
 				res = MwpSerial.read(fd, devbuf, MemAlloc.DEV);
+#if !UNIX
+				if (res == 0) {
+					var err = MwpSerial.get_error_number();
+					if (err == 0 || err == ERROR_TIMEOUT) {
+						Thread.usleep(1000*2);
+						return true;
+					}
+				}
+#endif
 			} else if ((commode & ComMode.UDP) == ComMode.UDP) {
 				try {
 					res = skt.receive_from(out sockaddr, devbuf);
@@ -1276,9 +1294,8 @@ public class MWSerial : Object {
 				closing |= 1;
 				clearup();
 				if (available) {
-					Idle.add_once(() => { serial_lost(); });
+					Idle.add(() => { serial_lost();return false; });
 				}
-
 				return false;
 			}
 
@@ -1286,7 +1303,7 @@ public class MWSerial : Object {
 				csize = (uint16)res;
 				var msg = INAVEvent(){cmd=0, len=csize, flags=0, err=false, raw=devbuf};
 				msgq.push(msg);
-				Idle.add_once(() => {cli_event();});
+				Idle.add(() => {cli_event();return false;});
 			} else {
                 if(stime == 0)
                     stime =  GLib.get_monotonic_time();
@@ -1311,7 +1328,7 @@ public class MWSerial : Object {
 #if UNIX
 							flysky_event();
 #else
-							Idle.add_once(() => {flysky_event();});
+							Idle.add(() => {flysky_event();return false;});
 #endif
 						}
 					} else {
@@ -1409,7 +1426,7 @@ public class MWSerial : Object {
 #if UNIX
 									crsf_event();
 #else
-									Idle.add_once(() => {crsf_event();});
+									Idle.add(() => {crsf_event();return false;});
 #endif
 								}
 							}
@@ -1578,7 +1595,7 @@ public class MWSerial : Object {
 #if UNIX
 									serial_event();
 #else
-									Idle.add_once(() => { serial_event(); });
+									Idle.add(() => { serial_event();return false; });
 #endif
 								}
 								irxbufp = 0;
@@ -1665,7 +1682,7 @@ public class MWSerial : Object {
 #if UNIX
 								serial_event();
 #else
-								Idle.add_once(() => {serial_event();});
+								Idle.add(() => {serial_event();return false;});
 #endif
 								irxbufp = 0;
 							} else {

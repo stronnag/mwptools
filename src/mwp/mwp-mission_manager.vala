@@ -502,9 +502,6 @@ namespace MissionManager {
 		if((Mwp.debug_flags & Mwp.DEBUG_FLAGS.LOSANA) != Mwp.DEBUG_FLAGS.NONE) {
 			losa.set_log(true);
 		}
-		losa.new_margin.connect((m) => {
-				Mwp.conf.los_margin = m;
-			});
 		losa.run(ms, no, false);
 	}
 

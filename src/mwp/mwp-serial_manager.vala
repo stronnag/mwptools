@@ -24,10 +24,12 @@ namespace Mwp  {
 #if MQTT
     MwpMQTT mqtt;
 #endif
-
 }
 
 namespace Msp {
+	Utils.Warning_box wb0;
+	Utils.Warning_box wb1;
+
 	public void init() {
 		Mwp.mqtt_available = false;
 		Mwp.msp = new MWSerial();
@@ -46,6 +48,9 @@ namespace Msp {
         Mwp.msp.serial_event.connect(() => {
 				MWSerial.INAVEvent? m;
 				while((m = Mwp.msp.msgq.try_pop()) != null) {
+					if(Mwp.DEBUG_FLAGS.MSP in Mwp.debug_flags) {
+						MWPLog.message(":DBG: MSP: %d %u\n", m.cmd, Mwp.msp.msgq.length());
+					}
 					Mwp.handle_serial(Mwp.msp, m.cmd,m.raw,m.len,m.flags,m.err);
 				}
 			});
@@ -209,25 +214,10 @@ namespace Msp {
 		Mwp.window.typlab.set_label("");
 		Mwp.window.mmode.set_label("");
 		MwpMenu.set_menu_state(Mwp.window, "followme", false);
-#if !UNIX
-		set_analytics_state(true);
-#endif
+		Battery.bat_annul();
+		Battery.update = true;
+		Battery.set_bat_stat(0);
 	}
-
-#if !UNIX
-	private void set_analytics_state(bool state) {
-		if(Environment.get_variable("MWP_ALLOW_LOSA") != null) {
-			return;
-		}
-		string[] als = {"mta", "mlosa"};
-		foreach (var a in als) {
-			if(state) {
-				state = (state && Mwp.x_plot_elevations_rb);
-			}
-			MwpMenu.set_menu_state(Mwp.window, a, state);
-		}
-	}
-#endif
 
 	private uint8 pmask_to_mask(uint j) {
 		switch(j) {
@@ -239,17 +229,11 @@ namespace Msp {
 	}
 
 	private void serial_complete_setup(string serdev, bool ostat) {
-#if !UNIX
-		set_analytics_state(false);
-#endif
 		Mwp.window.conbutton.sensitive = true;
 		Mwp.hard_display_reset();
 		if (ostat == true) {
 			Mwp.xarm_flags=0xffff;
 			Mwp.lastrx = Mwp.lastok = Mwp.nticks;
-			Mwp.init_state();
-			Mwp.init_sstats();
-			Battery.bat_annul();
 			MWPLog.message("Connected %s (nopoll %s)\n", serdev, Mwp.nopoll.to_string());
 			Mwp.set_replay_menus(false);
 			if(Mwp.rawlog == true) {
@@ -277,11 +261,13 @@ namespace Msp {
 		} else {
 			string estr = null;
 			Mwp.msp.get_error_message(out estr);
-			Utils.warning_box("""Unable to open serial device:
+			wb0 = new Utils.Warning_box("""Unable to open serial device:
 Error: <i>%s</i>
 
 * Check that <u>%s</u> is available / connected.
 * Please verify you are a member of the owning group, typically 'dialout' or 'uucp'""".printf(estr, serdev), 0);
+
+			wb0.present();
 		}
 		Mwp.reboot_status();
 	}
@@ -294,7 +280,8 @@ Error: <i>%s</i>
 		bool ostat = false;
 		Mwp.serstate = Mwp.SERSTATE.NONE;
 		if(Radar.lookup_radar(serdev) || serdev == Mwp.forward_device) {
-			Utils.warning_box("The selected device is assigned to a special function (radar / forwarding).\nPlease choose another device", 60);
+			wb1 = new Utils.Warning_box("The selected device is assigned to a special function (radar / forwarding).\nPlease choose another device", 60);
+			wb1.present();
 			return;
 		} else if (serdev.has_prefix("mqtt://") ||
 				   serdev.has_prefix("ssl://") ||
@@ -308,15 +295,21 @@ Error: <i>%s</i>
 			Mwp.serstate = Mwp.SERSTATE.TELEM;
 			serial_complete_setup(serdev, ostat);
 #else
-			Utils.warning_box("MQTT is not enabled in this build\nPlease see the wiki for more information\nhttps://github.com/stronnag/mwptools/wiki/mqtt---bulletgcss-telemetry\n", 60);
+			new Utils.Warning_box("MQTT is not enabled in this build\nPlease see the wiki for more information\nhttps://github.com/stronnag/mwptools/wiki/mqtt---bulletgcss-telemetry\n", 60);
 			return;
 #endif
 		} else {
 			if (TelemTracker.ttrk.is_used(serdev)) {
-				Utils.warning_box("The selected device is use for Telemetry Tracking\n", 60);
+				new Utils.Warning_box("The selected device is use for Telemetry Tracking\n", 60);
 				return;
 			}
 			TelemTracker.ttrk.disable(serdev);
+			Mwp.init_state();
+			Mwp.init_sstats();
+			Battery.bat_annul();
+			Battery.update = true;
+			Battery.set_bat_stat(0);
+
 			MWPLog.message("Trying OS open for %s\n", serdev);
 			Mwp.window.conbutton.sensitive = false;
 			Mwp.msp.open_async.begin(serdev, Mwp.conf.baudrate, (obj,res) => {

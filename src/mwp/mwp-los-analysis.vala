@@ -68,16 +68,11 @@ public class LOSPoint : Object {
 
 	public static void add_path(double lat0, double lon0, double lat1, double lon1, uint8 col,
 								double ldist, int incr) {
-		Gdk.RGBA green = {0.0f, 1.0f, 0.0f, 0.5f};
-		Gdk.RGBA warning = {1.0f, 0.65f, 0.0f, 0.5f};
-		Gdk.RGBA red = {1.0f, 0.0f, 0.0f, 0.5f};
+		Gdk.RGBA green = {0.0f, 1.0f, 0.0f, 0.4f};
+		Gdk.RGBA warning = {1.0f, 0.65f, 0.0f, 0.4f};
+		Gdk.RGBA red = {1.0f, 0.0f, 0.0f, 0.4f};
 
         var pmlayer = new Shumate.PathLayer(Gis.map.viewport);
-		var llist = new List<uint>();
-        llist.append(5);
-        llist.append(5);
-        llist.append(15);
-        llist.append(5);
 		Gdk.RGBA wcol;
 		switch(col) {
 		case 0:
@@ -95,8 +90,7 @@ public class LOSPoint : Object {
 		}
 
 		pmlayer.set_stroke_color(wcol);
-        pmlayer.set_dash(llist);
-        pmlayer.set_stroke_width (6);
+        pmlayer.set_stroke_width (incr+4);
 		var ip0 =  new  Shumate.Marker();
 		ip0.latitude = lat0;
 		ip0.longitude = lon0;
@@ -140,13 +134,14 @@ public class LOSSlider : Adw.Window {
 	private static bool is_running;
 	private bool  _auto;
 	private bool  _can_auto;
-	private int _margin;
+	internal int _margin;
 	private bool mlog;
 	private int incr;
 	internal ProcessLauncher los;
 	internal int lospid;
-	public signal void new_margin(int m);
+	internal int losstdin;
 	internal string[] tempdirs;
+	internal Timer atimer;
 
 	public void set_log(bool _mlog) {
 		mlog = _mlog;
@@ -225,7 +220,6 @@ public class LOSSlider : Adw.Window {
 		}
 	}
 
-
 	private void set_marker_state(bool state) {
 		var mklist =  Gis.mm_layer.get_markers();
 		for (unowned GLib.List<weak Shumate.Marker> lp = mklist.first(); lp != null; lp = lp.next) {
@@ -240,6 +234,7 @@ public class LOSSlider : Adw.Window {
 		tempdirs = {};
 		_can_auto = true;
 		_margin = lmargin;
+		atimer = new Timer();
 		this.title = "LOS Analysis";
 		var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 2);
 		var header_bar = new Adw.HeaderBar();
@@ -296,8 +291,15 @@ public class LOSSlider : Adw.Window {
 						incr = 2;
 					}
 					if(mlog) {
-						MWPLog.message(":DBG: Auto LOS from %d\n", ppos);
+						MWPLog.message(":DBG: Area LOS from %d (sampling %d)\n", ppos, incr);
 					}
+					if(Environment.get_variable("MWP_LOSA_PAUSE_POLLER") != null) {
+						if(Mwp.msp.available && Mwp.serstate == Mwp.SERSTATE.POLLER) {
+							MWPLog.message(":DBG: Pausing MSP Poller\n");
+							Mwp.pause_poller(Mwp.SERSTATE.MISC_WORK);
+						}
+					}
+					atimer.start();
 					auto_run((int)ppos);
 				} else {
 					abutton.label = AUTO_LOS;
@@ -305,6 +307,10 @@ public class LOSSlider : Adw.Window {
 					if (los != null) {
 						ProcessLauncher.kill(lospid);
 					}
+					if (Mwp.serstate == Mwp.SERSTATE.MISC_WORK) {
+						Mwp.reset_poller();
+					}
+					auto_reset();
 				}
 			});
 
@@ -354,15 +360,16 @@ public class LOSSlider : Adw.Window {
 
 		this.close_request.connect(() => {
 				_margin = mentry.get_value_as_int ();
-				new_margin(_margin);
+				Mwp.conf.los_margin = _margin;
 				is_running = false;
-				if (los != null) {
-					ProcessLauncher.kill(lospid);
-				}
+				ProcessLauncher.kill(lospid);
 				LOSPoint.clear_all();
 				Utils.terminate_plots();
 				set_marker_state(true);
 				TAClean.clean_tmps(tempdirs);
+				if (Mwp.serstate == Mwp.SERSTATE.MISC_WORK) {
+					Mwp.reset_poller();
+				}
 				return false;
 			});
 		this.set_content(box);
@@ -435,8 +442,7 @@ public class LOSSlider : Adw.Window {
 		char cbuflat[16];
 		char cbuflon[16];
 		var losstr = "%s,%s,%d\n".printf(lat.format(cbuflat, "%.8f"), lon.format(cbuflon, "%.8f"), (int)alt);
-		var fd = los.get_stdin_pipe();
-		Posix.write(fd, losstr.data, losstr.data.length);
+		Posix.write(losstdin, losstr.data, losstr.data.length);
 	}
 
 	private void auto_reset() {
@@ -473,10 +479,14 @@ public class LOSSlider : Adw.Window {
 		var res = los.run_argv(spawn_args, ProcessLaunch.STDOUT|ProcessLaunch.STDIN);
 		if (res) {
 			var chan = los.get_stdout_iochan();
+			losstdin = los.get_stdin_pipe();
 			lospid = los.get_pid();
 			var gdir = TAClean.get_tmp(lospid);
 			tempdirs += gdir;
 			los.complete.connect(() => {
+					if(mlog) {
+						MWPLog.message(":DBG: close mpe %d\n", lospid);
+					}
 					try{chan.shutdown(false);} catch {}
 				});
 			chan.add_watch (IOCondition.IN|IOCondition.HUP, (src, cond) => {
@@ -501,9 +511,9 @@ public class LOSSlider : Adw.Window {
 	}
 
 	void read_spipe(string line) {
-		uint8 losc  = (uint8)int.parse(line[0:1]);
-		double ldist = double.parse(line[2:]);
 		if (!_auto || is_running) {
+			uint8 losc  = (uint8)int.parse(line[0:1]);
+			double ldist = double.parse(line[2:]);
 			double lat,lon;
 			double alt;
 			var ppos = slider.get_value ();
@@ -511,10 +521,15 @@ public class LOSSlider : Adw.Window {
 			if(mlog) {
 				MWPLog.message(":DBG: h=(%f,%f) m=(%f,%f) %d %.2f %d (%.1f)\n", HomePoint.hp.latitude,HomePoint.hp.longitude, lat, lon, losc, ldist, incr, ppos/10.0);
 			}
-			LOSPoint.add_path(HomePoint.hp.latitude,HomePoint.hp.longitude, 	lat, lon, losc, ldist, incr);
+			Idle.add(() => {
+					LOSPoint.add_path(HomePoint.hp.latitude,HomePoint.hp.longitude, lat, lon, losc, ldist, incr);
+					return false;
+				});
 			if(_auto) {
 				ppos += incr;
 				if (ppos > 1000) {
+					var et = atimer.elapsed();
+					MWPLog.message("LOS generation took %.1fs\n", et);
 					slider.set_value(1000.0);
 					if(mlog) {
 						MWPLog.message(":DBG: Ending LOS child\n");
@@ -523,6 +538,9 @@ public class LOSSlider : Adw.Window {
 					auto_reset();
 					if(mlog) {
 						MWPLog.message(":DBG: Ended LOS child\n");
+					}
+					if (Mwp.serstate == Mwp.SERSTATE.MISC_WORK) {
+						Mwp.reset_poller();
 					}
 				} else {
 					slider.set_value(ppos);

@@ -84,6 +84,7 @@ namespace Mwp {
 		MISC_BULK,
         TELEM,
         TELEM_SP,
+		MISC_WORK,
     }
 
 	[Flags]

@@ -15,6 +15,10 @@
  * (c) Jonathan Hudson <jh+mwptools@daria.co.uk>
  */
 
+namespace MWPWarn {
+	Utils.Warning_box wb5;
+}
+
 namespace Mwp {
 	bool telem;
 	bool seenMSP;
@@ -277,6 +281,8 @@ namespace Mwp {
         last_ltmf = 0xff;
         Mwp.window.validatelab.set_text("");
         msats = SATS.MINSATS;
+		Battery.init();
+		Battery.set_bat_stat(0);
         Battery.curr = {false, 0, 0, 0};
         varios.idx = 0;
     }
@@ -290,7 +296,7 @@ namespace Mwp {
     }
 
 	void msg_poller() {
-        if(serstate == SERSTATE.POLLER) {
+        if(msp.available && serstate == SERSTATE.POLLER) {
 			ptdiff = 0.0;
             send_poll();
 			run_queue();
@@ -370,7 +376,8 @@ namespace Mwp {
 										idcount++;
 										if(idcount == Mwp.conf.ident_limit) {
 											Msp.close_serial();
-											Utils.warning_box("No response received from the FC\nPlesae check connection and protocol\nConsider <tt>--no-poll</tt> if this is intentional\nSee also the <tt>ident-limit</tt> setting");
+											MWPWarn.wb5 = new Utils.Warning_box("No response received from the FC\nPlesae check connection and protocol\nConsider <tt>--no-poll</tt> if this is intentional\nSee also the <tt>ident-limit</tt> setting");
+											MWPWarn.wb5.present();
 											idcount = 0;
 										}
 									}
@@ -489,13 +496,15 @@ namespace Mwp {
     }
 
     private void reset_poller() {
-		MWPLog.message(":DBG: Reset Poller\n");
-		if(starttasks == 0) {
-			lastok = nticks;
-			if(serstate != SERSTATE.NONE && serstate != SERSTATE.TELEM) {
-				if(nopoll == false) // FIXNOPOLL
-					serstate = SERSTATE.POLLER;
-				msg_poller();
+		if(msp.available) {
+			MWPLog.message(":DBG: Reset Poller\n");
+			if(starttasks == 0) {
+				lastok = nticks;
+				if(serstate != SERSTATE.NONE && serstate != SERSTATE.TELEM) {
+					if(nopoll == false) // FIXNOPOLL
+						serstate = SERSTATE.POLLER;
+					msg_poller();
+				}
 			}
 		}
     }
@@ -590,7 +599,7 @@ namespace Mwp {
 				var twait = (uint)(1000*(et-ptdiff));
 				if (twait < 8) {
 					twait = 8 - twait;
-					Timeout.add_once(twait, () => { next_poll(); });
+					Timeout.add(twait, () => { next_poll();return false;});
 				} else {
 					next_poll();
 				}
@@ -684,7 +693,6 @@ namespace Mwp {
 			var msg = "No %s detected".printf(nss);
 			Mwp.add_toast_text(msg);
 			MWPLog.message("no %s, sensor = 0x%x\n", nss, sensor);
-			Mwp.window.statusbar1.label = msg;
 			if(gpscnt < 5) {
 				gpscnt++;
 			}

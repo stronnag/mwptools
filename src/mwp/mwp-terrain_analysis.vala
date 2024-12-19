@@ -191,7 +191,7 @@ namespace TA {
 						int sts = 0;
 						var ok = subp.get_status(out sts);
 						if(ok) {
-							Idle.add_once(() => {
+							Idle.add(() => {
 									var pid = subp.get_pid();
 									var gdir = TAClean.get_tmp(pid);
 									var fn = Path.build_filename(gdir, "mwpmission.plt");
@@ -203,6 +203,7 @@ namespace TA {
 											gsubp.complete.connect(() => {});
 										}
 									}
+									return false;
 								});
 							if (replname != null) {
 								MissionManager.open_mission_file(replname);

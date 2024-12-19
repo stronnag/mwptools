@@ -15,6 +15,15 @@
  * (c) Jonathan Hudson <jh+mwptools@daria.co.uk>
  */
 
+
+namespace MWPWarn {
+	Utils.Warning_box wb8;
+	Utils.Warning_box wb9;
+	Utils.Warning_box wba;
+	Utils.Warning_box wbb;
+	Utils.Warning_box wbc;
+}
+
 namespace Mwp {
     private WPMGR wpmgr;
     private uint8 last_wp_pts =0;
@@ -125,7 +134,7 @@ namespace Mwp {
         wpmgr.wp_flag &= ~WPDL.CALLBACK;
         MBus.nwpts = pts;
 		// must use Idle.add as we may not otherwise hit the mainloop
-        Idle.add_once (() => { MBus.svc.callback(); });
+        Idle.add (() => { MBus.svc.callback(); return false; });
     }
 
     private void report_special_wp(MSP_WP w) {
@@ -148,7 +157,8 @@ namespace Mwp {
 			remove_tid(ref upltid);
 			wp_reset_poller();
 			Mwp.window.validatelab.set_text("⚠"); // u+26a0
-			Utils.warning_box("Upload cancelled", 10);
+			MWPWarn.wb8 = new Utils.Warning_box("Upload cancelled", 10);
+			MWPWarn.wb8.present();
             return;
 		}
         w.wp_no = *rp++;
@@ -192,7 +202,8 @@ namespace Mwp {
 				Mwp.window.validatelab.set_text("✔"); // u+2714
 				wp_get_approaches(0);
 			} else {
-				Utils.warning_box("Fallback safe mission, 0 points", 10);
+				MWPWarn.wb9 = new Utils.Warning_box("Fallback safe mission, 0 points", 10);
+				MWPWarn.wb9.present();
 				MWPLog.message("Fallback safe mission\n");
 			}
 		} else {
@@ -235,14 +246,16 @@ namespace Mwp {
 				start_download();
 			}
 		} else {
-			Utils.warning_box("No WPs in FC to download\nMaybe 'Restore' is needed?", 10);
+			MWPWarn.wba = new Utils.Warning_box("No WPs in FC to download\nMaybe 'Restore' is needed?", 10);
+			MWPWarn.wba.present();
 		}
     }
     public void start_wp_timer(uint timeo, string reason="WP") {
         upltid = Timeout.add(timeo, () => {
                 MWPLog.message("%s operation probably failed\n", reason);
                 string wmsg = "%s operation timeout.\nThe transfer has probably failed".printf(reason);
-                Utils.warning_box(wmsg);
+                MWPWarn.wbb = new Utils.Warning_box(wmsg);
+				MWPWarn.wbb.present();
                 if((wpmgr.wp_flag & WPDL.CALLBACK) != 0) {
                     upload_callback(-2);
 				}
@@ -255,8 +268,9 @@ namespace Mwp {
 		var wps = MultiM.missonx_to_wps(MissionManager.msx, id);
 		var  mlim = (id == -1) ? MissionManager.msx.length : 1;
 		if(wps.length > wp_max || mlim > MAXMULTI) {
-			Utils.warning_box(
+			MWPWarn.wbc = new Utils.Warning_box(
 				"Mission set exceeds FC limits:\nWP: %d/%d\nSegments: %d/%u".printf(wps.length, wp_max, mlim, MAXMULTI));
+			MWPWarn.wbc.present();
 			return;
 		}
 
@@ -288,8 +302,10 @@ namespace Mwp {
 	}
 
 	public void pause_poller(SERSTATE s) {
-		serstate = s;
-        mq.clear();
+		if (msp.available) {
+			serstate = s;
+			mq.clear();
+		}
 	}
 
 }

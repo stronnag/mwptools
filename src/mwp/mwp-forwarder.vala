@@ -19,6 +19,7 @@ public class Forwarder : Object {
 	private string devname;
 	private MWSerial? fwddev;
 	private uint8 rcount;
+	internal Utils.Warning_box wb;
 
 	public Forwarder(string? _dev) {
 		if (_dev != null) {
@@ -71,8 +72,9 @@ public class Forwarder : Object {
  							} else {
 								string fstr;
 								fwddev.get_error_message(out fstr);
-								Utils.warning_box(
+								wb = new Utils.Warning_box(
 									"Failed to open forwarding device %s after 5 attempts: %s\n".printf(devname, fstr), 10);
+								wb.present();
 							}
 						}
 					}

@@ -39,19 +39,21 @@ namespace Mwp {
 							MWPLog.message("Dead  terminal\n");
 							//							if (in_cli) {
 							Msp.close_serial();
-							Timeout.add_seconds_once(2, () => {
+							Timeout.add_seconds(2, () => {
 									Msp.try_reopen(devname);
 									nopoll = txpoll;
 									//serstate = SERSTATE.NORMAL;
+									return false;
 								});
 							t=null;
 						});
 					t.reboot.connect(() => {
 							MWPLog.message("Terminal reboot signalled\n");
 							in_cli = false;
-							Timeout.add_seconds_once(2, () => {
+							Timeout.add_seconds(2, () => {
 									Msp.try_reopen(devname);
 									nopoll = txpoll;
+									return false;
 								});
 						});
 

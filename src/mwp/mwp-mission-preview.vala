@@ -97,7 +97,7 @@ public class  MissionPreviewer : GLib.Object {
 
     public void stop() {
         running = false;
-		Idle.add_once(()=> {mission_replay_done();});;
+		Idle.add(()=> {mission_replay_done();return false;});;
 		Posix.close(fd);
     }
 
@@ -116,7 +116,7 @@ public class  MissionPreviewer : GLib.Object {
 		if(fd != -1) {
 			double posn[3] = {lat, lon, cse};
 			Posix.write(fd, posn, 3*sizeof(double));
-			Idle.add_once(() => { mission_replay_event(); });
+			Idle.add(() => { mission_replay_event();return false;});
 		}
 		Thread.usleep(MAXSLEEP);
     }
@@ -398,7 +398,7 @@ public class  MissionPreviewer : GLib.Object {
                 if(running)
                     iterate_mission();
 				Posix.close(fd);
-				Idle.add_once(()=> {mission_replay_done();});;
+				Idle.add(()=> {mission_replay_done();return false;});;
 				return 0;
             });
         return thr;

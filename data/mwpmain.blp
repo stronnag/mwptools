@@ -153,15 +153,6 @@ template $MwpWindow: Adw.ApplicationWindow {
           ]
         }
 
-        Gtk.Label statusbar1 {
-          margin-start: 1;
-          margin-end: 1;
-          hexpand: false;
-          halign: fill;
-          ellipsize: end;
-//          width-chars: 28;
-        }
-
         Gtk.Label verlab {
           margin-start: 1;
           margin-end: 1;
@@ -196,6 +187,16 @@ template $MwpWindow: Adw.ApplicationWindow {
           justify: center;
 //          width-chars: 4;
         }
+
+        Gtk.Label statusbar1 {
+          margin-start: 1;
+          margin-end: 1;
+          hexpand: false;
+          halign: fill;
+          ellipsize: end;
+          width-chars: 28;
+        }
+
 
 	Gtk.Box {
           hexpand: true;

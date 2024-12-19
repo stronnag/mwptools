@@ -254,8 +254,9 @@ class ClITerm : Object {
 						ml.quit();
 						return false;
 					} else {
-						Idle.add_once(() => {
+						Idle.add(() => {
 								process_input((uchar)c);
+								return false;
 							});
 					}
 				}

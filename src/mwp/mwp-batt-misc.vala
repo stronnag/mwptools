@@ -75,6 +75,7 @@ namespace Battery {
 			ivbat = 0;
 			curr = {false,0,0,0,0 ,0};
 			Mwp.msp.td.power.volts = 0.0f;
+			Mwp.panelbox.update(Panel.View.VOLTS, Voltage.Update.CURR|Voltage.Update.VOLTS);
 		} else {
             float  vf = ((float)ivbat)/100.0f;
             if (nsampl == Mwp.MAXVSAMPLE) {

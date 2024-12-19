@@ -271,115 +271,156 @@ static void show_error(DWORD errval) {
   fprintf(stderr, "Err: %s\n", errstr);
 }
 
-static HANDLE check_handle_from_fd(int fd) {
-     HANDLE hfd;
-     if ((fd & 0x4000000)  != 0) {
-          hfd = (HANDLE)((intptr_t)fd & ~0x4000000);
-     } else {
-          hfd = (HANDLE)_get_osfhandle(fd);
-     }
-     return hfd;
+void flush_serial(int hfd) {
+  PurgeComm((HANDLE)((intptr_t)hfd), PURGE_RXABORT|PURGE_TXABORT|PURGE_RXCLEAR|PURGE_TXCLEAR);
 }
 
-void flush_serial(int fd) {
-     HANDLE hfd = check_handle_from_fd(fd);
-     PurgeComm(hfd, PURGE_RXABORT|PURGE_TXABORT|PURGE_RXCLEAR|PURGE_TXCLEAR);
-}
-
-int set_fd_speed(int fd, int baudrate) {
-     HANDLE hfd = check_handle_from_fd(fd);
+int set_fd_speed(int hfd, int baudrate) {
      DCB dcb = {0};
      BOOL res = FALSE;
 
      dcb.DCBlength = sizeof(DCB);
-     if ((res = GetCommState(hfd, &dcb))) {
+     if ((res = GetCommState((HANDLE)((intptr_t)hfd), &dcb))) {
         dcb.ByteSize=8;
         dcb.StopBits=ONESTOPBIT;
         dcb.Parity=NOPARITY;
 	dcb.BaudRate = baudrate;
-	res = SetCommState(hfd, &dcb);
+	res = SetCommState((HANDLE)((intptr_t)hfd), &dcb);
 	return 0;
      }
      return -1;
 }
 
-void set_timeout(int fd, __attribute__ ((unused)) int p0, __attribute__ ((unused)) int p1) {
-     HANDLE hfd = check_handle_from_fd(fd);
+void set_timeout(int hfd, int timetenths, int number) {
      COMMTIMEOUTS ctout;
-     GetCommTimeouts(hfd, &ctout);
-     ctout.ReadIntervalTimeout = MAXDWORD;
-     ctout.ReadTotalTimeoutMultiplier = MAXDWORD;
-     ctout.ReadTotalTimeoutConstant = MAXDWORD-1;
-     SetCommTimeouts(hfd, &ctout);
+     GetCommTimeouts((HANDLE)((intptr_t)hfd), &ctout);
+     ctout.WriteTotalTimeoutMultiplier = 0;
+     ctout.WriteTotalTimeoutConstant = 0;
+     if(timetenths == 0) {
+       ctout.ReadIntervalTimeout = MAXDWORD;
+       ctout.ReadTotalTimeoutMultiplier = 0;
+       ctout.ReadTotalTimeoutConstant = 0;
+
+       /*
+       ctout.ReadTotalTimeoutMultiplier = MAXDWORD;
+       if(number == 0) {
+	 ctout.ReadTotalTimeoutConstant = MAXDWORD-1;
+       } else {
+	 ctout.ReadTotalTimeoutConstant = number;
+       }
+       */
+     } else {
+       ctout.ReadIntervalTimeout = timetenths*10;
+       ctout.ReadTotalTimeoutMultiplier = (number > 1) ? number : 1;
+       ctout.ReadTotalTimeoutConstant = timetenths*10;
+     }
+     SetCommTimeouts((HANDLE)((intptr_t)hfd), &ctout);
 }
 
 int open_serial(const char *device, int baudrate) {
-  SECURITY_ATTRIBUTES secattr;
-  secattr.nLength = sizeof secattr;
-  secattr.lpSecurityDescriptor = NULL;
-  secattr.bInheritHandle = FALSE;
   HANDLE hfd = CreateFile(device,
 			  GENERIC_READ|GENERIC_WRITE,
 			  0,
-			  &secattr,
+			  NULL,
 			  OPEN_EXISTING,
 			  FILE_FLAG_OVERLAPPED,
 			  NULL);
 
-  int fd = -1;
   if(hfd != INVALID_HANDLE_VALUE) {
-    u_long ft = GetFileType(hfd);
-    if(ft != 0) {
-               fd = _open_osfhandle ((intptr_t)hfd, O_RDWR);
-    } else {
-      fd = 0x4000000 + (int)(intptr_t)hfd;
-    }
-    set_timeout(fd, 0, 0);
-    set_fd_speed(fd, baudrate);
+    set_timeout((intptr_t)hfd, 0, 1);
+    set_fd_speed((intptr_t)hfd, baudrate);
   }
-  return fd;
+  return (intptr_t)hfd;
 }
 
-void close_serial(int fd) {
-     if ((fd & 0x4000000)  != 0) {
-          HANDLE hfd = (HANDLE)((intptr_t)fd & ~0x4000000);
-          CloseHandle(hfd);
-     } else {
-          close(fd);
-     }
+void close_serial(int hfd) {
+  CloseHandle((HANDLE)((intptr_t)hfd));
 }
-
-ssize_t read_serial(int fd, uint8_t*buffer, size_t buflen) {
-     HANDLE hfd = check_handle_from_fd(fd);
+ssize_t read_serial(int hfd, uint8_t*buffer, size_t buflen) {
      DWORD nb= 0;
      OVERLAPPED ovl={0};
      ovl.hEvent =   CreateEvent(NULL, true, false, NULL);
-     if (ReadFile (hfd, buffer, buflen, &nb, &ovl) == 0) {
-	  DWORD eval = GetLastError();
-	  if (eval == ERROR_IO_PENDING) {
-	       GetOverlappedResult(hfd, &ovl, &nb, true);
-	  } else {
-	       //      show_error(eval);
-	       nb = 0;
-	  }
+     if (ReadFile ((HANDLE)((intptr_t)hfd), buffer, buflen, &nb, &ovl) == 0) {
+          DWORD eval = GetLastError();
+          if (eval == ERROR_IO_PENDING) {
+	    GetOverlappedResult((HANDLE)((intptr_t)hfd), &ovl, &nb, true);
+          } else {
+	    nb = 0;
+          }
      }
      CloseHandle(ovl.hEvent);
      return (ssize_t)nb;
 }
-
+/*
+ssize_t read_serial(int fd, uint8_t*buffer, size_t buflen) {
+     HANDLE hfd = check_handle_from_fd(fd);
+     DWORD dwWaitResult;
+     DWORD nb= 0;
+     OVERLAPPED ovl={0};
+     ovl.hEvent =   CreateEvent(NULL, true, false, NULL);
+     if (!ReadFile (hfd, buffer, buflen, &nb, &ovl)) {
+       DWORD eval = GetLastError();
+       if (eval == ERROR_IO_PENDING) {
+	 dwWaitResult = WaitForSingleObject(ovl.hEvent, INFINITE);
+	 switch (dwWaitResult) {
+	 case WAIT_OBJECT_0:
+	   if (!GetOverlappedResult(hfd, &ovl, &nb, FALSE)) {
+	     nb = 0;
+	   }
+	   break;
+	 default:
+	   nb = 0;
+	   break;
+	 }
+       } else {
+	 nb = 0;
+       }
+     }
+     CloseHandle(ovl.hEvent);
+     return (ssize_t)nb;
+}
+*/
+/*
 ssize_t write_serial(int fd, uint8_t*buffer, size_t buflen) {
      HANDLE hfd = check_handle_from_fd(fd);
      DWORD nb= 0;
      OVERLAPPED ovl={0};
      ovl.hEvent = CreateEvent(NULL, true, false, NULL);
-     if (WriteFile (hfd, buffer, buflen, &nb, &ovl) == 0) {
-	  DWORD eval = GetLastError();
-	  if (eval == ERROR_IO_PENDING) {
-	       GetOverlappedResult(hfd, &ovl, &nb, true);
-	  } else {
-	       //      show_error(eval);
-	       nb = 0;
-	  }
+     if (!WriteFile (hfd, buffer, buflen, &nb, &ovl)) {
+       DWORD eval = GetLastError();
+       if (eval == ERROR_IO_PENDING) {
+	 DWORD dwWaitResult = WaitForSingleObject(ovl.hEvent, INFINITE);
+	 switch (dwWaitResult) {
+	 case WAIT_OBJECT_0:
+	   if(!GetOverlappedResult(hfd, &ovl, &nb, TRUE)) {
+	     nb = 0;
+	   }
+	   break;
+	 default:
+	   nb = 0;
+	   break;
+	 }
+       } else {
+	 //      show_error(eval);
+	 nb = 0;
+       }
+     }
+     CloseHandle(ovl.hEvent);
+     return (ssize_t)nb;
+}
+*/
+
+ssize_t write_serial(int hfd, uint8_t*buffer, size_t buflen) {
+     DWORD nb= 0;
+     OVERLAPPED ovl={0};
+     ovl.hEvent = CreateEvent(NULL, true, false, NULL);
+     if (WriteFile ((HANDLE)((intptr_t)hfd), buffer, buflen, &nb, &ovl) == 0) {
+          DWORD eval = GetLastError();
+          if (eval == ERROR_IO_PENDING) {
+	    GetOverlappedResult((HANDLE)((intptr_t)hfd), &ovl, &nb, true);
+          } else {
+               nb = 0;
+          }
      }
      CloseHandle(ovl.hEvent);
      return (ssize_t)nb;

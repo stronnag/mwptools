@@ -231,6 +231,102 @@ namespace SportDev {
 }
 
 namespace Utils {
+#if TACKYBOX
+	public class Warning_box : Gtk.Window {
+		private uint tid;
+		public Warning_box(string warnmsg, int timeout = 0, Gtk.Window? w = null, Gtk.Widget? extra=null) {
+			MWPLog.message("Warning: %s\n", warnmsg);
+			tid = 0;
+			title = "Mwp Message";
+			var vbox = new Gtk.Box(Gtk.Orientation.VERTICAL, 8);
+			var hbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 12);
+			var label = new Gtk.Label(null);
+			label.use_markup = true;
+			label.label = warnmsg;
+			//label.margin = 8;
+			label.hexpand = true;
+
+			hbox.append(label);
+			vbox.append((hbox));
+
+			var button = new Gtk.Button.with_label("OK");
+			button.hexpand = false;
+			button.halign = Gtk.Align.END;
+			button.vexpand = false;
+
+			if(extra != null) {
+				vbox.append(extra);
+			}
+
+			vbox.append(button);
+
+			button.clicked.connect(() => {
+					/*					if(tid != 0) {
+						Source.remove(tid);
+					}
+					*/
+					this.close();
+				});
+			/*
+			if(timeout > 0) {
+				Timeout.add_seconds(timeout, () => {
+						tid = 0;
+						this.close();
+						return false;;
+					});
+			}
+			*/
+			label.selectable = true;
+			set_child(vbox);
+			if(w == null) {
+				w = Mwp.window;
+			}
+			set_transient_for(w);
+		}
+	}
+
+#else
+	public class Warning_box : Object {
+		public uint tid = 0;
+		public  Adw.AlertDialog am;
+		internal Gtk.Widget? w;
+		public Warning_box(string warnmsg, int timeout = 0, Gtk.Window? _w = null, Gtk.Widget? extra=null) {
+			am = new Adw.AlertDialog("MWP Message",  warnmsg);
+			am. set_body_use_markup (true);
+			am.add_response ("ok", "OK");
+			am.response.connect((s) => {
+					if(tid != 0) {
+						Source.remove(tid);
+						tid = 0;
+					}
+				});
+
+			w = _w;
+			if(w == null) {
+				w = Mwp.window;
+			}
+
+			if(extra != null) {
+				am.set_extra_child(extra);
+			}
+
+			if(timeout > 0) {
+				tid = Timeout.add_seconds(timeout, () => {
+						tid = 0;
+						if (am != null) {
+							am.force_close();
+						}
+						return false;
+					});
+			}
+		}
+		public void present() {
+			am.present(w);
+		}
+
+	}
+#endif
+
 	public void rmrf(string dname) {
 		try {
 			var dir = File.new_for_path(dname);
@@ -315,33 +411,6 @@ namespace Utils {
         var s = Path.build_filename (t, ".mi-%d-%08x.xml".printf(Posix.getpid(), ir));
         return s;
     }
-
-	public void warning_box(string warnmsg,	int timeout = 0, Gtk.Window? w = null, Gtk.Widget? extra=null) {
-		uint tid = 0;
-		var am = new Adw.AlertDialog("MWP Message",  warnmsg);
-		am. set_body_use_markup (true);
-		am.add_response ("ok", "OK");
-		am.response.connect((s) => {
-				if(tid != 0) {
-					Source.remove(tid);
-				}
-			});
-		if(w == null) {
-			w = Mwp.window;
-		}
-
-		if(extra != null) {
-			am.set_extra_child(extra);
-		}
-
-		am.present(w);
-		if(timeout > 0) {
-            tid = Timeout.add_seconds_once(timeout, () => {
-					tid = 0;
-                    am.close();
-                });
-		}
-	}
 
 	void check_pango_size(Gtk.Widget w, string fname, string str, out int fw, out int fh) {
 		var font = new Pango.FontDescription().from_string(fname);
