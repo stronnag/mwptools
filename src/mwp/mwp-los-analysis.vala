@@ -66,13 +66,16 @@ public class LOSPoint : Object {
 		relalt = xalt;
     }
 
+	internal static Shumate.PathLayer pmlayer;
+	internal static uint8 _lcol = 0xff;
+	internal static double prelat = 0;
+	internal static double prelon = 0;
+
 	public static void add_path(double lat0, double lon0, double lat1, double lon1, uint8 col,
 								double ldist, int incr) {
 		Gdk.RGBA green = {0.0f, 1.0f, 0.0f, 0.4f};
 		Gdk.RGBA warning = {1.0f, 0.65f, 0.0f, 0.4f};
 		Gdk.RGBA red = {1.0f, 0.0f, 0.0f, 0.4f};
-
-        var pmlayer = new Shumate.PathLayer(Gis.map.viewport);
 		Gdk.RGBA wcol;
 		switch(col) {
 		case 0:
@@ -85,22 +88,37 @@ public class LOSPoint : Object {
 			wcol = red;
 			break;
 		}
-		if(incr < 8) {
-			wcol.alpha = 0.2f;
+		if(col != _lcol) {
+			if (incr < 0.8) {
+				wcol.alpha = 0.2f;
+			}
+			pmlayer = new Shumate.PathLayer(Gis.map.viewport);
+			pmlayer.set_fill_color(wcol);
+			pmlayer.set_stroke_color(wcol);
+			pmlayer.set_stroke_width (1);
+			pmlayer.closed = true;
+			pmlayer.fill = true;
+			var ip0 =  new  Shumate.Marker();
+			ip0.latitude = lat0;
+			ip0.longitude = lon0;
+			pmlayer.add_node(ip0);
+			if(_lcol != 0xff) {
+				ip0 =  new  Shumate.Marker();
+				ip0.latitude = prelat;
+				ip0.longitude = prelon;
+				pmlayer.add_node(ip0);
+			}
+			Gis.map.insert_layer_behind (pmlayer, Gis.mp_layer); // below mission path
+			_lcol = col;
+			players += pmlayer;
 		}
 
-		pmlayer.set_stroke_color(wcol);
-        pmlayer.set_stroke_width (incr+4);
-		var ip0 =  new  Shumate.Marker();
-		ip0.latitude = lat0;
-		ip0.longitude = lon0;
-		pmlayer.add_node(ip0);
-		ip0 =  new  Shumate.Marker();
-		ip0.latitude = lat1;
-		ip0.longitude = lon1;
-		pmlayer.add_node(ip0);
-		players += pmlayer;
-		Gis.map.insert_layer_behind (pmlayer, Gis.mp_layer); // below mission path
+		var ip1 =  new  Shumate.Marker();
+		ip1.latitude = lat1;
+		ip1.longitude = lon1;
+		prelat = lat1;
+		prelon = lon1;
+		pmlayer.add_node(ip1);
 
 		if(col != 0) {
 			double c,d;
@@ -109,7 +127,9 @@ public class LOSPoint : Object {
 			d *= ldist;
 			Geo.posit(lat0, lon0, c, d, out dlat, out dlon);
 			var dlos = new MWPPoint();
-			var strcol = wcol.to_string();
+			Gdk.RGBA pcol = wcol;
+			pcol.alpha = wcol.alpha * 0.5f;
+			var strcol = pcol.to_string();
 			var cssstr =  ".map-point { min-width: 5px; min-height: 5px; background: %s; border: 1px solid %s; border-radius: 50%%; }".printf(strcol, strcol);
 			dlos.set_css_style(cssstr);
 			dlos.set_size_request(15,15);
@@ -269,27 +289,24 @@ public class LOSSlider : Adw.Window {
 		sbox.append (slider); // ex t,f
 		sbox.append(ebutton);
 		box.append(sbox);
+
+		var incbutton = new Gtk.CheckButton.with_label ("0.2% increment");
+		incbutton.halign = Gtk.Align.END;
+		incbutton.hexpand = true;
 		incr = 10;
 
-		Gdk.ModifierType astate = 0;
 		var bbox = new Gtk.Box (Gtk.Orientation.HORIZONTAL,4);
 		abutton = new Gtk.Button.with_label (AUTO_LOS);
-		var abc= new Gtk.GestureClick();
-		abutton.add_controller(abc);
-		abc.set_propagation_phase(Gtk.PropagationPhase.CAPTURE);
-
-		abc.pressed.connect((n,x,y) => {
-				astate = abc.get_current_event_state();
-			});
 		abutton.clicked.connect(() => {
 				if (abutton.label == AUTO_LOS) {
 					_margin = mentry.get_value_as_int ();
 					var ppos = slider.get_value ();
-					abutton.label = "Stop";
-					incr = 10;
-					if ((astate & (Gdk.ModifierType.SHIFT_MASK|Gdk.ModifierType.CONTROL_MASK)) != 0) {
+					if(incbutton.active) {
 						incr = 2;
+					} else {
+						incr = 10;
 					}
+					abutton.label = "Stop";
 					if(mlog) {
 						MWPLog.message(":DBG: Area LOS from %d (sampling %d)\n", ppos, incr);
 					}
@@ -349,6 +366,7 @@ public class LOSSlider : Adw.Window {
 
 		hbox.append(mlab);
 		hbox.append (mentry);
+		hbox.append (incbutton);
 		box.append(hbox);
 		box.append(bbox);
 		default_width = 600;
