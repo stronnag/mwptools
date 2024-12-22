@@ -1278,7 +1278,8 @@ public class MWSerial : Object {
 				try {
 					res = skt.receive_from(out sockaddr, devbuf);
 					if (res <= 0) {
-						MWPLog.message("Received 0 or less %d\n", res);
+						var err = MwpSerial.get_error_number();
+						MWPLog.message("Received 0 or fewer (%d) [errno %d] bytes\n", res, err);
 					}
 				} catch(Error e) {
                     res = 0;
@@ -1287,8 +1288,13 @@ public class MWSerial : Object {
 				try {
 					if(!skt.is_closed()) {
 						res = skt.receive(devbuf);
+						if (res <= 0) {
+							var err = MwpSerial.get_error_number();
+							MWPLog.message(":DBG: TCP read %d (errno %d)\n", res, err);
+						}
 					}
 				} catch (Error e) {
+					MWPLog.message(":DBG: TCP %s\n", e.message);
 					res = 0;
 				}
 			} else {
