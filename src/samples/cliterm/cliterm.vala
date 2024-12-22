@@ -1,4 +1,4 @@
-#if !UNIX
+#if WINDOWS
 extern int winrawchar();
 #endif
 

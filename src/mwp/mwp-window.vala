@@ -243,7 +243,7 @@ namespace Mwp {
 			char lonbuf[16];
 			var lat = Mwp.conf.latitude;
 			var lon = Mwp.conf.longitude;
-			MWPLog.message("Locale: %s (%s %s / %.3f %.3f)\n", ulocale, lat.format(latbuf, "%.3f"), lon.format(lonbuf, "%.3f"), lat, lon);
+			MWPLog.message("Locale: %s (%s %s / %.1f %.1f)\n", ulocale, lat.format(latbuf, "%.1f"), lon.format(lonbuf, "%.1f"), lat, lon);
 		}
 
 		private void init_basics() {
@@ -846,7 +846,7 @@ namespace Mwp {
 			app.set_accels_for_action ("win.flight-stats", { "<primary><shift>a" });
 			app.set_accels_for_action ("win.quit", { "<primary>q" });
 			MwpMenu.set_menu_state(Mwp.window, "followme", false);
-#if !UNIX
+#if WINDOWS
         MwpMenu.set_menu_state(Mwp.window, "terminal", false);
 #endif
 		}

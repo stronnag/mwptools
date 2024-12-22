@@ -148,7 +148,7 @@ public class V4L2_dialog : Adw.Window {
 		rb1 = new Gtk.CheckButton.with_label ("URI");
 		rb1.active = true;
 		rb0.set_group(rb1);
-#if !UNIX
+#if WINDOWS
 		rb0.sensitive = false;
 		viddev_c.sensitive = false;
 #endif

@@ -21,7 +21,9 @@ if host_machine.system() == 'darwin'
   dopts += '--define=DARWIN'
 endif
 
-if host_machine.system() != 'windows'
+if host_machine.system() == 'windows'
+  dopts += '--define=WINDOWS'
+else
   dopts += '--define=UNIX'
 endif
 

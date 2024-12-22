@@ -1127,7 +1127,7 @@ public class MWSerial : Object {
 		}
 		closing |= 2;
 		clearup();
-#if !UNIX
+#if WINDOWS
 		foad = true;
 #endif
     }
@@ -1261,11 +1261,15 @@ public class MWSerial : Object {
 #endif
 			if ((commode & ComMode.TTY) == ComMode.TTY) {
 				res = MwpSerial.read(fd, devbuf, MemAlloc.DEV);
-#if !UNIX
+#if WINDOWS
 				if (res == 0) {
 					var err = MwpSerial.get_error_number();
 					if (err == 0 || err == ERROR_TIMEOUT) {
-						Thread.usleep(1000*2);
+						Thread.usleep(1000*5);
+						return true;
+					} else {
+						MWPLog.message(":DBG: WIN32: FIXME %d %x\n", err, err);
+						Thread.usleep(1000*10);
 						return true;
 					}
 				}
