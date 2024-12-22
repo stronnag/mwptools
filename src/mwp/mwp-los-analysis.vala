@@ -290,7 +290,7 @@ public class LOSSlider : Adw.Window {
 		sbox.append(ebutton);
 		box.append(sbox);
 
-		var incbutton = new Gtk.CheckButton.with_label ("0.2% increment");
+		var incbutton = new Gtk.CheckButton.with_label ("High resolution (slower)");
 		incbutton.halign = Gtk.Align.END;
 		incbutton.hexpand = true;
 		incr = 10;
