@@ -76,7 +76,6 @@ public class LOSPoint : Object {
 		prelat = 0;
 		prelon = 0;
 		pmlayer=null;
-		players={};
 	}
 
 	public static void add_path(double lat0, double lon0, double lat1, double lon1, uint8 col,
@@ -316,9 +315,8 @@ public class LOSSlider : Adw.Window {
 						incr = 10;
 					}
 					abutton.label = "Stop";
-					if(mlog) {
-						MWPLog.message(":DBG: Area LOS from %d (sampling %d)\n", ppos, incr);
-					}
+					double spct = (double)incr/10.0;
+					MWPLog.message(":DBG: Area LOS from %.1f%% (sampling %.1f%%)\n", ppos/10.0, spct);
 					if(Environment.get_variable("MWP_LOSA_PAUSE_POLLER") != null) {
 						if(Mwp.msp.available && Mwp.serstate == Mwp.SERSTATE.POLLER) {
 							MWPLog.message(":DBG: Pausing MSP Poller\n");
@@ -498,9 +496,7 @@ public class LOSSlider : Adw.Window {
         spawn_args += "-home=%s,%s".printf(	HomePoint.hp.latitude.format(cbuflat, "%.8f"),
 											HomePoint.hp.longitude.format(cbuflon, "%.8f"));
 		spawn_args += "-stdin";
-		if (mlog) {
-			MWPLog.message(":DBG: LOS spawn %s\n", string.joinv(" ",spawn_args));
-		}
+		MWPLog.message("LOS spawn %s\n", string.joinv(" ",spawn_args));
 
 		los = new ProcessLauncher();
 		var res = los.run_argv(spawn_args, ProcessLaunch.STDOUT|ProcessLaunch.STDIN);

@@ -168,7 +168,9 @@ func process_elevations(dm *DEMMgr, mpts []Point, m *Mission, spt bool) {
 		if !spt {
 			Dump_climb_dive(mpts, true)
 		} else {
-			fmt.Printf("%1d\t%7.5f\n", los, nat)
+			if Conf.Noplot == true {
+				fmt.Printf("%1d\t%7.5f\n", los, nat)
+			}
 		}
 	}
 }
