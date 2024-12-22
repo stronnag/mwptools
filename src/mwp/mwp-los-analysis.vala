@@ -71,6 +71,14 @@ public class LOSPoint : Object {
 	internal static double prelat = 0;
 	internal static double prelon = 0;
 
+	public static void reset() {
+		_lcol = 0xff;
+		prelat = 0;
+		prelon = 0;
+		pmlayer=null;
+		players={};
+	}
+
 	public static void add_path(double lat0, double lon0, double lat1, double lon1, uint8 col,
 								double ldist, int incr) {
 		Gdk.RGBA green = {0.0f, 1.0f, 0.0f, 0.4f};
@@ -299,10 +307,11 @@ public class LOSSlider : Adw.Window {
 		abutton = new Gtk.Button.with_label (AUTO_LOS);
 		abutton.clicked.connect(() => {
 				if (abutton.label == AUTO_LOS) {
+					LOSPoint.reset();
 					_margin = mentry.get_value_as_int ();
 					var ppos = slider.get_value ();
 					if(incbutton.active) {
-						incr = 2;
+						incr = 1;
 					} else {
 						incr = 10;
 					}
