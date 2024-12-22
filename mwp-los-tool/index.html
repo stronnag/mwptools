@@ -593,24 +593,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#line-of-sight" class="md-nav__link">
-    <span class="md-ellipsis">
-      Line of sight ...
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#area-los" class="md-nav__link">
-    <span class="md-ellipsis">
-      Area LOS
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#examples" class="md-nav__link">
     <span class="md-ellipsis">
       Examples
@@ -630,7 +612,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#area-los_1" class="md-nav__link">
+  <a href="#area-los" class="md-nav__link">
     <span class="md-ellipsis">
       Area LOS
     </span>
@@ -1298,24 +1280,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#line-of-sight" class="md-nav__link">
-    <span class="md-ellipsis">
-      Line of sight ...
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#area-los" class="md-nav__link">
-    <span class="md-ellipsis">
-      Area LOS
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#examples" class="md-nav__link">
     <span class="md-ellipsis">
       Examples
@@ -1335,7 +1299,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#area-los_1" class="md-nav__link">
+  <a href="#area-los" class="md-nav__link">
     <span class="md-ellipsis">
       Area LOS
     </span>
@@ -1396,20 +1360,11 @@
 <ul>
 <li>Online DEMs (Digital Elevation Model) vary <a href="../Mission-Elevation-Plot-and-Terrain-Analysis/#datum">significantly</a>, with implications for accuracy.</li>
 </ul>
-<p><a href="https://github.com/stronnag/mwptools">mwp</a> uses  <a href="https://registry.opendata.aws/terrain-tiles/">Mapzen DEM</a> data, which improves accuracy (more users  get 30m data) with better accuracy, as well as a significant performance boost and offline usage after the initial data download.</p>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> uses  <a href="https://registry.opendata.aws/terrain-tiles/">Mapzen DEM</a> data, which improves accuracy (more users  get one arc-second data ) with better accuracy, as well as a significant performance boost and offline usage after the initial data download.</p>
 <p>Please be aware of these accuracy / fidelity issues when evaluating the results of any elevation analysis.</p>
 <h2 id="invocation">Invocation<a class="headerlink" href="#invocation" title="Permanent link">#</a></h2>
-<div class="admonition note">
-<p class="admonition-title">Legacy Images</p>
-<p>The images this section are from legacy mwp, however the capability is the same.</p>
-</div>
-<p>LOS is invoked from any waypoint using the right mouse button.</p>
+<p>is invoked from any waypoint using the right mouse button.</p>
 <p><img alt="Menu Options" src="../images/los-menu.png" width="30%" /></p>
-<h2 id="line-of-sight">Line of sight ...<a class="headerlink" href="#line-of-sight" title="Permanent link">#</a></h2>
-<p>The user can select locations on the mission via a slider and run an analysis. A LOS calculation is performed, a graphical view is shown and a red (no LOS), orange (LOS below a user defined margin) or green (unconditional LOS) line is displayed on the map from the observer (home location) to the chosen location. This may be repeated as required.</p>
-<h2 id="area-los">Area LOS<a class="headerlink" href="#area-los" title="Permanent link">#</a></h2>
-<p>Pressing a modifier key (Shift or Control) while selecting "Line of Sight ..."  will invoke <strong>Area LOS</strong> ;  the calculation is performed automatically with 1% increments of the <a href="#miscellaneous-notes">naive mission length</a>. A set of resulting green/orange/red LOS lines is displayed on the map.</p>
-<p>Note that both options are available from the LOS analysis window; the modifier option is merely a convenience.</p>
 <h2 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">#</a></h2>
 <p>When the LOS slider is displayed, the only UI actions available are:</p>
 <ul>
@@ -1417,22 +1372,33 @@
 <li>Zoom the map</li>
 <li>Change the map product</li>
 </ul>
-<p>This restriction means that the mission cannot be changed while a LOS Analysis is being performed.</p>
+<p>This restriction means that the mission cannot be changed while a LOS Analysis is being performed. This is currently a feature (to reduce implementation complexity).</p>
 <h3 id="manual-los-analysis">Manual LOS Analysis<a class="headerlink" href="#manual-los-analysis" title="Permanent link">#</a></h3>
-<p>In the image below, the user has selected "Line of Sight ..." from the right mouse menu at WP9. The slider is positioned appropriate to WP9. Note that if the mission contains JUMP WPs, these are executed once only (regardless of the mission setting). This is why the slider might appear less advanced compared to the mission length if the JUMP is ignored. The user can reposition the WP using the slider (or the start / end buttons).</p>
+<p>The LOS dialog presents:</p>
+<ul>
+<li>A slider to position the 'puck` (to which LOS is calculated) along the mission path.</li>
+<li>Start and End buttons to move the puck to start / end.</li>
+<li>A Margin selection (the clearance required at the puck location).</li>
+<li>A High resolution button (for Area LOS puck increments)</li>
+<li>A "Point LOS" button.</li>
+<li>An "Area LOS" button.</li>
+<li>A "Clear" button.</li>
+</ul>
+<p><img alt="Manual LOS" src="../images/los-manual.png" /></p>
+<p>In the image above the user has selected "Line of Sight ..." from the right mouse menu at WP6. The slider is positioned appropriate to WP6. Note that if the mission contains JUMP WPs, these are executed once only (regardless of the mission setting). This is why the slider might appear less advanced compared to the mission length if the JUMP is ignored. The user can reposition the WP using the slider (or the start / end buttons).</p>
 <p>When "Point LOS" is clicked, the LOS is calculated between planned home (brown icon, lower left) and the red "⨁" "Point of Interest" (POI) icon. This is displayed as a terrain plot with the LOS line superimposed over the terrain elevation. The line is red as there is no LOS (and it would be green where there is LOS). A red "dot-dash" is also displayed on the map. If a margin is specified, then LOS lines with clearance between the terrain and the margin value are shown in orange.</p>
 <p>The user may repeat the "move slider" / "Point LOS" action as required. The prior terrain plot is removed each time "Point LOS" is selected; the lines on the map are removed when the slider dialog is closed. "Area LOS" may be used to run a continuous analysis from the currently selected location. "Area LOS" may be started / stopped at any point (and Point Analysis invoked at any time when stopped).</p>
-<p>When an analysis results in an orange or red LOS line, the first point where the LOS break is detected is shown on the line as a coloured blob. This is apparent in the Area image below.</p>
-<p><img alt="Manual LOS" src="../images/los_manual.png" /></p>
-<h3 id="area-los_1">Area LOS<a class="headerlink" href="#area-los_1" title="Permanent link">#</a></h3>
+<p>When an analysis results in an orange or red LOS fill, the first point where the LOS break is detected is also shown as a coloured blob. This is apparent in the Area image below.</p>
+<h3 id="area-los">Area LOS<a class="headerlink" href="#area-los" title="Permanent link">#</a></h3>
 <p>This analysis is iterated along the mission path automatically, providing Area coverage for the mission.</p>
-<p><img alt="Auto LOS" src="../images/auto-los.png" /></p>
-<p>The image shows the state after a complete "Area" analysis. While the analysis is running, the slider and "Point LOS" are not sensitive; once the run has completed, these controls are available if the user wishes to investigate further. The user can stop (and restart) Area  using the "Area LOS" / "Stop" button. (Note: in earlier versions, "Area LOS" was called "Auto LOS").</p>
-<p>Here, the user has subsequently used "Point LOS" to examine a point in the orange region. As expected, there is very little clearance between the LOS line and the terrain. This is confirmed on the map plot where the "blobs" (immediately to the right of the plot window close button) indicate the point where LOS is compromised.</p>
-<p>It is important to note that Area LOS is performed at 1% increments of the <a href="#miscellaneous-notes">naive mission length</a>, it is not contiguous. In the above case, there is a point at 34.1% where there is no LOS.</p>
-<p><img alt="Bad LOS" src="../images/fail-los.png" /></p>
-<p>If you selection the "High Resolution" when running "Area LOS", you get 0.1% increments, which may be used to investigate small segments (it will be slower ... and resource intensive). Here a detailed analysis has been run from 33.6% to 34.6% which captures the instance of complete loss of LOS.</p>
-<p><img alt="Auto_no LOS" src="../images/auto-bad-los.png" /></p>
+<p><img alt="Auto LOS" src="../images/low-res-los.png" /></p>
+<p>The image shows the state after a complete "Area" analysis. While the analysis is running, the slider and "Point LOS" are not sensitive; once the run has completed, these controls are available if the user wishes to investigate further. The user can stop (and restart) Area  using the "Area LOS" / "Stop" button.</p>
+<p>Note the areas indicated in the SE part of the mission.</p>
+<p>If the user now runs a "High Resolution" Area LOS, note how the more fidelity is revealed in the SE part of the mission.</p>
+<p><img alt="Auto LOS" src="../images/high-res-los.png" /></p>
+<p>The user can use the  "Point LOS" to examine a point.</p>
+<p><img alt="Auto LOS" src="../images/point-los.png" /></p>
+<p>It is important to note that Area LOS is performed at 1% increments of the <a href="#miscellaneous-notes">naive mission length</a>, it is not contiguous.</p>
 <p>Caveat user!</p>
 <p>There is also a You Tube video (uses a slightly earlier UI iteration).</p>
 <iframe width="768" height="634" src="https://www.youtube.com/embed/EIm8vksK1Pg" title="mwp LOS (Line of Sight) Tool" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
