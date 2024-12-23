@@ -21,6 +21,7 @@ namespace BBLV {
 
 namespace LogPlay {
 	int child_pid;
+	int speed = 0;
 }
 
 namespace Mwp {
@@ -123,6 +124,11 @@ namespace Mwp {
             args += idx.to_string();
             if(delay == false)
                 args += "--fast";
+
+			if (LogPlay.speed > 1) {
+				args += "-speed";
+				args += LogPlay.speed.to_string();
+			}
 
 			if(BBL.skiptime > 0) {
 				args += "-skiptime";

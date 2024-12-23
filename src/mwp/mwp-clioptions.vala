@@ -40,6 +40,7 @@ namespace Mwp {
     int nrings = 0;
     double ringint = 0;
 	//    TelemTracker ttrk; // FIXME
+	int fl2ltmvers;
 }
 
 namespace Cli {
@@ -161,7 +162,7 @@ namespace Cli {
 			if(res == false || text == null) {
 				MWPLog.message("fl2ltm %s\n", text);
 			} else {
-				int vsum = 0;
+				Mwp.fl2ltmvers = 0;
 				var parts = text.split("\n");
 				bool ok = false;
 				text = "fl2ltm";
@@ -171,12 +172,12 @@ namespace Cli {
 						if (lparts.length == 3) {
 							var vparts = lparts[1].split(".");
 							for(var i = 0; i < 3 && i < vparts.length; i++) {
-								vsum = int.parse(vparts[i]) + 100 * vsum;
+								Mwp.fl2ltmvers = int.parse(vparts[i]) + 100 * Mwp.fl2ltmvers;
 							}
 						}
-						if (vsum > 10000) {
+						if (Mwp.fl2ltmvers > 10000) {
 							Mwp.sticks_ok = true;
-							if (vsum >= FL2LTMVERS) {
+							if (Mwp.fl2ltmvers >= FL2LTMVERS) {
 								Mwp.bblosd_ok = true;
 								ok = true;
 							}
@@ -186,12 +187,12 @@ namespace Cli {
 					}
 				}
 				if (!ok) {
-					var oldmsg = "\"%s\" (%d) may be too old, upgrade recommended".printf(text, vsum);
+					var oldmsg = "\"%s\" (%d) may be too old, upgrade recommended".printf(text, Mwp.fl2ltmvers);
 					MWPLog.message(oldmsg+"\n");
 					Mwp.add_toast_text(oldmsg);
 					res = false;
 				} else {
-					MWPLog.message("Using %s (%d)\n", text, vsum);
+					MWPLog.message("Using %s (%d)\n", text, Mwp.fl2ltmvers);
 				}
 			}
 			appsts[6] = res;

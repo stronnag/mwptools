@@ -1,6 +1,15 @@
 using Gtk 4.0;
 using Adw 1;
 
+Adjustment adjustment {
+  lower: 1;
+  upper: 25;
+  step-increment: 1;
+  page-increment: 10;
+}
+
+
+
 template $BBLWindow: Adw.Window {
   title: "mwp Blackbox selector";
   icon-name: "mwp_icon";
@@ -59,6 +68,21 @@ template $BBLWindow: Adw.Window {
 	hexpand: true;
 	halign: end;
         label: "Speedup";
+      }
+
+      Box bspeedup {
+	hexpand: true;
+	halign: end;
+	visible: false;
+        Label {
+          label: _('Speedup Factor');
+        }
+
+        SpinButton bb_speed {
+          text: _('1');
+          adjustment: adjustment;
+          climb-rate: 1;
+        }
       }
     }
     Box {

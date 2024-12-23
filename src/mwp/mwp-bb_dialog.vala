@@ -117,6 +117,10 @@ namespace BBL {
 		private unowned Gtk.Button cancel;
 		[GtkChild]
 		private unowned Gtk.Button apply;
+		[GtkChild]
+		private unowned Gtk.Box bspeedup;
+		[GtkChild]
+		private unowned Gtk.SpinButton bb_speed;
 
 		public signal void complete();
 		public signal void rescale();
@@ -198,6 +202,7 @@ namespace BBL {
 		}
 
 		public Window() {
+			LogPlay.speed = 0;
 			transient_for = Mwp.window;
 			apply.sensitive = false;
 			BBL.videofile=null;
@@ -216,9 +221,22 @@ namespace BBL {
 
 			setup_factories();
 
+
+			if(Mwp.fl2ltmvers > 10026) {
+				speedup.visible = false;
+				bspeedup.visible = true;
+				bb_speed.value = 1;
+			}
+
 			apply.clicked.connect( (id) => {
 					Mwp.add_toast_text("Preparing log for replay ... ");
-					BBL.speedup = this.speedup.active;
+					if(speedup.visible) {
+						BBL.speedup = this.speedup.active;
+						LogPlay.speed = 10;
+					} else {
+						LogPlay.speed = bb_speed.get_value_as_int();
+						BBL.speedup = (LogPlay.speed > 1);
+					}
 					BBL.vactive = vidbutton.active;
 					BBL.skiptime = int.parse(skip_entry.text);
 					if(BBL.vactive) {
