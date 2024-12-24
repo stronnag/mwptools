@@ -20,7 +20,7 @@ namespace MWPWarn {
 }
 
 namespace Mwp {
-	bool telem;
+	uint telem;
 	bool seenMSP;
 
     int replayer;
@@ -512,7 +512,7 @@ namespace Mwp {
 	public void telem_init(Msp.Cmds cmd) {
 		var mtype= (cmd >= Msp.Cmds.MAV_BASE) ? "MAVLink" : "LTM";
 		var mstr = "%s telemetry".printf(mtype);
-		MWPLog.message("%s\n", mstr);
+		MWPLog.message("%s\n", mstr);;
 		if (conf.manage_power && inhibit_cookie == 0) {
 			inhibit_cookie = MwpIdle.inhibit();
 			MWPLog.message("Managing screen idle and suspend (%x)\n", inhibit_cookie);
@@ -522,16 +522,14 @@ namespace Mwp {
 		init_sstats();
 		last_tm = nticks;
 		last_gps = nticks;
-		if(last_tm == 0) {
-			last_tm = 1;
-		}
+		telem++;;
 	}
 
 	public void reset_msgs() {
 		last_tm = 0;
 		last_gps = 0;
 		nticks = 0;
-		telem = false;
+		telem = 0;
 		seen_msp =  false;
 	}
 
@@ -564,13 +562,13 @@ namespace Mwp {
 	public void handle_serial(MWSerial ser, Msp.Cmds cmd, uint8[] raw, uint len, uint8 xflags, bool errs) {
 		bool handled = false;
         if(cmd >= Msp.Cmds.LTM_BASE && cmd < Msp.Cmds.MAV_BASE) {
-            telem = true;
+            telem++;
             if (seenMSP == false) {
                 Mwp.nopoll = true;
 			}
 			handled = Mwp.handle_ltm(ser, cmd, raw, len);
 		} else if (cmd >= Msp.Cmds.MAV_BASE && cmd < Msp.Cmds.MAV_BASE+256) {
-			telem  = true;
+			telem++;
             if(mavc == 0 &&  ser.available) {
                 //send_mav_heartbeat(); //FIXME
             }
@@ -578,16 +576,12 @@ namespace Mwp {
 			handled = Mwp.handle_mavlink(ser, cmd, raw, len);
         } else {
 			seenMSP = true;
-			telem = false;
+			telem = 0;
 			last_tm = 0;
 			handled = Mwp.handle_msp(ser, cmd, raw, len, xflags, errs);
 		}
-		if(telem) {
-			if(last_tm == 0) {
-				telem_init(cmd);
-			} else {
-				last_tm = nticks;
-			}
+		if(telem ==  1) {
+			telem_init(cmd);
 		}
 		if(!handled) {
 			show_unhandled(cmd, raw, len);

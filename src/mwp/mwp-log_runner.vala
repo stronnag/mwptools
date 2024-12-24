@@ -122,10 +122,11 @@ namespace Mwp {
             args += dstr;
             args += "--index";
             args += idx.to_string();
+
             if(delay == false)
                 args += "--fast";
 
-			if (LogPlay.speed > 1) {
+			if (Mwp.fl2ltmvers > 10026 && LogPlay.speed > 1) {
 				args += "-speed";
 				args += LogPlay.speed.to_string();
 			}

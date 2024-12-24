@@ -118,8 +118,6 @@ namespace BBL {
 		[GtkChild]
 		private unowned Gtk.Button apply;
 		[GtkChild]
-		private unowned Gtk.Box bspeedup;
-		[GtkChild]
 		private unowned Gtk.SpinButton bb_speed;
 
 		public signal void complete();
@@ -221,21 +219,18 @@ namespace BBL {
 
 			setup_factories();
 
-
-			if(Mwp.fl2ltmvers > 10026) {
-				speedup.visible = false;
-				bspeedup.visible = true;
-				bb_speed.value = 1;
+			bb_speed.value = 10;
+			if(Mwp.fl2ltmvers < 10027) {
+				bb_speed.sensitive = false;
 			}
 
 			apply.clicked.connect( (id) => {
 					Mwp.add_toast_text("Preparing log for replay ... ");
-					if(speedup.visible) {
-						BBL.speedup = this.speedup.active;
-						LogPlay.speed = 10;
-					} else {
+					BBL.speedup = this.speedup.active;
+					if (BBL.speedup) {
 						LogPlay.speed = bb_speed.get_value_as_int();
-						BBL.speedup = (LogPlay.speed > 1);
+					} else {
+						LogPlay.speed = 0;
 					}
 					BBL.vactive = vidbutton.active;
 					BBL.skiptime = int.parse(skip_entry.text);

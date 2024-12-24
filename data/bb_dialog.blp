@@ -3,7 +3,7 @@ using Adw 1;
 
 Adjustment adjustment {
   lower: 1;
-  upper: 25;
+  upper: 20;
   step-increment: 1;
   page-increment: 10;
 }
@@ -64,18 +64,17 @@ template $BBLWindow: Adw.Window {
           ]
         };
       }
-      Gtk.CheckButton speedup {
-	hexpand: true;
-	halign: end;
-        label: "Speedup";
-      }
 
       Box bspeedup {
 	hexpand: true;
 	halign: end;
-	visible: false;
+
+	Gtk.CheckButton speedup {
+          label: "Speedup";
+	}
+
         Label {
-          label: _('Speedup Factor');
+          label: _('By');
         }
 
         SpinButton bb_speed {

@@ -36,7 +36,7 @@ namespace Mwp {
             }
         }
         if(Logger.is_logging) {
-            Logger.armed((armed == 1), duration, flag,sensor, telem);
+            Logger.armed((armed == 1), duration, flag,sensor, telem!=0);
         }
         if(armed != larmed) {
             changed = true;
@@ -77,7 +77,7 @@ namespace Mwp {
                     Mwp.window.logger_cb.active = true;
                 }
                 if(Logger.is_logging) {
-                    Logger.armed(true,duration,flag, sensor,telem);
+                    Logger.armed(true,duration,flag, sensor,telem!=0);
                     if(rhdop != 10000) {
                         LTM_XFRAME xf = LTM_XFRAME();
                         xf = {0};
@@ -111,7 +111,7 @@ namespace Mwp {
                 }
                 if(conf.logarmed == true) {
                     if(Logger.is_logging) {
-                        Logger.armed(false,duration,flag, sensor,telem);
+                        Logger.armed(false,duration,flag, sensor,telem!=0);
 					}
                     Mwp.window.logger_cb.active=false;
                 }
