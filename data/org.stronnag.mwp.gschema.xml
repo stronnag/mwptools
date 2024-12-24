@@ -532,12 +532,6 @@
       address. Setting blank ("") disables.</description>
     </key>
 
-    <key name="window-scale" type="i">
-      <default>80</default>
-      <summary>Window size as percent of monitor</summary>
-      <description>Default window size size as percent of monitor size for non-full screen invocation.</description>
-    </key>
-
     <key name="ident-limit" type="i">
       <default>60</default>
       <summary>MSP_IDENT limit for MSP recognition</summary>

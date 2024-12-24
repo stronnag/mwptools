@@ -105,7 +105,6 @@ public class MWPSettings : GLib.Object {
 	public string mapbox_apikey {get; set; default="";}
 	public double symbol_scale {get; set; default=1.0;}
 	public double touch_scale {get; set; default=1.0;}
-	public int window_scale {get; set; default=80;}
 	public int ident_limit  {get; set; default=60;}
 	public double touch_factor {get; set; default=0.0;}
 	public int p_pane_width {get; set; default=0;}
@@ -198,7 +197,6 @@ public class MWPSettings : GLib.Object {
 		settings.bind("uc-mission-tags", this, "ucmissiontags", SettingsBindFlags.DEFAULT);
 		settings.bind("uilang", this, "uilang", SettingsBindFlags.DEFAULT);
 		settings.bind("vlevels", this, "vlevels", SettingsBindFlags.DEFAULT);
-		settings.bind("window-scale", this, "window-scale", SettingsBindFlags.DEFAULT);
 		settings.bind("wp-dist-size", this, "wp-dist-fontsize", SettingsBindFlags.DEFAULT);
 		settings.bind("wp-spotlight", this, "wp-spotlight", SettingsBindFlags.DEFAULT);
 		settings.bind("wp-text-style", this, "wp-text", SettingsBindFlags.DEFAULT);
@@ -208,8 +206,6 @@ public class MWPSettings : GLib.Object {
 		settings.bind("p-height", Mwp.window, "default-height", SettingsBindFlags.DEFAULT);
 		settings.bind("p-is-maximised", Mwp.window, "maximized", SettingsBindFlags.DEFAULT);
 		settings.bind("p-is-fullscreen", Mwp.window, "fullscreened", SettingsBindFlags.DEFAULT);
-
-
 	}
 
     public MWPSettings() {
