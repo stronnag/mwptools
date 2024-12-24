@@ -384,7 +384,10 @@ namespace Mwp {
 #if UNIX
 				var u = Posix.utsname();
 				if (u.sysname == "Darwin") {
-					pane_type = 2;
+				
+			fw = 2+(150*fw)/100;
+
+pane_type = 1;
 				} else {
 					pane_type = 1;
 				}
