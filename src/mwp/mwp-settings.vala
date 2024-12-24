@@ -197,7 +197,6 @@ public class MWPSettings : GLib.Object {
 		settings.bind("uc-mission-tags", this, "ucmissiontags", SettingsBindFlags.DEFAULT);
 		settings.bind("uilang", this, "uilang", SettingsBindFlags.DEFAULT);
 		settings.bind("vlevels", this, "vlevels", SettingsBindFlags.DEFAULT);
-		settings.bind("window-scale", this, "window-scale", SettingsBindFlags.DEFAULT);
 		settings.bind("wp-dist-size", this, "wp-dist-fontsize", SettingsBindFlags.DEFAULT);
 		settings.bind("wp-spotlight", this, "wp-spotlight", SettingsBindFlags.DEFAULT);
 		settings.bind("wp-text-style", this, "wp-text", SettingsBindFlags.DEFAULT);
