@@ -216,11 +216,18 @@ endif
 
 if host_machine.system() != 'windows'
   meson.add_install_script('meson/post_install.sh')
-  gnome.post_install(
-    glib_compile_schemas: true,
-    gtk_update_icon_cache: true,
-    update_desktop_database: true
-  )
+  if host_machine.system() == 'darwin'
+    gnome.post_install(
+      glib_compile_schemas: true,
+      gtk_update_icon_cache: true,
+      )
+  else
+    gnome.post_install(
+      glib_compile_schemas: true,
+      gtk_update_icon_cache: true,
+      update_desktop_database: true
+    )
+  endif
 else
     gnome.post_install(
       glib_compile_schemas: true,
