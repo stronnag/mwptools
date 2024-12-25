@@ -202,8 +202,9 @@ namespace Mwp {
 			button_menu.always_show_arrow = false;
 			var popover = button_menu.popover as Gtk.PopoverMenu;
 			popover.has_arrow = false;
+#if !DARWIN
 			popover.flags = Gtk.PopoverMenuFlags.NESTED;
-
+#endif
 			setup_accels(app);
 			setup_misc_controls();
 			close_check = false;
