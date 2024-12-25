@@ -110,14 +110,16 @@ public class MWPSettings : GLib.Object {
 	public int p_pane_width {get; set; default=0;}
 
 	construct {
-        var uc = Environment.get_user_data_dir();
+
 #if DARWIN
+        var uc = Environment.get_user_config_dir();
 		string kfile = GLib.Path.build_filename(uc,"mwp", "mwp.ini");
 		MWPLog.message("Using settings keyfile %s\n", kfile);
 		SettingsBackend kbe = SettingsBackend.keyfile_settings_backend_new(kfile, "/org/stronnag/mwp/","mwp");
 		settings = new Settings.with_backend(sname, kbe);
 #else
 		/*
+        var uc = Environment.get_user_data_dir();
         uc += "/glib-2.0/schemas/";
         try {
             SettingsSchemaSource sss = new SettingsSchemaSource.from_directory (uc, null, false);            schema = sss.lookup (sname, false);

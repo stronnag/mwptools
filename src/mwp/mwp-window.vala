@@ -383,26 +383,19 @@ namespace Mwp {
 
 			var pane_type = conf.pane_type;
 			if(conf.pane_type == 0) {
-#if UNIX
-				var u = Posix.utsname();
-				if (u.sysname == "Darwin") {
-					if(pane_type == 0) {
-					  //					  pane_type = 2;
-					  pane_type = 1;
-                      int mfact=125;
-                      var mfe = Environment.get_variable("MWP_MAC_FACTOR");
-                      if (mfe != null) {
-                          mfact = int.parse(mfe);
-                      }
-
-                      fw = fw*mfact/100;
-					  MWPLog.message(":DBG: MACOS width %d\n", fw);
-					} else {
-					  pane_type = 1;
-					}
-				} else {
-					pane_type = 1;
-				}
+#if DARWIN
+                if(pane_type == 0) {
+                    pane_type = 1;
+                }
+                if(pane_type == 1) {
+                    int mfact=125;
+                    var mfe = Environment.get_variable("MWP_MAC_FACTOR");
+                    if (mfe != null) {
+                        mfact = int.parse(mfe);
+                    }
+                    fw = fw*mfact/100;
+                    MWPLog.message(":DBG: MACOS width %d\n", fw);
+                }
 #else
 				pane_type = 1;
 #endif
