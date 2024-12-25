@@ -23,10 +23,12 @@ namespace MBus {
 	internal uint8 fix;
 
 	public void update_fix() {
-		if (Mwp.msp.td.gps.nsats != nsats || Mwp.msp.td.gps.fix != fix) {
-			nsats = Mwp.msp.td.gps.nsats;
-			fix = Mwp.msp.td.gps.fix;
-			svc.sats_changed(nsats, fix);
+		if (svc != null) {
+			if (Mwp.msp.td.gps.nsats != nsats || Mwp.msp.td.gps.fix != fix) {
+				nsats = Mwp.msp.td.gps.nsats;
+				fix = Mwp.msp.td.gps.fix;
+				svc.sats_changed(nsats, fix);
+			}
 		}
 	}
 
@@ -34,10 +36,12 @@ namespace MBus {
 	internal double hlon;
 
 	public void update_home() {
-		if (hlat != Mwp.msp.td.origin.lat || hlon != Mwp.msp.td.origin.lon) {
-			hlat = Mwp.msp.td.origin.lat;
-			hlon = Mwp.msp.td.origin.lon;
-			svc.home_changed(hlat, hlon, (int)Mwp.msp.td.origin.alt);
+		if (svc != null) {
+			if (hlat != Mwp.msp.td.origin.lat || hlon != Mwp.msp.td.origin.lon) {
+				hlat = Mwp.msp.td.origin.lat;
+				hlon = Mwp.msp.td.origin.lon;
+				svc.home_changed(hlat, hlon, (int)Mwp.msp.td.origin.alt);
+			}
 		}
 	}
 
@@ -53,32 +57,34 @@ namespace MBus {
 	internal uint dbus_upd_ticks = 20;
 
 	public void update_location() {
-		if(svc.dbus_pos_interval == 0 || Mwp.nticks - lastdbus >= dbus_upd_ticks) {
-			if(blat != Mwp.msp.td.gps.lat || blon != Mwp.msp.td.gps.lon || balt != (int)Mwp.msp.td.gps.alt) {
-				blat = Mwp.msp.td.gps.lat;
-				blon = Mwp.msp.td.gps.lon;
-				balt = (int)Mwp.msp.td.gps.alt;
-				svc.location_changed(blat, blon, balt);
+		if (svc != null) {
+			if(svc.dbus_pos_interval == 0 || Mwp.nticks - lastdbus >= dbus_upd_ticks) {
+				if(blat != Mwp.msp.td.gps.lat || blon != Mwp.msp.td.gps.lon || balt != (int)Mwp.msp.td.gps.alt) {
+					blat = Mwp.msp.td.gps.lat;
+					blon = Mwp.msp.td.gps.lon;
+					balt = (int)Mwp.msp.td.gps.alt;
+					svc.location_changed(blat, blon, balt);
 
-				int16 tazimuth = (int16)(Math.atan2(Mwp.msp.td.gps.alt, Mwp.msp.td.comp.range)/(Math.PI/180.0));
+					int16 tazimuth = (int16)(Math.atan2(Mwp.msp.td.gps.alt, Mwp.msp.td.comp.range)/(Math.PI/180.0));
                 // Historic MW baggage ...alas
-				var brg = Mwp.msp.td.comp.bearing;
-				if(brg < 0)
-					brg += 360;
-				brg = ((brg + 180) % 360);
-				if(bdirection != Mwp.msp.td.comp.bearing || brange != Mwp.msp.td.comp.range || bazimuth != tazimuth) {
-					bdirection = Mwp.msp.td.comp.bearing;
-					brange = Mwp.msp.td.comp.range;
-					bazimuth = tazimuth;
-					svc.polar_changed(brange, brg, bazimuth);
-				}
+					var brg = Mwp.msp.td.comp.bearing;
+					if(brg < 0)
+						brg += 360;
+					brg = ((brg + 180) % 360);
+					if(bdirection != Mwp.msp.td.comp.bearing || brange != Mwp.msp.td.comp.range || bazimuth != tazimuth) {
+						bdirection = Mwp.msp.td.comp.bearing;
+						brange = Mwp.msp.td.comp.range;
+						bazimuth = tazimuth;
+						svc.polar_changed(brange, brg, bazimuth);
+					}
 
-				if(bspd != (uint32)Mwp.msp.td.gps.gspeed || bcse != (uint32)Mwp.msp.td.gps.cog) {
-					bspd = (uint32)Mwp.msp.td.gps.gspeed;
-					bcse = (uint32)Mwp.msp.td.gps.cog;
-					svc.velocity_changed(bspd, bcse);
+					if(bspd != (uint32)Mwp.msp.td.gps.gspeed || bcse != (uint32)Mwp.msp.td.gps.cog) {
+						bspd = (uint32)Mwp.msp.td.gps.gspeed;
+						bcse = (uint32)Mwp.msp.td.gps.cog;
+						svc.velocity_changed(bspd, bcse);
+					}
+					lastdbus = Mwp.nticks;
 				}
-				lastdbus = Mwp.nticks;
 			}
 		}
 	}
@@ -86,18 +92,22 @@ namespace MBus {
 	internal int bstate;
 	internal int bmode;
 	public void update_state() {
-		if (bstate != Mwp.msp.td.state.state || bmode != Mwp.msp.td.state.ltmstate) {
-			bstate = Mwp.msp.td.state.state;
-			bmode = Mwp.msp.td.state.ltmstate;
-			svc.state_changed(bstate, bmode);
+		if (svc != null) {
+			if (bstate != Mwp.msp.td.state.state || bmode != Mwp.msp.td.state.ltmstate) {
+				bstate = Mwp.msp.td.state.state;
+				bmode = Mwp.msp.td.state.ltmstate;
+				svc.state_changed(bstate, bmode);
+			}
 		}
 	}
 
 	internal uint8 bwpno;
 	public void update_wp() {
-		if(bwpno != Mwp.msp.td.state.wpno) {
-			bwpno = Mwp.msp.td.state.wpno;
-			svc.waypoint_changed((int)bwpno);
+		if (svc != null) {
+			if(bwpno != Mwp.msp.td.state.wpno) {
+				bwpno = Mwp.msp.td.state.wpno;
+				svc.waypoint_changed((int)bwpno);
+			}
 		}
 	}
 

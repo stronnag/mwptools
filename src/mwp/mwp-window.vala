@@ -58,9 +58,9 @@ namespace Mwp {
 			if (inhibit_cookie != 0) {
                 MwpIdle.uninhibit(inhibit_cookie);
 			}
-            if (MBus.svc != null){
+			if (MBus.svc != null)
                 MBus.svc.quit();
-            }
+
             MapManager.killall();
 		}
 	}
