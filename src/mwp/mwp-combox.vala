@@ -54,9 +54,14 @@ public class MwpCombox : Gtk.Frame {
 	}
 
 	public void set_active(int i) {
-		var v = menu.get_item_attribute_value(i, "target", VariantType.STRING);
-		if(v != null) {
-			entry.text = (string)v;
+		var nm = menu.get_n_items();
+		if(nm > 0) {
+			var v = menu.get_item_attribute_value(i, "target", VariantType.STRING);
+			if(v != null) {
+				entry.text = (string)v;
+			}
+		} else {
+			entry.text = "";
 		}
 	}
 

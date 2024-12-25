@@ -380,7 +380,6 @@ namespace Mwp {
 			int fw,fh;
 			Utils.check_pango_size(this, "Monospace", "_00:00:00.0N 000.00.00.0W_", out fw, out fh);
 			// Must match 150% scaling in flight_view
-			int fw0 = fw;
             //			MWPLog.message(":DBG: FW0 %s, panetype %s, pane_width %s\n", fw0.to_string(),  conf.pane_type.to_string(), conf.p_pane_width.to_string());
 			fw = 2+(150*fw)/100;
 
