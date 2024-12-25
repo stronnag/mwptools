@@ -18,7 +18,7 @@
 public class MWPSettings : GLib.Object {
     public Settings settings {get; set;}
     private const string sname = "org.stronnag.mwp";
-    private SettingsSchema schema;
+	//    private SettingsSchema schema;
     public double latitude {get; set; default=0.0;}
     public double longitude {get; set; default=0.0;}
     public uint loiter {get; set; default=30;}
@@ -117,6 +117,7 @@ public class MWPSettings : GLib.Object {
 		SettingsBackend kbe = SettingsBackend.keyfile_settings_backend_new(kfile, "/org/stronnag/mwp/","mwp");
 		settings = new Settings.with_backend(sname, kbe);
 #else
+		/*
         uc += "/glib-2.0/schemas/";
         try {
             SettingsSchemaSource sss = new SettingsSchemaSource.from_directory (uc, null, false);            schema = sss.lookup (sname, false);
@@ -124,7 +125,11 @@ public class MWPSettings : GLib.Object {
 
         if (schema != null) {
             settings = new Settings.full (schema, null, null);
-		} else {
+		} else
+		*/
+		{
+			MWPLog.message("Using settings schema %s\n", sname);
+
             settings =  new Settings (sname);
 		}
 #endif
