@@ -207,23 +207,27 @@ namespace Mwp {
 			close_check = false;
 			close_request.connect(() => {
 					if(close_check) {
+                        MWPLog.message(":DBG: cleanup 1\n");
 						Mwp.cleanup();
 						return false;
 					} else {
 						if(!MissionManager.is_dirty) {
-							Mwp.cleanup();
+                            MWPLog.message(":DBG: cleanup 2\n");
+                            Mwp.cleanup();
 							return false;
 						} else {
 							waiter.begin((o,res) => {
 									var ok = waiter.end(res);
 									if(ok) {
-										close_check = true;
+                                        MWPLog.message(":DBG: cleanup 3\n");
+                                        close_check = true;
 										close();
 									}
 								});
 							return true;
 						}
 					}
+                    MWPLog.message(":DBG: cleanup 4\n");
 				});
 			init_basics();
 
