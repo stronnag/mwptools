@@ -111,6 +111,12 @@ public class MWPSettings : GLib.Object {
 
 	construct {
         var uc = Environment.get_user_data_dir();
+#if DARWIN
+		string kfile = GLib.Path.build_filename(uc,"mwp", "mwp.ini");
+		MWPLog.message("Using settings keyfile %s\n", kfile);
+		SettingsBackend kbe = SettingsBackend.keyfile_settings_backend_new(kfile, "/org/stronnag/mwp/","mwp");
+		settings = new Settings.with_backend(sname, kbe);
+#else
         uc += "/glib-2.0/schemas/";
         try {
             SettingsSchemaSource sss = new SettingsSchemaSource.from_directory (uc, null, false);            schema = sss.lookup (sname, false);
@@ -121,7 +127,7 @@ public class MWPSettings : GLib.Object {
 		} else {
             settings =  new Settings (sname);
 		}
-
+#endif
 		settings.bind("adjust-tz", this, "adjust-tz", SettingsBindFlags.DEFAULT);
 		settings.bind("arming-speak", this, "arming-speak", SettingsBindFlags.DEFAULT);
 		settings.bind("atexit", this, "atexit", SettingsBindFlags.GET);
