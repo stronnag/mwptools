@@ -56,10 +56,12 @@ namespace Mwp {
 			}
 			TTS.stop_audio();
 			if (inhibit_cookie != 0) {
-				MwpIdle.uninhibit(inhibit_cookie);
+                MwpIdle.uninhibit(inhibit_cookie);
 			}
-			MBus.svc.quit();
-			MapManager.killall();
+            if (MBus.svc != null){
+                MBus.svc.quit();
+            }
+            MapManager.killall();
 		}
 	}
 
@@ -207,19 +209,16 @@ namespace Mwp {
 			close_check = false;
 			close_request.connect(() => {
 					if(close_check) {
-                        MWPLog.message(":DBG: cleanup 1\n");
 						Mwp.cleanup();
 						return false;
 					} else {
 						if(!MissionManager.is_dirty) {
-                            MWPLog.message(":DBG: cleanup 2\n");
                             Mwp.cleanup();
 							return false;
 						} else {
 							waiter.begin((o,res) => {
 									var ok = waiter.end(res);
 									if(ok) {
-                                        MWPLog.message(":DBG: cleanup 3\n");
                                         close_check = true;
 										close();
 									}
@@ -227,7 +226,6 @@ namespace Mwp {
 							return true;
 						}
 					}
-                    MWPLog.message(":DBG: cleanup 4\n");
 				});
 			init_basics();
 
@@ -382,7 +380,7 @@ namespace Mwp {
 			Utils.check_pango_size(this, "Monospace", "_00:00:00.0N 000.00.00.0W_", out fw, out fh);
 			// Must match 150% scaling in flight_view
 			int fw0 = fw;
-			MWPLog.message(":DBG: FW0 %s, panetype %s, pane_width%s\n", fw0.to_string(),  conf.pane_type.to_string(), conf.p_pane_width.to_string());
+            //			MWPLog.message(":DBG: FW0 %s, panetype %s, pane_width %s\n", fw0.to_string(),  conf.pane_type.to_string(), conf.p_pane_width.to_string());
 			fw = 2+(150*fw)/100;
 
 			var pane_type = conf.pane_type;
@@ -392,13 +390,13 @@ namespace Mwp {
                     pane_type = 1;
                 }
                 if(pane_type == 1) {
-                    int mfact=125;
+                    int mfact=128;
                     var mfe = Environment.get_variable("MWP_MAC_FACTOR");
                     if (mfe != null) {
                         mfact = int.parse(mfe);
                     }
                     fw = fw*mfact/100;
-                    MWPLog.message(":DBG: MACOS width %d\n", fw);
+                    //                    MWPLog.message(":DBG: MACOS width %d\n", fw);
                 }
 #else
 				pane_type = 1;
