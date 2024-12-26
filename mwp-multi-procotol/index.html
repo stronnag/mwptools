@@ -1079,6 +1079,27 @@
   
   
     <li class="md-nav__item">
+      <a href="../mwp-macos/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    MacOS (Homebrew)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../mwp-windows-msys/" class="md-nav__link">
         
   
@@ -1568,7 +1589,7 @@
 </ul>
 <p>Each of these requires a specific device name and <em>may</em> require a protocol selection.</p>
 <h2 id="serial-devices">Serial devices<a class="headerlink" href="#serial-devices" title="Permanent link">#</a></h2>
-<p>Serial devices are defined by the operating system device node name and optionally include an embedded baud rate, for example:</p>
+<p>Serial devices are defined by the operating system device node name and optionally include an embedded baud rate (<code>@baudrate</code>), for example:</p>
 <pre><code># Linux, USB seral
 /dev/ttyACM0
 # Linux, USB serial with baud rate
@@ -1578,6 +1599,10 @@
 
 # FreeBSD
 /dev/cuaU0
+
+# Windows
+COM7
+COM17@38400
 </code></pre>
 <h2 id="bluetooth">Bluetooth<a class="headerlink" href="#bluetooth" title="Permanent link">#</a></h2>
 <p>Bluetooth may be specified by either an <code>rfcomm</code> device node (<code>/dev/rfcommX</code> on Linux, <code>/dev/ttypX</code> pseudo-terminal abstraction on FreeBSD) or by the device address (<code>BD_ADDR</code>, Linux and FreeBSD only):</p>
