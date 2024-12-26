@@ -98,6 +98,7 @@ nav:
       - mwp-follow-me.md
   - 'Build and Install / OS Specific':
       - Building-with-meson-and-ninja.md
+      - 'MacOS (Homebrew)' : mwp-macos.md
       - 'Windows (MSys2)' : mwp-windows-msys.md
   - Miscellaneous:
       - mwp-Power-and-screen-management.md
