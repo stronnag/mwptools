@@ -1297,8 +1297,12 @@
  adwaita-icon-theme \
  gnuplot
 </code></pre></div>
+<h4 id="optional-recommended">Optional / Recommended<a class="headerlink" href="#optional-recommended" title="Permanent link">#</a></h4>
+<div class="highlight"><pre><span></span><code>brew install bash-completion
+</code></pre></div>
 <h3 id="blueprint-compiler">Blueprint compiler<a class="headerlink" href="#blueprint-compiler" title="Permanent link">#</a></h3>
-<p>This is not in <code>homebrew</code>, install locally:</p>
+<p>The required <code>blueprint-compiler</code> is not in <code>homebrew</code>, so is installed locally:</p>
+<p><strong>Note:</strong> If you have a pre-existing python, then the packages installed above may fail to install the dependency <code>pygobject3</code> and you will have to install it manually, either via <code>brew</code> or <code>pipx</code>.</p>
 <div class="highlight"><pre><span></span><code>git clone https://gitlab.gnome.org/jwestman/blueprint-compiler
 cd blueprint-compiler/
 meson setup _build
@@ -1316,15 +1320,27 @@ ninja -C _build install
 </code></pre></div>
 <h4 id="one-off-post-install">One off post install<a class="headerlink" href="#one-off-post-install" title="Permanent link">#</a></h4>
 <ul>
-<li>It is necessary to add <code>$HOME/.local/bin</code> to <code>$PATH</code></li>
-</ul>
-<p>mwp's <code>gsettings</code> does not work on MacOS (or more strictly, it does, but <code>mwp</code> and <code>gsettings</code> do not share storage, which is not helpful. Therefore mwp is using a <code>ini</code> file backend on MacOS.</p>
-<ul>
-<li>copy the template <code>ini</code> file into the config directory
-  <div class="highlight"><pre><span></span><code>mkdir -p ~/.config/mwp/
+<li>
+<p>It is necessary to add <code>$HOME/.local/bin</code> to <code>$PATH</code></p>
+</li>
+<li>
+<p>mwp's <code>gsettings</code> does not work on MacOS (or more strictly, it does, but <code>mwp</code> and <code>gsettings</code> do not share storage, which is not helpful). Therefore mwp is using an <code>ini</code> file backend on MacOS.</p>
+</li>
+<li>
+<p>copy the template <code>ini</code> file into the config directory
+    <div class="highlight"><pre><span></span><code>mkdir -p ~/.config/mwp/
 cp docs/mwp.ini ~/.config/mwp/
-</code></pre></div></li>
-<li>To set settings outside of mwp, you may edit  <code>~/.config/mwp/mwp.ini</code> <strong>with care</strong> as there is no error checking.</li>
+</code></pre></div></p>
+</li>
+<li>
+<p>To set settings outside of mwp, you may edit  <code>~/.config/mwp/mwp.ini</code> <strong>with care</strong> as there is no error checking.</p>
+</li>
+<li>
+<p>Install <code>mwp.app</code>. This adds <code>mwp</code> to <code>Finder</code> etc.
+  <div class="highlight"><pre><span></span><code>cd /Applications
+tar -xf &lt;PATH TO&gt;/mwptools/docs/mwp.app.tar.gz
+</code></pre></div></p>
+</li>
 </ul>
 <h2 id="other-notes">Other notes<a class="headerlink" href="#other-notes" title="Permanent link">#</a></h2>
 <p>macOS appears not measure text width in the same was a other OS. A "fudge factor" is included that works on my "Ventura" VM. The user set there own value with the environment variable `MWP_MAC_FACTOR', set to a value greater than 100. Try with values around 125.</p>
