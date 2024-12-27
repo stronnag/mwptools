@@ -44,9 +44,18 @@ brew install gtk4 \
  gnuplot
 ```
 
+#### Optional / Recommended
+
+```
+brew install bash-completion
+```
+
+
 ### Blueprint compiler
 
-This is not in `homebrew`, install locally:
+The required `blueprint-compiler` is not in `homebrew`, so is installed locally:
+
+**Note:** If you have a pre-existing python, then the packages installed above may fail to install the dependency `pygobject3` and you will have to install it manually, either via `brew` or `pipx`.
 
 ```
 git clone https://gitlab.gnome.org/jwestman/blueprint-compiler
@@ -72,14 +81,21 @@ ninja -C _build install
 
 * It is necessary to add `$HOME/.local/bin` to `$PATH`
 
-mwp's `gsettings` does not work on MacOS (or more strictly, it does, but `mwp` and `gsettings` do not share storage, which is not helpful. Therefore mwp is using a `ini` file backend on MacOS.
+* mwp's `gsettings` does not work on MacOS (or more strictly, it does, but `mwp` and `gsettings` do not share storage, which is not helpful). Therefore mwp is using an `ini` file backend on MacOS.
 
-* copy the template `ini` file into the config directory
-  ```
-  mkdir -p ~/.config/mwp/
-  cp docs/mwp.ini ~/.config/mwp/
-  ```
+  * copy the template `ini` file into the config directory
+    ```
+    mkdir -p ~/.config/mwp/
+    cp docs/mwp.ini ~/.config/mwp/
+    ```
+
 * To set settings outside of mwp, you may edit  `~/.config/mwp/mwp.ini` **with care** as there is no error checking.
+
+* Install `mwp.app`. This adds `mwp` to `Finder` etc.
+  ```
+  cd /Applications
+  tar -xf <PATH TO>/mwptools/docs/mwp.app.tar.gz
+  ```
 
 ## Other notes
 
