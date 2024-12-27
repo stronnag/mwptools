@@ -41,7 +41,6 @@ namespace Gis {
 	Shumate.MarkerLayer rm_layer;
 	Shumate.MarkerLayer mm_layer;
 	Shumate.MarkerLayer hm_layer;
-	Shumate.MarkerLayer tt_layer;
 	private StrIntStore mis;
 	internal Queue<Shumate.MapLayer?> qml;
 	private Gtk.Label warnlab;
@@ -212,8 +211,6 @@ namespace Gis {
 		Gis.map.add_layer(Gis.mm_layer);
 		Gis.hm_layer = new Shumate.MarkerLayer(Gis.map.viewport); // home marker
 		Gis.map.add_layer(Gis.hm_layer);
-		Gis.tt_layer = new Shumate.MarkerLayer(Gis.map.viewport); // Tips
-		Gis.map.add_layer(Gis.tt_layer);
 		var c = Gdk.RGBA();
 		c.parse("red");
 		Gis.mp_layer.set_stroke_color(c);

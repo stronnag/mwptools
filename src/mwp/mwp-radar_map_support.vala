@@ -76,30 +76,16 @@ namespace Radar {
 				}
 			}
 			rp  = new MWPMarker.from_image(img);
-			rp.extra = new MWPLabel();
-			Gis.tt_layer.add_marker((MWPLabel)rp.extra);
-			rp.extra.visible=false;
-			uint tt_timer = 0;
-
-			rp.leave.connect(() => {
-					if(tt_timer != 0) {
-						Source.remove(tt_timer);
-						tt_timer = 0;
-					}
-					rp.extra.visible=false;
-				});
-			rp.enter.connect((x,y) => {
-					rp.extra.visible=true;
-					tt_timer = Timeout.add_seconds(30, () => {
-							tt_timer = 0;
-							rp.extra.visible=false;
-							return false;
-						});
-				});
             rp.set_selectable(false);
 			rp.no = (int)rk;
 			rp.opacity = 0.8;
 			Gis.rm_layer.add_marker (rp);
+			rp.has_tooltip = true;
+			rp.query_tooltip.connect((x,y,k,t) => {
+					var s = generate_tt(r);
+					t.set_text(s);
+					return true;
+				});
 		}
         rp.set_location (r.latitude, r.longitude);
 		if ((r.source & RadarSource.M_ADSB) != 0) {
@@ -117,22 +103,10 @@ namespace Radar {
 		if(r.etype != 10) {
 			rp.rotate(r.heading);
 		}
-		var tt = generate_tt(r);
-		((MWPLabel)rp.extra).set_text(tt);
-		var l = ((MWPLabel)rp.extra).get_child();
-		var _h = l.get_height();
-		var _w = l.get_width();
-		if (_w == 0) _w = 100;
-		if (_h == 0) _h = 50;
-		double _sx,_sy;
-		Gis.map.viewport.location_to_widget_coords(Gis.map, rp.latitude, rp.longitude,
-												   out _sx, out _sy);
-		double tla, tlo;
-		Gis.map.viewport.widget_coords_to_location (Gis.map,
-													_sx+10+(_w+1.0)/2.0, _sy+10+(_h+1)/2,
-													out tla, out tlo);
-		((MWPLabel)rp.extra).latitude = tla;
-		((MWPLabel)rp.extra).longitude = tlo;
+
+		if(rp.has_tooltip) {
+			rp.tooltip_text=generate_tt(r);
+		}
     }
 
 	private string generate_tt(RadarPlot r) {
@@ -165,12 +139,7 @@ namespace Radar {
 
     public void remove_radar(uint rid) {
         var rp = find_radar_item(rid);
-		if(rp != null) {
-			if(rp.extra != null) {
-				Gis.tt_layer.remove_marker((Shumate.Marker)rp.extra);
-			}
-			Gis.rm_layer.remove_marker(rp);
-		}
+		Gis.rm_layer.remove_marker(rp);
 	}
 
     public void set_radar_hidden(uint rid) {
