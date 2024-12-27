@@ -39,11 +39,20 @@ extern void __attribute__((weak)) mwp_log_message(const gchar *format, ...);
 static GModule *handle;
 
 static inline gchar *m_module_build_path(const gchar *dir, const gchar *name) {
-// Once GLIB actually documents the replacement, the pragmas can be removed
+#ifdef __APPLE__
+  char *mname;
+  mname = malloc(strlen(name)+16);
+  p = stpcpy(mname, "lib");
+  p = stpcpy(p, name);
+  stpcpy(p, ".dylib");
+  return mname;
+#else
+  // Once GLIB actually documents the replacement, the pragmas can be removed
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   return g_module_build_path(dir, name);
 #pragma GCC diagnostic pop
+#endif
 }
 
 #ifdef USE_ESPEAK
