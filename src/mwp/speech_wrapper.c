@@ -29,11 +29,11 @@
 #define API_FLITE 3
 
 
-#ifdef __APPLE__
-#define mwp_log_message printf
-#else
+//#ifdef __APPLE__
+//#define mwp_log_message printf
+//#else
 extern void __attribute__((weak)) mwp_log_message(const gchar *format, ...);
-#endif
+//#endif
 
 #if defined(USE_ESPEAK) || defined(USE_SPEECHD) || defined(USE_FLITE)
 static GModule *handle;
@@ -94,6 +94,8 @@ static int ep_init(char *voice) {
             g_module_symbol(handle, "espeak_Synchronize", (gpointer *)&esh))
           res = API_ESPEAK;
       }
+    } else {
+      mwp_log_message(":DBG: failed to dlopen %s\n", modname);
     }
     g_free(modname);
   }

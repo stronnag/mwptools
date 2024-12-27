@@ -221,7 +221,9 @@ namespace Cli {
 
         if(Mwp.exvox == null) {
 			uint8 spapi_mask  = MwpSpeech.get_api_mask();
-			if (spapi_mask != 0) {
+            MWPLog.message("Mask %d, api [%s]\n", spapi_mask, Mwp.conf.speech_api);
+
+            if (spapi_mask != 0) {
 				for(uint8 j = Mwp.SPEAKER_API.ESPEAK; j < Mwp.SPEAKER_API.COUNT; j++) {
 					if(Mwp.conf.speech_api == Mwp.SPEAKERS[j] && ((spapi_mask & (1<<(j-1))) != 0)) {
 						Mwp.spapi = j;
