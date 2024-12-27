@@ -42,7 +42,7 @@ static inline gchar *m_module_build_path(const gchar *dir, const gchar *name) {
 #ifdef __APPLE__
   char *mname;
   mname = malloc(strlen(name)+16);
-  p = stpcpy(mname, "lib");
+  char *p = stpcpy(mname, "lib");
   p = stpcpy(p, name);
   stpcpy(p, ".dylib");
   return mname;
