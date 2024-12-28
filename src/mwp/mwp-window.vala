@@ -205,7 +205,7 @@ namespace Mwp {
 #if !DARWIN
 			popover.flags = Gtk.PopoverMenuFlags.NESTED;
 #else
-			if(Environment.get_variable("MWP_MAC_NESTED") != null) {
+			if(Environment.get_variable("MWP_MAC_NO_NEST") == null) {
 				popover.flags = Gtk.PopoverMenuFlags.NESTED;
 			}
 #endif
