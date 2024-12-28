@@ -102,3 +102,5 @@ Once a suitable value is found:
 
 * Reset panel sizing `rm -f ~/.config/mwp/.paned`
 * If required, add the `MWP_MAC_FACTOR` environment variable to `~/.config/mwp/cmdopts`
+
+On Ventura, the menus may behave strangely, to the point of being almost unusable. This may be mitigated by setting the environment variable `MWP_MAC_NO_NEST` (to anything).
