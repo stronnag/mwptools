@@ -15,6 +15,8 @@ A version of MacOS supporting `homebrew`, e.g.
 * Sonoma
 * Ventura
 
+At the time of writing, Homebrew does not officially support Sequoia for (most of) the packages required, however, the required packages (and mwp) work well on Sequoia / X86_64.
+
 ## Install HomeBrew
 
 ```
@@ -53,7 +55,7 @@ brew install bash-completion
 
 ### Blueprint compiler
 
-The required `blueprint-compiler` is not in `homebrew`, so is installed locally:
+The required `blueprint-compiler` is not in `homebrew`, so is install locally:
 
 **Note:** If you have a pre-existing python, then the packages installed above may fail to install the dependency `pygobject3` and you will have to install it manually, either via `brew` or `pipx`.
 
@@ -80,7 +82,7 @@ ninja -C _build install
 #### One off post install
 
 * It is necessary to add `$HOME/.local/bin` to `$PATH`
-* mwp's `gsettings` does not work on MacOS (or more strictly, it does, but `mwp` and `gsettings` do not share storage, which is not helpful). Therefore mwp is using an `ini` file backend on MacOS. A default will be installed on first use.
+* mwp's `gsettings` does not work on MacOS (or more strictly, it does, but `mwp` and `gsettings` do not share storage, which is not helpful). Therefore mwp is using an `ini` file backend on MacOS. A default `ini` file will be installed on first use.
 * To set settings outside of mwp, you may edit  `~/.config/mwp/mwp.ini` **with care** as there is no error checking.
 * Install `mwp.app`. This adds `mwp` to `Finder` etc.
   ```
