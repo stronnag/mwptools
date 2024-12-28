@@ -112,28 +112,43 @@ public class MWPSettings : GLib.Object {
 	construct {
 
 #if DARWIN
-        var uc = Environment.get_user_config_dir();
-		string kfile = GLib.Path.build_filename(uc,"mwp", "mwp.ini");
+		string uc =  Environment.get_user_config_dir();
+		string kfile = GLib.Path.build_filename(uc,"mwp");
+		DirUtils.create_with_parents(kfile, 0755);
+		kfile = GLib.Path.build_filename(kfile , "mwp.ini");
+		if(!FileUtils.test(kfile, FileTest.EXISTS|FileTest.IS_REGULAR)) {
+			bool ok = false;
+			var ud =  Environment.get_user_data_dir();
+			var sds =  Environment.get_system_data_dirs();
+			var fn =  GLib.Path.build_filename(ud, "mwp", "mwp.ini");
+			if (!FileUtils.test(fn, FileTest.EXISTS|FileTest.IS_REGULAR)) {
+				foreach (var sd in sds) {
+					fn =  GLib.Path.build_filename(sd, "mwp", "mwp.ini");
+					if (FileUtils.test(fn, FileTest.EXISTS|FileTest.IS_REGULAR)) {
+						ok = true;
+						break;
+					}
+				}
+			} else {
+				ok = true;
+			}
+			if(ok) {
+				string defset;
+				try {
+					if(FileUtils.get_contents(fn, out defset)) {
+						FileUtils.set_contents(kfile, defset);
+					}
+				} catch (Error e) {
+					MWPLog.message("Copy settings: %s\n", e.message);
+				}
+			}
+		}
 		MWPLog.message("Using settings keyfile %s\n", kfile);
 		SettingsBackend kbe = SettingsBackend.keyfile_settings_backend_new(kfile, "/org/stronnag/mwp/","mwp");
 		settings = new Settings.with_backend(sname, kbe);
 #else
-		/*
-        var uc = Environment.get_user_data_dir();
-        uc += "/glib-2.0/schemas/";
-        try {
-            SettingsSchemaSource sss = new SettingsSchemaSource.from_directory (uc, null, false);            schema = sss.lookup (sname, false);
-        } catch {}
-
-        if (schema != null) {
-            settings = new Settings.full (schema, null, null);
-		} else
-		*/
-		{
-			MWPLog.message("Using settings schema %s\n", sname);
-
-            settings =  new Settings (sname);
-		}
+		MWPLog.message("Using settings schema %s\n", sname);
+		settings =  new Settings (sname);
 #endif
 		settings.bind("adjust-tz", this, "adjust-tz", SettingsBindFlags.DEFAULT);
 		settings.bind("arming-speak", this, "arming-speak", SettingsBindFlags.DEFAULT);

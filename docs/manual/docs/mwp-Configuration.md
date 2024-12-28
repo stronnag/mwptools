@@ -195,8 +195,16 @@ The user may maintain these files manually if used, or use the [graphic places e
 The underlying infrastructure used by {{ mwp }} has a facility for storing configuration items in a registry like store. This is used extensively by {{ mwp }}. The items can viewed and modified using a number of tools:
 
 * {{ mwp }} preference dialogue (for a small subset of the items)
-* The `dconf-editor` graphical settings editor
-* The command line `gsettings` tool
+* The `dconf-editor` graphical settings editor (Linux, FreeBSD)
+* The command line `gsettings` tool (Linux, FreeBSD, Windows)
+* Regedit (Windows)
+* Text Editor (MacOS)
+
+### MacOS (exception)
+
+Gtk on MacOS does not support `gsettings` in a useful way. As a work around, MacOS settings are stored in a text `.ini` file, `$HOME/.config/mwp/mwp.ini`.
+
+### Linux, FreeBSD, Windows
 
 For `gsettings` and `dconf-editor`, the name-space is `org.stronnag.mwp`, so to view the list of items:
 
@@ -221,7 +229,6 @@ This *may* not be installed by default, but should be available via the OS packa
 ![dconf editor](images/dconf-1.png){: width="50%" }
 <figcaption>dconf-editor, editing a setting</figcaption>
 </figure>
-
 
 ### List of mwp settings
 

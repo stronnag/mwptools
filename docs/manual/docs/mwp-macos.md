@@ -80,17 +80,8 @@ ninja -C _build install
 #### One off post install
 
 * It is necessary to add `$HOME/.local/bin` to `$PATH`
-
-* mwp's `gsettings` does not work on MacOS (or more strictly, it does, but `mwp` and `gsettings` do not share storage, which is not helpful). Therefore mwp is using an `ini` file backend on MacOS.
-
-  * copy the template `ini` file into the config directory
-    ```
-    mkdir -p ~/.config/mwp/
-    cp docs/mwp.ini ~/.config/mwp/
-    ```
-
+* mwp's `gsettings` does not work on MacOS (or more strictly, it does, but `mwp` and `gsettings` do not share storage, which is not helpful). Therefore mwp is using an `ini` file backend on MacOS. A default will be installed on first use.
 * To set settings outside of mwp, you may edit  `~/.config/mwp/mwp.ini` **with care** as there is no error checking.
-
 * Install `mwp.app`. This adds `mwp` to `Finder` etc.
   ```
   cd /Applications
