@@ -759,11 +759,35 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#macos-exception" class="md-nav__link">
+    <span class="md-ellipsis">
+      MacOS (exception)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#linux-freebsd-windows" class="md-nav__link">
+    <span class="md-ellipsis">
+      Linux, FreeBSD, Windows
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Linux, FreeBSD, Windows">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#dconf-editor" class="md-nav__link">
     <span class="md-ellipsis">
       dconf-editor
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -1572,11 +1596,35 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#macos-exception" class="md-nav__link">
+    <span class="md-ellipsis">
+      MacOS (exception)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#linux-freebsd-windows" class="md-nav__link">
+    <span class="md-ellipsis">
+      Linux, FreeBSD, Windows
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Linux, FreeBSD, Windows">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#dconf-editor" class="md-nav__link">
     <span class="md-ellipsis">
       dconf-editor
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -1861,9 +1909,14 @@ Jurby:54.353974:-4.523600:-1
 <p>The underlying infrastructure used by <a href="https://github.com/stronnag/mwptools">mwp</a> has a facility for storing configuration items in a registry like store. This is used extensively by <a href="https://github.com/stronnag/mwptools">mwp</a>. The items can viewed and modified using a number of tools:</p>
 <ul>
 <li><a href="https://github.com/stronnag/mwptools">mwp</a> preference dialogue (for a small subset of the items)</li>
-<li>The <code>dconf-editor</code> graphical settings editor</li>
-<li>The command line <code>gsettings</code> tool</li>
+<li>The <code>dconf-editor</code> graphical settings editor (Linux, FreeBSD)</li>
+<li>The command line <code>gsettings</code> tool (Linux, FreeBSD, Windows)</li>
+<li>Regedit (Windows)</li>
+<li>Text Editor (MacOS)</li>
 </ul>
+<h3 id="macos-exception">MacOS (exception)<a class="headerlink" href="#macos-exception" title="Permanent link">#</a></h3>
+<p>Gtk on MacOS does not support <code>gsettings</code> in a useful way. As a work around, MacOS settings are stored in a text <code>.ini</code> file, <code>$HOME/.config/mwp/mwp.ini</code>.</p>
+<h3 id="linux-freebsd-windows">Linux, FreeBSD, Windows<a class="headerlink" href="#linux-freebsd-windows" title="Permanent link">#</a></h3>
 <p>For <code>gsettings</code> and <code>dconf-editor</code>, the name-space is <code>org.stronnag.mwp</code>, so to view the list of items:</p>
 <pre><code>$ gsettings list-recursively  org.stronnag.mwp
 </code></pre>
