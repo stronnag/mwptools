@@ -204,6 +204,10 @@ namespace Mwp {
 			popover.has_arrow = false;
 #if !DARWIN
 			popover.flags = Gtk.PopoverMenuFlags.NESTED;
+#else
+			if(Environment.get_variable("MWP_MAC_NESTED") != null) {
+				popover.flags = Gtk.PopoverMenuFlags.NESTED;
+			}
 #endif
 			setup_accels(app);
 			setup_misc_controls();
