@@ -184,9 +184,10 @@ namespace Msp {
             Mwp.clear_sensor_array();
         } else {
             Mwp.show_serial_stats();
-            if (Mwp.msp.available)
+            if (Mwp.msp.available) {
                 Mwp.msp.close();
-            Mwp.replayer = Mwp.Player.NONE;
+			}
+			Mwp.replayer = Mwp.Player.NONE;
         }
 
 		if(Mwp.fwddev != null && Mwp.fwddev.available()) {
@@ -273,8 +274,6 @@ Error: <i>%s</i>
 	}
 
     private void connect_serial() {
-		CRSF.init();
-		//		SportDev.active = false;
 		RSSI.set_title(RSSI.Title.RSSI);
 		var serdev = Mwp.dev_entry.text;
 		bool ostat = false;

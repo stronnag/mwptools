@@ -16,7 +16,31 @@
  */
 
 namespace Frsky {
-    private uint8 sport_parse_lat_lon(uint val, out int32 value) {
+	public class Sportdata : Object {
+		public char id;
+		public bool active;
+		public int32 lat;
+		public int32 lon;
+		public double cse;
+		public double spd;
+		public int32 alt;
+		public double galt;
+		public uint16 rhdop;
+		public int16 pitch;
+		public int16 roll;
+		public uint8 fix;
+		public uint8 sats;
+		public uint8 flags;
+		public double ax;
+		public double ay;
+		public double az;
+		public uint16 range;
+		public uint16 rssi;
+		public int16 vario;
+		public double volts;
+	}
+
+	private uint8 sport_parse_lat_lon(uint val, out int32 value) {
         uint8 imode = (uint8)(val >> 31);
         value = (int)(val & 0x3fffffff);
         if ((val & (1 << 30))!= 0)
@@ -25,15 +49,23 @@ namespace Frsky {
         return imode;
     }
 
+	private void init(MWSerial ser) {
+		ser.td.r = new Sportdata();
+		((Sportdata)ser.td.r).id = 'S';
+	}
+
 	public void process_sport_message (MWSerial ser, uint8[]buf) {
+		if(ser.td.r == null || ((Sportdata)ser.td.r).id != 'S') {
+			init(ser);
+		}
 		ushort id;
 		uint val;
 		SEDE.deserialise_u16(&buf[2], out id);
 		SEDE.deserialise_u32(&buf[4], out val);
 		if(ser.is_main) {
-			if(!SportDev.active) {
+			if(!((Sportdata)ser.td.r).active) {
 				Mwp.window.mmode.label = "S-PORT";
-				SportDev.active = true;
+				((Sportdata)ser.td.r).active = true;
 				Mwp.xnopoll = Mwp.nopoll;
 				Mwp.nopoll = true;
 				Mwp.serstate = Mwp.SERSTATE.TELEM;
@@ -55,7 +87,7 @@ namespace Frsky {
 		case SportDev.FrID.VFAS_ID:
 			if(ser.is_main) {
 				if (val /100  < 80) {
-					SportDev.volts = val / 100.0;
+					((Sportdata)ser.td.r).volts = val / 100.0;
 					Mwp.sflags |=  Mwp.SPK.Volts;
 				}
 				Battery.set_bat_stat((uint16)val);
@@ -66,15 +98,15 @@ namespace Frsky {
 			int32 ipos;
 			uint8 lorl = sport_parse_lat_lon (val, out ipos);
 			if (lorl == 0) {
-				SportDev.lat = ipos;
+				((Sportdata)ser.td.r).lat = ipos;
 			} else {
-				SportDev.lon = ipos;
+				((Sportdata)ser.td.r).lon = ipos;
 				MSP_ALTITUDE al = MSP_ALTITUDE();
-				al.estalt = SportDev.alt;
-				al.vario = SportDev.vario;
+				al.estalt = ((Sportdata)ser.td.r).alt;
+				al.vario = ((Sportdata)ser.td.r).vario;
 				double ddm;
-				var dlat = SportDev.lat/1e7;
-				var dlon = SportDev.lon/1e7;
+				var dlat = ((Sportdata)ser.td.r).lat/1e7;
+				var dlon = ((Sportdata)ser.td.r).lon/1e7;
 
 				int fvup = 0;
 				int ttup = 0;
@@ -100,7 +132,7 @@ namespace Frsky {
 					Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.YAW);
 				}
 
-				if(SportDev.fix > 0) {
+				if(((Sportdata)ser.td.r).fix > 0) {
 					Mwp.sat_coverage();
 					if(ser.is_main) {
 						if(Mwp.armed != 0) {
@@ -124,7 +156,7 @@ namespace Frsky {
 												ser.td.comp.bearing =  cg.direction;
 												fvup = FlightBox.Update.BEARING;
 											}
-											Mwp.update_odo(SportDev.spd, ddm);
+											Mwp.update_odo(((Sportdata)ser.td.r).spd, ddm);
 										}
 									}
 								}
@@ -135,11 +167,11 @@ namespace Frsky {
 							}
 						}
 
-						if(SportDev.fix > 0 && SportDev.sats >= Mwp.msats) {
+						if(((Sportdata)ser.td.r).fix > 0 && ((Sportdata)ser.td.r).sats >= Mwp.msats) {
 							Mwp.update_pos_info();
 
 							if(Mwp.want_special != 0)
-								Mwp.process_pos_states(dlat, dlon, SportDev.alt/100.0, "Sport");
+								Mwp.process_pos_states(dlat, dlon, ((Sportdata)ser.td.r).alt/100.0, "Sport");
 						}
 					}
 				}
@@ -157,7 +189,7 @@ namespace Frsky {
 
 		case SportDev.FrID.GPS_ALT_ID:
 			r =((int)val) / 100.0;
-			SportDev.galt = r;
+			((Sportdata)ser.td.r).galt = r;
 			if(ser.td.gps.alt != r) {
 			   ser.td.gps.alt = r;
 			   /*
@@ -182,15 +214,15 @@ namespace Frsky {
 			if ((gfix & 1) == 1)
 				ifix = 3;
 			if(ser.is_main) {
-				if (SportDev.flags == 0) { // prefer FR_ID_ADC2_ID
-					SportDev.rhdop = Mwp.rhdop = 550 - (hdp * 50);
+				if (((Sportdata)ser.td.r).flags == 0) { // prefer FR_ID_ADC2_ID
+					((Sportdata)ser.td.r).rhdop = Mwp.rhdop = 550 - (hdp * 50);
 					ser.td.gps.hdop = Mwp.rhdop / 100.0;
 				}
 				Mwp.nsats = nsats;
 				if ((gfix & 2) == 2) {
 					if(Mwp.have_home == false && Mwp.armed != 0) {
 						if(Mwp.home_changed(ser.td.gps.lat, ser.td.gps.lon)) {
-							if(SportDev.fix == 0) {
+							if(((Sportdata)ser.td.r).fix == 0) {
 								Mwp.no_ofix++;
 							} else {
 								Mwp.sflags |=  Mwp.SPK.GPS;
@@ -201,7 +233,7 @@ namespace Frsky {
 					}
 				}
 				if ((gfix & 4) == 4) {
-					if (SportDev.range < 500) {
+					if (((Sportdata)ser.td.r).range < 500) {
 						MWPLog.message("SPORT: %s set home: changed home position %f %f\n",
 									   id.to_string(), ser.td.gps.lat, ser.td.gps.lon);
 						Mwp.home_changed(ser.td.gps.lat, ser.td.gps.lon);
@@ -216,8 +248,8 @@ namespace Frsky {
 				//				if((Mwp._nsats == 0 && Mwp.nsats != 0) || (Mwp.nsats == 0 && Mwp._nsats != 0)) {
 				//	Mwp.nsats = Mwp._nsats;
 				//}
-				SportDev.sats = nsats;
-				SportDev.fix = ifix;
+				((Sportdata)ser.td.r).sats = nsats;
+				((Sportdata)ser.td.r).fix = ifix;
 				Mwp.flash_gps();
 				Mwp.last_gps = Mwp.nticks;
 			}
@@ -235,7 +267,7 @@ namespace Frsky {
 
 		case SportDev.FrID.GPS_SPEED_ID:
 			r = ((val/1000.0)*0.51444444);
-			SportDev.spd = r;
+			((Sportdata)ser.td.r).spd = r;
 			if(ser.td.gps.gspeed != r) {
 				ser.td.gps.gspeed = r;
 				if (ser.is_main) {
@@ -248,7 +280,7 @@ namespace Frsky {
 
 		case SportDev.FrID.GPS_COURS_ID:
 			r = val / 100.0;
-			SportDev.cse = r;
+			((Sportdata)ser.td.r).cse = r;
 			if (ser.td.gps.cog != r) {
 				ser.td.gps.cog = r;
 				if (ser.is_main) {
@@ -260,14 +292,14 @@ namespace Frsky {
 		case SportDev.FrID.ADC2_ID: // AKA HDOP
 			if(ser.is_main) {
 				Mwp.rhdop = (uint16)((val &0xff)*10);
-				SportDev.rhdop = Mwp.rhdop;
-				SportDev.flags |= 1;
+				((Sportdata)ser.td.r).rhdop = Mwp.rhdop;
+				((Sportdata)ser.td.r).flags |= 1;
 				ser.td.gps.hdop = Mwp.rhdop / 100.0;
 			}
 			break;
 		case SportDev.FrID.ALT_ID:
 			r = (int)val / 100.0;
-			SportDev.alt = (int)val;
+			((Sportdata)ser.td.r).alt = (int)val;
 			Mwp.sflags |=  Mwp.SPK.ELEV;
 			if(ser.td.alt.alt != r) {
 				ser.td.alt.alt = r;
@@ -409,9 +441,9 @@ namespace Frsky {
 
 
 		case SportDev.FrID.RSSI_ID:
-			SportDev.rssi = (uint16)((val&0xff)*1023/100);
-			if (ser.td.rssi.rssi !=  SportDev.rssi) {
-				ser.td.rssi.rssi =  SportDev.rssi;
+			((Sportdata)ser.td.r).rssi = (uint16)((val&0xff)*1023/100);
+			if (ser.td.rssi.rssi !=  ((Sportdata)ser.td.r).rssi) {
+				ser.td.rssi.rssi =  ((Sportdata)ser.td.r).rssi;
 				if(ser.is_main) {
 					Mwp.panelbox.update(Panel.View.RSSI, RSSI.Update.RSSI);
 				} else {
@@ -423,14 +455,14 @@ namespace Frsky {
 		case SportDev.FrID.ROLL:
 			if(ser.is_main) {
 				if (id == SportDev.FrID.ROLL)
-					SportDev.roll = (int16)val;
+					((Sportdata)ser.td.r).roll = (int16)val;
 				else
-					SportDev.pitch = (int16)val;
+					((Sportdata)ser.td.r).pitch = (int16)val;
 
 				LTM_AFRAME af = LTM_AFRAME();
-				af.pitch = SportDev.pitch;
-				af.roll = SportDev.roll;
-				af.heading = Mwp.mhead = (int16) SportDev.cse;
+				af.pitch = ((Sportdata)ser.td.r).pitch;
+				af.roll = ((Sportdata)ser.td.r).roll;
+				af.heading = Mwp.mhead = (int16) ((Sportdata)ser.td.r).cse;
 				if(ser.td.atti.angx != af.roll || ser.td.atti.angy != af.pitch) {
 					ser.td.atti.angx = af.roll;
 					ser.td.atti.angy = af.pitch;
@@ -438,16 +470,16 @@ namespace Frsky {
 				}
 				ser.td.atti.yaw = Mwp.mhead;
 				if(Logger.is_logging) {
-					Logger.attitude((double)SportDev.pitch, (double)SportDev.roll, (int)Mwp.mhead);
+					Logger.attitude((double)((Sportdata)ser.td.r).pitch, (double)((Sportdata)ser.td.r).roll, (int)Mwp.mhead);
 				}
 			}
 			break;
 
 		case SportDev.FrID.HOME_DIST:
 			if(ser.is_main) {
-				int diff = (int)(SportDev.range - val);
-				if(SportDev.range > 100 && (diff * 100 / SportDev.range) > 9)
-					MWPLog.message("%s %um (mwp: %u, diff: %d)\n", id.to_string(), val, SportDev.range, diff);
+				int diff = (int)(((Sportdata)ser.td.r).range - val);
+				if(((Sportdata)ser.td.r).range > 100 && (diff * 100 / ((Sportdata)ser.td.r).range) > 9)
+					MWPLog.message("%s %um (mwp: %u, diff: %d)\n", id.to_string(), val, ((Sportdata)ser.td.r).range, diff);
 			}
 			break;
 
@@ -462,38 +494,38 @@ namespace Frsky {
 					}
 				}
 				//			LTM_SFRAME sf = LTM_SFRAME ();
-				//sf.vbat = (uint16)(SportDev.volts*1000);
+				//sf.vbat = (uint16)(((Sportdata)ser.td.r).volts*1000);
 				//sf.flags = ((failsafe) ? 2 : 0) | (armed & 1) | (ltmflags << 2);
 				//sf.vcurr = (conf.smartport_fuel == 2) ? (uint16)curr.mah : 0;
-				//sf.rssi = (uint8)(SportDev.rssi * 255/ 1023);
+				//sf.rssi = (uint8)(((Sportdata)ser.td.r).rssi * 255/ 1023);
 				//sf.airspeed = 0;
 			}
 			break;
 		case SportDev.FrID.ACCX_ID:
-			SportDev.ax = ((int)val) / 100.0;
+			((Sportdata)ser.td.r).ax = ((int)val) / 100.0;
 			break;
 		case SportDev.FrID.ACCY_ID:
-			SportDev.ay = ((int)val) / 100.0;
+			((Sportdata)ser.td.r).ay = ((int)val) / 100.0;
 			break;
 		case SportDev.FrID.ACCZ_ID:
 			if(ser.is_main) {
-				SportDev.az = ((int)val) / 100.0;
-				SportDev.pitch = -(int16)(180.0 * Math.atan2 (SportDev.ax, Math.sqrt(SportDev.ay*SportDev.ay + SportDev.az*SportDev.az))/Math.PI);
-				SportDev.roll  = (int16)(180.0 * Math.atan2 (SportDev.ay, Math.sqrt(SportDev.ax*SportDev.ax + SportDev.az*SportDev.az))/Math.PI);
-				if(ser.td.atti.angx != SportDev.roll || ser.td.atti.angy != SportDev.pitch) {
-					ser.td.atti.angx = SportDev.roll;
-					ser.td.atti.angy = SportDev.pitch;
+				((Sportdata)ser.td.r).az = ((int)val) / 100.0;
+				((Sportdata)ser.td.r).pitch = -(int16)(180.0 * Math.atan2 (((Sportdata)ser.td.r).ax, Math.sqrt(((Sportdata)ser.td.r).ay*((Sportdata)ser.td.r).ay + ((Sportdata)ser.td.r).az*((Sportdata)ser.td.r).az))/Math.PI);
+				((Sportdata)ser.td.r).roll  = (int16)(180.0 * Math.atan2 (((Sportdata)ser.td.r).ay, Math.sqrt(((Sportdata)ser.td.r).ax*((Sportdata)ser.td.r).ax + ((Sportdata)ser.td.r).az*((Sportdata)ser.td.r).az))/Math.PI);
+				if(ser.td.atti.angx != ((Sportdata)ser.td.r).roll || ser.td.atti.angy != ((Sportdata)ser.td.r).pitch) {
+					ser.td.atti.angx = ((Sportdata)ser.td.r).roll;
+					ser.td.atti.angy = ((Sportdata)ser.td.r).pitch;
 					Mwp.panelbox.update(Panel.View.AHI, AHI.Update.AHI);
 				}
 				if(Logger.is_logging) {
-					Logger.attitude((double)SportDev.pitch, (double)SportDev.roll, (int16) SportDev.cse);
+					Logger.attitude((double)((Sportdata)ser.td.r).pitch, (double)((Sportdata)ser.td.r).roll, (int16) ((Sportdata)ser.td.r).cse);
 				}
 			}
 			break;
 
 		case SportDev.FrID.VARIO_ID:
 			double dv = ((int) val / 10.0);
-			SportDev.vario = (int16)dv;
+			((Sportdata)ser.td.r).vario = (int16)dv;
 			if(ser.is_main) {
 				if (Math.fabs(ser.td.alt.vario - dv) > 1.0) {
 					ser.td.alt.vario = dv;

@@ -29,26 +29,28 @@ namespace CRSF {
 	const uint8 LINKSTATS_ID = 0x14;
 	const double ATTITODEG = (57.29578 / 10000.0);
 
-	struct Teledata {
-		double lat;
-		double lon;
-		int heading;
-		int speed;
-		int alt;
-		int vario;
-		uint8 nsat;
-		uint8 fix;
-		int16 pitch;
-		int16 roll;
-		int16 yaw;
-		double volts;
-		uint16 rssi;
-		bool setlab;
+	public class Teledata : Object {
+		public char id;
+		public double lat;
+		public double lon;
+		public int heading;
+		public int speed;
+		public int alt;
+		public int vario;
+		public uint8 nsat;
+		public uint8 fix;
+		public int16 pitch;
+		public int16 roll;
+		public int16 yaw;
+		public double volts;
+		public uint16 rssi;
+		public bool setlab;
 	}
-	Teledata teledata;
 
-	public void init() {
-		teledata = {0};
+
+	private void init(MWSerial ser) {
+		ser.td.r = new Teledata();
+		((Teledata)ser.td.r).id = 'C';
 	}
 
 	uint8 * deserialise_be_u24(uint8* rp, out uint32 v) {
@@ -56,20 +58,23 @@ namespace CRSF {
         return rp + 3*sizeof(uint8);
 	}
 
-	private void crsf_analog() {
+	private void crsf_analog(Teledata d) {
 		MSP_ANALOG2 an = MSP_ANALOG2();
-		an.rssi = CRSF.teledata.rssi;
-		an.vbat = (uint16)(100*CRSF.teledata.volts);
+		an.rssi = d.rssi;
+		an.vbat = (uint16)(100*d.volts);
 		an.mahdraw = (Mwp.conf.smartport_fuel == 2 )? (uint16)Battery.curr.mah :0;
 		an.amps = Battery.curr.centiA;
 		Battery.process_msp_analog(an);
 	}
 
 	private void ProcessCRSF(MWSerial ser, uint8 []buffer) {
+		if(ser.td.r == null || ((Teledata)ser.td.r).id != 'C') {
+			init(ser);
+		}
+
 		if (ser.is_main) {
-			if(!CRSF.teledata.setlab) {
+			if(!((Teledata)ser.td.r).setlab) {
 				Mwp.window.mmode.label = "CRSF";
-				CRSF.teledata.setlab = true;
 				Mwp.xnopoll = Mwp.nopoll;
 				Mwp.nopoll = true;
 				Mwp.serstate = Mwp.SERSTATE.TELEM;
@@ -103,17 +108,17 @@ namespace CRSF {
 			int32 alt= (int32)__builtin_bswap16(val16) - 1000; // m
 			uint8 nsat = *ptr;
 			var dlat = lat / 1e7;
-			CRSF.teledata.lat = dlat;
+			((Teledata)ser.td.r).lat = dlat;
 			var dlon = lon / 1e7;
-			CRSF.teledata.lon = dlon;
-			CRSF.teledata.heading = (int)hdg;
-			CRSF.teledata.alt = (int)alt;
-			CRSF.teledata.nsat = nsat;
-			CRSF.teledata.speed = (int)gspeed;
+			((Teledata)ser.td.r).lon = dlon;
+			((Teledata)ser.td.r).heading = (int)hdg;
+			((Teledata)ser.td.r).alt = (int)alt;
+			((Teledata)ser.td.r).nsat = nsat;
+			((Teledata)ser.td.r).speed = (int)gspeed;
 			if (nsat > 5)
-				CRSF.teledata.fix = 3;
+				((Teledata)ser.td.r).fix = 3;
 			else
-				CRSF.teledata.fix = 1;
+				((Teledata)ser.td.r).fix = 1;
 
 			double ddm;
 			if(Rebase.is_valid()) {
@@ -148,13 +153,13 @@ namespace CRSF {
 			}
 
 			if(ser.td.gps.nsats != nsat) {
-				ser.td.gps.fix = CRSF.teledata.fix;
+				ser.td.gps.fix = ((Teledata)ser.td.r).fix;
 				ser.td.gps.nsats = nsat;
 				fvup |= FlightBox.Update.GPS;
 				ttup |= TelemTracker.Fields.SAT;
 			}
 
-			if (CRSF.teledata.fix > 0) {
+			if (((Teledata)ser.td.r).fix > 0) {
 				if(ser.is_main) {
 					if(ser.td.gps.cog != hdg) {
 						ser.td.gps.cog = hdg;
@@ -232,30 +237,30 @@ namespace CRSF {
 				}
 				ptr = CRSF.deserialise_be_u24(ptr, out val32);
 				uint32 capa = val32;
-				CRSF.teledata.volts = volts;
+				((Teledata)ser.td.r).volts = volts;
 				Battery.curr.mah = capa;
 				Battery.curr.centiA = (int16)amps*100;
 				Battery.curr.ampsok = true;
 				if (Battery.curr.centiA > Odo.stats.amps)
 					Odo.stats.amps = Battery.curr.centiA;
-				crsf_analog();
+				crsf_analog((Teledata)ser.td.r);
 			}
 			break;
 
 		case CRSF.VARIO_ID:
 			if(ser.is_main) {
 				ptr= SEDE.deserialise_u16(ptr, out val16);  // Voltage ( mV * 100 )
-				CRSF.teledata.vario = (int)__builtin_bswap16(val16);
+				((Teledata)ser.td.r).vario = (int)__builtin_bswap16(val16);
 			}
 			break;
 		case CRSF.BARO_ID:
 			ptr= SEDE.deserialise_u16(ptr, out val16);
-			CRSF.teledata.alt = (int)__builtin_bswap16(val16);
+			((Teledata)ser.td.r).alt = (int)__builtin_bswap16(val16);
 			if (buffer.length > 5) {
 				SEDE.deserialise_u16(ptr, out val16);
-				CRSF.teledata.vario = (int)__builtin_bswap16(val16);
+				((Teledata)ser.td.r).vario = (int)__builtin_bswap16(val16);
 			}
-			ser.td.alt.alt = CRSF.teledata.alt;
+			ser.td.alt.alt = ((Teledata)ser.td.r).alt;
 			break;
 		case CRSF.ATTI_ID:
 			ptr= SEDE.deserialise_u16(ptr, out val16);  // Pitch radians *10000
@@ -273,18 +278,18 @@ namespace CRSF {
 			bool fvup = (ser.td.atti.yaw != (int)yaw);
 			ser.td.atti.yaw = (int)yaw;
 			if(ser.is_main) {
-				CRSF.teledata.yaw = Mwp.mhead = (int16)yaw ;
-				CRSF.teledata.pitch = (int16)pitch;
-				CRSF.teledata.roll = (int16)roll;
+				((Teledata)ser.td.r).yaw = Mwp.mhead = (int16)yaw ;
+				((Teledata)ser.td.r).pitch = (int16)pitch;
+				((Teledata)ser.td.r).roll = (int16)roll;
 				LTM_AFRAME af = LTM_AFRAME();
-				af.pitch = CRSF.teledata.pitch;
-				af.roll = CRSF.teledata.roll;
+				af.pitch = ((Teledata)ser.td.r).pitch;
+				af.roll = ((Teledata)ser.td.r).roll;
 				af.heading = (int16)yaw;
-				if(ser.td.atti.angy != CRSF.teledata.pitch || ser.td.atti.angx != CRSF.teledata.roll) {
+				if(ser.td.atti.angy != ((Teledata)ser.td.r).pitch || ser.td.atti.angx != ((Teledata)ser.td.r).roll) {
 					Mwp.panelbox.update(Panel.View.AHI, AHI.Update.AHI);
 				}
-				ser.td.atti.angy = CRSF.teledata.pitch;
-				ser.td.atti.angx = CRSF.teledata.roll;
+				ser.td.atti.angy = ((Teledata)ser.td.r).pitch;
+				ser.td.atti.angx = ((Teledata)ser.td.r).roll;
 				if(fvup) {
 					Mwp.panelbox.update(Panel.View.FVIEW, FlightBox.Update.YAW);
 					Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.YAW);
@@ -474,9 +479,9 @@ namespace CRSF {
 					MBus.update_state();
 
 				if(Mwp.wp0.lat == 0.0 && Mwp.wp0.lon == 0.0) {
-					if(CRSF.teledata.fix > 1) {
-						Mwp.wp0.lat = CRSF.teledata.lat;
-						Mwp.wp0.lon = CRSF.teledata.lon;
+					if(((Teledata)ser.td.r).fix > 1) {
+						Mwp.wp0.lat = ((Teledata)ser.td.r).lat;
+						Mwp.wp0.lon = ((Teledata)ser.td.r).lon;
 					}
 				}
 				if(Mwp.want_special != 0 /* && have_home*/) {
@@ -487,15 +492,15 @@ namespace CRSF {
 
 		case CRSF.LINKSTATS_ID:
 			if(ptr[2] == 0) {
-				CRSF.teledata.rssi = (ptr[0] > ptr[1]) ? ptr[0] : ptr[1];
-				CRSF.teledata.rssi = 1023*CRSF.teledata.rssi/255;
+				((Teledata)ser.td.r).rssi = (ptr[0] > ptr[1]) ? ptr[0] : ptr[1];
+				((Teledata)ser.td.r).rssi = 1023*((Teledata)ser.td.r).rssi/255;
 				RSSI.set_title(RSSI.Title.RSSI);
 			} else {
-				CRSF.teledata.rssi = 1023*ptr[2]/100;
+				((Teledata)ser.td.r).rssi = 1023*ptr[2]/100;
 				RSSI.set_title(RSSI.Title.LQ);
 			}
-			bool rssiup = (ser.td.rssi.rssi != CRSF.teledata.rssi);
-			ser.td.rssi.rssi = CRSF.teledata.rssi;
+			bool rssiup = (ser.td.rssi.rssi != ((Teledata)ser.td.r).rssi);
+			ser.td.rssi.rssi = ((Teledata)ser.td.r).rssi;
 			if(rssiup) {
 				if(ser.is_main) {
 					Mwp.panelbox.update(Panel.View.RSSI, RSSI.Update.RSSI);

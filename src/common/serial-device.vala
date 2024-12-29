@@ -729,6 +729,7 @@ public class MWSerial : Object {
         clear_counters();
         state = States.S_HEADER;
 		msgq = new AsyncQueue<INAVEvent?>();
+		td = {};
 #if UNIX
 		try {
             io_chan = new IOChannel.unix_new(fd);
@@ -1140,6 +1141,7 @@ public class MWSerial : Object {
 			commode = 0;
 			sockaddr=null;
 			skt = null;
+			td = {};
 		}
 	}
 

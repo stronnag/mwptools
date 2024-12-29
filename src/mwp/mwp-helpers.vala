@@ -207,29 +207,6 @@ namespace PosFormat  {
     }
 }
 
-namespace SportDev {
-	bool active;
-    int32 lat;
-    int32 lon;
-    double cse;
-    double spd;
-    int32 alt;
-    double galt;
-    uint16 rhdop;
-    int16 pitch;
-    int16 roll;
-    uint8 fix;
-    uint8 sats;
-    uint8 flags;
-    double ax;
-    double ay;
-    double az;
-    uint16 range;
-    uint16 rssi;
-    int16 vario;
-    double volts;
-}
-
 namespace Utils {
 #if TACKYBOX
 	public class Warning_box : Gtk.Window {

@@ -126,4 +126,5 @@ public struct TrackData {
 	public AltData alt;
 	public AttiData atti;
 	public StateData state;
+	public Object r;
 }
