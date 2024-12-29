@@ -273,7 +273,7 @@ Error: <i>%s</i>
 	}
 
     private void connect_serial() {
-		CRSF.teledata.setlab = false;
+		CRSF.init();
 		//		SportDev.active = false;
 		RSSI.set_title(RSSI.Title.RSSI);
 		var serdev = Mwp.dev_entry.text;

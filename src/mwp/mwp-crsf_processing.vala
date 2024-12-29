@@ -47,6 +47,10 @@ namespace CRSF {
 	}
 	Teledata teledata;
 
+	public void init() {
+		teledata = {0};
+	}
+
 	uint8 * deserialise_be_u24(uint8* rp, out uint32 v) {
         v = (*(rp) << 16 |  (*(rp+1) << 8) | *(rp+2));
         return rp + 3*sizeof(uint8);
@@ -229,7 +233,6 @@ namespace CRSF {
 				ptr = CRSF.deserialise_be_u24(ptr, out val32);
 				uint32 capa = val32;
 				CRSF.teledata.volts = volts;
-				ser.td.power.volts = (float)volts;
 				Battery.curr.mah = capa;
 				Battery.curr.centiA = (int16)amps*100;
 				Battery.curr.ampsok = true;
