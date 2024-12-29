@@ -23,10 +23,32 @@ namespace DeltaCache {
 }
 
 namespace Mwp {
+	[Flags]
+	public enum PosDiff {
+		NONE=0,
+		LAT=1,
+		LON =2,
+		ANY=LAT|LON
+	}
+
+	internal const double POSDELTA = 1e-7;
+
 	uint8 last_gmode;
 	int lealt=0;
 	double lvticks=0;
 	double lfdiff = 0.0;
+
+	PosDiff pos_diff(double lat0, double lon0, double lat1, double lon1) {
+		PosDiff d = PosDiff.NONE;
+		if((Math.fabs(lat0 - lat1) > POSDELTA)) {
+			d |= PosDiff.LAT;
+		}
+
+		if (Math.fabs(lon0 - lon1) > POSDELTA) {
+			d |= PosDiff.LON;
+		}
+		return d;
+	}
 
     private bool calc_vario(int ealt, out double fdiff) {
         fdiff = lfdiff;
@@ -277,7 +299,7 @@ namespace Mwp {
         double c = DeltaCache.cse;
 		ddm = DeltaCache.ddm;
 
-		if((Math.fabs(lat - DeltaCache.dlat) > 1e-6) || (Math.fabs(lon - DeltaCache.dlon) > 1e-6)) {
+		if(pos_diff(lat, lon, DeltaCache.dlat, DeltaCache.dlon) != PosDiff.NONE) {
 			if(DeltaCache.dlat != 0 && DeltaCache.dlon != 0) {
 				double d;
 				Geo.csedist(DeltaCache.dlat, DeltaCache.dlon, lat, lon, out d, out c);
@@ -342,18 +364,11 @@ namespace Mwp {
         return d;
     }
 
-    private bool lat_lon_diff(double lat0, double lon0, double lat1, double lon1) {
-        var d1 = lat0 - lat1;
-        var d2 = lon0 - lon1;
-        return (((Math.fabs(d1) > 1e-6) || Math.fabs(d2) > 1e-6));
-    }
-
-    private bool home_changed(double lat, double lon) {
+	private bool home_changed(double lat, double lon) {
         bool ret=false;
 		double hlat, hlon;
 		HomePoint.get_location(out hlat, out hlon);
-
-		if (lat_lon_diff(lat, lon, hlat , hlon)) {
+		if(pos_diff(lat, lon, hlat, hlon) != PosDiff.NONE) {
             if(have_home && (hlat != 0.0) && (hlon != 0.0)) {
                 double d,cse;
                 Geo.csedist(lat, lon, hlat, hlon, out d, out cse);

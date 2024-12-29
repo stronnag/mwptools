@@ -1126,11 +1126,12 @@ namespace Mwp {
 					Rebase.relocate(ref lat,ref lon);
 				}
 
-				if(Math.fabs(lat - ser.td.gps.lat) > 1e-6) {
+				var pdiff = Mwp.pos_diff(lat, lon, ser.td.gps.lat, ser.td.gps.lon);
+				if (Mwp.PosDiff.LAT in pdiff) {
 					ser.td.gps.lat = lat;
 					fvup |= FlightBox.Update.LAT;
 				}
-				if(Math.fabs(lon - ser.td.gps.lon) > 1e-6) {
+				if (Mwp.PosDiff.LON in pdiff) {
 					ser.td.gps.lon = lon;
 					fvup |= FlightBox.Update.LON;
 				}

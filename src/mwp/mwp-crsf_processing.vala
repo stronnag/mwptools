@@ -118,12 +118,13 @@ namespace CRSF {
 
 			Mwp.calc_cse_dist_delta(dlat, dlon, out ddm);
 
-			if(Math.fabs(dlat - ser.td.gps.lat) > 1e-6) {
+			var pdiff = Mwp.pos_diff(dlat, dlon, ser.td.gps.lat, ser.td.gps.lon);
+			if (Mwp.PosDiff.LAT in pdiff) {
 				ser.td.gps.lat = dlat;
 				fvup |= FlightBox.Update.LAT;
 				ttup |= TelemTracker.Fields.LAT;
 			}
-			if(Math.fabs(dlon - ser.td.gps.lon) > 1e-6) {
+			if (Mwp.PosDiff.LON in pdiff) {
 				ser.td.gps.lon = dlon;
 				fvup |= FlightBox.Update.LON;
 				ttup |= TelemTracker.Fields.LON;
