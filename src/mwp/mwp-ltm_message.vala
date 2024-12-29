@@ -103,7 +103,7 @@ namespace Mwp {
 				ttup |= TelemTracker.Fields.LAT;
 				ser.td.gps.lat = lat;
 			}
-			if (PosDiff.LAT in pdiff) {
+			if (PosDiff.LON in pdiff) {
 				fvup |= FlightBox.Update.LON;
 				ttup |= TelemTracker.Fields.LON;
 				ser.td.gps.lon = lon;
