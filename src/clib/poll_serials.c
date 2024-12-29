@@ -117,7 +117,6 @@ int check_delete_name(char *s) {
 char ** check_ports() {
    DIR* dir;
   struct dirent* ent;
-  char* endptr;
   char **devs = NULL;
 
   if (!(dir = opendir("/dev"))) {
@@ -127,7 +126,6 @@ char ** check_ports() {
 
   int n = 0;
   while((ent = readdir(dir)) != NULL) {
-
     if(strncasecmp(ent->d_name, "cu.usb", 6) == 0) {
       n++;
       continue;
@@ -175,7 +173,11 @@ char ** check_ports() {
 }
 
 int check_delete_name(char *s) {
-  return 0;
+  int res = strncasecmp(s, "/dev/cu.usb", sizeof("/dev/cu.usb")-1);
+  if (res != 0) {
+    res = strncmp(s, "/dev/cu.bluetooth", sizeof("/dev/cu.bluetooth")-1);
+  }
+  return res;
 }
 
 int check_insert_name(char *s) {

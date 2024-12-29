@@ -119,8 +119,9 @@ namespace TTS {
 				if(subp.run_command(espawn, ProcessLaunch.STDIN)) {
 					efdin = subp.get_stdin_pipe();
 					epid = subp.get_pid();
+					MWPLog.message("Spawned voice helper \"%s\", %d\n", espawn, epid);
 				} else {
-                    MWPLog.message("spawn failed for\"%s\", %s\n", espawn);
+                    MWPLog.message("Spawn failed for \"%s\"\n", espawn);
                 }
             } else {
                 si = MwpSpeech.init(voice);

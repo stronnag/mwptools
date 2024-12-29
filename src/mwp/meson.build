@@ -59,6 +59,7 @@ mwpsrcs = files('mwp-about.vala', 'mwp-ah_widget.vala',
                 'mwp-gpsstats.vala',
                 'mwp-gzmisc.vala',
                 'mwp-idler.vala',
+                'speech_wrapper.c',
                )
 
 mwpdeps = [deps,
@@ -120,6 +121,7 @@ if xopts.length() > 0
   mwpdeps += dependency('gmodule-2.0')
   foreach x : xopts
     mwp_v_args += '--define='+x
+    mwp_c_args += '-D'+x
   endforeach
 endif
 

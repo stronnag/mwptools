@@ -18,7 +18,7 @@
 public class MWPSettings : GLib.Object {
     public Settings settings {get; set;}
     private const string sname = "org.stronnag.mwp";
-    private SettingsSchema schema;
+	//    private SettingsSchema schema;
     public double latitude {get; set; default=0.0;}
     public double longitude {get; set; default=0.0;}
     public uint loiter {get; set; default=30;}
@@ -105,24 +105,51 @@ public class MWPSettings : GLib.Object {
 	public string mapbox_apikey {get; set; default="";}
 	public double symbol_scale {get; set; default=1.0;}
 	public double touch_scale {get; set; default=1.0;}
-	public int window_scale {get; set; default=80;}
 	public int ident_limit  {get; set; default=60;}
 	public double touch_factor {get; set; default=0.0;}
 	public int p_pane_width {get; set; default=0;}
 
 	construct {
-        var uc = Environment.get_user_data_dir();
-        uc += "/glib-2.0/schemas/";
-        try {
-            SettingsSchemaSource sss = new SettingsSchemaSource.from_directory (uc, null, false);            schema = sss.lookup (sname, false);
-        } catch {}
 
-        if (schema != null) {
-            settings = new Settings.full (schema, null, null);
-		} else {
-            settings =  new Settings (sname);
+#if DARWIN
+		string uc =  Environment.get_user_config_dir();
+		string kfile = GLib.Path.build_filename(uc,"mwp");
+		DirUtils.create_with_parents(kfile, 0755);
+		kfile = GLib.Path.build_filename(kfile , "mwp.ini");
+		if(!FileUtils.test(kfile, FileTest.EXISTS|FileTest.IS_REGULAR)) {
+			bool ok = false;
+			var ud =  Environment.get_user_data_dir();
+			var sds =  Environment.get_system_data_dirs();
+			var fn =  GLib.Path.build_filename(ud, "mwp", "mwp.ini");
+			if (!FileUtils.test(fn, FileTest.EXISTS|FileTest.IS_REGULAR)) {
+				foreach (var sd in sds) {
+					fn =  GLib.Path.build_filename(sd, "mwp", "mwp.ini");
+					if (FileUtils.test(fn, FileTest.EXISTS|FileTest.IS_REGULAR)) {
+						ok = true;
+						break;
+					}
+				}
+			} else {
+				ok = true;
+			}
+			if(ok) {
+				string defset;
+				try {
+					if(FileUtils.get_contents(fn, out defset)) {
+						FileUtils.set_contents(kfile, defset);
+					}
+				} catch (Error e) {
+					MWPLog.message("Copy settings: %s\n", e.message);
+				}
+			}
 		}
-
+		MWPLog.message("Using settings keyfile %s\n", kfile);
+		SettingsBackend kbe = SettingsBackend.keyfile_settings_backend_new(kfile, "/org/stronnag/mwp/","mwp");
+		settings = new Settings.with_backend(sname, kbe);
+#else
+		MWPLog.message("Using settings schema %s\n", sname);
+		settings =  new Settings (sname);
+#endif
 		settings.bind("adjust-tz", this, "adjust-tz", SettingsBindFlags.DEFAULT);
 		settings.bind("arming-speak", this, "arming-speak", SettingsBindFlags.DEFAULT);
 		settings.bind("atexit", this, "atexit", SettingsBindFlags.GET);
@@ -198,7 +225,6 @@ public class MWPSettings : GLib.Object {
 		settings.bind("uc-mission-tags", this, "ucmissiontags", SettingsBindFlags.DEFAULT);
 		settings.bind("uilang", this, "uilang", SettingsBindFlags.DEFAULT);
 		settings.bind("vlevels", this, "vlevels", SettingsBindFlags.DEFAULT);
-		settings.bind("window-scale", this, "window-scale", SettingsBindFlags.DEFAULT);
 		settings.bind("wp-dist-size", this, "wp-dist-fontsize", SettingsBindFlags.DEFAULT);
 		settings.bind("wp-spotlight", this, "wp-spotlight", SettingsBindFlags.DEFAULT);
 		settings.bind("wp-text-style", this, "wp-text", SettingsBindFlags.DEFAULT);
@@ -208,8 +234,6 @@ public class MWPSettings : GLib.Object {
 		settings.bind("p-height", Mwp.window, "default-height", SettingsBindFlags.DEFAULT);
 		settings.bind("p-is-maximised", Mwp.window, "maximized", SettingsBindFlags.DEFAULT);
 		settings.bind("p-is-fullscreen", Mwp.window, "fullscreened", SettingsBindFlags.DEFAULT);
-
-
 	}
 
     public MWPSettings() {

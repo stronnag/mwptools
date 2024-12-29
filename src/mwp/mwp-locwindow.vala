@@ -80,7 +80,9 @@ namespace Mwp {
 					glon = InputParser.get_longitude(t2);
 					var zl = -1.0;
 					var n = places_dd.get_selected ();
-					if (n > 0) {
+					if (n == 0) {
+						MapUtils.centre_on(Mwp.conf.latitude, Mwp.conf.longitude);
+					} else if (n > 0) {
 						zl = pls[n].zoom;
 						MapUtils.centre_on(glat, glon, zl);
 					}
@@ -100,13 +102,6 @@ namespace Mwp {
 
 			if(ni > 0) {
 				((Gtk.StringList)places_dd.model).splice(0, ni, null);
-				/*
-				for(var j = 0; j < ni; j++) {
-					var k = ni-1-j;
-					MWPLog.message(":DBG:DD remove %u %u\n", j, k);
-					((Gtk.StringList)places_dd.model).remove(k);
-				}
-				*/
 			}
 
 			foreach(var l in pls) {

@@ -11,7 +11,7 @@ Each of these requires a specific device name and _may_ require a protocol selec
 
 ## Serial devices
 
-Serial devices are defined by the operating system device node name and optionally include an embedded baud rate, for example:
+Serial devices are defined by the operating system device node name and optionally include an embedded baud rate (`@baudrate`), for example:
 
     # Linux, USB seral
     /dev/ttyACM0
@@ -22,6 +22,10 @@ Serial devices are defined by the operating system device node name and optional
 
     # FreeBSD
     /dev/cuaU0
+
+	# Windows
+	COM7
+	COM17@38400
 
 ## Bluetooth
 

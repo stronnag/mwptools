@@ -29,21 +29,30 @@
 #define API_FLITE 3
 
 
-#ifdef __APPLE__
-#define mwp_log_message printf
-#else
+//#ifdef __APPLE__
+//#define mwp_log_message printf
+//#else
 extern void __attribute__((weak)) mwp_log_message(const gchar *format, ...);
-#endif
+//#endif
 
 #if defined(USE_ESPEAK) || defined(USE_SPEECHD) || defined(USE_FLITE)
 static GModule *handle;
 
 static inline gchar *m_module_build_path(const gchar *dir, const gchar *name) {
-// Once GLIB actually documents the replacement, the pragmas can be removed
+#ifdef __APPLE__
+  char *mname;
+  mname = malloc(strlen(name)+16);
+  char *p = stpcpy(mname, "lib");
+  p = stpcpy(p, name);
+  stpcpy(p, ".dylib");
+  return mname;
+#else
+  // Once GLIB actually documents the replacement, the pragmas can be removed
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   return g_module_build_path(dir, name);
 #pragma GCC diagnostic pop
+#endif
 }
 
 #ifdef USE_ESPEAK
@@ -85,6 +94,8 @@ static int ep_init(char *voice) {
             g_module_symbol(handle, "espeak_Synchronize", (gpointer *)&esh))
           res = API_ESPEAK;
       }
+    } else {
+      mwp_log_message(":DBG: failed to dlopen %s\n", modname);
     }
     g_free(modname);
   }

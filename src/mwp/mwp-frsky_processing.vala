@@ -78,13 +78,14 @@ namespace Frsky {
 
 				int fvup = 0;
 				int ttup = 0;
-				if (Math.fabs(ser.td.gps.lat - dlat) > 1e-6) {
+				var pdiff = Mwp.pos_diff(dlat, dlon, ser.td.gps.lat, ser.td.gps.lon);
+				if (Mwp.PosDiff.LAT in pdiff) {
 					fvup |= FlightBox.Update.LAT;
 					ttup |= TelemTracker.Fields.LAT;
 					ser.td.gps.lat = dlat;
 				}
 
-				if (Math.fabs(ser.td.gps.lon - dlon) > 1e-6) {
+				if (Mwp.PosDiff.LON in pdiff) {
 					fvup |= FlightBox.Update.LON;
 					ttup |= TelemTracker.Fields.LON;
 					ser.td.gps.lon = dlon;

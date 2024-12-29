@@ -97,12 +97,13 @@ namespace Mwp {
 			var cse = calc_cse_dist_delta(lat, lon, out ddm);
 			int fvup = 0;
 			int ttup = 0;
-			if(Math.fabs(lat - ser.td.gps.lat) > 1e-6) {
+			var pdiff = pos_diff(lat, lon, ser.td.gps.lat, ser.td.gps.lon);
+			if (PosDiff.LAT in pdiff) {
 				fvup |= FlightBox.Update.LAT;
 				ttup |= TelemTracker.Fields.LAT;
 				ser.td.gps.lat = lat;
 			}
-			if(Math.fabs(lon - ser.td.gps.lon) > 1e-6) {
+			if (PosDiff.LON in pdiff) {
 				fvup |= FlightBox.Update.LON;
 				ttup |= TelemTracker.Fields.LON;
 				ser.td.gps.lon = lon;

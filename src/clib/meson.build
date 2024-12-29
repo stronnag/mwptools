@@ -8,7 +8,7 @@ endif
 
 paho = meson.get_compiler('c').find_library('paho-mqtt3cs', kwargs: pahoargs)
 
-clsrcs = files('btdev.c', 'get_locale_double.c', 'rserial.c', 'speech_wrapper.c', 'getloc.c')
+clsrcs = files('btdev.c', 'get_locale_double.c', 'rserial.c', 'getloc.c')
 if paho.found()
   clsrcs += files('paho_wrapper.c')
   clib_dep += paho
@@ -23,7 +23,6 @@ if build_machine.system() == 'windows'
 endif
 
 common_inc_dir += [include_directories('.'), include_directories('../common')]
-
 clib_cargs=[]
 foreach x : xopts
   clib_cargs += '-D'+x

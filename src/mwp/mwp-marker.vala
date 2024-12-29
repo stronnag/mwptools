@@ -24,7 +24,6 @@ public class MWPMarker : Shumate.Marker {
 	private double _sy;
 	private int _lastang;
 	private int _size;
-	public Gtk.Widget extra {get; set;}
 	private Gtk.GestureDrag gestd;
 
 	public signal void leave();
@@ -41,7 +40,6 @@ public class MWPMarker : Shumate.Marker {
 		_sy = 0.0;
 		_lastang  = -1;
 		_size = -1;
-		extra = null;
 
 		var gestc = new Gtk.GestureClick();
 		add_controller(gestc);
