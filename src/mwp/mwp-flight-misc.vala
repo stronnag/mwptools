@@ -18,6 +18,8 @@
 namespace DeltaCache {
 	double dlat=0;
 	double dlon=0;
+	double cse = 0;
+	double ddm = 0;
 }
 
 namespace Mwp {
@@ -272,21 +274,26 @@ namespace Mwp {
     }
 
     private double calc_cse_dist_delta(double lat, double lon, out double ddm) {
-        double c = 0;
-        ddm = 0;
+        double c = DeltaCache.cse;
+		ddm = DeltaCache.ddm;
 
-		if (lat != DeltaCache.dlat || lon != DeltaCache.dlat) {
+		if((Math.fabs(lat - DeltaCache.dlat) > 1e-6) || (Math.fabs(lon - DeltaCache.dlon) > 1e-6)) {
 			if(DeltaCache.dlat != 0 && DeltaCache.dlon != 0) {
 				double d;
 				Geo.csedist(DeltaCache.dlat, DeltaCache.dlon, lat, lon, out d, out c);
 				ddm = d * 1852.0;
+				DeltaCache.cse = c;
+				DeltaCache.ddm = ddm;
+				/*
+				  if (c == 0) {
+				  MWPLog.message(":DBG: CSE = 0 %f %f %f %f (%f %f)\n",
+				  lat, lon, DeltaCache.dlat , DeltaCache.dlon,
+				  msp.td.gps.lat, msp.td.gps.lon);
+					}
+				*/
 			}
-			if (ddm < 128*1000) {
-				DeltaCache.dlat = lat;
-				DeltaCache.dlon = lon;
-			} else {
-				ddm = 0;
-			}
+			DeltaCache.dlat = lat;
+			DeltaCache.dlon = lon;
 		}
         return c;
     }
