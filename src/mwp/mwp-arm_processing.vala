@@ -43,7 +43,8 @@ namespace Mwp {
 			//  navstatus.set_replay_mode((replayer != Player.NONE)); // FIXME
             // radstatus.annul(); /; FIXME
             if (armed == 1) {
-                magdt = -1;
+				Mwp.window.armed_state(true);
+				magdt = -1;
                 Odo.stats = {0};
 				Odo.stats.atime = armtime;
                 Odo.stats.alt = -9999;
@@ -87,6 +88,7 @@ namespace Mwp {
                     }
                 }
             } else {
+				Mwp.window.armed_state(false);
                 if(Odo.stats.time > 5) {
                     MWPLog.message("Distance = %.1f, max speed = %.1f time = %u\n",
                                    Odo.stats.distance, Odo.stats.speed, Odo.stats.time);

@@ -137,6 +137,9 @@ namespace Mwp {
 		private Mwp.SCWindow scwindow;
 		private bool close_check;
 
+
+		public signal void armed_state(bool armed);
+
 		public async bool checker() {
 			bool ok = false;
 			var am = new Adw.AlertDialog("MWP Message",  "Mission has uncommitted changes");
@@ -232,6 +235,12 @@ namespace Mwp {
 						}
 					}
 				});
+
+			armed_state.connect((s) => {
+					set_mission_menus(!s);
+					reboot_status();
+				});
+
 			init_basics();
 
 			setup_terminal_reboot();
@@ -984,7 +993,6 @@ namespace Mwp {
 			"restore-mission",
 			"upload-mission",
 			"download-mission",
-			"navconfig",
 			"mission-info"};
         foreach(var s in ms0) {
             MwpMenu.set_menu_state(Mwp.window, s, state);

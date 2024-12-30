@@ -118,6 +118,7 @@ namespace TileUtils {
 					tile_stop.set_label("Close");
 				});
 			//            ts.set_range(bbox.bottom, bbox.left, bbox.top, bbox.right);
+			//			MWPLog.message(":DBG: BBOX %f %f %f %f\n",b.minlat, b.minlon, b.maxlat,b.maxlon);
 			ts.set_range(b.minlat, b.minlon, b.maxlat,b.maxlon);
 			ts.set_misc(source.id);
 			ts.set_zooms(zval-4, zval);
@@ -126,4 +127,20 @@ namespace TileUtils {
 			present();
 		}
 	}
+
+	/*
+	void get_dem_list(MapUtils.BoundingBox b) {
+		for(var lat = b.minlat; lat <  b.maxlat; lat += 1.0) {
+			for(var lon = b.minlon; lon <  b.maxlon; lon += 1.0) {
+				var hh  = new HgtHandle(lat, lon);
+				if (hh.fd == -1) {
+					var fn = HgtHandle.getbase(lat, lon, null, null);
+					MWPLog.message("Download DEM %s\n", fn);
+					DemManager.asyncdl.add_queue(fn);
+				}
+				hh = null;
+			}
+		}
+	}
+	*/
 }
