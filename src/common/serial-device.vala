@@ -1141,6 +1141,7 @@ public class MWSerial : Object {
 			commode = 0;
 			sockaddr=null;
 			skt = null;
+			td.r = null;
 			td = {};
 		}
 	}

@@ -245,6 +245,8 @@ namespace Mwp {
         xnopoll = nopoll;
         nopoll = true;
 
+		RSSI.set_title(RSSI.Title.RSSI);
+
         if ((rtype & Player.MWP) != 0 || (rtype & Player.BBOX) != 0 && x_fl2ltm == false) {
             rawfd = true;
         }
@@ -252,6 +254,8 @@ namespace Mwp {
         if(msp.available) {
 			Msp.close_serial();
 		}
+
+		Mwp.clear_sidebar(Mwp.msp);
 
         if (rawfd) {
             sr = MwpPipe.pipe(playfd);

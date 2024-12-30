@@ -307,7 +307,6 @@ namespace TelemTracker {
 		public void start_reader(SecDev sd) {
 			if (sd.dev == null) {
 				sd.dev = new MWSerial();
-				sd.dev.td = {};
 				sd.ready = 0;
 			}
 

@@ -547,5 +547,9 @@ namespace Mwp {
 		if ((ms == null || ms.npoints == 0) && !Mwp.window.wpeditbutton.active) {
 			HomePoint.try_hide();
 		}
-    }
+
+		if(Mwp.msp != null) {
+			Mwp.clear_sidebar(Mwp.msp);
+		}
+	}
 }

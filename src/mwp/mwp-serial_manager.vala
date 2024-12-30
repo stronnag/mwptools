@@ -24,6 +24,19 @@ namespace Mwp  {
 #if MQTT
     MwpMQTT mqtt;
 #endif
+
+	public void clear_sidebar(MWSerial s) {
+		s.td = {};
+		Battery.bat_annul();
+		Battery.update = true;
+		Battery.set_bat_stat(0);
+		Mwp.panelbox.update(Panel.View.DIRN, 0xff);
+		Mwp.panelbox.update(Panel.View.FVIEW, 0xff);
+		Mwp.panelbox.update(Panel.View.AHI, 0xff);
+		Mwp.panelbox.update(Panel.View.RSSI, 0xff);
+		Mwp.panelbox.update(Panel.View.VOLTS, 0xff);
+		Mwp.panelbox.update(Panel.View.VARIO, 0xff);
+	}
 }
 
 namespace Msp {
@@ -36,7 +49,6 @@ namespace Msp {
         Mwp.lastp = new Timer();
 		Mwp.lastp.start();
 		Mwp.msp.is_main = true;
-		Mwp.msp.td = {};
 		Mwp.mq = new Queue<Mwp.MQI?>();
         Mwp.lastmsg = Mwp.MQI(); //{cmd = Msp.Cmds.INVALID};
 		Mwp.csdq = new Queue<string>();
@@ -215,9 +227,6 @@ namespace Msp {
 		Mwp.window.typlab.set_label("");
 		Mwp.window.mmode.set_label("");
 		MwpMenu.set_menu_state(Mwp.window, "followme", false);
-		Battery.bat_annul();
-		Battery.update = true;
-		Battery.set_bat_stat(0);
 	}
 
 	private uint8 pmask_to_mask(uint j) {
@@ -305,10 +314,7 @@ Error: <i>%s</i>
 			TelemTracker.ttrk.disable(serdev);
 			Mwp.init_state();
 			Mwp.init_sstats();
-			Battery.bat_annul();
-			Battery.update = true;
-			Battery.set_bat_stat(0);
-
+			Mwp.clear_sidebar(Mwp.msp);
 			MWPLog.message("Trying OS open for %s\n", serdev);
 			Mwp.window.conbutton.sensitive = false;
 			Mwp.msp.open_async.begin(serdev, Mwp.conf.baudrate, (obj,res) => {

@@ -53,6 +53,9 @@ namespace Mwp {
 						want_special |= POSMODE.CRUISE;
 					else if(ltmflags != Msp.Ltm.LAND) {
 					}
+					Mwp.window.update_state();
+					var ls_state = Msp.ltm_mode(ltmflags);
+					Mwp.window.fmode.set_label(ls_state);
 				}
 
 				//			if(achg || mchg)
@@ -103,7 +106,8 @@ namespace Mwp {
 			Mav.MAVLINK_GPS_RAW_INT m = *(Mav.MAVLINK_GPS_RAW_INT*)raw;
 			double ddm;
 			int fix = m.fix_type;
-
+			int fvup = 0;
+			int ttup = 0;
 			if(m.eph != 65535) {
 				ser.td.gps.hdop = m.eph/100.0;
 			}
@@ -124,14 +128,42 @@ namespace Mwp {
 			var cse = calc_cse_dist_delta(mlat, mlon, out ddm);
 			cse = (m.cog == 0xffff) ? cse : m.cog/100.0;
 			double dalt = m.alt/1000.0;
+			var pdiff = pos_diff(mlat, mlon, ser.td.gps.lat, ser.td.gps.lon);
+			if (PosDiff.LAT in pdiff) {
+				fvup |= FlightBox.Update.LAT;
+				ttup |= TelemTracker.Fields.LAT;
+				ser.td.gps.lat = mlat;
+			}
+			if (PosDiff.LON in pdiff) {
+				fvup |= FlightBox.Update.LON;
+				ttup |= TelemTracker.Fields.LON;
+				ser.td.gps.lon = mlon;
+			}
 
-			ser.td.gps.lat = mlat;
-			ser.td.gps.lon = mlon;
-			ser.td.alt.alt = dalt;
-			ser.td.gps.nsats = m.satellites_visible;
-			ser.td.gps.cog = cse;
-			ser.td.gps.fix = (uint8)fix;
-			ser.td.gps.gspeed = spd;
+			if(Math.fabs(ser.td.alt.alt - dalt) > 1.0) {
+				fvup |= FlightBox.Update.ALT;
+				ttup |= TelemTracker.Fields.ALT;
+				ser.td.alt.alt = dalt;
+				ser.td.gps.alt = dalt;
+			}
+
+			if(Math.fabs(ser.td.gps.gspeed - spd) > 0.1) {
+				fvup |= FlightBox.Update.SPEED;
+				ttup |= TelemTracker.Fields.SPD;
+				ser.td.gps.gspeed = spd;
+			}
+
+			if(ser.td.gps.nsats != m.satellites_visible || ser.td.gps.fix != fix) {
+				fvup |= FlightBox.Update.GPS;
+				ttup |= TelemTracker.Fields.SAT;
+				ser.td.gps.nsats = m.satellites_visible;
+				ser.td.gps.fix = (uint8)fix;
+			}
+
+			if(Math.fabs(cse-ser.td.gps.cog) > 1) {
+				ser.td.gps.cog = cse;
+				Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.COG);
+            }
 
 			if(ser.is_main) {
 				gpsfix = (fix > 1);
@@ -159,8 +191,14 @@ namespace Mwp {
 								var cg = MSP_COMP_GPS();
 								cg.range = (uint16)Math.lround(range*1852);
 								cg.direction = (int16)Math.lround(cse);
-								ser.td.comp.range =  cg.range;
-								ser.td.comp.bearing =  cg.direction;
+								if(Math.fabs(ser.td.comp.range -  cg.range) > 1.0) {
+									ser.td.comp.range =  cg.range;
+									fvup |= FlightBox.Update.RANGE;
+								}
+								if(Math.fabs(ser.td.comp.bearing - cg.direction) > 1.0) {
+									ser.td.comp.bearing =  cg.direction;
+									fvup = FlightBox.Update.BEARING;
+								}
 							}
 						}
 					}
@@ -171,20 +209,43 @@ namespace Mwp {
 						Logger.mav_gps_raw_int (m);
 					}
 				}
+				if(fvup != 0) {
+					Mwp.panelbox.update(Panel.View.FVIEW, fvup);
+				}
+			} else {
+				if (ttup != 0) {
+					TelemTracker.ttrk.update(ser, ttup);
+				}
 			}
 			break;
 
 		case Msp.Cmds.MAVLINK_MSG_ATTITUDE:
-			if(ser.is_main) {
-				Mav.MAVLINK_ATTITUDE m = *(Mav.MAVLINK_ATTITUDE*)raw;
-				mhead = (int16)(m.yaw*RAD2DEG);
-				if(mhead < 0)
-					mhead += 360;
+			Mav.MAVLINK_ATTITUDE m = *(Mav.MAVLINK_ATTITUDE*)raw;
+			mhead = (int16)(m.yaw*RAD2DEG);
+			if(mhead < 0)
+				mhead += 360;
+			bool fvup = (Math.fabs(ser.td.atti.yaw - mhead) > 1.0);
 				ser.td.atti.yaw = mhead;
-				ser.td.atti.angx = (int16)(m.roll*57.29578);
-				ser.td.atti.angy = -(int16)(m.pitch*57.29578);
-			}
-			break;
+				var roll = (m.roll*57.29578);
+				var pitch = -(m.pitch*57.29578);
+
+				var vdiff = ((Math.fabs(ser.td.atti.angx-roll) > 1) || (Math.fabs(ser.td.atti.angy-pitch) > 1));
+				ser.td.atti.angx = (int16)roll;
+				ser.td.atti.angy = (int16)pitch;
+				if(ser.is_main) {
+					if(fvup) {
+						Mwp.panelbox.update(Panel.View.FVIEW, FlightBox.Update.YAW);
+						Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.YAW);
+					}
+					if(vdiff) {
+						Mwp.panelbox.update(Panel.View.AHI, AHI.Update.AHI);
+					}
+				} else {
+					if(fvup) {
+						TelemTracker.ttrk.update(ser, TelemTracker.Fields.CSE);
+					}
+				}
+				break;
 
 		case Msp.Cmds.MAVLINK_MSG_RC_CHANNELS_RAW:
 			if(ser.is_main) {
@@ -237,7 +298,15 @@ namespace Mwp {
 			break;
 
 		case Msp.Cmds.MAVLINK_MSG_ID_RADIO_STATUS:
-			ser.td.rssi.rssi = raw[4]*1023/255;
+			var rssi = raw[4]*1023/255;
+			if (rssi != ser.td.rssi.rssi) {
+				ser.td.rssi.rssi = rssi;
+				if(ser.is_main) {
+				   Mwp.panelbox.update(Panel.View.RSSI, RSSI.Update.RSSI);
+				} else {
+					TelemTracker.ttrk.update(ser, TelemTracker.Fields.RSSI);
+				}
+			}
 			break;
 
 		case Msp.Cmds.MAVLINK_MSG_ID_OWNSHIP:
