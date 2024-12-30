@@ -129,6 +129,12 @@ namespace Mwp {
 				ser.td.gps.fix = fix;
 			}
 
+			if(Math.fabs(cse-ser.td.gps.cog) > 1) {
+				ser.td.gps.cog = cse;
+				fvup |= Direction.Update.COG;
+				ttup |= TelemTracker.Fields.CSE;
+			}
+
 			if(fix > 0) {
 				if(ser.is_main) {
 					flash_gps();
@@ -144,6 +150,7 @@ namespace Mwp {
 					if (Logger.is_logging) {
 						Logger.altitude(al.estalt, (int16)al.vario);
 					}
+
 					sat_coverage();
 					_nsats = nsats;
 					update_pos_info();
@@ -181,11 +188,6 @@ namespace Mwp {
 							if(no_ofix == 10) {
 								MWPLog.message("No home position yet\n");
 							}
-						}
-
-						if(Math.fabs(cse-ser.td.gps.cog) > 1) {
-							ser.td.gps.cog = cse;
-							Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.COG);
 						}
 
 						if((sensor & Msp.Sensors.MAG) == Msp.Sensors.MAG && last_nmode != 3) {

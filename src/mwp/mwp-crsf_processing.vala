@@ -166,12 +166,14 @@ namespace CRSF {
 				ttup |= TelemTracker.Fields.SAT;
 			}
 
+			if(ser.td.gps.cog != hdg) {
+				ser.td.gps.cog = hdg;
+				fvup |= Direction.Update.COG;
+				ttup |= TelemTracker.Fields.CSE;
+			}
+
 			if (d.fix > 0) {
 				if(ser.is_main) {
-					if(ser.td.gps.cog != hdg) {
-						ser.td.gps.cog = hdg;
-						Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.COG);
-					}
 					Mwp.nsats = nsat;
 					Mwp.sat_coverage();
 					Mwp._nsats = nsat;

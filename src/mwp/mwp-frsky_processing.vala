@@ -291,6 +291,8 @@ namespace Frsky {
 				ser.td.gps.cog = r;
 				if (ser.is_main) {
 					Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.COG);
+				} else {
+					TelemTracker.ttrk.update(ser, TelemTracker.Fields.CSE);
 				}
 			}
 			break;

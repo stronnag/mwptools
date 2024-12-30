@@ -273,7 +273,7 @@ namespace TelemTracker {
 					Radar.upsert(rk, ri);
 				}
 
-				if(Fields.SPD in what) {
+				if(Fields.CSE in what) {
 					ri.heading = (uint16)(sd.dev.td.gps.cog);
 					Radar.upsert(rk, ri);
 				}

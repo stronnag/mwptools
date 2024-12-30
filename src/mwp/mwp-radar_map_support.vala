@@ -82,7 +82,8 @@ namespace Radar {
 			Gis.rm_layer.add_marker (rp);
 			rp.has_tooltip = true;
 			rp.query_tooltip.connect((x,y,k,t) => {
-					var s = generate_tt(r);
+					var ri = Radar.radar_cache.lookup(rp.no);
+					var s = generate_tt(ri);
 					t.set_text(s);
 					return true;
 				});
@@ -102,10 +103,6 @@ namespace Radar {
 		}
 		if(r.etype != 10) {
 			rp.rotate(r.heading);
-		}
-
-		if(rp.has_tooltip) {
-			rp.tooltip_text=generate_tt(r);
 		}
     }
 
