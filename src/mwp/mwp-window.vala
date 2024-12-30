@@ -237,7 +237,10 @@ namespace Mwp {
 				});
 
 			armed_state.connect((s) => {
-					set_mission_menus(!s);
+					s = !s;
+					MWPLog.message("Armed changed set menus %s\n", s.to_string());
+					set_mission_menus(s);
+					update_state();
 					reboot_status();
 				});
 
@@ -487,11 +490,14 @@ namespace Mwp {
 
 		public void update_state() {
 			bool mstate = false;
+			bool wpstate = false;
 			if(msp.available) {
 				if(serstate == SERSTATE.POLLER) {
 					mstate = (msp.td.state.ltmstate ==  Msp.Ltm.POSHOLD);
+					wpstate = (msp.td.state.ltmstate ==  Msp.Ltm.WAYPOINTS);
 				}
 				MwpMenu.set_menu_state(Mwp.window, "followme", mstate);
+				MwpMenu.set_menu_state(Mwp.window, "upload-mission", !wpstate);
 			}
 		}
 

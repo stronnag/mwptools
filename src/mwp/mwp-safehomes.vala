@@ -328,8 +328,8 @@ public class  SafeHomeDialog : Adw.Window {
 		Mwp.window.insert_action_group("shm", dgm);
 
 		Mwp.window.armed_state.connect((s) => {
-				MwpMenu.set_menu_state(this, "loadfc", !s);
-				MwpMenu.set_menu_state(this, "savefc", !s);
+				MwpMenu.set_menu_state(dg, "loadfc", !s);
+				MwpMenu.set_menu_state(dg, "savefc", !s);
 			});
 
 		this.close_request.connect (() => {
