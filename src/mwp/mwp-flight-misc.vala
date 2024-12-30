@@ -526,15 +526,6 @@ namespace Mwp {
 			if(conf.logarmed == true)
 				Mwp.window.logger_cb.active=false;
 
-			Battery.set_bat_stat(0);
-			msp.td.gps.annul();
-			msp.td.atti.annul();
-			msp.td.alt.annul();
-			msp.td.power.annul();
-			msp.td.rssi.annul();
-			msp.td.comp.annul();
-			msp.td.origin.annul();
-
 			craft.remove_all();
 			RangeCircles.remove_rings();
 			xsensor = 0;
@@ -547,9 +538,6 @@ namespace Mwp {
 		if ((ms == null || ms.npoints == 0) && !Mwp.window.wpeditbutton.active) {
 			HomePoint.try_hide();
 		}
-
-		if(Mwp.msp != null) {
-			Mwp.clear_sidebar(Mwp.msp);
-		}
+		Mwp.clear_sidebar(Mwp.msp);
 	}
 }

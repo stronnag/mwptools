@@ -26,7 +26,17 @@ namespace Mwp  {
 #endif
 
 	public void clear_sidebar(MWSerial s) {
-		s.td = {};
+		if(s != null) {
+			s.td = {};
+			s.td.gps.annul();
+			s.td.atti.annul();
+			s.td.alt.annul();
+			s.td.power.annul();
+			s.td.rssi.annul();
+			s.td.comp.annul();
+			s.td.origin.annul();
+		}
+		RSSI.set_title(RSSI.Title.RSSI);
 		Battery.bat_annul();
 		Battery.update = true;
 		Battery.set_bat_stat(0);
@@ -283,10 +293,10 @@ Error: <i>%s</i>
 	}
 
     private void connect_serial() {
-		RSSI.set_title(RSSI.Title.RSSI);
 		var serdev = Mwp.dev_entry.text;
 		bool ostat = false;
 		Mwp.serstate = Mwp.SERSTATE.NONE;
+		Mwp.clear_sidebar(Mwp.msp);
 		if(Radar.lookup_radar(serdev) || serdev == Mwp.forward_device) {
 			wb1 = new Utils.Warning_box("The selected device is assigned to a special function (radar / forwarding).\nPlease choose another device", 60);
 			wb1.present();
@@ -314,7 +324,6 @@ Error: <i>%s</i>
 			TelemTracker.ttrk.disable(serdev);
 			Mwp.init_state();
 			Mwp.init_sstats();
-			Mwp.clear_sidebar(Mwp.msp);
 			MWPLog.message("Trying OS open for %s\n", serdev);
 			Mwp.window.conbutton.sensitive = false;
 			Mwp.msp.open_async.begin(serdev, Mwp.conf.baudrate, (obj,res) => {
