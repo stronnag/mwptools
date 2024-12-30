@@ -118,8 +118,7 @@ namespace TileUtils {
 					tile_stop.set_label("Close");
 					get_dem_list(b);
 				});
-			//            ts.set_range(bbox.bottom, bbox.left, bbox.top, bbox.right);
-			//			MWPLog.message(":DBG: BBOX %f %f %f %f\n",b.minlat, b.minlon, b.maxlat,b.maxlon);
+			// MWPLog.message(":DBG: BBOX %f %f %f %f\n",b.minlat, b.minlon, b.maxlat,b.maxlon);
 			ts.set_range(b.minlat, b.minlon, b.maxlat,b.maxlon);
 			ts.set_misc(source.id);
 			ts.set_zooms(zval-4, zval);
@@ -135,10 +134,10 @@ namespace TileUtils {
 				var hh  = new HgtHandle(lat, lon);
 				var fn = HgtHandle.getbase(lat, lon, null, null);
 				if (hh.fd == -1) {
-					MWPLog.message("Add DEM download %s\n", fn);
+					MWPLog.message("Seeder: Add DEM download %s\n", fn);
 					DemManager.asyncdl.add_queue(fn);
 				} else {
-					MWPLog.message("Skip DEM %s\n", fn);
+					MWPLog.message("Seeder: Skip DEM %s\n", fn);
 				}
 				hh = null;
 			}
