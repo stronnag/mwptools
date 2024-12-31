@@ -115,7 +115,7 @@ namespace Mwp {
 			ns.gps_mode = *rp++;
 
 			if(ns.gps_mode == 15) {
-				if (nticks - last_crit > CRITINTVL) {
+				if (nticks - last_crit > 6*CRITINTVL) {
 					Audio.play_alarm_sound(MWPAlert.GENERAL);
 					MWPLog.message("GPS Critial Failure!!!\n");
 					Mwp.add_toast_text("GPS Critial Failure!!!");
