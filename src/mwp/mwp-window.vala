@@ -139,6 +139,7 @@ namespace Mwp {
 
 
 		public signal void armed_state(bool armed);
+		public signal void status_change(uint8 lflags);
 
 		public async bool checker() {
 			bool ok = false;
@@ -496,6 +497,7 @@ namespace Mwp {
 					mstate = (msp.td.state.ltmstate ==  Msp.Ltm.POSHOLD);
 					wpstate = (msp.td.state.ltmstate ==  Msp.Ltm.WAYPOINTS);
 				}
+				//				MWPLog.message(":DBG: window state %d (%s)\n", msp.td.state.ltmstate, wpstate.to_string());
 				MwpMenu.set_menu_state(Mwp.window, "followme", mstate);
 				MwpMenu.set_menu_state(Mwp.window, "upload-mission", !wpstate);
 			}
@@ -942,21 +944,7 @@ namespace Mwp {
     }
 
 	public void add_toast_text(string s) {
-		//#if UNIX
 		Mwp.window.toaster.add_toast(new Adw.Toast(s));
-		/*
-#else
-		if(mtid != 0) {
-			Source.remove(mtid);
-		}
-		Mwp.window.statusbar1.label = s;
-		mtid = Timeout.add(10000, () => {
-				mtid =0;
-				Mwp.window.statusbar1.label = "";
-				return false;
-				});
-#endif
-		*/
 	}
 
     public void clear_sensor_array() {

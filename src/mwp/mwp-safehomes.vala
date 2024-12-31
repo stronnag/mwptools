@@ -214,7 +214,7 @@ public class  SafeHomeDialog : Adw.Window {
 	private GLib.ListStore lstore;
 	private Gtk.ColumnView cv;
 	Gtk.SingleSelection lsel;
-
+	GLib.SimpleActionGroup dg;
 	private Gtk.Switch switcher;
 	private GLib.SimpleAction aq_fcl;
 	private GLib.SimpleAction aq_fcs;
@@ -274,7 +274,7 @@ public class  SafeHomeDialog : Adw.Window {
 		var shpop = new Gtk.PopoverMenu.from_model(shmenu);
 		fsmenu_button.set_popover(shpop);
 
-		var dg = new GLib.SimpleActionGroup();
+		dg = new GLib.SimpleActionGroup();
 		var aq = new GLib.SimpleAction("load",null);
 		aq.activate.connect(() => {
 				run_chooser( Gtk.FileChooserAction.OPEN);
@@ -328,8 +328,7 @@ public class  SafeHomeDialog : Adw.Window {
 		Mwp.window.insert_action_group("shm", dgm);
 
 		Mwp.window.armed_state.connect((s) => {
-				MwpMenu.set_menu_state(dg, "loadfc", !s);
-				MwpMenu.set_menu_state(dg, "savefc", !s);
+				menu_armed_state(s);
 			});
 
 		this.close_request.connect (() => {
@@ -362,7 +361,15 @@ public class  SafeHomeDialog : Adw.Window {
 		shmarkers.safept_move.connect((idx,la,lo) => {
 				drag_action(idx, la, lo);
 			});
+
+		menu_armed_state((Mwp.armed !=0));
 		set_content(sbox);
+	}
+
+	private void menu_armed_state(bool s) {
+		MWPLog.message("Set SH menus for  armed=%s\n", s.to_string());
+		MwpMenu.set_menu_state(dg, "loadfc", !s);
+		MwpMenu.set_menu_state(dg, "savefc", !s);
 	}
 
 	private void create_cv() {
@@ -963,5 +970,6 @@ public class  SafeHomeDialog : Adw.Window {
 			if(!state)
 				display_homes(true);
 		}
+		menu_armed_state((Mwp.armed !=0));
     }
 }

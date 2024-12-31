@@ -41,10 +41,11 @@ namespace Mwp {
 
 	[Flags]
 	private enum StartupTasks {
+		STATUS,
 		SAFEHOMES,
 		GEOZONES,
 		MISSION,
-		STATUS
+		STATUSX
 	}
 
 	StartupTasks starttasks = 0;
@@ -781,9 +782,11 @@ namespace Mwp {
 					starttasks += StartupTasks.MISSION;
 				}
 			}
-			starttasks += StartupTasks.STATUS;
+			if (starttasks != 0) {
+				starttasks += StartupTasks.STATUS;
+			}
+			starttasks += StartupTasks.STATUSX;
 			// fired off by common settings ....
-
 			break;
 
 		case Msp.Cmds.COMMON_SET_SETTING:
@@ -922,11 +925,17 @@ namespace Mwp {
 				return true;
 			} else {
 				handle_msp_status(raw, len);
+				if(starttasks != 0) {
+					handle_misc_startup();
+				}
 			}
 			break;
 		case Msp.Cmds.STATUS_EX:
 		case Msp.Cmds.INAV_STATUS:
 			handle_msp_status(raw, len);
+			if(starttasks != 0) {
+				handle_misc_startup();
+			}
 			break;
 
 		case Msp.Cmds.SENSOR_STATUS:
@@ -1611,6 +1620,7 @@ namespace Mwp {
                 want_special = 0;
                 MWPLog.message("%s %s\n", Mwp.window.verlab.label, Mwp.window.typlab.label);
 
+				if(starttasks == 0) {
                 var reqsize = build_pollreqs();
                 var nreqs = requests.length;
                     // data we send, response is structs + this
@@ -1636,6 +1646,7 @@ namespace Mwp {
                         Audio.start_audio();
                     }
                 }
+				}
                 report_bits(bxflag);
                 Craft.RMIcon ri = 0;
                 if ((rth_mask != 0) && ((bxflag & rth_mask) == 0))
@@ -1647,15 +1658,16 @@ namespace Mwp {
                 if(ri != 0 && craft != null)
                     craft.remove_special(ri);
             } else {
-                if(requests.length == 0 && ((sensor & Msp.Sensors.GPS) == Msp.Sensors.GPS)) {
-                    build_pollreqs();
-                }
-                if(sensor != xsensor) {
-                    update_sensor_array();
-                    xsensor = sensor;
-                }
+				if(starttasks == 0) {
+					if(requests.length == 0 && ((sensor & Msp.Sensors.GPS) == Msp.Sensors.GPS)) {
+						build_pollreqs();
+					}
+					if(sensor != xsensor) {
+						update_sensor_array();
+						xsensor = sensor;
+					}
+				}
             }
-
                 // acro/horizon/angle changed
             uint8 ltmflags = 0;
 
@@ -1686,33 +1698,32 @@ namespace Mwp {
                         xfailsafe = failsafe;
                     }
                 }
-                if ((rth_mask != 0) &&
-                    ((bxflag & rth_mask) != 0) &&
-                    ((xbits & rth_mask) == 0)) {
-                    MWPLog.message("set RTH on %08x %u %ds\n", bxflag,bxflag,
+                if ((rth_mask != 0) && ((bxflag & rth_mask) != 0)) {
+                    if ((xbits & rth_mask) == 0) {
+						MWPLog.message("set RTH on %08x %u %ds\n", bxflag,bxflag,
                                    (int)duration);
-                    want_special |= POSMODE.RTH;
+						want_special |= POSMODE.RTH;
+					}
                     ltmflags = Msp.Ltm.RTH;
-                } else if ((ph_mask != 0) &&
-                         ((bxflag & ph_mask) != 0) &&
-                         ((xbits & ph_mask) == 0)) {
-                    MWPLog.message("set PH on %08x %u %ds\n", bxflag, bxflag,
-                                   (int)duration);
-                    want_special |= POSMODE.PH;
-                    ltmflags = Msp.Ltm.POSHOLD;
-                } else if ((wp_mask != 0) &&
-                         ((bxflag & wp_mask) != 0) &&
-                         ((xbits & wp_mask) == 0)) {
-                    MWPLog.message("set WP on %08x %u %ds\n", bxflag, bxflag,
-                                   (int)duration);
-                    want_special |= POSMODE.WP;
+                } else if ((ph_mask != 0) && ((bxflag & ph_mask) != 0)) {
+					if ((xbits & ph_mask) == 0) {
+						MWPLog.message("set PH on %08x %u %ds\n", bxflag, bxflag,
+									   (int)duration);
+						want_special |= POSMODE.PH;
+					}
+					ltmflags = Msp.Ltm.POSHOLD;
+                } else if ((wp_mask != 0) && ((bxflag & wp_mask) != 0)) {
+					if ((xbits & wp_mask) == 0) {
+						MWPLog.message("set WP on %08x %u %ds\n", bxflag, bxflag, (int)duration);
+						want_special |= POSMODE.WP;
+					}
                     ltmflags = Msp.Ltm.WAYPOINTS;
-                } else if ((cr_mask != 0)  &&
-                           ((bxflag & cr_mask) != 0) &&
-                           ((xbits & cr_mask) == 0)) {
-                    MWPLog.message("set CRUISE on %08x %u %ds\n", bxflag, bxflag,
+                } else if ((cr_mask != 0) && ((bxflag & cr_mask) != 0)) {
+					if ((xbits & cr_mask) == 0) {
+						MWPLog.message("set CRUISE on %08x %u %ds\n", bxflag, bxflag,
                                    (int)duration);
-                    want_special |= POSMODE.CRUISE;
+						want_special |= POSMODE.CRUISE;
+					}
                     ltmflags = Msp.Ltm.CRUISE;
                 } else if ((xbits != bxflag) && craft != null) {
                     craft.set_normal();
@@ -1726,6 +1737,7 @@ namespace Mwp {
 						ltmflags !=  Msp.Ltm.LAND) { // handled by NAV_STATUS
 						TTS.say(TTS.Vox.LTM_MODE);
 					}
+					MWPLog.message(":DBG: update state %d (was %d)\n", ltmflags, last_ltmf);
 					Mwp.window.update_state();
 					last_ltmf = ltmflags;
 				}
@@ -1766,29 +1778,42 @@ namespace Mwp {
 	}
 
 	public void handle_misc_startup() {
-		if (SAFEHOMES in starttasks) {
-			starttasks -= StartupTasks.SAFEHOMES;
-			last_safehome = Safehome.MAXHOMES;
-			uint8 shid = 0;
-			MWPLog.message("Load FC safehomes\n");
-			queue_cmd(Msp.Cmds.SAFEHOME,&shid,1);
-			run_queue();
-		} else if (GEOZONES in starttasks) {
-			starttasks -= StartupTasks.GEOZONES;
-			MWPLog.message("Load FC Geozones\n");
-			gzr.reset();
-			queue_gzone(0);
-			gz_from_msp = true;
-			run_queue();
-		} else if (MISSION in starttasks) {
-			starttasks -= StartupTasks.MISSION;
-			MWPLog.message("Auto-download FC mission\n");
-			download_mission();
-		} else if (STATUS in starttasks) {
-			starttasks -= StartupTasks.STATUS;
+		if (armed == 0) {
+			if (STATUS in starttasks) {
+				MWPLog.message("Inital starttask %x\n", starttasks);
+				starttasks -= StartupTasks.STATUS;
+				queue_cmd(msp_get_status,null,0);
+				run_queue();
+			} else if (SAFEHOMES in starttasks) {
+				starttasks -= StartupTasks.SAFEHOMES;
+				last_safehome = Safehome.MAXHOMES;
+				uint8 shid = 0;
+				MWPLog.message("Load FC safehomes\n");
+				queue_cmd(Msp.Cmds.SAFEHOME,&shid,1);
+				run_queue();
+			} else if (GEOZONES in starttasks) {
+				starttasks -= StartupTasks.GEOZONES;
+				MWPLog.message("Load FC Geozones\n");
+				gzr.reset();
+				queue_gzone(0);
+				gz_from_msp = true;
+				run_queue();
+			} else if (MISSION in starttasks) {
+				starttasks -= StartupTasks.MISSION;
+				MWPLog.message("Auto-download FC mission\n");
+				download_mission();
+			} else if (STATUSX in starttasks) {
+				starttasks -= StartupTasks.STATUSX;
+				have_status= false;
+				queue_cmd(msp_get_status,null,0);
+				run_queue();
+			}
+		} else {
+			MWPLog.message("Armed, skipping start tasks\n");
+			starttasks = 0;
+			have_status= false;
 			queue_cmd(msp_get_status,null,0);
 			run_queue();
 		}
-		//		MWPLog.message(":DBG: misc startup %d\n", starttasks);
 	}
 }
