@@ -129,6 +129,7 @@ namespace Mwp {
 				ser.td.gps.fix = fix;
 			}
 
+
 			if(Math.fabs(cse - ser.td.gps.cog) > 1) {
 				if (ser.is_main) {
 					Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.COG);
@@ -271,7 +272,9 @@ namespace Mwp {
 				h += 360;
 			}
 			bool fvup = (Math.fabs(ser.td.atti.yaw - h) > 1.0);
-			ser.td.atti.yaw = h;
+			if (fvup) {
+				ser.td.atti.yaw = h;
+			}
 			if(ser.is_main) {
 				mhead = h;
 				var vdiff = (af.roll != Atti._sx) || (af.pitch != Atti._sy);

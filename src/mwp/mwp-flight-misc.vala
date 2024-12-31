@@ -307,11 +307,9 @@ namespace Mwp {
 				DeltaCache.cse = c;
 				DeltaCache.ddm = ddm;
 				/*
-				  if (c == 0) {
-				  MWPLog.message(":DBG: CSE = 0 %f %f %f %f (%f %f)\n",
-				  lat, lon, DeltaCache.dlat , DeltaCache.dlon,
-				  msp.td.gps.lat, msp.td.gps.lon);
-					}
+				  MWPLog.message(":DBG: CSE = %.0f %f %f %f %f (%f %f)\n",
+								 c, lat, lon, DeltaCache.dlat , DeltaCache.dlon,
+								 msp.td.gps.lat, msp.td.gps.lon);
 				*/
 			}
 			DeltaCache.dlat = lat;
