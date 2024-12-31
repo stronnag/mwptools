@@ -129,10 +129,13 @@ namespace Mwp {
 				ser.td.gps.fix = fix;
 			}
 
-			if(Math.fabs(cse-ser.td.gps.cog) > 1) {
+			if(Math.fabs(cse - ser.td.gps.cog) > 1) {
+				if (ser.is_main) {
+					Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.COG);
+				} else {
+					TelemTracker.ttrk.update(ser, TelemTracker.Fields.CSE);
+				}
 				ser.td.gps.cog = cse;
-				fvup |= Direction.Update.COG;
-				ttup |= TelemTracker.Fields.CSE;
 			}
 
 			if(fix > 0) {
