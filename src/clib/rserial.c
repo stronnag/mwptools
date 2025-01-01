@@ -318,13 +318,26 @@ void set_timeout(int hfd, int timetenths, int number) {
 }
 
 int open_serial(const char *device, int baudrate) {
-  HANDLE hfd = CreateFile(device,
+  char * dname;
+
+  if(strncmp(device, "COM", 3) == 0) {
+    dname = malloc(strlen(device)+16);
+    strcpy(dname, "\\\\.\\");
+    strcat(dname, device);
+  } else {
+    dname = device;
+  }
+
+  HANDLE hfd = CreateFile(dname,
 			  GENERIC_READ|GENERIC_WRITE,
 			  0,
 			  NULL,
 			  OPEN_EXISTING,
 			  FILE_FLAG_OVERLAPPED,
 			  NULL);
+  if(dname != device) {
+    free(dname);
+  }
 
   if(hfd != INVALID_HANDLE_VALUE) {
     set_timeout((intptr_t)hfd, 0, 1);
