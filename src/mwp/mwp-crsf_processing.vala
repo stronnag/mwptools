@@ -285,7 +285,6 @@ namespace CRSF {
 				yaw += 360;
 			}
 			bool fvup = (ser.td.atti.yaw != (int)yaw);
-			ser.td.atti.yaw = (int)yaw;
 			if(ser.is_main) {
 				d.yaw = Mwp.mhead = (int16)yaw ;
 				d.pitch = (int16)pitch;
@@ -295,16 +294,18 @@ namespace CRSF {
 				af.roll = d.roll;
 				af.heading = (int16)yaw;
 				if(ser.td.atti.angy != d.pitch || ser.td.atti.angx != d.roll) {
+					ser.td.atti.angy = d.pitch;
+					ser.td.atti.angx = d.roll;
 					Mwp.panelbox.update(Panel.View.AHI, AHI.Update.AHI);
 				}
-				ser.td.atti.angy = d.pitch;
-				ser.td.atti.angx = d.roll;
 				if(fvup) {
+					ser.td.atti.yaw = (int)yaw;
 					Mwp.panelbox.update(Panel.View.FVIEW, FlightBox.Update.YAW);
 					Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.YAW);
 				}
 			} else {
 				if(fvup) {
+					ser.td.atti.yaw = (int)yaw;
 					TelemTracker.ttrk.update(ser, TelemTracker.Fields.CSE);
 				}
 			}

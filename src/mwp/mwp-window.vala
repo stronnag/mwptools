@@ -240,7 +240,9 @@ namespace Mwp {
 			armed_state.connect((s) => {
 					s = !s;
 					MWPLog.message("Armed changed set menus %s\n", s.to_string());
-					set_mission_menus(s);
+					if(!conf.armed_red_pill) {
+						set_mission_menus(s);
+					}
 					update_state();
 					reboot_status();
 				});
@@ -499,7 +501,10 @@ namespace Mwp {
 				}
 				//				MWPLog.message(":DBG: window state %d (%s)\n", msp.td.state.ltmstate, wpstate.to_string());
 				MwpMenu.set_menu_state(Mwp.window, "followme", mstate);
-				MwpMenu.set_menu_state(Mwp.window, "upload-mission", !wpstate);
+
+				if (!conf.armed_red_pill) {
+					MwpMenu.set_menu_state(Mwp.window, "upload-mission", !wpstate);
+				}
 			}
 		}
 

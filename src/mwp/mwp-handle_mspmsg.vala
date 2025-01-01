@@ -1737,7 +1737,7 @@ namespace Mwp {
 						ltmflags !=  Msp.Ltm.LAND) { // handled by NAV_STATUS
 						TTS.say(TTS.Vox.LTM_MODE);
 					}
-					MWPLog.message(":DBG: update state %d (was %d)\n", ltmflags, last_ltmf);
+					//					MWPLog.message(":DBG: update state %d (was %d)\n", ltmflags, last_ltmf);
 					Mwp.window.update_state();
 					last_ltmf = ltmflags;
 				}
@@ -1778,7 +1778,7 @@ namespace Mwp {
 	}
 
 	public void handle_misc_startup() {
-		if (armed == 0) {
+		if (armed == 0 || conf.armed_red_pill) {
 			if (STATUS in starttasks) {
 				MWPLog.message("Inital starttask %x\n", starttasks);
 				starttasks -= StartupTasks.STATUS;

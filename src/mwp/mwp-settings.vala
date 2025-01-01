@@ -108,9 +108,9 @@ public class MWPSettings : GLib.Object {
 	public int ident_limit  {get; set; default=60;}
 	public double touch_factor {get; set; default=0.0;}
 	public int p_pane_width {get; set; default=0;}
+	public bool armed_red_pill {get; set; default=false;}
 
 	construct {
-
 #if DARWIN
 		string uc =  Environment.get_user_config_dir();
 		string kfile = GLib.Path.build_filename(uc,"mwp");
@@ -151,6 +151,7 @@ public class MWPSettings : GLib.Object {
 		settings =  new Settings (sname);
 #endif
 		settings.bind("adjust-tz", this, "adjust-tz", SettingsBindFlags.DEFAULT);
+		settings.bind("armed-red-pill", this, "armed-red-pill", SettingsBindFlags.DEFAULT);
 		settings.bind("arming-speak", this, "arming-speak", SettingsBindFlags.DEFAULT);
 		settings.bind("atexit", this, "atexit", SettingsBindFlags.GET);
 		settings.bind("atstart", this, "atstart", SettingsBindFlags.GET);
