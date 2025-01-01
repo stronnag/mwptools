@@ -230,7 +230,6 @@ Requires mwptools 2024.11.20 or later.
 * Use Homebrew to install required packages (names may be evinced from the Linux docs)
 * Follow generic instructions for `meson` and `ninja`
 
-
 ## Gsetting keys
 
 ### List of mwp settings
@@ -239,6 +238,7 @@ Requires mwptools 2024.11.20 or later.
 | ---- | ------- | ----------- | ------ |
 | adjust-tz | Adjust FC's TZ (and DST) | mwp should adjust FC's TZ (and DST) based on the local clock | true |
 | ah-invert-roll | Invert AH roll | Set to true to invert roll in the AH (so it becomes an attitude indicator) | false |
+| armed-red-pill | Antidote to armed menus placebo | Whether suppress desensitising of MSP action items when armed. | false |
 | arming-speak | speak arming states | whether to reporting arming state by audio | false |
 | atexit | Something that is executed at exit | e.g. `gsettings set org.gnome.settings-daemon.plugins.power idle-dim true`. See also `manage-power` (and consider setting `manage-power` to `true` instead). | "" |
 | atstart | Something that is executed at startup | e.g. `gsettings set org.gnome.settings-daemon.plugins.power idle-dim false`. See also `manage-power` (and consider setting to true). | "" |
@@ -297,7 +297,11 @@ Requires mwptools 2024.11.20 or later.
 | mission-path | Directory for mission files | Directory for mission files, default = current directory | "" |
 | msp2-adsb | MSP2_ADSB_VEHICLE_LIST usage | Options for requesting MSP2_ADSB_VEHICLE_LIST. "off": never request, "on:" always request, "auto:" heuristic based on serial settings / bandwidth | "off" |
 | osd-mode | Data items overlaid on the map | 0 = none, 1 = current WP/Max WP, 2 = next WP distance and course. This is a mask, so 3 means both OSD items. | 3 |
-| p-pane-width | Private setting | Please do not change this unless you appreciate the consequences | 0 |
+| p-height | Internal setting |  | 720 |
+| p-is-fullscreen | Internal setting |  | false |
+| p-is-maximised | Internal setting |  | true |
+| p-pane-width | Internal setting | Please do not change this unless you appreciate the consequences | 0 |
+| p-width | Internal setting |  | 1280 |
 | poll-timeout | Poll messages timeout (ms) | Timeout in milliseconds for telemetry poll messages. Note that timer loop has a resolution of 100ms. | 900 |
 | pos-is-centre | Determines position label content | Whether the position label is the centre or pointer location | false |
 | radar-alert-altitude | Altitude below which ADS-B alerts may be generated | Target altitude (metres) below which ADS-B proximity alerts may be generated. Requires that 'radar-alert-range' is also set (non-zero). Setting to 0 disables. Note that ADS-B altitudes are AMSL (or geoid). | 0 |
@@ -321,12 +325,10 @@ Requires mwptools 2024.11.20 or later.
 | uilang | Language Handling | "en" do everything as English (UI numeric decimal points, voice), "ev" do voice as English (so say 'point' for decimals even when shown as 'comma') | "" |
 | view-mode | UAV view mode | Options for model view | "inview" |
 | vlevels | Voltage levels | Semi-colon(;) separated list of *cell* voltages values for transition between voltage label colours | "" |
-| window-scale | Window size as percent of monitor | Default window size size as percent of monitor size for non-full screen invocation. | 80 |
 | wp-dist-size | Font size (points) for OSD WP distance display | Font size (points) for OSD WP distance display | 56.0 |
 | wp-spotlight | Style for the 'next waypoint' highlight | Defines RGBA colour for 'next way point' highlight | "#ffffff60" |
 | wp-text-style | Style of text used for next WP display | Defines the way the WP numbers are displayed. Font, size and RGBA description (or well known name, with alpha) | "Sans 72/#ff000060" |
 | zone-detect | Application to return timezone from location | If supplied, the application will be used to return the timezone (in preference to geonames.org). The application should take latitude and longitude as parameters. See samples/tzget.sh | "" |
-
 
 ## DBus
 

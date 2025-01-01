@@ -667,7 +667,7 @@
     <key name="armed-red-pill" type="b">
       <summary>Antidote to armed menus placebo</summary>
       <default>false</default>
-      <description>Whether suppress desensitising of MSP action items when armed.</description>
+      <description>Whether to suppress desensitising of MSP action items when armed.</description>
     </key>
 
   </schema>
