@@ -368,7 +368,6 @@ public class  SafeHomeDialog : Adw.Window {
 
 	private void menu_armed_state(bool s) {
 		if(!Mwp.conf.armed_red_pill) {
-			MWPLog.message("Set SH menus for  armed=%s\n", s.to_string());
 			MwpMenu.set_menu_state(dg, "loadfc", !s);
 			MwpMenu.set_menu_state(dg, "savefc", !s);
 		}
