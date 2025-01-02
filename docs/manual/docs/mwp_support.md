@@ -17,7 +17,7 @@
 * [irc.libera.chat #mwptools](ircs://irc.libera.chat/mwptools)
 * Most likely you will be requested to raise a [GitHub Issue](https://github.com/stronnag/mwptools/issues) for non-trivial cases or if there is an [Information requirement](#information-requirements). Hint, you can easily cut out the middle-man here.
 * Ensure you're running the latest `master` version.
-* See also [Information requirements](#information-requirements). Without this information, it is unlikely that any, non-trivial, support can be given.
+* See also [Information requirements](#information-requirements). Without this information, it is unlikely that any, non-trivial, support can be given. Please note that images are unlikely to be helpful compared to log files.
 
 ### "Supported" OS
 
