@@ -48,7 +48,7 @@
 
 * A step of steps to reproduce the issue
 * The actual and expected outcomes
-* Include {{ mwp }}'s console log, from your home directory, `mwp_stderr_YYYY-MM-DD.txt`, e.g. `$HOME/mwp_stderr_2021-12-28.txt`. **Do not delete** any information from this file; the contents are there for a purpose, or paste the terminal output into a file (or copy paste into the issue). The terminal output may include information from system components that are not the mwp log (e.g. GDK / GTK / Wayland messages).
+* Include {{ mwp }}'s console log, from your home directory (`Documents\mwp` for Windows), `mwp_stderr_YYYY-MM-DD.txt`, e.g. `$HOME/mwp_stderr_2021-12-28.txt`. **Do not delete** any information from this file; the contents are there for a purpose. Or paste the whole terminal output into a file (or copy / paste into the issue). The terminal output may include information from system components that are not the mwp log (e.g. GDK / GTK / Wayland messages).
 * If your issue concerns telemetry, include a sample of data that causes the issue. Raw logs may be captured with the `--raw-log` option.
 * If you're having a problem playing a blackbox log (or other flight log), include the problematic log.
 
