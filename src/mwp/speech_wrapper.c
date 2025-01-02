@@ -333,7 +333,7 @@ unsigned char get_speech_api_mask() {
 
 static int ss_init(char *v) { return 0; }
 
-static void ss_say(char *t) { mwp_log_message ("null speech say %s\n", t); }
+static void ss_say(char *t) { /*mwp_log_message ("null speech say %s\n", t);*/ }
 
 static void ss_close(void) {}
 

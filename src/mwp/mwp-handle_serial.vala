@@ -459,34 +459,37 @@ namespace Mwp {
 
 	void send_poll() {
         if(serstate == SERSTATE.POLLER && requests.length > tcycle) {
+			Msp.Cmds req = Msp.Cmds.NOOP;
 			bool skip = false;
-            var req=requests[tcycle];
-            lastm = nticks;
-            if (req == Msp.Cmds.ANALOG || req == Msp.Cmds.ANALOG2) {
-                if (lastm - last_an > MAVINTVL) {
-                    last_an = lastm;
-                    mavc = 0;
-                } else {
-					skip = true;
-                }
-            }
-			// only is not armed
-            if (req == Msp.Cmds.GPSSTATISTICS && armed == 1) {
-				skip = true;
-            }
-
-			if(req == Msp.Cmds.ADSB_VEHICLE_LIST) {
-				if(lastm - last_ga < MAVINTVL*5) {
-					skip = true;
-				} else {
-					last_ga = lastm;
+			do {
+				skip = false;
+				req=requests[tcycle];
+				lastm = nticks;
+				if (req == Msp.Cmds.ANALOG || req == Msp.Cmds.ANALOG2) {
+					if (lastm - last_an > MAVINTVL) {
+						last_an = lastm;
+						mavc = 0;
+					} else {
+						skip = true;
+					}
 				}
-			}
+				// only is not armed
+				if (req == Msp.Cmds.GPSSTATISTICS && armed == 1) {
+					skip = true;
+				}
 
-			if(skip){
-				tcycle = (tcycle + 1) % requests.length;
-                req = requests[tcycle];
-			}
+				if(req == Msp.Cmds.ADSB_VEHICLE_LIST) {
+					if(lastm - last_ga < MAVINTVL*5) {
+						skip = true;
+					} else {
+						last_ga = lastm;
+					}
+				}
+
+				if(skip){
+					tcycle = (tcycle + 1) % requests.length;
+				}
+			} while (skip);
 
 			if(req == Msp.Cmds.WP)
                 request_wp(0);
