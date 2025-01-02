@@ -384,7 +384,13 @@ namespace Mwp {
 		case Msp.Cmds.GEOZONE:
 			var cnt = gzr.zone_parse(raw, len);
 			if (cnt >= GeoZoneManager.MAXGZ) {
-				queue_gzvertex(0, 0);
+				var ngz = gzr.length();
+				MWPLog.message(":DBG: Read %u geozones\n", ngz);
+				if (ngz > 0) {
+					queue_gzvertex(0, 0);
+				} else {
+					reset_gzvertex(false);
+				}
 			} else {
 				queue_gzone(cnt);
 			}
@@ -397,29 +403,7 @@ namespace Mwp {
 			if (res) {
 				queue_gzvertex(nz, nv);
 			} else {
-				reset_poller();
-				res = gzr.validate();
-				if (res) {
-					MWPLog.message("Geozones validated\n");
-					if(gzone != null) {
-						gzone.remove();
-						gzone = null;
-						set_gzsave_state(false);
-					}
-					gzone = gzr.generate_overlay();
-					set_gzsave_state(true);
-					Idle.add(() => {
-							gzone.display();
-							gzedit.refresh(gzone);
-							if (Logger.is_logging) {
-								Logger.logstring("geozone", gzr.to_string());
-							}
-							return false;
-						});
-				} else {
-					gzr.reset();
-				}
-				handle_misc_startup();
+				reset_gzvertex(true);
 			}
 			break;
 
@@ -1763,6 +1747,35 @@ namespace Mwp {
 		zb[1] = (uint8) nv;
 		queue_cmd(Msp.Cmds.GEOZONE_VERTEX, zb, 2);
 		run_queue();
+	}
+
+
+	private void reset_gzvertex(bool has_vertex) {
+		reset_poller();
+		if (has_vertex) {
+			var res = gzr.validate();
+			if (res) {
+				MWPLog.message("Geozones validated\n");
+				if(gzone != null) {
+					gzone.remove();
+					gzone = null;
+					set_gzsave_state(false);
+				}
+				gzone = gzr.generate_overlay();
+				set_gzsave_state(true);
+				Idle.add(() => {
+						gzone.display();
+						gzedit.refresh(gzone);
+						if (Logger.is_logging) {
+							Logger.logstring("geozone", gzr.to_string());
+						}
+						return false;
+					});
+			} else {
+				gzr.reset();
+			}
+		}
+		handle_misc_startup();
 	}
 
 	public void request_fc_safehomes() {

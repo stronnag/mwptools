@@ -594,6 +594,8 @@ public class GeoZoneManager {
 		if(index < MAXGZ) {
 			if (nvertices > 0) {
 				append_zone(index, shape, ztype, minalt, maxalt, isAMSL, action, nvertices);
+			} else {
+				return -1;
 			}
 		} else {
 			return -1;
@@ -703,7 +705,12 @@ public class GeoZoneManager {
 
 	public int zone_parse(uint8[] raw, size_t len) {
 		if (len == ZONESIZE) {
-			return 1+zone_decode(raw[0:len]);
+			int nidx = zone_decode(raw[0:len]);
+			if (nidx == -1) {
+				return MAXGZ;
+			} else {
+				return 1+nidx;
+			}
 		}
 		return MAXGZ;
 	}

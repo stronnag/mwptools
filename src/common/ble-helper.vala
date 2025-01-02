@@ -26,7 +26,7 @@ public class BleSerial : Object {
 		gid = _g;
 	}
 
-	private int get_fd_for_characteristic(ObjectPath path, string callname, out uint16 mtu) {
+	private int get_fd_for_characteristic(ObjectPath? path, string callname, out uint16 mtu) {
 		int fd = -1;
 		mtu = 0;
 		UnixFDList fdl;
