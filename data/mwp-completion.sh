@@ -14,13 +14,13 @@ _mwp_complete()
       _mwp_files mission
       return 0
       ;;
-    '--cli-file')
-      _mwp_files mission
-      return 0
-      ;;
     '-s'|'-d'|'serial-device'|'--device')
       devs=$(ls /dev/ttyUSB* /dev/ttyACM* /dev/rfcomm* 2> /dev/null)
       COMPREPLY=( $(compgen -W "$devs" -- $cur) )
+      return 0
+      ;;
+    '-f'|'--flight-controller')
+      COMPREPLY=( $(compgen -W "mw mwnav bf cf inav auto" -- $cur) )
       return 0
       ;;
     '-t'|'--force-type')
@@ -66,7 +66,7 @@ _mwp_complete()
       return 0
       ;;
 
-    '-h'|'--help'|'-V'|'--version'|'build-id')
+    '-h'|'--help'|'-V'|'--version'|'build-id'|'debug-help')
       return 0
       ;;
   esac
@@ -74,36 +74,36 @@ _mwp_complete()
   case $cur in
     -*)
       OPTS="--help
-       	--mission
-	--serial-device
-	--device
+	--auto-connect
+	--build-id
+	--centre
+	--cli-file
 	--connect
-	--no-poll
-	--no-trail
-	--raw-log
+	--debug-flags
+	--debug-help
+	--device
 	--force-mag
 	--force-type
 	--force4
-	--centre-on-home
-	--debug-flags
-	--replay-mwp
-	--replay-bbox
-	--centre
-	--offline
-	--n-points
-	--mod-points
-	--rings
-	--voice-command
-	--version
-	--build-id
-	--really-really-run-as-root
 	--forward-to
-	--radar-device
 	--kmlfile
-	--relaxed-msp
+	--mission
+	--mod-points
+	--n-points
+	--no-poll
+	--no-trail
+	--offline
+	--radar-device
+	--raw-log
+	--really-really-run-as-root
 	--rebase
-	--cli-file"
-
+	--relaxed-msp
+	--replay-bbox
+	--replay-mwp
+	--rings
+	--serial-device
+	--version
+	--voice-command"
       COMPREPLY=( $(compgen -W "${OPTS[*]}" -- $cur) )
       return 0
       ;;
@@ -139,7 +139,7 @@ _mwp_files()
   fi
   case $wanted in
     'mission')
-      _filedir '@(json|mission|txt)'
+      _filedir '@(json|mission)'
       ;;
     'TXT')
       _filedir '@(txt|TXT|bbl|BBL)'
