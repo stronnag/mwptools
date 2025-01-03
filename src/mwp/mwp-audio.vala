@@ -23,7 +23,9 @@ namespace Audio {
             var fn = MWPUtils.find_conf_file(sfn);
             if(fn != null) {
 				mfn = Gtk.MediaFile.for_filename(fn);
-				mfn.play();
+				if (mfn != null) {
+					mfn.play();
+				}
 			}
 		}
 	}
