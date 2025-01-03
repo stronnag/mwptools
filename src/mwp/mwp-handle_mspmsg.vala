@@ -104,8 +104,7 @@ namespace Mwp {
 
 		if(errs == true) {
             lastrx = lastok = nticks;
-            MWPLog.message("Msp Error: %s[0x%x,%d,%db] %s\n", cmd.to_string(), cmd, cmd, len,
-                           (cmd == Msp.Cmds.COMMON_SETTING) ? (string)lastmsg.data : "");
+            MWPLog.message("Msp Error: %s [%db] %s\n", cmd.format(), len, (cmd == Msp.Cmds.COMMON_SETTING) ? (string)lastmsg.data : "");
             switch(cmd) {
 			case Msp.Cmds.ADSB_VEHICLE_LIST:
 				clear_poller_item(Msp.Cmds.ADSB_VEHICLE_LIST);
