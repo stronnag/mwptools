@@ -505,11 +505,13 @@ namespace Mwp {
 		if(msp.available) {
 			MWPLog.message(":DBG: Reset Poller\n");
 			if(starttasks == 0) {
-				lastok = nticks;
-				if(serstate != SERSTATE.NONE && serstate != SERSTATE.TELEM) {
-					if(nopoll == false) // FIXNOPOLL
+					if(serstate != SERSTATE.NONE && serstate != SERSTATE.TELEM) {
+					if(nopoll == false) { // FIXNOPOLL
+						lastok = lastrx = last_gps = nticks;
+						tcycle = 0;
 						serstate = SERSTATE.POLLER;
-					msg_poller();
+						msg_poller();
+					}
 				}
 			}
 		}

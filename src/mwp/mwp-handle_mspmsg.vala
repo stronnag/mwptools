@@ -1797,6 +1797,7 @@ namespace Mwp {
 				queue_cmd(msp_get_status,null,0);
 				run_queue();
 			} else if (SAFEHOMES in starttasks) {
+				sh_disp = true;
 				starttasks -= StartupTasks.SAFEHOMES;
 				last_safehome = Safehome.MAXHOMES;
 				uint8 shid = 0;
