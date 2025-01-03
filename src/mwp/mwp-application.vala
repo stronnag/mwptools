@@ -70,6 +70,7 @@ namespace Mwp {
 		{ "cli-file", 0, 0, OptionArg.STRING, null, "CLI File", null},
 		{ "connect", 'c', 0, OptionArg.NONE, null, "connect to first device (does not set auto flag)", null},
 		{ "debug-flags", 0, 0, OptionArg.INT, null, "Debug flags (mask)", null},
+		{ "debug-help", 0, 0, OptionArg.NONE, null, "list debug flag values", null},
 		{ "device", 'd', 0, OptionArg.STRING, null, "Serial device", "device-name"},
 		{ "dont-maximise", 0, 0, OptionArg.NONE, null, "Legacy, ignored", null},
 		{ "force-mag", 0, 0, OptionArg.NONE, null, "force mag for vehicle direction", null},
@@ -394,6 +395,13 @@ namespace Mwp {
 
 			if (o.contains("build-id")) {
 				stdout.printf("%s\n", MwpVers.get_build());
+				return 0;
+			}
+
+			if (o.contains("debug-help")) {
+				foreach (FlagsValue value in ((FlagsClass) typeof (Mwp.DEBUG_FLAGS).class_ref()).values) {
+					stderr.printf ("%5u : %s\n", value.value, value.value_nick);
+				}
 				return 0;
 			}
 			return -1;

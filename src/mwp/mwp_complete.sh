@@ -66,7 +66,7 @@ _mwp_complete()
       return 0
       ;;
 
-    '-h'|'--help'|'-V'|'--version'|'build-id')
+    '-h'|'--help'|'-V'|'--version'|'build-id'|'debug-help')
       return 0
       ;;
   esac
@@ -74,45 +74,36 @@ _mwp_complete()
   case $cur in
     -*)
       OPTS="--help
-       	--mission
-	--serial-device
-	--device
-	--flight-controller
-	--connect
 	--auto-connect
-	--no-poll
-	--no-trail
-	--raw-log
-	--ignore-sizing
-	--full-screen
-	--ignore-rotation
-	--dont-maximise
+	--build-id
+	--centre
+	--cli-file
+	--connect
+	--debug-flags
+	--debug-help
+	--device
 	--force-mag
-	--force-nav
-	--layout
 	--force-type
 	--force4
-	--ignore-3dr
-	--centre-on-home
-	--debug-flags
-	--replay-mwp
-	--replay-bbox
-	--centre
-	--offline
-	--n-points
-	--mod-points
-	--rings
-	--voice-command
-	--version
-	--build-id
-	--really-really-run-as-root
 	--forward-to
-	--perma-warn
-	--radar-device
-	--fsmenu
 	--kmlfile
-	--relaxed-msp"
-
+	--mission
+	--mod-points
+	--n-points
+	--no-poll
+	--no-trail
+	--offline
+	--radar-device
+	--raw-log
+	--really-really-run-as-root
+	--rebase
+	--relaxed-msp
+	--replay-bbox
+	--replay-mwp
+	--rings
+	--serial-device
+	--version
+	--voice-command"
       COMPREPLY=( $(compgen -W "${OPTS[*]}" -- $cur) )
       return 0
       ;;

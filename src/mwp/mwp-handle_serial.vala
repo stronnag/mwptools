@@ -312,12 +312,15 @@ namespace Mwp {
 		}
     }
 
-     void  run_queue() {
+     void run_queue() {
         if((replayer & (Player.BBOX|Player.OTX|Player.RAW)) != 0) {
             mq.clear();
         } else if(msp.available && !mq.is_empty()) {
 			lastmsg = mq.pop_head();
 			msp.send_command((uint16)lastmsg.cmd, lastmsg.data, lastmsg.len);
+			if(Mwp.DEBUG_FLAGS.MSP in Mwp.debug_flags) {
+				MWPLog.message(":DBG: MSP send: %s\n", lastmsg.cmd.format());
+			}
         }
     }
 
@@ -365,7 +368,7 @@ namespace Mwp {
 								if (lastmsg.cmd != Msp.Cmds.INVALID) {
 									telstats.toc++;
 									string res;
-                                    res = lastmsg.cmd.to_string();
+                                    res = lastmsg.cmd.format();
 									if(nopoll == false)
 										MWPLog.message("MSP Timeout %u %u %u (%s %s)\n",
 													   nticks, lastok, lastrx, res, serstate.to_string());

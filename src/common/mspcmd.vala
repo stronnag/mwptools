@@ -47,9 +47,9 @@ namespace Msp {
       UNDEFINED = 19,
       LAUNCH = 20,
       AUTOTUNE = 21,
-  }
+	}
 
-  public enum Cmds {
+	public enum Cmds {
         NOOP = 0,
         API_VERSION=1,
         FC_VARIANT=2,
@@ -146,11 +146,13 @@ namespace Msp {
 		FW_APPROACH = 0x204A,
 		SET_FW_APPROACH = 0x204B,
 
-		PRIV_TEXT_GEOZ = 0x2ffe,
-		PRIV_TEXT_EOM = 0x2ffd,
-		PRIV_TEXT_SAFEH = 0x2ffc,
-
 		ADSB_VEHICLE_LIST = 0x2090,
+
+		PRIV_TEXT = 0xef00,
+        INFO_WP = 0xeff3,
+		PRIV_TEXT_GEOZ = 0xeffe,
+		PRIV_TEXT_EOM = 0xeffd,
+		PRIV_TEXT_SAFEH = 0xeffc,
 
         LTM_BASE  = 0x10000,
         TS_FRAME = (LTM_BASE + 'S'),
@@ -184,8 +186,34 @@ namespace Msp {
         MAVLINK_MSG_SCALED_PRESSURE = (MAV_BASE+29),
         MAVLINK_MSG_BATTERY_STATUS = (MAV_BASE+147),
         MAVLINK_MSG_STATUSTEXT = (MAV_BASE+253),
-        INFO_WP = 0x30000,
-        INVALID = 0xfffff
+
+        INVALID = 0xfffff;
+
+		public string format() {
+			int n = 9;
+			uint id = this;
+			var sb = new StringBuilder();
+			var a = this.to_string();
+			if(this < Msp.Cmds.MSPV2) {
+				sb.append("MSP");
+			} else if (this < PRIV_TEXT) {
+				sb.append("MSP2");
+			} else if (this < LTM_BASE) {
+				sb.append("Private");
+			} else if (this < MAV_BASE) {
+				n++;
+				id -= LTM_BASE;
+				sb.append("LTM");
+			} else {
+				n += 8;
+				id -= MAV_BASE;
+				sb.append("Navlink");
+			}
+			sb.append(":");
+			sb.append(a[n:]);
+			sb.append_printf(" 0x%x/%u", id, id);
+			return sb.str;
+		}
     }
 
     public enum Sensors {
