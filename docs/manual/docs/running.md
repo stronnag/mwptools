@@ -31,7 +31,7 @@ The {{ mwp }}  map and map symbols are 'touch-aware'.
 ```
 $ mwp --help
 Usage:
-  mwp [OPTION…]
+  mwp.exe [OPTION…]
 
 Help Options:
   -h, --help                          Show help options
@@ -46,6 +46,7 @@ Application Options:
   --cli-file                          CLI File
   -c, --connect                       connect to first device (does not set auto flag)
   --debug-flags                       Debug flags (mask)
+  --debug-help                        list debug flag values
   -d, --device=device-name            Serial device
   --dont-maximise                     Legacy, ignored
   --force-mag                         force mag for vehicle direction
