@@ -295,6 +295,9 @@ namespace Cli {
 
 		if(Mwp.llstr != null) {
 			LLparse.llparse(Mwp.llstr, ref Mwp.clat, ref Mwp.clon, ref zm);
+			if (zm == -1) {
+				zm =  Mwp.conf.zoom;
+			}
 			MapUtils.centre_on(Mwp.clat, Mwp.clon, zm);
 			Mwp.set_pos_label(Mwp.clat, Mwp.clon);
 		}
