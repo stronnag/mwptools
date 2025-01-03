@@ -725,6 +725,7 @@ namespace Mwp {
 		}
 
 		private void test_audio() {
+			Audio.play_alarm_sound(MWPAlert.GENERAL);
 			TTS.say(TTS.Vox.AUDIO_TEST);
 		}
 

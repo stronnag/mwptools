@@ -47,7 +47,7 @@ namespace VideoMan {
 								var h = Environment.get_home_dir();
 								uri = h + uri[1:uri.length];
 							}
-							if (!uri.contains("""://""")) {
+							if (!uri.contains("://")) {
 								try {
 									uri = Gst.filename_to_uri(uri);
 								} catch {}

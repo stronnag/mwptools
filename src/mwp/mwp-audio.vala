@@ -17,13 +17,13 @@
 
 namespace Audio {
 	uint spktid = 0;
-
+	internal Gtk.MediaFile mfn;
 	void play_alarm_sound(string sfn) {
 		if(Mwp.conf.beep) {
             var fn = MWPUtils.find_conf_file(sfn);
             if(fn != null) {
-				var m = Gtk.MediaFile.for_filename(fn);
-				m.play();
+				mfn = Gtk.MediaFile.for_filename(fn);
+				mfn.play();
 			}
 		}
 	}
