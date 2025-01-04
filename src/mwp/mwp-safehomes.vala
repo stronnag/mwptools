@@ -367,7 +367,7 @@ public class  SafeHomeDialog : Adw.Window {
 	}
 
 	private void menu_armed_state(bool s) {
-		if(!Mwp.conf.armed_red_pill) {
+		if(Mwp.conf.armed_msp_placebo) {
 			MwpMenu.set_menu_state(dg, "loadfc", !s);
 			MwpMenu.set_menu_state(dg, "savefc", !s);
 		}

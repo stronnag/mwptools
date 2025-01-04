@@ -1790,7 +1790,7 @@ namespace Mwp {
 	}
 
 	public void handle_misc_startup() {
-		if (armed == 0 || conf.armed_red_pill) {
+		if (armed == 0 || conf.armed_msp_placebo == false) {
 			if (STATUS in starttasks) {
 				MWPLog.message("Inital starttask %x\n", starttasks);
 				starttasks -= StartupTasks.STATUS;

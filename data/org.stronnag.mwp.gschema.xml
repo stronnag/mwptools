@@ -664,7 +664,7 @@
       </description>
     </key>
 
-    <key name="armed-red-pill" type="b">
+    <key name="armed-msp-placebo" type="b">
       <summary>Antidote to armed menus placebo</summary>
       <default>false</default>
       <description>Whether to suppress desensitising of MSP action items when armed.</description>
