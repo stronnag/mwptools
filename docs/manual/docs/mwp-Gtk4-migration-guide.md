@@ -29,6 +29,11 @@ The following are minimum versions.
 
 For replaying blackbox log, [bbl2kml](https://github.com/stronnag/bbl2kml) 1.0.24 or later is rquired.
 
+### Unsupported OS
+
+* MacOS (Ventura or later), requires `homebrew`
+* Windows (10 or later), requires `MSys2`
+
 ## GSettings /DConf schema
 
 The gsettings / dconf schema is now `/org/stronnag/mwp/`. The keys are (mainly) the same as for legacy mwp/gtk3 and may be migrated:
@@ -238,7 +243,7 @@ Requires mwptools 2024.11.20 or later.
 | ---- | ------- | ----------- | ------ |
 | adjust-tz | Adjust FC's TZ (and DST) | mwp should adjust FC's TZ (and DST) based on the local clock | true |
 | ah-invert-roll | Invert AH roll | Set to true to invert roll in the AH (so it becomes an attitude indicator) | false |
-| armed-red-pill | Antidote to armed menus placebo | Whether suppress desensitising of MSP action items when armed. | false |
+| armed-msp-placebo | Antidote to armed menus placebo | Whether to suppress desensitising of MSP action items when armed. | false |
 | arming-speak | speak arming states | whether to reporting arming state by audio | false |
 | atexit | Something that is executed at exit | e.g. `gsettings set org.gnome.settings-daemon.plugins.power idle-dim true`. See also `manage-power` (and consider setting `manage-power` to `true` instead). | "" |
 | atstart | Something that is executed at startup | e.g. `gsettings set org.gnome.settings-daemon.plugins.power idle-dim false`. See also `manage-power` (and consider setting to true). | "" |
