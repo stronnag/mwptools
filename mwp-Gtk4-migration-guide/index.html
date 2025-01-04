@@ -374,6 +374,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#unsupported-os" class="md-nav__link">
+    <span class="md-ellipsis">
+      Unsupported OS
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1427,6 +1436,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#unsupported-os" class="md-nav__link">
+    <span class="md-ellipsis">
+      Unsupported OS
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1667,6 +1685,11 @@
 <li>libsecret-1</li>
 </ul>
 <p>For replaying blackbox log, <a href="https://github.com/stronnag/bbl2kml">bbl2kml</a> 1.0.24 or later is rquired.</p>
+<h3 id="unsupported-os">Unsupported OS<a class="headerlink" href="#unsupported-os" title="Permanent link">#</a></h3>
+<ul>
+<li>MacOS (Ventura or later), requires <code>homebrew</code></li>
+<li>Windows (10 or later), requires <code>MSys2</code></li>
+</ul>
 <h2 id="gsettings-dconf-schema">GSettings /DConf schema<a class="headerlink" href="#gsettings-dconf-schema" title="Permanent link">#</a></h2>
 <p>The gsettings / dconf schema is now <code>/org/stronnag/mwp/</code>. The keys are (mainly) the same as for legacy mwp/gtk3 and may be migrated:</p>
 <div class="highlight"><pre><span></span><code>dconf dump /org/mwptools/planner/ | dconf load /org/stronnag/mwp/
@@ -1872,9 +1895,9 @@ pipx install meson
 <td>false</td>
 </tr>
 <tr>
-<td>armed-red-pill</td>
+<td>armed-msp-placebo</td>
 <td>Antidote to armed menus placebo</td>
-<td>Whether suppress desensitising of MSP action items when armed.</td>
+<td>Whether to suppress desensitising of MSP action items when armed.</td>
 <td>false</td>
 </tr>
 <tr>
