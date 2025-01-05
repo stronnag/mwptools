@@ -1511,6 +1511,10 @@ public class MWSerial : Object {
 								needed = 1;
 								cmd = Msp.Cmds.Tx_FRAME;
 								break;
+							case 'w':
+								needed = 6;
+								cmd = Msp.Cmds.Tw_FRAME;
+								break;
 							default:
 								error_counter("LTM/Proto");
 								if(debug) {

@@ -508,6 +508,30 @@ namespace Mwp {
 			//cleanup_replay(); // FIXME
 			break;
 
+		case Msp.Cmds.Tw_FRAME:
+			/* 3 * int16 cm/s x,y,z */
+			if(ser.is_main) {
+				uint8* rp;
+				int16 iw_x, iw_y;
+				rp = SEDE.deserialise_i16(raw, out iw_x);
+				SEDE.deserialise_i16(rp, out iw_y);
+				double w_x = (double)iw_x;
+				double w_y = (double)iw_y;
+				var w_dirn = Math.atan2(w_y, w_x) * (180.0 / Math.PI);
+				if (w_dirn < 0) {
+					w_dirn += 360;
+				}
+				var w_ms = Math.sqrt(w_x*w_x + w_y*w_y) / 100.0;
+				var w_angle = (w_dirn + 180) % 360;
+				var w_diff = ser.td.gps.cog - w_angle;
+				if (w_diff < 0) {
+					w_diff += 360;
+				}
+				var vas = ser.td.gps.gspeed - w_ms * Math.cos(w_diff*Math.PI/180.0);
+				MWPLog.message(":DBG: Vas %.1f (%.1fm/s %.0f)\n", vas, w_ms, w_dirn);
+			}
+			break;
+
 		default:
 			handled = false;
 			break;
