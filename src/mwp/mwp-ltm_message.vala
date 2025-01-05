@@ -515,20 +515,11 @@ namespace Mwp {
 				int16 iw_x, iw_y;
 				rp = SEDE.deserialise_i16(raw, out iw_x);
 				SEDE.deserialise_i16(rp, out iw_y);
-				double w_x = (double)iw_x;
-				double w_y = (double)iw_y;
-				var w_dirn = Math.atan2(w_y, w_x) * (180.0 / Math.PI);
-				if (w_dirn < 0) {
-					w_dirn += 360;
+				if (iw_x != ser.td.wind.w_x ||  iw_y != ser.td.wind.w_y) {
+					ser.td.wind.w_x = iw_x;
+					ser.td.wind.w_y = iw_y;
+					WindEstimate.update(ser.td);
 				}
-				var w_ms = Math.sqrt(w_x*w_x + w_y*w_y) / 100.0;
-				var w_angle = (w_dirn + 180) % 360;
-				var w_diff = ser.td.gps.cog - w_angle;
-				if (w_diff < 0) {
-					w_diff += 360;
-				}
-				var vas = ser.td.gps.gspeed - w_ms * Math.cos(w_diff*Math.PI/180.0);
-				MWPLog.message(":DBG: Vas %.1f (%.1fm/s %.0f)\n", vas, w_ms, w_dirn);
 			}
 			break;
 

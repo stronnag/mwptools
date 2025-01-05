@@ -60,6 +60,7 @@ mwpsrcs = files('mwp-about.vala', 'mwp-ah_widget.vala',
                 'mwp-gzmisc.vala',
                 'mwp-idler.vala',
                 'speech_wrapper.c',
+                'mwp-windest.vala',
                )
 
 mwpdeps = [deps,

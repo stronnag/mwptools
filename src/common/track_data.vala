@@ -25,6 +25,7 @@ public enum TrackDataSet {
 	POWER,
 	RSSI,
 	STATE,
+	WIND,
 }
 
 public struct GPSData {
@@ -88,6 +89,17 @@ public struct AttiData {
 	}
 }
 
+public struct WindData {
+	public int16 w_x ;
+	public int16 w_y ;
+	public int16 w_z ;
+	public void annul() {
+		w_x = 0;
+		w_y = 0;
+		w_z = 0;
+	}
+}
+
 public struct  PowerData {
 	public float volts ;
 	public int mah ;
@@ -126,5 +138,6 @@ public struct TrackData {
 	public AltData alt;
 	public AttiData atti;
 	public StateData state;
+	public WindData wind;
 	public Object r;
 }
