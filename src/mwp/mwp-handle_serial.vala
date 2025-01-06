@@ -520,7 +520,7 @@ namespace Mwp {
 	public void telem_init(Msp.Cmds cmd) {
 		var mtype= (cmd >= Msp.Cmds.MAV_BASE) ? "MAVLink" : "LTM";
 		var mstr = "%s telemetry".printf(mtype);
-		MWPLog.message("%s\n", mstr);
+		MWPLog.message("Init %s\n", mstr);
 		if (conf.manage_power && inhibit_cookie == 0) {
 			inhibit_cookie = MwpIdle.inhibit();
 			MWPLog.message("Managing screen idle and suspend (%x)\n", inhibit_cookie);
@@ -593,8 +593,10 @@ namespace Mwp {
 		if(telem) {
 			if(last_tm == 0) {
 				telem_init(cmd);
+				last_tm = 2;
 			} else {
-				last_tm = nticks;
+				if (nticks > 0)
+					last_tm = nticks;
 			}
 		}
 		if(!handled) {

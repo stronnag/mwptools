@@ -90,10 +90,12 @@ public struct AttiData {
 }
 
 public struct WindData {
+	public bool has_wind;
 	public int16 w_x ;
 	public int16 w_y ;
 	public int16 w_z ;
 	public void annul() {
+		has_wind = false;
 		w_x = 0;
 		w_y = 0;
 		w_z = 0;
@@ -140,4 +142,16 @@ public struct TrackData {
 	public StateData state;
 	public WindData wind;
 	public Object r;
+
+	public void annul_all() {
+		gps.annul();
+		origin.annul();
+		comp.annul();
+		power.annul();
+		rssi.annul();
+		alt.annul();
+		atti.annul();
+		state.annul();
+		wind.annul();
+	}
 }

@@ -24,7 +24,8 @@ namespace Panel {
 		AHI,
 		RSSI,
 		VOLTS,
-		VARIO
+		VARIO,
+		WIND,
 	}
 
 	View status;
@@ -35,6 +36,7 @@ namespace Panel {
 	RSSI.View rssiv;
 	Voltage.View powerv;
 	Vario.View vario;
+	WindEstimate.View wind;
 
 	public class Box: Gtk.Frame {
 		private Gtk.Paned v;    // master paned
@@ -249,6 +251,11 @@ namespace Panel {
 					vario.update(stuff);
 				}
 				break;
+			case Panel.View.WIND:
+				if(wind != null) {
+					wind.update(stuff);
+				}
+				break;
 			default:
 				break;
 			}
@@ -287,6 +294,12 @@ namespace Panel {
 				vario.update(0);
 				w = vario;
 				Panel.status |= Panel.View.VARIO;
+				break;
+			case "wind":
+				wind= new WindEstimate.View();
+				wind.update(0);
+				w = wind;
+				Panel.status |= Panel.View.WIND;
 				break;
 			}
 			if(w != null) {

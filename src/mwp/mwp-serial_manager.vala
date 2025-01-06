@@ -27,14 +27,8 @@ namespace Mwp  {
 
 	public void clear_sidebar(MWSerial s) {
 		if(s != null) {
+			s.td.annul_all();
 			s.td = {};
-			s.td.gps.annul();
-			s.td.atti.annul();
-			s.td.alt.annul();
-			s.td.power.annul();
-			s.td.rssi.annul();
-			s.td.comp.annul();
-			s.td.origin.annul();
 		}
 		RSSI.set_title(RSSI.Title.RSSI);
 		Battery.bat_annul();

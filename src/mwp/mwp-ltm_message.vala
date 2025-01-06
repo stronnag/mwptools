@@ -131,12 +131,15 @@ namespace Mwp {
 
 
 			if(Math.fabs(cse - ser.td.gps.cog) > 1) {
+				ser.td.gps.cog = cse;
 				if (ser.is_main) {
 					Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.COG);
+					if (ser.td.wind.has_wind) {
+						Mwp.panelbox.update(Panel.View.WIND, WindEstimate.Update.ANY);
+					}
 				} else {
 					TelemTracker.ttrk.update(ser, TelemTracker.Fields.CSE);
 				}
-				ser.td.gps.cog = cse;
 			}
 
 			if(fix > 0) {
@@ -516,9 +519,10 @@ namespace Mwp {
 				rp = SEDE.deserialise_i16(raw, out iw_x);
 				SEDE.deserialise_i16(rp, out iw_y);
 				if (iw_x != ser.td.wind.w_x ||  iw_y != ser.td.wind.w_y) {
+					ser.td.wind.has_wind = true;
 					ser.td.wind.w_x = iw_x;
 					ser.td.wind.w_y = iw_y;
-					WindEstimate.update(ser.td);
+					Mwp.panelbox.update(Panel.View.WIND, WindEstimate.Update.ANY);
 				}
 			}
 			break;

@@ -29,7 +29,8 @@ blpfiles = [
   'shedit.blp',
   'survey.blp',
   'surveymenu.blp',
-  'gps_stats_dialog.blp'
+  'gps_stats_dialog.blp',
+  'vas.blp',
 ]
 
 blueprints_ui = []
