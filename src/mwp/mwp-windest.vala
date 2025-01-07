@@ -72,9 +72,14 @@ namespace WindEstimate {
 			if((Mwp.DEBUG_FLAGS.ADHOC in Mwp.debug_flags)) {
 				MWPLog.message(":DBG: Vas %.1f (%.1fm/s %.0f°)\n", vas, w_ms, w_dirn);
 			}
-			vasl.label = "<span size='150%%'>%5.1f</span><span size='x-small'>m/s</span>".printf(vas);
+
+			var sp = Units.speed(vas);
+			var su = Units.speed_units();
+
+			vasl.label = "<span size='150%%'>%5.1f</span><span size='x-small'>%s</span>".printf(sp, su);
 			wdirnl.label = "<span size='150%%'> %03d°(%s)</span>".printf((int)w_dirn, dirs[ndir]);
-			wspdl.label = "<span size='150%%'>%5.1f</span><span size='x-small'>m/s</span>".printf(w_ms);
+			sp = Units.speed(w_ms);
+			wspdl.label = "<span size='150%%'>%5.1f</span><span size='x-small'>%s</span>".printf(sp, su);
 			rotate(w_dirn);
 		}
 
