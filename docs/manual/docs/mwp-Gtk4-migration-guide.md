@@ -119,16 +119,18 @@ The available panel widgets are named as:
 | `flight` | "Flight View" Position / Velocity / Satellites etc, |
 | `volts` | Battery information |
 | `vario` | Vario indicator |
+| `wind` | Wind Estimator (BBL replay only) |
 
 No other legacy widgets have been migrated.
 
 So using the following `~/.config/mwp/panel.conf`
 
 ```
-# default + vario widgets
-ahi,0,1,100
+# default + vario + wind widgets
+ahi, 0, 1, 100
 vario,0,2
-rssi, 1, 0
+rssi, 0, 0
+wind, 1, 0
 dirn, 1, 1
 flight, 2, 0
 volts, 3, 0

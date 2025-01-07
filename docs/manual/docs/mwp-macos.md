@@ -92,7 +92,7 @@ ninja -C _build install
 
 ## Other notes
 
-macOS appears not measure text width in the same was a other OS. A "fudge factor" is included that works on my "Ventura" VM. The user set there own value with the environment variable `MWP_MAC_FACTOR', set to a value greater than 100. Try with values around 125.
+macOS appears not measure text width in the same was a other OS. A "fudge factor" is included that works on my MacOS VMs. The user set there own value with the environment variable `MWP_MAC_FACTOR', set to a value greater than 100. Try with values around 125.
 
 e.g.
 ```
