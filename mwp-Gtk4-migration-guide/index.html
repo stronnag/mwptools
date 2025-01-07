@@ -1785,14 +1785,19 @@ volts, 3, 0
 <td><code>vario</code></td>
 <td>Vario indicator</td>
 </tr>
+<tr>
+<td><code>wind</code></td>
+<td>Wind Estimator (BBL replay only)</td>
+</tr>
 </tbody>
 </table>
 <p>No other legacy widgets have been migrated.</p>
 <p>So using the following <code>~/.config/mwp/panel.conf</code></p>
-<div class="highlight"><pre><span></span><code># default + vario widgets
-ahi,0,1,100
+<div class="highlight"><pre><span></span><code># default + vario + wind widgets
+ahi, 0, 1, 100
 vario,0,2
-rssi, 1, 0
+rssi, 0, 0
+wind, 1, 0
 dirn, 1, 1
 flight, 2, 0
 volts, 3, 0
