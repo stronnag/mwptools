@@ -125,10 +125,10 @@ _mwp_files()
   then
     case $wanted in
       'mission')
-	path=$(dequote $(gsettings get  org.mwptools.planner mission-path))
+	path=$(dequote $(gsettings get org.stronnag.mwp mission-path))
 	;;
       'log'|'TXT')
-	path=$(dequote $(gsettings get  org.mwptools.planner log-path))
+	path=$(dequote $(gsettings get org.stronnag.mwp log-path))
 	;;
     esac
     if [ -n "$path" ] ; then
