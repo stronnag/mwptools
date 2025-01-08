@@ -73,6 +73,8 @@ install_data (
   install_dir: join_paths(get_option('datadir'), 'glib-2.0', 'schemas'),
 )
 
+install_data('org.stronnag.mwp.desktop', install_dir : join_paths(get_option('datadir') , 'applications'))
+
 bcd =  dependency('bash-completion', required: false)
 if bcd.found()
   bcd_dir = bcd.get_variable(pkgconfig : 'completionsdir')
