@@ -80,9 +80,9 @@ namespace Mwp {
 		MWPLog.message(sb.str);
 
 		var vstr = check_virtual(os);
-		if(vstr == null || vstr.length == 0)
-			vstr = "none";
-		MWPLog.message("hypervisor: %s\n", vstr);
+		if(vstr != null && vstr.length >  0) {
+			MWPLog.message("hypervisor: %s\n", vstr);
+		}
 	}
 
 	public void get_gl_info() {
@@ -155,4 +155,129 @@ namespace Mwp {
 			}
 		}
 	}
+
+	private static string? check_virtual(string? os) {
+		string hyper = null;
+#if UNIX
+		string []cmd = {};
+		switch (os) {
+		case "Linux":
+			cmd = {"lscpu"};
+			break;
+		case "FreeBSD":
+			cmd = {"sysctl", "-n", "kern.vm_guest"};
+			break;
+		case "Darwin":
+			cmd = {"sysctl", "-n", "kern.hv_vmm_present"};
+			break;
+		}
+
+		if(cmd.length > 0) {
+			string strout="";
+			size_t len;
+			var subp = new ProcessLauncher();
+			if (subp.run_argv(cmd, ProcessLaunch.STDOUT)) {
+				var ioc = subp.get_stdout_iochan();
+				subp.complete.connect(() => {
+						try { ioc.shutdown(false); } catch {}
+					});
+				try {
+					var sts = ioc.read_to_end(out strout, out len);
+					if(sts == IOStatus.NORMAL && strout.length > 0) {
+						if (cmd[0] == "lscpu") {
+							var parts = strout.split("\n");
+							foreach(var a in parts) {
+								if (a.has_prefix("Hypervisor vendor:")) {
+									hyper = a[20:].strip();
+									break;
+								}
+							}
+						} else {
+							strout = strout.chomp();
+							hyper = strout;
+						}
+					}
+				} catch (Error e) {}
+			}
+			return hyper;
+        }
+
+		var subp = new ProcessLauncher();
+		if (subp.run_argv({"dmesg"}, ProcessLaunch.STDOUT)) {
+			var ioc = subp.get_stdout_iochan();
+			string line;
+			size_t length = -1;
+			subp.complete.connect(() => {
+					try { ioc.shutdown(false); } catch {}
+				});
+			for(;;) {
+				try {
+					var sts = ioc.read_line (out line, out length, null);
+					if (sts != IOStatus.NORMAL || line == null) {
+						break;
+					}
+					line = line.chomp();
+					var index = line.index_of("Hypervisor");
+					if(index != -1) {
+						hyper = line.substring(index);
+						break;
+					}
+				} catch (Error e) {
+					break;
+				}
+			}
+		}
+#else
+		hyper = win_get_hyper();
+#endif
+		return hyper;
+	}
+
+#if WINDOWS
+	string? run_vm_checker(string[] args) {
+		string str=null;
+		var p = new ProcessLauncher();
+		var ok = p.run_argv(args, ProcessLaunch.STDOUT);
+		if (ok) {
+			var ep = p.get_stdout_iochan();
+			try{
+				size_t slen;
+				ep.read_to_end(out str, out slen);
+			} catch {}
+		}
+		return str;
+	}
+	string? win_get_hyper() {
+		string hyper = null;
+		var manu = run_vm_checker({"WMIC", "COMPUTERSYSTEM", "GET" ,"MANUFACTURER"});
+		if(manu != null) {
+			if (manu.contains("QEMU") ||
+				manu.contains("Xen") ||
+				manu.contains("innotek") ||
+				manu.contains("VMware")) {
+				var parts = manu.split("\n");
+				if (parts.length > 1) {
+					hyper = parts[1];
+				}
+			}
+		}
+		if (hyper == null) {
+			var model = run_vm_checker({"WMIC", "COMPUTERSYSTEM", "GET", "MODEL"});
+			if (model != null) {
+				if(model.contains("Standard PC")) {
+					hyper = "KVM";
+				} else if(model.contains("HVM domU")) {
+					hyper = "Xen";
+				} else if(model.contains("Virtual Machine")) {
+					hyper = "HyperV";
+				} else if(model.contains("Virtual Box")) {
+					hyper = "VirtualBox";
+				} else if(model.contains("VMware")) {
+					hyper = "VMWare";
+				}
+			}
+		}
+		return hyper;
+	}
+#endif
 }

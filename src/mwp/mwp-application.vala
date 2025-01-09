@@ -183,68 +183,6 @@ namespace Mwp {
 		return v;
 	}
 
-	private static string? check_virtual(string? os) {
-		string hyper = null;
-#if UNIX
-		string []cmd = {};
-		switch (os) {
-		case "Linux":
-			cmd = {"systemd-detect-virt"};
-			break;
-		case "FreeBSD":
-			cmd = {"sysctl", "-n", "kern.vm_guest"};
-			break;
-		}
-
-		if(cmd.length > 0) {
-			string strout="";
-			size_t len;
-			var subp = new ProcessLauncher();
-			if (subp.run_argv(cmd, ProcessLaunch.STDOUT)) {
-				var ioc = subp.get_stdout_iochan();
-				subp.complete.connect(() => {
-						try { ioc.shutdown(false); } catch {}
-					});
-				try {
-					var sts = ioc.read_to_end(out strout, out len);
-					if(sts == IOStatus.NORMAL && strout.length > 0) {
-						strout = strout.chomp();
-                        hyper = strout;
-					}
-				} catch (Error e) {}
-			}
-			return hyper;
-        }
-
-		var subp = new ProcessLauncher();
-		if (subp.run_argv({"dmesg"}, ProcessLaunch.STDOUT)) {
-			var ioc = subp.get_stdout_iochan();
-			string line;
-			size_t length = -1;
-			subp.complete.connect(() => {
-					try { ioc.shutdown(false); } catch {}
-				});
-			for(;;) {
-				try {
-					var sts = ioc.read_line (out line, out length, null);
-					if (sts != IOStatus.NORMAL || line == null) {
-						break;
-					}
-					line = line.chomp();
-					var index = line.index_of("Hypervisor");
-					if(index != -1) {
-						hyper = line.substring(index);
-						break;
-					}
-				} catch (Error e) {
-					break;
-				}
-			}
-		}
-#endif
-		return hyper;
-	}
-
 	private static string? read_env_args() {
 		var s1 = read_cmd_opts();
 		var s2 = Environment.get_variable("MWP_ARGS");
