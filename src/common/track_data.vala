@@ -141,7 +141,7 @@ public struct TrackData {
 	public AttiData atti;
 	public StateData state;
 	public WindData wind;
-	public Object r;
+	public Object r; // Telemetry private "raw" data
 
 	public void annul_all() {
 		gps.annul();

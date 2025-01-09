@@ -60,6 +60,7 @@ namespace Mwp {
 		MWPLog.message("Gtk: %d.%d.%d (build) / %u.%u.%u (runtime)\n", Gtk.MAJOR_VERSION, Gtk.MINOR_VERSION,Gtk.MICRO_VERSION, Gtk.get_major_version(), Gtk.get_minor_version(), Gtk.get_micro_version());
 		MWPLog.message("Adw: %d.%d.%d (build) / %u.%u.%u (runtime)\n", Adw.MAJOR_VERSION, Adw.MINOR_VERSION,Adw.MICRO_VERSION, Adw.get_major_version(), Adw.get_minor_version(), Adw.get_micro_version());
 		MWPLog.message("GLib: %d.%d.%d (build) / %u.%u.%u (runtime)\n", GLib.Version.MAJOR, GLib.Version.MINOR,GLib.Version.MICRO, GLib.Version.major, GLib.Version.minor, GLib.Version.micro);
+		MWPLog.message("Shumate: %d.%d.%d\n", Shumate.MAJOR_VERSION, Shumate.MINOR_VERSION, Shumate.MICRO_VERSION);
 		sb.erase();
 		sb.append("WM: ");
 		sb.append(dmstr);
