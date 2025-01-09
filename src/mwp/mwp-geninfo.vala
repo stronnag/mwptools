@@ -234,10 +234,10 @@ namespace Mwp {
 	}
 
 #if WINDOWS
-	string? run_vm_checker(string[] args) {
+	string? run_vm_checker(string cmd) {
 		string str=null;
 		var p = new ProcessLauncher();
-		var ok = p.run_argv(args, ProcessLaunch.STDOUT);
+		var ok = p.run_command(cmd, ProcessLaunch.STDOUT);
 		if (ok) {
 			var ep = p.get_stdout_iochan();
 			try{
@@ -249,7 +249,7 @@ namespace Mwp {
 	}
 	string? win_get_hyper() {
 		string hyper = null;
-		var manu = run_vm_checker({"WMIC", "COMPUTERSYSTEM", "GET" ,"MANUFACTURER"});
+		var manu = run_vm_checker("WMIC COMPUTERSYSTEM GET MANUFACTURER");
 		if(manu != null) {
 			if (manu.contains("QEMU") ||
 				manu.contains("Xen") ||
@@ -262,7 +262,7 @@ namespace Mwp {
 			}
 		}
 		if (hyper == null) {
-			var model = run_vm_checker({"WMIC", "COMPUTERSYSTEM", "GET", "MODEL"});
+			var model = run_vm_checker("WMIC COMPUTERSYSTEM GET MODEL");
 			if (model != null) {
 				if(model.contains("Standard PC")) {
 					hyper = "KVM";
@@ -273,7 +273,7 @@ namespace Mwp {
 				} else if(model.contains("Virtual Box")) {
 					hyper = "VirtualBox";
 				} else if(model.contains("VMware")) {
-					hyper = "VMWare";
+					hyper = "VMware";
 				}
 			}
 		}
