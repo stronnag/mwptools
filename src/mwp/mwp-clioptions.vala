@@ -291,6 +291,7 @@ namespace Cli {
         if(Rebase.has_reloc()) {
             Mwp.clat = Rebase.reloc.lat;
             Mwp.clon = Rebase.reloc.lon;
+			MWPLog.message(":DBG: Using reloc %f %f\n", Mwp.clat, Mwp.clon);
         }
 
 		if(Mwp.llstr != null) {
@@ -298,9 +299,9 @@ namespace Cli {
 			if (zm == -1) {
 				zm =  Mwp.conf.zoom;
 			}
-			MapUtils.centre_on(Mwp.clat, Mwp.clon, zm);
-			Mwp.set_pos_label(Mwp.clat, Mwp.clon);
 		}
+		MapUtils.centre_on(Mwp.clat, Mwp.clon, zm);
+		Mwp.set_pos_label(Mwp.clat, Mwp.clon);
 
 		if(Mwp.conf.mag_sanity != "") {
             var parts = Mwp.conf.mag_sanity.split(",");
