@@ -143,6 +143,8 @@ volts, 3, 0
 would appear as:
 ![mwp4-panel-1](images/mwp4-panel-1.png)
 
+Note: If you change  `~/.config/mwp/panel.conf`, you should exit {{ mwp }} and delete  `~/.config/mwp/.paned` before restarting mwp.
+
 ## Coexistence
 
 mwp (Gtk4) and legacy (Gtk+-3.0) versions can coexist.

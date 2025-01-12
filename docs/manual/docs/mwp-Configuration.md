@@ -190,6 +190,13 @@ Example `places`
 
 The user may maintain these files manually if used, or use the [graphic places editor](misc-ui-elements.md#favourite-places). The command line option `--centre` accepts a place name as well as a geographic coordinates.
 
+## Panel settings
+
+See the [migration guide](mwp-Gtk4-migration-guide.md) for information concerning:
+
+* `~/.config/mwp/panel.conf`
+* `~/.config/mwp/.paned`
+
 ## Dconf / gsettings
 
 The underlying infrastructure used by {{ mwp }} has a facility for storing configuration items in a registry like store. This is used extensively by {{ mwp }}. The items can viewed and modified using a number of tools:
