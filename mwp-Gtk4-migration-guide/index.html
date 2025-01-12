@@ -366,18 +366,27 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#specific-components" class="md-nav__link">
+  <a href="#supported-os" class="md-nav__link">
     <span class="md-ellipsis">
-      Specific components
+      Supported OS
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#unsupported-os" class="md-nav__link">
+  <a href="#unsupported-but-usable-os" class="md-nav__link">
     <span class="md-ellipsis">
-      Unsupported OS
+      Unsupported but usable OS
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#specific-components" class="md-nav__link">
+    <span class="md-ellipsis">
+      Specific components
     </span>
   </a>
   
@@ -1428,18 +1437,27 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#specific-components" class="md-nav__link">
+  <a href="#supported-os" class="md-nav__link">
     <span class="md-ellipsis">
-      Specific components
+      Supported OS
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#unsupported-os" class="md-nav__link">
+  <a href="#unsupported-but-usable-os" class="md-nav__link">
     <span class="md-ellipsis">
-      Unsupported OS
+      Unsupported but usable OS
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#specific-components" class="md-nav__link">
+    <span class="md-ellipsis">
+      Specific components
     </span>
   </a>
   
@@ -1661,17 +1679,24 @@
 <p>This document describes the migration from legacy (Gtk+-3.0) mwp to contemporary (Gtk4) mwp.</p>
 <p><img alt="mwp" src="../images/mwp4.png" /></p>
 <h2 id="system-requirements">System Requirements<a class="headerlink" href="#system-requirements" title="Permanent link">#</a></h2>
+<h3 id="supported-os">Supported OS<a class="headerlink" href="#supported-os" title="Permanent link">#</a></h3>
 <ul>
-<li>Modern POSIX operating system, for example:<ul>
+<li>Modern Open Source POSIX operating system, for example:<ul>
 <li>Alpine Linux 3.20+</li>
 <li>Arch Linux</li>
 <li>Debian "Trixie" / "Sid" (and derivatives)</li>
 <li>Fedora 40+</li>
 <li>FreeBSD 14+</li>
-<li>MacOS (recent)</li>
+<li>Ubuntu 24.04 and later (and derivatives).</li>
 </ul>
 </li>
 </ul>
+<h3 id="unsupported-but-usable-os">Unsupported but usable OS<a class="headerlink" href="#unsupported-but-usable-os" title="Permanent link">#</a></h3>
+<ul>
+<li>MacOS (Ventura or later), requires <code>homebrew</code>. <a href="../mwp-macos/">Platform specifics</a></li>
+<li>Windows (10 or later), requires <code>MSys2</code>. <a href="../mwp-windows-msys/">Platform specifics</a></li>
+</ul>
+<p>Note that most of the documentation assumes open source OS (Linux, FreeBSD) semantics. See the "Platform Specifics" documents for differences.</p>
 <h3 id="specific-components">Specific components<a class="headerlink" href="#specific-components" title="Permanent link">#</a></h3>
 <p>The following are minimum versions.</p>
 <ul>
@@ -1685,11 +1710,6 @@
 <li>libsecret-1</li>
 </ul>
 <p>For replaying blackbox log, <a href="https://github.com/stronnag/bbl2kml">bbl2kml</a> 1.0.24 or later is rquired.</p>
-<h3 id="unsupported-os">Unsupported OS<a class="headerlink" href="#unsupported-os" title="Permanent link">#</a></h3>
-<ul>
-<li>MacOS (Ventura or later), requires <code>homebrew</code></li>
-<li>Windows (10 or later), requires <code>MSys2</code></li>
-</ul>
 <h2 id="gsettings-dconf-schema">GSettings /DConf schema<a class="headerlink" href="#gsettings-dconf-schema" title="Permanent link">#</a></h2>
 <p>The gsettings / dconf schema is now <code>/org/stronnag/mwp/</code>. The keys are (mainly) the same as for legacy mwp/gtk3 and may be migrated:</p>
 <div class="highlight"><pre><span></span><code>dconf dump /org/mwptools/planner/ | dconf load /org/stronnag/mwp/

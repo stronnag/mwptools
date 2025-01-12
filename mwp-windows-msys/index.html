@@ -1631,6 +1631,10 @@
 
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">#</a></h2>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> has, since December 2024, had somewhat functional support for  building <code>mwptools</code> using the Windows <a href="https://www.msys2.org/">Msys2</a> toolchain with the aim of providing a native Windows version of mwp.</p>
+<ul>
+<li>May be built locally using the <a href="https://www.msys2.org/">Msys2</a></li>
+<li>A "portable" Windows Installer is published in the "Snapshot" builds (Github release area).</li>
+</ul>
 <h2 id="status">Status<a class="headerlink" href="#status" title="Permanent link">#</a></h2>
 <p>Somewhat experimental, however most things work.</p>
 <h2 id="building">Building<a class="headerlink" href="#building" title="Permanent link">#</a></h2>
@@ -1670,8 +1674,11 @@ Set your Msys terminal to UTF-8 as well (Options from the title bar icon)
 After you've done this once, subsequently, after the repo has been updated, you can rerun the build / package generation by rerunning <code>makepkg-mingw</code> (and <code>pacman</code> to install) as required.</li>
 </ul>
 <h3 id="windows-installer">Windows Installer<a class="headerlink" href="#windows-installer" title="Permanent link">#</a></h3>
-<p>There is also a <a href="http://seyrsnys-mwptools-win64.surge.sh/">Windows Installer</a>. At some stage this may be incorporated into the Github "Releases" page.</p>
-<p>Unzip the archive and run the installer. Select the option to install a desktop icon if you wish.</p>
+<p>Run the installer. Select the option to install a desktop icon if you wish. Options are provided for a System or Portable (user local) installation.</p>
+<ul>
+<li>If you select a portable (user local) installation, the "DejaVu Mono" fonts cannot be installed, resulting in an ugly side panel.</li>
+<li>The portable (user local) installation may be removed by deleting the installation directory.</li>
+</ul>
 <h4 id="binary-components-and-open-source-licences">Binary Components and Open Source Licences<a class="headerlink" href="#binary-components-and-open-source-licences" title="Permanent link">#</a></h4>
 <p>The Windows installer includes components distributed under various Open Source
 Licences:</p>
@@ -1720,11 +1727,11 @@ Licences:</p>
 <h2 id="data-locations">Data Locations<a class="headerlink" href="#data-locations" title="Permanent link">#</a></h2>
 <h3 id="configuration-files">Configuration Files<a class="headerlink" href="#configuration-files" title="Permanent link">#</a></h3>
 <ul>
-<li><code>%UserProfile%\AppData\Local\mwp</code> / <code>$LOCALAPPDATA/mwp</code></li>
+<li><code>%UserProfile%\AppData\Local\mwp</code> / <code>$LOCALAPPDATA/mwp</code> (<code>~/.config/mwp</code> on POSIX systems).</li>
 </ul>
 <h3 id="map-caches">Map caches:<a class="headerlink" href="#map-caches" title="Permanent link">#</a></h3>
 <ul>
-<li><code>%UserProfile%\AppData\Local\Microsoft\Windows\INetCache</code> / <code>$LOCALAPPDATA/Microsoft/Windows/INetCache</code></li>
+<li><code>%UserProfile%\AppData\Local\Microsoft\Windows\INetCache</code> / <code>$LOCALAPPDATA/Microsoft/Windows/INetCache</code> (<code>~/.cache</code> on POSIX systems).</li>
 <li>And sub-directories:<ul>
 <li><code>shumate</code> : Tile caches</li>
 <li><code>mwp/DEMs</code> : Digital Elevation Models (aka Terrain data)</li>
@@ -1754,7 +1761,7 @@ PS C:\Users\win11&gt; gsettings set org.stronnag.mwp smartport-fuel-unit &#39;mA
 <li>Build issues require the full build text, not just some random subset</li>
 <li>Run time issues require the "stderr" log (<code>mwp_stderr_YYYY-MM_DD.txt</code>) as well as any artefacts that cause an issue (BBL, ETX log, mission files etc.).</li>
 </ul>
-<p>Until just now, these folders defaulted to GLib's <code>Environment.get_home_dir()</code> which was <code>$HOME</code> / <code>%HOME%</code> everywhere.
+<p>Previously, these folders defaulted to GLib's <code>Environment.get_home_dir()</code> which was <code>$HOME</code> / <code>%HOME%</code> everywhere.
 Now they default to:</p>
 <ul>
 <li>Normal (POSIX) OS: <code>Environment.get_home_dir()</code> aka <code>$HOME</code></li>
