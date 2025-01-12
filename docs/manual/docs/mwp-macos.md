@@ -104,3 +104,5 @@ Once a suitable value is found:
 * If required, add the `MWP_MAC_FACTOR` environment variable to `~/.config/mwp/cmdopts`
 
 On Ventura, the menus may behave strangely, to the point of being almost unusable. This may be mitigated by setting the environment variable `MWP_MAC_NO_NEST` (to anything).
+
+`libsrecret` and other Dbus related services are not available.

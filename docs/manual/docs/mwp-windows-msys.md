@@ -2,6 +2,9 @@
 
 {{ mwp }} has, since December 2024, had somewhat functional support for  building `mwptools` using the Windows [Msys2](https://www.msys2.org/) toolchain with the aim of providing a native Windows version of mwp.
 
+* May be built locally using the [Msys2](https://www.msys2.org/)
+* A "portable" Windows Installer is published in the "Snapshot" builds (Github release area).
+
 ## Status
 
 Somewhat experimental, however most things work.
@@ -62,9 +65,10 @@ After you've done this once, subsequently, after the repo has been updated, you 
 
 ### Windows Installer
 
-There is also a [Windows Installer](http://seyrsnys-mwptools-win64.surge.sh/). At some stage this may be incorporated into the Github "Releases" page.
+Run the installer. Select the option to install a desktop icon if you wish. Options are provided for a System or Portable (user local) installation.
 
-Unzip the archive and run the installer. Select the option to install a desktop icon if you wish.
+* If you select a portable (user local) installation, the "DejaVu Mono" fonts cannot be installed, resulting in an ugly side panel.
+* The portable (user local) installation may be removed by deleting the installation directory.
 
 #### Binary Components and Open Source Licences
 
@@ -126,11 +130,11 @@ The above external applications will need to be on the `PATH` available to the i
 
 ### Configuration Files
 
-* `%UserProfile%\AppData\Local\mwp` / `$LOCALAPPDATA/mwp`
+* `%UserProfile%\AppData\Local\mwp` / `$LOCALAPPDATA/mwp` (`~/.config/mwp` on POSIX systems).
 
 ### Map caches:
 
-* `%UserProfile%\AppData\Local\Microsoft\Windows\INetCache` / `$LOCALAPPDATA/Microsoft/Windows/INetCache`
+* `%UserProfile%\AppData\Local\Microsoft\Windows\INetCache` / `$LOCALAPPDATA/Microsoft/Windows/INetCache` (`~/.cache` on POSIX systems).
 * And sub-directories:
     * `shumate` : Tile caches
 	* `mwp/DEMs` : Digital Elevation Models (aka Terrain data)
@@ -163,7 +167,7 @@ Please see the [general guidance](mwp_support.md), in particular:
 * Build issues require the full build text, not just some random subset
 * Run time issues require the "stderr" log (`mwp_stderr_YYYY-MM_DD.txt`) as well as any artefacts that cause an issue (BBL, ETX log, mission files etc.).
 
-Until just now, these folders defaulted to GLib's `Environment.get_home_dir()` which was `$HOME` / `%HOME%` everywhere.
+Previously, these folders defaulted to GLib's `Environment.get_home_dir()` which was `$HOME` / `%HOME%` everywhere.
 Now they default to:
 
 * Normal (POSIX) OS: `Environment.get_home_dir()` aka `$HOME`

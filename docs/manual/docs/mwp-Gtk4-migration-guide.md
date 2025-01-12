@@ -6,13 +6,22 @@ This document describes the migration from legacy (Gtk+-3.0) mwp to contemporary
 
 ## System Requirements
 
-* Modern POSIX operating system, for example:
+### Supported OS
+
+* Modern Open Source POSIX operating system, for example:
     * Alpine Linux 3.20+
     * Arch Linux
     * Debian "Trixie" / "Sid" (and derivatives)
     * Fedora 40+
     * FreeBSD 14+
-	* MacOS (recent)
+	* Ubuntu 24.04 and later (and derivatives).
+
+### Unsupported but usable OS
+
+* MacOS (Ventura or later), requires `homebrew`. [Platform specifics](mwp-macos.md)
+* Windows (10 or later), requires `MSys2`. [Platform specifics](mwp-windows-msys.md)
+
+Note that most of the documentation assumes open source OS (Linux, FreeBSD) semantics. See the "Platform Specifics" documents for differences.
 
 ### Specific components
 
@@ -28,11 +37,6 @@ The following are minimum versions.
 * libsecret-1
 
 For replaying blackbox log, [bbl2kml](https://github.com/stronnag/bbl2kml) 1.0.24 or later is rquired.
-
-### Unsupported OS
-
-* MacOS (Ventura or later), requires `homebrew`
-* Windows (10 or later), requires `MSys2`
 
 ## GSettings /DConf schema
 
