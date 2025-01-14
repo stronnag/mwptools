@@ -344,10 +344,16 @@ namespace Mwp {
 		case Msp.Cmds.MAVLINK_MSG_STATUSTEXT:
 			if(ser.is_main) {
 				uint8 sev = raw[0];
-				raw[51] = 0;
-				string text = (string)raw[1:50];
+				string text = (string)raw[1:len];
 				var stext = text.strip();
 				MWPLog.message("INFO: mavstatus (%d) %s\n", sev, stext);
+				if(len > 1) {
+					if (stext != Mwp.window.statusbar1.label) {
+						if (stext.validate()) {
+							Mwp.window.statusbar1.label = stext;
+						}
+					}
+				}
 			}
 			break;
 
