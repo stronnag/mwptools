@@ -98,6 +98,7 @@ namespace Mwp {
 			int fvup = 0;
 			int ttup = 0;
 			var pdiff = pos_diff(lat, lon, ser.td.gps.lat, ser.td.gps.lon);
+
 			if (PosDiff.LAT in pdiff) {
 				fvup |= FlightBox.Update.LAT;
 				ttup |= TelemTracker.Fields.LAT;
@@ -128,7 +129,6 @@ namespace Mwp {
 				ser.td.gps.nsats = lsats;
 				ser.td.gps.fix = fix;
 			}
-
 
 			if(Math.fabs(cse - ser.td.gps.cog) > 1) {
 				ser.td.gps.cog = cse;
@@ -183,7 +183,7 @@ namespace Mwp {
 										}
 										if(Math.fabs(ser.td.comp.bearing - cg.direction) > 1.0) {
 											ser.td.comp.bearing =  cg.direction;
-											fvup = FlightBox.Update.BEARING;
+											fvup |= FlightBox.Update.BEARING;
 										}
 										if(Logger.is_logging) {
 											Logger.comp_gps(cg.direction, cg.range, 1);
