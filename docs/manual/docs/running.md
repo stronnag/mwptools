@@ -113,4 +113,4 @@ You can *drag and drop* relevant files onto the {{ mwp }} map:
 * Safe Homes
 * FW Approach definitions
 * `set` parameters affecting visualisation (`nav_fw_land_approach_length`, `nav_fw_loiter_radius`).
-* (future) GeoZones
+* GeoZones

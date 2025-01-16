@@ -32,8 +32,6 @@ You may wish to obfuscate the location of log replay, particularly if you are pu
 	mwp --rebase 35.761000\ 140.378945 -b reloc-test.TXT -m reloc-test.mission
 	mwp --rebase "35:45:39.6N 140:22:44.2E" -b reloc-test.TXT -m reloc-test.mission
 
-Currently (March 2024) only flight logs and mission files are rebased. Safehomes (and Geozones) may also be relocated in future.
-
 ## Blackbox replay
 
 In order to replay blackbox logs, you additionally need [inav blackbox tools](https://github.com/iNavFlight/blackbox-tools), specifically `blackbox_decode`). Binary packages are provided for many popular platforms. The minimum required version in 0.4.4, the latest release is recommended.
