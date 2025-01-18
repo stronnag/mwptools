@@ -209,9 +209,9 @@ namespace TA {
 								MissionManager.open_mission_file(replname);
 							}
 							FileUtils.unlink(outfn);
-							if(replname != null)
+							if(replname != null) {
 								FileUtils.unlink(replname);
-
+							}
 							if (cdlines.length > 0) {
 								maxclimb = DStr.strtod(pe_climb.text, null);
 								maxdive = DStr.strtod(pe_dive.text, null);

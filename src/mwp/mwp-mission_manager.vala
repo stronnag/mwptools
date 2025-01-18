@@ -153,7 +153,7 @@ namespace MissionManager {
 
 	public Mission? open_mission_file(string fn, bool append=false) {
 		bool is_j = fn.has_suffix(".json");
-		bool is_x = fn.has_suffix(".mission");
+		bool is_x = (fn.has_suffix(".mission") || fn.has_suffix(".xml"));
 		last_file = null;
 		Mission?[]_msx=null;
 		if (is_j) {
