@@ -19,17 +19,23 @@ public enum FType {
 	UNKNOWN = 0,
 	MISSION = 1,
 	BBL = 2,
-	OTXLOG = 3,
-	MWPLOG = 4,
-	KMLZ = 5,
-	INAV_CLI = 6,
-	INAV_CLI_M = 7,
+	OTXLOG = 4,
+	MWPLOG = 8,
+	KMLZ = 16,
+	INAV_CLI = 32,
+	INAV_CLI_M = INAV_CLI|MISSION,
+	XML = 64,
+	MISSION_XML = XML|MISSION,
+	JSON = 128,
+	MISSION_JSON = JSON|MISSION,
 }
 
 namespace MWPFileType {
 		private void handle_file_by_type(FType ftyp, string? fn) {
 			switch(ftyp) {
 			case FType.MISSION:
+			case FType.MISSION_XML:
+			case FType.MISSION_JSON:
 				Mwp.mission = fn;
 				break;
 			case FType.BBL:
@@ -91,48 +97,26 @@ namespace MWPFileType {
 			var fs = FileStream.open (fn, "r");
 			if (fs != null) {
 				if(fs.read (buf) > 0) {
-					var mt = GLib.ContentType.guess(fn, buf, null);
-					switch (mt) {
-					case "application/vnd.mw.mission":
-					case "application/vnd.mwp.json.mission":
-						ftyp = FType.MISSION;
-						break;
-					case "application/vnd.blackbox.log":
+					if(Regex.match_simple ("^(geozone|safehome) ", (string)buf, RegexCompileFlags.MULTILINE|RegexCompileFlags.RAW)) {
+						ftyp = FType.INAV_CLI;
+					}
+					if (Regex.match_simple("^#wp \\d+ valid", (string)buf, RegexCompileFlags.MULTILINE|RegexCompileFlags.RAW)) {
+						ftyp = FType.INAV_CLI_M;
+					}
+				}
+				if(ftyp == FType.UNKNOWN) {
+					if(((string)buf).contains("<mission>") || ((string)buf).contains("<MISSION>")) {
+						ftyp = FType.MISSION_XML;
+					} else if (Regex.match_simple("""{\s*"missions"\s*:\s*\[""", (string)buf, RegexCompileFlags.MULTILINE|RegexCompileFlags.RAW)) {
+						ftyp = FType.MISSION_JSON;
+					} else if (((string)buf).has_prefix("H Product:Blackbox flight data recorder")) {
 						ftyp = FType.BBL;
-						break;
-					case "application/vnd.otx.telemetry.log":
-						ftyp = FType.OTXLOG;
-						break;
-					case "application/vnd.mwp.log":
+					} else if (((string)buf).has_prefix("{\"type\":\"environment\"")) {
 						ftyp = FType.MWPLOG;
-						break;
-					case "application/vnd.google-earth.kmz":
-					case "application/vnd.google-earth.kml+xml":
+					} else if (((string)buf).has_prefix("Date,Time,")) {
+						ftyp = FType.OTXLOG;
+					} else if (((string)buf).contains("<kml xmlns=\"http://www.opengis.net/kml/2.2\">")) {
 						ftyp = FType.KMLZ;
-						break;
-					default:
-						break;
-					}
-
-					if(ftyp == FType.UNKNOWN) {
-						if(Regex.match_simple ("^(geozone|safehome) ", (string)buf, RegexCompileFlags.MULTILINE|RegexCompileFlags.RAW)) {
-							ftyp = FType.INAV_CLI;
-						}
-						if (Regex.match_simple("^#wp \\d+ valid", (string)buf, RegexCompileFlags.MULTILINE|RegexCompileFlags.RAW)) {
-							ftyp = FType.INAV_CLI_M;
-						}
-					}
-					if(ftyp == FType.UNKNOWN) {
-						if(((string)buf).contains("<mission>") || ((string)buf).contains("<MISSION>")) {
-							ftyp = FType.MISSION;
-						} else if (((string)buf).has_prefix("H Product:Blackbox flight data recorder")) {						ftyp = FType.BBL;
-						} else if (((string)buf).has_prefix("{\"type\":\"environment\"")) {
-							ftyp = FType.MWPLOG;
-						} else if (((string)buf).has_prefix("Date,Time,")) {
-							ftyp = FType.OTXLOG;
-						} else if (((string)buf).contains("<kml xmlns=\"http://www.opengis.net/kml/2.2\">")) {
-							ftyp = FType.KMLZ;
-						}
 					}
 				}
 			}

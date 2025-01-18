@@ -81,7 +81,7 @@ namespace Mwp {
 		var tfile = lfn;
 		string _fu;
 		var res = MWPFileType.guess_content_type(lfn, out _fu);
-		if (res != FType.MISSION) {
+		if (res != FType.MISSION_XML) {
 			var m = MissionManager.current();
             if(m != null && m.npoints > 0) {
 				tfile=Utils.mstempname(false);

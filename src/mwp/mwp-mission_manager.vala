@@ -152,23 +152,26 @@ namespace MissionManager {
 	}
 
 	public Mission? open_mission_file(string fn, bool append=false) {
-		bool is_j = fn.has_suffix(".json");
-		bool is_x = (fn.has_suffix(".mission") || fn.has_suffix(".xml"));
-		last_file = null;
+		string fu;
 		Mission?[]_msx=null;
-		if (is_j) {
-			_msx = JsonIO.read_json_file(fn);
-		} else if (is_x) {
-			_msx = XmlIO.read_xml_file (fn, true);
-		} else {
-			_msx = TxtIO.read_txt(fn);
+		var ftype = MWPFileType.guess_content_type(fn, out fu);
+		if ((ftype & FType.MISSION) == FType.MISSION) {
 			last_file = null;
+			if (ftype == FType.MISSION_JSON) {
+				_msx = JsonIO.read_json_file(fu);
+			} else if (ftype == FType.MISSION_XML) {
+				_msx = XmlIO.read_xml_file (fu, true);
+			} else {
+				_msx = TxtIO.read_txt(fu);
+				last_file = null;
+			}
 		}
-		if (_msx == null)
+		if (_msx == null) {
 			return null;
-
+		}
 		mdx = 0;
 		var nwp = check_mission_length(_msx);
+
 		if (nwp == 0)
 			return null;
 

@@ -67,6 +67,7 @@ namespace JsonIO {
 					}
 					mi += m;
 				}
+				ms.points = mi;
 				ms.update_meta(false);
 				break;
 			case "meta":
@@ -108,7 +109,6 @@ namespace JsonIO {
 				}
 			}
 		} catch {}
-
 		return msx;
     }
 
@@ -178,25 +178,26 @@ namespace JsonIO {
                     if (dobj != null) {
                         parse_details(dobj, ref ms);
                     }
-                    break;
+					break;
             }
         }
     }
 
     private static void parse_details(Json.Object o, ref Mission ms) {
         foreach (var name in o.get_members()) {
-            switch (name) {
-                case "distance":
-                    ms.dist = o.get_double_member("distance");
+			var oo = o.get_object_member(name);
+			switch (name) {
+			case "distance":
+                    ms.dist = oo.get_double_member("value");
                     break;
                 case "nav-speed":
-                    ms.nspeed = o.get_double_member("nav-speed");
+                    ms.nspeed = oo.get_double_member("value");
                     break;
                 case "fly-time":
-                    ms.et = (int)o.get_int_member("fly-time");
+                    ms.et = (int)oo.get_int_member("value");
                     break;
                 case "loiter-time":
-                    ms.lt = (int)o.get_int_member("loiter-time");
+                    ms.lt = (int)oo.get_int_member("value");
                     break;
             }
         }
