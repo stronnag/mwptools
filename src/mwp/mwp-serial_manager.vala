@@ -154,7 +154,7 @@ namespace Msp {
 		}
         MWPLog.message("Serial closed replay %d\n", Mwp.replayer);
 		Mwp.csdq.clear();
-
+		Mwp.clear_gps_flash();
         if(Mwp.inhibit_cookie != 0) {
 			MwpIdle.uninhibit(Mwp.inhibit_cookie);
             Mwp.inhibit_cookie = 0;

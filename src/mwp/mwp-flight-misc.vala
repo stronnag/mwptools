@@ -287,12 +287,47 @@ namespace Mwp {
         }
     }
 
+	private static uint spinid=0;
+	private static string []spinners;
+	private static uint last_flash;
+	private static uint nspin = 0;
+	private static uint nspinlen = 0;
+
+	void init_gps_flash() {
+		var s = Environment.get_variable("MWP_SPINNER_ID");
+		spinners = {
+			"▁▂▃▄▅▆▇█▇▆▅▄▃▂▁ ",
+			"-\\|/",
+			"-≻›⟩|⟨‹≺",
+			"◐◓◑◒",
+			"⡀⡄⡆⡇⣇⣧⣷⣿",
+			"▘▀▝▐▗▄▖▌",
+			"╹┖╿┚╹╺┍╼┕╺╻┒╽┎╻╸┙╾┑╸",
+			"┫┛┻┗┣┏┳┓",
+			" ▖◼▝ ▗◼▘"
+		};
+		if (s != null) {
+			nspin = uint.parse(s);
+			if (nspin >=spinners.length)
+				nspin=0;
+		}
+		nspinlen = spinners[nspin].char_count();
+	}
+
+	private void clear_gps_flash() {
+		spinid = 0;
+		last_flash = 0;
+		Mwp.window.gpslab.label = " ";
+	}
+
     private void flash_gps() {
-        Mwp.window.gpslab.label = "<span foreground = '%s'>⬤</span>".printf(conf.led);
-        Timeout.add(25, () => {
-                Mwp.window.gpslab.set_label("◯");
-				return false;
-            });
+		if ((nticks-last_flash) > 4) {
+			int start = spinners[nspin].index_of_nth_char (spinid);
+			int end = spinners[nspin].index_of_nth_char (spinid+1);
+			Mwp.window.gpslab.label = spinners[nspin][start:end];
+			spinid = (spinid+1) % nspinlen;
+			last_flash = nticks;
+		}
     }
 
     private double calc_cse_dist_delta(double lat, double lon, out double ddm) {

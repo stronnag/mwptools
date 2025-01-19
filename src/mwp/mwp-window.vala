@@ -321,6 +321,7 @@ namespace Mwp {
 			sensor_sts[3] = mag_sts;
 			sensor_sts[4] = gps_sts;
 			sensor_sts[5] = sonar_sts;
+			init_gps_flash();
 		}
 
 		private void show_window() {

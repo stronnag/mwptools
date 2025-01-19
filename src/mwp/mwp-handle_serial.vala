@@ -396,7 +396,7 @@ namespace Mwp {
                                         Audio.play_alarm_sound(MWPAlert.SAT);
                                     if(replay_paused == false)
                                         MWPLog.message("GPS stalled\n");
-                                    Mwp.window.gpslab.label = "<span foreground = \"red\">⬤</span>";
+                                    Mwp.window.gpslab.label = "!";
                                     last_gps = nticks;
                                 }
                             }

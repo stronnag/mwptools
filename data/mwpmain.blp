@@ -240,14 +240,16 @@ template $MwpWindow: Adw.ApplicationWindow {
           }
 
           Gtk.Label gpslab {
-            use-markup: true;
-            label: "◯";
+            label: " ";
             halign: end;
-            margin-start: 2;
-            margin-end: 2;
+            margin-start: 1;
+            margin-end: 1;
             hexpand: false;
 	    width-chars: 3;
             justify: center;
+	    styles [
+              "monospace"
+            ]
           }
 
           Gtk.Box {
