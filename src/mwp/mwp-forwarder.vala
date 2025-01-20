@@ -37,6 +37,7 @@ public class Forwarder : Object {
 	}
 
 	public void forward_command(uint16 cmd, uint8[]raw, size_t len) {
+		fdev.use_v2 = Mwp.msp.use_v2;
 		fdev.send_command(cmd, raw, len);
 	}
 
