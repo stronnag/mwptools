@@ -17,47 +17,48 @@
 
 public class Forwarder : Object {
 	private string devname;
-	private MWSerial? fwddev;
+	private MWSerial? fdev;
 	private uint8 rcount;
 	internal Utils.Warning_box wb;
 
 	public Forwarder(string? _dev) {
 		if (_dev != null) {
 			devname = _dev;
-			fwddev = new MWSerial.forwarder();
+			fdev = new MWSerial.forwarder();
 		}
 	}
 
 	public bool available() {
-		if (fwddev != null) {
-			return fwddev.available;
+		if (fdev != null) {
+			return fdev.available;
 		} else {
 			return false;
 		}
 	}
 
-	public void send_command(uint16 cmd, uint8[]raw, size_t len) {
-		fwddev.send_command(cmd, raw, len);
+	public void forward_command(uint16 cmd, uint8[]raw, size_t len) {
+		fdev.send_command(cmd, raw, len);
 	}
 
-	public void send_ltm(uint8 cmd, uint8[]raw, size_t len) {
-		fwddev.send_ltm(cmd, raw, len);
+	public void forward_ltm(uint16 cmd, uint8[]raw, size_t len) {
+		fdev.send_ltm((uint8)cmd, raw, len);
 	}
 
-	public void send_mav(uint8 cmd, uint8[]raw, size_t len) {
-		fwddev.send_mav(cmd, raw, len);
+	public void forward_mav(uint16 cmd, uint8[]raw, size_t len) {
+		fdev.mavvid = Mwp.msp.mavvid;
+		fdev.send_mav(cmd, raw, len);
 	}
 
 	public void close() {
-		fwddev.close();
+		fdev.close();
 	}
 
 	public void try_open(MWSerial msp) {
-        if(!fwddev.available) {
-			fwddev.open_async.begin(devname, 0,  (obj,res) => {
-					var ok = fwddev.open_async.end(res);
+        if(!fdev.available) {
+			fdev.open_async.begin(devname, 0,  (obj,res) => {
+					var ok = fdev.open_async.end(res);
 					if (ok) {
-						fwddev.set_mode(MWSerial.Mode.SIM);
+						fdev.set_mode(MWSerial.Mode.SIM);
 						MWPLog.message("set forwarder %s\n", devname);
 						rcount = 0;
 					} else {
@@ -71,7 +72,7 @@ public class Forwarder : Object {
 									});
  							} else {
 								string fstr;
-								fwddev.get_error_message(out fstr);
+								fdev.get_error_message(out fstr);
 								wb = new Utils.Warning_box(
 									"Failed to open forwarding device %s after 5 attempts: %s\n".printf(devname, fstr), 10);
 								wb.present();

@@ -605,7 +605,7 @@ namespace Mwp {
 
         if(fwddev.available()) {
             if(cmd < Msp.Cmds.LTM_BASE && conf.forward == FWDS.ALL) {
-                fwddev.send_command(cmd, raw, len);
+                fwddev.forward_command(cmd, raw, len);
             }
             if(cmd >= Msp.Cmds.LTM_BASE && cmd < Msp.Cmds.MAV_BASE) {
                 if (conf.forward == FWDS.LTM || conf.forward == FWDS.ALL ||
@@ -613,7 +613,7 @@ namespace Mwp {
                      (cmd == Msp.Cmds.TG_FRAME ||
                       cmd == Msp.Cmds.TA_FRAME ||
                       cmd == Msp.Cmds.TS_FRAME )))
-					fwddev.send_ltm((cmd - Msp.Cmds.LTM_BASE), raw, len);
+					fwddev.forward_ltm((cmd - Msp.Cmds.LTM_BASE), raw, len);
             }
             if(cmd >= Msp.Cmds.MAV_BASE &&
                (conf.forward == FWDS.ALL ||
@@ -624,7 +624,7 @@ namespace Mwp {
                   cmd == Msp.Cmds.MAVLINK_MSG_VFR_HUD ||
                   cmd == Msp.Cmds.MAVLINK_MSG_ATTITUDE ||
                   cmd == Msp.Cmds.MAVLINK_MSG_RC_CHANNELS_RAW)))) {
-                fwddev.send_mav((cmd - Msp.Cmds.MAV_BASE), raw, len);
+                fwddev.forward_mav((cmd - Msp.Cmds.MAV_BASE), raw, len);
             }
         }
 

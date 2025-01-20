@@ -463,6 +463,8 @@ public class MWSerial : Object {
 #else
 	private bool foad;
 #endif
+	public uint8 mavvid;
+
 	private const int WEAKSIZE = 1;
 
 	public enum MemAlloc {
@@ -543,6 +545,9 @@ public class MWSerial : Object {
 		S_SPORT_OK,
 		S_MPM_P = 600,
 	}
+
+	const uint8 MAVID1='j';
+	const uint8 MAVID2='h';
 
 	public struct INAVEvent {
 		public Msp.Cmds cmd;
@@ -1361,6 +1366,7 @@ public class MWSerial : Object {
 									sp = nc;
 									state=States.S_M_SIZE;
 									errstate = false;
+									mavvid = 1;
 								}
 								break;
 							case 0xfd:
@@ -1368,6 +1374,7 @@ public class MWSerial : Object {
 									sp = nc;
 									state=States.S_M2_SIZE;
 									errstate = false;
+									mavvid = 2;
 								}
 								break;
 							case CRSF.RADIO_ADDRESS:
@@ -1980,10 +1987,66 @@ public class MWSerial : Object {
 		}
 	}
 
-	public void send_mav(uint8 cmd, void *data, size_t len) {
-		const uint8 MAVID1='j';
-		const uint8 MAVID2='h';
+	public void send_mav(uint16 cmd, void *data, size_t len) {
+		if(mavvid == 2 || cmd > 256) {
+			send_mav2(cmd, data, len);
+		} else {
+			send_mav1(cmd, data, len);
+		}
+	}
 
+	public void send_mav2(uint16 cmd, void *data, size_t len) {
+		if(available == true && !ro) {
+			uint16 mcrc;
+			uint8* ptx = txbuf;
+			uint8* pdata = data;
+
+			check_txbuf_size(len+8);
+			mcrc = mavlink_crc(0xffff, (uint8)len);
+
+			*ptx++ = 0xfd;
+			*ptx++ = (uint8)len;
+
+			*ptx++ = 0;
+			mcrc = mavlink_crc(mcrc, 0);
+			*ptx++ = 0;
+			mcrc = mavlink_crc(mcrc, 0);
+
+			*ptx++ = mavseqno;
+			mcrc = mavlink_crc(mcrc, mavseqno);
+
+			*ptx++ = MAVID1;
+			mcrc = mavlink_crc(mcrc, MAVID1);
+			*ptx++ = MAVID2;
+			mcrc = mavlink_crc(mcrc, MAVID2);
+
+			uint8 c = (uint8)(cmd & 0xff);
+			*ptx++ = c;
+			mcrc = mavlink_crc(mcrc, c);
+
+			c = (uint8)(cmd >> 8);
+			*ptx++ = c;
+			mcrc = mavlink_crc(mcrc, c);
+
+			c = 0;
+			*ptx++ = c;
+			mcrc = mavlink_crc(mcrc, c);
+
+			for(var j = 0; j < len; j++) {
+				*ptx = *pdata++;
+				mcrc = mavlink_crc(mcrc, *ptx);
+				ptx++;
+			}
+			var seed  = MavCRC.lookup(cmd);
+			mcrc = mavlink_crc(mcrc, seed);
+			*ptx++ = (uint8)(mcrc&0xff);
+			*ptx++ = (uint8)(mcrc >> 8);
+			write(txbuf, (len+12));
+			mavseqno++;
+		}
+	}
+
+	public void send_mav1(uint16 cmd, void *data, size_t len) {
 		if(available == true && !ro) {
 			uint16 mcrc;
 			uint8* ptx = txbuf;
@@ -2002,8 +2065,8 @@ public class MWSerial : Object {
 			mcrc = mavlink_crc(mcrc, MAVID1);
 			*ptx++ = MAVID2;
 			mcrc = mavlink_crc(mcrc, MAVID2);
-			*ptx++ = cmd;
-			mcrc = mavlink_crc(mcrc, cmd);
+			*ptx++ = (uint8)cmd;
+			mcrc = mavlink_crc(mcrc, (uint8)cmd);
 			for(var j = 0; j < len; j++) {
 				*ptx = *pdata++;
 				mcrc = mavlink_crc(mcrc, *ptx);
