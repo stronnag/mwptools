@@ -174,7 +174,11 @@ func main() {
 				}
 			}
 			if err == nil {
-				conn, err = net.DialUDP(udpfam, laddr, raddr)
+				if dd.name == "" {
+					conn, err = net.ListenUDP(udpfam, laddr)
+				} else {
+					conn, err = net.DialUDP(udpfam, laddr, raddr)
+				}
 			}
 			if err != nil {
 				log.Fatal(err)
