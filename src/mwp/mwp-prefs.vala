@@ -202,6 +202,7 @@ namespace Prefs {
 				for(int i=0; i<strs.length;i++) {
 					strs[i] = strs[i].strip();
 				}
+				Mwp.conf.devices = strs;
 				Mwp.conf.settings.set_strv( "device-names", strs);
 				Mwp.build_serial_combo();
 
