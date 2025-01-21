@@ -547,7 +547,7 @@ public class MWSerial : Object {
 	}
 
 	const uint8 MAVID1='j';
-	const uint8 MAVID2='h';
+	const uint8 MAVID2= 190;
 
 	public struct INAVEvent {
 		public Msp.Cmds cmd;
