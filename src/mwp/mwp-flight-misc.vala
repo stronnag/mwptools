@@ -296,15 +296,20 @@ namespace Mwp {
 	void init_gps_flash() {
 		var s = Environment.get_variable("MWP_SPINNER_ID");
 		spinners = {
-			"▁▂▃▄▅▆▇█▇▆▅▄▃▂▁ ",
-			"-\\|/",
-			"-≻›⟩|⟨‹≺",
-			"◐◓◑◒",
-			"⡀⡄⡆⡇⣇⣧⣷⣿",
-			"▘▀▝▐▗▄▖▌",
-			"╹┖╿┚╹╺┍╼┕╺╻┒╽┎╻╸┙╾┑╸",
-			"┫┛┻┗┣┏┳┓",
-			" ▖◼▝ ▗◼▘"
+			"◉◎",				// 0
+			"⡀⡄⡆⡇⣇⣧⣷⣿",		// 1
+			"▁▂▃▄▅▆▇█▇▆▅▄▃▂▁", // 2
+			/**
+			"-\\|/",			// 3
+			"-≻›⟩|⟨‹≺",			// 4
+			"◐◓◑◒",				// 5
+			"▘▀▝▐▗▄▖▌",			// 6
+			"╹┖╿┚╹╺┍╼┕╺╻┒╽┎╻╸┙╾┑╸", // 7
+			"┫┛┻┗┣┏┳┓", 		// 8
+			" ▖◼▝ ▗◼▘",			// 9
+			"◍◌",				// 10
+			"㊂㊀㊁"				// 11
+			**/
 		};
 		if (s != null) {
 			nspin = uint.parse(s);
@@ -321,7 +326,7 @@ namespace Mwp {
 	}
 
     private void flash_gps() {
-		if ((nticks-last_flash) > 4) {
+		if ((nticks-last_flash) > 1) {
 			int start = spinners[nspin].index_of_nth_char (spinid);
 			int end = spinners[nspin].index_of_nth_char (spinid+1);
 			Mwp.window.gpslab.label = spinners[nspin][start:end];
