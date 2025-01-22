@@ -1798,6 +1798,7 @@ Types of message to forward (none, LTM, minLTM, minMAV, all)
 <ul>
 <li>Where a telemetry protocol offers different versions (<code>MSP</code>, <code>MAVlink</code>), mwp will forward the version received.</li>
 <li>For MAVLink, mwp uses a <code>sysid</code> of <code>106</code> (UTF8 <code>j</code>).</li>
+<li>The MAVLink <code>system id</code> may be set with the setting <code>mavlink-sysid</code>, in the range 2-255 (see https://ardupilot.org/dev/docs/mavlink-basics.html and GCS guidance ibid)</li>
 </ul>
 <p>e.g.</p>
 <p><div class="highlight"><pre><span></span><code># setting
