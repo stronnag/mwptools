@@ -263,7 +263,7 @@ namespace Mwp {
     }
 
 	const string? [] arm_fails = {
-        null, null, "Armed",null, /*"Ever Armed"*/ null,null,null,
+        null, null, "Armed",null, /*"Ever Armed"*/ null,null,"Geozone",
         "Failsafe", "Not level","Calibrating","Overload",
         "Navigation unsafe", "Compass cal", "Acc cal", "Arm switch", "Hardware failure",
         "Box failsafe", "Box killswitch", "RC Link", "Throttle", "CLI",
