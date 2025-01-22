@@ -198,6 +198,7 @@ namespace Mwp {
     private enum ARMFLAGS {
         ARMED                                           = (1 << 2), // 4
         WAS_EVER_ARMED                                  = (1 << 3), // 8
+        ARMING_DISABLED_GEOZONE                 = (1 << 6), // 40
         ARMING_DISABLED_FAILSAFE_SYSTEM                 = (1 << 7), // 80
         ARMING_DISABLED_NOT_LEVEL                       = (1 << 8), // 100
         ARMING_DISABLED_SENSORS_CALIBRATING             = (1 << 9), // 200

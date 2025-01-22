@@ -36,7 +36,7 @@ From its MultiWii origins mwp has evolved to support navigation capabilities in 
 
 * MSP (MultiWii Serial Protocol)
 * LTM (Lightweight Telemetry)
-* MAVLink (INAV telemetry subset)
+* MAVLink (INAV telemetry 'push' subset)
 * Smartport (direct /  via inverter / or from Multi-protocol Module)
 * Crossfire (CRSF)
 * Flysky AA (via Multi-protocol Module)
