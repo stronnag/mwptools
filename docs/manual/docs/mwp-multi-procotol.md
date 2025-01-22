@@ -193,3 +193,39 @@ Offering:
 * S-Port and CRSF may be less reliably detected.
 * MPM is hard to auto-detected. From EdgeTX 2.7, MPM auto-detection works reliably.
 * It is recommended that for S-Port, CRSF and MPM, the desired protocol is set explicitly (not left at "Auto").
+
+## Telemetry Forwarding
+
+{{ mwp }} can forward received telemetry protocol payloads according to a filter defined by two parameters:
+
+* The CLI parameter ``--forward-to=<device>` where `<device>` represents the device node / name used for forwarding. `<device>` describes any supported mwp transport (serial, BT, UDP, TCP).
+* The setting `forward`:
+  ```
+  $ gsettings describe  org.stronnag.mwp forward
+  Types of message to forward (none, LTM, minLTM, minMAV, all)
+  ```
+
+where:
+
+* `none`: No forwarding (default)
+*  `all`: Any of `MSP`, `LTM` or `MAVlink`. All response / telemetry will be forwarded.
+* `LTM`: All `LTM` messages
+* `minLTM`: Minimal set of `LTM` (typically for antenna trackers; `G`, `A` and `S` frames).
+* `minMAV`: Minimal set of `MAVLink` (typically for antenna trackers; `ID_HEARTBEAT`, `ID_SYS_STATUS`, `GPS_RAW_INT`, `VFR_HUD`, `ATTITUDE`, `RC_CHANNELS_RAW`).
+
+Notes:
+
+* Where a telemetry protocol offers different versions (`MSP`, `MAVlink`), mwp will forward the version received.
+* For MAVLink, mwp uses a `sysid` of `106` (UTF8 `j`).
+
+e.g.
+
+```
+# setting
+gsettings set org.stronnag.mwp forward minLTM
+```
+```
+# in ~/.config/mwp/cmdopts
+# forward over UDP
+--forward-to=udp://udp-ant:30001
+```
