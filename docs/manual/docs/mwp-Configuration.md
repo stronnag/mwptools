@@ -239,6 +239,8 @@ This *may* not be installed by default, but should be available via the OS packa
 
 ### List of mwp settings
 
+### List of mwp settings
+
 | Name | Summary | Description | Default |
 | ---- | ------- | ----------- | ------ |
 | adjust-tz | Adjust FC's TZ (and DST) | mwp should adjust FC's TZ (and DST) based on the local clock | true |
@@ -291,6 +293,7 @@ This *may* not be installed by default, but should be available via the OS packa
 | manage-power | manage power and screen | whether to manage idle and screen saver | false |
 | map-sources | Additional Map sources | JSON file defining additional map sources | "" |
 | mapbox-apikey | Mapbox API Key | Mapbox API key, enables Mapbox as a map Provider. Setting blank ("") disables. | "" |
+| mavlink-sysid | Sysid for synthesised MAVLink | System ID in the range 2-255 (see https://ardupilot.org/dev/docs/mavlink-basics.html and GCS guidance ibid) | 106 |
 | max-climb-angle | Maximum climb angle highlight for terrain analysis | If non-zero, any climb angles exceeding the specified value will be highlighted in Terrain Analysis Climb / Dive report. Note that the absolute value is taken as a positive (climb) angle | 0.0 |
 | max-dive-angle | Maximum dive angle highlight for terrain analysis | If non-zero, any dive angles exceeding the specified value will be highlighted in Terrain Analysis Climb / Dive report. Note that the absolute value is taken as a negative (dive) angle | 0.0 |
 | max-home-delta | home position delta (m) | Maximum variation of home position without verbal alert | 2.5 |

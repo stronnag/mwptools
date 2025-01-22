@@ -464,6 +464,7 @@ public class MWSerial : Object {
 	private bool foad;
 #endif
 	public uint8 mavvid;
+	public uint8 mavsysid;
 
 	private const int WEAKSIZE = 1;
 
@@ -546,7 +547,6 @@ public class MWSerial : Object {
 		S_MPM_P = 600,
 	}
 
-	const uint8 MAVID1='j';
 	const uint8 MAVID2= 190;
 
 	public struct INAVEvent {
@@ -656,6 +656,7 @@ public class MWSerial : Object {
         available = false;
         set_txbuf(MemAlloc.TX);
 		pmask = PMask.AUTO;
+		mavsysid = 'j';
     }
 
     public MWSerial.reader() {
@@ -2015,8 +2016,8 @@ public class MWSerial : Object {
 			*ptx++ = mavseqno;
 			mcrc = mavlink_crc(mcrc, mavseqno);
 
-			*ptx++ = MAVID1;
-			mcrc = mavlink_crc(mcrc, MAVID1);
+			*ptx++ = mavsysid;
+			mcrc = mavlink_crc(mcrc, mavsysid);
 			*ptx++ = MAVID2;
 			mcrc = mavlink_crc(mcrc, MAVID2);
 
@@ -2061,8 +2062,8 @@ public class MWSerial : Object {
 			*ptx++ = mavseqno;
 			mcrc = mavlink_crc(mcrc, mavseqno);
 			mavseqno++;
-			*ptx++ = MAVID1;
-			mcrc = mavlink_crc(mcrc, MAVID1);
+			*ptx++ = mavsysid;
+			mcrc = mavlink_crc(mcrc, mavsysid);
 			*ptx++ = MAVID2;
 			mcrc = mavlink_crc(mcrc, MAVID2);
 			*ptx++ = (uint8)cmd;

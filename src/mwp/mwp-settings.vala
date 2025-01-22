@@ -109,6 +109,7 @@ public class MWPSettings : GLib.Object {
 	public double touch_factor {get; set; default=0.0;}
 	public int p_pane_width {get; set; default=0;}
 	public bool armed_msp_placebo {get; set; default=false;}
+	public uint mavlink_sysid {get; set; default=106;}
 
 	construct {
 #if DARWIN
@@ -200,6 +201,7 @@ public class MWPSettings : GLib.Object {
 		settings.bind("max-home-delta", this, "max-home-delta", SettingsBindFlags.DEFAULT);
 		settings.bind("max-radar-slots", this, "max-radar", SettingsBindFlags.DEFAULT);
 		settings.bind("radar-list-max-altitude", this, "max-radar-altitude", SettingsBindFlags.DEFAULT);
+		settings.bind("mavlink-sysid", this, "mavlink-sysid", SettingsBindFlags.DEFAULT);
 		settings.bind("max-wps", this, "max-wps", SettingsBindFlags.DEFAULT);
 		settings.bind("max-climb-angle", this, "maxclimb", SettingsBindFlags.DEFAULT);
 		settings.bind("max-dive-angle", this, "maxdive", SettingsBindFlags.DEFAULT);

@@ -25,6 +25,7 @@ public class Forwarder : Object {
 		if (_dev != null) {
 			devname = _dev;
 			fdev = new MWSerial.forwarder();
+			fdev.mavsysid = (uint8)Mwp.conf.mavlink_sysid;
 		}
 	}
 
