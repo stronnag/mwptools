@@ -215,9 +215,10 @@ where:
 
 Notes:
 
+* Prior to forwarding the message payload, mwp will have validated the message and processed it for its own purpose.
 * Where a telemetry protocol offers different versions (`MSP`, `MAVlink`), mwp will forward the version received.
 * For MAVLink, mwp uses a `sysid` of `106` (UTF8 `j`).
-* The MAVLink `system id` may be set with the setting `mavlink-sysid`, in the range 2-255 (see https://ardupilot.org/dev/docs/mavlink-basics.html and GCS guidance ibid)
+* The MAVLink `sysid` may be changed with the setting `mavlink-sysid`, in the range 2-255 (see [MAVlink documentation](https://ardupilot.org/dev/docs/mavlink-basics.html#message-format) and particularly the GCS guidance, 2nd paragraph _ibid_)
 
 e.g.
 

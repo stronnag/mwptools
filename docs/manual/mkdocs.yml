@@ -41,7 +41,7 @@ plugins:
       output_path: ../mwptools.pdf
       cover_logo: images/mwp_icon.svg
       enabled_if_env: ENABLE_PDF_EXPORT
-      copyright: (c) Jonathan Hudson 2014-2024
+      copyright: (c) Jonathan Hudson 2014-2025
       convert_iframe:
         - src: https://player.vimeo.com/video/268036585?h=e81256c10e
           text: Watch on Vimeo

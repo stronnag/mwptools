@@ -674,7 +674,7 @@
      <summary>Sysid for synthesised MAVLink</summary>
      <range min="2" max="255"/>
       <default>106</default>
-      <description>System ID in the range 2-255 (see https://ardupilot.org/dev/docs/mavlink-basics.html and GCS guidance ibid) </description>
+      <description>System ID in the range 2-255 (see [MAVlink documentation](https://ardupilot.org/dev/docs/mavlink-basics.html#message-format) and particularly the GCS guidance, 2nd paragraph _ibid_)</description>
    </key>
 
   </schema>
