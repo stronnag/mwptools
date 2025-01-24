@@ -1792,7 +1792,7 @@ namespace Mwp {
 				download_mission();
 			} else if (STATUSX in starttasks) {
 				starttasks -= StartupTasks.STATUSX;
-				have_status= false;
+				have_status = false;
 				queue_cmd(msp_get_status,null,0);
 				run_queue();
 			}

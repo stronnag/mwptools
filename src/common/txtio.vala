@@ -90,14 +90,16 @@ namespace TxtIO {
 					}
 				}
 			} else if(line.has_prefix("set ")) {
-				int val;
-				if (line.contains("nav_fw_land_approach_length")) {
-					if (Cli.get_set_val(line, out val)) {
-						FWPlot.nav_fw_land_approach_length = val/100;
-					}
-				} else if (line.contains("nav_fw_loiter_radius")) {
-					if (Cli.get_set_val(line, out val)) {
-						FWPlot.nav_fw_loiter_radius = val/100;
+				if(!Mwp.msp.available) {
+					int val;
+					if (line.contains("nav_fw_land_approach_length")) {
+						if (Cli.get_set_val(line, out val)) {
+							FWPlot.nav_fw_land_approach_length = val/100;
+						}
+					} else if (line.contains("nav_fw_loiter_radius")) {
+						if (Cli.get_set_val(line, out val)) {
+							FWPlot.nav_fw_loiter_radius = val/100;
+						}
 					}
 				}
 			}

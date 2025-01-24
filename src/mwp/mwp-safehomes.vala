@@ -808,14 +808,16 @@ public class  SafeHomeDialog : Adw.Window {
 					}
 				}
 			} else if(s.has_prefix("set ")) {
-				int val;
-				if (s.contains("nav_fw_land_approach_length")) {
-					if (Cli.get_set_val(s, out val)) {
-						FWPlot.nav_fw_land_approach_length = val/100;
-					}
-				} else if (s.contains("nav_fw_loiter_radius")) {
-					if (Cli.get_set_val(s, out val)) {
-						FWPlot.nav_fw_loiter_radius = val/100;
+				if(!Mwp.msp.available) {
+					int val;
+					if (s.contains("nav_fw_land_approach_length")) {
+						if (Cli.get_set_val(s, out val)) {
+							FWPlot.nav_fw_land_approach_length = val/100;
+						}
+					} else if (s.contains("nav_fw_loiter_radius")) {
+						if (Cli.get_set_val(s, out val)) {
+							FWPlot.nav_fw_loiter_radius = val/100;
+						}
 					}
 				}
 			}
