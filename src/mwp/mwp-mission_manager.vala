@@ -537,12 +537,18 @@ namespace MissionManager {
 	}
 
 	public void update_all_fwa() {
-		int j = 0;
-		for(var k = 0; k < msx.length; k++) {
-			var m = msx[k];
+		var m = current();
+		if (m != null) {
 			for(int i=0; i < m.npoints; i++) {
-				MWPLog.message(":DBG: msx %d, i = %d j = %d\n", k, i, j);
-				j++;
+				if(m.points[i].action == Msp.Action.LAND) {
+					if(FWApproach.is_active((int)MissionManager.mdx+8)) {
+						unowned MWPMarker? mk = MsnTools.search_markers_by_id(m.points[i].no);
+						if (mk != null) {
+							FWPlot.update_laylines((int)MissionManager.mdx+8, mk, true);
+						}
+						break;
+					}
+				}
 			}
 		}
 	}
