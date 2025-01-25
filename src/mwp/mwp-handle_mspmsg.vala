@@ -38,6 +38,7 @@ namespace Mwp {
 	bool gz_from_msp;
 	uint8 []boxids;
 	int idcount;
+	bool fwachanged;
 
 	[Flags]
 	private enum StartupTasks {
@@ -719,6 +720,7 @@ namespace Mwp {
 					request_common_setting("safehome_max_distance");
 				}
 				if(vi.fc_vers >= FCVERS.hasFWApp) {
+					fwachanged = false;
 					request_common_setting("nav_fw_land_approach_length");
 					request_common_setting("nav_fw_loiter_radius");
 				}
@@ -816,8 +818,13 @@ namespace Mwp {
 				break;
 			case "nav_fw_land_approach_length":
 				if (len == 4) {
-					SEDE.deserialise_u32(raw, out FWPlot.nav_fw_land_approach_length);
-					FWPlot.nav_fw_land_approach_length /= 100;
+					uint32 fwlal;
+					SEDE.deserialise_u32(raw, out fwlal);
+					fwlal /= 100;
+					if (fwlal != FWPlot.nav_fw_land_approach_length) {
+						FWPlot.nav_fw_land_approach_length = fwlal;
+						fwachanged = true;
+					}
 					sb.append_printf("%um\n", FWPlot.nav_fw_land_approach_length);
 				} else {
 					sb.append_printf("length error %u\n", len);
@@ -827,8 +834,17 @@ namespace Mwp {
 				if(len == 2) {
 					uint16 fwr;
 					SEDE.deserialise_u16(raw, out fwr);
-					FWPlot.nav_fw_loiter_radius = fwr / 100;
-					sb.append_printf("%um\n", FWPlot.nav_fw_loiter_radius);
+					fwr /= 100;
+					if (fwr != FWPlot.nav_fw_loiter_radius) {
+						FWPlot.nav_fw_loiter_radius = fwr;
+						fwachanged = true;
+					}
+					sb.append_printf("%um (%s)\n", FWPlot.nav_fw_loiter_radius, fwachanged.to_string());
+					if(fwachanged) {
+						Safehome.manager.redraw_homes();
+						MissionManager.update_all_fwa();
+						fwachanged = false;
+					}
 				} else {
 					sb.append_printf("length error %u\n", len);
 				}

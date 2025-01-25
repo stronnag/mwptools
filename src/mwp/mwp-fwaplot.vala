@@ -16,13 +16,12 @@
  */
 
 namespace FWPlot {
-
 	private Shumate.PathLayer []lpaths;
 	private Shumate.PathLayer []apaths;
 	private Gdk.RGBA landcol;
 	private Gdk.RGBA appcol;
 	public uint32 nav_fw_land_approach_length = 350;
-	public uint32 nav_fw_loiter_radius = 50;
+	public uint32 nav_fw_loiter_radius = 75;
 
 	public void init() {
 		landcol = {0xfc/255.0f, 0xac/255.0f, 0x64/255.0f, 0xa0/255.0f};

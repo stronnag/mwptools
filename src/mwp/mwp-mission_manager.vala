@@ -535,4 +535,15 @@ namespace MissionManager {
 		}
 		return res;
 	}
+
+	public void update_all_fwa() {
+		int j = 0;
+		for(var k = 0; k < msx.length; k++) {
+			var m = msx[k];
+			for(int i=0; i < m.npoints; i++) {
+				MWPLog.message(":DBG: msx %d, i = %d j = %d\n", k, i, j);
+				j++;
+			}
+		}
+	}
 }

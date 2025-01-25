@@ -961,6 +961,12 @@ public class  SafeHomeDialog : Adw.Window {
 		}
     }
 
+	public void redraw_homes() {
+		if (switcher.active) {
+			display_homes(true);
+		}
+	}
+
     public void display_ui() {
 		if(Mwp.msp != null && Mwp.msp.available) {
 			online_change(Mwp.vi.fc_vers);
