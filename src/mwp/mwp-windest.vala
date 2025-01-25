@@ -34,7 +34,7 @@ namespace WindEstimate {
 
 		public View() {
 			 try {
-				 pix = new Gdk.Pixbuf.from_resource_at_scale ("/org/stronnag/mwp/wind-arrow.svg", 64, 64, true);
+				 pix = new Gdk.Pixbuf.from_resource_at_scale ("/org/stronnag/mwp/pixmaps/wind-arrow.svg", 64, 64, true);
 				 var tex = Gdk.Texture.for_pixbuf(pix);
 				 ico = new Gtk.Image.from_paintable(tex);
 			 } catch (Error e){
