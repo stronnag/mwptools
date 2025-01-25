@@ -20,7 +20,7 @@ Adjustment adjustment5 {
 }
 
 template $TileUtilsDialog: Adw.Window {
-  title: _('mwp map seeder');
+  title: _("mwp map seeder");
   icon-name: "mwp_icon";
 
   Box vbox {
@@ -40,7 +40,7 @@ template $TileUtilsDialog: Adw.Window {
         margin-top: 2;
         margin-bottom: 2;
         hexpand: false;
-        label: _('The tile seeder will pre-seed the tile cache for the currently selected map source, where tiles are missing or older than the stale time (days).\n\nAll tiles within the area currently displayed will be downloaded at the max zoom level. Tiles for a larger area will be downloaded for each lesser zoom level.\n\nUse the min and max zoom to select the zoom levels and then click "Apply". Statistics showing the status of the download will be displayed. Clicking "Stop" or closing the dialogue will terminate the seeding.  ');
+        label: _("The tile seeder will pre-seed the tile cache for the currently selected map source, where tiles are missing or older than the stale time (days).\n\nAll tiles within the area currently displayed will be downloaded at the max zoom level. Tiles for a larger area will be downloaded for each lesser zoom level.\n\nUse the min and max zoom to select the zoom levels and then click 'Apply'. Statistics showing the status of the download will be displayed. Clicking 'Stop' or closing the dialogue will terminate the seeding.  ");
         wrap: true;
         wrap-mode: word_char;
         max-width-chars: 80;
@@ -58,7 +58,7 @@ template $TileUtilsDialog: Adw.Window {
           Label label6 {
             visible: true;
             can-focus: false;
-            label: _('Min Zoom');
+            label: _("Min Zoom");
           }
 
           SpinButton tile_minzoom {
@@ -70,11 +70,11 @@ template $TileUtilsDialog: Adw.Window {
           halign: center;
 
           Label label7 {
-            label: _('Max Zoom');
+            label: _("Max Zoom");
           }
 
           SpinButton tile_maxzoom {
-            text: _('0');
+            text: _("0");
             adjustment: adjustment5;
           }
         }
@@ -83,7 +83,7 @@ template $TileUtilsDialog: Adw.Window {
           halign: end;
 
           Label label8 {
-            label: _('Stale Days');
+            label: _("Stale Days");
           }
 
           SpinButton tile_age {
@@ -95,7 +95,7 @@ template $TileUtilsDialog: Adw.Window {
       Label tile_stats {
         margin-top: 2;
         margin-bottom: 2;
-        label: _('0/0/0');
+        label: _("0/0/0");
       }
     }
 

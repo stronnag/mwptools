@@ -3,7 +3,7 @@ using Adw 1;
 
 template $TADialog: Adw.Window {
   icon-name: "mwp_icon";
-  title: _('Terrain Analysis');
+  title: _("Terrain Analysis");
 
   Box {
     spacing: 4;
@@ -23,7 +23,7 @@ template $TADialog: Adw.Window {
 
         Label {
           halign: end;
-          label: _('Nominal Home');
+          label: _("Nominal Home");
           justify: right;
 
           layout {
@@ -34,7 +34,7 @@ template $TADialog: Adw.Window {
 
         Label {
           halign: end;
-          label: _('Margin Elevation (m)');
+          label: _("Margin Elevation (m)");
           justify: right;
 
           layout {
@@ -54,7 +54,7 @@ template $TADialog: Adw.Window {
 
         Label {
           halign: end;
-          label: _('Replace Mission');
+          label: _("Replace Mission");
           justify: right;
 
           layout {
@@ -65,7 +65,7 @@ template $TADialog: Adw.Window {
 
         Entry pe_clearance {
           focusable: true;
-          placeholder-text: _('Clearance (m) optional');
+          placeholder-text: _("Clearance (m) optional");
           input-purpose: digits;
 
           layout {
@@ -93,7 +93,7 @@ template $TADialog: Adw.Window {
         }
 
         Label {
-          label: _('Update Land Offset');
+          label: _("Update Land Offset");
 
           layout {
             column: '0';
@@ -103,7 +103,7 @@ template $TADialog: Adw.Window {
 
         Label {
           halign: end;
-          label: _('RTH Altitude (m)');
+          label: _("RTH Altitude (m)");
           justify: right;
 
           layout {
@@ -114,7 +114,7 @@ template $TADialog: Adw.Window {
 
         Entry pe_rthalt {
           focusable: true;
-          placeholder-text: _('RTH Alttude (m)');
+          placeholder-text: _("RTH Alttude (m)");
           input-purpose: digits;
 
           layout {
@@ -125,7 +125,7 @@ template $TADialog: Adw.Window {
 
         Label {
           halign: end;
-          label: _('Altitude Mode');
+          label: _("Altitude Mode");
           justify: right;
 
           layout {
@@ -151,7 +151,7 @@ template $TADialog: Adw.Window {
 
         Label {
           halign: end;
-          label: _('Max. Climb Angle (°)');
+          label: _("Max. Climb Angle (°)");
 
           layout {
             column: '0';
@@ -161,7 +161,7 @@ template $TADialog: Adw.Window {
 
         Label {
           halign: end;
-          label: _('Max. Dive Angle (°)');
+          label: _("Max. Dive Angle (°)");
 
           layout {
             column: '0';
@@ -171,7 +171,7 @@ template $TADialog: Adw.Window {
 
         Entry pe_climb {
           focusable: true;
-          placeholder-text: _('Max climb angle (°)');
+          placeholder-text: _("Max climb angle (°)");
           input-purpose: number;
 
           layout {
@@ -182,7 +182,7 @@ template $TADialog: Adw.Window {
 
         Entry pe_dive {
           focusable: true;
-          placeholder-text: _('Max dive angle (°)');
+          placeholder-text: _("Max dive angle (°)");
           input-purpose: number;
 
           layout {
@@ -202,12 +202,12 @@ template $TADialog: Adw.Window {
 
         Button pe_ok {
           hexpand: true;
-          label: _('Apply');
+          label: _("Apply");
           // 	  sensitive: false;
         }
 
         Button pe_close {
-          label: _('Close');
+          label: _("Close");
           hexpand: true;
           receives-default: true;
         }

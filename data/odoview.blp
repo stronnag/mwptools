@@ -2,7 +2,7 @@ using Gtk 4.0;
 using Adw 1;
 
 template $OdoWindow: Adw.Window {
-  title: _('Odo View');
+  title: _("Odo View");
   icon-name: "mwp_icon";
 
   Box vbox {
@@ -22,7 +22,7 @@ template $OdoWindow: Adw.Window {
         visible: true;
         can-focus: false;
         halign: start;
-        label: _('Elapsed Time');
+        label: _("Elapsed Time");
 
         layout {
           row: 0;
@@ -35,7 +35,7 @@ template $OdoWindow: Adw.Window {
         can-focus: false;
         halign: end;
         hexpand: false;
-        label: _('0:00');
+        label: _("0:00");
         justify: right;
 
         layout {
@@ -48,7 +48,7 @@ template $OdoWindow: Adw.Window {
         visible: true;
         can-focus: false;
         halign: start;
-        label: _('mm:ss');
+        label: _("mm:ss");
 
         layout {
           row: 0;
@@ -60,7 +60,7 @@ template $OdoWindow: Adw.Window {
         visible: true;
         can-focus: false;
         halign: start;
-        label: _('Distance');
+        label: _("Distance");
 
         layout {
           row: '1';
@@ -73,7 +73,7 @@ template $OdoWindow: Adw.Window {
         can-focus: false;
         halign: end;
         hexpand: false;
-        label: _('0');
+        label: _("0");
         justify: right;
 
         layout {
@@ -86,7 +86,7 @@ template $OdoWindow: Adw.Window {
         visible: true;
         can-focus: false;
         halign: start;
-        label: _('metres');
+        label: _("metres");
 
         layout {
           row: '1';
@@ -98,7 +98,7 @@ template $OdoWindow: Adw.Window {
         visible: true;
         can-focus: false;
         halign: start;
-        label: _('Maximum Speed');
+        label: _("Maximum Speed");
 
         layout {
           row: '2';
@@ -111,7 +111,7 @@ template $OdoWindow: Adw.Window {
         can-focus: false;
         halign: end;
         hexpand: false;
-        label: _('0');
+        label: _("0");
 
         layout {
           row: 2;
@@ -125,7 +125,7 @@ template $OdoWindow: Adw.Window {
         visible: true;
         can-focus: false;
         halign: start;
-        label: _('m/s');
+        label: _("m/s");
 
         layout {
           row: '2';
@@ -137,7 +137,7 @@ template $OdoWindow: Adw.Window {
         visible: true;
         can-focus: false;
         halign: start;
-        label: _('Maximum Range');
+        label: _("Maximum Range");
 
         layout {
           row: 3;
@@ -149,7 +149,7 @@ template $OdoWindow: Adw.Window {
         visible: true;
         can-focus: false;
         halign: end;
-        label: _('0');
+        label: _("0");
 
         layout {
           row: 3;
@@ -161,7 +161,7 @@ template $OdoWindow: Adw.Window {
         visible: true;
         can-focus: false;
         halign: start;
-        label: _('metres');
+        label: _("metres");
 
         layout {
           row: 3;
@@ -172,7 +172,7 @@ template $OdoWindow: Adw.Window {
       Label {
         visible: true;
         can-focus: false;
-        label: _('Maximum Altitude');
+        label: _("Maximum Altitude");
 
         layout {
           row: 4;
@@ -184,7 +184,7 @@ template $OdoWindow: Adw.Window {
         visible: true;
         can-focus: false;
         halign: end;
-        label: _('0');
+        label: _("0");
 
         layout {
           row: 4;
@@ -196,7 +196,7 @@ template $OdoWindow: Adw.Window {
         visible: true;
         can-focus: false;
         halign: start;
-        label: _('metres');
+        label: _("metres");
 
         layout {
           row: 4;
@@ -207,9 +207,9 @@ template $OdoWindow: Adw.Window {
       Label odo_ca0 {
         visible: true;
         can-focus: false;
-        tooltip-text: _('Only updated for blackbox replay');
+        tooltip-text: _("Only updated for blackbox replay");
         halign: start;
-        label: _('Maximum Current');
+        label: _("Maximum Current");
 
         layout {
           row: 5;
@@ -220,9 +220,9 @@ template $OdoWindow: Adw.Window {
       Label odoamps {
         visible: true;
         can-focus: false;
-        tooltip-text: _('Only updated for blackbox replay');
+        tooltip-text: _("Only updated for blackbox replay");
         halign: end;
-        label: _('n/a');
+        label: _("n/a");
 
         layout {
           row: 5;
@@ -233,8 +233,8 @@ template $OdoWindow: Adw.Window {
       Label odo_ca2 {
         visible: true;
         can-focus: false;
-        tooltip-text: _('Only updated for blackbox replay');
-        label: _('Amps');
+        tooltip-text: _("Only updated for blackbox replay");
+        label: _("Amps");
 
         layout {
           row: 5;
@@ -296,7 +296,7 @@ template $OdoWindow: Adw.Window {
       Label {
         visible: true;
         can-focus: false;
-        label: _('Notes:');
+        label: _("Notes:");
       }
     }
 

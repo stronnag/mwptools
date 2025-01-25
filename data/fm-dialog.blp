@@ -10,7 +10,7 @@ Adjustment adjustment {
 
 template $FollowWindow : Adw.Window {
   icon-name: "mwp_icon";
-  title: _('mwp Follow Me');
+  title: _("mwp Follow Me");
   default-width: 480;
 
   Box vbox {
@@ -26,7 +26,7 @@ template $FollowWindow : Adw.Window {
       hexpand: false;
 
       Label {
-        label: _('Drag the <span weight="bold" background="green" >Green Location Icon (⨁)</span> to the desired location\n• Ensure that the vehicle is in <b>POSHOLD</b>\n• Ensure that <b>GCS NAV</b> mode is asserted\n• Ensure that there is an active MSP channel\n\nClicking OK will result in the FollowMe location being sent to the vehicle\n<i>if the above three conditions are satisfiled</i>.\nClicking Toggle will toggle the display of the FollowMe Icon and centre it if off-screen when toggled for display.\nIf you have a GPS connected to the GCS and want to use GPSd for follow me location, check the box below. With GPSd, the follow me location will send automatically.\n');
+        label: _("Drag the <span weight='bold' background='green' >Green Location Icon (⨁)</span> to the desired location\n• Ensure that the vehicle is in <b>POSHOLD</b>\n• Ensure that <b>GCS NAV</b> mode is asserted\n• Ensure that there is an active MSP channel\n\nClicking OK will result in the FollowMe location being sent to the vehicle\n<i>if the above three conditions are satisfiled</i>.\nClicking Toggle will toggle the display of the FollowMe Icon and centre it if off-screen when toggled for display.\nIf you have a GPS connected to the GCS and want to use GPSd for follow me location, check the box below. With GPSd, the follow me location will send automatically.\n");
         use-markup: true;
 	wrap: true;
       }
@@ -39,18 +39,18 @@ template $FollowWindow : Adw.Window {
 
       Box {
         Label {
-          label: _('Relative Altitude (m)');
+          label: _("Relative Altitude (m)");
         }
 
         SpinButton fm_spin_alt {
-          text: _('0');
+          text: _("0");
           adjustment: adjustment;
           climb-rate: 1;
         }
       }
 
       Label fm_label {
-        label: _('00:00:00N 000:00:00W');
+        label: _("00:00:00N 000:00:00W");
 	use-markup: true;
       }
 
@@ -59,11 +59,11 @@ template $FollowWindow : Adw.Window {
         halign: end;
 
         Button fm_toggle {
-          label: _('Toggle');
+          label: _("Toggle");
         }
 
         Button fm_ok {
-          label: _('OK');
+          label: _("OK");
         }
       }
     }
