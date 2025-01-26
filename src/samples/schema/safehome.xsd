@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- XSchema for INAV sahehomes
+     usage  e.g. xmllint -​-noout -​-schema safehome.xsd safehomes.xml
+     Initial draft: 2025-01-26 Jonathan Hudson (@stronnag)
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+  <xs:element name="safehomes">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="description"/>
+        <xs:element minOccurs = "0"  maxOccurs="8" ref="safehome"/>
+        <xs:element minOccurs = "0" maxOccurs="8" ref="fwapproach"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <!--  All of description is optional -->
+  <xs:element name="description">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs = "0" maxOccurs="unbounded" ref="options"/>
+      </xs:sequence>
+      <xs:attribute name="generator" type="xs:NCName"/>
+      <xs:attribute name="version" type="xs:decimal"/>
+    </xs:complexType>
+  </xs:element>
+  <!--  options are optional
+       Consumers might use options to assist visualisation when
+       offline, for example
+       <options name="nav_fw_land_approach_length" value="150" />
+       <options name="nav_fw_loiter_radius" value="40" />
+  -->
+  <xs:element name="options">
+    <xs:complexType>
+      <xs:attribute name="name" use="required" type="xs:NCName"/>
+      <xs:attribute name="value" use="required" type="xs:integer"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="safehome">
+    <xs:complexType>
+      <xs:attribute name="enabled" use="required" type="xs:boolean"/>
+      <xs:attribute name="id" use="required" type="xs:integer"/>
+      <xs:attribute name="latitude" use="required" type="xs:decimal"/>
+      <xs:attribute name="longitude" use="required" type="xs:decimal"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="fwapproach">
+    <xs:complexType>
+      <xs:attribute name="approachalt" use="required" type="xs:decimal"/>
+      <xs:attribute name="approachdirection" use="required" >
+	<xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="left"/>
+            <xs:enumeration value="right"/>
+	  </xs:restriction>
+	</xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="index" use="required" type="xs:integer"/>
+      <xs:attribute name="landalt" use="required" type="xs:decimal"/>
+      <xs:attribute name="landheading1" use="required" type="xs:integer"/>
+      <xs:attribute name="landheading2" use="required" type="xs:integer"/>
+      <xs:attribute name="sealevelref" use="required" type="xs:boolean"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

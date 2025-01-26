@@ -2,8 +2,8 @@
 
 {{ mwp }} has, since December 2024, had somewhat functional support for  building `mwptools` using the Windows [Msys2](https://www.msys2.org/) toolchain with the aim of providing a native Windows version of mwp.
 
-* May be built locally using the [Msys2](https://www.msys2.org/)
 * A "portable" Windows Installer is published in the "Snapshot" builds (Github release area).
+* May be built locally using the [Msys2](https://www.msys2.org/)
 
 ## Status
 
@@ -69,6 +69,7 @@ Run the installer. Select the option to install a desktop icon if you wish. Opti
 
 * If you select a portable (user local) installation, the "DejaVu Mono" fonts cannot be installed, resulting in an ugly side panel.
 * The portable (user local) installation may be removed by deleting the installation directory.
+* The installer may not set the "Start In" directory correctly.
 
 #### Binary Components and Open Source Licences
 
@@ -121,7 +122,7 @@ The above external applications will need to be on the `PATH` available to the i
 
 ## Known issues
 
-* Bluetooth in general is unreliable, in some part due to the difficulty in consistently enumerating BT devices.
+* Bluetooth in general may be unreliable, in some part due to the difficulty in consistently enumerating BT devices.
 * BLE is not available
 * Terrain Analysis and Line of Sight Analysis is only available "off-line"
 * In the event that mwp should crash, it may leave behind some spawned applications, for example one of more of `fl2ltm`, `blackbox_decode`, `espeak`, `voice`, `bproxy`, `gmproxy`, `gdbus`. In particular, mwp may not restart if an `gdbus` orphaned remains. In such cases, the user is advised to clean up using the Task Manager.
@@ -158,7 +159,7 @@ Neither of these locations are cleared by an uninstall.
 
 ## Other
 
-Note that mwp creates and consumes IP services. It may be necessary to ensure it's white-listed in the Windows firewall.
+Note that mwp creates and consumes IP services. It may be necessary to ensure that `mwp.exe` is white-listed in the Windows firewall.
 
 ## Reporting Issues
 
