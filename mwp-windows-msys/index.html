@@ -1632,8 +1632,8 @@
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">#</a></h2>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> has, since December 2024, had somewhat functional support for  building <code>mwptools</code> using the Windows <a href="https://www.msys2.org/">Msys2</a> toolchain with the aim of providing a native Windows version of mwp.</p>
 <ul>
-<li>May be built locally using the <a href="https://www.msys2.org/">Msys2</a></li>
 <li>A "portable" Windows Installer is published in the "Snapshot" builds (Github release area).</li>
+<li>May be built locally using the <a href="https://www.msys2.org/">Msys2</a></li>
 </ul>
 <h2 id="status">Status<a class="headerlink" href="#status" title="Permanent link">#</a></h2>
 <p>Somewhat experimental, however most things work.</p>
@@ -1678,6 +1678,7 @@ After you've done this once, subsequently, after the repo has been updated, you 
 <ul>
 <li>If you select a portable (user local) installation, the "DejaVu Mono" fonts cannot be installed, resulting in an ugly side panel.</li>
 <li>The portable (user local) installation may be removed by deleting the installation directory.</li>
+<li>The installer may not set the "Start In" directory correctly.</li>
 </ul>
 <h4 id="binary-components-and-open-source-licences">Binary Components and Open Source Licences<a class="headerlink" href="#binary-components-and-open-source-licences" title="Permanent link">#</a></h4>
 <p>The Windows installer includes components distributed under various Open Source
@@ -1719,7 +1720,7 @@ Licences:</p>
 <p>The above external applications will need to be on the <code>PATH</code> available to the installed mwp.</p>
 <h2 id="known-issues">Known issues<a class="headerlink" href="#known-issues" title="Permanent link">#</a></h2>
 <ul>
-<li>Bluetooth in general is unreliable, in some part due to the difficulty in consistently enumerating BT devices.</li>
+<li>Bluetooth in general may be unreliable, in some part due to the difficulty in consistently enumerating BT devices.</li>
 <li>BLE is not available</li>
 <li>Terrain Analysis and Line of Sight Analysis is only available "off-line"</li>
 <li>In the event that mwp should crash, it may leave behind some spawned applications, for example one of more of <code>fl2ltm</code>, <code>blackbox_decode</code>, <code>espeak</code>, <code>voice</code>, <code>bproxy</code>, <code>gmproxy</code>, <code>gdbus</code>. In particular, mwp may not restart if an <code>gdbus</code> orphaned remains. In such cases, the user is advised to clean up using the Task Manager.</li>
@@ -1754,7 +1755,7 @@ PS C:\Users\win11&gt; gsettings set org.stronnag.mwp smartport-fuel-unit &#39;mA
 </li>
 </ul>
 <h2 id="other">Other<a class="headerlink" href="#other" title="Permanent link">#</a></h2>
-<p>Note that mwp creates and consumes IP services. It may be necessary to ensure it's white-listed in the Windows firewall.</p>
+<p>Note that mwp creates and consumes IP services. It may be necessary to ensure that <code>mwp.exe</code> is white-listed in the Windows firewall.</p>
 <h2 id="reporting-issues">Reporting Issues<a class="headerlink" href="#reporting-issues" title="Permanent link">#</a></h2>
 <p>Please see the <a href="../mwp_support/">general guidance</a>, in particular:</p>
 <ul>
