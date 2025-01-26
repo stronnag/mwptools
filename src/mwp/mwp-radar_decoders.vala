@@ -222,16 +222,16 @@ namespace Radar {
 					}
 
 					if(obj.has_member("dst")) {
-						ri.range = obj.get_double_member ("dst") * 1852.0;
+						ri.srange = (uint)(obj.get_double_member ("dst") * 1852.0);
 						sb.append_printf(" range: %.0f", ri.range);
 					}
 
-					if(obj.has_member("dir")) {
-						ri.bearing = (uint16)obj.get_double_member ("dir");
-						sb.append_printf(" brg: %u", ri.bearing);
-					} else {
+					//if(obj.has_member("dir")) {
+					//	ri.bearing = (uint16)obj.get_double_member ("dir");
+					//	sb.append_printf(" brg: %u", ri.bearing);
+					//} else {
 						ri.bearing = 0xffff;
-					}
+						//}
 
 					if(obj.has_member("seen")) {
 						var seen = (uint)obj.get_double_member ("seen");

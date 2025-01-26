@@ -812,47 +812,53 @@ namespace Radar {
 
 			var alert = r.alert;
 			var xalert = r.alert;
-			if(r.srange == 0xffffffff) {
-				bool havehome = false;
-				havehome =  GCS.get_location(out hlat, out hlon);
-				if (!havehome) {
-					if(HomePoint.is_valid()) {
-						havehome = HomePoint.get_location(out hlat, out hlon);
-					}
+			bool havehome = false;
+			havehome =  GCS.get_location(out hlat, out hlon);
+			if (!havehome) {
+				if(HomePoint.is_valid()) {
+					havehome = HomePoint.get_location(out hlat, out hlon);
 				}
-				if(havehome) {
-					double c,d;
-					Geo.csedist(hlat, hlon, r.latitude, r.longitude, out d, out c);
-					idm = d*1852.0; // nm to m
-					r.range = idm;
-					r.bearing = (uint16)c;
-				}
+			}
+			if(havehome) {
+				double c,d;
+				Geo.csedist(hlat, hlon, r.latitude, r.longitude, out d, out c);
+				idm = d*1852.0; // nm to m
+				r.range = idm;
+				r.bearing = (uint16)c;
 			} else {
-				r.range = (double)(r.srange);
+				if(r.srange != 0xffffffff) {
+					r.range = (double)(r.srange);
+				}
 				r.bearing = 0xffff;
 			}
 
 			if((r.source & RadarSource.M_ADSB) != 0) {
-					if(Mwp.conf.radar_alert_altitude > 0 && Mwp.conf.radar_alert_range > 0 &&
-					   r.altitude < Mwp.conf.radar_alert_altitude && idm < Mwp.conf.radar_alert_range) {
-						xalert = RadarAlert.ALERT;
-						var this_sec = dt.to_unix();
-						if(r.state < Radar.Status.STALE && this_sec >= last_sec + 2) {
-							Audio.play_alarm_sound(MWPAlert.GENERAL);
-							last_sec =  this_sec;
-						}
-					} else {
-						xalert = RadarAlert.NONE;
+				if(Mwp.conf.radar_alert_altitude > 0 && Mwp.conf.radar_alert_range > 0 &&
+				   r.altitude < Mwp.conf.radar_alert_altitude && r.range < Mwp.conf.radar_alert_range) {
+					xalert = RadarAlert.ALERT;
+					var this_sec = dt.to_unix();
+					if(r.state < Radar.Status.STALE && this_sec >= last_sec + 2) {
+						Audio.play_alarm_sound(MWPAlert.GENERAL);
+						last_sec =  this_sec;
+						Mwp.add_toast_text("ADSB proximity %s %.0fm@%u° %.0fm".printf(
+											   r.name, r.range, r.bearing, r.altitude));
 					}
+				} else {
+					xalert = RadarAlert.NONE;
 				}
-				if (alert != xalert) {
-					xalert |= RadarAlert.SET;
-					r.alert = xalert;
-				}
-				if(r.state >= RadarView.status.length)
-					r.state = Status.UNDEF;
-
+			}
+			if (alert != xalert) {
+				xalert |= RadarAlert.SET;
+				r.alert = xalert;
+			}
+			if(r.state >= RadarView.status.length)
+				r.state = Status.UNDEF;
 			show_number();
 		}
 	}
 }
+/*
+  MWPLog.message(":DBG:RADAR Check %s range:%u bearing:%u alt:%.0f (r=%u a=%u)\n",
+  r.name, (uint)r.range, r.bearing, r.altitude,
+  Mwp.conf.radar_alert_range, Mwp.conf.radar_alert_altitude);
+*/

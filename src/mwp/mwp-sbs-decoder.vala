@@ -61,9 +61,15 @@ public class ADSBReader :Object {
 						switch (parts[0]) {
 						case "range":
 							range = uint.parse(parts[1]);
+							if (range > 250) {
+								range = 250;
+							}
 							break;
 						case "interval":
 							interval = uint.parse(parts[1]);
+							if(interval < 1000) {
+								interval = 1000;
+							}
 						break;
 						}
 					}

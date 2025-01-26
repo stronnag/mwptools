@@ -213,7 +213,7 @@ public class MWPSettings : GLib.Object {
 		settings.bind("p-pane-width", this, "p-pane-width", SettingsBindFlags.DEFAULT);
 		settings.bind("poll-timeout", this, "polltimeout", SettingsBindFlags.DEFAULT);
 		settings.bind("pos-is-centre", this, "pos-is-centre", SettingsBindFlags.DEFAULT);
-		settings.bind("radar-list-max-altitude", this, "radar-alert-altitude", SettingsBindFlags.DEFAULT);
+		settings.bind("radar-alert-altitude", this, "radar-alert-altitude", SettingsBindFlags.DEFAULT);
 		settings.bind("radar-alert-range", this, "radar-alert-range", SettingsBindFlags.DEFAULT);
 		settings.bind("rings-colour", this, "rcolstr", SettingsBindFlags.DEFAULT);
 		settings.bind("rth-autoland", this, "rth-autoland", SettingsBindFlags.DEFAULT);
