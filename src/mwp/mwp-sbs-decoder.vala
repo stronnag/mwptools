@@ -22,8 +22,11 @@ public class ADSBReader :Object {
 	private string host;
 	private uint16 port;
 	private Soup.Session session;
+	private uint range;
+	private uint interval;
 
 	public ADSBReader(string pn, uint16 _port=30003) {
+		interval = 1000;
 		var p = pn[6:pn.length].split(":");
 		port = _port;
 		host = "localhost";
@@ -37,12 +40,51 @@ public class ADSBReader :Object {
 	}
 
 	public ADSBReader.web(string pn) {
+		interval = 1000;
 		session = new Soup.Session ();
 		host = pn;
 	}
 
+	public ADSBReader.adsbx(string pn) {
+		interval = 1000;
+		session = new Soup.Session ();
+		try {
+			var up = Uri.parse(pn, UriFlags.HAS_PASSWORD);
+			var h = up.get_host();
+			host = "https://%s".printf(h);
+			var q = up.get_query();
+			if (q != null) {
+				var items = q.split("&");
+				foreach(var s in items) {
+					var parts = s.split("=");
+					if (parts.length == 2) {
+						switch (parts[0]) {
+						case "range":
+							range = uint.parse(parts[1]);
+							break;
+						case "interval":
+							interval = uint.parse(parts[1]);
+						break;
+						}
+					}
+				}
+			}
+		} catch (Error e) {
+			MWPLog.message("adsbx: parse %s %s\n", pn, e.message);
+		}
+	}
+
 	private async bool fetch() {
-		var msg = new Soup.Message ("GET", host);
+		Soup.Message msg;
+		string ahost;
+		if (range == 0) {
+			ahost = host;
+		} else {
+			double clat, clon;
+			MapUtils.get_centre_location(out clat, out clon);
+			ahost = "%s/v2/point/%f/%f/%u".printf(host, clat, clon, range);
+		}
+		msg = new Soup.Message ("GET", ahost);
 		try {
 			var byt = yield session.send_and_read_async (msg, Priority.DEFAULT, null);
 			if (msg.status_code == 200) {
@@ -60,12 +102,15 @@ public class ADSBReader :Object {
 		}
 	}
 
-	public void poll(uint timeout=1000) {
-		Timeout.add(timeout, () => {
+	public void poll(uint t=1000) {
+		if (interval == 0) {
+			interval = t;
+		}
+		Timeout.add(interval, () => {
 				fetch.begin((obj, res) => {
 						var ok = fetch.end(res);
 						if(ok) {
-							poll(timeout);
+							poll(t);
 						}
 					});
 				return false;

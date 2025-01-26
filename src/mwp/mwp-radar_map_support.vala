@@ -110,17 +110,20 @@ namespace Radar {
 		string ga_alt;
 		string ga_speed;
 		string state;
+		string xstate;
 		if((r.source & RadarSource.M_ADSB) != 0) {
 			ga_alt = Units.ga_alt(r.altitude);
 			ga_speed = Units.ga_speed(r.speed);
 			state = "(%s)".printf(CatMap.to_category(r.etype));
+			xstate = ((RadarSource)r.source).to_string();
 		} else {
 			ga_alt = "%.0f %s".printf(Units.distance(r.altitude), Units.distance_units());
 			ga_speed = "%.0f %s".printf(Units.speed(r.speed), Units.speed_units());
-			state = "";
+			state = "(B6)";
+			xstate = RadarView.status[r.state];
 		}
 		var tt = "%s / %s %s\n%s %s\n%s %s %.0f° ".printf(
-			r.name, RadarView.status[r.state], state,
+			r.name, xstate, state,
 			PosFormat.lat(r.latitude, Mwp.conf.dms),
 			PosFormat.lon(r.longitude, Mwp.conf.dms),
 			ga_alt, ga_speed, r.heading);

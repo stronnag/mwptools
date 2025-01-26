@@ -24,8 +24,27 @@ namespace Radar {
 		TELEM,    // 2,
 		MAVLINK,  // 4,
 		SBS,      //  8,
+		ADSBX,      //  16,
 		M_INAV = (INAV|TELEM),
-		M_ADSB = (MAVLINK|SBS),
+		M_ADSB = (MAVLINK|SBS|ADSBX);
+
+		public string to_string() {
+			string sstr;
+			if ((this & INAV) != 0) {
+				sstr = "INAV";
+			} else if((this & MAVLINK) != 0) {
+				sstr = "MAVL";
+			} else if((this & SBS) != 0) {
+				sstr = "SDR";
+			} else if((this & ADSBX) != 0) {
+				sstr = "ADSBX";
+			} else if((this & TELEM) != 0) {
+				sstr = "TELEM";
+			} else {
+				sstr = "UnKnown";
+			}
+			return sstr;
+		}
 	}
 
 	public class RadarPlot : Object {
@@ -47,6 +66,11 @@ namespace Radar {
 		public uint32 srange;
 		public bool posvalid;
 		public DateTime dt {get; construct set;}
+
+		public RadarPlot() {
+			bearing = 0xffff;
+		}
+
 	}
 
 	public enum RadarAlert {

@@ -96,7 +96,7 @@ namespace Radar {
 										return false;
 									});
 							} else {
-								decode_jsa((string)s);
+								decode_jsa((string)s, "aircraft");
 							}
 						});
 					jsa.line_reader.begin();
@@ -119,16 +119,26 @@ namespace Radar {
 					MWPLog.message("mwp not compiled with protobuf-c\n");
 #endif
 
-				} else if (pn.has_prefix("http://") || pn.has_prefix("https://")) {
+				} else if (pn.has_prefix("http://") ||
+						   pn.has_prefix("https://") ||
+						   pn.has_prefix("adsbx://") ) {
 					uint8 htype = 0;
 					if(pn.has_suffix(".pb")) {
 						htype = 1;
 					} else if(pn.has_suffix(".json")) {
 						htype = 2;
+					} else if (pn.has_prefix("adsbx://")) {
+						htype = 3;
 					}
+
 					if(htype != 0) {
 						MWPLog.message("Set up http radar device %s\n", pn);
-						var httpa = new ADSBReader.web(pn);
+						ADSBReader httpa;
+						if(htype == 3) {
+							httpa = new ADSBReader.adsbx(pn);
+						} else  {
+							httpa = new ADSBReader.web(pn);
+						}
 						httpa.result.connect((s) => {
 								if (s == null) {
 									Timeout.add_seconds(60, () => {
@@ -140,7 +150,8 @@ namespace Radar {
 										decode_pba(s);
 									} else {
 										s[s.length-1] = 0;
-										decode_jsa((string)s);
+										string key = (htype == 2) ? "aircraft" : "ac";
+										decode_jsa((string)s, key);
 									}
 								}
 							});
@@ -607,13 +618,7 @@ namespace Radar {
 		private string format_status(RadarPlot r) {
 			string sstr = "";
 			if(r.state == 0) {
-				if((r.source & RadarSource.MAVLINK) != 0) {
-					sstr = "ADSB";
-				} else if((r.source & RadarSource.SBS) != 0) {
-					sstr = "SDR";
-				} else {
-					sstr = "UnKnown";
-				}
+				sstr = ((RadarSource)r.source).to_string();
 			} else {
 				sstr = RadarView.status[r.state];
 			}
@@ -737,6 +742,8 @@ namespace Radar {
 				return "A";
 			case RadarSource.SBS:
 				return "S";
+			case RadarSource.ADSBX:
+				return "X";
 			}
 			return "?";
 		}
@@ -819,8 +826,6 @@ namespace Radar {
 					idm = d*1852.0; // nm to m
 					r.range = idm;
 					r.bearing = (uint16)c;
-				} else {
-					r.bearing = 0xffff;
 				}
 			} else {
 				r.range = (double)(r.srange);

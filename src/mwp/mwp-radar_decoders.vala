@@ -161,14 +161,14 @@ namespace Radar {
 	}
 #endif
 
-	public void decode_jsa(string js) {
+	public void decode_jsa(string js, string aname = "aircraft") {
 		var parser = new Json.Parser();
 		var now = new DateTime.now_local();
 		var rdebug = ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE);
 		try {
 			parser.load_from_data (js);
 			var root = parser.get_root().get_object();
-			var acarry = root.get_array_member ("aircraft");
+			var acarry = root.get_array_member (aname);
 			foreach (var acnode in acarry.get_elements ()) {
 				var obj = acnode.get_object ();
 				var hex  = obj.get_string_member ("hex");
@@ -177,11 +177,15 @@ namespace Radar {
 					var ri = radar_cache.lookup(icao);
 					if (ri == null) {
 						ri = new RadarPlot();
-						ri.source = Radar.RadarSource.SBS;
+						if(aname == "aircraft") {
+							ri.source = Radar.RadarSource.SBS;
+						} else {
+							ri.source = Radar.RadarSource.ADSBX;
+						}
 						ri.srange = Radar.ADSB_DISTNDEF;
 					}
-					var sb = new StringBuilder("JSAC");
-					sb.append_printf(" I:%X", icao);
+					var sb = new StringBuilder("JSON\n");
+					sb.append_printf("I:%X", icao);
 					ri.posvalid = true;
 					ri.latitude = obj.get_double_member("lat");
 					if(obj.has_member("lon")) {
@@ -216,6 +220,19 @@ namespace Radar {
 						ri.speed = obj.get_double_member ("gs") * 1852.0 / 3600;
 						sb.append_printf(" spd: %.0f", ri.speed);
 					}
+
+					if(obj.has_member("dst")) {
+						ri.range = obj.get_double_member ("dst") * 1852.0;
+						sb.append_printf(" range: %.0f", ri.range);
+					}
+
+					if(obj.has_member("dir")) {
+						ri.bearing = (uint16)obj.get_double_member ("dir");
+						sb.append_printf(" brg: %u", ri.bearing);
+					} else {
+						ri.bearing = 0xffff;
+					}
+
 					if(obj.has_member("seen")) {
 						var seen = (uint)obj.get_double_member ("seen");
 						TimeSpan ts = (int64)(seen*-1e6);
