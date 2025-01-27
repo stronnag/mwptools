@@ -69,7 +69,7 @@ namespace Radar {
 				img = inavtelem;
 			} else {
 				var cdsc = CatMap.name_for_category(r.etype);
-				if ((r.alert & RadarAlert.ALERT) == RadarAlert.ALERT) {
+				if((r.alert & RadarAlert.ALERT) != 0 && (Radar.astat & Radar.AStatus.A_RED) == Radar.AStatus.A_RED) {
 					img = rplanes[cdsc.idx];
 				} else {
 					img = yplanes[cdsc.idx];
@@ -92,7 +92,7 @@ namespace Radar {
 		if ((r.source & RadarSource.M_ADSB) != 0) {
 			if((r.alert & RadarAlert.SET) == RadarAlert.SET) {
 				var cdsc = CatMap.name_for_category(r.etype);
-				if((r.alert & RadarAlert.ALERT) == RadarAlert.ALERT) {
+				if((r.alert & RadarAlert.ALERT) != 0 &&  (Radar.astat & Radar.AStatus.A_RED) == Radar.AStatus.A_RED) {
 					rp.set_image(rplanes[cdsc.idx]);
 				} else if (r.alert == RadarAlert.SET) {
 					rp.set_image(yplanes[cdsc.idx]);

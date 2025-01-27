@@ -392,7 +392,8 @@ namespace Radar {
 					var label = list_item.get_child() as Gtk.Label;
 					r.bind_property("name", label, "label", BindingFlags.SYNC_CREATE);
 					r.notify["alert"].connect((s,p) => {
-							if(((( RadarPlot)s).alert & RadarAlert.ALERT) != 0) {
+							if(((( RadarPlot)s).alert & RadarAlert.ALERT) != 0 &&
+							   (Radar.astat & Radar.AStatus.A_RED) == Radar.AStatus.A_RED) {
 								label.add_css_class("error");
 							} else {
 								label.remove_css_class("error");
@@ -880,18 +881,23 @@ namespace Radar {
 					var this_sec = dt.to_unix();
 					if(r.state < Radar.Status.STALE && this_sec >= last_sec + 2) {
 						last_sec =  this_sec;
-						string s = "ADSB proximity %s %s@%s \u21d5%s".printf(r.name, format_range(r), format_bearing(r), format_alt(r));
-						if(r.extra == null) {
-							r.extra = Mwp.add_toast_text(s, 0);
-							((Adw.Toast)r.extra).dismissed.connect(() => {
-									r.extra = null;
-								});
-						} else {
-							if (r.extra != null) {
-								((Adw.Toast)r.extra).set_title(s);
+						if(( Radar.astat & Radar.AStatus.A_TOAST) == Radar.AStatus.A_TOAST) {
+							string s = "ADSB proximity %s %s@%s \u21d5%s".printf(r.name, format_range(r), format_bearing(r), format_alt(r));
+							if(r.extra == null) {
+								r.extra = Mwp.add_toast_text(s, 0);
+								((Adw.Toast)r.extra).dismissed.connect(() => {
+										r.extra = null;
+									});
+							} else {
+								if (r.extra != null) {
+									((Adw.Toast)r.extra).set_title(s);
+								}
 							}
 						}
-						Audio.play_alarm_sound(MWPAlert.GENERAL);
+
+						if(( Radar.astat & Radar.AStatus.A_SOUND) == Radar.AStatus.A_SOUND) {
+							Audio.play_alarm_sound(MWPAlert.GENERAL);
+						}
 					}
 				} else {
 					xalert = RadarAlert.NONE;
