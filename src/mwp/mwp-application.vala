@@ -237,6 +237,25 @@ namespace Mwp {
 		var fn = MWPUtils.find_conf_file("cmdopts");
 		if(fn != null) {
 			read_cmd_file(fn, ref sb);
+		} else {
+			fn = GLib.Path.build_filename(Environment.get_user_config_dir(),"mwp","cmdopts");
+			try {
+				FileUtils.set_contents(fn, """# Default user options for mwp
+# Lines starting with # are comments, blanks are ignored
+# See https://stronnag.github.io/mwptools//mwp-Configuration/ for more information
+# For example:
+#--mod-points 4
+#--radar-device adsbx://api.adsb.one?range=40&interval=1000
+#--rings 50,20
+#MWP_TIME_FMT="%F %T"
+
+# Add your favourite options and environment variables  below
+
+""");
+			} catch (Error e) {
+				stderr.printf("Failed to create %s : %s\n", fn, e.message);
+				Posix.exit(1);
+			}
 		}
 		return sb.str;
 	}
