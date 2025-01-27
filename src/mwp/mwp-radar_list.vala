@@ -33,6 +33,45 @@ namespace Radar {
 		STALE = 3,
 	}
 
+	public enum AStatus {
+		C_MAP=1,
+		C_GCS=2,
+		C_HOME=3,
+		C_VEHICLE=4,
+		A_SOUND=8,
+		A_TOAST=16,
+		A_RED=32
+	}
+
+	public static AStatus astat;
+	public static double lat;
+	public static double lon;
+
+	public static AStatus get_astatus() {
+		astat = 0;
+		bool haveloc = GCS.get_location(out lat, out lon); // always wins
+		if (haveloc) {
+			astat = C_GCS|A_SOUND|A_TOAST|A_RED;
+		} else {
+			if (Mwp.msp.available && Mwp.msp.td.gps.fix > 0) {
+				astat = C_VEHICLE|A_SOUND|A_TOAST|A_RED;
+				lat = Mwp.msp.td.gps.lat;
+				lon = Mwp.msp.td.gps.lon;
+			} else if(HomePoint.is_valid()) {
+				haveloc = HomePoint.get_location(out lat, out lon);
+				if (haveloc) {
+					astat = C_HOME|A_RED;
+				}
+			}
+		}
+		if (astat == 0) {
+			MapUtils.get_centre_location(out lat, out lon);
+			astat = C_MAP;
+		}
+		return astat;
+	}
+
+
 	public bool lookup_radar(string s) {
 		foreach (var r in radardevs) {
 			if (r.name == s) {
@@ -96,7 +135,7 @@ namespace Radar {
 										return false;
 									});
 							} else {
-								decode_jsa((string)s, "aircraft");
+								decode_jsa((string)s);
 							}
 						});
 					jsa.line_reader.begin();
@@ -150,8 +189,7 @@ namespace Radar {
 										decode_pba(s);
 									} else {
 										s[s.length-1] = 0;
-										string key = (htype == 2) ? "aircraft" : "ac";
-										decode_jsa((string)s, key);
+										decode_jsa((string)s);
 									}
 								}
 							});
@@ -278,6 +316,8 @@ namespace Radar {
 
 		Gtk.ColumnView cv;
 		Gtk.NoSelection lsel;
+
+		bool vhidden;
 
 		enum Buttons {
 			CENTRE,
@@ -598,7 +638,7 @@ namespace Radar {
 		private string format_range(RadarPlot r) {
 			string ga = "";
 			if (r.range != TOTHEMOON && r.range != 0.0) {
-				if(r.source == RadarSource.SBS || r.source == RadarSource.MAVLINK) {
+				if((r.source & RadarSource.M_ADSB) != 0) {
 					ga = Units.ga_range(r.range);
 				} else {
 					ga = "%.0f %s".printf(Units.distance(r.range), Units.distance_units());
@@ -681,17 +721,17 @@ namespace Radar {
 				new Gtk.Button.with_label ("Close")
 			};
 
-			bool hidden = false;
+			vhidden = false;
 
 			buttons[Buttons.HIDE].clicked.connect (() => {
-					if(!hidden) {
+					if(!vhidden) {
 						buttons[Buttons.HIDE].label = "Show symbols";
 						Gis.rm_layer.set_visible(false);
 					} else {
 						buttons[Buttons.HIDE].label = "Hide symbols";
 						Gis.rm_layer.set_visible(true);
 					}
-					hidden = !hidden;
+					vhidden = !vhidden;
 				});
 
 			buttons[Buttons.CLOSE].clicked.connect (() => {
@@ -765,6 +805,7 @@ namespace Radar {
 				MapUtils.centre_on(alat, alon);
 			}
 		}
+
 		private void show_number() {
 			uint n_rows = Radar.radar_cache.size();
 			uint stale = 0;
@@ -832,19 +873,31 @@ namespace Radar {
 				r.bearing = 0xffff;
 			}
 
-			if((r.source & RadarSource.M_ADSB) != 0) {
+			if(!vhidden && (r.source & RadarSource.M_ADSB) != 0 && r.bearing != 0xffff) {
 				if(Mwp.conf.radar_alert_altitude > 0 && Mwp.conf.radar_alert_range > 0 &&
 				   r.altitude < Mwp.conf.radar_alert_altitude && r.range < Mwp.conf.radar_alert_range) {
 					xalert = RadarAlert.ALERT;
 					var this_sec = dt.to_unix();
 					if(r.state < Radar.Status.STALE && this_sec >= last_sec + 2) {
-						Audio.play_alarm_sound(MWPAlert.GENERAL);
 						last_sec =  this_sec;
-						Mwp.add_toast_text("ADSB proximity %s %.0fm@%u° %.0fm".printf(
-											   r.name, r.range, r.bearing, r.altitude));
+						string s = "ADSB proximity %s %s@%s \u21d5%s".printf(r.name, format_range(r), format_bearing(r), format_alt(r));
+						if(r.extra == null) {
+							r.extra = Mwp.add_toast_text(s, 0);
+							((Adw.Toast)r.extra).dismissed.connect(() => {
+									r.extra = null;
+								});
+						} else {
+							if (r.extra != null) {
+								((Adw.Toast)r.extra).set_title(s);
+							}
+						}
+						Audio.play_alarm_sound(MWPAlert.GENERAL);
 					}
 				} else {
 					xalert = RadarAlert.NONE;
+					if (r.extra != null) {
+						((Adw.Toast)r.extra).dismiss();
+					}
 				}
 			}
 			if (alert != xalert) {

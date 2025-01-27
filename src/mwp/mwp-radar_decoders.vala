@@ -161,14 +161,24 @@ namespace Radar {
 	}
 #endif
 
-	public void decode_jsa(string js, string aname = "aircraft") {
+	public void decode_jsa(string js) {
 		var parser = new Json.Parser();
 		var now = new DateTime.now_local();
 		var rdebug = ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE);
 		try {
 			parser.load_from_data (js);
+			Json.Array acarry;
+			bool adsbx = false;
+
 			var root = parser.get_root().get_object();
-			var acarry = root.get_array_member (aname);
+			if(root.has_member("aircraft")) {
+				acarry = root.get_array_member ("aircraft");
+			} else if(root.has_member("ac")) {
+				acarry = root.get_array_member ("ac");
+				adsbx = true;
+			} else {
+				return;
+			}
 			foreach (var acnode in acarry.get_elements ()) {
 				var obj = acnode.get_object ();
 				var hex  = obj.get_string_member ("hex");
@@ -177,10 +187,10 @@ namespace Radar {
 					var ri = radar_cache.lookup(icao);
 					if (ri == null) {
 						ri = new RadarPlot();
-						if(aname == "aircraft") {
-							ri.source = Radar.RadarSource.SBS;
-						} else {
+						if(adsbx) {
 							ri.source = Radar.RadarSource.ADSBX;
+						} else {
+							ri.source = Radar.RadarSource.SBS;
 						}
 						ri.srange = Radar.ADSB_DISTNDEF;
 					}
@@ -211,11 +221,22 @@ namespace Radar {
 					if(obj.has_member("mag_heading")) {
 						ri.heading = (uint16)obj.get_double_member("mag_heading");
 						sb.append_printf(" hdr: %u", ri.heading);
+					} else 	if(obj.has_member("track")) {
+						ri.heading = (uint16)obj.get_double_member("track");
+						sb.append_printf(" hdr: %u", ri.heading);
+					} else 	if(obj.has_member("calc_track")) {
+						ri.heading = (uint16)obj.get_double_member("calc_track");
+						sb.append_printf(" hdr: %u", ri.heading);
 					}
-					if(obj.has_member("alt_baro")) {
+
+					if(obj.has_member("alt_geom")) {
+						ri.altitude = 0.3048*(double)obj.get_int_member ("alt_geom");
+						sb.append_printf(" alt: %.0f", ri.altitude);
+					} else if(obj.has_member("alt_baro")) {
 						ri.altitude = 0.3048*(double)obj.get_int_member ("alt_baro");
 						sb.append_printf(" alt: %.0f", ri.altitude);
 					}
+
 					if(obj.has_member("gs")) {
 						ri.speed = obj.get_double_member ("gs") * 1852.0 / 3600;
 						sb.append_printf(" spd: %.0f", ri.speed);

@@ -83,12 +83,11 @@ public class ADSBReader :Object {
 	private async bool fetch() {
 		Soup.Message msg;
 		string ahost;
+		Radar.get_astatus();
 		if (range == 0) {
 			ahost = host;
 		} else {
-			double clat, clon;
-			MapUtils.get_centre_location(out clat, out clon);
-			ahost = "%s/v2/point/%f/%f/%u".printf(host, clat, clon, range);
+			ahost = "%s/v2/point/%f/%f/%u".printf(host, Radar.lat, Radar.lon, range);
 		}
 		msg = new Soup.Message ("GET", ahost);
 		try {

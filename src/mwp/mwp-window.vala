@@ -950,8 +950,11 @@ namespace Mwp {
 		return sane;
     }
 
-	public void add_toast_text(string s) {
-		Mwp.window.toaster.add_toast(new Adw.Toast(s));
+	public Adw.Toast add_toast_text(string s, uint tmo=5) {
+		var t = new Adw.Toast(s);
+		t.set_timeout(tmo);
+		Mwp.window.toaster.add_toast(t);
+		return t;
 	}
 
     public void clear_sensor_array() {
