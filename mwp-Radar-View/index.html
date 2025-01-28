@@ -680,6 +680,48 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#adsbx-rest-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      ADSBX REST Providers
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ADSBX REST Providers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#supported-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Supported providers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configuration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adsbx-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adsbx Notes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#using-the-main-serial-port" class="md-nav__link">
     <span class="md-ellipsis">
       Using the main serial port
@@ -694,6 +736,39 @@
       Settings
     </span>
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#location-and-alerts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Location and Alerts
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Location and Alerts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#location-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Location Types
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visualisation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Visualisation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1376,6 +1451,48 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#adsbx-rest-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      ADSBX REST Providers
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ADSBX REST Providers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#supported-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Supported providers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configuration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adsbx-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adsbx Notes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#using-the-main-serial-port" class="md-nav__link">
     <span class="md-ellipsis">
       Using the main serial port
@@ -1390,6 +1507,39 @@
       Settings
     </span>
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#location-and-alerts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Location and Alerts
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Location and Alerts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#location-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Location Types
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visualisation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Visualisation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1558,37 +1708,32 @@
 <h1 id="radar-view">Radar View<a class="headerlink" href="#radar-view" title="Permanent link">#</a></h1>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> supports the display of "radar" contacts. This provides a view of adjacent aircraft obtained from a number of sources:</p>
 <ul>
-<li><a href="../mwp-telemetry-tracker/">Tracked Telemetry</a>. Models tracked by telemetry (CRSF, LTM, MAVLink, Smartport, MPM(Flysky, Smaprtport)). Provided by RX Telemetry Mirroring or dedicated telemetry radios.</li>
+<li><a href="../mwp-telemetry-tracker/">Tracked Telemetry</a>. Secondary models tracked by telemetry (CRSF, LTM, MAVLink, Smartport, MPM(Flysky, Smaprtport)). Provided by RX Telemetry Mirroring or dedicated telemetry radios.</li>
 <li>
 <p><a href="https://www.rcgroups.com/forums/showthread.php?3304673-iNav-Radar-ESP32-LoRa-modems">INAV-radar</a>. INAV radar works in conjunction with <a href="https://github.com/iNavFlight/inav">INAV</a> flight controllers to broadcast the location of UAS fitted with an ESP32 LoRa module. <a href="https://github.com/stronnag/mwptools">mwp</a> can listen to one of these modems in ground station mode to display the positions of the rest of the 'swarm' (up to 4 UAS); <a href="#inav-radar">technical / MSP details</a>.</p>
 </li>
 <li>
-<p><strong>Full size aircraft</strong> reported by the MAVLink 'Traffic Report' / 'ADSB Vehicle' message. Examples of available hardware include:</p>
-<ul>
+<p><strong>General Aviation</strong> from internet provider using a REST service delivering the dump1090/readsb  JSON <a href="https://github.com/wiedehopf/readsb/blob/dev/README-json.md">schema</a>. This schema is used by a number of both free and subscription web services.</p>
+</li>
+<li><strong>General Aviation</strong> typically reported using SDR (Software Defined Radios) using <a href="http://woodair.net/sbs/article/barebones42_socket_data.htm">SBS streaming TCP protocol</a>. This is generated by the open source <a href="https://github.com/flightaware/dump1090">dump1090</a> and <a href="https://github.com/Mictronics/readsb-protobuf">readsb</a> open source applications with a SDR receiver, as well as commercial products.</li>
+<li><strong>General Aviation</strong> typically reported using SDR (Software Defined Radios) using the <a href="https://github.com/flightaware/dump1090">dump1090-fa</a> JSON format.</li>
+<li><strong>General Aviation</strong> typically reported using SDR (Software Defined Radios) using the <a href="https://github.com/Mictronics/readsb-protobuf">readsb</a> "protobuf" format. This is the preferred way to access SDR ADSB / Mode-S data.</li>
+<li><strong>General Aviation</strong> reported by the MAVLink 'Traffic Report' / 'ADSB Vehicle' message. Examples of available hardware include:<ul>
 <li><a href="https://uavionix.com/products/pingrx/">uAvionix PingRX</a>, a compact device that receives ADS-B location data from full sized aircraft and publishes the locations as MAVLink. For a ground based installation, this device has around a 40Km detection radius. <a href="https://uavionix.com/downloads/integration/uAvionix%20Ping%20Integration%20Guide.pdf">MAVLink ICD</a>.</li>
 <li><a href="https://www.aerobits.pl/product/aero/">Aerobits TT-SC1</a>. Untested, but supports the same MAVLink API as the PingRX. <a href="https://www.aerobits.pl/wp-content/uploads/ci_uploads_software/tt_sc1/technical_documentation_sc/OEM_SC_Datasheet_07o-v1.1.8.pdf">Product documentation</a>.</li>
 </ul>
 </li>
 <li>
-<p><strong>Full size aircraft</strong> typically reported using SDR (Software Defined Radios) using <a href="http://woodair.net/sbs/article/barebones42_socket_data.htm">SBS streaming TCP protocol</a>. This is generated by the open source <a href="https://github.com/flightaware/dump1090">dump1090</a> and <a href="https://github.com/Mictronics/readsb-protobuf">readsb</a> open source applications with a SDR receiver, as well as commercial products.</p>
+<p><strong>General Aviation</strong> reported using the <code>MSP2_ADSB_VEHICLE_LIST</code> message. This is generated by <a href="https://github.com/iNavFlight/inav">INAV</a> later than 7.1.0 when a PingRX or TT-SC1 device is attached to the flight controller. This is received by the main <a href="https://github.com/stronnag/mwptools">mwp</a> MSP port without user configuration (no need to set up a <code>radar-device</code>). Due to the size of  <code>MSP2_ADSB_VEHICLE_LIST</code> message, <a href="https://github.com/stronnag/mwptools">mwp</a> does not poll for <code>MSP2_ADSB_VEHICLE_LIST</code> by default, see the <a href="#settings">setting</a> key <code>msp2-adsb</code>, below.</p>
 </li>
 <li>
-<p><strong>Full size aircraft</strong> typically reported using SDR (Software Defined Radios) using the <a href="https://github.com/flightaware/dump1090">dump1090-fa</a> JSON format.</p>
-</li>
-<li>
-<p><strong>Full size aircraft</strong> typically reported using SDR (Software Defined Radios) using the <a href="https://github.com/Mictronics/readsb-protobuf">readsb</a> "protobuf" format. This is the preferred way to access SDR ADSB / Mode-S data.</p>
-</li>
-<li>
-<p><strong>Full size aircraft</strong> reported using the <code>MSP2_ADSB_VEHICLE_LIST</code> message. This is generated by <a href="https://github.com/iNavFlight/inav">INAV</a> later than 7.1.0 when a PingRX or TT-SC1 device is attached to the flight controller. This is received by the main <a href="https://github.com/stronnag/mwptools">mwp</a> MSP port without user configuration (no need to set up a <code>radar-device</code>). Due to the size of  <code>MSP2_ADSB_VEHICLE_LIST</code> message, <a href="https://github.com/stronnag/mwptools">mwp</a> does not poll for <code>MSP2_ADSB_VEHICLE_LIST</code> by default, see the <a href="#settings">setting</a> key <code>msp2-adsb</code>, below.</p>
-</li>
-<li>
-<p>Proximity alerts (visual and audible) for manned (ADS-B / sbs-1 / dump1090 / readsb) aircraft, based on planned or actual home location.</p>
+<p>Proximity alerts (visual and audible) for General Aviation (ADS-B / sbs-1 / dump1090 / readsb / Internet REST) aircraft, based on planned or actual home location or vehicle location.</p>
 </li>
 </ul>
 <p>For SDR (Software Defined Radios) using the <a href="https://github.com/Mictronics/readsb-protobuf">readsb</a> or <a href="https://github.com/flightaware/dump1090">dump1090</a> where the SDR host has a web server configured to supply the generated "protobuf" or JSON output, then <a href="https://github.com/stronnag/mwptools">mwp</a> can obtain the data from the web server. Otherwise, it will be necessary to set up a small daemon on SDR host, see the <code>src/samples/adsb-extra</code> directory for further details.</p>
 <p>Note that the SDR protocols may also be used with network services that provide ADS-B reports (usually for a fee or for provided local data).</p>
 <h2 id="mwp-configuration">mwp Configuration<a class="headerlink" href="#mwp-configuration" title="Permanent link">#</a></h2>
-<p><a href="https://github.com/stronnag/mwptools">mwp</a> can receive the 'radar' data over one or two connections, either or both may be active, and <a href="https://github.com/stronnag/mwptools">mwp</a> can receive and display 'own vehicle' telemetry (MSP, LTM or Smartpost), <a href="../mwp-telemetry-tracker/">Tracked Telemetry</a>, 'INAV-radar' and 'MAVlink Traffic' data simultaneously. Radar data may be received over:</p>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> can receive the 'radar' data over one or more connections, anyof which may be active, and <a href="https://github.com/stronnag/mwptools">mwp</a> can receive and display 'own vehicle' telemetry (MSP, LTM, CRSF, Smartpost), <a href="../mwp-telemetry-tracker/">Tracked Telemetry</a>, 'INAV-radar', 'MAVlink Traffic' and General Aviation data simultaneously. Radar data may be received over:</p>
 <ul>
 <li>The main serial port device (see <a href="#using-the-main-serial-port">caveat</a> for INAV-radar) and <code>MSP2_ADSB_VEHICLE_LIST</code>.</li>
 <li>device(s) defined by the <code>radar-device</code> CLI or configuration parameter (MAVLink Traffic, INAV-radar, SDR protocols)</li>
@@ -1606,6 +1751,11 @@
 </li>
 <li>A UDP address, e.g. for simulation, recording replays or serial multiplexer (INAV, mavlink).<ul>
 <li><code>udp://:30001</code> local UDP listener.</li>
+</ul>
+</li>
+<li>An online REST service providing the <code>readsb</code> JSON format. For now, mwp supports services that offer and end point of the form <code>https://host/v2/point/lat/lon/</code>. These are defined using the <code>adsbx://</code> pseudo URI, and require the host, range in nautical miles (NM) and the refresh interval (milliseconds). Some suppliers limit the maximum range to 250NM and minimum update rate of 1 second.<ul>
+<li><code>adsbx://api.adsb.one?range=40&amp;interval=1000</code>
+  Please see <a href="#adsbx-rest-providers">below</a> for the mwp implementation details.</li>
 </ul>
 </li>
 <li>A <code>readsb</code> protobuf source or <code>dump1090</code> JSON source over <code>http</code>/<code>https</code>, for example, using hosts <code>woozle</code> (protobuf) and <code>jagular</code> (JSON):<ul>
@@ -1641,10 +1791,49 @@
 </ul>
 <p>Multiple devices may be defined, e.g.</p>
 <ul>
-<li>As separate options, <code>--radar-device=/dev/pingRX@57600 --radar-device= /dev/inavradar@115200</code></li>
+<li>As separate options, <code>--radar-device=/dev/pingRX@57600 --radar-device /dev/inavradar@115200</code></li>
 <li>As a comma separated list: <code>--radar-device=/dev/pingRX@57600,/dev/inavradar@115200</code></li>
 </ul>
 <p>Any bespoke <code>radar-device</code> is started automatically on startup (or when it shows up). It is not managed via the serial <code>Connect</code> button.</p>
+<h2 id="adsbx-rest-providers">ADSBX REST Providers<a class="headerlink" href="#adsbx-rest-providers" title="Permanent link">#</a></h2>
+<p>For many users using a (free) online REST service will be a simple option compared to using their own hardware devices.</p>
+<h3 id="supported-providers">Supported providers<a class="headerlink" href="#supported-providers" title="Permanent link">#</a></h3>
+<p>The intention is to support any provider that offers the <code>readsb</code> JSON response (sometimes called the ADSBExchange V2 API response). The query to get such a response may differ between providers, so for now the following providers are supported:</p>
+<ul>
+<li>adsb.lol</li>
+<li>adsb.one</li>
+</ul>
+<p>These sources have the benefits of:</p>
+<ul>
+<li>Using the same REST API endpoint (<code>https://host/v2/point/lat/lon/range</code>)</li>
+<li>Are free to use</li>
+<li>Do not require registration</li>
+<li>Have few usage limits</li>
+</ul>
+<h3 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">#</a></h3>
+<p>Using (one of) the above providers requires that the user defines a <code>--radar-device</code> option using the <code>adsbx://</code> URI schema. It is necessary to supply the host name, the range (in nautical miles) and a refresh interval in milliseconds, in the format:
+<div class="highlight"><pre><span></span><code>adsbx://host?range=R&amp;interval=T
+</code></pre></div>
+where</p>
+<ul>
+<li><code>host</code> is the provider host (assumed available via https)</li>
+<li><code>range</code> defines the range (R)  in nautical miles</li>
+<li><code>interval</code> defines the refresh interval (T) in milliseconds</li>
+</ul>
+<p><code>--radar-device</code> may be given on the command line, or more conveniently in <code>~/.config/mwp/cmdopts</code>, for example:</p>
+<div class="highlight"><pre><span></span><code>--radar-device adsbx://api.adsb.lol?range=40&amp;interval=1000
+## or
+--radar-device adsbx://api.adsb.one?range=40&amp;interval=1000
+</code></pre></div>
+<h3 id="adsbx-notes">Adsbx Notes<a class="headerlink" href="#adsbx-notes" title="Permanent link">#</a></h3>
+<ul>
+<li>It is pointless to define both providers as they have much the same data</li>
+<li>The providers permit a maximum range of 250NM</li>
+<li>The providers have a minimum query interval of 1s (1000ms)</li>
+<li>As the APIs return the data as JSON, the results are verbose. Requesting a range of 250NM may seem like a good idea; however it is not useful for our purposes and will return a large volume of data, which may be sub-optimal using mobile internet in the field.</li>
+<li><code>mwp</code> will use select a centre location based on <a href="#location-and-alerts">user choice and vehicle state</a>.</li>
+</ul>
+<p>Where the data is provided by 3rd party volunteers, there may be limited coverage in remote areas (or areas with little air traffic).</p>
 <h2 id="using-the-main-serial-port">Using the main serial port<a class="headerlink" href="#using-the-main-serial-port" title="Permanent link">#</a></h2>
 <p>The main <a href="https://github.com/stronnag/mwptools">mwp</a> serial port may be used for MavLink Traffic and <code>MSP2_ADSB_VEHICLE_LIST</code> messages without any further configuration. For INAV-radar, to use the main MSP port for INAV-radar (vice using <code>--radar-device</code>), it is still necessary to add a command option to <a href="https://github.com/stronnag/mwptools">mwp</a>; it needs to told to relax the default inbound MSP direction check.</p>
 <p>This is enabled as</p>
@@ -1691,7 +1880,64 @@
 </tr>
 </tbody>
 </table>
-<p>Note that proximity alerts require that both the <code>radar-alert-altitude</code> and <code>radar-alert-range</code> values are set, and that there is a planned or actual home location. For <a href="https://github.com/Mictronics/readsb-protobuf">readsb</a> "protobuf" data, the range from the <strong>SDR</strong> is available and this will be shown as range (and used for alerts) where there is no home set (home will override).</p>
+<p>Note that proximity alerts require that both the <code>radar-alert-altitude</code> and <code>radar-alert-range</code> values are set.</p>
+<h2 id="location-and-alerts">Location and Alerts<a class="headerlink" href="#location-and-alerts" title="Permanent link">#</a></h2>
+<p>mwp selects a location for alerts based on the user choice and vehicle state. The same location will also be used for <code>adsbx://</code> (internet REST) services.</p>
+<p>The following table defines how the location is selected, and the range check alert visualisation for that state.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>No location</th>
+<th>GCS</th>
+<th>Home</th>
+<th>Connection/GPS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sound</td>
+<td>x</td>
+<td>Y</td>
+<td>x</td>
+<td>Y</td>
+</tr>
+<tr>
+<td>Toast</td>
+<td>x</td>
+<td>Y</td>
+<td>x</td>
+<td>Y</td>
+</tr>
+<tr>
+<td>Item Colour</td>
+<td>x</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+</tr>
+<tr>
+<td>Base Position</td>
+<td>View centre / SDR location</td>
+<td>GCS</td>
+<td>Home</td>
+<td>Vehicle</td>
+</tr>
+</tbody>
+</table>
+<h3 id="location-types">Location Types<a class="headerlink" href="#location-types" title="Permanent link">#</a></h3>
+<ul>
+<li><strong>No location</strong>: There is no home or vehicle location known.</li>
+<li><strong>GCS</strong>: The user has enabled the GCS location icon, either from the View -&gt; GCS Location menu item or a local GPS (via <code>gpsd</code>).</li>
+<li><strong>Home</strong>: A home position is available, either from the vehicle GPS or a "fake" / "planned" home via Ctrl-Shift-H / creating a mission / loading a mission with stored home position.</li>
+<li><strong>Connection</strong>: The vehicle is connected to mwp and is supplying a valid GPS location.</li>
+</ul>
+<h3 id="visualisation">Visualisation<a class="headerlink" href="#visualisation" title="Permanent link">#</a></h3>
+<ul>
+<li><strong>Sound</strong>: A beep is emitted every two seconds</li>
+<li><strong>Toast</strong>: A transient, non-blocking notification at the base of the screem</li>
+<li><strong>Item Colour</strong>: The aircraft icon will show in red, and the aircraft detail will be shown in the Gtk4 "error" style in the radar list.</li>
+</ul>
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">#</a></h2>
 <div class="admonition note">
 <p class="admonition-title">Legacy Images</p>
@@ -1700,9 +1946,9 @@
 <p>Once the radar interface is open, radar tracks are displayed on the map and in a list available from the "View -&gt; Radar View' menu option.</p>
 <ul>
 <li>The list view is sort-able on the <code>Id</code>, <code>Status</code>, <code>Last</code> (time) and <code>Range</code> columns.</li>
-<li>The map visualisation may be toggled by the <code>Hide Tracks</code> (<code>Show Tracks</code>) button.</li>
+<li>The map visualisation may be toggled by the <code>Hide Tracks</code> (<code>Show Tracks</code>) button. This will also supress alerts.</li>
 <li>List and map views are updated in (near) real time.</li>
-<li>Preference for display units are used for positions, altitude and speed.</li>
+<li>Settings for display units are used for positions, altitude and speed.</li>
 </ul>
 <h3 id="name">Name<a class="headerlink" href="#name" title="Permanent link">#</a></h3>
 <table>
@@ -1729,6 +1975,10 @@
 <td>Telemetry</td>
 <td>User defined for automatically allocated, prefixed by <code>TTRK-</code></td>
 </tr>
+<tr>
+<td>General Aviation</td>
+<td>Callsign if reported, otherwise [ICAO number]</td>
+</tr>
 </tbody>
 </table>
 <h3 id="status">Status<a class="headerlink" href="#status" title="Permanent link">#</a></h3>
@@ -1754,6 +2004,10 @@
 <td>An active INAV-radar contact</td>
 </tr>
 <tr>
+<td>Hidden</td>
+<td>A MAVLink Traffic /SDR contact is between 5 and 10 minutes old. It remains in the list but is not displayed in the map. MAVLink Traffic Report / SDR tracks are removed from the list (and internal storage) after 10 minutes inactivity. INAV-radar ground station. Stale / 'Lost' INAV-radar contacts do not expire, as they may relate to a lost model.</td>
+</tr>
+<tr>
 <td>ADS-B</td>
 <td>A live MAVLink Traffic report</td>
 </tr>
@@ -1762,8 +2016,8 @@
 <td>SDR radio report (sbs, json, protobuf)</td>
 </tr>
 <tr>
-<td>Hidden</td>
-<td>A MAVLink Traffic /SDR contact is between 5 and 10 minutes old. It remains in the list but is not displayed in the map. MAVLink Traffic Report / SDR tracks are removed from the list (and internal storage) after 10 minutes inactivity. INAV-radar ground station. Stale / 'Lost' INAV-radar contacts do not expire, as they may relate to a lost model.</td>
+<td>ADSBX</td>
+<td>General Aviation internet REST service</td>
 </tr>
 </tbody>
 </table>
@@ -1788,6 +2042,10 @@
 <td>SDR reports</td>
 <td>Time since last communication in seconds</td>
 </tr>
+<tr>
+<td>General Aviation</td>
+<td>Time since last communication in seconds</td>
+</tr>
 </tbody>
 </table>
 <h3 id="columns">Columns<a class="headerlink" href="#columns" title="Permanent link">#</a></h3>
@@ -1802,7 +2060,7 @@
 <tbody>
 <tr>
 <td>A</td>
-<td>ADS-B via MAVLink</td>
+<td>ADS-B via MAVLink or MSP</td>
 </tr>
 <tr>
 <td>I</td>
@@ -1815,6 +2073,10 @@
 <tr>
 <td>T</td>
 <td>Telemetry Tracker</td>
+</tr>
+<tr>
+<td>X</td>
+<td>General Aviation internet REST service</td>
 </tr>
 </tbody>
 </table>
@@ -1837,7 +2099,7 @@
 <p>There are simulators for both INAV-radar and MAVLink 'Traffic Report' (e.g. uAvionix PingRX) in the <code>mwptools/src/samples/radar</code> directory.</p>
 <p>There is a replay tool for SBS CSV logs <code>mwptools/src/samples/sbs-test/sbs-player.rb</code>.</p>
 <h2 id="changing-the-radar-symbols">Changing the Radar Symbols<a class="headerlink" href="#changing-the-radar-symbols" title="Permanent link">#</a></h2>
-<p>Any map symbol used by <a href="https://github.com/stronnag/mwptools">mwp</a> can be changed by the user; in the image above, the INAV radar node symbol has been changed from the default stylised INAV multirotor to a smaller version of the mission replay "paper plane" symbol as described in <a href="../mwp-Configuration/#settings-precedence-and-user-updates">creating your own icon</a>.</p>
+<p>Many map symbols used by <a href="https://github.com/stronnag/mwptools">mwp</a> can be changed by the user; in the image above, the INAV radar node symbol has been changed from the default stylised INAV multirotor to a smaller version of the mission replay "paper plane" symbol as described in <a href="../mwp-Configuration/#settings-precedence-and-user-updates">creating your own icon</a>.</p>
 <h2 id="protocol-documentation">Protocol documentation<a class="headerlink" href="#protocol-documentation" title="Permanent link">#</a></h2>
 <h3 id="mavlink-traffic-report-eg-uavionix-pingrx">MAVLink 'Traffic Report' (e.g. uAvionix PingRX)<a class="headerlink" href="#mavlink-traffic-report-eg-uavionix-pingrx" title="Permanent link">#</a></h3>
 <p>The MAVLink implementation is <a href="https://uavionix.com/downloads/integration/uAvionix%20Ping%20Integration%20Guide.pdf">comprehensively documented</a> by the vendor.</p>
