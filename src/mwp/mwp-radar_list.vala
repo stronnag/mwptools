@@ -339,7 +339,7 @@ namespace Radar {
 
 		public static string[] status = {"Undefined", "Armed", "Hidden", "Stale"};
 
-		private void label_alert_set(RadarPlot r, Gtk.Label l) {
+		private void label_alert(RadarPlot r, Gtk.Label l) {
 			if((r.alert & RadarAlert.ALERT) != 0 &&
 			   (Radar.astat & Radar.AStatus.A_RED) == Radar.AStatus.A_RED) {
 				l.add_css_class("error");
@@ -367,7 +367,9 @@ namespace Radar {
 
 			var f0 = new Gtk.SignalListItemFactory();
 			var c0 = new Gtk.ColumnViewColumn("*", f0);
-			cv.append_column(c0);
+			var expression = new Gtk.PropertyExpression(typeof(RadarPlot), null, "source");
+			c0.set_sorter(new Gtk.NumericSorter(expression));
+
 			f0.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
 					var label=new Gtk.Label("");
@@ -381,15 +383,16 @@ namespace Radar {
 					r.notify["source"].connect((s,p) => {
 							label.label = source_id(((RadarPlot)s).source);
 						});
-					r.notify["alert"].connect((s,p) => {label_alert_set((RadarPlot)s, label);});
+					r.notify["alert"].connect((s,p) => {label_alert((RadarPlot)s, label);});
 				});
-			var expression = new Gtk.PropertyExpression(typeof(RadarPlot), null, "source");
-			c0.set_sorter(new Gtk.NumericSorter(expression));
+			cv.append_column(c0);
 
 			f0 = new Gtk.SignalListItemFactory();
 			c0 = new Gtk.ColumnViewColumn("Name", f0);
 			c0.expand = true;
-			cv.append_column(c0);
+			expression = new Gtk.PropertyExpression(typeof(RadarPlot), null, "name");
+			c0.set_sorter(new Gtk.StringSorter(expression));
+
 			f0.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
 					var label=new Gtk.Label("");
@@ -401,15 +404,12 @@ namespace Radar {
 					RadarPlot r = list_item.get_item() as RadarPlot;
 					var label = list_item.get_child() as Gtk.Label;
 					r.bind_property("name", label, "label", BindingFlags.SYNC_CREATE);
-					r.notify["alert"].connect((s,p) => {label_alert_set((RadarPlot)s, label);});
+					r.notify["alert"].connect((s,p) => {label_alert((RadarPlot)s, label);});
 				});
-
-			expression = new Gtk.PropertyExpression(typeof(RadarPlot), null, "name");
-			c0.set_sorter(new Gtk.StringSorter(expression));
+			cv.append_column(c0);
 
 			f0 = new Gtk.SignalListItemFactory();
 			c0 = new Gtk.ColumnViewColumn("Latitude", f0);
-			cv.append_column(c0);
 			c0.expand = true;
 			f0.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
@@ -424,12 +424,13 @@ namespace Radar {
 					r.notify["latitude"].connect((s,p) => {
 							label.label = PosFormat.lat(((RadarPlot)s).latitude, Mwp.conf.dms);
 						});
-					r.notify["alert"].connect((s,p) => {label_alert_set((RadarPlot)s, label);});
+					r.notify["alert"].connect((s,p) => {label_alert((RadarPlot)s, label);});
 				});
+			cv.append_column(c0);
+
 			f0 = new Gtk.SignalListItemFactory();
 			c0 = new Gtk.ColumnViewColumn("Longitude", f0);
 			c0.expand = true;
-			cv.append_column(c0);
 			f0.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
 					var label=new Gtk.Label("");
@@ -443,12 +444,13 @@ namespace Radar {
 					r.notify["longitude"].connect((s,p) => {
 							label.label = PosFormat.lon(((RadarPlot)s).longitude, Mwp.conf.dms);
 						});
-					r.notify["alert"].connect((s,p) => {label_alert_set((RadarPlot)s, label);});
+					r.notify["alert"].connect((s,p) => {label_alert((RadarPlot)s, label);});
 				});
+			cv.append_column(c0);
+
 			f0 = new Gtk.SignalListItemFactory();
 			c0 = new Gtk.ColumnViewColumn("Altitude", f0);
 			c0.expand = true;
-			cv.append_column(c0);
 			f0.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
 					var label=new Gtk.Label("");
@@ -462,13 +464,13 @@ namespace Radar {
 					r.notify["altitude"].connect((s,p) => {
 							label.label = format_alt((RadarPlot)s);
 						});
-					r.notify["alert"].connect((s,p) => {label_alert_set((RadarPlot)s, label);});
+					r.notify["alert"].connect((s,p) => {label_alert((RadarPlot)s, label);});
 				});
+			cv.append_column(c0);
 
 			f0 = new Gtk.SignalListItemFactory();
 			c0 = new Gtk.ColumnViewColumn("Course", f0);
 			c0.expand = true;
-			cv.append_column(c0);
 			f0.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
 					var label=new Gtk.Label("");
@@ -482,13 +484,13 @@ namespace Radar {
 					r.notify["heading"].connect((s,p) => {
 							label.label = format_course((RadarPlot)s);
 						});
-					r.notify["alert"].connect((s,p) => {label_alert_set((RadarPlot)s, label);});
+					r.notify["alert"].connect((s,p) => {label_alert((RadarPlot)s, label);});
 				});
+			cv.append_column(c0);
 
 			f0 = new Gtk.SignalListItemFactory();
 			c0 = new Gtk.ColumnViewColumn("Speed", f0);
 			c0.expand = true;
-			cv.append_column(c0);
 			f0.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
 					var label=new Gtk.Label("");
@@ -502,12 +504,12 @@ namespace Radar {
 					r.notify["speed"].connect((s,p) => {
 							label.label = format_speed((RadarPlot)s);
 						});
-					r.notify["alert"].connect((s,p) => {label_alert_set((RadarPlot)s, label);});
+					r.notify["alert"].connect((s,p) => {label_alert((RadarPlot)s, label);});
 				});
+			cv.append_column(c0);
 
 			f0 = new Gtk.SignalListItemFactory();
 			c0 = new Gtk.ColumnViewColumn("Status", f0);
-			cv.append_column(c0);
 			expression = new Gtk.PropertyExpression(typeof(RadarPlot), null, "state");
 			c0.set_sorter(new Gtk.NumericSorter(expression));
 			f0.setup.connect((f,o) => {
@@ -527,8 +529,9 @@ namespace Radar {
 					r.notify["lq"].connect((s,p) => {
 							label.label = format_status((RadarPlot)s);
 						});
-					r.notify["alert"].connect((s,p) => {label_alert_set((RadarPlot)s, label);});
+					r.notify["alert"].connect((s,p) => {label_alert((RadarPlot)s, label);});
 				});
+			cv.append_column(c0);
 
 			f0 = new Gtk.SignalListItemFactory();
 			c0 = new Gtk.ColumnViewColumn("Last", f0);
@@ -537,7 +540,6 @@ namespace Radar {
 					return (int)((RadarPlot)a).dt.difference(((RadarPlot)b).dt);
 				});
 			c0.set_sorter(dtsorter);
-			cv.append_column(c0);
 			f0.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
 					var label=new Gtk.Label("");
@@ -551,13 +553,13 @@ namespace Radar {
 					r.notify["dt"].connect((s,p) => {
 							label.label = format_last((RadarPlot)s);
 						});
-					r.notify["alert"].connect((s,p) => {label_alert_set((RadarPlot)s, label);});
+					r.notify["alert"].connect((s,p) => {label_alert((RadarPlot)s, label);});
 				});
+			cv.append_column(c0);
 
 			f0 = new Gtk.SignalListItemFactory();
 			c0 = new Gtk.ColumnViewColumn("Range", f0);
 			c0.expand = true;
-			cv.append_column(c0);
 			expression = new Gtk.PropertyExpression(typeof(RadarPlot), null, "range");
 			c0.set_sorter(new Gtk.NumericSorter(expression));
 
@@ -574,13 +576,13 @@ namespace Radar {
 					r.notify["range"].connect((s,p) => {
 							label.label = format_range((RadarPlot)s);
 						});
-					r.notify["alert"].connect((s,p) => {label_alert_set((RadarPlot)s, label);});
+					r.notify["alert"].connect((s,p) => {label_alert((RadarPlot)s, label);});
 				});
+			cv.append_column(c0);
 
 			f0 = new Gtk.SignalListItemFactory();
 			c0 = new Gtk.ColumnViewColumn("Bearing", f0);
 			c0.expand = true;
-			cv.append_column(c0);
 			f0.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
 					var label=new Gtk.Label("");
@@ -594,13 +596,13 @@ namespace Radar {
 					r.notify["bearing"].connect((s,p) => {
 							label.label = format_bearing((RadarPlot)s);
 						});
-					r.notify["alert"].connect((s,p) => {label_alert_set((RadarPlot)s, label);});
+					r.notify["alert"].connect((s,p) => {label_alert((RadarPlot)s, label);});
 				});
+			cv.append_column(c0);
 
 			f0 = new Gtk.SignalListItemFactory();
 			c0 = new Gtk.ColumnViewColumn("Cat", f0);
 			c0.expand = true;
-			cv.append_column(c0);
 			expression = new Gtk.PropertyExpression(typeof(RadarPlot), null, "etype");
 			c0.set_sorter(new Gtk.NumericSorter(expression));
 			f0.setup.connect((f,o) => {
@@ -616,8 +618,9 @@ namespace Radar {
 					r.notify["etype"].connect((s,p) => {
 							label.label = format_cat((RadarPlot)s);
 						});
-					r.notify["alert"].connect((s,p) => {label_alert_set((RadarPlot)s, label);});
+					r.notify["alert"].connect((s,p) => {label_alert((RadarPlot)s, label);});
 				});
+			cv.append_column(c0);
 
 			var clm = cv.get_columns();
 			//               * Nm  La  Lo  Al  Cse Spd Sts Lst Rng Brg Cat
