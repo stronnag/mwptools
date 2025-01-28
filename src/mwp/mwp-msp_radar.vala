@@ -16,7 +16,6 @@
  */
 
 namespace MspRadar {
-
 	public void handle_radar(MWSerial s, Msp.Cmds cmd, uint8[] raw, uint len,
                               uint8 xflags, bool errs) {
 		double rlat, rlon;
@@ -166,6 +165,10 @@ namespace MspRadar {
 		var maxml = (mlen-2)/30;
 		if (maxvl > maxml)
 			maxvl = (uint8)maxml;
+
+		if (maxvl > 0) {
+			Radar.set_astatus();
+		}
 
 		for(var k = 0; k < maxvl; k++) {
             uint8 cs[10];
@@ -336,6 +339,7 @@ namespace MspRadar {
             sb.append_printf("ticks %u ", ri.lasttick);
 
 			ri.posvalid = true;
+			Radar.set_astatus();
 
 			Radar.upsert(v, ri);
 			Radar.update(v, ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE));

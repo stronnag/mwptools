@@ -83,7 +83,7 @@ public class ADSBReader :Object {
 	private async bool fetch() {
 		Soup.Message msg;
 		string ahost;
-		Radar.get_astatus();
+		Radar.set_astatus();
 		if (range == 0) {
 			ahost = host;
 		} else {
@@ -142,6 +142,7 @@ public class ADSBReader :Object {
 					result(null);
 					return false;
 				} else {
+					Radar.set_astatus();
 					result(line.data);
 				}
 			} catch (Error e) {
@@ -176,6 +177,7 @@ public class ADSBReader :Object {
 					try {
 						ok = yield inp.read_all_async(pbuf, Priority.DEFAULT, null, out nb);
 						if (ok && nb == msize) {
+							Radar.set_astatus();
 							result(pbuf);
 						} else {
 							MWPLog.message("PB read %d %d\n", (int)msize, (int)nb);

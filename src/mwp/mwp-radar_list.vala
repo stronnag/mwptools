@@ -47,7 +47,7 @@ namespace Radar {
 	public static double lat;
 	public static double lon;
 
-	public static AStatus get_astatus() {
+	public static AStatus set_astatus() {
 		astat = 0;
 		bool haveloc = GCS.get_location(out lat, out lon); // always wins
 		if (haveloc) {
@@ -846,7 +846,6 @@ namespace Radar {
 		public void update (uint rk, bool verbose = false) {
 			var dt = new DateTime.now_local ();
 			double idm = TOTHEMOON;
-			double hlat, hlon;
 
 			var r = Radar.radar_cache.lookup(rk);
 			if (r == null)

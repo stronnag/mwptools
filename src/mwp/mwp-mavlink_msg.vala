@@ -314,7 +314,7 @@ namespace Mwp {
 			break;
 
 		case Msp.Cmds.MAVLINK_MSG_ID_TRAFFIC_REPORT:
-			//process_mavlink_radar(raw);
+			MspRadar.process_mavlink_radar(raw);
 			break;
 
 		case Msp.Cmds.MAVLINK_MSG_ID_DATA_REQUEST:
