@@ -854,16 +854,10 @@ namespace Radar {
 
 			var alert = r.alert;
 			var xalert = r.alert;
-			bool havehome = false;
-			havehome =  GCS.get_location(out hlat, out hlon);
-			if (!havehome) {
-				if(HomePoint.is_valid()) {
-					havehome = HomePoint.get_location(out hlat, out hlon);
-				}
-			}
-			if(havehome) {
+
+			if(Radar.astat > Radar.AStatus.C_MAP) {
 				double c,d;
-				Geo.csedist(hlat, hlon, r.latitude, r.longitude, out d, out c);
+				Geo.csedist(Radar.lat, Radar.lon, r.latitude, r.longitude, out d, out c);
 				idm = d*1852.0; // nm to m
 				r.range = idm;
 				r.bearing = (uint16)c;
