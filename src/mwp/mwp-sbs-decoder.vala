@@ -87,7 +87,10 @@ public class ADSBReader :Object {
 		if (range == 0) {
 			ahost = host;
 		} else {
-			ahost = "%s/v2/point/%f/%f/%u".printf(host, Radar.lat, Radar.lon, range);
+			// tformat to force '.' in ',' locales
+			char[] labuf = new char[double.DTOSTR_BUF_SIZE];
+			char[] lobuf = new char[double.DTOSTR_BUF_SIZE];
+			ahost = "%s/v2/point/%s/%s/%u".printf(host, Radar.lat.format(labuf, "%f"), Radar.lon.format(lobuf, "%f"), range);
 		}
 		msg = new Soup.Message ("GET", ahost);
 		try {
