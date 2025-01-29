@@ -105,11 +105,12 @@ public class MWPSettings : GLib.Object {
 	public string mapbox_apikey {get; set; default="";}
 	public double symbol_scale {get; set; default=1.0;}
 	public double touch_scale {get; set; default=1.0;}
-	public int ident_limit  {get; set; default=60;}
+	public int ident_limit {get; set; default=60;}
 	public double touch_factor {get; set; default=0.0;}
 	public int p_pane_width {get; set; default=0;}
 	public bool armed_msp_placebo {get; set; default=false;}
 	public uint mavlink_sysid {get; set; default=106;}
+	public int radar_alert_minspeed {get; set; default=10;}
 
 	construct {
 #if DARWIN
@@ -215,6 +216,7 @@ public class MWPSettings : GLib.Object {
 		settings.bind("pos-is-centre", this, "pos-is-centre", SettingsBindFlags.DEFAULT);
 		settings.bind("radar-alert-altitude", this, "radar-alert-altitude", SettingsBindFlags.DEFAULT);
 		settings.bind("radar-alert-range", this, "radar-alert-range", SettingsBindFlags.DEFAULT);
+		settings.bind("radar-alert-min-speed", this, "radar-alert-minspeed", SettingsBindFlags.DEFAULT);
 		settings.bind("rings-colour", this, "rcolstr", SettingsBindFlags.DEFAULT);
 		settings.bind("rth-autoland", this, "rth-autoland", SettingsBindFlags.DEFAULT);
 		settings.bind("say-bearing", this, "say-bearing", SettingsBindFlags.DEFAULT);

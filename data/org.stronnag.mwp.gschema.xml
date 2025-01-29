@@ -442,7 +442,7 @@
     <key name="max-radar-slots" type="u">
       <default>4</default>
       <summary>Maximum number of aircraft</summary>
-      <description>Maximum number of aircraft reported by iNav-radar</description>
+      <description>Maximum number of aircraft reported by INAV radar</description>
     </key>
 
     <key type="b" name="arming-speak">
@@ -524,12 +524,17 @@
       is also set (non-zero). Setting to 0 disables.</description>
     </key>
 
+    <key name="radar-alert-min-speed" type="i">
+      <default>10</default>
+      <summary>Speed above which ADS-B alerts may be generated</summary>
+      <description>Target speed (metres/sec) above which ADS-B proximity alerts may be generated. Requires that 'radar-alert-altitude' and "radar-alert-range" are also set. .</description>
+    </key>
+
     <key type="s" name="gpsd-host">
       <default>"localhost"</default>
       <summary>gpsd provider</summary>
       <description>Provider for GCS location via gpsd.
-      Default is "localhost", can be set to other host name or IP
-      address. Setting blank ("") disables.</description>
+      Default is "localhost", can be set to other host name or IP address. Setting blank ("") disables.</description>
     </key>
 
     <key name="ident-limit" type="i">

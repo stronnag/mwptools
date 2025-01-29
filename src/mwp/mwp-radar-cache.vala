@@ -66,7 +66,6 @@ namespace Radar {
 		public uint32 srange;
 		public bool posvalid;
 		public DateTime dt {get; construct set;}
-		public Object extra;
 
 		public RadarPlot() {
 			bearing = 0xffff;
