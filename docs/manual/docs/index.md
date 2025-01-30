@@ -50,6 +50,8 @@ From its MultiWii origins mwp has evolved to support navigation capabilities in 
 * SDR ADS-B (dump1090 / readsb / SBS1) live reports for general aviation
 * Other SDR reporting procotols
 * MAVlink Traffic Report / ADSB Vehicle (e.g. general aviation, typically ADS-B via a device such as uAvionix PingRX or Aerobits TT-SC1)
+* `MSP2_ADSB_VEHICLE_LIST` (e.g. general aviation, typically ADS-B via a device such as uAvionix PingRX or Aerobits TT-SC1)
+* Internet providers / aggregators using the REST `readsb` JSON format.
 
 ### Log replay formats
 

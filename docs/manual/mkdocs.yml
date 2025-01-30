@@ -101,6 +101,7 @@ nav:
       - 'MacOS (Homebrew)' : mwp-macos.md
       - 'Windows (MSys2)' : mwp-windows-msys.md
   - Miscellaneous:
+      - 'mwp Gsettings' : mwpsettings.md
       - mwp-Power-and-screen-management.md
       - inav-4.0-multi-missions.md
       - mqtt---bulletgcss-telemetry.md

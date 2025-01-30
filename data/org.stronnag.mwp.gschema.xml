@@ -441,8 +441,8 @@
 
     <key name="max-radar-slots" type="u">
       <default>4</default>
-      <summary>Maximum number of aircraft</summary>
-      <description>Maximum number of aircraft reported by INAV radar</description>
+      <summary>Maximum number of INAV Radar vehicles</summary>
+      <description>Maximum number of vehicles reported by INAV Radar</description>
     </key>
 
     <key type="b" name="arming-speak">
@@ -527,7 +527,7 @@
     <key name="radar-alert-min-speed" type="i">
       <default>10</default>
       <summary>Speed above which ADS-B alerts may be generated</summary>
-      <description>Target speed (metres/sec) above which ADS-B proximity alerts may be generated. Requires that 'radar-alert-altitude' and "radar-alert-range" are also set. .</description>
+      <description>Target speed (metres/sec) above which ADS-B proximity alerts may be generated. Requires that 'radar-alert-altitude' and "radar-alert-range" are also set.</description>
     </key>
 
     <key type="s" name="gpsd-host">

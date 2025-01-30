@@ -135,19 +135,20 @@ The following `dconf` setting affect the radar function:
 
 | Setting | Usage |
 | ------- | ----- |
-| `radar-list-max-altitude` | Maximum altitude (metres) to show targets in the radar list view; targets higher than this value will show only in the map view. Setting to 0 disables. Note that ADS-B altitudes are AMSL (or geoid) and SDR altitudes are "Flight Level" (standard atmosphere). |
-| `radar-alert-altitude` | Target altitude (metres) below which ADS-B / SDR proximity alerts may be generated. Requires that 'radar-alert-range' is also set (none zero). Setting to 0 disables. Note that the above altitude datum. |
-| `radar-alert-range` | Target range (metres) below which ADS-B / SDR proximity alerts may be generated. Requires that 'radar-alert-altitude' is also set (none zero). Setting to 0 disables. |
+| `radar-alert-altitude` | Target altitude (metres) below which ADS-B proximity alerts may be generated. Requires that 'radar-alert-range' is also set (non-zero). Setting to 0 disables. Note that ADS-B altitudes are AMSL (or geoid) (default 0) |
+| `radar-alert-min-speed` | Target speed (metres/sec) above which ADS-B proximity alerts may be generated. Requires that 'radar-alert-altitude' and "radar-alert-range" are also set (default 10 m/s) |
+| `radar-alert-range` | Range below which ADS-B alerts may be generated. Requires that 'radar-alert-altitude' is also set (non-zero). Setting to 0 disables (default 0). |
+| `radar-list-max-altitude` | Maximum altitude (metres) to include targets in the radar list view. Targets higher than this value will show only in the map view. This is mainly for ADS-B receivers where there is no need for high altitude targets to be shown. Setting to 0 disables. Note that ADS-B altitudes are AMSL (or geoid) (default 0). |
 | `ga-alt` | Units for GA Altiude, enumerated as 0=m, 1=ft, 2=FL |
 | `ga-range` | Units for GA Range, enumerated as 0=m, 1=km, 2=miles, 3=nautical miles |
 | `ga-speed` | Units for GA Speed, enumerated as  0=m/s, 1=kph, 2=mph, 3=knots |
-| `msp2-adsb` | Options for requesting MSP2_ADSB_VEHICLE_LIST. "off": never request, "on:" always request, "auto:" heuristic based on serial settings / bandwidth |
+| `msp2-adsb` | Options for requesting `MSP2_ADSB_VEHICLE_LIST`. "off": never request, "on:" always request, "auto:" heuristic based on serial settings / bandwidth |
 
 Note that proximity alerts require that both the `radar-alert-altitude` and `radar-alert-range` values are set.
 
 ## Location and Alerts
 
-mwp selects a location for alerts based on the user choice and vehicle state. The same location will also be used for `adsbx://` (internet REST) services.
+mwp selects a location for alerts based on the user choice and vehicle state. The same location will also be used for `adsbx://` (internet REST) services to request aircraft within a given range.
 
 The following table defines how the location is selected, and the range check alert visualisation for that state.
 

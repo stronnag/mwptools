@@ -12,11 +12,19 @@ m[:schema][:key].each do |k|
                   default: k[:default], ktype: k[:type]}
 end
 
-File.open("mwpsettings.md", "w") do |f0|
-  STDERR.puts "Writing settings markdown to \"mwpsettings.md\""
-  File.open("mwp.ini", "w") do |f1|
-    STDERR.puts "Writing settings .ini to \"mwp.ini\""
+idir = "."
+ddir = "."
 
+idir = 'docs' if File.directory?('docs')
+ddir = 'docs/manual/docs' if File.directory?('docs/manual/docs')
+
+dfile = File.join(ddir, "mwpsettings.md")
+ifile = File.join(idir, "mwp.ini")
+STDERR.puts "Writing settings markdown to \"#{dfile}\""
+STDERR.puts "Writing settings .ini to \"#{ifile}\""
+
+File.open(dfile, "w") do |f0|
+  File.open(ifile, "w") do |f1|
     f0.puts '### List of mwp settings'
     f0.puts ''
     f0.puts '| Name | Summary | Description | Default |'
