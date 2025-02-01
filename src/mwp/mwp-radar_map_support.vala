@@ -24,7 +24,7 @@ namespace SVGReader {
     if (alt > 12000)
       alt = 12000;
 
-    h = (float)(0.1 + 0.7*(alt / 12000.0));
+	h = (float)(0.05 + 0.8*(alt / 12000.0));
     Gtk.hsv_to_rgb (h, s, v, out r, out g, out b);
     int ir = (int)(r*255);
     int ig = (int)(g*255);
