@@ -106,7 +106,7 @@ namespace Radar {
 
 	public void init_icons() {
 		CatMap.init();
-		yplanes = new Gdk.Pixbuf[CatMap.MAXICONS, 24];
+		yplanes = new Gdk.Pixbuf[CatMap.MAXICONS, 25];
 		try {
 			inavradar = Img.load_image_from_file("inav-radar.svg",
 												 Mwp.conf.misciconsize,Mwp.conf.misciconsize);
@@ -121,11 +121,11 @@ namespace Radar {
 					var fn = MWPUtils.find_conf_file(ys, "pixmaps");
 					if (FileUtils.get_contents(fn, out xml)) {
 						var doc = SVGReader.parse_svg(xml);
-						for(int alt = 0; alt < 12001; alt += 500) {
-							var bgfill =  SVGReader.rgb_for_alt((double)alt);
-							var fgcol = (alt > 6000) ? "#ffffff" : "#000000";
-							var ypix = SVGReader.rewrite_svg(doc, bgfill, fgcol);
+						for(int alt = 0; alt <= 12000; alt += 500) {
 							int ia = alt/500;
+							var bgfill =  SVGReader.rgb_for_alt((double)alt);
+							var fgcol = (ia > 13) ? "#ffffff" : "#000000";
+							var ypix = SVGReader.rewrite_svg(doc, bgfill, fgcol);
 							yplanes[i, ia] = ypix;
 						}
 						var rpix = SVGReader.rewrite_svg(doc, "#ff0000", "#ffff00");
@@ -160,7 +160,7 @@ namespace Radar {
 				if((r.alert & RadarAlert.ALERT) != 0 && (Radar.astat & Radar.AStatus.A_RED) == Radar.AStatus.A_RED) {
 					img = rplanes[cdsc.idx];
 				} else {
-					int ia = int.min( (int)r.altitude, 11999);
+					int ia = int.min( (int)r.altitude, 12499);
 					if (ia < 0)
 						ia = 0;
 					uint iax = (uint)ia/500;
@@ -188,7 +188,7 @@ namespace Radar {
 				if((r.alert & RadarAlert.ALERT) != 0 &&  (Radar.astat & Radar.AStatus.A_RED) == Radar.AStatus.A_RED) {
 					rp.set_image(rplanes[cdsc.idx]);
 				} else {
-					int ia = int.min( (int)r.altitude, 11999);
+					int ia = int.min( (int)r.altitude, 12499);
 					if (ia < 0)
 						ia = 0;
 					uint iax = (int)ia/500;
