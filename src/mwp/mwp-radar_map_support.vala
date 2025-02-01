@@ -183,26 +183,26 @@ namespace Radar {
 		}
         rp.set_location (r.latitude, r.longitude);
 		if ((r.source & RadarSource.M_ADSB) != 0) {
+			var cdsc = CatMap.name_for_category(r.etype);
 			if((r.alert & RadarAlert.SET) == RadarAlert.SET) {
-				var cdsc = CatMap.name_for_category(r.etype);
 				if((r.alert & RadarAlert.ALERT) != 0 &&  (Radar.astat & Radar.AStatus.A_RED) == Radar.AStatus.A_RED) {
 					rp.set_image(rplanes[cdsc.idx]);
-				} else {
-					int ia = int.min( (int)r.altitude, 12499);
-					if (ia < 0)
-						ia = 0;
-					uint iax = (int)ia/500;
-					if (r.alert == RadarAlert.SET) {
-						rp.set_image(yplanes[cdsc.idx, iax]);
-						r.lastiax = iax;
-					} else if (r.lastiax != iax) {
-						rp.set_image(yplanes[cdsc.idx, iax]);
-						r.lastiax = iax;
-					}
 				}
-				r.alert &= ~RadarAlert.SET;
-				Radar.radar_cache.upsert(rk, r);
+			} else {
+				int ia = int.min( (int)r.altitude, 12499);
+				if (ia < 0)
+					ia = 0;
+				uint iax = (int)ia/500;
+				if (r.alert == RadarAlert.SET) {
+					rp.set_image(yplanes[cdsc.idx, iax]);
+					r.lastiax = iax;
+				} else if (r.lastiax != iax) {
+					rp.set_image(yplanes[cdsc.idx, iax]);
+					r.lastiax = iax;
+				}
 			}
+			r.alert &= ~RadarAlert.SET;
+			Radar.radar_cache.upsert(rk, r);
 		}
 		if(r.etype != 10) {
 			rp.rotate(r.heading);

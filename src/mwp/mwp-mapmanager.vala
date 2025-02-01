@@ -72,10 +72,18 @@ namespace Gis {
 
 		var fn = MWPUtils.find_conf_file("vlegend.svg", "pixmaps");
 		adsblegend = new Gtk.Picture.for_filename (fn);
-		adsblegend.halign = Gtk.Align.START;
-		adsblegend.valign = Gtk.Align.CENTER;
-		adsblegend.margin_start = 8;
-
+		var aw = adsblegend.paintable.get_intrinsic_width();
+		var ah = adsblegend.paintable.get_intrinsic_height();
+		MWPLog.message("::DBG:: legend %d x %d\n", aw, ah);
+		if (aw > ah) {
+			adsblegend.halign = Gtk.Align.CENTER;
+			adsblegend.valign = Gtk.Align.START;
+			adsblegend.margin_top = 4;
+		} else {
+			adsblegend.halign = Gtk.Align.START;
+			adsblegend.valign = Gtk.Align.CENTER;
+			adsblegend.margin_start = 8;
+		}
 		if(Mwp.conf.mapbox_apikey != "") {
 			Gis.mapbox_key = Mwp.conf.mapbox_apikey;
 		} else {
