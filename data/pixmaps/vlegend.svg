@@ -1,80 +1,28 @@
-<svg width="5" height="125" viewBox="0 0 5 125" version="1.1" id="svg1"
-   xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
-  <g id="alts">
-<rect
-style="opacity:1;fill:#ffad32;stroke:#ffad32;stroke-width:0;stroke-dasharray:none"
-id="alt_0" width="5" height="5" x="0" y="120" />
-<rect
-style="opacity:1;fill:#ffd132;stroke:#ffd132;stroke-width:0;stroke-dasharray:none"
-id="alt_500" width="5" height="5" x="0" y="115" />
-<rect
-style="opacity:1;fill:#fff432;stroke:#fff432;stroke-width:0;stroke-dasharray:none"
-id="alt_1000" width="5" height="5" x="0" y="110" />
-<rect
-style="opacity:1;fill:#e5ff32;stroke:#e5ff32;stroke-width:0;stroke-dasharray:none"
-id="alt_1500" width="5" height="5" x="0" y="105" />
-<rect
-style="opacity:1;fill:#c1ff32;stroke:#c1ff32;stroke-width:0;stroke-dasharray:none"
-id="alt_2000" width="5" height="5" x="0" y="100" />
-<rect
-style="opacity:1;fill:#9eff32;stroke:#9eff32;stroke-width:0;stroke-dasharray:none"
-id="alt_2500" width="5" height="5" x="0" y="95" />
-<rect
-style="opacity:1;fill:#7aff32;stroke:#7aff32;stroke-width:0;stroke-dasharray:none"
-id="alt_3000" width="5" height="5" x="0" y="90" />
-<rect
-style="opacity:1;fill:#56ff32;stroke:#56ff32;stroke-width:0;stroke-dasharray:none"
-id="alt_3500" width="5" height="5" x="0" y="85" />
-<rect
-style="opacity:1;fill:#32ff32;stroke:#32ff32;stroke-width:0;stroke-dasharray:none"
-id="alt_4000" width="5" height="5" x="0" y="80" />
-<rect
-style="opacity:1;fill:#32ff56;stroke:#32ff56;stroke-width:0;stroke-dasharray:none"
-id="alt_4500" width="5" height="5" x="0" y="75" />
-<rect
-style="opacity:1;fill:#32ff7a;stroke:#32ff7a;stroke-width:0;stroke-dasharray:none"
-id="alt_5000" width="5" height="5" x="0" y="70" />
-<rect
-style="opacity:1;fill:#32ff9e;stroke:#32ff9e;stroke-width:0;stroke-dasharray:none"
-id="alt_5500" width="5" height="5" x="0" y="65" />
-<rect
-style="opacity:1;fill:#32ffc1;stroke:#32ffc1;stroke-width:0;stroke-dasharray:none"
-id="alt_6000" width="5" height="5" x="0" y="60" />
-<rect
-style="opacity:1;fill:#32ffe5;stroke:#32ffe5;stroke-width:0;stroke-dasharray:none"
-id="alt_6500" width="5" height="5" x="0" y="55" />
-<rect
-style="opacity:1;fill:#32f4ff;stroke:#32f4ff;stroke-width:0;stroke-dasharray:none"
-id="alt_7000" width="5" height="5" x="0" y="50" />
-<rect
-style="opacity:1;fill:#32d1ff;stroke:#32d1ff;stroke-width:0;stroke-dasharray:none"
-id="alt_7500" width="5" height="5" x="0" y="45" />
-<rect
-style="opacity:1;fill:#32adff;stroke:#32adff;stroke-width:0;stroke-dasharray:none"
-id="alt_8000" width="5" height="5" x="0" y="40" />
-<rect
-style="opacity:1;fill:#3289ff;stroke:#3289ff;stroke-width:0;stroke-dasharray:none"
-id="alt_8500" width="5" height="5" x="0" y="35" />
-<rect
-style="opacity:1;fill:#3265ff;stroke:#3265ff;stroke-width:0;stroke-dasharray:none"
-id="alt_9000" width="5" height="5" x="0" y="30" />
-<rect
-style="opacity:1;fill:#3242ff;stroke:#3242ff;stroke-width:0;stroke-dasharray:none"
-id="alt_9500" width="5" height="5" x="0" y="25" />
-<rect
-style="opacity:1;fill:#4732ff;stroke:#4732ff;stroke-width:0;stroke-dasharray:none"
-id="alt_10000" width="5" height="5" x="0" y="20" />
-<rect
-style="opacity:1;fill:#6b32ff;stroke:#6b32ff;stroke-width:0;stroke-dasharray:none"
-id="alt_10500" width="5" height="5" x="0" y="15" />
-<rect
-style="opacity:1;fill:#8e32ff;stroke:#8e32ff;stroke-width:0;stroke-dasharray:none"
-id="alt_11000" width="5" height="5" x="0" y="10" />
-<rect
-style="opacity:1;fill:#b232ff;stroke:#b232ff;stroke-width:0;stroke-dasharray:none"
-id="alt_11500" width="5" height="5" x="0" y="5" />
-<rect
-style="opacity:1;fill:#d632ff;stroke:#d632ff;stroke-width:0;stroke-dasharray:none"
-id="alt_12000" width="5" height="5" x="0" y="0" />
- </g>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="10" height="250" viewBox="0 0 10 250">
+<path fill-rule="nonzero" fill="rgb(100%, 67.843137%, 19.607843%)" fill-opacity="1" d="M 0 240 L 10 240 L 10 250 L 0 250 Z M 0 240 "/>
+<path fill-rule="nonzero" fill="rgb(100%, 81.960784%, 19.607843%)" fill-opacity="1" d="M 0 230 L 10 230 L 10 240 L 0 240 Z M 0 230 "/>
+<path fill-rule="nonzero" fill="rgb(100%, 95.686275%, 19.607843%)" fill-opacity="1" d="M 0 220 L 10 220 L 10 230 L 0 230 Z M 0 220 "/>
+<path fill-rule="nonzero" fill="rgb(89.803922%, 100%, 19.607843%)" fill-opacity="1" d="M 0 210 L 10 210 L 10 220 L 0 220 Z M 0 210 "/>
+<path fill-rule="nonzero" fill="rgb(75.686275%, 100%, 19.607843%)" fill-opacity="1" d="M 0 200 L 10 200 L 10 210 L 0 210 Z M 0 200 "/>
+<path fill-rule="nonzero" fill="rgb(61.960784%, 100%, 19.607843%)" fill-opacity="1" d="M 0 190 L 10 190 L 10 200 L 0 200 Z M 0 190 "/>
+<path fill-rule="nonzero" fill="rgb(47.843137%, 100%, 19.607843%)" fill-opacity="1" d="M 0 180 L 10 180 L 10 190 L 0 190 Z M 0 180 "/>
+<path fill-rule="nonzero" fill="rgb(33.72549%, 100%, 19.607843%)" fill-opacity="1" d="M 0 170 L 10 170 L 10 180 L 0 180 Z M 0 170 "/>
+<path fill-rule="nonzero" fill="rgb(19.607843%, 100%, 19.607843%)" fill-opacity="1" d="M 0 160 L 10 160 L 10 170 L 0 170 Z M 0 160 "/>
+<path fill-rule="nonzero" fill="rgb(19.607843%, 100%, 33.72549%)" fill-opacity="1" d="M 0 150 L 10 150 L 10 160 L 0 160 Z M 0 150 "/>
+<path fill-rule="nonzero" fill="rgb(19.607843%, 100%, 47.843137%)" fill-opacity="1" d="M 0 140 L 10 140 L 10 150 L 0 150 Z M 0 140 "/>
+<path fill-rule="nonzero" fill="rgb(19.607843%, 100%, 61.960784%)" fill-opacity="1" d="M 0 130 L 10 130 L 10 140 L 0 140 Z M 0 130 "/>
+<path fill-rule="nonzero" fill="rgb(19.607843%, 100%, 75.686275%)" fill-opacity="1" d="M 0 120 L 10 120 L 10 130 L 0 130 Z M 0 120 "/>
+<path fill-rule="nonzero" fill="rgb(19.607843%, 100%, 89.803922%)" fill-opacity="1" d="M 0 110 L 10 110 L 10 120 L 0 120 Z M 0 110 "/>
+<path fill-rule="nonzero" fill="rgb(19.607843%, 95.686275%, 100%)" fill-opacity="1" d="M 0 100 L 10 100 L 10 110 L 0 110 Z M 0 100 "/>
+<path fill-rule="nonzero" fill="rgb(19.607843%, 81.960784%, 100%)" fill-opacity="1" d="M 0 90 L 10 90 L 10 100 L 0 100 Z M 0 90 "/>
+<path fill-rule="nonzero" fill="rgb(19.607843%, 67.843137%, 100%)" fill-opacity="1" d="M 0 80 L 10 80 L 10 90 L 0 90 Z M 0 80 "/>
+<path fill-rule="nonzero" fill="rgb(19.607843%, 53.72549%, 100%)" fill-opacity="1" d="M 0 70 L 10 70 L 10 80 L 0 80 Z M 0 70 "/>
+<path fill-rule="nonzero" fill="rgb(19.607843%, 39.607843%, 100%)" fill-opacity="1" d="M 0 60 L 10 60 L 10 70 L 0 70 Z M 0 60 "/>
+<path fill-rule="nonzero" fill="rgb(19.607843%, 25.882353%, 100%)" fill-opacity="1" d="M 0 50 L 10 50 L 10 60 L 0 60 Z M 0 50 "/>
+<path fill-rule="nonzero" fill="rgb(27.843137%, 19.607843%, 100%)" fill-opacity="1" d="M 0 40 L 10 40 L 10 50 L 0 50 Z M 0 40 "/>
+<path fill-rule="nonzero" fill="rgb(41.960784%, 19.607843%, 100%)" fill-opacity="1" d="M 0 30 L 10 30 L 10 40 L 0 40 Z M 0 30 "/>
+<path fill-rule="nonzero" fill="rgb(55.686275%, 19.607843%, 100%)" fill-opacity="1" d="M 0 20 L 10 20 L 10 30 L 0 30 Z M 0 20 "/>
+<path fill-rule="nonzero" fill="rgb(69.803922%, 19.607843%, 100%)" fill-opacity="1" d="M 0 10 L 10 10 L 10 20 L 0 20 Z M 0 10 "/>
+<path fill-rule="nonzero" fill="rgb(83.921569%, 19.607843%, 100%)" fill-opacity="1" d="M 0 0 L 10 0 L 10 10 L 0 10 Z M 0 0 "/>
 </svg>
