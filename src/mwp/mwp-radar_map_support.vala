@@ -15,9 +15,79 @@
  * (c) Jonathan Hudson <jh+mwptools@daria.co.uk>
  */
 
-namespace Radar {
+namespace SVGReader {
+  string rgb_for_alt(double alt) {
+    float h,s,v;
+    s = 0.8f;
+    v = 1.0f;
+    float r,g,b;
+    if (alt > 12000)
+      alt = 12000;
 
-	private Gdk.Pixbuf [] yplanes;
+    h = (float)(0.1 + 0.7*(alt / 12000.0));
+    Gtk.hsv_to_rgb (h, s, v, out r, out g, out b);
+    int ir = (int)(r*255);
+    int ig = (int)(g*255);
+    int ib = (int)(b*255);
+    return "#%02x%02x%02x".printf(ir,ig,ib);
+  }
+
+	Xml.Doc* parse_svg(string s) {
+		Xml.Parser.init();
+		Xml.Doc* doc = Xml.Parser.parse_memory(s, s.length);
+        if (doc == null) {
+            return null;
+        }
+		return doc;
+	}
+
+	Gdk.Pixbuf? rewrite_svg(Xml.Doc *doc, string? bgfill, string? fgfill) {
+		Xml.Node* root = doc->get_root_element ();
+		if (root != null) {
+			if (root->name == "svg") {
+				bool done = false;
+				for (Xml.Node* iter = root->children; iter != null; iter = iter->next) {
+					if (done)
+						break;
+					if (iter->type != Xml.ElementType.ELEMENT_NODE) {
+						continue;
+					}
+					if(iter->name == "path") {
+						bool is_mwpbg = false;
+						bool is_mwpfg = false;
+						for (Xml.Attr* prop = iter->properties; prop != null; prop = prop->next) {
+							string attr_content = prop->children->content;
+							if(prop->name == "id" && attr_content == "mwpbg") {
+								is_mwpbg = true;
+							} else if(prop->name == "id" && attr_content == "mwpfg") {
+								is_mwpfg = true;
+							} else if(prop->name == "fill") {
+								if (is_mwpbg && bgfill != null) {
+									is_mwpbg = false;
+									prop->children->content = bgfill;
+								} else if (is_mwpfg && fgfill != null) {
+									is_mwpfg = false;
+									prop->children->content = fgfill;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		string os;
+		doc->dump_memory_enc_format (out os, null, "utf-8", true);
+		var stream = new MemoryInputStream.from_data(os.data);
+		try {
+			return new Gdk.Pixbuf.from_stream(stream, null);
+		} catch {
+			return null;
+		}
+	}
+}
+
+namespace Radar {
+	private Gdk.Pixbuf [,] yplanes;
 	private Gdk.Pixbuf [] rplanes;
 	private Gdk.Pixbuf inavradar;
 	private Gdk.Pixbuf inavtelem;
@@ -36,6 +106,7 @@ namespace Radar {
 
 	public void init_icons() {
 		CatMap.init();
+		yplanes = new Gdk.Pixbuf[CatMap.MAXICONS, 24];
 		try {
 			inavradar = Img.load_image_from_file("inav-radar.svg",
 												 Mwp.conf.misciconsize,Mwp.conf.misciconsize);
@@ -45,9 +116,26 @@ namespace Radar {
 			for(var i = 0; i < CatMap.MAXICONS; i++) {
 				var bn = CatMap.name_for_index(i);
 				var ys = "adsb/%s.svg".printf(bn);
-				var rs = "adsb/%s_red.svg".printf(bn);
-				yplanes += Img.load_image_from_file(ys, -1, -1);
-				rplanes += Img.load_image_from_file(rs, -1, -1);
+				string xml;
+				try {
+					var fn = MWPUtils.find_conf_file(ys, "pixmaps");
+					if (FileUtils.get_contents(fn, out xml)) {
+						var doc = SVGReader.parse_svg(xml);
+						for(int alt = 0; alt < 12001; alt += 500) {
+							var bgfill =  SVGReader.rgb_for_alt((double)alt);
+							var fgcol = (alt > 6000) ? "#ffffff" : "#000000";
+							var ypix = SVGReader.rewrite_svg(doc, bgfill, fgcol);
+							int ia = alt/500;
+							yplanes[i, ia] = ypix;
+						}
+						var rpix = SVGReader.rewrite_svg(doc, "#ff0000", "#ffff00");
+						rplanes += rpix;
+						delete doc;
+						Xml.Parser.cleanup();
+					}
+				} catch (Error e) {
+					stderr.printf("Read %s %s\n", ys, e.message);
+				}
 			}
 		} catch {
 			MWPLog.message("Radar: Failed to load icons\n");
@@ -72,7 +160,12 @@ namespace Radar {
 				if((r.alert & RadarAlert.ALERT) != 0 && (Radar.astat & Radar.AStatus.A_RED) == Radar.AStatus.A_RED) {
 					img = rplanes[cdsc.idx];
 				} else {
-					img = yplanes[cdsc.idx];
+					int ia = int.min( (int)r.altitude, 11999);
+					if (ia < 0)
+						ia = 0;
+					uint iax = (uint)ia/500;
+					r.lastiax = iax;
+					img = yplanes[cdsc.idx, iax];
 				}
 			}
 			rp  = new MWPMarker.from_image(img);
@@ -94,8 +187,18 @@ namespace Radar {
 				var cdsc = CatMap.name_for_category(r.etype);
 				if((r.alert & RadarAlert.ALERT) != 0 &&  (Radar.astat & Radar.AStatus.A_RED) == Radar.AStatus.A_RED) {
 					rp.set_image(rplanes[cdsc.idx]);
-				} else if (r.alert == RadarAlert.SET) {
-					rp.set_image(yplanes[cdsc.idx]);
+				} else {
+					int ia = int.min( (int)r.altitude, 11999);
+					if (ia < 0)
+						ia = 0;
+					uint iax = (int)ia/500;
+					if (r.alert == RadarAlert.SET) {
+						rp.set_image(yplanes[cdsc.idx, iax]);
+						r.lastiax = iax;
+					} else if (r.lastiax != iax) {
+						rp.set_image(yplanes[cdsc.idx, iax]);
+						r.lastiax = iax;
+					}
 				}
 				r.alert &= ~RadarAlert.SET;
 				Radar.radar_cache.upsert(rk, r);

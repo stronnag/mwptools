@@ -65,12 +65,13 @@ namespace Radar {
 		public uint8 etype  {get; construct set;}
 		public uint32 srange;
 		public bool posvalid;
+		public uint lastiax;
 		public DateTime dt {get; construct set;}
 
 		public RadarPlot() {
 			bearing = 0xffff;
+			lastiax = 0;
 		}
-
 	}
 
 	public enum RadarAlert {

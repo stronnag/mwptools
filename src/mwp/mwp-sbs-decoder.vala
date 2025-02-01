@@ -24,9 +24,11 @@ public class ADSBReader :Object {
 	private Soup.Session session;
 	private uint range;
 	private uint interval;
+	private uint nreq;
 
 	public ADSBReader(string pn, uint16 _port=30003) {
 		interval = 1000;
+		nreq = 0;
 		var p = pn[6:pn.length].split(":");
 		port = _port;
 		host = "localhost";
@@ -94,17 +96,18 @@ public class ADSBReader :Object {
 		}
 		msg = new Soup.Message ("GET", ahost);
 		try {
+			nreq++;
 			var byt = yield session.send_and_read_async (msg, Priority.DEFAULT, null);
 			if (msg.status_code == 200) {
 				result(byt.get_data());
 				return true;
 			} else {
-				MWPLog.message("ADSB fetch: %u %s\n", msg.status_code, msg.reason_phrase);
+				MWPLog.message("ADSB fetch <%s> : %u %s (%u)\n", ahost, msg.status_code, msg.reason_phrase, nreq);
 				result(null);
 				return false;
 			}
 		} catch (Error e) {
-			MWPLog.message("ADSB fetch: %s\n", e.message);
+			MWPLog.message("ADSB fetch <%s> : %s\n", ahost, e.message);
 			result(null);
 			return false;
 		}
