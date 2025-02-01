@@ -845,6 +845,7 @@ namespace Mwp {
 				{"show-serial-stats", show_serial_stats},
 				{"areap", run_area_planner},
 				{"gps-stats", show_gps_stats},
+				{"vlegend", Gis.toggle_vlegend},
 			};
 
             add_action_entries (winacts, this);
@@ -859,7 +860,7 @@ namespace Mwp {
 					lsaq.set_state (s);
 				});
 			window.add_action(lsaq);
-
+			app.set_accels_for_action ("win.vlegend", { "<primary>v" });
 			app.set_accels_for_action ("win.about", { "<primary>a" });
 			app.set_accels_for_action ("win.cliploc", { "<primary>l" });
 			app.set_accels_for_action ("win.fmtcliploc", { "<primary><shift>l" });

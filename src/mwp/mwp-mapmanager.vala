@@ -45,6 +45,8 @@ namespace Gis {
 	internal Queue<Shumate.MapLayer?> qml;
 	private Gtk.Label warnlab;
 	private Gtk.Label osdlab;
+	private Gtk.Picture adsblegend;
+
 	private string mapbox_key = null;
 
 	public void init () {
@@ -67,6 +69,13 @@ namespace Gis {
 		osdlab.valign = Gtk.Align.START;
 		Gis.overlay.add_overlay(warnlab);
 		Gis.overlay.add_overlay(osdlab);
+
+		var fn = MWPUtils.find_conf_file("vlegend.svg", "pixmaps");
+		adsblegend = new Gtk.Picture.for_filename (fn);
+		adsblegend.halign = Gtk.Align.START;
+		adsblegend.valign = Gtk.Align.CENTER;
+		adsblegend.margin_start = 8;
+
 		if(Mwp.conf.mapbox_apikey != "") {
 			Gis.mapbox_key = Mwp.conf.mapbox_apikey;
 		} else {
@@ -101,6 +110,14 @@ namespace Gis {
 	public void  map_show_warning(string msg) {
 		warnlab.label = "<span size='300%%' color='#ff0000c0'>%s</span>".printf(msg);
 		warnlab.visible=true;
+	}
+
+	public void toggle_vlegend() {
+		if (adsblegend.get_parent() != null) {
+			Gis.overlay.remove_overlay(adsblegend);
+		} else {
+			Gis.overlay.add_overlay(adsblegend);
+		}
 	}
 
 	public void  map_hide_warning() {
