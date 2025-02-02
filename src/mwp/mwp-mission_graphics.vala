@@ -26,7 +26,7 @@ namespace IconTools {
 		public string to_string() {
 			return "#%02x%02x%02x%02x".printf(r, g, b, a);
 		}
-		public Gdk.RGBA to_rbga() {
+		public Gdk.RGBA to_rgba() {
 			return {(float)r/255.0f, (float)g/255.0f, (float)b/255.0f, (float)a/255.0f};
 		}
 	}

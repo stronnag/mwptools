@@ -96,7 +96,7 @@ public class Craft : Object {
         pmlayer = new Shumate.MarkerLayer(Gis.map.viewport);
         crpath = new Shumate.PathLayer(Gis.map.viewport);
         crlayer = new Shumate.MarkerLayer(Gis.map.viewport);
-        crpath.set_stroke_color(ladyjane.to_rbga());
+        crpath.set_stroke_color(ladyjane.to_rgba());
         crpath.set_stroke_width (4);
 
 		Gis.map.insert_layer_above (crpath, Gis.hp_layer); // above home layer

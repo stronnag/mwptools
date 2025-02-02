@@ -51,7 +51,7 @@ public class OverlayItem : Object {
 	public Shumate.PathLayer? pl;
 	public List<MWPLabel?> mks;
 
-	private Gdk.RGBA rbga_from_string(string s) {
+	private Gdk.RGBA rgba_from_string(string s) {
 		var c = Gdk.RGBA();
 		c.parse(s);
 		return c;
@@ -109,17 +109,17 @@ public class OverlayItem : Object {
 
 	public void show_linestring() {
 		pl.closed=false;
-		pl.set_stroke_color(rbga_from_string(styleinfo.line_colour));
+		pl.set_stroke_color(rgba_from_string(styleinfo.line_colour));
 		pl.set_stroke_width (styleinfo.line_width);
 	}
 
 	public void update_style(StyleItem si) {
 		styleinfo = si;
-		pl.set_stroke_color(rbga_from_string(styleinfo.line_colour));
+		pl.set_stroke_color(rgba_from_string(styleinfo.line_colour));
 		pl.set_stroke_width (styleinfo.line_width);
 		pl.fill = (styleinfo.fill_colour != null);
 		if (pl.fill)
-			pl.set_fill_color(rbga_from_string(styleinfo.fill_colour));
+			pl.set_fill_color(rgba_from_string(styleinfo.fill_colour));
 
 		var llist = new List<uint>();
 		if (styleinfo.line_dash != 0) {
@@ -136,13 +136,12 @@ public class OverlayItem : Object {
 	}
 
 	public void show_polygon() {
-
 			pl.closed=true;
-			pl.set_stroke_color(rbga_from_string(styleinfo.line_colour));
+			pl.set_stroke_color(rgba_from_string(styleinfo.line_colour));
 			pl.set_stroke_width (styleinfo.line_width);
 			pl.fill = (styleinfo.fill_colour != null);
 			if (pl.fill)
-				pl.set_fill_color(rbga_from_string(styleinfo.fill_colour));
+				pl.set_fill_color(rgba_from_string(styleinfo.fill_colour));
 			if (styleinfo.line_dash != 0) {
 				var llist = new List<uint>();
 				llist.append(styleinfo.line_dash);
