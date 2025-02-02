@@ -390,14 +390,21 @@ namespace Radar {
 		if(Toast.id != 0) {
 			if(( Radar.astat & Radar.AStatus.A_TOAST) == Radar.AStatus.A_TOAST) {
 				var r = radar_cache.lookup(Toast.id);
-				var msg = "ADSB proximity %s %s@%s \u21d5%s".printf(r.name, format_range(r), format_bearing(r), format_alt(r));
-				if(Toast.toast == null) {
-					Toast.toast = Mwp.add_toast_text(msg, 0);
-					Toast.toast.dismissed.connect(() => {
-							Toast.toast = null;
-						});
+				if (r != null) {
+					var msg = "ADSB proximity %s %s@%s \u21d5%s".printf(r.name, format_range(r), format_bearing(r), format_alt(r));
+					if(Toast.toast == null) {
+						Toast.toast = Mwp.add_toast_text(msg, 0);
+						Toast.toast.dismissed.connect(() => {
+								Toast.toast = null;
+							});
+					} else {
+						Toast.toast.set_title(msg);
+					}
 				} else {
-					Toast.toast.set_title(msg);
+					if(Toast.toast != null) {
+						Toast.toast.dismiss();
+						Toast.toast = null;
+					}
 				}
 			}
 			if(( Radar.astat & Radar.AStatus.A_SOUND) == Radar.AStatus.A_SOUND) {

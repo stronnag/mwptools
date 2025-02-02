@@ -176,19 +176,22 @@ namespace Radar {
 			rp.has_tooltip = true;
 			rp.query_tooltip.connect((x,y,k,t) => {
 					var ri = Radar.radar_cache.lookup(rp.no);
-					var s = generate_tt(ri);
-					t.set_text(s);
-					return true;
+					if (ri != null) {
+						var s = generate_tt(ri);
+						t.set_text(s);
+						return true;
+					} else {
+						return false;
+					}
 				});
 		}
         rp.set_location (r.latitude, r.longitude);
 		if ((r.source & RadarSource.M_ADSB) != 0) {
 			var cdsc = CatMap.name_for_category(r.etype);
-			if((r.alert & RadarAlert.SET) == RadarAlert.SET) {
-				if((r.alert & RadarAlert.ALERT) != 0 &&  (Radar.astat & Radar.AStatus.A_RED) == Radar.AStatus.A_RED) {
-					rp.set_image(rplanes[cdsc.idx]);
-				}
-			} else {
+			if((r.alert & RadarAlert.SET) == RadarAlert.SET && (r.alert & RadarAlert.ALERT) != 0 &&  (Radar.astat & Radar.AStatus.A_RED) == Radar.AStatus.A_RED) {
+				rp.set_image(rplanes[cdsc.idx]);
+				r.lastiax = -1;
+			} else if ((r.alert & RadarAlert.ALERT) == 0) {
 				int ia = int.min( (int)r.altitude, 12499);
 				if (ia < 0)
 					ia = 0;
@@ -214,22 +217,24 @@ namespace Radar {
 		string ga_speed;
 		string state;
 		string xstate;
+		string rng = "";
 		if((r.source & RadarSource.M_ADSB) != 0) {
 			ga_alt = Units.ga_alt(r.altitude);
 			ga_speed = Units.ga_speed(r.speed);
 			state = "(%s)".printf(CatMap.to_category(r.etype));
 			xstate = ((RadarSource)r.source).to_string();
+			rng = "\u2b80%s".printf(Radar.format_range(r));
 		} else {
 			ga_alt = "%.0f %s".printf(Units.distance(r.altitude), Units.distance_units());
 			ga_speed = "%.0f %s".printf(Units.speed(r.speed), Units.speed_units());
 			state = "(B6)";
 			xstate = RadarView.status[r.state];
 		}
-		var tt = "%s / %s %s\n%s %s\n%s %s %.0f° ".printf(
+		var tt = "%s / %s %s\n%s %s\n%s %s %.0f° %s".printf(
 			r.name, xstate, state,
 			PosFormat.lat(r.latitude, Mwp.conf.dms),
 			PosFormat.lon(r.longitude, Mwp.conf.dms),
-			ga_alt, ga_speed, r.heading);
+			ga_alt, ga_speed, r.heading, rng);
 		return tt;
 	}
 
