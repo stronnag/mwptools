@@ -11,8 +11,8 @@ namespace SVGReader {
 		int ir = (int)(r*255);
 		int ig = (int)(g*255);
 		int ib = (int)(b*255);
-		int op = (int)(opacity*255);
-		return "#%02x%02x%02x%0x2".printf(ir, ig, ib, op);
+		//		int op = (int)(opacity*255);
+		return "#%02x%02x%02x".printf(ir, ig, ib);
 	}
 
 	Xml.Doc* parse_svg(string s) {
