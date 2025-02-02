@@ -29,7 +29,7 @@ Build by the `Makefile`.
 make
 ```
 
-`read_svg` generates a set if SVGs for a given model (from the mwp SVG models),
+`read_svg` generates a set of SVGs for a given model (from the mwp SVG models),
 
 ```
 ./read_svg A3.svg
@@ -39,6 +39,8 @@ alt   500, id  1, fill #ff9932
 alt 11500, id 23, fill #ea32ff
 alt 12000, id 24, fill #ff32ea
 ```
+
+It also generates a list of fill colours, e.g. as used by `mkrect.rb` to generate the legend.
 
 #### `mkrect.rb`
 
@@ -52,10 +54,36 @@ mkrect.rb [options]
     -v, --vertical                   orientation
     -?, --help                       Show this message
 ```
-
 e.g.
 
 ```
 ./read_svg A3.svg  | ./mkrect.rb  > /tmp/hlegend.svg
 ./read_svg A3.svg  | ./mkrect.rb -v -s 250 -o 0.8 > /tmp/vlegend.svg
 ```
+
+### Runtime altitude dependent colour coding of SVG models.
+
+In order for user defined ADSB SVG models to be colour coded according to altitude, the following rules apply:
+
+* There are 25 "bands" from 0 to 12000m at 500m intervals
+* Both the fill (background) and stroke (foreground) will be updated according to altitude if the SVG is formatted as described below. In particular, if the `id` tag is missing or not recognised, no alternation will be made.
+
+mwp applies the following in generating altitude dependent colour modification.
+
+* Prerequisite: The fill and stroke paths are each defined as follows:
+  ```xml
+  <path ... fill="..." .../>
+  ```
+* In order for the background fill to be updated, an attribute `id="mwpbg"` must be provided **before** the `fill` attribute, for example:
+  ```xml
+  <path id="mwpbg" fill="rgb(255,255,255)"  fill-opacity="1" ... />
+   ```
+* In order for the foreground stroke to be updated, an attribute `id="mwpfg"` must be provided **before** the `fill` attribute, for example:
+  ```xml
+  <path id="mwpfg" fill="rgb(0%,0%,0%)" ... />
+   ```
+* If the required `id` is present, the `fill` attribute will be updated as:
+  - For `id="mwpbg"`, the fill (background) is set to an altitude band colour.
+  - For `id="mwpfg"`, the fill (outline) is set to white if the altitude is > 6000m.
+
+Note that mwp processes each SVG at startup and caches internally the image generated from such transformations. The aircraft icons are updated at runtime when an aircraft moves between bands.

@@ -9,8 +9,6 @@ As `readsb` and `dump1090` typically require a third party web server to export 
 * `adsbpbsrv` for [readsb](https://github.com/Mictronics/readsb-protobuf) protobuf
 * `jsacsrv` for [dump1090](https://github.com/flightaware/dump1090) JSON.
 
-
-
 ## `adsbpbsrv` daemon
 
 This is built on the `readsb` machine using the supplied `Makefile`. It requires a `vala` compiler and `make`. These are available via the package manager on most Linux and FreeBSDs.
