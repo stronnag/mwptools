@@ -1,7 +1,6 @@
 namespace SVGReader {
-	string rgb_for_alt(double alt) {
-		float h,s,v;
-		s = 0.8f;
+	string rgb_for_alt(double alt, float s=0.8f, float opacity = 0.8f) {
+		float h,v;
 		v = 1.0f;
 		float r,g,b;
 		if (alt > 12000)
@@ -12,7 +11,8 @@ namespace SVGReader {
 		int ir = (int)(r*255);
 		int ig = (int)(g*255);
 		int ib = (int)(b*255);
-		return "#%02x%02x%02x".printf(ir,ig,ib);
+		int op = (int)(opacity*255);
+		return "#%02x%02x%02x%0x2".printf(ir, ig, ib, op);
 	}
 
 	Xml.Doc* parse_svg(string s) {
