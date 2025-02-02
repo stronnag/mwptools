@@ -23,6 +23,12 @@ i.e. h has range 0.05 - 0.85 (18 - 306 in standard 360°  scale)
 
 #### `read_svg`
 
+Build by the `Makefile`.
+
+```
+make
+```
+
 `read_svg` generates a set if SVGs for a given model (from the mwp SVG models),
 
 ```
@@ -43,7 +49,7 @@ alt 12000, id 24, fill #ff32ea
 ./read_svg A3.svg  | VERTICAL=1 ./mkrect.rb  > /tmp/vlegend.svg
 ```
 
-For display in mwp, the legend SVGs are scaled by factor of 2:
+For display, the legend SVGs are scaled by factor of 2:
 
 ```
 rsvg-convert -z 2 -f svg -o mwptools/data/pixmaps/vlegend.svg /tmp/vlegend.svg
