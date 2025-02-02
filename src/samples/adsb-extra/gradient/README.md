@@ -42,15 +42,20 @@ alt 12000, id 24, fill #ff32ea
 
 #### `mkrect.rb`
 
-`mkrect.rb` takes the output of `read_svg` and generates a SVG gradient image. By default this is horizontal. It can be coerced to vertical by setting the environment variable `VERTICAL`:
+`mkrect.rb` takes the output of `read_svg` (read from STDIN) and generates a SVG gradient image. By default this is horizontal.
+
+``` ruby
+ ./mkrect.rb --help
+mkrect.rb [options]
+    -o, --opacity=VAL                opacity (0-1)
+    -s, --size=VAL                   dominant size
+    -v, --vertical                   orientation
+    -?, --help                       Show this message
+```
+
+e.g.
 
 ```
 ./read_svg A3.svg  | ./mkrect.rb  > /tmp/hlegend.svg
-./read_svg A3.svg  | VERTICAL=1 ./mkrect.rb  > /tmp/vlegend.svg
-```
-
-For display, the legend SVGs are scaled by factor of 2:
-
-```
-rsvg-convert -z 2 -f svg -o mwptools/data/pixmaps/vlegend.svg /tmp/vlegend.svg
+./read_svg A3.svg  | ./mkrect.rb -v -s 250 -o 0.8 > /tmp/vlegend.svg
 ```

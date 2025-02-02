@@ -1,5 +1,5 @@
 namespace SVGReader {
-	string rgb_for_alt(double alt, float s=0.8f, float opacity = 0.8f) {
+	string rgb_for_alt(double alt, float s=0.8f) {
 		float h,v;
 		v = 1.0f;
 		float r,g,b;
@@ -11,7 +11,6 @@ namespace SVGReader {
 		int ir = (int)(r*255);
 		int ig = (int)(g*255);
 		int ib = (int)(b*255);
-		//		int op = (int)(opacity*255);
 		return "#%02x%02x%02x".printf(ir, ig, ib);
 	}
 
@@ -67,11 +66,19 @@ int main(string?[] args) {
 	if (args.length > 1) {
 		string fn = args[1];
 		string xml;
+		float sfact = 0.8f;
+		if (args.length > 2) {
+			sfact = float.parse(args[2]);
+			if (sfact > 1.0) {
+				sfact /= 100.0f;
+			}
+		}
+
 		try {
 			if (FileUtils.get_contents(fn, out xml)) {
 				var doc = SVGReader.parse_svg(xml);
 				for(int alt = 0; alt < 12001; alt += 500) {
-					var bgfill =  SVGReader.rgb_for_alt((double)alt);
+					var bgfill =  SVGReader.rgb_for_alt((double)alt, sfact);
 					var s = SVGReader.rewrite_svg(doc, bgfill);
 					var ofn = "alt_%05d.svg".printf(alt);
 					FileUtils.set_contents(ofn, s);
