@@ -147,7 +147,7 @@ namespace Assist {
 		internal uint offset;
 		internal int sid;
 
-		internal static bool close;
+		internal static bool _close;
 
 		private static GLib.Once<Window> _instance;
 		public static unowned Window instance () {
@@ -155,10 +155,10 @@ namespace Assist {
 		}
 
 		public Window() {
-			close = false;
+			_close = false;
 			transient_for = Mwp.window;
 			close_request.connect(() => {
-					close = true;
+					_close = true;
 					return false;
 				});
 
@@ -204,7 +204,7 @@ namespace Assist {
 		}
 
 		public void send_assist() {
-			if (!close && sid < sg.length) {
+			if (!_close && sid < sg.length) {
 				var dlen = sg[sid];
 				var dslice = data[offset:offset+dlen];
 				Mwp.queue_cmd(Msp.Cmds.INAV_GPS_UBLOX_COMMAND, dslice, dlen);
