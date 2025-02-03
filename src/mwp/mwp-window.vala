@@ -771,6 +771,11 @@ namespace Mwp {
 			g.present();
 		}
 
+		private void do_assist() {
+			var a = Assist.Window.instance();
+			a.present();
+		}
+
 		private void do_cli_open() {
 			IChooser.Filter []ifm = { {"CLI File", {"txt"}}, };
 			var fc = IChooser.chooser(Mwp.conf.missionpath, ifm);
@@ -846,6 +851,7 @@ namespace Mwp {
 				{"areap", run_area_planner},
 				{"gps-stats", show_gps_stats},
 				{"vlegend", Gis.toggle_vlegend},
+				{"assistnow", do_assist},
 			};
 
             add_action_entries (winacts, this);
@@ -884,6 +890,7 @@ namespace Mwp {
 			app.set_accels_for_action ("win.reboot", { "<primary>exclam" });
 			app.set_accels_for_action ("win.flight-stats", { "<primary><shift>a" });
 			app.set_accels_for_action ("win.quit", { "<primary>q" });
+
 			MwpMenu.set_menu_state(Mwp.window, "followme", false);
 #if WINDOWS
         MwpMenu.set_menu_state(Mwp.window, "terminal", false);
@@ -998,7 +1005,8 @@ namespace Mwp {
 			"restore-mission",
 			"upload-mission",
 			"download-mission",
-			"mission-info"};
+			"mission-info",
+		};
         foreach(var s in ms0) {
             MwpMenu.set_menu_state(Mwp.window, s, state);
 		}
@@ -1011,6 +1019,7 @@ namespace Mwp {
 		}
 		MwpMenu.set_menu_state(Mwp.window, "gz-dl", state);
 		MwpMenu.set_menu_state(Mwp.window, "gz-ul", state);
+		MwpMenu.set_menu_state(Mwp.window, "assistnow", state);
 	}
 
 	void show_arm_status() {

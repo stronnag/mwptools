@@ -1,0 +1,94 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $AssistWindow: Adw.Window {
+  icon-name: "mwp_icon";
+  title: "Ublox AssistNow";
+  modal: true;
+
+  Box {
+    orientation: vertical;
+    [start]
+    Adw.HeaderBar {}
+
+    [end]
+    Box {
+      orientation: vertical;
+      spacing: 8;
+      Frame  {
+        hexpand: true;
+        label: 'Asssit Type';
+        Box {
+	  orientation: vertical;
+	  CheckButton online {
+	    label: 'Online';
+	    active: true;
+	  }
+	  CheckButton offline {
+	    label: 'Offline';
+	    group: online;
+	  }
+        }
+      }
+
+      Grid {
+        row-spacing: 4;
+        Label {
+          label: _("Size (b) :");
+          layout {
+            column: '0';
+            row: '0';
+          }
+        }
+
+        Label asize {
+	  label: "tbd";
+	  styles [ "monospace" ]
+          layout {
+            column: '1';
+            row: '0';
+          }
+        }
+
+        Label {
+          label: _("Uploaded :");
+          layout {
+            column: '0';
+            row: '1';
+          }
+        }
+
+        Label astat {
+	  styles [ "monospace" ]
+	  label: "0/0";
+          layout {
+            column: '1';
+            row: '1';
+          }
+        }
+      }
+
+      [end]
+      Box {
+        valign: end;
+        halign: end;
+        vexpand: true;
+        hexpand: true;
+	spacing: 8;
+
+        Button download {
+          halign: end;
+	  hexpand: false;
+	  label: _("Download");
+        }
+
+        Button apply {
+          halign: end;
+	  hexpand: false;
+          label: _("Apply");
+	  sensitive: false;
+        }
+      }
+    }
+  }
+}

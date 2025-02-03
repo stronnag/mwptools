@@ -31,6 +31,7 @@ blpfiles = [
   'surveymenu.blp',
   'gps_stats_dialog.blp',
   'vas.blp',
+  'assistnow.blp',
 ]
 
 blueprints_ui = []

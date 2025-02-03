@@ -675,6 +675,12 @@
       <description>Whether to suppress desensitising of MSP action items when armed.</description>
     </key>
 
+    <key name="assist-key" type="s">
+      <summary>Ublox Assist now key</summary>
+      <default>""</default>
+      <description>Ublox Assist now key.</description>
+    </key>
+
     <key name="mavlink-sysid" type="u">
      <summary>Sysid for synthesised MAVLink</summary>
      <range min="2" max="255"/>
