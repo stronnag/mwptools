@@ -107,6 +107,10 @@ namespace Mwp {
             lastrx = lastok = nticks;
             MWPLog.message("Msp Error: %s [%db] %s\n", cmd.format(), len, (cmd == Msp.Cmds.COMMON_SETTING) ? (string)lastmsg.data : "");
             switch(cmd) {
+			case Msp.Cmds.INAV_GPS_UBLOX_COMMAND:
+				Assist.Window.instance().show_error();
+				break;
+
 			case Msp.Cmds.ADSB_VEHICLE_LIST:
 				clear_poller_item(Msp.Cmds.ADSB_VEHICLE_LIST);
 				break;

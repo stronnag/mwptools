@@ -221,9 +221,16 @@ namespace Assist {
 		}
 
 		private void reset_labels() {
+			download.sensitive = true;
 			apply.sensitive = false;
 			asize.label = "tbd";
 			astat.label = "    0 /    0";
+		}
+
+		public void show_error() {
+			Mwp.reset_poller();
+			download.sensitive = false;
+			astat.label = "MSP Error!";
 		}
 	}
 }
