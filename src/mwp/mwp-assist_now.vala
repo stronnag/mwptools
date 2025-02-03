@@ -147,12 +147,21 @@ namespace Assist {
 		internal uint offset;
 		internal int sid;
 
+		internal static bool close;
+
 		private static GLib.Once<Window> _instance;
 		public static unowned Window instance () {
 			return _instance.once (() => { return new Window (); });
 		}
 
 		public Window() {
+			close = false;
+			transient_for = Mwp.window;
+			close_request.connect(() => {
+					close = true;
+					return false;
+				});
+
 			an = null;
 			if(Mwp.conf.assist_key == "") {
 				download.sensitive = false;
@@ -181,6 +190,7 @@ namespace Assist {
 
 			apply.clicked.connect(() => {
 					apply.sensitive = false;
+					download.sensitive = false;
 					offset = 0;
 					sid = 0;
 					Mwp.pause_poller(Mwp.SERSTATE.MISC_BULK);
@@ -194,7 +204,7 @@ namespace Assist {
 		}
 
 		public void send_assist() {
-			if (sid < sg.length) {
+			if (!close && sid < sg.length) {
 				var dlen = sg[sid];
 				var dslice = data[offset:offset+dlen];
 				Mwp.queue_cmd(Msp.Cmds.INAV_GPS_UBLOX_COMMAND, dslice, dlen);
@@ -205,6 +215,8 @@ namespace Assist {
 				MWPLog.message(":DBG: Done Assist D/L\n");
 				sid = -1;
 				Mwp.reset_poller();
+				download.sensitive = true;
+				apply.sensitive = true;
 			}
 		}
 
