@@ -4,7 +4,6 @@ using Adw 1;
 template $AssistWindow: Adw.Window {
   icon-name: "mwp_icon";
   title: "Ublox AssistNow";
-  modal: true;
 
   Box {
     orientation: vertical;
@@ -22,13 +21,19 @@ template $AssistWindow: Adw.Window {
 	  orientation: vertical;
 	  CheckButton online {
 	    label: 'Online';
-	    active: true;
 	  }
 	  CheckButton offline {
 	    label: 'Offline';
 	    group: online;
 	  }
         }
+      }
+
+      Frame  {
+	CheckButton useloc {
+	  label: 'Use location';
+	  tooltip-text: "Home (if defined) or map centre";
+	}
       }
 
       Grid {
@@ -76,7 +81,15 @@ template $AssistWindow: Adw.Window {
         hexpand: true;
 	spacing: 8;
 
-        Button download {
+        Button fileload {
+          halign: end;
+	  hexpand: false;
+	  label: _("From Cache");
+	  tooltip-text: "Last download (if valid, <= 3 hours for online, <= 32 days offline)";
+	  sensitive: false;
+        }
+
+	Button download {
           halign: end;
 	  hexpand: false;
 	  label: _("Download");

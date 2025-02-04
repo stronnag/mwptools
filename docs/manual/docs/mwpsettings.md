@@ -6,6 +6,7 @@
 | ah-invert-roll | Invert AH roll | Set to true to invert roll in the AH (so it becomes an attitude indicator) | false |
 | armed-msp-placebo | Antidote to armed menus placebo | Whether to suppress desensitising of MSP action items when armed. | false |
 | arming-speak | speak arming states | whether to reporting arming state by audio | false |
+| assist-key | Ublox Assist now key | Ublox Assist now key. | "" |
 | atexit | Something that is executed at exit | e.g. `gsettings set org.gnome.settings-daemon.plugins.power idle-dim true`. See also `manage-power` (and consider setting `manage-power` to `true` instead). | "" |
 | atstart | Something that is executed at startup | e.g. `gsettings set org.gnome.settings-daemon.plugins.power idle-dim false`. See also `manage-power` (and consider setting to true). | "" |
 | audio-on-arm | start audio on arm | start audio on arm (and stop on disarm) | true |

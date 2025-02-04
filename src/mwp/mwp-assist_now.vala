@@ -21,17 +21,26 @@ public class AssistNow {
 		session = new Soup.Session ();
 	}
 
-	public string online_url(string token) {
+	public string online_url(string token, bool useloc) {
 		StringBuilder sb = new StringBuilder("https://online-live1.services.u-blox.com/GetOnlineData.ashx?token=");
 		sb.append(token);
-		sb.append(";gnss=gps,gal,bds,glo,qzss;datatype=eph,alm,aux,pos;format=mga;");
+		sb.append("&gnss=gps,gal,bds,glo,qzss&datatype=eph,alm,aux,pos&format=mga");
+		if(useloc) {
+			double lat,lon;
+			if(HomePoint.is_valid()) {
+				HomePoint.get_location(out lat, out lon);
+			} else {
+				MapUtils.get_centre_location(out lat, out lon);
+			}
+			sb.append_printf("&lat=%f&lon=%f&filteronpos", lat, lon);
+		}
 		return sb.str;
 	}
 
 	public string offline_url(string token) {
 		StringBuilder sb = new StringBuilder("https://offline-live1.services.u-blox.com/GetOfflineData.ashx?token=");
 		sb.append(token);
-		sb.append(";gnss=gps,gal,bds,glo;format=mga;period=5;resolution=1;alm=gps,qzss,gal,bds,glo;");
+		sb.append("&gnss=gps,gal,bds,glo&format=mga&period=5&resolution=1&alm=gps,qzss,gal,bds,glo");
 		return sb.str;
 	}
 
@@ -52,7 +61,7 @@ public class AssistNow {
 		}
 	}
 
-	public uint16 []? split_ublox(uint8[] dx) {
+	public static uint16 []? split_ublox(uint8[] dx) {
 		var state = UState.HEADER1;
 		uint16 len = 0;
 		uint16 cnt = 0;
@@ -129,6 +138,8 @@ namespace Assist {
 
 	public class Window : Adw.Window {
 		[GtkChild]
+		internal unowned Gtk.Button fileload;
+		[GtkChild]
 		internal unowned Gtk.Button download;
 		[GtkChild]
 		internal unowned Gtk.Button apply;
@@ -136,6 +147,9 @@ namespace Assist {
 		internal unowned Gtk.CheckButton online;
 		[GtkChild]
 		internal unowned Gtk.CheckButton offline;
+		[GtkChild]
+		internal unowned Gtk.CheckButton useloc;
+
 		[GtkChild]
 		internal unowned Gtk.Label asize;
 		[GtkChild]
@@ -170,20 +184,20 @@ namespace Assist {
 			download.clicked.connect(() => {
 					an = new AssistNow();
 					string url;
+					string id;
+
 					if (online.active) {
-						url = an.online_url(Mwp.conf.assist_key);
+						url = an.online_url(Mwp.conf.assist_key, useloc.active);
 					} else {
 						url = an.offline_url(Mwp.conf.assist_key);
 					}
+					id = get_file_base();
 					an.fetch.begin(url, (obj, res) => {
 							data = an.fetch.end(res);
 							if (data != null) {
-								asize.label = data.length.to_string();
-								sg = an.split_ublox(data);
-								astat.label = " %4d / %4d".printf(0, sg.length);
-								apply.sensitive = true;
+								process_data(id, true);
 							} else {
-								asize.label = "Error!";
+								asize.label = "D/L Error!";
 							}
 						});
 				});
@@ -194,13 +208,29 @@ namespace Assist {
 					offset = 0;
 					sid = 0;
 					Mwp.pause_poller(Mwp.SERSTATE.MISC_BULK);
-					var str = (online.active) ? "on" : "off";
-					MWPLog.message(":DBG: Start Assist %sline D/L\n", str);
+					var str = get_file_base();
+					MWPLog.message("Start Assist %s D/L\n", str);
 					send_assist();
 				});
 
-			online.toggled.connect(reset_labels);
-			offline.toggled.connect(reset_labels);
+
+			fileload.clicked.connect(() => {
+					var id = get_file_base();
+					var fn = get_cache_file(id);
+					try {
+						FileUtils.get_data(fn, out data);
+						process_data(id, false);
+					} catch {};
+				});
+
+			online.toggled.connect(_reset_label);
+			offline.toggled.connect(_reset_label);
+
+			online.active = true;
+		}
+
+		string get_file_base() {
+			return (online.active) ? "online" : "offline";
 		}
 
 		public void send_assist() {
@@ -212,7 +242,7 @@ namespace Assist {
 				astat.label = " %4d / %4d".printf(sid, sg.length);
 				offset += dlen;
 			} else {
-				MWPLog.message(":DBG: Done Assist D/L\n");
+				MWPLog.message("Completed Assist D/L\n");
 				sid = -1;
 				Mwp.reset_poller();
 				download.sensitive = true;
@@ -220,7 +250,26 @@ namespace Assist {
 			}
 		}
 
-		private void reset_labels() {
+		private void process_data(string id, bool docache) {
+			asize.label = data.length.to_string();
+			sg = AssistNow.split_ublox(data);
+			if (sg.length > 0) {
+				astat.label = " %4d / %4d".printf(0, sg.length);
+				apply.sensitive = true;
+				if(docache) {
+					var fn =  get_cache_file(id);
+					try {
+						FileUtils.set_data(fn, data);
+						fileload.sensitive  = true;
+					} catch {}
+				}
+			}
+		}
+
+		private void _reset_label(Gtk.CheckButton b) {
+			if (b.active) {
+				fileload.sensitive =  check_cached(get_file_base());
+			}
 			download.sensitive = true;
 			apply.sensitive = false;
 			asize.label = "tbd";
@@ -231,6 +280,35 @@ namespace Assist {
 			Mwp.reset_poller();
 			download.sensitive = false;
 			astat.label = "MSP Error!";
+		}
+
+		private string? get_cache_file(string id) {
+			var cdir = Environment.get_user_cache_dir();
+			var pb =  new PathBuf.from_path(cdir);
+			pb.push("mwp");
+			pb.push(id);
+			pb.set_extension("ubx");
+			return pb.to_path();
+		}
+
+		private bool check_cached(string id) {
+			var ok = false;
+			var fn = get_cache_file(id);
+			File file = File.new_for_path (fn);
+			try {
+				var info =  file.query_info("*", FileQueryInfoFlags.NONE);
+				var ctd = info.get_creation_date_time();
+				var now = new  DateTime.now_local();
+				TimeSpan ts;
+				if(id == "online") {
+					ts = TimeSpan.HOUR*3;
+				} else {
+					ts = TimeSpan.DAY*32;
+				}
+				ok = (now.difference(ctd) < ts);
+
+			} catch {}
+			return ok;
 		}
 	}
 }
