@@ -103,6 +103,7 @@ nav:
   - Miscellaneous:
       - 'mwp Gsettings' : mwpsettings.md
       - mwp-Power-and-screen-management.md
+      - 'UBlox AssistNow' : mwp-assist-now.md
       - inav-4.0-multi-missions.md
       - mqtt---bulletgcss-telemetry.md
       - Support-for-inav-3.0-WP-features.md
