@@ -85,20 +85,22 @@ template $AssistWindow: Adw.Window {
           halign: end;
 	  hexpand: false;
 	  label: _("From Cache");
-	  tooltip-text: "Last download (if valid, <= 3 hours for online, <= 32 days offline)";
+	  tooltip-text: "Last download (if valid, <= 4 hours for online, <= 35 days offline)";
 	  sensitive: false;
         }
 
 	Button download {
           halign: end;
 	  hexpand: false;
-	  label: _("Download");
+	  label: _("Download (Network)");
+	  tooltip-text: "Down data from AssistNow website";
         }
 
         Button apply {
           halign: end;
 	  hexpand: false;
-          label: _("Apply");
+          label: _("Apply to FC's GPS");
+	  tooltip-text: "Apply AssistNow date to GPS (via the FC)";
 	  sensitive: false;
         }
       }

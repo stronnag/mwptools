@@ -160,6 +160,9 @@ namespace Assist {
 		internal uint16 []sg;
 		internal uint offset;
 		internal int sid;
+		internal int sidtx;
+		internal DateTime now;
+		internal int nfilt;
 
 		internal static bool _close;
 
@@ -192,6 +195,7 @@ namespace Assist {
 						url = an.offline_url(Mwp.conf.assist_key);
 					}
 					id = get_file_base();
+					nfilt = 0;
 					an.fetch.begin(url, (obj, res) => {
 							data = an.fetch.end(res);
 							if (data != null) {
@@ -207,6 +211,7 @@ namespace Assist {
 					download.sensitive = false;
 					offset = 0;
 					sid = 0;
+					sidtx = 0;
 					Mwp.pause_poller(Mwp.SERSTATE.MISC_BULK);
 					var str = get_file_base();
 					MWPLog.message("Start Assist %s D/L\n", str);
@@ -215,6 +220,7 @@ namespace Assist {
 
 
 			fileload.clicked.connect(() => {
+					nfilt = 0;
 					var id = get_file_base();
 					var fn = get_cache_file(id);
 					try {
@@ -227,19 +233,43 @@ namespace Assist {
 			offline.toggled.connect(_reset_label);
 
 			online.active = true;
+			now = new DateTime.now_utc();
+
 		}
 
 		string get_file_base() {
 			return (online.active) ? "online" : "offline";
 		}
 
+		private const int PAYOFF = 6;
+
+		private bool filter_data(uint8[]dx) {
+			var cls = dx[2];
+			var mid = dx[3];
+			if(cls == 0x13 && mid == 0x20) {
+				uint8 yr = dx[PAYOFF+4];
+				uint8 mo = dx[PAYOFF+5];
+				uint8 da = dx[PAYOFF+6];
+				var fdt = new DateTime.utc(yr+2000, mo, da, 12, 0, 0.0);
+				var tdiff = now.difference(fdt);
+				if(tdiff < -12*TimeSpan.HOUR || tdiff > 12*TimeSpan.HOUR) {
+					return true;
+				}
+			}
+			return false;
+		}
+
 		public void send_assist() {
 			if (!_close && sid < sg.length) {
 				var dlen = sg[sid];
 				var dslice = data[offset:offset+dlen];
-				Mwp.queue_cmd(Msp.Cmds.INAV_GPS_UBLOX_COMMAND, dslice, dlen);
+				var filtered = filter_data(dslice);
+				if (!filtered) {
+					Mwp.queue_cmd(Msp.Cmds.INAV_GPS_UBLOX_COMMAND, dslice, dlen);
+					sidtx++;
+				}
 				sid++;
-				astat.label = " %4d / %4d".printf(sid, sg.length);
+				format_astat(sidtx, sg.length);
 				offset += dlen;
 			} else {
 				MWPLog.message("Completed Assist D/L\n");
@@ -250,11 +280,28 @@ namespace Assist {
 			}
 		}
 
+		private void format_astat(int val, int vmax) {
+			if(nfilt == 0) {
+				astat.label = " %4d / %4d".printf(val, vmax);
+			} else {
+				astat.label = " %4d / %4d [%4d]".printf(val, vmax-nfilt, vmax);
+			}
+		}
+
 		private void process_data(string id, bool docache) {
 			asize.label = data.length.to_string();
 			sg = AssistNow.split_ublox(data);
 			if (sg.length > 0) {
-				astat.label = " %4d / %4d".printf(0, sg.length);
+				int o = 0;
+				foreach(var g in sg) {
+					var dslice = data[o:o+g];
+					var filtered = filter_data(dslice);
+					if (filtered) {
+						nfilt++;
+					}
+					o += g;
+				}
+				format_astat(0, sg.length);
 				apply.sensitive = true;
 				if(docache) {
 					var fn =  get_cache_file(id);
@@ -273,7 +320,8 @@ namespace Assist {
 			download.sensitive = true;
 			apply.sensitive = false;
 			asize.label = "tbd";
-			astat.label = "    0 /    0";
+			nfilt = 0;
+			format_astat(0,0);
 		}
 
 		public void show_error() {
@@ -298,14 +346,14 @@ namespace Assist {
 			try {
 				var info =  file.query_info("*", FileQueryInfoFlags.NONE);
 				var ctd = info.get_creation_date_time();
-				var now = new  DateTime.now_local();
+				var lnow = new  DateTime.now_local();
 				TimeSpan ts;
 				if(id == "online") {
-					ts = TimeSpan.HOUR*3;
+					ts = TimeSpan.HOUR*4;
 				} else {
-					ts = TimeSpan.DAY*32;
+					ts = TimeSpan.DAY*35;
 				}
-				ok = (now.difference(ctd) < ts);
+				ok = (lnow.difference(ctd) < ts);
 
 			} catch {}
 			return ok;
