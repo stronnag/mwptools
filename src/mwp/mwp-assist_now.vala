@@ -177,7 +177,8 @@ namespace Assist {
 			transient_for = Mwp.window;
 			close_request.connect(() => {
 					_close = true;
-					return false;
+					visible = false;
+					return true;
 				});
 
 			an = null;
