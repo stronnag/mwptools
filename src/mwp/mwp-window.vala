@@ -1019,7 +1019,6 @@ namespace Mwp {
 		}
 		MwpMenu.set_menu_state(Mwp.window, "gz-dl", state);
 		MwpMenu.set_menu_state(Mwp.window, "gz-ul", state);
-		MwpMenu.set_menu_state(Mwp.window, "assistnow", state);
 	}
 
 	void show_arm_status() {

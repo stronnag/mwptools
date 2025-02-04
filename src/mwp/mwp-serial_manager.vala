@@ -148,6 +148,7 @@ namespace Msp {
 		if(Mwp.cleaned == true) {
 			    return;
 		}
+		Assist.Window.instance().gps_available(false);
 		if(!Mwp.zznopoll) {
 			if(Mwp.xnopoll != Mwp.nopoll)
 				Mwp.nopoll = Mwp.xnopoll;

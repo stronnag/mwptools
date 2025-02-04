@@ -135,7 +135,6 @@ public class AssistNow {
 
 namespace Assist {
 	[GtkTemplate (ui = "/org/stronnag/mwp/assistnow.ui")]
-
 	public class Window : Adw.Window {
 		[GtkChild]
 		internal unowned Gtk.Button fileload;
@@ -170,6 +169,8 @@ namespace Assist {
 		public static unowned Window instance () {
 			return _instance.once (() => { return new Window (); });
 		}
+
+		public signal void  gps_available(bool state);
 
 		public Window() {
 			_close = false;
@@ -234,7 +235,9 @@ namespace Assist {
 
 			online.active = true;
 			now = new DateTime.now_utc();
-
+			this.gps_available.connect((b) => {
+					apply.sensitive = b;
+				});
 		}
 
 		string get_file_base() {
@@ -276,8 +279,12 @@ namespace Assist {
 				sid = -1;
 				Mwp.reset_poller();
 				download.sensitive = true;
-				apply.sensitive = true;
+				apply.sensitive = check_apply();
 			}
+		}
+
+		private bool check_apply() {
+			return (Mwp.msp.available && ((Mwp.feature_mask &  Msp.Feature.GPS) != 0));
 		}
 
 		private void format_astat(int val, int vmax) {
@@ -302,7 +309,7 @@ namespace Assist {
 					o += g;
 				}
 				format_astat(0, sg.length);
-				apply.sensitive = true;
+				apply.sensitive = check_apply();
 				if(docache) {
 					var fn =  get_cache_file(id);
 					try {

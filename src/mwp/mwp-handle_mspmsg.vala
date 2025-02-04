@@ -357,11 +357,9 @@ namespace Mwp {
 						   (0 != (feature_mask & Msp.Feature.TELEMETRY)).to_string(),
 						   (0 != (feature_mask & Msp.Feature.GPS)).to_string(),
 						   curf.to_string());
-			queue_cmd(Msp.Cmds.BLACKBOX_CONFIG,null,0);
 
-			if((feature_mask & Msp.Feature.GPS) != 0) {
-				MwpMenu.set_menu_state(Mwp.window, "assistnow", true);
-			}
+			Assist.Window.instance().gps_available(true);
+			queue_cmd(Msp.Cmds.BLACKBOX_CONFIG,null,0);
 			break;
 
 		case Msp.Cmds.GEOZONE:
