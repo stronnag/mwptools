@@ -181,9 +181,6 @@ namespace Assist {
 				});
 
 			an = null;
-			if(Mwp.conf.assist_key == "") {
-				download.sensitive = false;
-			}
 
 			download.clicked.connect(() => {
 					an = new AssistNow();
@@ -238,6 +235,10 @@ namespace Assist {
 			this.gps_available.connect((b) => {
 					apply.sensitive = b;
 				});
+
+			if(Mwp.conf.assist_key == "") {
+				download.sensitive = false;
+			}
 		}
 
 		string get_file_base() {
@@ -278,7 +279,9 @@ namespace Assist {
 				MWPLog.message("Completed Assist D/L\n");
 				sid = -1;
 				Mwp.reset_poller();
-				download.sensitive = true;
+				if(Mwp.conf.assist_key != "") {
+					download.sensitive = true;
+				}
 				apply.sensitive = check_apply();
 			}
 		}
@@ -324,7 +327,9 @@ namespace Assist {
 			if (b.active) {
 				fileload.sensitive =  check_cached(get_file_base());
 			}
-			download.sensitive = true;
+			if(Mwp.conf.assist_key != "") {
+				download.sensitive = true;
+			}
 			apply.sensitive = false;
 			asize.label = "tbd";
 			nfilt = 0;
