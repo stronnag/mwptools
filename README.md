@@ -73,5 +73,5 @@ GPL v3 or later
 
 ## Contact
 
-* IRC * [irc.libera.chat #mwptools](ircs://irc.libera.chat/mwptools)
+* IRC [irc.libera.chat #mwptools](ircs://irc.libera.chat/mwptools)
 * Github [Issues](https://github.com/stronnag/mwptools/issues) and [discussions](https://github.com/stronnag/mwptools/discussions)

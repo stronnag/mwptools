@@ -210,6 +210,8 @@ namespace Assist {
 
 		public signal void  gps_available(bool state);
 
+		private static string assist_key;
+
 		public Window() {
 			_close = false;
 			transient_for = Mwp.window;
@@ -227,9 +229,9 @@ namespace Assist {
 					string id;
 
 					if (online.active) {
-						url = an.online_url(Mwp.conf.assist_key, useloc.active);
+						url = an.online_url(assist_key, useloc.active);
 					} else {
-						url = an.offline_url(Mwp.conf.assist_key);
+						url = an.offline_url(assist_key);
 					}
 					id = get_file_base();
 					an.fetch.begin(url, (obj, res) => {
@@ -269,7 +271,7 @@ namespace Assist {
 					apply.sensitive = b;
 				});
 
-			if(Mwp.conf.assist_key == "") {
+			if(assist_key == "") {
 				download.sensitive = false;
 			}
 		}
@@ -277,6 +279,27 @@ namespace Assist {
 		public void init() {
 			reset_labels();
 			online.active = true;
+			if(assist_key == null) {
+				if(Mwp.conf.assist_key != "") {
+					assist_key = Mwp.conf.assist_key;
+				} else {
+					Secret.Schema generic_schema =
+						new Secret.Schema("org.freedesktop.Secret.Generic",
+										  Secret.SchemaFlags.NONE,
+										  "name", Secret.SchemaAttributeType.STRING,
+										  "domain", Secret.SchemaAttributeType.STRING,
+										  null
+										  );
+					var attributes = new GLib.HashTable<string,string> (str_hash, str_equal);
+					attributes["name"] = "assist-key";
+					attributes["domain"] = "org.stronnag.mwp";
+					try {
+						assist_key = Secret.password_lookupv_sync(generic_schema, attributes,  null);
+					} catch (Error e) {
+						MWPLog.message("libsecret: %s\n", e.message);
+					}
+				}
+			}
 		}
 
 		string get_file_base() {
@@ -297,7 +320,7 @@ namespace Assist {
 				MWPLog.message("Completed Assist D/L (%u)\n", sid);
 				sid = -1;
 				Mwp.reset_poller();
-				if(Mwp.conf.assist_key != "") {
+				if(assist_key != "") {
 					download.sensitive = true;
 				}
 				apply.sensitive = check_apply();
@@ -336,7 +359,7 @@ namespace Assist {
 		}
 
 		private void reset_labels() {
-			if(Mwp.conf.assist_key != "") {
+			if(assist_key != "") {
 				download.sensitive = true;
 			}
 			apply.sensitive = false;

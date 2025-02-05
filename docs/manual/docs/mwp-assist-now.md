@@ -23,10 +23,26 @@ It is possible to download and save the data to a file cache, and then upload to
 * INAV 8 or later
 * Registered for the AssistNow service.
 * A single AssistNow access key for 'online' and 'offline' data.
-* The key is stored in mwp's settings:
-    ````
-	gsetting set org.stronnag.mwp assist-key 'xxxxxxxxxxxxxx'
-    ````
+
+### AssistNow Key
+
+This may be stored with either `gsettings` or the user's secret keyring.
+
+#### Gsettings
+
+The key may be stored in mwp's settings:
+````
+gsetting set org.stronnag.mwp assist-key 'xxxxxxxxxxxxxx'
+````
+
+#### Keyring
+
+Alternatively, add to the user's secret keyring using `secret-tool` with the following attributes:
+
+```
+secret-tool store --label="AssistNow API" name assist-key domain org.stronnag.mwp
+Password: xxxxxxxxxxxxxx
+```
 
 ## Usage
 
