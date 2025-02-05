@@ -1081,6 +1081,45 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Requirements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#assistnow-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      AssistNow Key
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="AssistNow Key">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gsettings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gsettings
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyring
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1326,6 +1365,45 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Requirements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#assistnow-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      AssistNow Key
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="AssistNow Key">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gsettings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gsettings
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyring
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1377,10 +1455,18 @@
 <li>INAV 8 or later</li>
 <li>Registered for the AssistNow service.</li>
 <li>A single AssistNow access key for 'online' and 'offline' data.</li>
-<li>The key is stored in mwp's settings:
-    <div class="highlight"><pre><span></span><code>gsetting set org.stronnag.mwp assist-key &#39;xxxxxxxxxxxxxx&#39;
-</code></pre></div></li>
 </ul>
+<h3 id="assistnow-key">AssistNow Key<a class="headerlink" href="#assistnow-key" title="Permanent link">#</a></h3>
+<p>This may be stored with either <code>gsettings</code> or the user's secret keyring.</p>
+<h4 id="gsettings">Gsettings<a class="headerlink" href="#gsettings" title="Permanent link">#</a></h4>
+<p>The key may be stored in mwp's settings:
+<div class="highlight"><pre><span></span><code>gsetting set org.stronnag.mwp assist-key &#39;xxxxxxxxxxxxxx&#39;
+</code></pre></div></p>
+<h4 id="keyring">Keyring<a class="headerlink" href="#keyring" title="Permanent link">#</a></h4>
+<p>Alternatively, add to the user's secret keyring using <code>secret-tool</code> with the following attributes:</p>
+<div class="highlight"><pre><span></span><code>secret-tool store --label=&quot;AssistNow API&quot; name assist-key domain org.stronnag.mwp
+Password: xxxxxxxxxxxxxx
+</code></pre></div>
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">#</a></h2>
 <p>The UI is available from the File menu:</p>
 <p><img alt="mwp assist" src="../images/mwp-assist.png" width="50%" /></p>
