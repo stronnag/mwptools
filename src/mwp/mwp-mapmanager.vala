@@ -74,7 +74,6 @@ namespace Gis {
 		adsblegend = new Gtk.Picture.for_filename (fn);
 		var aw = adsblegend.paintable.get_intrinsic_width();
 		var ah = adsblegend.paintable.get_intrinsic_height();
-		MWPLog.message("::DBG:: legend %d x %d\n", aw, ah);
 		if (aw > ah) {
 			adsblegend.halign = Gtk.Align.CENTER;
 			adsblegend.valign = Gtk.Align.START;
