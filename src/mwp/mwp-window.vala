@@ -773,6 +773,7 @@ namespace Mwp {
 
 		private void do_assist() {
 			var a = Assist.Window.instance();
+			a.init();
 			a.present();
 		}
 

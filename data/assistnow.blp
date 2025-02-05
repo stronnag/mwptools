@@ -19,21 +19,23 @@ template $AssistWindow: Adw.Window {
         label: 'Asssit Type';
         Box {
 	  orientation: vertical;
-	  CheckButton online {
-	    label: 'Online';
+	  Box {
+	    orientation: horizontal;
+	    spacing: 8;
+	    CheckButton online {
+	      label: 'Online';
+	    }
+	    CheckButton useloc {
+	      label: 'Use location';
+	      tooltip-text: "Home (if defined) or map centre";
+	      active: true;
+	    }
 	  }
 	  CheckButton offline {
 	    label: 'Offline';
 	    group: online;
 	  }
         }
-      }
-
-      Frame  {
-	CheckButton useloc {
-	  label: 'Use location';
-	  tooltip-text: "Home (if defined) or map centre";
-	}
       }
 
       Grid {

@@ -63,6 +63,7 @@ namespace Mwp {
 		hasActiveWP = 0x070100,
 		hasAdsbList = 0x070101,
 		hasGeoZones = 0x080000,
+		hasAssistNow = 0x080000,
     }
 
 	[Flags]
