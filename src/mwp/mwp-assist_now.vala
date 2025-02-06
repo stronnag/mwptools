@@ -37,8 +37,19 @@ public class AssistNow {
 			} else {
 				MapUtils.get_centre_location(out lat, out lon);
 			}
-			sb.append_printf("&lat=%f&lon=%f&filteronpos", lat, lon);
+			double w, h;
+			var b = MapUtils.get_bounding_box();
+			b.get_map_size(out w, out h);
+			w = double.max(w, 10000);
+			w = double.min(w, 300000);
+			var iw = (int)(w/1000)*1000;
+			var alt = DemManager.lookup(lat, lon);
+			if (alt != Hgt.NODATA && alt > 0) {      // not ideal, but we don't want sea depth.
+				sb.append_printf("&alt=%.0f", alt);
+			}
+			sb.append_printf("&lat=%f&lon=%f&filteronpos&pacc=%d", lat, lon, iw);
 		}
+		// MWPLog.message(":DBG: %s\n", sb.str);
 		return sb.str;
 	}
 
@@ -208,8 +219,6 @@ namespace Assist {
 			return _instance.once (() => { return new Window (); });
 		}
 
-		public signal void  gps_available(bool state);
-
 		private static string assist_key;
 
 		public Window() {
@@ -267,13 +276,13 @@ namespace Assist {
 			online.toggled.connect(_reset_label);
 			offline.toggled.connect(_reset_label);
 
-			this.gps_available.connect((b) => {
-					apply.sensitive = b;
-				});
-
 			if(assist_key == "") {
 				download.sensitive = false;
 			}
+		}
+
+		public void  gps_available(bool b) {
+			apply.sensitive = b;
 		}
 
 		public void init() {
