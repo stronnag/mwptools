@@ -65,6 +65,8 @@ After you've done this once, subsequently, after the repo has been updated, you 
 
 ### Windows Installer
 
+A Windows Installer may be provided.
+
 Run the installer. Select the option to install a desktop icon if you wish. Options are provided for a System or Portable (user local) installation.
 
 * If you select a portable (user local) installation, the "DejaVu Mono" fonts cannot be installed, resulting in an ugly side panel.
@@ -146,7 +148,7 @@ Neither of these locations are cleared by an uninstall.
 
 {{ mwp }} maintains [documented settings](mwp-Configuration.md) in a Registry like Gtk component which can be assessed by the command line tool `gsettings`. If you use Msys2, this will be installed. If you use the installer it is also  installed; but it is necessary to establish its path to use it (and enable it to find the settings):
 
-* The mwp installer will install `gsettings`, this will need `C:\Program Files\mwptools\bin` to be on the `PATH` or `cd  "C:\Program Files\mwptools"` and invoke `bin/gsettings`.  e.g.:
+* The mwp Windows Installer will install `gsettings`, this will need `C:\Program Files\mwptools\bin` to be on the `PATH` or `cd  "C:\Program Files\mwptools"` and invoke `bin/gsettings`.  e.g.:
 
     ```
     PS C:\Users\win11> $env:Path += ";C:\Program Files\mwptools\bin"
