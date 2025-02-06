@@ -259,7 +259,7 @@ namespace Assist {
 					sid = 0;
 					Mwp.pause_poller(Mwp.SERSTATE.MISC_BULK);
 					var str = get_file_base();
-					MWPLog.message("Start Assist %s D/L\n", str);
+					MWPLog.message("Start Assist %s D/L (%u)\n", str, sg.length);
 					send_assist();
 				});
 
