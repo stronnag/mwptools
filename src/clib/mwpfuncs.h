@@ -23,4 +23,6 @@ extern char** check_ports();
 extern int check_insert_name(char *s);
 extern int check_delete_name(char *s);
 
+extern int set_v6_dual_stack(int fd);
+
 #define MWP_MISC_MWP_MAX_WP 60

@@ -128,6 +128,12 @@ namespace WinIdle {
 	void uninhibit(uint c);
 }
 
+[CCode (cheader_filename = "mwpfuncs.h")]
+namespace WinFix {
+	[CCode (cname="set_v6_dual_stack")]
+	int set_v6_dual_stack(int fd);
+}
+
 #if WINDOWS
 [CCode (cheader_filename = "winerror.h")]
 public const int ERROR_TIMEOUT;

@@ -8,7 +8,7 @@ endif
 
 paho = meson.get_compiler('c').find_library('paho-mqtt3cs', kwargs: pahoargs)
 
-clsrcs = files('btdev.c', 'get_locale_double.c', 'rserial.c', 'getloc.c')
+clsrcs = files('btdev.c', 'get_locale_double.c', 'rserial.c', 'getloc.c', 'v6only_windows_trainwreck.c')
 if paho.found()
   clsrcs += files('paho_wrapper.c')
   clib_dep += paho
@@ -16,6 +16,8 @@ endif
 
 if build_machine.system() != 'linux'
   clsrcs += files('poll_serials.c')
+  ws2 = meson.get_compiler('c').find_library('ws2_32')
+  clib_dep += ws2
 endif
 
 if build_machine.system() == 'windows'
@@ -36,6 +38,7 @@ libargs = {
   'install': true,
   'install_dir': get_option('prefix') / 'lib',
 }
+
 
 if dynalib
   libargs += {  'version': '3.0.0', 'soversion': '3', }
