@@ -16,12 +16,12 @@ endif
 
 if build_machine.system() != 'linux'
   clsrcs += files('poll_serials.c')
-  ws2 = meson.get_compiler('c').find_library('ws2_32')
-  clib_dep += ws2
 endif
 
 if build_machine.system() == 'windows'
   clsrcs += files('winidle.c')
+  ws2 = meson.get_compiler('c').find_library('ws2_32')
+  clib_dep += ws2
 endif
 
 common_inc_dir += [include_directories('.'), include_directories('../common')]
