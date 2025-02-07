@@ -381,7 +381,7 @@ public class AudioThread : Object {
 					case TTS.Vox.NAV_STATUS:
 						switch(Mwp.msp.td.state.navmode) {
 						case 0:
-							s = "Pilot has control";
+							s = "No navigation mode selected";
 							break;
 						case 1:
 							s = "Return to home initiated";

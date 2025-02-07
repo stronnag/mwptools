@@ -1007,6 +1007,7 @@ namespace Mwp {
 			at.angy /= 10;
 
 			var vdiff = (at.angx != Atti._sx) || (at.angy != Atti._sy);
+
 			if(vdiff) {
 				Atti._sx = at.angx;
 				Atti._sy = at.angy;
@@ -1019,6 +1020,7 @@ namespace Mwp {
 				ser.td.atti.angy = at.angy;
 				Mwp.panelbox.update(Panel.View.AHI, AHI.Update.AHI);
 			}
+
 			bool yawup = (ser.td.atti.yaw != mhead);
 			if(yawup) {
 				ser.td.atti.yaw = mhead;

@@ -484,10 +484,11 @@ namespace AHI {
 		}
 
         private void update_ahi(int roll, int pitch) {
-            if(roll > 360)
-                roll = 360;
             if(roll < 0)
-                roll = 0;
+                roll += 360;
+
+			if(roll > 360)
+                roll %= 360;
 
             if(pitch > 70)
                 pitch = 70;

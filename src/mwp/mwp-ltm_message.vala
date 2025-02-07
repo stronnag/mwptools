@@ -281,16 +281,14 @@ namespace Mwp {
 			if(ser.is_main) {
 				mhead = h;
 				var vdiff = (af.roll != Atti._sx) || (af.pitch != Atti._sy);
+				//				MWPLog.message("::DBG:: %d %d %d %d %s\n", Atti._sx, Atti._sy, af.roll, af.pitch, vdiff.to_string());
 				if(vdiff) {
 					Atti._sx = af.roll;
 					Atti._sy = af.pitch;
-					af.roll = -af.roll;
-					if(af.roll < 0) {
-						af.roll += 360;
-					}
-					af.pitch = -af.pitch;
-					ser.td.atti.angx = af.roll;
-					ser.td.atti.angy = af.pitch;
+					var roll = -af.roll;
+					var pitch = -af.pitch;
+					ser.td.atti.angx = roll;
+					ser.td.atti.angy = pitch;
 					if(Logger.is_logging) {
 						Logger.attitude(af.roll, af.pitch, mhead);
 					}
@@ -383,7 +381,6 @@ namespace Mwp {
 							ltmflags !=  Msp.Ltm.LAND) { // handled by NAV_STATUS
 							TTS.say(TTS.Vox.LTM_MODE);
 						}
-						last_ltmf = ltmflags;
 						if(ltmflags == Msp.Ltm.POSHOLD)
 							want_special |= POSMODE.PH;
 						else if(ltmflags == Msp.Ltm.WAYPOINTS) {
@@ -405,10 +402,11 @@ namespace Mwp {
 								craft.set_normal();
 						}
 						ls_state = Msp.ltm_mode(ltmflags);
-						MWPLog.message("New LTM Mode %s (%d) %d %ds %f %f %x %x\n",
-									   ls_state, ltmflags, armed, duration,
+						MWPLog.message("New LTM Mode %s (%d %d) %d %ds %f %f %x %x\n",
+									   ls_state, ltmflags, last_ltmf, armed, duration,
 									   xlat, xlon, xws, want_special);
 						Mwp.window.fmode.set_label(ls_state);
+						last_ltmf = ltmflags;
 					}
 
 					if(mchg || achg) {

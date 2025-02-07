@@ -431,7 +431,6 @@ namespace Mwp {
     private void process_pos_states(double lat, double lon, double alt, string? reason=null) {
         if (lat == 0.0 && lon == 0.0) {
             want_special = 0;
-            last_ltmf = 0xff;
             return;
         }
 
