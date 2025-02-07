@@ -313,9 +313,9 @@ namespace TelemTracker {
 			sd.dev.serial_event.connect(() => {
 					MWSerial.INAVEvent? m;
 					while((m = sd.dev.msgq.try_pop()) != null) {
-						if(m.cmd >= Msp.Cmds.LTM_BASE && m.cmd < Msp.Cmds.MAV_BASE) {
+						if(m.cmd >= Msp.LTM_BASE && m.cmd < Msp.MAV_BASE) {
 							Mwp.handle_ltm(sd.dev, m.cmd, m.raw, m.len);
-						} else if (m.cmd >= Msp.Cmds.MAV_BASE && m.cmd < Msp.Cmds.MAV_BASE+256) {
+						} else if (m.cmd >= Msp.MAV_BASE && m.cmd < Msp.MAV_BASE+65535) {
 							Mwp.handle_mavlink(sd.dev, m.cmd, m.raw, m.len);
 						}
 					}

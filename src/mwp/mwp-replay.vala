@@ -175,12 +175,12 @@ public class ReplayThread : GLib.Object {
     }
 
     private void send_rec(MWSerial msp, Msp.Cmds cmd, size_t len, void *buf) {
-        if(cmd < Msp.Cmds.LTM_BASE) {
+        if(cmd < Msp.LTM_BASE) {
             msp.send_command(cmd, buf, len);
-        } else if (cmd < Msp.Cmds.MAV_BASE) {
-            msp.send_ltm((uint8)(cmd - Msp.Cmds.LTM_BASE), buf, len);
+        } else if (cmd < Msp.MAV_BASE) {
+            msp.send_ltm((uint8)(cmd - Msp.LTM_BASE), buf, len);
         } else {
-            msp.send_mav((uint8)(cmd - Msp.Cmds.MAV_BASE), buf, len);
+            msp.send_mav((uint8)(cmd - Msp.MAV_BASE), buf, len);
         }
     }
 

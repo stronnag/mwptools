@@ -1634,7 +1634,7 @@ public class MWSerial : Object {
 							if(checksum  == devbuf[nc]) {
 								state = States.S_HEADER;
 								stats.msgs++;
-								if(cmd < Msp.Cmds.MSPV2 || cmd > Msp.Cmds.LTM_BASE) {
+								if(cmd < Msp.Cmds.MSPV2 || cmd > Msp.LTM_BASE) {
 									var msg = INAVEvent(){cmd=cmd, len=csize, flags=xflags, err=errstate, raw=rxbuf[0:csize+4]};
 									msgq.push(msg);
 #if UNIX
@@ -1791,7 +1791,7 @@ public class MWSerial : Object {
 								rxmavsum |= (devbuf[nc] << 8);
 								if(rxmavsum == mavsum) {
 									stats.msgs++;
-									var msg = INAVEvent(){cmd=cmd+Msp.Cmds.MAV_BASE, len=csize, flags=0, err=errstate, raw=rxbuf[0:csize+4]};
+									var msg = INAVEvent(){cmd=cmd+Msp.MAV_BASE, len=csize, flags=0, err=errstate, raw=rxbuf[0:csize+4]};
 									msgq.push(msg);
 									serial_event();
 									state = States.S_HEADER;
@@ -1876,7 +1876,7 @@ public class MWSerial : Object {
 							rxmavsum |= (devbuf[nc] << 8);
 							if(rxmavsum == mavsum) {
 								stats.msgs++;
-								var msg = INAVEvent(){cmd=cmd+Msp.Cmds.MAV_BASE, len=csize, flags=0, err=errstate, raw=rxbuf[0:csize+4]};
+								var msg = INAVEvent(){cmd=cmd+Msp.MAV_BASE, len=csize, flags=0, err=errstate, raw=rxbuf[0:csize+4]};
 								msgq.push(msg);
 								serial_event();
 								if(mavsig == 0)

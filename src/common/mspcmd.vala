@@ -49,6 +49,9 @@ namespace Msp {
       AUTOTUNE = 21,
 	}
 
+	public const uint LTM_BASE  = 0x10000;
+	public const uint MAV_BASE  = 0x20000;
+	
 	public enum Cmds {
         NOOP = 0,
         API_VERSION=1,
@@ -156,7 +159,6 @@ namespace Msp {
 		PRIV_TEXT_EOM = 0xeffd,
 		PRIV_TEXT_SAFEH = 0xeffc,
 
-        LTM_BASE  = 0x10000,
         TS_FRAME = (LTM_BASE + 'S'),
         TA_FRAME = (LTM_BASE + 'A'),
         TG_FRAME = (LTM_BASE + 'G'),
@@ -170,8 +172,7 @@ namespace Msp {
         Tx_FRAME = (LTM_BASE + 'x'), // private, quit message
 
 
-        MAV_BASE  = 0x20000,
-        MAVLINK_MSG_ID_HEARTBEAT = (MAV_BASE+0),
+        MAVLINK_MSG_ID_HEARTBEAT = (MAV_BASE),
         MAVLINK_MSG_ID_SYS_STATUS = (MAV_BASE+1),
         MAVLINK_MSG_GPS_RAW_INT = (MAV_BASE+24),
         MAVLINK_MSG_ATTITUDE = (MAV_BASE+30),

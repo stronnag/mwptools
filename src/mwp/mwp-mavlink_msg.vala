@@ -18,6 +18,8 @@
 namespace Mwp {
 	bool handle_mavlink(MWSerial ser, Msp.Cmds cmd, uint8[]raw, uint len) {
 		bool handled = true;
+		//MWPLog.message("::DBG:: [%x, %u] %s\n", cmd, len, cmd.format());
+
 		switch (cmd) {
 		case Msp.Cmds.MAVLINK_MSG_ID_HEARTBEAT:
 			Mav.MAVLINK_HEARTBEAT m = *(Mav.MAVLINK_HEARTBEAT*)raw;

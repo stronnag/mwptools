@@ -518,7 +518,7 @@ namespace Mwp {
     }
 
 	public void telem_init(Msp.Cmds cmd) {
-		var mtype= (cmd >= Msp.Cmds.MAV_BASE) ? "MAVLink" : "LTM";
+		var mtype= (cmd >= Msp.MAV_BASE) ? "MAVLink" : "LTM";
 		var mstr = "%s telemetry".printf(mtype);
 		MWPLog.message("Init %s\n", mstr);
 		if (conf.manage_power && inhibit_cookie == 0) {
@@ -546,15 +546,15 @@ namespace Mwp {
 	public void show_unhandled(Msp.Cmds cmd, uint8[] raw, uint len) {
 		uint mcmd;
 		string mtxt;
-		if (cmd < Msp.Cmds.LTM_BASE) {
+		if (cmd < Msp.LTM_BASE) {
 			mcmd = cmd;
 			mtxt = "MSP";
 		}
-		else if (cmd >= Msp.Cmds.LTM_BASE && cmd < Msp.Cmds.MAV_BASE) {
-			mcmd = cmd - Msp.Cmds.LTM_BASE;
+		else if (cmd >= Msp.LTM_BASE && cmd < Msp.MAV_BASE) {
+			mcmd = cmd - Msp.LTM_BASE;
 			mtxt = "LTM";
 		} else {
-			mcmd = cmd - Msp.Cmds.MAV_BASE;
+			mcmd = cmd - Msp.MAV_BASE;
 			mtxt = "MAVLink";
 		}
 		StringBuilder sb = new StringBuilder("** Unknown ");
@@ -571,13 +571,13 @@ namespace Mwp {
 
 	public void handle_serial(MWSerial ser, Msp.Cmds cmd, uint8[] raw, uint len, uint8 xflags, bool errs) {
 		bool handled = false;
-        if(cmd >= Msp.Cmds.LTM_BASE && cmd < Msp.Cmds.MAV_BASE) {
+        if(cmd >= Msp.LTM_BASE && cmd < Msp.MAV_BASE) {
             telem = true;
             if (seenMSP == false) {
                 Mwp.nopoll = true;
 			}
 			handled = Mwp.handle_ltm(ser, cmd, raw, len);
-		} else if (cmd >= Msp.Cmds.MAV_BASE && cmd < Msp.Cmds.MAV_BASE+256) {
+		} else if (cmd >= Msp.MAV_BASE && cmd < Msp.MAV_BASE+65535) {
 			telem  = true;
             if(mavc == 0 &&  ser.available) {
                 //send_mav_heartbeat(); //FIXME
@@ -604,18 +604,18 @@ namespace Mwp {
         }
 
         if(fwddev.available()) {
-            if(cmd < Msp.Cmds.LTM_BASE && conf.forward == FWDS.ALL) {
+            if(cmd < Msp.LTM_BASE && conf.forward == FWDS.ALL) {
                 fwddev.forward_command(cmd, raw, len);
             }
-            if(cmd >= Msp.Cmds.LTM_BASE && cmd < Msp.Cmds.MAV_BASE) {
+            if(cmd >= Msp.LTM_BASE && cmd < Msp.MAV_BASE) {
                 if (conf.forward == FWDS.LTM || conf.forward == FWDS.ALL ||
                     (conf.forward == FWDS.minLTM &&
                      (cmd == Msp.Cmds.TG_FRAME ||
                       cmd == Msp.Cmds.TA_FRAME ||
                       cmd == Msp.Cmds.TS_FRAME )))
-					fwddev.forward_ltm((cmd - Msp.Cmds.LTM_BASE), raw, len);
+					fwddev.forward_ltm((uint16)(cmd - Msp.LTM_BASE), raw, len);
             }
-            if(cmd >= Msp.Cmds.MAV_BASE &&
+            if(cmd >= Msp.MAV_BASE &&
                (conf.forward == FWDS.ALL ||
                 (conf.forward == FWDS.minLTM &&
                  (cmd == Msp.Cmds.MAVLINK_MSG_ID_HEARTBEAT ||
@@ -624,7 +624,7 @@ namespace Mwp {
                   cmd == Msp.Cmds.MAVLINK_MSG_VFR_HUD ||
                   cmd == Msp.Cmds.MAVLINK_MSG_ATTITUDE ||
                   cmd == Msp.Cmds.MAVLINK_MSG_RC_CHANNELS_RAW)))) {
-                fwddev.forward_mav((cmd - Msp.Cmds.MAV_BASE), raw, len);
+                fwddev.forward_mav((uint16)(cmd - Msp.MAV_BASE), raw, len);
             }
         }
 
