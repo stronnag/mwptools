@@ -25,6 +25,9 @@ public class ADSBReader :Object {
 	private uint range;
 	private uint interval;
 	private uint nreq;
+	private string format;
+	private string keyid;
+	private string keyval;
 
 	public ADSBReader(string pn, uint16 _port=30003) {
 		interval = 1000;
@@ -49,6 +52,7 @@ public class ADSBReader :Object {
 
 	public ADSBReader.adsbx(string pn) {
 		interval = 1000;
+		format="v2/point/%s/%s/%s";
 		session = new Soup.Session ();
 		try {
 			var up = Uri.parse(pn, UriFlags.HAS_PASSWORD);
@@ -58,7 +62,7 @@ public class ADSBReader :Object {
 			if (q != null) {
 				var items = q.split("&");
 				foreach(var s in items) {
-					var parts = s.split("=");
+					var parts = s.split("=", 2);
 					if (parts.length == 2) {
 						switch (parts[0]) {
 						case "range":
@@ -72,7 +76,20 @@ public class ADSBReader :Object {
 							if(interval < 1000) {
 								interval = 1000;
 							}
-						break;
+							break;
+						case "format":
+							format=parts[1];
+							format = format.replace("{}", "%s");
+							break;
+						case "api-key":
+							var kp = parts[1].split(":", 2);
+							if(kp.length == 2) {
+								keyid = kp[0];
+								keyval = kp[1];
+							}
+							break;
+						default:
+							break;
 						}
 					}
 				}
@@ -89,12 +106,19 @@ public class ADSBReader :Object {
 		if (range == 0) {
 			ahost = host;
 		} else {
-			// tformat to force '.' in ',' locales
+			// .format to force '.' in ',' locales
 			char[] labuf = new char[double.DTOSTR_BUF_SIZE];
 			char[] lobuf = new char[double.DTOSTR_BUF_SIZE];
-			ahost = "%s/v2/point/%s/%s/%u".printf(host, Radar.lat.format(labuf, "%f"), Radar.lon.format(lobuf, "%f"), range);
+			StringBuilder sb = new StringBuilder(host);
+			sb.append_c('/');
+			sb.append_printf(format, Radar.lat.format(labuf, "%f"), Radar.lon.format(lobuf, "%f"), range.to_string());
+			ahost = sb.str;
 		}
 		msg = new Soup.Message ("GET", ahost);
+		if(keyid != null && keyval != null) {
+			msg.request_headers.append(keyid, keyval);
+		}
+
 		try {
 			nreq++;
 			var byt = yield session.send_and_read_async (msg, Priority.DEFAULT, null);
