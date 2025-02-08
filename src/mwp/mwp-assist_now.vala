@@ -276,7 +276,7 @@ namespace Assist {
 			online.toggled.connect(_reset_label);
 			offline.toggled.connect(_reset_label);
 
-			if(assist_key == "") {
+			if(assist_key == null || assist_key == "") {
 				download.sensitive = false;
 			}
 		}
