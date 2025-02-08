@@ -23,6 +23,7 @@
 
 * Arch Linux
 * Alpine Linux (Edge)
+* Chimera Linux
 * Debian Testing (`trixie`, `sid`), and contemporaneous derivatives.
 * Fedora latest
 * FreeBSD latest `RELEASE`

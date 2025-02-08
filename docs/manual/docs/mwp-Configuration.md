@@ -209,7 +209,7 @@ The underlying infrastructure used by {{ mwp }} has a facility for storing confi
 
 ### MacOS (exception)
 
-Gtk on MacOS does not support `gsettings` in a useful way. As a work around, MacOS settings are stored in a text `.ini` file, `$HOME/.config/mwp/mwp.ini`.
+Gtk on MacOS does not support `gsettings` in a useful way. As a work around, MacOS settings are stored in a text `.ini` file, `$HOME/.config/mwp/mwp.ini`. This may be (carefully) edited with a text editor.
 
 ### Linux, FreeBSD, Windows
 
@@ -222,6 +222,8 @@ and to list then get / set a single item:
     $ gsettings get org.stronnag.mwp log-save-path
     ..
     $ gsettings set org.stronnag.mwp log-save-path ~/flight-logs/
+
+[Windows specific detail](mwp-windows-msys.md/#settings).
 
 #### dconf-editor
 

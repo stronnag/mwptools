@@ -16,6 +16,16 @@ As most people won't want to actually build the manual, these are not hard build
 
 Trying run `mkdocs` will reveal missing packages. Most distros don't package all that is needed; you'll end up with some `pip`/`pipx` packages as well.
 
+### Arch Linux Packages
+
+```
+paru -S mkdocs mkdocs-get-deps mkdocs-git-revision-date-localized-plugin \
+  mkdocs-macros-plugin mkdocs-material mkdocs-material-extensions \
+  mkdocs-material-pymdownx-extras mkdocs-minify-plugin mkdocs-with-pdf
+```
+
+## Hints
+
 The HTML site can then be build with `mkdocs build` or `mkdocs serve`.
 
 The PDF is built with `ENABLE_PDF_EXPORT=1 mkdocs build`

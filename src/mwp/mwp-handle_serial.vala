@@ -601,7 +601,9 @@ namespace Mwp {
 		}
 		if(!handled) {
 			show_unhandled(cmd, raw, len);
-        }
+        } else {
+			lastrx = nticks;
+		}
 
         if(fwddev.available()) {
             if(cmd < Msp.LTM_BASE && conf.forward == FWDS.ALL) {

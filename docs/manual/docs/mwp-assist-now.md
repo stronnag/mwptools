@@ -7,7 +7,7 @@
 Assist Now provides two data sets:
 
 * "Online": Data that is immediately useful. Downloaded data is useful for about 4 hours.
-* "Offline": Longer term satellite orbit information. Downloaded data is useful for 35 days.
+* "Offline": Longer term satellite orbit information. Downloaded data is useful for up to 35 days.
 
 mwp provides a UI to:
 
@@ -26,7 +26,7 @@ It is possible to download and save the data to a file cache, and then upload to
 
 ### AssistNow Key
 
-This may be stored with either `gsettings` or the user's secret keyring.
+This may be stored with either [`gsettings`](mwp-Configuration.md/#dconf-gsettings) or the user's secret keyring.
 
 #### Gsettings
 
