@@ -777,12 +777,23 @@ public class MWSerial : Object {
 
 			foreach(var ifam in fams) {
 				try {
-					sockaddr= new InetSocketAddress (new InetAddress.any(ifam),
-                                                    (uint16)port);
+					var sa = sockaddr= new InetSocketAddress (new InetAddress.any(ifam), (uint16)port);
 					skt = new Socket (ifam, SocketType.DATAGRAM, SocketProtocol.UDP);
 					if (skt != null) {
-						v6only();
-						skt.bind (sockaddr, true);
+#if WINDOWS
+						if (ifam == SocketFamily.IPV6) {
+							int err = WinFix.set_v6_dual_stack(skt.fd);
+							if (err != 0) {
+								var _lerr = MwpSerial.get_error_number();
+								uint8 [] sbuf = new uint8[1024];
+								var s = MwpSerial.error_text(_lerr, sbuf, 1024);
+								MWPLog.message("::DBG:: Windwos IPV6 trainwreck %s\n", s);
+							} else {
+								MWPLog.message("::DBG:: Fixup Windwos IPV6 trainwreck %d\n", err);
+							}
+						}
+#endif
+						skt.bind (sa, true);
 						fd = skt.fd;
 						//						if(debug) {
 						MWPLog.message(":DBG: UDP bound: %s fd=%d\n", skt.get_local_address().to_string(), fd);
@@ -842,7 +853,6 @@ public class MWSerial : Object {
 						}
                         skt = new Socket (fam, stype, sproto);
                         if(skt != null) {
-							v6only();
                             fd = skt.fd;
                             if(fd != -1) {
                                 try {
@@ -874,24 +884,6 @@ public class MWSerial : Object {
 		}
     }
 
-
-	private void v6only() {
-#if WINDOWS
-		var fam = sockaddr.get_family();
-		if (skt.fd != -1 && fam ==  SocketFamily.IPV6) {
-			int err = WinFix.set_v6_dual_stack(skt.fd);
-			if (err != 0) {
-				var _lerr = MwpSerial.get_error_number();
-				uint8 [] sbuf = new uint8[1024];
-				var s = MwpSerial.error_text(_lerr, sbuf, 1024);
-				MWPLog.message("::DBG:: Windwos IPV6 trainwreck %s\n", s);
-			} else {
-				MWPLog.message("::DBG:: Fixup Windwos IPV6 trainwreck %d\n", err);
-			}
-		}
-#endif
-	}
-	
     private void set_noblock() {
 #if UNIX
 		try {
