@@ -108,6 +108,37 @@ where
 --radar-device adsbx://api.adsb.one?range=40&interval=1000
 ```
 
+#### Expanded adsbx:// URI format
+
+In order to support other providers (other than `adsb.one` and `adsb.lol`), an expanded URI format is available. This enables the use of providers that have a more complex URL (compared to `https://host/v2/point/lat/lon/range`) and / or require authentication. For example, the provider `opendata.adsb.fi` requires:
+
+```
+https://opendata.adsb.fi/api/v2/lat/{lat}/lon/{lon}/dist/{range}
+```
+where `{lat}`, `{lon}` and `{range}` are the centre latitude, longitude and range. In addition, commercial sites may require an API key (and identifier).
+
+mwp therefore accepts additional `adsbx://` parameters:
+
+* `format` : The path after the host, by default `v2/point/{}/{}/{}` where the '{}' items are respectively `latitude`, `longitude` and `range`.
+* `api-key` : The api key and identifier.
+
+For example:
+
+```
+--radar-device adsbx://opendata.adsb.fi?range=40&interval=1000&format=api/v2/lat/{}/lon/{}/dist/{}
+```
+
+And for a site that required a user specific API token with an identifier `api-auth` which is set as a `https` header:
+
+```
+  ..... &api-key=api-auth:MySecretToken
+```
+
+results in the `https` header:
+```
+api-auth: MySecretToken
+```
+
 ### Adsbx Notes
 
 * It is pointless to define both providers as they have much the same data
