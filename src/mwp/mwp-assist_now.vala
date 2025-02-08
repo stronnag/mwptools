@@ -276,7 +276,7 @@ namespace Assist {
 			online.toggled.connect(_reset_label);
 			offline.toggled.connect(_reset_label);
 
-			if(assist_key == "") {
+			if(assist_key == null || assist_key == "") {
 				download.sensitive = false;
 			}
 		}
@@ -309,6 +309,7 @@ namespace Assist {
 					}
 				}
 			}
+			download.sensitive =  check_dl_state();
 		}
 
 		string get_file_base() {
@@ -329,11 +330,13 @@ namespace Assist {
 				MWPLog.message("Completed Assist D/L (%u)\n", sid);
 				sid = -1;
 				Mwp.reset_poller();
-				if(assist_key != "") {
-					download.sensitive = true;
-				}
+				download.sensitive =  check_dl_state();
 				apply.sensitive = check_apply();
 			}
+		}
+
+		private bool check_dl_state() {
+			return (assist_key != null && assist_key != "");
 		}
 
 		private bool check_apply() {
@@ -368,17 +371,15 @@ namespace Assist {
 		}
 
 		private void reset_labels() {
-			if(assist_key != "") {
-				download.sensitive = true;
-			}
 			apply.sensitive = false;
 			asize.label = "";
 			format_astat(0,0);
+			download.sensitive = check_dl_state();
 		}
 
 		public void show_error() {
 			Mwp.reset_poller();
-			download.sensitive = false;
+			download.sensitive = check_dl_state();
 			astat.label = "MSP Error!";
 		}
 
