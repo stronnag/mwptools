@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/mwp_icon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.3">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.a40c8224.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.d7758b05.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -1763,6 +1763,7 @@ Set your Msys terminal to UTF-8 as well (Options from the title bar icon)
 After you've done this once, subsequently, after the repo has been updated, you can rerun the build / package generation by rerunning <code>makepkg-mingw</code> (and <code>pacman</code> to install) as required.</li>
 </ul>
 <h3 id="windows-installer">Windows Installer<a class="headerlink" href="#windows-installer" title="Permanent link">#</a></h3>
+<p>A Windows Installer may be provided.</p>
 <p>Run the installer. Select the option to install a desktop icon if you wish. Options are provided for a System or Portable (user local) installation.</p>
 <ul>
 <li>If you select a portable (user local) installation, the "DejaVu Mono" fonts cannot be installed, resulting in an ugly side panel.</li>
@@ -1833,7 +1834,7 @@ Licences:</p>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> maintains <a href="../mwp-Configuration/">documented settings</a> in a Registry like Gtk component which can be assessed by the command line tool <code>gsettings</code>. If you use Msys2, this will be installed. If you use the installer it is also  installed; but it is necessary to establish its path to use it (and enable it to find the settings):</p>
 <ul>
 <li>
-<p>The mwp installer will install <code>gsettings</code>, this will need <code>C:\Program Files\mwptools\bin</code> to be on the <code>PATH</code> or <code>cd  "C:\Program Files\mwptools"</code> and invoke <code>bin/gsettings</code>.  e.g.:</p>
+<p>The mwp Windows Installer will install <code>gsettings</code>, this will need <code>C:\Program Files\mwptools\bin</code> to be on the <code>PATH</code> or <code>cd  "C:\Program Files\mwptools"</code> and invoke <code>bin/gsettings</code>.  e.g.:</p>
 <div class="highlight"><pre><span></span><code>PS C:\Users\win11&gt; $env:Path += &quot;;C:\Program Files\mwptools\bin&quot;
 PS C:\Users\win11&gt; gsettings list-recursively org.stronnag.mwp
 org.stronnag.mwp adjust-tz true
@@ -1911,7 +1912,7 @@ Now they default to:</p>
     <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.5090c770.min.js"></script>
+      <script src="../assets/javascripts/bundle.f1b6f286.min.js"></script>
       
     
   </body>
