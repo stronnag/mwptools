@@ -53,6 +53,8 @@
 * If your issue concerns telemetry, include a sample of data that causes the issue. Raw logs may be captured with the `--raw-log` option.
 * If you're having a problem playing a blackbox log (or other flight log), include the problematic log.
 
+Due to Github's file type theatre, it may be necessary to encapsulate such artefacts in `gzip`, `tar.gz` or `zip` file.
+
 Issues that do not meet these information requirements most likely be ignored / closed without explanation.
 
 ### Unsupported
