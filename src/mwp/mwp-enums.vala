@@ -103,6 +103,7 @@ namespace Mwp {
 		LOSANA,		// 512
 		RDRLIST,	// 1024
 		MAPS,       // 2048
+		MAVLINK,    // 4096
     }
 
 	[Flags]
