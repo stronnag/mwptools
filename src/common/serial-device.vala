@@ -1785,7 +1785,11 @@ public class MWSerial : Object {
 									stats.msgs++;
 									var msg = INAVEvent(){cmd=cmd+Msp.MAV_BASE, len=csize, flags=0, err=errstate, raw=rxbuf[0:csize+4]};
 									msgq.push(msg);
-									serial_event();
+#if UNIX
+								serial_event();
+#else
+								Idle.add(() => {serial_event();return false;});
+#endif
 									state = States.S_HEADER;
 								} else {
 									error_counter("Mav/CRC");
@@ -1870,7 +1874,11 @@ public class MWSerial : Object {
 								stats.msgs++;
 								var msg = INAVEvent(){cmd=cmd+Msp.MAV_BASE, len=csize, flags=0, err=errstate, raw=rxbuf[0:csize+4]};
 								msgq.push(msg);
+#if UNIX
 								serial_event();
+#else
+								Idle.add(() => {serial_event();return false;});
+#endif
 								if(mavsig == 0)
 									state = States.S_HEADER;
 								else

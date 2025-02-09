@@ -18,8 +18,9 @@
 namespace Mwp {
 	bool handle_mavlink(MWSerial ser, Msp.Cmds cmd, uint8[]raw, uint len) {
 		bool handled = true;
-		//MWPLog.message("::DBG:: [%x, %u] %s\n", cmd, len, cmd.format());
-
+		if((Mwp.DEBUG_FLAGS.MAVLINK in Mwp.debug_flags)) {
+			MWPLog.message("::DBG:: [%x, %u] %s\n", cmd, len, cmd.format());
+		}
 		switch (cmd) {
 		case Msp.Cmds.MAVLINK_MSG_ID_HEARTBEAT:
 			Mav.MAVLINK_HEARTBEAT m = *(Mav.MAVLINK_HEARTBEAT*)raw;
@@ -110,6 +111,9 @@ namespace Mwp {
 			int fix = m.fix_type;
 			int fvup = 0;
 			int ttup = 0;
+
+			fix = int.min(fix, 3);
+
 			if(m.eph != 65535) {
 				ser.td.gps.hdop = m.eph/100.0;
 			}
@@ -188,7 +192,6 @@ namespace Mwp {
 							double hlat, hlon;
 							HomePoint.get_location(out hlat, out hlon);
 							Geo.csedist(hlat, hlon, mlat, mlon, out range, out brg);
-
 							if(range >= 0.0 && range < 256) {
 								var cg = MSP_COMP_GPS();
 								cg.range = (uint16)Math.lround(range*1852);
@@ -205,6 +208,7 @@ namespace Mwp {
 						}
 					}
 					update_pos_info();
+
 					if(want_special != 0)
 						process_pos_states(mlat, mlon, dalt, "MavGPS");
 					if(Logger.is_logging) {
