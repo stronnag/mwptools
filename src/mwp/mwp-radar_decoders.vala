@@ -161,21 +161,19 @@ namespace Radar {
 	}
 #endif
 
-	public void decode_jsa(string js) {
+	public void decode_jsa(string js, bool adsbx = false) {
 		var parser = new Json.Parser();
 		var now = new DateTime.now_local();
 		var rdebug = ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE);
 		try {
 			parser.load_from_data (js);
 			Json.Array acarry;
-			bool adsbx = false;
 
 			var root = parser.get_root().get_object();
 			if(root.has_member("aircraft")) {
 				acarry = root.get_array_member ("aircraft");
 			} else if(root.has_member("ac")) {
 				acarry = root.get_array_member ("ac");
-				adsbx = true;
 			} else {
 				return;
 			}

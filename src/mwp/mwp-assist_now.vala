@@ -62,19 +62,20 @@ public class AssistNow {
 
 	public async uint8[]? fetch(string uri) {
 		Soup.Message msg;
+		uint8[]? darry = null;
+
 		msg = new Soup.Message ("GET", uri);
 		try {
 			var byt = yield session.send_and_read_async (msg, Priority.DEFAULT, null);
 			if (msg.status_code == 200) {
-				return byt.get_data();
+				darry = byt.get_data();
 			} else {
 				MWPLog.message("UBLOX fetch <%s> : %u %s\n", uri, msg.status_code, msg.reason_phrase);
-				return null;
 			}
 		} catch (Error e) {
 			print("UBLOX fetch <%s> : %s\n", uri, e.message);
-			return null;
 		}
+		return darry;
 	}
 
 	public static LogData []? split_ublox(uint8[] dx) {
@@ -236,7 +237,7 @@ namespace Assist {
 					an = new AssistNow();
 					string url;
 					string id;
-
+					download.sensitive = false;
 					if (online.active) {
 						url = an.online_url(assist_key, useloc.active);
 					} else {
@@ -250,6 +251,7 @@ namespace Assist {
 							} else {
 								asize.label = "D/L Error!";
 							}
+							download.sensitive =  check_dl_state();
 						});
 				});
 

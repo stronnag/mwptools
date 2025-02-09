@@ -277,7 +277,7 @@ namespace Radar {
 										decode_pba(s);
 									} else {
 										s[s.length-1] = 0;
-										decode_jsa((string)s);
+										decode_jsa((string)s, (htype == 3));
 									}
 								}
 							});
