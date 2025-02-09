@@ -728,6 +728,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#expanded-adsbx-uri-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      Expanded adsbx:// URI format
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -1564,6 +1579,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#expanded-adsbx-uri-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      Expanded adsbx:// URI format
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -1914,6 +1944,25 @@ where</p>
 ## or
 --radar-device adsbx://api.adsb.one?range=40&amp;interval=1000
 </code></pre></div>
+<h4 id="expanded-adsbx-uri-format">Expanded adsbx:// URI format<a class="headerlink" href="#expanded-adsbx-uri-format" title="Permanent link">#</a></h4>
+<p>In order to support other providers (other than <code>adsb.one</code> and <code>adsb.lol</code>), an expanded URI format is available. This enables the use of providers that have a more complex URL (compared to <code>https://host/v2/point/lat/lon/range</code>) and / or require authentication. For example, the provider <code>opendata.adsb.fi</code> requires:</p>
+<p><div class="highlight"><pre><span></span><code>https://opendata.adsb.fi/api/v2/lat/{lat}/lon/{lon}/dist/{range}
+</code></pre></div>
+where <code>{lat}</code>, <code>{lon}</code> and <code>{range}</code> are the centre latitude, longitude and range. In addition, commercial sites may require an API key (and identifier).</p>
+<p>mwp therefore accepts additional <code>adsbx://</code> parameters:</p>
+<ul>
+<li><code>format</code> : The path after the host, by default <code>v2/point/{}/{}/{}</code> where the '{}' items are respectively <code>latitude</code>, <code>longitude</code> and <code>range</code>.</li>
+<li><code>api-key</code> : The api key and identifier.</li>
+</ul>
+<p>For example:</p>
+<div class="highlight"><pre><span></span><code>--radar-device adsbx://opendata.adsb.fi?range=40&amp;interval=1000&amp;format=api/v2/lat/{}/lon/{}/dist/{}
+</code></pre></div>
+<p>And for a site that required a user specific API token with an identifier <code>api-auth</code> which is set as a <code>https</code> header:</p>
+<div class="highlight"><pre><span></span><code>  ..... &amp;api-key=api-auth:MySecretToken
+</code></pre></div>
+<p>results in the <code>https</code> header:
+<div class="highlight"><pre><span></span><code>api-auth: MySecretToken
+</code></pre></div></p>
 <h3 id="adsbx-notes">Adsbx Notes<a class="headerlink" href="#adsbx-notes" title="Permanent link">#</a></h3>
 <ul>
 <li>It is pointless to define both providers as they have much the same data</li>
