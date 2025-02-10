@@ -221,13 +221,13 @@ func main() {
 				if ddname == "" {
 					laddr, err = net.ResolveUDPAddr(ipfam, fmt.Sprintf(":%d", ddport))
 					if err != nil && ipfam != "udp" {
-						ipfam := "udp"
+						ipfam = "udp"
 						laddr, err = net.ResolveUDPAddr(ipfam, fmt.Sprintf(":%d", ddport))
 					}
 				} else {
 					raddr, err = net.ResolveUDPAddr(ipfam, fmt.Sprintf("%s:%d", ddname, ddport))
 					if err != nil && ipfam != "udp" {
-						ipfam := "udp"
+						ipfam = "udp"
 						raddr, err = net.ResolveUDPAddr(ipfam, fmt.Sprintf("%s:%d", ddname, ddport))
 					}
 				}
@@ -237,7 +237,7 @@ func main() {
 				if err != nil {
 					log.Fatal(err)
 				}
-				fmt.Fprintf(os.Stderr, "local UDP address %+v\n", conn.LocalAddr())
+				fmt.Fprintf(os.Stderr, "UDP %+v <=> %+v\n", conn.LocalAddr(), conn.RemoteAddr())
 				sd = conn
 			}
 		} else {

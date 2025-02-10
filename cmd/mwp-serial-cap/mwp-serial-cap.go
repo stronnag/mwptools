@@ -163,13 +163,13 @@ func main() {
 			if dd.name == "" {
 				laddr, err = net.ResolveUDPAddr(udpfam, fmt.Sprintf("%s:%d", dd.name, dd.port))
 				if err != nil {
-					udpfam := "udp"
+					udpfam = "udp"
 					laddr, err = net.ResolveUDPAddr(udpfam, fmt.Sprintf("%s:%d", dd.name, dd.port))
 				}
 			} else {
 				raddr, err = net.ResolveUDPAddr(udpfam, fmt.Sprintf("%s:%d", dd.name, dd.port))
 				if err != nil {
-					udpfam := "udp"
+					udpfam = "udp"
 					raddr, err = net.ResolveUDPAddr(udpfam, fmt.Sprintf("%s:%d", dd.name, dd.port))
 				}
 			}
