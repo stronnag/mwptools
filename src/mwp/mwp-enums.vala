@@ -186,7 +186,8 @@ namespace Mwp {
 
 	[Flags]
     private enum POSMODE {
-        HOME = 1,
+		NIL,
+        HOME,
         PH,
         RTH,
         WP,

@@ -472,7 +472,7 @@ namespace Mwp {
         }
 
         if((want_special & POSMODE.PH) != 0) {
-            if(armed != 0 && msp.available) {
+			if(armed != 0 && msp.available) {
                 MwpMenu.set_menu_state(Mwp.window, "followme", true);
             } else {
 				MwpMenu.set_menu_state(Mwp.window, "followme", false);

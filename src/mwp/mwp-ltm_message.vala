@@ -381,9 +381,9 @@ namespace Mwp {
 							ltmflags !=  Msp.Ltm.LAND) { // handled by NAV_STATUS
 							TTS.say(TTS.Vox.LTM_MODE);
 						}
-						if(ltmflags == Msp.Ltm.POSHOLD)
+						if(ltmflags == Msp.Ltm.POSHOLD) {
 							want_special |= POSMODE.PH;
-						else if(ltmflags == Msp.Ltm.WAYPOINTS) {
+						} else if(ltmflags == Msp.Ltm.WAYPOINTS) {
 							want_special |= POSMODE.WP;
 							//if (NavStatus.nm_pts == 0 || NavStatus.nm_pts == 255)
 							//	NavStatus.nm_pts = last_wp_pts; // FIXME
@@ -400,6 +400,8 @@ namespace Mwp {
 						else if(ltmflags != Msp.Ltm.LAND) {
 							if(craft != null)
 								craft.set_normal();
+						} else {
+							MWPLog.message("::DBG:: Unknown LTM %d\n", ltmflags);
 						}
 						ls_state = Msp.ltm_mode(ltmflags);
 						MWPLog.message("New LTM Mode %s (%d %d) %d %ds %f %f %x %x\n",
@@ -414,7 +416,7 @@ namespace Mwp {
 					}
 
 					if(want_special != 0 /* && have_home*/) {
-						process_pos_states(xlat,xlon, 0, "SFrame");
+						process_pos_states(xlat, xlon, 0, "SFrame");
 					}
 					uint16 mah = sf.vcurr;
 					uint16 ivbat = (sf.vbat + 50) / 10;
