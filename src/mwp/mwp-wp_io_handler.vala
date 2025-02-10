@@ -137,6 +137,7 @@ namespace Mwp {
         Idle.add (() => { MBus.svc.callback(); return false; });
     }
 
+	/**
     private void report_special_wp(MSP_WP w) {
         double lat, lon;
         lat = w.lat/10000000.0;
@@ -148,7 +149,7 @@ namespace Mwp {
             MWPLog.message("Special WP#%d (%d) %.6f %.6f %dm %d°\n", w.wp_no, w.action, lat, lon, w.altitude/100, w.p1);
         }
     }
-
+	**/
     private void handle_mm_download(uint8[] raw, uint len) {
         have_wp = true;
         MSP_WP w = MSP_WP();
@@ -157,32 +158,32 @@ namespace Mwp {
 			remove_tid(ref upltid);
 			wp_reset_poller();
 			Mwp.window.validatelab.set_text("⚠"); // u+26a0
-			MWPWarn.wb8 = new Utils.Warning_box("Upload cancelled", 10);
+			MWPWarn.wb8 = new Utils.Warning_box("Download cancelled", 10);
 			MWPWarn.wb8.present();
             return;
 		}
         w.wp_no = *rp++;
-        w.action = *rp++;
-        rp = SEDE.deserialise_i32(rp, out w.lat);
-        rp = SEDE.deserialise_i32(rp, out w.lon);
-		rp = SEDE.deserialise_i32(rp, out w.altitude);
-		rp = SEDE.deserialise_i16(rp, out w.p1);
 
-        if(w.wp_no == 0 || w.wp_no > 253) {
-            report_special_wp(w);
-            return;
-        }
-		rp = SEDE.deserialise_i16(rp, out w.p2);
-		rp = SEDE.deserialise_i16(rp, out w.p3);
-		w.flag = *rp;
-        wpmgr.wps += w;
-		bool done = false;
-
-		if(vi.fc_vers >= FCVERS.hasWP_V4 && wpmgr.wps.length == wpmgr.npts) {
+		bool done;
+		if(w.wp_no == 0) {
 			done = true;
+		} else {
+			w.action = *rp++;
+			rp = SEDE.deserialise_i32(rp, out w.lat);
+			rp = SEDE.deserialise_i32(rp, out w.lon);
+			rp = SEDE.deserialise_i32(rp, out w.altitude);
+			rp = SEDE.deserialise_i16(rp, out w.p1);
+			rp = SEDE.deserialise_i16(rp, out w.p2);
+			rp = SEDE.deserialise_i16(rp, out w.p3);
+			w.flag = *rp;
+			wpmgr.wps += w;
+			done = false;
 		}
-
-		if (w.flag == 0xa5) {
+		if(vi.fc_vers >= FCVERS.hasWP_V4) {
+			if (wpmgr.wps.length == wpmgr.npts) {
+				done = true;
+			}
+		} else if (w.flag == 0xa5) {
 			done = true;
 		}
 
