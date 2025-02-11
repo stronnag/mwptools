@@ -94,7 +94,7 @@ namespace Follow {
 			wp.action =  Msp.Action.WAYPOINT;
 			wp.lat = (int32)(lat*1e7);
 			wp.lon = (int32)(lon*1e7);
-			wp.altitude = (int32)alt;
+			wp.altitude = 100*(int32)alt;
 			wp.p1 = (int16)cse; // heading
 			wp.p2 = wp.p3 = 0;
 			wp.flag = 0xa5;
