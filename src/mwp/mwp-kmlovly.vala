@@ -161,11 +161,19 @@ namespace Kml {
 
 		public void from_file_async(string _fname) {
 			MWPLog.message("Start KML async loader\n");
-			Mwp.add_toast_text("Started KML async loader", 2);
+			var t = Mwp.add_toast_text("Started KML async loader", 0);
+			t.dismissed.connect(() => {
+					t = null;
+				});
+
 			async_loader.begin(_fname, (obj,res) => {
 					var ok = async_loader.end(res);
+					if (t != null) {
+						t.dismiss();
+						t = null;
+					}
+					MWPLog.message("Finished KML async loader\n");
 					if(ok) {
-						MWPLog.message("Done async loader\n");
 						Idle.add(() =>  {
 								ovly.display();
 								kmls.append_val(this);
