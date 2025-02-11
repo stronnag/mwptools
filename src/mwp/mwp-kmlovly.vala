@@ -78,7 +78,8 @@ namespace Kml {
 	private Remover rmer = null;
 
     public void try_load_overlay(string kf) {
-        new Kml.KmlOverlay.from_file(kf);
+		var k = new KmlOverlay();
+		k.from_file_async(kf);
 	}
 
 	private void update_kml_menu() {
@@ -96,7 +97,7 @@ namespace Kml {
 						var gfile = files.get_item(j) as File;
 						if (gfile != null) {
 							var fn = gfile.get_path ();
-							new KmlOverlay.from_file(fn);
+							try_load_overlay(fn); //new KmlOverlay.from_file(fn);
 						} else {
 							stderr.printf("filedialog returns NULL\n");
 						}
@@ -141,6 +142,38 @@ namespace Kml {
 				kmls.append_val(this);
 				update_kml_menu();
 			}
+		}
+
+		private async bool async_loader(string _fname) {
+			var thr = new Thread<bool>("kmlloader", () => {
+					bool ok;
+					if(_fname.has_suffix(".kmz")) {
+						ok = read_kmz(_fname);
+					} else {
+						ok = parse(_fname);
+					}
+					Idle.add (async_loader.callback);
+					return ok;
+				});
+			yield;
+			return thr.join();
+		}
+
+		public void from_file_async(string _fname) {
+			MWPLog.message("Start KML async loader\n");
+			Mwp.add_toast_text("Started KML async loader", 2);
+			async_loader.begin(_fname, (obj,res) => {
+					var ok = async_loader.end(res);
+					if(ok) {
+						MWPLog.message("Done async loader\n");
+						Idle.add(() =>  {
+								ovly.display();
+								kmls.append_val(this);
+								update_kml_menu();
+								return false;
+							});
+					}
+				});
 		}
 
 		public string get_filename() {

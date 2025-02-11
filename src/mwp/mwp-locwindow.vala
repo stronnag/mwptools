@@ -46,11 +46,9 @@ namespace Mwp {
 					return true;
 				});
 
-
 			p.places_changed.connect(() => {
 					load_places();
 				});
-
 
 			place_edit.clicked.connect(() => {
 					p.show();
