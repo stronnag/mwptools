@@ -31,10 +31,14 @@ namespace Mwp {
 		[GtkChild]
 		private unowned Gtk.Button gotocan;
 
-		Places.PosItem[] pls;
+		private string llat;
+		private string llon;
+		private Places.PosItem[] pls;
 		public signal void new_pos(double la, double lo, int zoom);
 
 		public GotoDialog () {
+			llat = null;
+			llon = null;
 			transient_for = Mwp.window;;
 			var p = new PlaceEdit();
 			close_request.connect (() => {
@@ -57,6 +61,8 @@ namespace Mwp {
 					if ((int)n >= 0) {
 						golat.set_text(PosFormat.lat(pls[n].lat, Mwp.conf.dms));
 						golon.set_text(PosFormat.lon(pls[n].lon, Mwp.conf.dms));
+						llat = golat.text;
+						llon = golon.text;
 					}
 				});
 
@@ -76,15 +82,17 @@ namespace Mwp {
 							t2 = parts[1];
 						}
 					}
-					glat = InputParser.get_latitude(t1);
-					glon = InputParser.get_longitude(t2);
-					var zl = -1.0;
-					var n = places_dd.get_selected ();
-					if (n == 0) {
-						MapUtils.centre_on(Mwp.conf.latitude, Mwp.conf.longitude);
-					} else if (n > 0) {
-						zl = pls[n].zoom;
-						MapUtils.centre_on(glat, glon, zl);
+					if(llat != t1 || llon != t2) {
+						glat = InputParser.get_latitude(t1);
+						glon = InputParser.get_longitude(t2);
+						MapUtils.centre_on(glat, glon);
+					} else {
+						var n = places_dd.get_selected ();
+						if (n == 0) {
+							MapUtils.centre_on(Mwp.conf.latitude, Mwp.conf.longitude);
+						} else if (n > 0) {
+							MapUtils.centre_on(pls[n].lat, pls[n].lon, pls[n].zoom);
+						}
 					}
 					visible=false;
 				});
