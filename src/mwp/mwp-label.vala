@@ -15,7 +15,7 @@ public class MWPLabel : MWPMarker {
 			fs *= Mwp.conf.touch_scale;
 		}
 		bcol = "white";
-		fcol = "black";
+		fcol = "#000000ff";
 		fontsize = FONTSIZE;
 		label = txt;
 		generate_label();
@@ -106,7 +106,7 @@ public class MWPLabel : MWPMarker {
 		draw_box(cr, tw, th, point, false);
 		cr.fill_preserve();
 		cr.set_line_width(1.0f);
-		cr.set_source_rgba (r.red*0.7, r.green*0.7, r.blue*0.7, 1.0f);
+		cr.set_source_rgba (r.red*0.8, r.green*0.8, r.blue*0.8, 1.0f);
 		cr.stroke();
 
 		r.parse(fcol);

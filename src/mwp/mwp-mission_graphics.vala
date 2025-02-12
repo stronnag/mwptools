@@ -34,13 +34,8 @@ namespace IconTools {
 	private Hexcol get_text_for(out string text, int no, int action, uint8 mflag = 0) {
 		Hexcol colour;
 		string symb;
-        uint8 alpha = 0x80;
-		/*
-		var sx = Environment.get_variable("MWP_MALPHA");
-		if (sx != null) {
-			alpha = (uint8)uint.parse(sx);
-		}
-		*/
+        uint8 alpha = MissionManager.alpha;
+
 		if ((mflag & MsnTools.IFlags.SET_HEAD) != 0)
 			action = Msp.Action.SET_HEAD;
 		if ((mflag & MsnTools.IFlags.JUMPF) != 0)
@@ -49,7 +44,10 @@ namespace IconTools {
 			action = Msp.Action.RTH;
 
 		if ((mflag & MsnTools.IFlags.FLYBY) != 0)
-            alpha = 0x40;
+            alpha /= 2;
+
+		if(alpha < 0x40)
+			alpha = 0x40;
 
         switch (action) {
 		case Msp.Action.WAYPOINT:

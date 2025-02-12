@@ -33,8 +33,13 @@ namespace MissionManager {
 	private TA.Dialog tadialog;
 	bool is_dirty;
 	Previewer pv;
+	uint8 alpha = 0x80;
 
 	public void init() {
+		var sx = Environment.get_variable("MWP_MISSION_ALPHA");
+		if (sx != null) {
+			alpha = (uint8)uint.parse(sx);
+		}
 		tadialog = new TA.Dialog();
 		msx={};
 		is_dirty = false;
