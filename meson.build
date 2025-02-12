@@ -1,6 +1,8 @@
 project('mwptools', 'vala', 'c', version : '25.02.12', meson_version : '>= 1.4.0')
 
 nogo = get_option('nogo')
+pointy_labels = get_option('pointy-labels')
+
 force_s = get_option('force-static')
 dynalib = true
 if force_s

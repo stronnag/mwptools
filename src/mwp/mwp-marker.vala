@@ -18,12 +18,12 @@
 public class MWPMarker : Shumate.Marker {
     public int no;
     public int offset;
-	private Gdk.Pixbuf pix;
+	internal Gdk.Pixbuf pix;
 	public bool draggable;
 	private double _sx;
 	private double _sy;
 	private int _lastang;
-	private int _size;
+	internal int _size;
 	private Gtk.GestureDrag gestd;
 
 	public signal void leave();
@@ -32,6 +32,14 @@ public class MWPMarker : Shumate.Marker {
 	public signal void drag_motion(double lat, double lon);
 	public signal void drag_begin();
 	public signal void drag_end();
+
+	public void set_pixbuf(Gdk.Pixbuf _px) {
+		pix = _px;
+	}
+
+	public void set_pixsize(int _sz) {
+		_size = _sz;
+	}
 
 	construct {
         no = 0;

@@ -1,3 +1,139 @@
+#if SHUMATE_USE_ALIGN
+public class MWPLabel : MWPMarker {
+	const int RADIUS = 10;
+	const int PADDING = RADIUS/2;
+	const double FONTSIZE = 10.0;
+
+	private string bcol;
+	private string fcol;
+	private string label;
+	private double fontsize;
+
+	public MWPLabel(string txt="")  {
+		var fs = Mwp.conf.symbol_scale;
+		if(Touch.has_touch_screen()) {
+			fs *= Mwp.conf.touch_scale;
+		}
+		bcol = "white";
+		fcol = "black";
+		fontsize = FONTSIZE;
+		label = txt;
+		generate_label();
+    }
+
+	public void set_text(string txt) {
+		label = txt;
+		generate_label();
+	}
+
+	public void set_font_scale(double ps = Pango.Scale.MEDIUM) {
+		fontsize = FONTSIZE*ps;
+		generate_label();
+	}
+
+	private string val_to_colour(Value v) {
+		var vt = v.type();
+		if(vt == typeof(string)) {
+			return (v as string);
+		} else if (vt== typeof(Gdk.RGBA)) {
+			return ((Gdk.RGBA)v).to_string();
+		}
+		return "rgb(0,0,0)";
+	}
+
+	public void set_text_colour(Value v) {
+		fcol = val_to_colour(v);
+		generate_label();
+	}
+
+	public void set_colour(Value v) {
+		bcol = val_to_colour(v);
+		generate_label();
+	}
+
+	// should use Gtk.get_locale_direction()  for reverse (Gtk.TextDirection.RTL)
+	private void draw_box(Cairo.Context cr, int width, int height, int point, bool rev) {
+		cr.move_to (RADIUS, 0);
+		cr.line_to (width - RADIUS, 0);
+		cr.arc (width - RADIUS, RADIUS, RADIUS - 1, 3 * Math.PI / 2.0, 0);
+		if(rev) {
+			cr.line_to (width, height - RADIUS);
+			cr.arc (width - RADIUS, height - RADIUS, RADIUS - 1, 0, Math.PI / 2.0);
+			cr.line_to (point, height);
+			cr.line_to (0, height + point);
+			cr.arc (RADIUS, RADIUS, RADIUS - 1, Math.PI, 3 * Math.PI / 2.0);
+		} else {
+			cr.line_to (width, height + point);
+			cr.line_to (width - point, height);
+			cr.line_to (RADIUS, height);
+			cr.arc (RADIUS, height - RADIUS, RADIUS - 1, Math.PI / 2.0, Math.PI);
+			cr.line_to (0, RADIUS);
+			cr.arc (RADIUS, RADIUS, RADIUS - 1, Math.PI, 3 * Math.PI / 2.0);
+		}
+		cr.close_path ();
+	}
+
+	private Pango.Layout text_get_size(Cairo.Context cr, string s, out int w, out int h) {
+		var font = new Pango.FontDescription();
+        font.set_family("Sans");
+        var fsize = fontsize * Pango.SCALE;
+		var layout = Pango.cairo_create_layout(cr);
+		font.set_size((int)fsize);
+        layout.set_font_description(font);
+		layout.set_text(s, -1);
+		layout.get_pixel_size(out w, out h);
+		return layout;
+	}
+
+	private void show_text(Cairo.Context cr, Pango.Layout l) {
+		Pango.cairo_show_layout(cr, l);
+	}
+
+	private void generate_label() {
+		var cst = new Cairo.ImageSurface (Cairo.Format.ARGB32, 256, 256);
+		var cr = new Cairo.Context (cst);
+
+		int tw, th;
+		var l = text_get_size(cr, label, out tw, out th);
+
+		th += (int)(2*PADDING);
+		tw += (int)(2*PADDING);
+		int point = (th +2)/3;
+
+		var r = Gdk.RGBA();
+		r.parse(bcol);
+		cr.set_source_rgba (r.red, r.green, r.blue, r.alpha);
+		draw_box(cr, tw, th, point, false);
+		cr.fill_preserve();
+		cr.set_line_width(1.0f);
+		cr.set_source_rgba (r.red*0.7, r.green*0.7, r.blue*0.7, 1.0f);
+		cr.stroke();
+
+		r.parse(fcol);
+		cr.set_source_rgba (r.red, r.green, r.blue, r.alpha);
+
+		var ty = PADDING;
+		var tx = PADDING;
+		cr.move_to(tx, ty);
+		show_text(cr, l);
+		var surface = new Cairo.ImageSurface (Cairo.Format.ARGB32, tw, th+point);
+        var context =  new Cairo.Context (surface);
+        context.set_source_surface(cst, 0 ,0);
+        context.paint();
+		var px = Gdk.pixbuf_get_from_surface(surface, 0, 0, tw, th+point);
+
+        set_pixbuf(px);
+		var tex = Gdk.Texture.for_pixbuf(pix);
+		var sz = int.max(pix.width, pix.height);
+		set_pixsize(sz);
+		var img = new Gtk.Image.from_paintable(tex);
+		img.set_pixel_size(sz);
+		set_child(img);
+		xalign=1;
+		yalign=1;
+	}
+}
+#else
 public class MWPLabel : MWPMarker {
 	private Gtk.CssProvider provider;
 	private string bcol;
@@ -65,3 +201,4 @@ public class MWPLabel : MWPMarker {
 		set_css();
 	}
 }
+#endif

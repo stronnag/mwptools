@@ -99,6 +99,10 @@ if protoc.found()
   mwp_v_args += ['--vapidir', meson.current_source_dir(), '--pkg', 'decode_readsb', '--define=PROTOC' ]
 endif
 
+if pointy_labels
+  mwp_v_args += '--define=SHUMATE_USE_ALIGN'
+endif
+
 # for BSD etc.
 mwp_c_args = []
 
