@@ -35,7 +35,12 @@ namespace IconTools {
 		Hexcol colour;
 		string symb;
         uint8 alpha = 0x80;
-
+		/*
+		var sx = Environment.get_variable("MWP_MALPHA");
+		if (sx != null) {
+			alpha = (uint8)uint.parse(sx);
+		}
+		*/
 		if ((mflag & MsnTools.IFlags.SET_HEAD) != 0)
 			action = Msp.Action.SET_HEAD;
 		if ((mflag & MsnTools.IFlags.JUMPF) != 0)
