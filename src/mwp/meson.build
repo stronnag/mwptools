@@ -3,6 +3,12 @@ subdir('survey')
 
 getinfo = files('getinfo.sh')
 mwp_v_args = []
+if pointy_labels
+  if extra_vapi != ''
+    mwp_v_args += ['--vapidir' , extra_vapi]
+  endif
+  mwp_v_args += '--define=SHUMATE_USE_ALIGN'
+endif
 
 mwpvers_h = custom_target(
     '_mwpvers.h',
@@ -100,9 +106,6 @@ if protoc.found()
   mwp_v_args += ['--vapidir', meson.current_source_dir(), '--pkg', 'decode_readsb', '--define=PROTOC' ]
 endif
 
-if pointy_labels
-  mwp_v_args += '--define=SHUMATE_USE_ALIGN'
-endif
 
 # for BSD etc.
 mwp_c_args = []

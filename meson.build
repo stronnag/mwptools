@@ -20,9 +20,6 @@ if show_deprecated  == false
 endif
 
 extra_vapi = get_option('extra-vapi-path')
-if extra_vapi != ''
-  add_project_arguments('--vapidir' , extra_vapi, language : 'vala')
-endif
 
 with_gatt = true
 if build_machine.system() != 'linux'
