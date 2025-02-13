@@ -543,13 +543,6 @@
       <description>Timeout value in seconds for a MSP FC to reply to a MSP_INDENT probe. Effectively a timeout counter in seconds. Set to a negative value to disable.</description>
     </key>
 
-    <key name="misc-icon-size" type="i">
-      <default>32</default>
-      <summary>Miscellaneous icon size</summary>
-      <description>Size for miscellaneous icons (radar, GCS location)
-      in pixels. -1 means the image's natural size (no scaling).</description>
-    </key>
-
     <key name="show-sticks" enum="org.stronnag.mwp.sticks">
       <default>"icon"</default>
       <summary>Whether to show sticks in log replay</summary>

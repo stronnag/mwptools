@@ -30,11 +30,10 @@ namespace GCS {
 
 	public MWPMarker? create_icon () {
 		try {
-			var img = Img.load_image_from_file("gcs.svg", Mwp.conf.misciconsize,Mwp.conf.misciconsize);
+			var img = Img.load_image_from_file("gcs.svg", -1, -1);
 			icon = new MWPMarker.from_image(img);
 			Gis.info_layer.add_marker (icon);
 			icon.visible = false;
-			icon.opacity = 0.6;
 			icon.set_draggable(true);
 			if(Gpsd.reader != null) {
 				Gpsd.reader.gpsd_result.connect((s) => {

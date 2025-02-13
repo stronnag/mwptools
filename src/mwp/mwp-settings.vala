@@ -93,7 +93,6 @@ public class MWPSettings : GLib.Object {
     public uint radar_alert_altitude {get; set; default=0;}
     public uint radar_alert_range {get; set; default=0;}
     public string gpsdhost {get; set; default="localhost";}
-    public int misciconsize {get; set; default=32;}
     public int show_sticks {get; set; default=2;}
     public uint view_mode {get; set; default=0;}
     public int msp2_adsb {get; set; default=0;}
@@ -209,7 +208,6 @@ public class MWPSettings : GLib.Object {
 		settings.bind("max-climb-angle", this, "maxclimb", SettingsBindFlags.DEFAULT);
 		settings.bind("max-dive-angle", this, "maxdive", SettingsBindFlags.DEFAULT);
 		settings.bind("min-dem-zoom", this, "min-dem-zoom", SettingsBindFlags.DEFAULT);
-		settings.bind("misc-icon-size", this, "misciconsize", SettingsBindFlags.DEFAULT);
 		settings.bind("mission-path", this, "missionpath", SettingsBindFlags.DEFAULT);
 		settings.bind("mission-meta-tag", this, "missionmetatag", SettingsBindFlags.DEFAULT);
 		settings.bind("osd-mode", this, "osd-mode", SettingsBindFlags.DEFAULT);
