@@ -92,7 +92,7 @@ namespace IconTools {
 			break;
         }
 
-		text = "%s %d".printf(symb, no);
+		text = "<span face='monospace'>%s</span>\u2009%d".printf(symb, no);
 		return colour;
     }
 }

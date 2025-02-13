@@ -18,7 +18,7 @@
 #if SHUMATE_USE_ALIGN
 public class MWPLabel : MWPMarker {
 	const int RADIUS = 10;
-	const int PADDING = RADIUS/2;
+	const int PADDING = RADIUS/2; 
 	const double FONTSIZE = 10.0;
 
 	private string bcol;
@@ -90,14 +90,16 @@ public class MWPLabel : MWPMarker {
 		cr.close_path ();
 	}
 
+	const string WPSTYLE="Regular";
 	private Pango.Layout text_get_size(Cairo.Context cr, string s, out int w, out int h) {
-		var font = new Pango.FontDescription();
-        font.set_family("Regular");
+		Pango.FontDescription font;
+		font = new Pango.FontDescription();
+        font.set_family(WPSTYLE);		
         var fsize = fontsize * Pango.SCALE;
 		var layout = Pango.cairo_create_layout(cr);
 		font.set_size((int)fsize);
         layout.set_font_description(font);
-		layout.set_text(s, -1);
+		layout.set_markup(s, -1);
 		layout.get_pixel_size(out w, out h);
 		return layout;
 	}
