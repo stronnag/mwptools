@@ -34,7 +34,7 @@ namespace IconTools {
 	private Hexcol get_text_for(out string text, int no, int action, uint8 mflag = 0) {
 		Hexcol colour;
 		string symb;
-        uint8 alpha = MissionManager.alpha;
+        uint8 alpha = (uint8)Mwp.conf.mission_icon_alpha;
 
 		if ((mflag & MsnTools.IFlags.SET_HEAD) != 0)
 			action = Msp.Action.SET_HEAD;

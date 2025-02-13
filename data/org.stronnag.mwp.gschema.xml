@@ -90,7 +90,7 @@
     </key>
 
     <key name="default-nav-speed" type="d">
-      <default>2.5</default>
+      <default>7.0</default>
       <summary>Default Nav speed</summary>
       <description>
         Default Nav speed (m/s). For calculating durations only.
@@ -666,6 +666,15 @@
       <summary>Touch (Hi)DPI scaling</summary>
       <description>
         Adjustment factor for HiDpi touch screens (0 disable, often 1.5 or 2.0).
+      </description>
+    </key>
+
+    <key name="mission-icon-alpha" type="u">
+      <range min="0" max="255"/>
+      <default>160</default>
+      <summary>Alpha for mission icons</summary>
+      <description>
+        Alpha for mission icons in the range 0 - 255.
       </description>
     </key>
 
