@@ -32,6 +32,25 @@ namespace GCS {
 		try {
 			var img = Img.load_image_from_file("gcs.svg", -1, -1);
 			icon = new MWPMarker.from_image(img);
+#if SHUMATE_USE_ALIGN
+			try {
+				var fn = MWPUtils.find_conf_file("gcs.svg", "pixmaps");
+				string xml;
+				FileUtils.get_contents(fn, out xml);
+				var doc = SVGReader.parse_svg(xml);
+				float xalign;
+				float yalign;
+				var aflags = SVGReader.get_mwp_alignment(doc, out xalign, out yalign);
+				if (SVGReader.MwpAlign.X in aflags) {
+					icon.xalign = xalign;
+				}
+				if (SVGReader.MwpAlign.Y in aflags) {
+					icon.yalign = yalign;
+				}
+				delete doc;
+				Xml.Parser.cleanup();
+			} catch {}
+#endif
 			Gis.info_layer.add_marker (icon);
 			icon.visible = false;
 			icon.set_draggable(true);

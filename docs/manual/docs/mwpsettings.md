@@ -23,7 +23,7 @@
 | default-loiter | Default Loiter time | Default Loiter time | 30 |
 | default-longitude | Default Longitude | Default Longitude when no GPS | -1.532936 |
 | default-map | Default Map | Default map *key* | "" |
-| default-nav-speed | Default Nav speed | Default Nav speed (m/s). For calculating durations only. | 2.5 |
+| default-nav-speed | Default Nav speed | Default Nav speed (m/s). For calculating durations only. | 7.0 |
 | default-zoom | Default Map zoom | Default map zoom | 15 |
 | delta-minspeed | Minimum speed for elapsed distance updates | Minimum speed for elapsed distance updates (m/s). Default is zero, which means the elapsed distance is always updated; larger values will take out hover / jitter movements. | 0.0 |
 | device-names | Device names | A list of device names to be added to those that can be auto-discovered | [] |
@@ -60,7 +60,7 @@
 | max-radar-slots | Maximum number of INAV Radar vehicles | Maximum number of vehicles reported by INAV Radar | 4 |
 | max-wps | Maximum number of WP supported | Maximum number of WP supported | 120 |
 | min-dem-zoom | Minimum zoom for DEM loading | DEMs will not be fetched if zoom is below this value | 9 |
-| misc-icon-size | Miscellaneous icon size | Size for miscellaneous icons (radar, GCS location) in pixels. -1 means the image's natural size (no scaling). | 32 |
+| mission-icon-alpha | Alpha for mission icons | Alpha for mission icons in the range 0 - 255. | 160 |
 | mission-meta-tag | use meta vice mwp in mission file | If true, the legacy 'mwp' tag is named 'meta' | false |
 | mission-path | Directory for mission files | Directory for mission files, default = current directory | "" |
 | msp2-adsb | MSP2_ADSB_VEHICLE_LIST usage | Options for requesting MSP2_ADSB_VEHICLE_LIST. "off": never request, "on:" always request, "auto:" heuristic based on serial settings / bandwidth | "off" |

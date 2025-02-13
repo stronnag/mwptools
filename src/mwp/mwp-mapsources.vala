@@ -185,7 +185,7 @@ namespace EsriWorld {
 		es.license = "© 2021 Esri, Maxar, Earthstar Geographics, USDA FSA, USGS, Aerogrid, IGN, IGP, and the GIS User Community";
 		es.license_uri = "https://www.esriuk.com/en-gb/content/products?esri-world-imagery-service";
 		es.min_zoom_level = 0;
-		es.max_zoom_level = 19;
+		es.max_zoom_level = 18;
 		es.tile_size = 256;
 		es.projection = Shumate.MapProjection.MERCATOR;
 		es.url_template = "https://clarity.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
