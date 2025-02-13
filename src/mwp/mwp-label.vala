@@ -92,7 +92,7 @@ public class MWPLabel : MWPMarker {
 
 	private Pango.Layout text_get_size(Cairo.Context cr, string s, out int w, out int h) {
 		var font = new Pango.FontDescription();
-        font.set_family("Sans");
+        font.set_family("Regular");
         var fsize = fontsize * Pango.SCALE;
 		var layout = Pango.cairo_create_layout(cr);
 		font.set_size((int)fsize);
