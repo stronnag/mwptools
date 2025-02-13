@@ -12,11 +12,11 @@
 </clipPath>
 </defs>
 <g clip-path="url(#clip-0)">
-<rect x="-3.2" y="-3.2" width="38.4" height="38.4" fill="rgb(0%, 35.686275%, 73.333333%)" fill-opacity="1"/>
+<rect x="-3.2" y="-3.2" width="38.4" height="38.4" fill="rgb(0%, 35.686275%, 73.333333%)" fill-opacity="0,6"/>
 </g>
 <g clip-path="url(#clip-1)">
 <g clip-path="url(#clip-2)">
-<path fill-rule="nonzero" fill="rgb(100%, 83.529412%, 0%)" fill-opacity="1" d="M -48.78125 15.949219 L 55.242188 15.949219 L 55.242188 50.625 L -48.78125 50.625 Z M -48.78125 15.949219 "/>
+<path fill-rule="nonzero" fill="rgb(100%, 83.529412%, 0%)" fill-opacity="0.6" d="M -48.78125 15.949219 L 55.242188 15.949219 L 55.242188 50.625 L -48.78125 50.625 Z M -48.78125 15.949219 "/>
 </g>
 </g>
 </svg>
