@@ -33,7 +33,7 @@ public class MWPLabel : MWPMarker {
 		}
 		bcol = "white";
 		fcol = "#000000ff";
-		fontsize = FONTSIZE;
+		fontsize = FONTSIZE*fs;
 		label = txt;
 		generate_label();
     }
