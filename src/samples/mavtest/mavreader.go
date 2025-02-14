@@ -525,7 +525,36 @@ func (m *MavReader) mav_show() {
 			} else {
 				callsign = "unknown"
 			}
-			fmt.Printf("ICAO %d, callsign %s\n", icao, callsign)
+
+			fmt.Printf("ICAO %x, callsign %s ", icao, callsign)
+			if (valid & 0x1) == 1 {
+				ilat := int32(binary.LittleEndian.Uint32(m.payload[4:8]))
+				lat := float64(ilat) / 1e7
+				ilon := int32(binary.LittleEndian.Uint32(m.payload[8:12]))
+				lon := float64(ilon) / 1e7
+				fmt.Printf("%f %f ", lat, lon)
+			}
+			if (valid & 0x2) == 2 {
+				ialt := int32(binary.LittleEndian.Uint32(m.payload[12:16]))
+				alt := float64(ialt) / 1e3
+				fmt.Printf("%.1fm ", alt)
+			}
+			if (valid & 0x4) == 4 {
+				icse := binary.LittleEndian.Uint16(m.payload[16:18])
+				cse := float64(icse) / 1e2
+				fmt.Printf("%.0f° ", cse)
+			}
+			if (valid & 0x8) == 8 {
+				ivel := binary.LittleEndian.Uint16(m.payload[16:18])
+				hvel := float64(ivel) / 1e2
+				fmt.Printf("%.0fm/s ", hvel)
+			}
+			squawk := binary.LittleEndian.Uint16(m.payload[24:26])
+			if squawk != 0xffff {
+				fmt.Printf("swk=%x ", squawk)
+			}
+			// time since last communication (seconds)
+			fmt.Printf("etyp %x, tslc %d\n", m.payload[36], m.payload[37])
 
 		default:
 			fmt.Printf("** Unhandled **\n")
