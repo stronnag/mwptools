@@ -18,7 +18,7 @@
 #if SHUMATE_USE_ALIGN
 public class MWPLabel : MWPMarker {
 	const int RADIUS = 10;
-	const int PADDING = RADIUS/2; 
+	const int PADDING = RADIUS/2;
 	const double FONTSIZE = 10.0;
 
 	private string bcol;
@@ -94,7 +94,7 @@ public class MWPLabel : MWPMarker {
 	private Pango.Layout text_get_size(Cairo.Context cr, string s, out int w, out int h) {
 		Pango.FontDescription font;
 		font = new Pango.FontDescription();
-        font.set_family(WPSTYLE);		
+        font.set_family(WPSTYLE);
         var fsize = fontsize * Pango.SCALE;
 		var layout = Pango.cairo_create_layout(cr);
 		font.set_size((int)fsize);
@@ -112,12 +112,14 @@ public class MWPLabel : MWPMarker {
 		var cst = new Cairo.ImageSurface (Cairo.Format.ARGB32, 256, 256);
 		var cr = new Cairo.Context (cst);
 
-		int tw, th;
-		var l = text_get_size(cr, label, out tw, out th);
+		int tw, th, tw0, th0;
+		var l = text_get_size(cr, label, out tw0, out th0);
 
-		th = 2*((th + 2*PADDING + 1)/2);
-		tw = 2*((th + 2*PADDING + 1)/2);
+		th = 2*((th0 + 2*PADDING + 1)/2);
+		tw = 2*((tw0 + 2*PADDING + 1)/2);
 		int point = 2*((1+(th + 2)/3)/2);
+		var thp = th + point;
+		tw = int.max(tw, thp);
 
 		var r = Gdk.RGBA();
 		r.parse(bcol);
@@ -132,14 +134,15 @@ public class MWPLabel : MWPMarker {
 		cr.set_source_rgba (r.red, r.green, r.blue, r.alpha);
 
 		var ty = PADDING;
-		var tx = PADDING;
+		var tx = (tw - tw0+1)/2;
+
 		cr.move_to(tx, ty);
 		show_text(cr, l);
-		var surface = new Cairo.ImageSurface (Cairo.Format.ARGB32, tw, th+point);
+		var surface = new Cairo.ImageSurface (Cairo.Format.ARGB32, tw, thp);
         var context =  new Cairo.Context (surface);
         context.set_source_surface(cst, 0 ,0);
         context.paint();
-		var px = Gdk.pixbuf_get_from_surface(surface, 0, 0, tw, th+point);
+		var px = Gdk.pixbuf_get_from_surface(surface, 0, 0, tw, thp);
 
         set_pixbuf(px);
 		var tex = Gdk.Texture.for_pixbuf(pix);
