@@ -24,19 +24,24 @@ namespace Touch {
 			var seat = dpy.get_default_seat();
 			var cap = seat.get_capabilities();
 			is_touch = (int8)(cap & Gdk.SeatCapabilities.TOUCH);
+			MWPLog.message(":DBG: Touch %d\n", is_touch);
 		}
 		return (bool)is_touch;
 	}
 
 	public double get_scale() {
+		double scale;
 		if (dpy == null) {
 			dpy = Gdk.Display.get_default();
 		}
 		var surf = Mwp.window.get_surface();
 		var mon = dpy.get_monitor_at_surface(surf);
 		if (mon != null) {
-			return mon.get_scale();
+			scale = mon.get_scale();
+		} else {
+			scale = 1.0;
 		}
-		return 1.0;
+		MWPLog.message(":DBG: Touch scale  %f\n", scale);
+		return scale;
 	}
 }
