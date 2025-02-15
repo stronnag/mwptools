@@ -67,6 +67,7 @@ namespace Radar {
 		public bool posvalid;
 		public uint lastiax;
 		public DateTime dt {get; construct set;}
+		public DateTime lastdraw {get; construct set;}
 
 		public RadarPlot() {
 			bearing = 0xffff;

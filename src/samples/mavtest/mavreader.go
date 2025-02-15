@@ -517,7 +517,7 @@ func (m *MavReader) mav_show() {
 			if (valid & 0x10) == 0x10 {
 				var cs []byte
 				for j := 0; j < 9; j++ {
-					if m.payload[27+j] != ' ' {
+					if m.payload[27+j] != ' ' && m.payload[27+j] != 0 {
 						cs = append(cs, m.payload[27+j])
 					}
 				}

@@ -21,7 +21,7 @@ namespace Radar {
 	private Gdk.Pixbuf inavradar;
 	private Gdk.Pixbuf inavtelem;
 
-	private unowned MWPMarker? find_radar_item(uint rid) {
+	public unowned MWPMarker? find_radar_item(uint rid) {
 		 var rdrlist =  Gis.rm_layer.get_markers();
 		 for (unowned GLib.List<weak Shumate.Marker> lp = rdrlist.first();
 			  lp != null; lp = lp.next) {
@@ -73,6 +73,7 @@ namespace Radar {
 	public void update_marker(uint rk) {
 		var r = Radar.radar_cache.lookup(rk);
 		if (r == null) {
+			MWPLog.message(":BUG: Failed to find %x\n", rk);
 			return;
 		}
 		var rp = find_radar_item(rk);
@@ -96,9 +97,10 @@ namespace Radar {
 				}
 			}
 			rp  = new MWPMarker.from_image(img);
+			//rp = new MWPLabel(r.name);
             rp.set_selectable(false);
 			rp.no = (int)rk;
-			rp.opacity = 0.8;
+			rp.opacity = (r.state == Radar.Status.STALE) ? 0.5 : 0.8;
 			Gis.rm_layer.add_marker (rp);
 			rp.has_tooltip = true;
 			rp.query_tooltip.connect((x,y,k,t) => {
@@ -112,7 +114,11 @@ namespace Radar {
 					}
 				});
 		}
+		r.lastdraw = new DateTime.now_local();
         rp.set_location (r.latitude, r.longitude);
+		if(r.state != Radar.Status.HIDDEN) {
+			rp.visible = true;
+		}
 		if ((r.source & RadarSource.M_ADSB) != 0) {
 			var cdsc = CatMap.name_for_category(r.etype);
 			if((r.alert & RadarAlert.SET) == RadarAlert.SET && (r.alert & RadarAlert.ALERT) != 0 &&  (Radar.astat & Radar.AStatus.A_RED) == Radar.AStatus.A_RED) {

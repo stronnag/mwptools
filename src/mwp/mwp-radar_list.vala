@@ -345,35 +345,47 @@ namespace Radar {
 							Radar.remove_radar(rk);
 							radar_cache.remove(rk);
 						}
-					} else if(delta > hided) {
-						if(rdebug)
-							MWPLog.message("TRAF-HID %X %s %u %u\n",
-										   rk, r.name, r.state, radar_cache.size());
-						if(is_adsb) {
-							r.state = Radar.Status.HIDDEN; // hidden
-							r.alert = RadarAlert.SET;
+					} else {
+						var xstate = r.state;
+						r.state &= ~(Radar.Status.HIDDEN|Radar.Status.STALE);
+						if(delta > hided) {
+							if(rdebug)
+								MWPLog.message("TRAF-HID %X %s %u %u\n",
+											   rk, r.name, r.state, radar_cache.size());
+							if(is_adsb) {
+								r.state = Radar.Status.HIDDEN; // hidden
+								if (r.state != xstate) {
+									r.alert = RadarAlert.SET;
+								}
+								radar_cache.upsert(rk, r);
+								radarv.update(rk, ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE));
+								if (r.posvalid) {
+									Radar.set_radar_hidden(rk);
+								}
+							}
+						} else if(delta > staled) {
+							if(rdebug)
+								MWPLog.message("TRAF-STALE %X %s %u %u\n", rk, r.name, r.state, radar_cache.size());
+							r.state = Radar.Status.STALE; // stale
+							if (r.state != xstate) {
+								r.alert = RadarAlert.SET;
+							}
 							radar_cache.upsert(rk, r);
 							radarv.update(rk, ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE));
-							if (r.posvalid) {
-								Radar.set_radar_hidden(rk);
+							if(r.posvalid) {
+								Radar.set_radar_stale(rk);
+							}
+						} else {
+							if(is_adsb) {
+								r.state = 0;
+								if (r.state != xstate) {
+									r.alert = RadarAlert.SET;
+								}
+								radar_cache.upsert(rk, r);
+								radarv.update(rk, ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE));
 							}
 						}
-					} else if(delta > staled) {
-						if(rdebug)
-							MWPLog.message("TRAF-STALE %X %s %u %u\n", rk, r.name, r.state, radar_cache.size());
-						r.state = Radar.Status.STALE; // stale
-						r.alert = RadarAlert.SET;
-						radar_cache.upsert(rk, r);
-						radarv.update(rk, ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE));
-						if(r.posvalid) {
-							Radar.set_radar_stale(rk);
-						}
-					} else {
-						if(is_adsb) {
-							r.state = 0;
-							radar_cache.upsert(rk, r);
-							radarv.update(rk, ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE));
-						}
+
 					}
 				}
 				do_purge = !do_purge;
@@ -883,12 +895,26 @@ namespace Radar {
 
 			buttons[Buttons.CENTRE].sensitive = (n_rows != 0);
 
+			//print("--------------- Start Cache -----------------\n");
 			for(var j = 0; j < n_rows; j++) {
 				var r = Radar.radar_cache.get_item(j);
 				if(r.state == Radar.Status.STALE) {
 					stale++;
-				} else if(r.state == Radar.Status.HIDDEN)
+				} else if(r.state == Radar.Status.HIDDEN) {
 					hidden++;
+				}
+				/*
+				var m0 = Radar.find_radar_item(r.id);
+				string status= " ";
+				if(m0 == null) {
+					status = "*";
+				}
+				print (" %s %s %x %x %d", status, r.name, r.state, r.id, r.lq);
+				if(m0 != null) {
+					print(" %.3f %.3f", m0.latitude, m0.longitude);
+				}
+				print("\n");
+				*/
 			}
 			var sb = new StringBuilder("Targets: ");
 			uint live = n_rows - stale - hidden;
@@ -899,8 +925,9 @@ namespace Radar {
 				sb.append_printf("\tStale: %u", stale);
 			if (hidden > 0)
 				sb.append_printf("\tHidden: %u", hidden);
-
 			label.set_text (sb.str);
+			//print ("%s\n", sb.str);
+			//print("--------------- done Cache -----------------\n");
 		}
 
 		public void remove (uint rid) {
