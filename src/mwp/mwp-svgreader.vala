@@ -55,17 +55,36 @@ namespace SVGReader {
 		if (root != null) {
 			if (root->name == "svg") {
 				for (Xml.Attr* prop = root->properties; prop != null; prop = prop->next) {
-					if(prop->name == "mwp-xalign") {
-						found += MwpAlign.X;
-						xalign = float.parse(prop->children->content);
-					} else if(prop->name == "mwp-yalign") {
-						found += MwpAlign.Y;
+					if (prop->ns != null && prop->ns->prefix == "mwp") {
+						if(prop->name == "xalign") {
+							found += MwpAlign.X;
+							xalign = float.parse(prop->children->content);
+						} else if(prop->name == "yalign") {
+							found += MwpAlign.Y;
 						yalign = float.parse(prop->children->content);
+						}
 					}
 				}
 			}
 		}
 		return found;
+	}
+
+	public void get_size(Xml.Doc *doc, out int width, out int height) {
+		width = 0;
+		height = 0;
+		Xml.Node* root = doc->get_root_element ();
+		if (root != null) {
+			if (root->name == "svg") {
+				for (Xml.Attr* prop = root->properties; prop != null; prop = prop->next) {
+					if(prop->name == "width") {
+						width= int.parse(prop->children->content);
+					} else if(prop->name == "height") {
+						width = int.parse(prop->children->content);
+					}
+				}
+			}
+		}
 	}
 
 	Gdk.Pixbuf? rewrite_svg(Xml.Doc *doc, string? bgfill, string? fgfill) {
