@@ -2191,14 +2191,17 @@ public class MWSerial : Object {
 			time_t(out currtime);
 			string dstr = devname.delimit("""\:@/[]""", '_');
 			var dt = new DateTime.from_unix_local(currtime);
+			var string logdir = UserDirs.get_default();
 			var fn  = "mwp.%s.%s.raw".printf(dstr, dt.format("%FT%H%M%S"));
-			MWPLog.message("raw log for %s %s\n", devname, fn);
+			var lfn = Path.build_filename(logdir, fn);
+
+			MWPLog.message("raw log for %s %s\n", devname, lfn);
 			int modes = Posix.O_TRUNC|Posix.O_CREAT|Posix.O_WRONLY;
 #if WINDOWS
 			modes = WinFix.set_bin_mode(modes);
 #endif
-			raws = Posix.open (fn, modes, 0640);
-			timer = new Timer ();
+			raws = Posix.open (lfn, modes, 0640);
+			timer = new Timer();
 			rawlog = true;
 			Posix.write(raws, "v2\n" , 3);
 		} else {
