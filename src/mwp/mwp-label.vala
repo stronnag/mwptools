@@ -27,10 +27,7 @@ public class MWPLabel : MWPMarker {
 	private double fontsize;
 
 	public MWPLabel(string txt="")  {
-		var fs = Mwp.conf.symbol_scale;
-		if(Touch.has_touch_screen()) {
-			fs *= Mwp.conf.touch_scale;
-		}
+		var fs = MwpScreen.rescale(1);
 		bcol = "white";
 		fcol = "#000000ff";
 		fontsize = FONTSIZE*fs;

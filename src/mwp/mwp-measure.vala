@@ -17,7 +17,7 @@
 
 namespace Measurer {
 	public bool active;
-	private const int PSIZE=24;
+	private const int PSIZE=32;
 	public class Measure : Adw.Window {
 		private Gtk.Label label;
 		private Shumate.PathLayer pl;
@@ -98,9 +98,7 @@ namespace Measurer {
 		public void add_point(double lat, double lon) {
 			var l = new MWPPoint.with_colour("#00000040");
 			var ps = PSIZE;
-			if (Touch.has_touch_screen()) {
-				ps = (int)(((double)ps)*Mwp.conf.touch_scale);
-			}
+			ps = MwpScreen.rescale(ps);
 			l.set_size_request(ps, ps);
 			l.latitude = lat;
 			l.longitude = lon;

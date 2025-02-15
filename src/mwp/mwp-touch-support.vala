@@ -15,7 +15,7 @@
  * (c) Jonathan Hudson <jh+mwptools@daria.co.uk>
  */
 
-namespace Touch {
+namespace MwpScreen {
 	internal int8 is_touch = -1;
 	internal Gdk.Display dpy = null;
 	public bool has_touch_screen() {
@@ -24,7 +24,6 @@ namespace Touch {
 			var seat = dpy.get_default_seat();
 			var cap = seat.get_capabilities();
 			is_touch = (int8)(cap & Gdk.SeatCapabilities.TOUCH);
-			MWPLog.message(":DBG: Touch %d\n", is_touch);
 		}
 		return (bool)is_touch;
 	}
@@ -41,7 +40,17 @@ namespace Touch {
 		} else {
 			scale = 1.0;
 		}
-		MWPLog.message(":DBG: Touch scale  %f\n", scale);
 		return scale;
+	}
+
+	public int rescale(int sz) {
+		double ns = sz;
+		if (has_touch_screen()) {
+			ns *=  Mwp.conf.touch_scale;
+		}
+		if(Mwp.conf.symbol_scale != 1.0) {
+			ns *=  Mwp.conf.symbol_scale;
+		}
+		return (int)(ns + 0.5);
 	}
 }

@@ -90,7 +90,7 @@ public class MWPMarker : Shumate.Marker {
 					double lat,lon;
 					var dev = gestd.get_device();
 					if(dev != null && dev.source ==  Gdk.InputSource.TOUCHSCREEN) {
-						var tfactor = Touch.get_scale();
+						var tfactor = MwpScreen.get_scale();
 						x = x / tfactor;
 						y = y / tfactor;
 					}
