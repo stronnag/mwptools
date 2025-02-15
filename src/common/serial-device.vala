@@ -2191,7 +2191,7 @@ public class MWSerial : Object {
 			time_t(out currtime);
 			string dstr = devname.delimit("""\:@/[]""", '_');
 			var dt = new DateTime.from_unix_local(currtime);
-			var string logdir = UserDirs.get_default();
+			var logdir = UserDirs.get_default();
 			var fn  = "mwp.%s.%s.raw".printf(dstr, dt.format("%FT%H%M%S"));
 			var lfn = Path.build_filename(logdir, fn);
 
