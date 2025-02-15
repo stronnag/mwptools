@@ -88,12 +88,11 @@ public class MWPMarker : Shumate.Marker {
 				var seq = gestd.get_last_updated_sequence();
 				if(gestd.get_sequence_state(seq) == Gtk.EventSequenceState.CLAIMED) {
 					double lat,lon;
-					if(Mwp.conf.touch_factor != 0.0) {
-						var dev = gestd.get_device();
-						if(dev != null && dev.source ==  Gdk.InputSource.TOUCHSCREEN) {
-							x = x / Mwp.conf.touch_factor;
-							y = y / Mwp.conf.touch_factor;
-						}
+					var dev = gestd.get_device();
+					if(dev != null && dev.source ==  Gdk.InputSource.TOUCHSCREEN) {
+						var tfactor = Touch.get_scale();
+						x = x / tfactor;
+						y = y / tfactor;
 					}
 					_sx +=x;
 					_sy +=y;

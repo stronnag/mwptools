@@ -17,13 +17,26 @@
 
 namespace Touch {
 	internal int8 is_touch = -1;
+	internal Gdk.Display dpy = null;
 	public bool has_touch_screen() {
 		if (is_touch == -1) {
-			var dp = Gdk.Display.get_default();
-			var seat = dp.get_default_seat();
+			dpy = Gdk.Display.get_default();
+			var seat = dpy.get_default_seat();
 			var cap = seat.get_capabilities();
 			is_touch = (int8)(cap & Gdk.SeatCapabilities.TOUCH);
 		}
 		return (bool)is_touch;
+	}
+
+	public double get_scale() {
+		if (dpy == null) {
+			dpy = Gdk.Display.get_default();
+		}
+		var surf = Mwp.window.get_surface();
+		var mon = dpy.get_monitor_at_surface(surf);
+		if (mon != null) {
+			return mon.get_scale();
+		}
+		return 1.0;
 	}
 }

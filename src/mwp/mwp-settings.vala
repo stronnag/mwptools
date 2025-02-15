@@ -105,7 +105,6 @@ public class MWPSettings : GLib.Object {
 	public double symbol_scale {get; set; default=1.0;}
 	public double touch_scale {get; set; default=1.0;}
 	public int ident_limit {get; set; default=60;}
-	public double touch_factor {get; set; default=0.0;}
 	public int p_pane_width {get; set; default=0;}
 	public bool armed_msp_placebo {get; set; default=false;}
 	public uint mavlink_sysid {get; set; default=106;}
@@ -226,7 +225,6 @@ public class MWPSettings : GLib.Object {
 		settings.bind("stats-timeout", this, "stats-timeout", SettingsBindFlags.DEFAULT);
 		settings.bind("symbol-scale", this, "symbol-scale", SettingsBindFlags.DEFAULT);
 		settings.bind("touch-scale", this, "touch-scale", SettingsBindFlags.DEFAULT);
-		settings.bind("touch-factor", this, "touch-factor", SettingsBindFlags.DEFAULT);
 		settings.bind("uc-mission-tags", this, "ucmissiontags", SettingsBindFlags.DEFAULT);
 		settings.bind("uilang", this, "uilang", SettingsBindFlags.DEFAULT);
 		settings.bind("vlevels", this, "vlevels", SettingsBindFlags.DEFAULT);
