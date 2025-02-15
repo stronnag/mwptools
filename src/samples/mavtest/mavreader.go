@@ -173,8 +173,8 @@ func (m *MavReader) set_reader(rfh io.ReadCloser) error {
 	sig, err := m.reader.Peek(3)
 	if err == nil {
 		if sig[0] == 'v' && sig[1] == '2' && sig[2] == '\n' {
-			m.ftype = LOG_V2RAW
 			m.reader.Discard(3)
+			m.ftype = LOG_V2RAW
 		} else if sig[0] == '{' && sig[1] == '"' {
 			m.ftype = LOG_JSON
 		}
@@ -526,7 +526,7 @@ func (m *MavReader) mav_show() {
 				callsign = "unknown"
 			}
 
-			fmt.Printf("ICAO %x, callsign %s ", icao, callsign)
+			fmt.Printf("ICAO %x, callsign %s valid %x : ", icao, callsign, valid)
 			if (valid & 0x1) == 1 {
 				ilat := int32(binary.LittleEndian.Uint32(m.payload[4:8]))
 				lat := float64(ilat) / 1e7

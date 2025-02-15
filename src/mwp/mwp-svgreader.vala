@@ -80,7 +80,7 @@ namespace SVGReader {
 					if(prop->name == "width") {
 						width= int.parse(prop->children->content);
 					} else if(prop->name == "height") {
-						width = int.parse(prop->children->content);
+						height = int.parse(prop->children->content);
 					}
 				}
 			}
@@ -125,7 +125,19 @@ namespace SVGReader {
 		doc->dump_memory_enc_format (out os, null, "utf-8", true);
 		var stream = new MemoryInputStream.from_data(os.data);
 		try {
-			return new Gdk.Pixbuf.from_stream(stream, null);
+			var pix  = new Gdk.Pixbuf.from_stream(stream, null);
+			if(Mwp.conf.symbol_scale != 0.0 && Mwp.conf.symbol_scale != 1.0) {
+				int width, height;
+				get_size(doc, out width, out height);
+				if (width > 0 && height > 0) {
+					double dh = height;
+					double dw = width;
+					dh *= Mwp.conf.symbol_scale;
+					dw *= Mwp.conf.symbol_scale;
+					pix = ((Gdk.Pixbuf)pix).scale_simple((int)(dw+0.5), (int)(dh+0.5), Gdk.InterpType.BILINEAR);
+				}
+			}
+			return pix;
 		} catch {
 			return null;
 		}

@@ -132,6 +132,9 @@ namespace WinIdle {
 namespace WinFix {
 	[CCode (cname="set_v6_dual_stack")]
 	int set_v6_dual_stack(int fd);
+
+	[CCode (cname="set_bin_mode")]
+	int set_bin_mode(int m);
 }
 
 #if WINDOWS

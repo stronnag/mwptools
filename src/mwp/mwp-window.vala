@@ -394,14 +394,6 @@ namespace Mwp {
 					}
 				});
 
-			var gestl = new Gtk.GestureLongPress();
-			gestl.touch_only = true;
-			gestl.delay_factor *= 1.5;
-			Gis.map.add_controller(gestl);
-			gestl.pressed.connect((x,y) => {
-					MWPLog.message(":DBG: Long Press!!!\n");
-				});
-
 			Battery.init();
 			hwstatus[0] = 1; // Assume OK
 			Msp.init();

@@ -16,11 +16,11 @@
  */
 
 namespace Img {
-	public Gdk.Pixbuf? load_image_from_file(string fn,int w=-1,int h=-1) throws GLib.Error {        try {
+	public Gdk.Pixbuf? load_image_from_file(string fn,int w=-1,int h=-1, bool touch = false) throws GLib.Error {        try {
 			var iconfile = MWPUtils.find_conf_file(fn, "pixmaps");
 			var pix = new Gdk.Pixbuf.from_file(iconfile);
 			if (w > 0 || h > 0) {
-				pix = ((Gdk.Pixbuf)pix).scale_simple(w, h,Gdk.InterpType.BILINEAR);
+				pix = ((Gdk.Pixbuf)pix).scale_simple(w, h, Gdk.InterpType.BILINEAR);
 			}
 			return pix;
         } catch {

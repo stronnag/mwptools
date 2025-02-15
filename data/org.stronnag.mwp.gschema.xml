@@ -654,14 +654,6 @@
       </description>
     </key>
 
-    <key name="touch-factor" type="d">
-      <default>0.0</default>
-      <summary>Touch (Hi)DPI scaling</summary>
-      <description>
-        Adjustment factor for HiDpi touch screens (0 disable, often 1.5 or 2.0).
-      </description>
-    </key>
-
     <key name="mission-icon-alpha" type="u">
       <range min="0" max="255"/>
       <default>160</default>

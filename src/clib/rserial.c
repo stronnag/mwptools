@@ -439,6 +439,11 @@ ssize_t write_serial(int hfd, uint8_t*buffer, size_t buflen) {
      return (ssize_t)nb;
 }
 
+
+int set_bin_mode(int m) {
+  return m|_O_BINARY;
+}
+
 int cf_pipe(int *fds) { _pipe(fds, 1024, _O_BINARY); return 0; }
 
 int get_error_number() {

@@ -24,5 +24,6 @@ extern int check_insert_name(char *s);
 extern int check_delete_name(char *s);
 
 extern int set_v6_dual_stack(int fd);
+extern int set_bin_mode(int m);
 
 #define MWP_MISC_MWP_MAX_WP 60
