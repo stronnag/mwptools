@@ -123,22 +123,25 @@ namespace SVGReader {
 		}
 		string os;
 		doc->dump_memory_enc_format (out os, null, "utf-8", true);
-		var stream = new MemoryInputStream.from_data(os.data);
+		return scale(os.data, Mwp.conf.symbol_scale);
+	}
+
+	public Gdk.Pixbuf? scale(uint8[] s, double sf) {
 		try {
-			var pix  = new Gdk.Pixbuf.from_stream(stream, null);
-			if(Mwp.conf.symbol_scale != 0.0 && Mwp.conf.symbol_scale != 1.0) {
-				int width, height;
-				get_size(doc, out width, out height);
-				if (width > 0 && height > 0) {
-					double dh = height;
-					double dw = width;
-					dh *= Mwp.conf.symbol_scale;
-					dw *= Mwp.conf.symbol_scale;
-					pix = ((Gdk.Pixbuf)pix).scale_simple((int)(dw+0.5), (int)(dh+0.5), Gdk.InterpType.BILINEAR);
-				}
+			var svg = new Rsvg.Handle.from_data(s);
+			double w,h;
+			svg.get_intrinsic_size_in_pixels(out w, out h);
+			var iw = (int)(w*sf+0.5);
+			var ih = (int)(h*sf+0.5);
+			var cst = new Cairo.ImageSurface (Cairo.Format.ARGB32, iw, ih);
+			var cr = new Cairo.Context (cst);
+			if(sf != 1.0) {
+				cr.scale(sf,sf);
 			}
-			return pix;
-		} catch {
+			Rsvg.Rectangle r = {0, 0,w, h};
+			svg.render_document (cr, r);
+			return Gdk.pixbuf_get_from_surface(cr.get_target(), 0, 0, iw, ih);
+		} catch (Error e) {
 			return null;
 		}
 	}

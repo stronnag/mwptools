@@ -83,6 +83,7 @@ mwpdeps = [deps,
            dependency('gstreamer-1.0'),
            dependency('json-glib-1.0'),
            dependency('libsecret-1'),
+           dependency('librsvg-2.0'),
            meson.get_compiler('vala').find_library('posix'),
            meson.get_compiler('vala').find_library('linux'),
           ]
