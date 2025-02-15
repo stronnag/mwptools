@@ -261,24 +261,32 @@ To restore the settings (overwrite). This could be for a different user or on a 
 
 For example, to replace a {{ mwp }} specific icon; i.e. replace the GCS Location icon (`$prefix/share/mwp/pixmaps/gcs.svg`) with a user defined file `~/.config/mwp/pixmaps/gcs.svg`.
 
-While the file name must be consistent, the format does not have to be; the replacement could be be a PNG, rather than SVG; we're not MSDOS and file "extensions" are an advisory illusion.
+All loadable icon / symbol files **must be SVG**.
 
-### Example
+All icons are drawn as their "natural" size (from the `svg` element), and then may be scaled by the `symbol-scale` and `touch-scale` settings.
 
-e.g. replace the inav-radar icon.
+## SVG customisation
 
-    mkdir -p ~/config/mwp/pixmaps
-    # copy the preview image
-    cp ~/.local/share/mwp/pixmaps/preview.png  ~/config/mwp/pixmaps/
-    # (optionally) resize it to 32x32 pixels
-    mogrify -resize 80% ~/config/mwp/pixmaps/preview.png
-    # and rename it, mwp doesn't care about the 'extension', this is not MSDOS:)
-    mv  ~/config/mwp/pixmaps/preview.png  ~/config/mwp/pixmaps/inav-radar.svg
-    # and verify ... perfect
-    file ~/.config/mwp/pixmaps/inav-radar.svg
-    /home/jrh/.config/mwp/pixmaps/inav-radar.svg: PNG image data, 32 x 32, 8-bit/color RGBA, non-interlaced
+SVG files for ADSB reported aircraft will be recoloured according to altitude where the path has an `id` attribute of `mwpbg` (fill) or `mwpfg` (stroke). See `src/samples/adsb-extra/gradient/README.md` for details.
 
-Note also that the resize step is no longer required, as {{ mwp }} scales the icon according to the `misc-icon-size` setting.
+Where mwp is built against `libshumate 1.5` (i.e. supporting symbol alignment), where [user defined override icons](https://www.daria.co.uk/mwptools/mwp-Configuration/#settings-precedence-and-user-updates) is used, it is possible to set the location of the "hot spot" in a SVG icon.
+
+Hot spot location uses the GTK `xalign` and `yalign` parameters. There are floating point numbers in the range (0.0 - 1.0) defining a coordinate system where (0,0) is top left and (1,1) is bottom right. These values are set using special tags (`mwp:xalign` and `mwp:yalign`) in the icon's `svg` element:
+
+Given the header:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     xmlns:mwp="http://www.daria.co.uk/namepaces/mwp"
+     mwp:yalign="0.83"
+     width="48" height="48" viewBox="0 0 48 48">
+```
+
+The GCS icon (co-incident with the home icon) has its hot spot at the bottom of the blue shape (same as the pointy bit of the brown home icon).
+
+![image](https://github.com/user-attachments/assets/038c9dbe-e41d-4c73-8a2a-af8a8f94e421)
 
 ## Environment variables
 
