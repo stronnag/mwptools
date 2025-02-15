@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/mwp_icon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.3">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.4">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.d7758b05.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.8608ea7d.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -850,20 +850,14 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Settings precedence and user updates">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#example" class="md-nav__link">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#svg-customisation" class="md-nav__link">
     <span class="md-ellipsis">
-      Example
+      SVG customisation
     </span>
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1764,20 +1758,14 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Settings precedence and user updates">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#example" class="md-nav__link">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#svg-customisation" class="md-nav__link">
     <span class="md-ellipsis">
-      Example
+      SVG customisation
     </span>
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -2062,21 +2050,22 @@ To backup the settings:</p>
 <h2 id="settings-precedence-and-user-updates">Settings precedence and user updates<a class="headerlink" href="#settings-precedence-and-user-updates" title="Permanent link">#</a></h2>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> installs a number of icon files in <code>$prefix/share/mwp/pixmaps</code>. The user can override these by creating an eponymous file in the user configuration directory, <code>~/.config/mwp/pixmaps/</code>. Such user configurations are never over-written on upgrade.</p>
 <p>For example, to replace a <a href="https://github.com/stronnag/mwptools">mwp</a> specific icon; i.e. replace the GCS Location icon (<code>$prefix/share/mwp/pixmaps/gcs.svg</code>) with a user defined file <code>~/.config/mwp/pixmaps/gcs.svg</code>.</p>
-<p>While the file name must be consistent, the format does not have to be; the replacement could be be a PNG, rather than SVG; we're not MSDOS and file "extensions" are an advisory illusion.</p>
-<h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">#</a></h3>
-<p>e.g. replace the inav-radar icon.</p>
-<pre><code>mkdir -p ~/config/mwp/pixmaps
-# copy the preview image
-cp ~/.local/share/mwp/pixmaps/preview.png  ~/config/mwp/pixmaps/
-# (optionally) resize it to 32x32 pixels
-mogrify -resize 80% ~/config/mwp/pixmaps/preview.png
-# and rename it, mwp doesn't care about the 'extension', this is not MSDOS:)
-mv  ~/config/mwp/pixmaps/preview.png  ~/config/mwp/pixmaps/inav-radar.svg
-# and verify ... perfect
-file ~/.config/mwp/pixmaps/inav-radar.svg
-/home/jrh/.config/mwp/pixmaps/inav-radar.svg: PNG image data, 32 x 32, 8-bit/color RGBA, non-interlaced
-</code></pre>
-<p>Note also that the resize step is no longer required, as <a href="https://github.com/stronnag/mwptools">mwp</a> scales the icon according to the <code>misc-icon-size</code> setting.</p>
+<p>All loadable icon / symbol files <strong>must be SVG</strong>.</p>
+<p>All icons are drawn as their "natural" size (from the <code>svg</code> element), and then may be scaled by the <code>symbol-scale</code> and <code>touch-scale</code> settings.</p>
+<h2 id="svg-customisation">SVG customisation<a class="headerlink" href="#svg-customisation" title="Permanent link">#</a></h2>
+<p>SVG files for ADSB reported aircraft will be recoloured according to altitude where the path has an <code>id</code> attribute of <code>mwpbg</code> (fill) or <code>mwpfg</code> (stroke). See <code>src/samples/adsb-extra/gradient/README.md</code> for details.</p>
+<p>Where mwp is built against <code>libshumate 1.5</code> (i.e. supporting symbol alignment), where <a href="https://www.daria.co.uk/mwptools/mwp-Configuration/#settings-precedence-and-user-updates">user defined override icons</a> is used, it is possible to set the location of the "hot spot" in a SVG icon.</p>
+<p>Hot spot location uses the GTK <code>xalign</code> and <code>yalign</code> parameters. There are floating point numbers in the range (0.0 - 1.0) defining a coordinate system where (0,0) is top left and (1,1) is bottom right. These values are set using special tags (<code>mwp:xalign</code> and <code>mwp:yalign</code>) in the icon's <code>svg</code> element:</p>
+<p>Given the header:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span>
+<span class="nt">&lt;svg</span><span class="w"> </span><span class="na">xmlns=</span><span class="s">&quot;http://www.w3.org/2000/svg&quot;</span>
+<span class="w">     </span><span class="na">xmlns:xlink=</span><span class="s">&quot;http://www.w3.org/1999/xlink&quot;</span>
+<span class="w">     </span><span class="na">xmlns:mwp=</span><span class="s">&quot;http://www.daria.co.uk/namepaces/mwp&quot;</span>
+<span class="w">     </span><span class="na">mwp:yalign=</span><span class="s">&quot;0.83&quot;</span>
+<span class="w">     </span><span class="na">width=</span><span class="s">&quot;48&quot;</span><span class="w"> </span><span class="na">height=</span><span class="s">&quot;48&quot;</span><span class="w"> </span><span class="na">viewBox=</span><span class="s">&quot;0 0 48 48&quot;</span><span class="nt">&gt;</span>
+</code></pre></div>
+<p>The GCS icon (co-incident with the home icon) has its hot spot at the bottom of the blue shape (same as the pointy bit of the brown home icon).</p>
+<p><img alt="image" src="https://github.com/user-attachments/assets/038c9dbe-e41d-4c73-8a2a-af8a8f94e421" /></p>
 <h2 id="environment-variables">Environment variables<a class="headerlink" href="#environment-variables" title="Permanent link">#</a></h2>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> recognises the following application specific environment variables</p>
 <table>
