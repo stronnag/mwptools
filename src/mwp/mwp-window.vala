@@ -380,7 +380,8 @@ namespace Mwp {
 				});
 
 			gestd.drag_end.connect((x,y) => {
-					if(Math.fabs(x) < 2 && Math.fabs(y) < 2) {
+					var rng = (MwpScreen.has_touch_screen()) ? 4 : 2;
+					if(Math.fabs(x) < rng && Math.fabs(y) < rng) {
 						double lat, lon;
 						if (wpeditbutton.active) {
 							Gis.map.viewport.widget_coords_to_location(Gis.base_layer, _sx, _sy, out lat, out lon);
@@ -391,6 +392,14 @@ namespace Mwp {
 							dmeasure.add_point(lat, lon);
 						}
 					}
+				});
+
+			var gestl = new Gtk.GestureLongPress();
+			gestl.touch_only = true;
+			gestl.delay_factor *= 1.5;
+			Gis.map.add_controller(gestl);
+			gestl.pressed.connect((x,y) => {
+					MWPLog.message(":DBG: Long Press!!!\n");
 				});
 
 			Battery.init();
