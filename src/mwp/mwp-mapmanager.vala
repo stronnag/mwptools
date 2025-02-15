@@ -16,13 +16,16 @@
  */
 
 namespace Img {
-	public Gdk.Pixbuf? load_image_from_file(string fn,int w=-1,int h=-1, bool touch = false) throws GLib.Error {        try {
-			var iconfile = MWPUtils.find_conf_file(fn, "pixmaps");
-			var pix = new Gdk.Pixbuf.from_file(iconfile);
-			if (w > 0 || h > 0) {
-				pix = ((Gdk.Pixbuf)pix).scale_simple(w, h, Gdk.InterpType.BILINEAR);
+	public Gdk.Pixbuf? load_image_from_file(string fn, bool touch = false) throws GLib.Error {
+        try {
+			uint8[]xml;
+			var ifn = MWPUtils.find_conf_file(fn, "pixmaps");
+			FileUtils.get_data(ifn, out xml);
+			double sf= Mwp.conf.symbol_scale;
+			if(touch && MwpScreen.has_touch_screen()) {
+				sf *= Mwp.conf.touch_scale;
 			}
-			return pix;
+			return SVGReader.scale(xml, sf);
         } catch {
 			MWPLog.message("failed to find icon %s\n", fn);
 		}

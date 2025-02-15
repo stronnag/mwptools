@@ -37,8 +37,8 @@ namespace Radar {
 		CatMap.init();
 		yplanes = new Gdk.Pixbuf[CatMap.MAXICONS, 25];
 		try {
-			inavradar = Img.load_image_from_file("inav-radar.svg", -1, -1);
-			inavtelem = Img.load_image_from_file("inav-telem.svg", -1, -1);
+			inavradar = Img.load_image_from_file("inav-radar.svg");
+			inavtelem = Img.load_image_from_file("inav-telem.svg");
 
 			for(var i = 0; i < CatMap.MAXICONS; i++) {
 				var bn = CatMap.name_for_index(i);

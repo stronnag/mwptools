@@ -87,7 +87,7 @@ namespace Follow {
 		uint8 buf[32];
 		double dist=0,cse = 0;
 			Geo.csedist(Mwp.xlat, Mwp.xlon, lat, lon, out dist, out cse);
-			//MWPLog.message(":DBG: Follow Me: Set lat=%.6f lon=%.6f %.0fm %.0f°\n", lat, lon, dist*1852.0, cse);
+			//			MWPLog.message(":DBG: Follow Me: Set lat=%.6f lon=%.6f %.0fm %.0f°\n", lat, lon, dist*1852.0, cse);
 			MSP_WP [] wps={};
 			MSP_WP wp = MSP_WP();
 			wp.wp_no = 255;
@@ -164,14 +164,15 @@ namespace Follow {
 		public static bool has_loc = false;
 
 		public signal void fmpt_move(double lat, double lon);
-		internal const string GREEN = "#4cc01060";
+		internal const string GREEN = "#4cc010a0";
 		internal Shumate.MarkerLayer fmlayer;
 		internal MWPLabel fmpoint;
 
 		public FPoint() {
 			fmlayer = new Shumate.MarkerLayer(Gis.map.viewport);
 			fmpoint = new MWPLabel("⨁");
-			fmpoint.set_font_scale(1.25*Mwp.conf.symbol_scale);
+			var fs = MwpScreen.rescale(1.25);
+			fmpoint.set_font_scale(fs);
 			fmpoint.set_colour (GREEN);
 			fmpoint.set_text_colour("white");
 			fmpoint.set_draggable(true);

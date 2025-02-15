@@ -1,13 +1,10 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
-<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
-<svg height="800px" width="800px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
-	 viewBox="0 0 512 512" xml:space="preserve">
-<polygon style="fill:#78B9EB;" points="256.001,512 174.085,457.39 194.037,427.461 317.963,427.461 337.915,457.39 "/>
-<polygon style="fill:#5A8BB0;" points="256.001,512 256.001,427.461 317.963,427.461 337.915,457.39 "/>
-<polygon style="fill:#93C7EF;" points="256.001,0 44.353,507.952 220.03,449.394 256.001,437.404 291.97,449.394 467.647,507.952 
-	"/>
-<polyline style="fill:#BFE4F8;" points="256.001,437.404 291.97,449.394 467.647,507.952 "/>
-<polygon style="fill:#78B9EB;" points="256.001,0 256.001,437.404 467.647,507.952 "/>
-<polygon style="fill:#BFE4F8;" points="256.001,0 44.353,507.952 220.03,449.394 "/>
-<polygon style="fill:#93C7EF;" points="256.001,0 291.97,449.394 467.647,507.952 "/>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="40" height="40" viewBox="0 0 40 40">
+<path fill-rule="nonzero" fill="rgb(47.058824%, 72.54902%, 92.156863%)" fill-opacity="1" d="M 20 40 L 13.601562 35.734375 L 15.160156 33.394531 L 24.839844 33.394531 L 26.398438 35.734375 Z M 20 40 "/>
+<path fill-rule="nonzero" fill="rgb(35.294118%, 54.509804%, 69.019608%)" fill-opacity="1" d="M 20 40 L 20 33.394531 L 24.839844 33.394531 L 26.398438 35.734375 Z M 20 40 "/>
+<path fill-rule="nonzero" fill="rgb(57.647059%, 78.039216%, 93.72549%)" fill-opacity="1" d="M 20 0 L 3.464844 39.683594 L 17.191406 35.109375 L 20 34.171875 L 22.808594 35.109375 L 36.535156 39.683594 Z M 20 0 "/>
+<path fill-rule="nonzero" fill="rgb(74.901961%, 89.411765%, 97.254902%)" fill-opacity="1" d="M 20 34.171875 L 22.808594 35.109375 L 36.535156 39.683594 "/>
+<path fill-rule="nonzero" fill="rgb(47.058824%, 72.54902%, 92.156863%)" fill-opacity="1" d="M 20 0 L 20 34.171875 L 36.535156 39.683594 Z M 20 0 "/>
+<path fill-rule="nonzero" fill="rgb(74.901961%, 89.411765%, 97.254902%)" fill-opacity="1" d="M 20 0 L 3.464844 39.683594 L 17.191406 35.109375 Z M 20 0 "/>
+<path fill-rule="nonzero" fill="rgb(57.647059%, 78.039216%, 93.72549%)" fill-opacity="1" d="M 20 0 L 22.808594 35.109375 L 36.535156 39.683594 Z M 20 0 "/>
 </svg>

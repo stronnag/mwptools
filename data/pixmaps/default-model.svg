@@ -1,47 +1,23 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
-
-<svg
-   fill="#000000"
-   width="800px"
-   height="800px"
-   viewBox="0 0 256 256"
-   id="Flat"
-   version="1.1"
-   sodipodi:docname="paper-plane-duotone-svgrepo-com.svg"
-   inkscape:version="1.3.2 (091e20ef0f, 2023-11-25, custom)"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg">
-  <defs
-     id="defs2" />
-  <sodipodi:namedview
-     id="namedview2"
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1.0"
-     inkscape:showpageshadow="2"
-     inkscape:pageopacity="0.0"
-     inkscape:pagecheckerboard="0"
-     inkscape:deskcolor="#d1d1d1"
-     inkscape:zoom="1.0125"
-     inkscape:cx="400"
-     inkscape:cy="400"
-     inkscape:window-width="1920"
-     inkscape:window-height="1014"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="Flat" />
-  <g
-     id="g2">
-    <path
-       d="M 120.90154,36.46437 26.30921,205.37925 A 8,8 0 0 0 35.98,216.822 l 89.211,-31.86106 a 8,8 0 0 1 5.38138,0 l 89.211,31.86106 a 8,8 0 0 0 9.67074,-11.44277 L 134.86164,36.46437 a 8,8 0 0 0 -13.9601,0 z"
-       id="path1"
-       style="opacity:0.5;fill:#00ffff" />
-    <path
-       d="M236.43432,201.4707l-94.59179-168.915a16.00119,16.00119,0,0,0-27.92188,0L19.32885,201.47021A16.00042,16.00042,0,0,0,38.67065,224.356l89.21094-31.86084L217.09253,224.356a16.171,16.171,0,0,0,5.44531.95117,16.02221,16.02221,0,0,0,13.89648-23.83643ZM135.88159,178.3623V120a8,8,0,1,0-16,0v58.3623l-86.58789,30.918L127.88159,40.37305l94.584,168.91211Z"
-       id="path2" />
-  </g>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="40" height="40" viewBox="0 0 40 40">
+<defs>
+<filter id="filter-remove-color" x="0%" y="0%" width="100%" height="100%">
+<feColorMatrix color-interpolation-filters="sRGB" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0" />
+</filter>
+<mask id="mask-0">
+<g filter="url(#filter-remove-color)">
+<rect x="-4" y="-4" width="48" height="48" fill="rgb(0%, 0%, 0%)" fill-opacity="0.5"/>
+</g>
+</mask>
+<clipPath id="clip-0">
+<rect x="0" y="0" width="40" height="40"/>
+</clipPath>
+<g id="source-6" clip-path="url(#clip-0)">
+<path fill-rule="nonzero" fill="rgb(0%, 100%, 100%)" fill-opacity="1" d="M 18.890625 5.699219 L 4.109375 32.089844 C 3.855469 32.546875 3.910156 33.109375 4.246094 33.507812 C 4.582031 33.90625 5.132812 34.054688 5.621094 33.878906 L 19.5625 28.898438 C 19.832031 28.804688 20.128906 28.804688 20.402344 28.898438 L 34.339844 33.878906 C 34.832031 34.054688 35.378906 33.90625 35.714844 33.507812 C 36.050781 33.109375 36.105469 32.546875 35.851562 32.089844 L 21.070312 5.699219 C 20.851562 5.304688 20.433594 5.058594 19.980469 5.058594 C 19.527344 5.058594 19.113281 5.304688 18.890625 5.699219 Z M 18.890625 5.699219 "/>
+</g>
+</defs>
+<g mask="url(#mask-0)">
+<use xlink:href="#source-6"/>
+</g>
+<path fill-rule="nonzero" fill="rgb(0%, 0%, 0%)" fill-opacity="1" d="M 36.941406 31.480469 L 22.164062 5.085938 C 21.722656 4.296875 20.886719 3.808594 19.980469 3.808594 C 19.078125 3.808594 18.242188 4.296875 17.800781 5.085938 L 3.019531 31.480469 C 2.511719 32.390625 2.621094 33.519531 3.292969 34.316406 C 3.964844 35.109375 5.0625 35.40625 6.042969 35.054688 L 19.980469 30.078125 L 33.921875 35.054688 C 34.195312 35.152344 34.480469 35.203125 34.773438 35.203125 C 35.65625 35.199219 36.472656 34.726562 36.921875 33.960938 C 37.367188 33.195312 37.375 32.253906 36.941406 31.480469 Z M 21.230469 27.867188 L 21.230469 18.75 C 21.230469 18.058594 20.671875 17.5 19.980469 17.5 C 19.292969 17.5 18.730469 18.058594 18.730469 18.75 L 18.730469 27.867188 L 5.203125 32.699219 L 19.980469 6.308594 L 34.761719 32.699219 Z M 21.230469 27.867188 "/>
 </svg>

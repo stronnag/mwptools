@@ -43,8 +43,7 @@ namespace MwpScreen {
 		return scale;
 	}
 
-	public int rescale(int sz) {
-		double ns = sz;
+	public int rescale(double ns) {
 		if (has_touch_screen()) {
 			ns *=  Mwp.conf.touch_scale;
 		}

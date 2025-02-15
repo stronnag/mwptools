@@ -894,6 +894,10 @@ namespace Mwp {
 			app.set_accels_for_action ("win.quit", { "<primary>q" });
 
 			MwpMenu.set_menu_state(Mwp.window, "followme", false);
+			if(Environment.get_variable("MWP_FOLLOW_ME") != null) {
+				MwpMenu.set_menu_state(Mwp.window, "followme", true);
+			}
+
 #if WINDOWS
         MwpMenu.set_menu_state(Mwp.window, "terminal", false);
 #endif

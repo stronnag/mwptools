@@ -44,7 +44,7 @@ namespace Posring {
 	}
 }
 
-public const string PREVIEW_IMG = "default-model.svg";
+public const string MODEL_IMG = "default-model.svg";
 public class Craft : Object {
 	private MWPMarker cricon;
 	private Shumate.MarkerLayer crlayer;
@@ -89,8 +89,8 @@ public class Craft : Object {
     }
 
 
-	public Craft (string img=PREVIEW_IMG) {
-		cricon = new MWPMarker.from_image_file(img, 40);
+	public Craft (string img=MODEL_IMG) {
+		cricon = new MWPMarker.from_image_file(img);
 		path_colour = trk_cyan;
         IconTools.Hexcol ladyjane = {0xa0, 0xa0, 0xa0, 0xa0}; //grey (of course)
         pmlayer = new Shumate.MarkerLayer(Gis.map.viewport);

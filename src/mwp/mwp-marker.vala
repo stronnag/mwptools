@@ -124,16 +124,12 @@ public class MWPMarker : Shumate.Marker {
 		}
 	}
 
-	public MWPMarker.from_image_file (string fn, int size = -1) {
+	public MWPMarker.from_image_file (string fn) {
 		try {
-			pix =  Img.load_image_from_file(fn, size, size);
+			pix =  Img.load_image_from_file(fn);
 			var tex =  Gdk.Texture.for_pixbuf(pix);
 			var img = new Gtk.Image.from_paintable(tex);
-			if (size == -1) {
-				_size = int.max(pix.width, pix.height);
-			} else {
-				_size = size;
-			}
+			var _size = int.max(pix.width, pix.height);
 			img.set_pixel_size(_size);
 			set_child(img);
 		} catch (Error e) {
@@ -163,10 +159,10 @@ public class MWPMarker : Shumate.Marker {
 		rotate(a);
 	}
 
-	public bool set_image_file (string fn, int size = -1) {
+	public bool set_image_file (string fn) {
 		bool ok = false;
 		try {
-			pix = Img.load_image_from_file(fn, size, size);
+			pix = Img.load_image_from_file(fn);
 			set_image(pix);
 			ok = true;
 		} catch (Error e) {

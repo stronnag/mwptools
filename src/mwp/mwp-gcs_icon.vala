@@ -30,7 +30,7 @@ namespace GCS {
 
 	public MWPMarker? create_icon () {
 		try {
-			var img = Img.load_image_from_file("gcs.svg", -1, -1);
+			var img = Img.load_image_from_file("gcs.svg", true);
 			icon = new MWPMarker.from_image(img);
 #if SHUMATE_USE_ALIGN
 			try {
