@@ -166,7 +166,7 @@ public class MWPLabel : MWPMarker {
         var stylec = label.get_style_context();
 		stylec.add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
 		var fs = Mwp.conf.symbol_scale;
-		if(Touch.has_touch_screen()) {
+		if(MwpScreen.has_touch_screen()) {
 			fs *= Mwp.conf.touch_scale;
 		}
 		set_font_scale(fs);
