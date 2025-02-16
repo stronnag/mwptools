@@ -75,6 +75,7 @@ namespace Radar {
 							ri.lq = (uint8)(td&0xff);
 					}
 					ri.dt = currdt;
+					ri.state = Radar.set_initial_state(ri.lq);
 				}
 			}
 			ri.altitude = int.parse(p[11])*0.3048;
@@ -136,11 +137,11 @@ namespace Radar {
 			// ri.dt = new DateTime.from_unix_local ((int64)(a.seen_tm/1000));
 			//	MWPLog.message("ADSB: %x %u %u\n", a.addr, a.seen_tm, a.seen_pos);
 			//if (ri.dt ==  null) { // can't happen ... unless it's cygwin, when it does
-			TimeSpan ts = (int64)(a.seen_pos*-1e6);
+			TimeSpan ts = -1*(TimeSpan.SECOND*((int64)(a.seen_pos)));
 			ri.dt = now.add(ts);
-			//}
 			ri.lq = (a.seen_pos < 256) ? (uint8)a.seen_pos : 255;
-			//			ri.lasttick = nticks;
+			ri.state = Radar.set_initial_state(ri.lq);
+
 			ri.srange = a.srange;
 			if (rdebug) {
 				string ssm;
@@ -254,7 +255,7 @@ namespace Radar {
 
 					if(obj.has_member("seen")) {
 						var seen = (uint)obj.get_double_member ("seen");
-						TimeSpan ts = (int64)(seen*-1e6);
+						TimeSpan ts = (int64)(seen*TimeSpan.SECOND);
 						ri.dt = now.add(ts);
 						ri.lq = (seen < 256) ? (uint8)seen : 255;
 						sb.append_printf(" seen: %.1f", seen);
@@ -262,6 +263,7 @@ namespace Radar {
 						ri.dt = now;
 						ri.lq = 255;
 					}
+					ri.state = Radar.set_initial_state(ri.lq);
 					sb.append_printf(" ts: %s, lq: %u\n", ri.dt.format("%T"), ri.lq);
 					//					ri.lasttick = nticks;
 					Radar.upsert(icao, ri);

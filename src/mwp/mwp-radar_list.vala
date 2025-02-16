@@ -61,6 +61,18 @@ namespace Radar {
 	public static double lat;
 	public static double lon;
 
+	public uint8 set_initial_state(uint lq) {
+		uint8 state;
+		if(lq > Radar.LateTime.HIDE) {
+			state = Radar.Status.HIDDEN;
+		} else if(lq > Radar.LateTime.STALE) {
+			state = Radar.Status.STALE;
+		} else {
+			state = 0;
+		}
+		return state;
+	}
+
 	private string format_cat(RadarPlot r) {
 		if((r.source & RadarSource.M_INAV) != 0) {
 			return "B6";

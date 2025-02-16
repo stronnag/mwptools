@@ -177,14 +177,15 @@ public class MWPMarker : Shumate.Marker {
 			if (ang != _lastang) {
 				var w = pix.get_width();
 				var h = pix.get_height();
-				var cst = new Cairo.ImageSurface (Cairo.Format.ARGB32, w, h);
+				var l = int.max(w,h) * 150/100;
+				var cst = new Cairo.ImageSurface (Cairo.Format.ARGB32, l, l);
 				var cr = new Cairo.Context (cst);
-				cr.translate (w*0.5, h*0.5);
+				cr.translate (l*0.5, l*0.5);
 				cr.rotate(deg*Math.PI/180);
-				cr.translate (-0.5*w, -0.5*h);
+				cr.translate (-0.5*l, -0.5*l);
 				Gdk.cairo_set_source_pixbuf(cr, pix, 0, 0);
 				cr.paint();
-				var px = Gdk.pixbuf_get_from_surface (cst, 0, 0, w, h);
+				var px = Gdk.pixbuf_get_from_surface (cst, 0, 0, l, l);
 				var tex = Gdk.Texture.for_pixbuf(px);
 				((Gtk.Image)get_child()).paintable = tex;
 				_lastang =ang;
