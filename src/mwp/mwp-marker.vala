@@ -172,6 +172,10 @@ public class MWPMarker : Shumate.Marker {
     }
 
 	public void rotate(double deg) {
+		/* In order to avoid cropping:
+		 * Create a 2x cairo context
+		 * Copy the template pixbuf to the **centre of the context**
+		 */
 		if (pix != null) {
 			int ang = (int)((deg + 0.5) % 360);
 			if (ang != _lastang) {
