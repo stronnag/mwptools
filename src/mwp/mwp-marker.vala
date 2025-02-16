@@ -178,7 +178,8 @@ public class MWPMarker : Shumate.Marker {
 		 */
 		if (pix != null) {
 			int ang = (int)((deg + 0.5) % 360);
-			if (ang != _lastang) {
+			//			if (ang != _lastang) {
+			if ((ang - _lastang).abs() > 4) {
 				var w = pix.get_width();
 				var h = pix.get_height();
 				var l = int.max(w,h) * 2;
@@ -190,12 +191,39 @@ public class MWPMarker : Shumate.Marker {
 				Gdk.cairo_set_source_pixbuf(cr, pix, w/2, h/2);
 				cr.paint();
 				var px = Gdk.pixbuf_get_from_surface (cst, 0, 0, l, l);
+				px = crop(px);
 				var tex = Gdk.Texture.for_pixbuf(px);
 				((Gtk.Image)get_child()).paintable = tex;
 				_lastang =ang;
 			}
 		}
     }
+
+	private Gdk.Pixbuf? crop(Gdk.Pixbuf pix) {
+		int top = 32767;
+		int bottom = -32768;
+		int left = 32767;
+		int right = -32768;
+		int w = pix.get_width();
+		int h = pix.get_height();
+		uint32* iu = (uint32*)pix.pixels;
+		for(var i = 0; i < h; i++) {
+			for(var j = 0; j < w; j++) {
+				uint32 p = *iu++;
+				if(p != 0) {
+					top = int.min(i, top);
+					bottom = int.max(i, bottom);
+					left = int.min(j, left);
+					right = int.max(j, right);
+				}
+			}
+		}
+		var nw = 2*((right-left+2)/2);
+		var nh = 2*((bottom-top+2)/2);
+		var npx = new Gdk.Pixbuf (Gdk.Colorspace.RGB, true, 8,  nw, nh);
+		pix.copy_area(left, top, nw, nh, npx, 0, 0);
+		return npx;
+	}
 }
 
 public class MWPPoint: MWPMarker {
