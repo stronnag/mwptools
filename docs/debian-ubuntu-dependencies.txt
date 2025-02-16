@@ -31,7 +31,8 @@ apt $CONFIRM install \
     libgstreamer-plugins-base1.0-dev \
     libprotobuf-c-dev \
     libxml2-utils \
-    desktop-file-utils
+    desktop-file-utils \
+    librsvg2-dev
 
 # vanity, prettier terminal progress bars (fcset, flashdl)
 apt $CONFIRM install libncurses5-dev
