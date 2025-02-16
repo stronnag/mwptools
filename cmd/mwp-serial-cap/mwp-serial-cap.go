@@ -158,15 +158,9 @@ func main() {
 			if len(ipfam) == 3 {
 				ipfam = "udp6"
 			}
-			var laddr, raddr *net.UDPAddr
+			var raddr *net.UDPAddr
 			var conn net.Conn
-			if dd.name == "" {
-				laddr, err = net.ResolveUDPAddr(ipfam, fmt.Sprintf("%s:%d", dd.name, dd.port))
-				if err != nil && ipfam != "udp" {
-					ipfam = "udp"
-					laddr, err = net.ResolveUDPAddr(ipfam, fmt.Sprintf("%s:%d", dd.name, dd.port))
-				}
-			} else {
+			if dd.name != "" {
 				raddr, err = net.ResolveUDPAddr(ipfam, fmt.Sprintf("%s:%d", dd.name, dd.port))
 				if err != nil {
 					ipfam = "udp"
@@ -175,9 +169,9 @@ func main() {
 			}
 			if err == nil {
 				if dd.name == "" {
-					conn, err = net.ListenUDP(ipfam, laddr)
+					conn, err = net.ListenUDP("udp", &net.UDPAddr{IP: net.IPv4zero, Port: dd.port})
 				} else {
-					conn, err = net.DialUDP(ipfam, laddr, raddr)
+					conn, err = net.DialUDP(ipfam, &net.UDPAddr{IP: net.IPv4zero, Port: dd.port}, raddr)
 				}
 			}
 			if err != nil {
