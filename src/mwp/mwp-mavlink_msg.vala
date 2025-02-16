@@ -363,6 +363,9 @@ namespace Mwp {
 			}
 			break;
 
+		case Msp.Cmds.MAVLINK_MSG_MESSAGE_INTERVAL:
+			break;
+
 		default:
 			handled = false;
 			break;

@@ -51,7 +51,7 @@ namespace Msp {
 
 	public const uint LTM_BASE  = 0x10000;
 	public const uint MAV_BASE  = 0x20000;
-	
+
 	public enum Cmds {
         NOOP = 0,
         API_VERSION=1,
@@ -190,7 +190,7 @@ namespace Msp {
         MAVLINK_MSG_SCALED_PRESSURE = (MAV_BASE+29),
         MAVLINK_MSG_BATTERY_STATUS = (MAV_BASE+147),
         MAVLINK_MSG_STATUSTEXT = (MAV_BASE+253),
-
+		MAVLINK_MSG_MESSAGE_INTERVAL = (MAV_BASE+244),
         INVALID = 0xfffff;
 
 		public string format() {

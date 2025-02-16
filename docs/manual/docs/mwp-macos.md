@@ -42,9 +42,12 @@ brew install gtk4 \
  go \
  espeak-ng \
  vte3 \
+ librsvg \
  adwaita-icon-theme \
  gnuplot
 ```
+
+Note: homebrew does not supply the librsvg VAPI (vala API) files. It will be necessary to build it from sources (or copy the files from a Linux box).
 
 #### Optional / Recommended
 

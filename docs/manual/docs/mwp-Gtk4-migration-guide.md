@@ -35,6 +35,7 @@ The following are minimum versions.
 * libvte4
 * libadwaita-1 1.5
 * libsecret-1
+* librsvg
 
 For replaying blackbox log, [bbl2kml](https://github.com/stronnag/bbl2kml) 1.0.24 or later is rquired.
 
@@ -209,13 +210,14 @@ libsoup-3.0-0 (>= 3.3.1)
 libtinfo6 (>= 6)
 libvte-2.91-gtk4-0
 libxml2 (>= 2.7.4)
+librsvg
 ```
 Example packages:
 
 ```
 sudo apt install -y blueprint-compiler libprotobuf-c-dev \
   libvte-2.91-gtk4-dev libshumate-dev libpaho-mqtt-dev libgtk-4-dev \
-  libadwaita-1-dev libsecret-1-dev
+  libadwaita-1-dev libsecret-1-dev librsvg2-dev
 ```
 
 ### Ubuntu

@@ -16,7 +16,6 @@
  */
 
 namespace Radar {
-
 	const double TOTHEMOON = 999999.0;
 
 	namespace Toast {
@@ -52,88 +51,92 @@ namespace Radar {
 		A_RED=32
 	}
 
+	public enum LateTime {
+		STALE = 15,
+		HIDE = 30,
+		DELETE = 60,
+	}
+
 	public static AStatus astat;
 	public static double lat;
 	public static double lon;
 
-		private string format_cat(RadarPlot r) {
-			if((r.source & RadarSource.M_INAV) != 0) {
-				return "B6";
-			}
-			return CatMap.to_category(r.etype);
+	private string format_cat(RadarPlot r) {
+		if((r.source & RadarSource.M_INAV) != 0) {
+			return "B6";
 		}
+		return CatMap.to_category(r.etype);
+	}
 
-		private string format_bearing(RadarPlot r) {
-			string ga;
-			if (r.bearing == 0xffff) {
-				ga = "";
-			} else {
-				ga = "%u°".printf(r.bearing);
-			}
-			return ga;
+	private string format_bearing(RadarPlot r) {
+		string ga;
+		if (r.bearing == 0xffff) {
+			ga = "";
+		} else {
+			ga = "%u°".printf(r.bearing);
 		}
+		return ga;
+	}
 
-		private string format_range(RadarPlot r) {
-			string ga = "";
-			if (r.range != TOTHEMOON && r.range != 0.0) {
-				if((r.source & RadarSource.M_ADSB) != 0) {
-					ga = Units.ga_range(r.range);
-				} else {
-					ga = "%.0f %s".printf(Units.distance(r.range), Units.distance_units());
-				}
-			}
-			return ga;
-		}
-
-		private string format_last(RadarPlot r) {
-			if (r.dt != null) {
-				return r.dt.format("%T");
-			} else {
-				return "";
-			}
-		}
-
-		private string format_status(RadarPlot r) {
-			string sstr = "";
-			if(r.state == 0) {
-				sstr = ((RadarSource)r.source).to_string();
-			} else {
-				sstr = RadarView.status[r.state];
-			}
-			return "%s / %u".printf(sstr, r.lq);
-		}
-
-		private string format_alt(RadarPlot r) {
-			string ga;
+	private string format_range(RadarPlot r) {
+		string ga = "";
+		if (r.range != TOTHEMOON && r.range != 0.0) {
 			if((r.source & RadarSource.M_ADSB) != 0) {
-				ga = Units.ga_alt(r.altitude);
+				ga = Units.ga_range(r.range);
 			} else {
-				ga = "%.0f %s".printf(Units.distance(r.altitude), Units.distance_units());
+				ga = "%.0f %s".printf(Units.distance(r.range), Units.distance_units());
 			}
-			return ga;
 		}
+		return ga;
+	}
 
-		private string format_speed(RadarPlot r) {
-			string ga;
-			if((r.source & RadarSource.M_ADSB) != 0) {
-				ga = Units.ga_speed(r.speed);
-			} else {
-				ga = "%.0f %s".printf(Units.speed(r.speed), Units.speed_units());
-			}
-			return ga;
+	private string format_last(RadarPlot r) {
+		if (r.dt != null) {
+			return r.dt.format("%T");
+		} else {
+			return "";
 		}
+	}
 
-		private string format_course(RadarPlot r) {
-			string ga;
-			if (r.heading ==  0xffff) {
-				ga = "";
-			} else {
-				ga = "%u°".printf(r.heading);
-			}
-			return ga;
+	private string format_status(RadarPlot r) {
+		string sstr = "";
+		if(r.state == 0) {
+			sstr = ((RadarSource)r.source).to_string();
+		} else {
+			sstr = RadarView.status[r.state];
 		}
+		return "%s / %u".printf(sstr, r.lq);
+	}
 
+	private string format_alt(RadarPlot r) {
+		string ga;
+		if((r.source & RadarSource.M_ADSB) != 0) {
+			ga = Units.ga_alt(r.altitude);
+		} else {
+			ga = "%.0f %s".printf(Units.distance(r.altitude), Units.distance_units());
+		}
+		return ga;
+	}
 
+	private string format_speed(RadarPlot r) {
+		string ga;
+		if((r.source & RadarSource.M_ADSB) != 0) {
+			ga = Units.ga_speed(r.speed);
+		} else {
+			ga = "%.0f %s".printf(Units.speed(r.speed), Units.speed_units());
+		}
+		return ga;
+	}
+
+	private string format_course(RadarPlot r) {
+		string ga;
+		if (r.heading ==  0xffff) {
+			ga = "";
+		} else {
+			ga = "%u°".printf(r.heading);
+		}
+		return ga;
+	}
 
 	public static AStatus set_astatus() {
 		astat = 0;
@@ -158,7 +161,6 @@ namespace Radar {
 		}
 		return astat;
 	}
-
 
 	public bool lookup_radar(string s) {
 		foreach (var r in radardevs) {
@@ -324,9 +326,9 @@ namespace Radar {
 				uint rk = r.id;
 				var is_adsb = ((r.source & RadarSource.M_ADSB) != 0);
 				if (do_purge) {
-					var staled = 15*TimeSpan.SECOND;
-					var hided = 30*TimeSpan.SECOND;;
-					var deled = 60*TimeSpan.SECOND;
+					var staled = LateTime.STALE*TimeSpan.SECOND;
+					var hided = LateTime.HIDE*TimeSpan.SECOND;;
+					var deled = LateTime.DELETE*TimeSpan.SECOND;
 					if (!is_adsb) {
 						staled *= 10;
 						deled *= 10;
@@ -334,6 +336,7 @@ namespace Radar {
 					}
 					var delta = now.difference(r.dt);
 					bool rdebug = ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE);
+					var xstate = r.state;
 					if (delta > deled) {
 						if (rdebug) {
 							MWPLog.message("TRAF-DEL %X %u %s %s len=%u\n",
@@ -345,47 +348,42 @@ namespace Radar {
 							Radar.remove_radar(rk);
 							radar_cache.remove(rk);
 						}
-					} else {
-						var xstate = r.state;
-						r.state &= ~(Radar.Status.HIDDEN|Radar.Status.STALE);
-						if(delta > hided) {
-							if(rdebug)
-								MWPLog.message("TRAF-HID %X %s %u %u\n",
-											   rk, r.name, r.state, radar_cache.size());
-							if(is_adsb) {
-								r.state = Radar.Status.HIDDEN; // hidden
-								if (r.state != xstate) {
-									r.alert = RadarAlert.SET;
-								}
-								radar_cache.upsert(rk, r);
-								radarv.update(rk, ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE));
-								if (r.posvalid) {
-									Radar.set_radar_hidden(rk);
-								}
-							}
-						} else if(delta > staled) {
-							if(rdebug)
-								MWPLog.message("TRAF-STALE %X %s %u %u\n", rk, r.name, r.state, radar_cache.size());
-							r.state = Radar.Status.STALE; // stale
+					} else if(delta > hided) {
+						if(rdebug)
+							MWPLog.message("TRAF-HID %X %s %u %u\n",
+										   rk, r.name, r.state, radar_cache.size());
+						if(is_adsb) {
+							r.state = Radar.Status.HIDDEN; // hidden
 							if (r.state != xstate) {
 								r.alert = RadarAlert.SET;
 							}
 							radar_cache.upsert(rk, r);
 							radarv.update(rk, ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE));
-							if(r.posvalid) {
-								Radar.set_radar_stale(rk);
-							}
-						} else {
-							if(is_adsb) {
-								r.state = 0;
-								if (r.state != xstate) {
-									r.alert = RadarAlert.SET;
-								}
-								radar_cache.upsert(rk, r);
-								radarv.update(rk, ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE));
+							if (r.posvalid) {
+								Radar.set_radar_hidden(rk);
 							}
 						}
-
+					} else if(delta > staled) {
+						if(rdebug)
+							MWPLog.message("TRAF-STALE %X %s %u %u\n", rk, r.name, r.state, radar_cache.size());
+						r.state = Radar.Status.STALE; // stale
+						if (r.state != xstate) {
+							r.alert = RadarAlert.SET;
+						}
+						radar_cache.upsert(rk, r);
+						radarv.update(rk, ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE));
+						if(r.posvalid) {
+							Radar.set_radar_stale(rk);
+						}
+					} else {
+						if(is_adsb) {
+							r.state = 0;
+							if (r.state != xstate) {
+								r.alert = RadarAlert.SET;
+							}
+							radar_cache.upsert(rk, r);
+							radarv.update(rk, ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE));
+						}
 					}
 				}
 				do_purge = !do_purge;

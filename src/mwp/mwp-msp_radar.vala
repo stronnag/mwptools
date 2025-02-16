@@ -333,8 +333,16 @@ namespace MspRadar {
 			ri.lq = *(rp+37);
 			sb.append_printf("emitter %u tslc %u ", ri.etype, ri.lq);
 
-			TimeSpan ts = -1000000*((int64)(ri.lq));
+			TimeSpan ts = -1*(TimeSpan.SECOND*((int64)(ri.lq)));
 			ri.dt = now.add(ts);
+
+			if(ri.lq > Radar.LateTime.HIDE) {
+				ri.state = Radar.Status.HIDDEN;
+			} else if(ri.lq > Radar.LateTime.STALE) {
+				ri.state = Radar.Status.STALE;
+			} else {
+				ri.state = 0;
+			}
 
             sb.append_printf("ticks %u ", ri.lasttick);
 
