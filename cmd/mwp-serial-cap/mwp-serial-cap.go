@@ -53,8 +53,8 @@ var (
 )
 
 const (
-	DevClass_TCP = 0
-	DevClass_UDP = 1
+	DevClass_TCP = "tcp"
+	DevClass_UDP = "udp"
 )
 
 type IPDev struct {
@@ -128,56 +128,56 @@ func main() {
 
 	var sd SerDev
 
-	r := regexp.MustCompile(`^(tcp|udp)://(__MWP_SERIAL_HOST|[\[\]:A-Za-z\-\.0-9]*):(\d+)`)
+	r := regexp.MustCompile(`^(tcp.?|udp.?)://(__MWP_SERIAL_HOST|[\[\]:A-Za-z\-\.0-9]*):(\d+)`)
 	m := r.FindAllStringSubmatch(name, -1)
 	if len(m) > 0 {
 		dd := IPDev{}
-		if m[0][1] == "tcp" {
-			dd.proto = DevClass_TCP
-		} else {
-			dd.proto = DevClass_UDP
-		}
+		ipfam := m[0][1]
 		dd.name = m[0][2]
 		dd.port, _ = strconv.Atoi(m[0][3])
-		switch dd.proto {
-		case DevClass_TCP:
+		switch ipfam[0:3] {
+		case "tcp":
 			var conn net.Conn
-			tcpfam := "tcp6"
+			if len(ipfam) == 3 {
+				ipfam = "tcp6"
+			}
 			remote := fmt.Sprintf("%s:%d", dd.name, dd.port)
-			addr, err := net.ResolveTCPAddr(tcpfam, remote)
-			if err != nil {
-				tcpfam = "tcp"
-				addr, err = net.ResolveTCPAddr(tcpfam, remote)
+			addr, err := net.ResolveTCPAddr(ipfam, remote)
+			if err != nil && ipfam != "tcp" {
+				ipfam = "tcp"
+				addr, err = net.ResolveTCPAddr(ipfam, remote)
 			}
 			if err == nil {
-				conn, err = net.DialTCP(tcpfam, nil, addr)
+				conn, err = net.DialTCP(ipfam, nil, addr)
 			}
 			if err != nil {
 				log.Fatal(err)
 			}
 			sd = conn
-		case DevClass_UDP:
+		case "udp":
+			if len(ipfam) == 3 {
+				ipfam = "udp6"
+			}
 			var laddr, raddr *net.UDPAddr
 			var conn net.Conn
-			udpfam := "udp6"
 			if dd.name == "" {
-				laddr, err = net.ResolveUDPAddr(udpfam, fmt.Sprintf("%s:%d", dd.name, dd.port))
-				if err != nil {
-					udpfam = "udp"
-					laddr, err = net.ResolveUDPAddr(udpfam, fmt.Sprintf("%s:%d", dd.name, dd.port))
+				laddr, err = net.ResolveUDPAddr(ipfam, fmt.Sprintf("%s:%d", dd.name, dd.port))
+				if err != nil && ipfam != "udp" {
+					ipfam = "udp"
+					laddr, err = net.ResolveUDPAddr(ipfam, fmt.Sprintf("%s:%d", dd.name, dd.port))
 				}
 			} else {
-				raddr, err = net.ResolveUDPAddr(udpfam, fmt.Sprintf("%s:%d", dd.name, dd.port))
+				raddr, err = net.ResolveUDPAddr(ipfam, fmt.Sprintf("%s:%d", dd.name, dd.port))
 				if err != nil {
-					udpfam = "udp"
-					raddr, err = net.ResolveUDPAddr(udpfam, fmt.Sprintf("%s:%d", dd.name, dd.port))
+					ipfam = "udp"
+					raddr, err = net.ResolveUDPAddr(ipfam, fmt.Sprintf("%s:%d", dd.name, dd.port))
 				}
 			}
 			if err == nil {
 				if dd.name == "" {
-					conn, err = net.ListenUDP(udpfam, laddr)
+					conn, err = net.ListenUDP(ipfam, laddr)
 				} else {
-					conn, err = net.DialUDP(udpfam, laddr, raddr)
+					conn, err = net.DialUDP(ipfam, laddr, raddr)
 				}
 			}
 			if err != nil {
