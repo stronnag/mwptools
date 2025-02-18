@@ -15,5 +15,8 @@ jsacsrv: jsacsrv.vala
 adsbpbsrv: adsbpbsrv.vala
 	$(VALAC) $(OPTS) $(PKGS) -o $@  $^
 
+fixup-svg: fixup-svg.vala
+	$(VALAC) $(OPTS) --pkg libxml-2.0 -o $@  $^
+
 clean:
-	rm -f $(APPS)
+	rm -f $(APPS) fixup-svg

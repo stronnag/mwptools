@@ -22,6 +22,8 @@ namespace SVGReader {
 		Y
 	}
 
+	const string MWP_NSHREF="http://www.daria.co.uk/namepaces/mwp";
+
 	string rgb_for_alt(double alt) {
     float h,s,v;
     s = 0.8f;
@@ -54,16 +56,15 @@ namespace SVGReader {
 		Xml.Node* root = doc->get_root_element ();
 		if (root != null) {
 			if (root->name == "svg") {
-				for (Xml.Attr* prop = root->properties; prop != null; prop = prop->next) {
-					if (prop->ns != null && prop->ns->prefix == "mwp") {
-						if(prop->name == "xalign") {
-							found += MwpAlign.X;
-							xalign = float.parse(prop->children->content);
-						} else if(prop->name == "yalign") {
-							found += MwpAlign.Y;
-						yalign = float.parse(prop->children->content);
-						}
-					}
+				var px = root->get_ns_prop("xalign", MWP_NSHREF);
+				if(px != null) {
+					xalign = float.parse(px);
+					found += MwpAlign.X;
+				}
+				px = root->get_ns_prop("yalign", MWP_NSHREF);
+				if(px != null) {
+					yalign = float.parse(px);
+					found += MwpAlign.Y;
 				}
 			}
 		}
@@ -76,12 +77,13 @@ namespace SVGReader {
 		Xml.Node* root = doc->get_root_element ();
 		if (root != null) {
 			if (root->name == "svg") {
-				for (Xml.Attr* prop = root->properties; prop != null; prop = prop->next) {
-					if(prop->name == "width") {
-						width= int.parse(prop->children->content);
-					} else if(prop->name == "height") {
-						height = int.parse(prop->children->content);
-					}
+				var px = root->get_prop("width");
+				if(px != null) {
+					width= int.parse(px);
+				}
+				px = root->get_prop("height");
+				if(px != null) {
+					height = int.parse(px);
 				}
 			}
 		}
@@ -99,21 +101,19 @@ namespace SVGReader {
 						continue;
 					}
 					if(iter->name == "path") {
-						bool is_mwpbg = false;
-						bool is_mwpfg = false;
-						for (Xml.Attr* prop = iter->properties; prop != null; prop = prop->next) {
-							string attr_content = prop->children->content;
-							if(prop->name == "id" && attr_content == "mwpbg") {
-								is_mwpbg = true;
-							} else if(prop->name == "id" && attr_content == "mwpfg") {
-								is_mwpfg = true;
-							} else if(prop->name == "fill") {
-								if (is_mwpbg && bgfill != null) {
-									is_mwpbg = false;
-									prop->children->content = bgfill;
-								} else if (is_mwpfg && fgfill != null) {
-									is_mwpfg = false;
-									prop->children->content = fgfill;
+						string? p;
+						p = iter->get_prop("id");
+						if (p != null) {
+							if (bgfill != null && p  == "mwpbg") {
+								var a = iter->has_prop("fill");
+								if (a != null) {
+									a->children->content = bgfill;
+								}
+							}
+							if (fgfill != null && p  == "mwpfg") {
+								var a = iter->has_prop("fill");
+								if (a != null) {
+									a->children->content = fgfill;
 								}
 							}
 						}

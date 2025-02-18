@@ -87,3 +87,8 @@ mwp applies the following in generating altitude dependent colour modification.
   - For `id="mwpfg"`, the fill (outline) is set to white if the altitude is > 6000m.
 
 Note that mwp processes each SVG at startup and caches internally the image generated from such transformations. The aircraft icons are updated at runtime when an aircraft moves between bands.
+
+## Resizing and Automation
+
+The script `resize_icons.sh` (in the parent directory) will resize a set of SVGs.
+Unfortunately, this will remove any `id="mwpfg"` or `id="mwpbg"` attributes (and any `mwp:xalign` and `mwp:yalign` attributes). These will have to be reapplied.
