@@ -28,7 +28,7 @@ $ ./fixup-svg --gradients /tmp/icons/*.svg
 $ cp /tmp/icons/*.svg ~/.config/mwp/pixmaps/adsb/
 ```
 
-# Work flow for GCS or other icon
+## Work flow for GCS or other icon
 
 ```
 $ ./fixup-svg --yalign 1  /tmp/valk1.svg
