@@ -47,4 +47,4 @@ $ ln -sf valk1.svg gcs.svg
 
 With pointy labels ... because everyone likes pointy labels.
 
-![pointy!](icons..png)
+![pointy!](icons.png)
