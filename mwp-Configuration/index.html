@@ -2054,7 +2054,7 @@ To backup the settings:</p>
 <p>All icons are drawn as their "natural" size (from the <code>svg</code> element), and then may be scaled by the <code>symbol-scale</code> and <code>touch-scale</code> settings.</p>
 <h2 id="svg-customisation">SVG customisation<a class="headerlink" href="#svg-customisation" title="Permanent link">#</a></h2>
 <p>SVG files for ADSB reported aircraft will be recoloured according to altitude where the path has an <code>id</code> attribute of <code>mwpbg</code> (fill) or <code>mwpfg</code> (stroke). See <code>src/samples/adsb-extra/gradient/README.md</code> for details.</p>
-<p>Where mwp is built against <code>libshumate 1.5</code> (i.e. supporting symbol alignment), where <a href="https://www.daria.co.uk/mwptools/mwp-Configuration/#settings-precedence-and-user-updates">user defined override icons</a> is used, it is possible to set the location of the "hot spot" in a SVG icon.</p>
+<p>Where mwp is built against <code>libshumate 1.5</code> (i.e. supporting symbol alignment), and where <a href="https://www.daria.co.uk/mwptools/mwp-Configuration/#settings-precedence-and-user-updates">user defined override icons</a> are used, it is possible to set the location of the "hot spot" in a SVG icon.</p>
 <p>Hot spot location uses the GTK <code>xalign</code> and <code>yalign</code> parameters. There are floating point numbers in the range (0.0 - 1.0) defining a coordinate system where (0,0) is top left and (1,1) is bottom right. These values are set using special tags (<code>mwp:xalign</code> and <code>mwp:yalign</code>) in the icon's <code>svg</code> element:</p>
 <p>Given the header:</p>
 <div class="highlight"><pre><span></span><code><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span>
@@ -2066,6 +2066,7 @@ To backup the settings:</p>
 </code></pre></div>
 <p>The GCS icon (co-incident with the home icon) has its hot spot at the bottom of the blue shape (same as the pointy bit of the brown home icon).</p>
 <p><img alt="image" src="https://github.com/user-attachments/assets/038c9dbe-e41d-4c73-8a2a-af8a8f94e421" /></p>
+<p>Note also that for mwp to load SVG icons, <code>librsvg</code> requires that the <code>svg</code> element contains <code>width</code> and <code>height</code> attributes.</p>
 <h2 id="environment-variables">Environment variables<a class="headerlink" href="#environment-variables" title="Permanent link">#</a></h2>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> recognises the following application specific environment variables</p>
 <table>
@@ -2078,7 +2079,7 @@ To backup the settings:</p>
 <tbody>
 <tr>
 <td><code>CFG_UGLY_XML</code></td>
-<td>Generate ugly multi-mission XML, so as not to confuse the inav configurator</td>
+<td>Generate ugly multi-mission XML, so as not to confuse the (older?) inav configurator</td>
 </tr>
 <tr>
 <td><code>MWP_ARGS</code></td>
