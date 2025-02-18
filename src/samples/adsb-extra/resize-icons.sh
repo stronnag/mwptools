@@ -15,7 +15,7 @@ usage() {
 }
 
 FACTOR=
-while getopts "f:" FOO
+while getopts "f:h" FOO
 do
   case $FOO in
     f) FACTOR=$OPTARG ;;

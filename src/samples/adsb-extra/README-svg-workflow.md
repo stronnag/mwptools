@@ -48,3 +48,23 @@ $ ln -sf valk1.svg gcs.svg
 With pointy labels ... because everyone likes pointy labels.
 
 ![pointy!](icons.png)
+
+
+## Usage
+
+```bash
+$ ./fixup-svg --help
+Usage:
+  fixup-svg [OPTION?]  - fixup-svg [options] files
+
+Help Options:
+  -h, --help          Show help options
+
+Application Options:
+  -x, --xalign=       xalign
+  -y, --yalign=       yalign
+  -g, --gradients=false   gradients
+
+$ ./resize-icons.sh -h
+resize-icons.sh -f factor files...
+```
