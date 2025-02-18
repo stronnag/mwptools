@@ -269,7 +269,7 @@ All icons are drawn as their "natural" size (from the `svg` element), and then m
 
 SVG files for ADSB reported aircraft will be recoloured according to altitude where the path has an `id` attribute of `mwpbg` (fill) or `mwpfg` (stroke). See `src/samples/adsb-extra/gradient/README.md` for details.
 
-Where mwp is built against `libshumate 1.5` (i.e. supporting symbol alignment), where [user defined override icons](https://www.daria.co.uk/mwptools/mwp-Configuration/#settings-precedence-and-user-updates) is used, it is possible to set the location of the "hot spot" in a SVG icon.
+Where mwp is built against `libshumate 1.5` (i.e. supporting symbol alignment), and where [user defined override icons](https://www.daria.co.uk/mwptools/mwp-Configuration/#settings-precedence-and-user-updates) are used, it is possible to set the location of the "hot spot" in a SVG icon.
 
 Hot spot location uses the GTK `xalign` and `yalign` parameters. There are floating point numbers in the range (0.0 - 1.0) defining a coordinate system where (0,0) is top left and (1,1) is bottom right. These values are set using special tags (`mwp:xalign` and `mwp:yalign`) in the icon's `svg` element:
 
@@ -288,13 +288,15 @@ The GCS icon (co-incident with the home icon) has its hot spot at the bottom of 
 
 ![image](https://github.com/user-attachments/assets/038c9dbe-e41d-4c73-8a2a-af8a8f94e421)
 
+Note also that for mwp to load SVG icons, `librsvg` requires that the `svg` element contains `width` and `height` attributes.
+
 ## Environment variables
 
 {{ mwp }} recognises the following application specific environment variables
 
 | Name  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  | Usage |
 | ------------- | ----- |
-| `CFG_UGLY_XML` | Generate ugly multi-mission XML, so as not to confuse the inav configurator |
+| `CFG_UGLY_XML` | Generate ugly multi-mission XML, so as not to confuse the (older?) inav configurator |
 | `MWP_ARGS` | Extra command line arguments |
 | `MWP_BLACK_TILE` | Specify a black tile to be used by the Black Tiles map proxy |
 | `MWP_LOG_DIR` | Location of console logs ($HOME if undefined) |

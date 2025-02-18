@@ -25,9 +25,14 @@ namespace Img {
 			if(touch && MwpScreen.has_touch_screen()) {
 				sf *= Mwp.conf.touch_scale;
 			}
-			return SVGReader.scale(xml, sf);
+			var px = SVGReader.scale(xml, sf);
+			if (px == null) {
+				MWPLog.message("Failed to load icon %s\n", fn);
+				px = new Gdk.Pixbuf.from_resource ("/org/stronnag/mwp/pixmaps/question-mark.svg");
+			}
+			return px;
         } catch {
-			MWPLog.message("failed to find icon %s\n", fn);
+			MWPLog.message("failed to load icon %s\n", fn);
 		}
 		return null;
     }

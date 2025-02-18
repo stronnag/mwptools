@@ -1,5 +1,14 @@
 #!/bin/bash
 
+if ! type -t > /dev/null identify ; then
+  echo "This script requires "identify" (typically from imagemagick)"
+  exit 127
+fi
+if ! type -t > /dev/null rsvg-convert ; then
+  echo "This script requires "rsvg-convert" (typically from librsvg)"
+  exit 127
+fi
+
 FC=${1:-1}
 if [[ $# -gt 1 ]] ; then
   IC=${2:-1}
@@ -15,3 +24,5 @@ for F in *.svg ; do
   mv $F _$F
   rsvg-convert -w $W1 -h $H1 -a -f svg -o $F _$F
 done
+echo "For ADSB symbols, you may have to (re)apply  'id=\"mwpfg\"' and 'id=\"mwpbg\"' attributes to the resized icons : see gradient/README.md"
+echo "For other symbols, you may have to (re)apply 'mwp:xalign' or 'mwp:yalign' attributes to the resized icons"

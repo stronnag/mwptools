@@ -127,21 +127,29 @@ namespace SVGReader {
 	}
 
 	public Gdk.Pixbuf? scale(uint8[] s, double sf) {
+		double w=0;
+		double h=0;
+		int iw = 0;
+		int ih = 0;
 		try {
 			var svg = new Rsvg.Handle.from_data(s);
-			double w,h;
-			svg.get_intrinsic_size_in_pixels(out w, out h);
-			var iw = (int)(w*sf+0.5);
-			var ih = (int)(h*sf+0.5);
-			var cst = new Cairo.ImageSurface (Cairo.Format.ARGB32, iw, ih);
-			var cr = new Cairo.Context (cst);
-			if(sf != 1.0) {
-				cr.scale(sf,sf);
+			var res = svg.get_intrinsic_size_in_pixels(out w, out h);
+			if (res) {
+				iw = (int)(w*sf+0.5);
+				ih = (int)(h*sf+0.5);
+				var cst = new Cairo.ImageSurface (Cairo.Format.ARGB32, iw, ih);
+				var cr = new Cairo.Context (cst);
+				if(sf != 1.0) {
+					cr.scale(sf,sf);
+				}
+				Rsvg.Rectangle r = {0, 0,w, h};
+				svg.render_document (cr, r);
+				return Gdk.pixbuf_get_from_surface(cr.get_target(), 0, 0, iw, ih);
+			} else {
+				return null;
 			}
-			Rsvg.Rectangle r = {0, 0,w, h};
-			svg.render_document (cr, r);
-			return Gdk.pixbuf_get_from_surface(cr.get_target(), 0, 0, iw, ih);
 		} catch (Error e) {
+			MWPLog.message("SVGScaler: %s\n", e.message);
 			return null;
 		}
 	}
