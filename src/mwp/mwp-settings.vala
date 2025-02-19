@@ -243,10 +243,19 @@ public class MWPSettings : GLib.Object {
 
     public MWPSettings() {
 		forward = settings.get_enum("forward");
+		settings.changed["forward"].connect (() => {
+				forward = settings.get_enum("forward");
+			});
+
+		msp2_adsb = settings.get_enum("msp2-adsb");
+		settings.changed["msp2_adsb"].connect (() => {
+				msp2_adsb = settings.get_enum("msp2_adsb");
+			});
+
 		view_mode = settings.get_enum("view-mode");
 		speak_amps = settings.get_enum("speak-amps");
 		show_sticks = settings.get_enum("show-sticks");
-		msp2_adsb = settings.get_enum("msp2-adsb");
+
 		pane_type = settings.get_enum("sidebar-type");
 		smartport_fuel = settings.get_enum("smartport-fuel-unit");
 		devices = settings.get_strv ("device-names");
