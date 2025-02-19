@@ -37,8 +37,8 @@ public class Forwarder : Object {
 		}
 	}
 
-	public void forward_command(uint16 cmd, uint8[]raw, size_t len) {
-		fdev.use_v2 = Mwp.msp.use_v2;
+	public void forward_command(uint16 cmd, uint8[]raw, size_t len, bool v2=true) {
+		fdev.use_v2 = v2;
 		fdev.send_command(cmd, raw, len);
 	}
 
@@ -46,8 +46,12 @@ public class Forwarder : Object {
 		fdev.send_ltm((uint8)cmd, raw, len);
 	}
 
-	public void forward_mav(uint16 cmd, uint8[]raw, size_t len) {
-		fdev.mavvid = Mwp.msp.mavvid;
+	public void forward_mav(uint16 cmd, uint8[]raw, size_t len, uint8 vers) {
+		if (vers == 0) {
+			fdev.mavvid = Mwp.msp.mavvid;
+		} else {
+			fdev.mavvid = vers;
+		}
 		fdev.send_mav(cmd, raw, len);
 	}
 

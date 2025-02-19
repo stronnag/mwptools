@@ -605,29 +605,38 @@ namespace Mwp {
 			lastrx = nticks;
 		}
 
-        if(fwddev.available()) {
+        if(fwddev.available() && conf.forward  != FWDS.NONE) {
             if(cmd < Msp.LTM_BASE && conf.forward == FWDS.ALL) {
                 fwddev.forward_command(cmd, raw, len);
-            }
-            if(cmd >= Msp.LTM_BASE && cmd < Msp.MAV_BASE) {
-                if (conf.forward == FWDS.LTM || conf.forward == FWDS.ALL ||
-                    (conf.forward == FWDS.minLTM &&
-                     (cmd == Msp.Cmds.TG_FRAME ||
-                      cmd == Msp.Cmds.TA_FRAME ||
-                      cmd == Msp.Cmds.TS_FRAME )))
+            } else if(cmd >= Msp.LTM_BASE && cmd < Msp.MAV_BASE && conf.forward == FWDS.minLTM) {				if (cmd == Msp.Cmds.TG_FRAME || cmd == Msp.Cmds.TA_FRAME || cmd == Msp.Cmds.TS_FRAME ) {
 					fwddev.forward_ltm((uint16)(cmd - Msp.LTM_BASE), raw, len);
-            }
-            if(cmd >= Msp.MAV_BASE &&
-               (conf.forward == FWDS.ALL ||
-                (conf.forward == FWDS.minLTM &&
-                 (cmd == Msp.Cmds.MAVLINK_MSG_ID_HEARTBEAT ||
-                  cmd == Msp.Cmds.MAVLINK_MSG_ID_SYS_STATUS ||
-                  cmd == Msp.Cmds.MAVLINK_MSG_GPS_RAW_INT ||
-                  cmd == Msp.Cmds.MAVLINK_MSG_VFR_HUD ||
-                  cmd == Msp.Cmds.MAVLINK_MSG_ATTITUDE ||
-                  cmd == Msp.Cmds.MAVLINK_MSG_RC_CHANNELS_RAW)))) {
-                fwddev.forward_mav((uint16)(cmd - Msp.MAV_BASE), raw, len);
-            }
+				}
+            } else if(cmd >= Msp.MAV_BASE && conf.forward == FWDS.minMAV) {
+				if (cmd == Msp.Cmds.MAVLINK_MSG_ID_HEARTBEAT || cmd == Msp.Cmds.MAVLINK_MSG_ID_SYS_STATUS || cmd == Msp.Cmds.MAVLINK_MSG_GPS_RAW_INT || cmd == Msp.Cmds.MAVLINK_MSG_VFR_HUD || cmd == Msp.Cmds.MAVLINK_MSG_ATTITUDE || cmd == Msp.Cmds.MAVLINK_MSG_RC_CHANNELS_RAW) {
+					fwddev.forward_mav((uint16)(cmd - Msp.MAV_BASE), raw, len, 0);
+				}
+			} else {
+				if(cmd ==  Msp.Cmds.TG_FRAME ||
+				   cmd ==  Msp.Cmds.MAVLINK_MSG_GPS_RAW_INT  ||
+				   cmd == Msp.Cmds.RAW_GPS) {
+					MessageForward.position();
+				} else if (cmd == Msp.Cmds.TA_FRAME ||
+						   cmd ==  Msp.Cmds.MAVLINK_MSG_ATTITUDE ||
+						   cmd == Msp.Cmds.ATTITUDE) {
+					MessageForward.attitude();
+				} else if (cmd == Msp.Cmds.TS_FRAME ||
+						   cmd == Msp.Cmds.MAVLINK_MSG_VFR_HUD ||
+						   cmd == Msp.Cmds.MAVLINK_MSG_ID_SYS_STATUS ||
+						   cmd == Msp.Cmds.STATUS ||
+						   cmd == Msp.Cmds.STATUS_EX ||
+						   cmd == Msp.Cmds.INAV_STATUS) {
+					MessageForward.status();
+				} else if (cmd == Msp.Cmds.TO_FRAME ||
+						   cmd == Msp.Cmds.WP && raw[0] == 0 ||
+						   cmd == Msp.Cmds.MAVLINK_MSG_GPS_GLOBAL_ORIGIN) {
+					MessageForward.origin();
+				}
+			}
         }
 
         if(mq.is_empty() && serstate == SERSTATE.POLLER) {

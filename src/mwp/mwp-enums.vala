@@ -241,12 +241,16 @@ namespace Mwp {
         MINSATS = 6
     }
 
-    private enum FWDS {
+    public enum FWDS {
         NONE=0,
         LTM=1,
         minLTM=2,
         minMAV=3,
-        ALL=4
+        ALL=4,
+		MSP1=5,
+		MSP2=6,
+		MAV1=7,
+		MAV2=8
     }
 
     private struct Varios {

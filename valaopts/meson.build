@@ -1,5 +1,5 @@
-vcargs = [ '-Wno-unused-variable', '-Wno-unused-function', '-Wno-unused-but-set-variable', '-Wno-pointer-sign', '-Wno-unused-value', '-Wno-unused-result' ]
-
+vcargs = [ '-Wno-unused-variable', '-Wno-unused-function', '-Wno-unused-but-set-variable', '-Wno-pointer-sign', '-Wno-unused-value', '-Wno-unused-result',  ]
+# '-Wno-strict-aliasing'
 #  '-Wno-deprecated-declarations',
 
 if meson.get_compiler('c').get_id() == 'clang'

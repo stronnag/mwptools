@@ -6,6 +6,10 @@
     <value nick="minLTM" value="2"/>
     <value nick="minMAV" value="3"/>
     <value nick="all" value="4"/>
+    <value nick="MSP1" value="5"/>
+    <value nick="MSP2" value="6"/>
+    <value nick="MAV1" value="7"/>
+    <value nick="MAV2" value="8"/>
   </enum>
 
 
@@ -326,7 +330,7 @@
       <default>"minLTM"</default>
       <summary>Types of message to forward</summary>
       <description>
-        Types of message to forward (none, LTM, minLTM, minMAV, all)
+        Types of message to forward (none, LTM, minLTM, minMAV, all, MSP1, MSP2, MAV1, MAV2)
       </description>
     </key>
 

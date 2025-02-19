@@ -202,22 +202,48 @@ Offering:
 * The setting `forward`:
   ```
   $ gsettings describe  org.stronnag.mwp forward
-  Types of message to forward (none, LTM, minLTM, minMAV, all)
+  Types of message to forward (none, LTM, minLTM, minMAV, all, MSP1, MSP2, MAV1, MAV2)
   ```
 
-where:
+These settings have two distinct behaviours:
 
 * `none`: No forwarding (default)
-*  `all`: Any of `MSP`, `LTM` or `MAVlink`. All response / telemetry will be forwarded.
-* `LTM`: All `LTM` messages
-* `minLTM`: Minimal set of `LTM` (typically for antenna trackers; `G`, `A` and `S` frames).
-* `minMAV`: Minimal set of `MAVLink` (typically for antenna trackers; `ID_HEARTBEAT`, `ID_SYS_STATUS`, `GPS_RAW_INT`, `VFR_HUD`, `ATTITUDE`, `RC_CHANNELS_RAW`).
 
-Notes:
+### Forwarding "same type" messages
+
+The following settings, apply to received telemetry of  the specified type. No message translation is done, and all data received will be regenerated and sent on to the `forward-device`.
+
+*  `all`: Any `MSP`, All received MSP responses will be forwarded.
+* `minLTM`: Minimal set of received `LTM` (typically for antenna trackers; `G`, `A` and `S` frames) will be forwarded.
+ * `minMAV`: Minimal set of `MAVLink` (typically for antenna trackers; `ID_HEARTBEAT`, `ID_SYS_STATUS`, `GPS_RAW_INT`, `VFR_HUD`, `ATTITUDE`) will be forwarded.
+
+### Translated "capability" messages
+
+The following settings are "capability" based and may involve translation of a forwarded protocol into a different protocol. For example, a MSP `MSP_RAW_GPS` might be forwarded to a `LTM` consumer as LTM `G_FRAME` or to a MAVLink consumer as `MAVLINK_MSG_GPS_RAW_INT`. Messages are grouped into the following "capailities":
+
+* GPS Position / velocity / status
+* Attitude
+* Status
+* Origin
+
+When a telemetry message via MSP, LTM or MAVlink is received that matches one of these categorisations, it is forwarded as best reprenting that capability is the consumer's message protocol:
+
+* `LTM` : Data is transposed to one or more LTM messages
+* `MSP1` : Data is transposed to one or more MSPv1 messages
+* `MSP2` : Data is transposed to one or more MSPv2 messages
+* `MAV1` : Data is transposed to one or more MAVLink v1 messages
+* `MAV2` : Data is transposed to one or more MAVLink v2 messages
+
+Caveat:
+
+* The association between an incoming message, its "capability" and the appropriate outgoing message(s) is necessarily "fuzzy"; not all data in one message protocol can be represented in a different message protocol
+* Simple cases e.g. receiving MSPv2 and forwarding to an antenna or head tracker that uses a different protocol (MSP1, MAV1, MAV2, LTM) should be satisfactory, as a tracker doesn't require much information.
+* Forwarding translated data to another GCS will most likely result in a degraded view on the consumer GCS.
+
+Other Notes:
 
 * Prior to forwarding the message payload, mwp will have validated the message and processed it for its own purpose.
-* Where a telemetry protocol offers different versions (`MSP`, `MAVlink`), mwp will forward the version received.
-* For MAVLink, mwp uses a `sysid` of `106` (UTF8 `j`).
+* For MAVLink, by default, mwp uses a `sysid` of `106` (UTF8 `j`).
 * The MAVLink `sysid` may be changed with the setting `mavlink-sysid`, in the range 2-255 (see [MAVlink documentation](https://ardupilot.org/dev/docs/mavlink-basics.html#message-format) and particularly the GCS guidance, 2nd paragraph _ibid_)
 
 e.g.

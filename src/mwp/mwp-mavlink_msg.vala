@@ -133,7 +133,7 @@ namespace Mwp {
 
 			var cse = calc_cse_dist_delta(mlat, mlon, out ddm);
 			cse = (m.cog == 0xffff) ? cse : m.cog/100.0;
-			double dalt = m.alt/1000.0;
+			double dalt = m.alt/1000.0 - ser.td.origin.alt;
 			var pdiff = pos_diff(mlat, mlon, ser.td.gps.lat, ser.td.gps.lon);
 			if (PosDiff.LAT in pdiff) {
 				fvup |= FlightBox.Update.LAT;
@@ -232,8 +232,8 @@ namespace Mwp {
 				mhead += 360;
 			bool fvup = (Math.fabs(ser.td.atti.yaw - mhead) > 1.0);
 				ser.td.atti.yaw = mhead;
-				int16 roll = (int16)(-m.roll*57.29578);
-				int16 pitch = (int16)(m.pitch*57.29578);
+				int16 roll = (int16)(-m.roll*Mwp.RAD2DEG);
+				int16 pitch = (int16)(m.pitch*Mwp.RAD2DEG);
 
 				var vdiff = ((Math.fabs(ser.td.atti.angx-roll) > 1) || (Math.fabs(ser.td.atti.angy-pitch) > 1));
 				ser.td.atti.angx = (int16)roll;
@@ -278,6 +278,8 @@ namespace Mwp {
 			}
 			ser.td.origin.lat = mlat;
 			ser.td.origin.lon = mlon;
+			ser.td.origin.alt = m.altitude/1000;
+
 			if (ser.is_main) {
 				wp0.lat  = ser.td.origin.lat;
 				wp0.lon  = ser.td.origin.lon;

@@ -53,6 +53,7 @@ namespace Battery {
         if ((Mwp.replayer & Mwp.Player.MWP) == Mwp.Player.NONE) {
             curr.centiA = an.amps;
             curr.mah = an.mahdraw;
+			Mwp.msp.td.power.mah = (int)an.mahdraw;
             if(curr.centiA != 0 || curr.mah != 0) {
                 curr.ampsok = true;
 				Battery.update = true;
