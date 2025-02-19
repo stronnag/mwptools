@@ -34,7 +34,7 @@
 | espeak-voice | Default espeak voice | Default espeak voice (see espeak documentation) | "en" |
 | flash-warn | Flash storage warning | If a dataflash is configured for black box, and this key is non-zero, a warning in generated if the data flash is greater than "flash-warn" percent full. | 0 |
 | flite-voice-file | Default flite voice file | Default flite voice file (full path, *.flitevox), see flite documentation) | "" |
-| forward | Types of message to forward | Types of message to forward (none, LTM, minLTM, minMAV, all) | "minLTM" |
+| forward | Types of message to forward | Types of message to forward (none, LTM, minLTM, minMAV, all, MSP1, MSP2, MAV1, MAV2) | "minLTM" |
 | ga-alt | Units for GA Altiude | 0=m, 1=ft, 2=FL | 0 |
 | ga-range | Units for GA Range | 0=m, 1=km, 2=miles, 3=nautical miles | 0 |
 | ga-speed | Units for GA Speed | 0=m/s, 1=kph, 2=mph, 3=knots | 0 |
@@ -88,7 +88,6 @@
 | speechd-voice | Default speechd voice | Default speechd voice (see speechd documentation) | "male1" |
 | stats-timeout | timeout for flight statistics display (s) | Timeout before the flight statistics popup automatically closes. A value of 0 means no timeout. | 30 |
 | symbol-scale | Symbol scale | Symbol scale factor, scales map symbols as multiplier. | 1.0 |
-| touch-factor | Touch (Hi)DPI scaling | Adjustment factor for HiDpi touch screens (0 disable, often 1.5 or 2.0). | 0.0 |
 | touch-scale | Touch symbol scale | Symbol scale factor, scales map symbols as multiplier (for touch screens) | 1.0 |
 | uc-mission-tags | Upper case mission XML tags | If true, MISSION, VERSION and MISSIONITEM tags are upper case (for interoperability with legacy Android applications) | false |
 | uilang | Language Handling | "en" do everything as English (UI numeric decimal points, voice), "ev" do voice as English (so say 'point' for decimals even when shown as 'comma') | "" |
