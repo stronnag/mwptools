@@ -795,6 +795,30 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Telemetry Forwarding">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#forwarding-same-type-messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      Forwarding "same type" messages
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#translated-capability-messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      Translated "capability" messages
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -1665,6 +1689,30 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Telemetry Forwarding">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#forwarding-same-type-messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      Forwarding "same type" messages
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#translated-capability-messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      Translated "capability" messages
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -1872,22 +1920,46 @@ udp://esp-air:14014/?bind=14014
 <li>The CLI parameter <code>`--forward-to=&lt;device&gt;</code> where <code>&lt;device&gt;</code> represents the device node / name used for forwarding. <code>&lt;device&gt;</code> describes any supported mwp transport (serial, BT, UDP, TCP).</li>
 <li>The setting <code>forward</code>:
   <div class="highlight"><pre><span></span><code>$ gsettings describe  org.stronnag.mwp forward
-Types of message to forward (none, LTM, minLTM, minMAV, all)
+Types of message to forward (none, LTM, minLTM, minMAV, all, MSP1, MSP2, MAV1, MAV2)
 </code></pre></div></li>
 </ul>
-<p>where:</p>
+<p>These settings have two distinct behaviours:</p>
 <ul>
 <li><code>none</code>: No forwarding (default)</li>
-<li><code>all</code>: Any of <code>MSP</code>, <code>LTM</code> or <code>MAVlink</code>. All response / telemetry will be forwarded.</li>
-<li><code>LTM</code>: All <code>LTM</code> messages</li>
-<li><code>minLTM</code>: Minimal set of <code>LTM</code> (typically for antenna trackers; <code>G</code>, <code>A</code> and <code>S</code> frames).</li>
-<li><code>minMAV</code>: Minimal set of <code>MAVLink</code> (typically for antenna trackers; <code>ID_HEARTBEAT</code>, <code>ID_SYS_STATUS</code>, <code>GPS_RAW_INT</code>, <code>VFR_HUD</code>, <code>ATTITUDE</code>, <code>RC_CHANNELS_RAW</code>).</li>
 </ul>
-<p>Notes:</p>
+<h3 id="forwarding-same-type-messages">Forwarding "same type" messages<a class="headerlink" href="#forwarding-same-type-messages" title="Permanent link">#</a></h3>
+<p>The following settings, apply to received telemetry of  the specified type. No message translation is done, and all data received will be regenerated and sent on to the <code>forward-device</code>.</p>
+<ul>
+<li><code>all</code>: Any <code>MSP</code>, All received MSP responses will be forwarded.</li>
+<li><code>minLTM</code>: Minimal set of received <code>LTM</code> (typically for antenna trackers; <code>G</code>, <code>A</code> and <code>S</code> frames) will be forwarded.</li>
+<li><code>minMAV</code>: Minimal set of <code>MAVLink</code> (typically for antenna trackers; <code>ID_HEARTBEAT</code>, <code>ID_SYS_STATUS</code>, <code>GPS_RAW_INT</code>, <code>VFR_HUD</code>, <code>ATTITUDE</code>) will be forwarded.</li>
+</ul>
+<h3 id="translated-capability-messages">Translated "capability" messages<a class="headerlink" href="#translated-capability-messages" title="Permanent link">#</a></h3>
+<p>The following settings are "capability" based and may involve translation of a forwarded protocol into a different protocol. For example, a MSP <code>MSP_RAW_GPS</code> might be forwarded to a <code>LTM</code> consumer as LTM <code>G_FRAME</code> or to a MAVLink consumer as <code>MAVLINK_MSG_GPS_RAW_INT</code>. Messages are grouped into the following "capailities":</p>
+<ul>
+<li>GPS Position / velocity / status</li>
+<li>Attitude</li>
+<li>Status</li>
+<li>Origin</li>
+</ul>
+<p>When a telemetry message via MSP, LTM or MAVlink is received that matches one of these categorisations, it is forwarded as best reprenting that capability is the consumer's message protocol:</p>
+<ul>
+<li><code>LTM</code> : Data is transposed to one or more LTM messages</li>
+<li><code>MSP1</code> : Data is transposed to one or more MSPv1 messages</li>
+<li><code>MSP2</code> : Data is transposed to one or more MSPv2 messages</li>
+<li><code>MAV1</code> : Data is transposed to one or more MAVLink v1 messages</li>
+<li><code>MAV2</code> : Data is transposed to one or more MAVLink v2 messages</li>
+</ul>
+<p>Caveat:</p>
+<ul>
+<li>The association between an incoming message, its "capability" and the appropriate outgoing message(s) is necessarily "fuzzy"; not all data in one message protocol can be represented in a different message protocol</li>
+<li>Simple cases e.g. receiving MSPv2 and forwarding to an antenna or head tracker that uses a different protocol (MSP1, MAV1, MAV2, LTM) should be satisfactory, as a tracker doesn't require much information.</li>
+<li>Forwarding translated data to another GCS will most likely result in a degraded view on the consumer GCS.</li>
+</ul>
+<p>Other Notes:</p>
 <ul>
 <li>Prior to forwarding the message payload, mwp will have validated the message and processed it for its own purpose.</li>
-<li>Where a telemetry protocol offers different versions (<code>MSP</code>, <code>MAVlink</code>), mwp will forward the version received.</li>
-<li>For MAVLink, mwp uses a <code>sysid</code> of <code>106</code> (UTF8 <code>j</code>).</li>
+<li>For MAVLink, by default, mwp uses a <code>sysid</code> of <code>106</code> (UTF8 <code>j</code>).</li>
 <li>The MAVLink <code>sysid</code> may be changed with the setting <code>mavlink-sysid</code>, in the range 2-255 (see <a href="https://ardupilot.org/dev/docs/mavlink-basics.html#message-format">MAVlink documentation</a> and particularly the GCS guidance, 2nd paragraph <em>ibid</em>)</li>
 </ul>
 <p>e.g.</p>
