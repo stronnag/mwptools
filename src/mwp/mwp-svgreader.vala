@@ -134,6 +134,19 @@ namespace SVGReader {
 		try {
 			var svg = new Rsvg.Handle.from_data(s);
 			var res = svg.get_intrinsic_size_in_pixels(out w, out h);
+			if(res == false) {
+				bool hasw;
+				bool hash;
+				Rsvg.Length ow;
+				Rsvg.Length oh;
+				Rsvg.Rectangle rect;
+				svg.get_intrinsic_dimensions (out hasw, out ow, out hash, out oh, out res, out rect);
+				// no point in looking elsewhere, as size_in_pixels has already failed.
+				if(res) {
+					w = rect.width;
+					h = rect.height;
+				}
+			}
 			if (res) {
 				iw = (int)(w*sf+0.5);
 				ih = (int)(h*sf+0.5);
