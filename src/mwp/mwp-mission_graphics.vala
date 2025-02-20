@@ -91,7 +91,7 @@ namespace IconTools {
 			colour = { 0xe0, 0xe0, 0xe0, alpha};
 			break;
         }
-		text = "<span face='monospace'>%s</span>\u2009%d".printf(symb, no);
+		text = "%s\u2009%d".printf(symb, no);
 		return colour;
     }
 }

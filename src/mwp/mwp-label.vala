@@ -25,8 +25,17 @@ public class MWPLabel : MWPMarker {
 	private string fcol;
 	private string label;
 	private double fontsize;
+	private string wpstyle;
 
 	public MWPLabel(string txt="")  {
+		wpstyle = Environment.get_variable("MWP_WPSTYLE");
+		if (wpstyle == null) {
+#if WINDOWS
+			wpstyle = "Segoe UI";
+#else
+			wpstyle = "Sans";
+#endif
+		}
 		var fs = MwpScreen.rescale(1);
 		bcol = "white";
 		fcol = "#000000ff";
@@ -87,17 +96,24 @@ public class MWPLabel : MWPMarker {
 		cr.close_path ();
 	}
 
-	const string WPSTYLE="Regular";
 	private Pango.Layout text_get_size(Cairo.Context cr, string s, out int w, out int h) {
 		Pango.FontDescription font;
-		font = new Pango.FontDescription();
-        font.set_family(WPSTYLE);
         var fsize = fontsize * Pango.SCALE;
-		var layout = Pango.cairo_create_layout(cr);
+		font = new Pango.FontDescription();
+        font.set_family(wpstyle);
 		font.set_size((int)fsize);
+		font.set_gravity(Pango.Gravity.AUTO);
+		font.set_style(Pango.Style.NORMAL);
+		font.set_weight(Pango.Weight.NORMAL);
+
+		//font = Pango.FontDescription.from_string(wpstyle);
+		var layout = Pango.cairo_create_layout(cr);
+
         layout.set_font_description(font);
 		layout.set_markup(s, -1);
 		layout.get_pixel_size(out w, out h);
+		//MWPLog.message("::DBG:: Font style %s\n", font.to_string());
+
 		return layout;
 	}
 
