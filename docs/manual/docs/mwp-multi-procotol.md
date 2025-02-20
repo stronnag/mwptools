@@ -29,7 +29,7 @@ Serial devices are defined by the operating system device node name and optional
 
 ## Bluetooth
 
-Bluetooth may be specified by either an `rfcomm` device node (`/dev/rfcommX` on Linux, `/dev/ttypX` pseudo-terminal abstraction on FreeBSD) or by the device address (`BD_ADDR`, Linux and FreeBSD only):
+Bluetooth may be specified by either an `rfcomm` device node (`/dev/rfcommX` on Linux, `/dev/ttypX` pseudo-terminal abstraction on FreeBSD, `COM` device on Windows and `/dev/cu.bluetooth*` on MacOS) or by the device address (`BD_ADDR`, Linux and FreeBSD only):
 
     # BT RFCOMM device node (Linux)
     /dev/rfcomm1
@@ -40,7 +40,7 @@ Bluetooth may be specified by either an `rfcomm` device node (`/dev/rfcommX` on 
     35:53:17:04:07:27
 
 * On Linux, both legacy Bluetooth (RFCOMM/SPP) and Bluetooth Low Energy (BLE) are supported. BLE devices do not implement RFCOMM and must be accessed by address.
-* On FreeBSD, only legacy (RFCOMM/SPP) Bluetooth is supported.
+* On FreeBSD, MacOS and Windows only legacy (RFCOMM/SPP) Bluetooth is supported.
 
 ### Further Bluetooth considerations
 
@@ -205,15 +205,15 @@ Offering:
   Types of message to forward (none, LTM, minLTM, minMAV, all, MSP1, MSP2, MAV1, MAV2)
   ```
 
-These settings have two distinct behaviours:
-
 * `none`: No forwarding (default)
+
+These settings have two distinct behaviours:
 
 ### Forwarding "same type" messages
 
 The following settings, apply to received telemetry of  the specified type. No message translation is done, and all data received will be regenerated and sent on to the `forward-device`.
 
-*  `all`: Any `MSP`, All received MSP responses will be forwarded.
+* `all`: Any `MSP`, `LTM` `MAVLink` , All received responses will be forwarded.
 * `minLTM`: Minimal set of received `LTM` (typically for antenna trackers; `G`, `A` and `S` frames) will be forwarded.
  * `minMAV`: Minimal set of `MAVLink` (typically for antenna trackers; `ID_HEARTBEAT`, `ID_SYS_STATUS`, `GPS_RAW_INT`, `VFR_HUD`, `ATTITUDE`) will be forwarded.
 
@@ -237,7 +237,7 @@ When a telemetry message via MSP, LTM or MAVlink is received that matches one of
 Caveat:
 
 * The association between an incoming message, its "capability" and the appropriate outgoing message(s) is necessarily "fuzzy"; not all data in one message protocol can be represented in a different message protocol
-* Simple cases e.g. receiving MSPv2 and forwarding to an antenna or head tracker that uses a different protocol (MSP1, MAV1, MAV2, LTM) should be satisfactory, as a tracker doesn't require much information.
+* Simple cases e.g. receiving MSPv2 and forwarding to an antenna or head tracker that uses a different protocol (`LTM`, `MSP1`, `MAV1`, `MAV2`) should be satisfactory, as a tracker doesn't require much information.
 * Forwarding translated data to another GCS will most likely result in a degraded view on the consumer GCS.
 
 Other Notes:
