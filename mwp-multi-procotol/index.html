@@ -1760,7 +1760,7 @@ COM7
 COM17@38400
 </code></pre>
 <h2 id="bluetooth">Bluetooth<a class="headerlink" href="#bluetooth" title="Permanent link">#</a></h2>
-<p>Bluetooth may be specified by either an <code>rfcomm</code> device node (<code>/dev/rfcommX</code> on Linux, <code>/dev/ttypX</code> pseudo-terminal abstraction on FreeBSD) or by the device address (<code>BD_ADDR</code>, Linux and FreeBSD only):</p>
+<p>Bluetooth may be specified by either an <code>rfcomm</code> device node (<code>/dev/rfcommX</code> on Linux, <code>/dev/ttypX</code> pseudo-terminal abstraction on FreeBSD, <code>COM</code> device on Windows and <code>/dev/cu.bluetooth*</code> on MacOS) or by the device address (<code>BD_ADDR</code>, Linux and FreeBSD only):</p>
 <pre><code># BT RFCOMM device node (Linux)
 /dev/rfcomm1
 /dev/rfcomm1@57600
@@ -1771,7 +1771,7 @@ COM17@38400
 </code></pre>
 <ul>
 <li>On Linux, both legacy Bluetooth (RFCOMM/SPP) and Bluetooth Low Energy (BLE) are supported. BLE devices do not implement RFCOMM and must be accessed by address.</li>
-<li>On FreeBSD, only legacy (RFCOMM/SPP) Bluetooth is supported.</li>
+<li>On FreeBSD, MacOS and Windows only legacy (RFCOMM/SPP) Bluetooth is supported.</li>
 </ul>
 <h3 id="further-bluetooth-considerations">Further Bluetooth considerations<a class="headerlink" href="#further-bluetooth-considerations" title="Permanent link">#</a></h3>
 <ul>
@@ -1918,19 +1918,21 @@ udp://esp-air:14014/?bind=14014
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> can forward received telemetry protocol payloads according to a filter defined by two parameters:</p>
 <ul>
 <li>The CLI parameter <code>`--forward-to=&lt;device&gt;</code> where <code>&lt;device&gt;</code> represents the device node / name used for forwarding. <code>&lt;device&gt;</code> describes any supported mwp transport (serial, BT, UDP, TCP).</li>
-<li>The setting <code>forward</code>:
+<li>
+<p>The setting <code>forward</code>:
   <div class="highlight"><pre><span></span><code>$ gsettings describe  org.stronnag.mwp forward
 Types of message to forward (none, LTM, minLTM, minMAV, all, MSP1, MSP2, MAV1, MAV2)
-</code></pre></div></li>
+</code></pre></div></p>
+</li>
+<li>
+<p><code>none</code>: No forwarding (default)</p>
+</li>
 </ul>
 <p>These settings have two distinct behaviours:</p>
-<ul>
-<li><code>none</code>: No forwarding (default)</li>
-</ul>
 <h3 id="forwarding-same-type-messages">Forwarding "same type" messages<a class="headerlink" href="#forwarding-same-type-messages" title="Permanent link">#</a></h3>
 <p>The following settings, apply to received telemetry of  the specified type. No message translation is done, and all data received will be regenerated and sent on to the <code>forward-device</code>.</p>
 <ul>
-<li><code>all</code>: Any <code>MSP</code>, All received MSP responses will be forwarded.</li>
+<li><code>all</code>: Any <code>MSP</code>, <code>LTM</code> <code>MAVLink</code> , All received responses will be forwarded.</li>
 <li><code>minLTM</code>: Minimal set of received <code>LTM</code> (typically for antenna trackers; <code>G</code>, <code>A</code> and <code>S</code> frames) will be forwarded.</li>
 <li><code>minMAV</code>: Minimal set of <code>MAVLink</code> (typically for antenna trackers; <code>ID_HEARTBEAT</code>, <code>ID_SYS_STATUS</code>, <code>GPS_RAW_INT</code>, <code>VFR_HUD</code>, <code>ATTITUDE</code>) will be forwarded.</li>
 </ul>
@@ -1953,7 +1955,7 @@ Types of message to forward (none, LTM, minLTM, minMAV, all, MSP1, MSP2, MAV1, M
 <p>Caveat:</p>
 <ul>
 <li>The association between an incoming message, its "capability" and the appropriate outgoing message(s) is necessarily "fuzzy"; not all data in one message protocol can be represented in a different message protocol</li>
-<li>Simple cases e.g. receiving MSPv2 and forwarding to an antenna or head tracker that uses a different protocol (MSP1, MAV1, MAV2, LTM) should be satisfactory, as a tracker doesn't require much information.</li>
+<li>Simple cases e.g. receiving MSPv2 and forwarding to an antenna or head tracker that uses a different protocol (<code>LTM</code>, <code>MSP1</code>, <code>MAV1</code>, <code>MAV2</code>) should be satisfactory, as a tracker doesn't require much information.</li>
 <li>Forwarding translated data to another GCS will most likely result in a degraded view on the consumer GCS.</li>
 </ul>
 <p>Other Notes:</p>
