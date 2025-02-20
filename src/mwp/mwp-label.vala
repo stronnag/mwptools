@@ -28,14 +28,11 @@ public class MWPLabel : MWPMarker {
 	private string wpstyle;
 
 	public MWPLabel(string txt="")  {
-		wpstyle = Environment.get_variable("MWP_WPSTYLE");
-		if (wpstyle == null) {
 #if WINDOWS
-			wpstyle = "Segoe UI";
+		wpstyle = "Segoe UI";
 #else
-			wpstyle = "Sans";
+		wpstyle = "Sans";
 #endif
-		}
 		var fs = MwpScreen.rescale(1);
 		bcol = "white";
 		fcol = "#000000ff";
@@ -106,14 +103,10 @@ public class MWPLabel : MWPMarker {
 		font.set_style(Pango.Style.NORMAL);
 		font.set_weight(Pango.Weight.NORMAL);
 
-		//font = Pango.FontDescription.from_string(wpstyle);
 		var layout = Pango.cairo_create_layout(cr);
-
         layout.set_font_description(font);
 		layout.set_markup(s, -1);
 		layout.get_pixel_size(out w, out h);
-		//MWPLog.message("::DBG:: Font style %s\n", font.to_string());
-
 		return layout;
 	}
 
