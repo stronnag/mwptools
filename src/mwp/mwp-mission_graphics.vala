@@ -358,8 +358,12 @@ namespace MsnTools {
 					nlat = m.homey;
 					nlon = m.homex;
 				} else {
-					nlat = m.points[k+1].lat;
-					nlon = m.points[k+1].lon;
+					if (m.points[k+1].is_geo()) {
+						nlat = m.points[k+1].lat;
+						nlon = m.points[k+1].lon;
+					} else {
+						HomePoint.get_location(out nlat, out nlon);
+					}
 				}
 				mi.lat = (nlat + m.points[k].lat)/2.0;
 				mi.lon = (nlon + m.points[k].lon)/2.0;
