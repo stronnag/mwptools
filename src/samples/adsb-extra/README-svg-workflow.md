@@ -1,3 +1,42 @@
+# Tools to assist in customising SVG Icons
+
+## `./resize-icons.sh`
+
+A shell script to resize (by a numeric scale factor), a set of SVG icons
+
+```
+$ ./resize-icons.sh -h
+resize-icons.sh -f factor files...
+```
+
+Note that this will unfortunately remove any `mwp` metadata; however this can be reinstalled with `fixup-svg`
+
+## `fixup-svg`
+
+Adds / resores mwp altitude colour gradient indicators (for ADSB icons) or `xalign` / `yalign` indicators for general icons (e.g. the GCS icon).
+
+
+
+
+
+```
+$ ./fixup-svg --help
+Usage:
+  fixup-svg [OPTION?]  - fixup-svg [options] files
+
+Help Options:
+  -h, --help          Show help options
+
+Application Options:
+  -x, --xalign=       xalign
+  -y, --yalign=       yalign
+  -g, --gradients=false   gradients
+```
+
+Note that gradients are applied as:
+
+* Any `path` with `fill="rbg(100%, 100%, 100%)"` or `fill="rgb(255,255,255)"` will be marked as a background path for altitude fill based colouring.
+* Any `path` with `fill="rbg(0%, %, 0%)"` will be marked as a foreground path for altitude based stroke colouring.
 
 ## Work flow for ADSB icons:
 
@@ -5,7 +44,7 @@
 # Tools area
 $ cd src/samples/adsb-extra/
 #
-# Make the fixup tool
+$ Build the `fixup-svg` tool:
 $ make fixup-svg
 #
 # create a work space
@@ -48,23 +87,3 @@ $ ln -sf valk1.svg gcs.svg
 With pointy labels ... because everyone likes pointy labels.
 
 ![pointy!](icons.png)
-
-
-## Usage
-
-```bash
-$ ./fixup-svg --help
-Usage:
-  fixup-svg [OPTION?]  - fixup-svg [options] files
-
-Help Options:
-  -h, --help          Show help options
-
-Application Options:
-  -x, --xalign=       xalign
-  -y, --yalign=       yalign
-  -g, --gradients=false   gradients
-
-$ ./resize-icons.sh -h
-resize-icons.sh -f factor files...
-```

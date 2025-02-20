@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
 
 if ! type -t > /dev/null identify ; then
-  echo "This script requires "identify" (typically from imagemagick)"
+  echo "This script requires "identify" (typically from imagemagick package)"
   exit 127
 fi
 if ! type -t > /dev/null rsvg-convert ; then
-  echo "This script requires "rsvg-convert" (typically from librsvg)"
+  echo "This script requires "rsvg-convert" (typically from librsvg package)"
+  exit 127
+fi
+if ! type -t > /dev/null dc ; then
+  echo "This script requires "dc" (typically from bc or dc package)"
   exit 127
 fi
 
