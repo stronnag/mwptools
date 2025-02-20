@@ -212,6 +212,11 @@ namespace Radar {
 					}
 					if(obj.has_member("flight")) {
 						var s = obj.get_string_member("flight");
+						if(s == "00000000") {
+							if(obj.has_member("r")) {
+								s = obj.get_string_member("r");
+							}
+						}
 						ri.name = s;
 					} else if(ri.name == null || ri.name.length == 0) {
 						ri.name = "[%u]".printf(icao);
