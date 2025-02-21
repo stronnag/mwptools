@@ -531,9 +531,9 @@ namespace Radar {
 					Gtk.ListItem list_item =  (Gtk.ListItem)o;
 					RadarPlot r = list_item.get_item() as RadarPlot;
 					var label = list_item.get_child() as Gtk.Label;
-					label.label = source_id(r.source);
+					label.label = ((RadarSource)r.source).source_id();
 					r.notify["source"].connect((s,p) => {
-							label.label = source_id(((RadarPlot)s).source);
+							label.label =  ((RadarSource) ((RadarPlot)s).source)    .source_id();
 						});
 					r.notify["alert"].connect((s,p) => {label_alert((RadarPlot)s, label);});
 				});
@@ -862,22 +862,6 @@ namespace Radar {
 					vis = false;
 					return true;
 				});
-		}
-
-		private string source_id(uint8 sid) {
-			switch(sid) {
-			case RadarSource.INAV:
-				return "I";
-			case RadarSource.TELEM:
-				return "T";
-			case RadarSource.MAVLINK:
-				return "A";
-			case RadarSource.SBS:
-				return "S";
-			case RadarSource.ADSBX:
-				return "X";
-			}
-			return "?";
 		}
 
 		private void zoom_to_swarm() {

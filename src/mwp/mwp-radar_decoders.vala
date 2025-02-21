@@ -193,6 +193,25 @@ namespace Radar {
 						}
 						ri.srange = Radar.ADSB_DISTNDEF;
 					}
+					var tsource = (adsbx) ? Radar.RadarSource.ADSBX : Radar.RadarSource.SBS;
+					if(obj.has_member("seen")) {
+						var seen = (uint)obj.get_double_member ("seen");
+						TimeSpan ts = (int64)(seen*TimeSpan.SECOND);
+						var xdt = now.add(ts);
+						if(tsource != ri.source && ri.dt != null && xdt.compare(ri.dt) == -1) {
+							MWPLog.message("LATE %s n=%s o=%s late n=%s o=%s\n",
+										   ri.name, tsource.source_id(),
+										   ((Radar.RadarSource)ri.source).source_id(),
+										   xdt.format("%T.%f"), ri.dt.format("%T.%f"));
+							continue;
+						}
+						ri.dt = xdt;
+						ri.lq = (seen < 256) ? (uint8)seen : 255;
+					} else {
+						ri.dt = now;
+						ri.lq = 255;
+					}
+
 					var sb = new StringBuilder("JSON\n");
 					sb.append_printf("I:%X", icao);
 					ri.posvalid = true;
@@ -209,6 +228,11 @@ namespace Radar {
 						}
 						ri.etype = et;
 						sb.append_printf(" typ: %s,%u", s, ri.etype);
+						/*
+						if(s[0] > 'A') {
+							MWPLog.message("CAT %x %s %s\n", icao, ri.name, s);
+						}
+						*/
 					}
 					if(obj.has_member("flight")) {
 						var s = obj.get_string_member("flight");
@@ -255,19 +279,10 @@ namespace Radar {
 					//	ri.bearing = (uint16)obj.get_double_member ("dir");
 					//	sb.append_printf(" brg: %u", ri.bearing);
 					//} else {
-						ri.bearing = 0xffff;
+					ri.bearing = 0xffff;
 						//}
+					ri.source = tsource;
 
-					if(obj.has_member("seen")) {
-						var seen = (uint)obj.get_double_member ("seen");
-						TimeSpan ts = (int64)(seen*TimeSpan.SECOND);
-						ri.dt = now.add(ts);
-						ri.lq = (seen < 256) ? (uint8)seen : 255;
-						sb.append_printf(" seen: %.1f", seen);
-					} else {
-						ri.dt = now;
-						ri.lq = 255;
-					}
 					ri.state = Radar.set_initial_state(ri.lq);
 					sb.append_printf(" ts: %s, lq: %u\n", ri.dt.format("%T"), ri.lq);
 					//					ri.lasttick = nticks;

@@ -45,6 +45,23 @@ namespace Radar {
 			}
 			return sstr;
 		}
+
+		public string source_id() {
+			switch(this) {
+			case RadarSource.INAV:
+				return "I";
+			case RadarSource.TELEM:
+				return "T";
+			case RadarSource.MAVLINK:
+				return "A";
+			case RadarSource.SBS:
+				return "S";
+			case RadarSource.ADSBX:
+				return "X";
+			default:
+				return "?";
+			}
+		}
 	}
 
 	public class RadarPlot : Object {
