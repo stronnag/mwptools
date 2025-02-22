@@ -38,7 +38,7 @@ do
     readarray -d ' ' -t arr <<<"$R"
     if [ "${arr[0]}" == "SVG" ] ; then
       W=${arr[3]}
-      H=${arr[3]}
+      H=${arr[4]}
       W1=$(dc -e "2 k $W  $FACTOR * p")
       H1=$(dc -e "2 k $H  $FACTOR * p")
       OF="${arr[1]}/_${arr[2]}"
