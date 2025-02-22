@@ -212,7 +212,8 @@ namespace Radar {
 				var pn = p.strip();
 				if (pn.has_prefix("sbs://")) {
 					MWPLog.message("Set up SBS radar device %s\n", pn);
-					var sbs = new ADSBReader(pn);
+					var sbs = new ADSBReader.net(pn);
+					sbs.suffix="txt";
 					sbs.result.connect((s) => {
 							if (s == null) {
 								Timeout.add_seconds(60, () => {
@@ -229,7 +230,8 @@ namespace Radar {
 					sbs.line_reader.begin();
 				} else if (pn.has_prefix("jsa://")) {
 					MWPLog.message("Set up JSA radar device %s\n", pn);
-					var jsa = new ADSBReader(pn, 37007);
+					var jsa = new ADSBReader.net(pn, 37007);
+					jsa.suffix="json";
 					jsa.result.connect((s) => {
 							if (s == null) {
 								Timeout.add_seconds(60, () => {
@@ -244,7 +246,8 @@ namespace Radar {
 				} else if (pn.has_prefix("pba://")) {
 #if PROTOC
 					MWPLog.message("Set up PSA radar device %s\n", pn);
-					var pba = new ADSBReader(pn, 38008);
+					var pba = new ADSBReader.net(pn, 38008);
+					pba.suffix = "pb";
 					pba.result.connect((s) => {
 							if (s == null) {
 								Timeout.add_seconds(60, () => {
@@ -280,6 +283,7 @@ namespace Radar {
 						} else  {
 							httpa = new ADSBReader.web(pn);
 						}
+						httpa.suffix = (htype == 1) ? "pb" : "json";
 						httpa.result.connect((s) => {
 								if (s == null) {
 									Timeout.add_seconds(60, () => {
@@ -356,6 +360,8 @@ namespace Radar {
 										   is_adsb.to_string(), radar_cache.size());
 						}
 						if(is_adsb) {
+							var dsec = delta / TimeSpan.SECOND;
+							r.lq = (dsec > 255) ? 255 : (uint8)dsec;
 							radarv.remove(rk);
 							Radar.remove_radar(rk);
 							radar_cache.remove(rk);
@@ -365,6 +371,8 @@ namespace Radar {
 							MWPLog.message("TRAF-HID %X %s %u %u\n",
 										   rk, r.name, r.state, radar_cache.size());
 						if(is_adsb) {
+							var dsec = delta / TimeSpan.SECOND;
+							r.lq = (dsec > 255) ? 255 : (uint8)dsec;
 							r.state = Radar.Status.HIDDEN; // hidden
 							if (r.state != xstate) {
 								r.alert = RadarAlert.SET;

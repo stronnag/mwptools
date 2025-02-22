@@ -28,9 +28,19 @@ public class ADSBReader :Object {
 	private string format;
 	private string keyid;
 	private string keyval;
+	public  string suffix;
+	private int id;
 
-	public ADSBReader(string pn, uint16 _port=30003) {
+	static int instance = 0;
+
+	public ADSBReader() {
+		id = instance;
+		instance++;
 		interval = 1000;
+	}
+
+	public ADSBReader.net(string pn, uint16 _port=30003) {
+		this();
 		nreq = 0;
 		var p = pn[6:pn.length].split(":");
 		port = _port;
@@ -45,13 +55,13 @@ public class ADSBReader :Object {
 	}
 
 	public ADSBReader.web(string pn) {
-		interval = 1000;
+		this();
 		session = new Soup.Session ();
 		host = pn;
 	}
 
 	public ADSBReader.adsbx(string pn) {
-		interval = 1000;
+		this();
 		format="v2/point/%s/%s/%s";
 		session = new Soup.Session ();
 		try {
@@ -99,6 +109,34 @@ public class ADSBReader :Object {
 		}
 	}
 
+	private void log_data(uint8[]data) {
+		if(Mwp.rawlog && suffix != null) {
+			FileStream fs;
+			string fn;
+			string mode;
+			var logdir = UserDirs.get_default();
+			if (suffix == ".txt") {
+				fn  = "adsb_%03d.txt".printf(id);
+				mode = "a";
+			} else {
+				var dt =  new DateTime.now_local ();
+				var ms = dt.get_microsecond()/1000;
+				fn  = "adsb_%03d_%jd.%03d.%s".printf(id, dt.to_unix(), ms, suffix);
+				mode = "wb";
+			}
+			var lfn = Path.build_filename(logdir, fn);
+			if(mode == "a") {
+				fs = FileStream.open(lfn, mode);
+				fs.write(data, data.length);
+				fs.flush();
+			} else {
+				try {
+					FileUtils.set_data(lfn, data);
+				} catch {}
+			}
+		}
+	}
+
 	private async bool fetch() {
 		Soup.Message msg;
 		string ahost;
@@ -123,7 +161,9 @@ public class ADSBReader :Object {
 			nreq++;
 			var byt = yield session.send_and_read_async (msg, Priority.DEFAULT, null);
 			if (msg.status_code == 200) {
-				result(byt.get_data());
+				var data =  byt.get_data();
+				log_data(data);
+				result(data);
 				return true;
 			} else {
 				MWPLog.message("ADSB fetch <%s> : %u %s (%u)\n", ahost, msg.status_code, msg.reason_phrase, nreq);
@@ -173,6 +213,7 @@ public class ADSBReader :Object {
 					return false;
 				} else {
 					Radar.set_astatus();
+					log_data(line.data);
 					result(line.data);
 				}
 			} catch (Error e) {
@@ -208,6 +249,7 @@ public class ADSBReader :Object {
 						ok = yield inp.read_all_async(pbuf, Priority.DEFAULT, null, out nb);
 						if (ok && nb == msize) {
 							Radar.set_astatus();
+							log_data(pbuf);
 							result(pbuf);
 						} else {
 							MWPLog.message("PB read %d %d\n", (int)msize, (int)nb);

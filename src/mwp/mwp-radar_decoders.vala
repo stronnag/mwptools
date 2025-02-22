@@ -106,7 +106,6 @@ namespace Radar {
 	public void decode_pba(uint8[] buf) {
 		ReadSB.Pbuf[] acs={};
 		var rdebug = ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE);
-		var now = new DateTime.now_local();
 		var nac = ReadSB.decode_ac_pb(buf, out acs);
 		for(int k = 0; k < nac; k++) {
 			var a = acs[k];
@@ -116,6 +115,19 @@ namespace Radar {
 				ri.source = Radar.RadarSource.SBS;
 				ri.srange = ADSB_DISTNDEF;
 			}
+			var xdt = new DateTime.from_unix_local ((int64)(a.seen_tm/1000));
+			var msec = (int)a.seen_tm%1000;
+			xdt = xdt.add(TimeSpan.MILLISECOND*msec);
+			if(ri.source != Radar.RadarSource.SBS && ri.dt != null) {
+				// MWPLog.message("MULTI %x %s this=%s/%.12s db=%s/%.12s\n", a.addr, ri.name.strip(), Radar.RadarSource.SBS.source_id(), xdt.format("%T.%f"), ((Radar.RadarSource)ri.source).source_id(), ri.dt.format("%T.%f"));
+				if(xdt.compare(ri.dt) == -1) {
+					// MWPLog.message(" *** SKIP this\n");
+					continue;
+				}
+			}
+			ri.source = Radar.RadarSource.SBS;
+
+			ri.dt = xdt;
 			ri.posvalid = true;
 			ri.latitude = a.lat;
 			ri.longitude = a.lon;
@@ -134,12 +146,9 @@ namespace Radar {
 			ri.heading = (uint16)a.hdg;
 			ri.altitude = 0.3048*((double)a.alt);
 			ri.speed = ((double)a.speed) * 1852.0 / 3600;
-			// ri.dt = new DateTime.from_unix_local ((int64)(a.seen_tm/1000));
-			//	MWPLog.message("ADSB: %x %u %u\n", a.addr, a.seen_tm, a.seen_pos);
-			//if (ri.dt ==  null) { // can't happen ... unless it's cygwin, when it does
-			TimeSpan ts = -1*(TimeSpan.SECOND*((int64)(a.seen_pos)));
-			ri.dt = now.add(ts);
-			ri.lq = (a.seen_pos < 256) ? (uint8)a.seen_pos : 255;
+			// seen_pos is **millseconds**
+			var lts = a.seen_pos/1000;
+			ri.lq = (lts < 256) ? (uint8)lts : 255;
 			ri.state = Radar.set_initial_state(ri.lq);
 
 			ri.srange = a.srange;
@@ -164,12 +173,11 @@ namespace Radar {
 
 	public void decode_jsa(string js, bool adsbx = false) {
 		var parser = new Json.Parser();
-		var now = new DateTime.now_local();
 		var rdebug = ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE);
 		try {
 			parser.load_from_data (js);
 			Json.Array acarry;
-
+			DateTime now;
 			var root = parser.get_root().get_object();
 			if(root.has_member("aircraft")) {
 				acarry = root.get_array_member ("aircraft");
@@ -178,32 +186,51 @@ namespace Radar {
 			} else {
 				return;
 			}
+
+			if(root.has_member("now")) {
+				var epoch_sec = root.get_double_member ("now");
+				if (epoch_sec > 9999999999) { // in **millisecs**
+					epoch_sec /= 1000;
+				}
+				var idt = (int64)epoch_sec;
+				int64 msec = (int64)(1000*(epoch_sec - idt));
+				var xdt = new DateTime.from_unix_local (idt);
+				now = xdt.add(TimeSpan.MILLISECOND*msec);
+			} else {
+				now = new DateTime.now_local();
+			}
+
 			foreach (var acnode in acarry.get_elements ()) {
 				var obj = acnode.get_object ();
 				var hex  = obj.get_string_member ("hex");
 				var icao = (uint)  MwpLibC.strtoul(hex, null, 16);  //uint64.parse(hex,16);
 				if(obj.has_member("lat")) {
+					var tsource = (adsbx) ? Radar.RadarSource.ADSBX : Radar.RadarSource.SBS;
 					var ri = radar_cache.lookup(icao);
 					if (ri == null) {
 						ri = new RadarPlot();
-						if(adsbx) {
-							ri.source = Radar.RadarSource.ADSBX;
-						} else {
-							ri.source = Radar.RadarSource.SBS;
-						}
+						ri.source = tsource;
 						ri.srange = Radar.ADSB_DISTNDEF;
 					}
-					var tsource = (adsbx) ? Radar.RadarSource.ADSBX : Radar.RadarSource.SBS;
-					if(obj.has_member("seen")) {
-						var seen = (uint)obj.get_double_member ("seen");
-						TimeSpan ts = (int64)(seen*TimeSpan.SECOND);
+					double seen=0.0;
+					bool is_seen = false;
+					if(obj.has_member("seen_pos")) {
+						seen = (uint)obj.get_double_member ("seen_pos");
+						is_seen = true;
+					} else if(obj.has_member("seen")) {
+						seen = (uint)obj.get_double_member ("seen");
+						is_seen = true;
+					}
+					if(is_seen) {
+						int64 lts = (int64)(seen*1000.0);
+						TimeSpan ts = -1*TimeSpan.MILLISECOND*lts;
 						var xdt = now.add(ts);
-						if(tsource != ri.source && ri.dt != null && xdt.compare(ri.dt) == -1) {
-							MWPLog.message("LATE %s n=%s o=%s late n=%s o=%s\n",
-										   ri.name, tsource.source_id(),
-										   ((Radar.RadarSource)ri.source).source_id(),
-										   xdt.format("%T.%f"), ri.dt.format("%T.%f"));
-							continue;
+						if(tsource != ri.source && ri.dt != null) {
+							// MWPLog.message("MULTI %x %s this=%s/%.12s db=%s/%.12s\n", icao, ri.name.strip(), tsource.source_id(), xdt.format("%T.%f"), ((Radar.RadarSource)ri.source).source_id(), ri.dt.format("%T.%f"));
+							if(xdt.compare(ri.dt) == -1) {
+								// MWPLog.message(" *** SKIP this\n");
+								continue;
+							}
 						}
 						ri.dt = xdt;
 						ri.lq = (seen < 256) ? (uint8)seen : 255;
