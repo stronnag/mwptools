@@ -1,8 +1,8 @@
 2 ICON "../../data/mwp.ico"
 
 1 VERSIONINFO
-FILEVERSION 25,02,22,0
-FILEVERSION 25,02,22,0
+FILEVERSION 25,02,23,0
+FILEVERSION 25,02,23,0
 FILEOS 0x40004
 FILETYPE 1
 {
@@ -12,12 +12,12 @@ FILETYPE 1
     {
       VALUE "CompanyName", "Stronnag MegaCorp"
       VALUE "FileDescription", "mwp"
-      VALUE "FileVersion", "25.02.22"
+      VALUE "FileVersion", "25.02.23"
       VALUE "InternalName", "mwp GCS and MissionPlanner"
       VALUE "LegalCopyright", "Copyright (c) 2014-2025 Jonathan Hudson"
       VALUE "OriginalFilename", "mwp.exe"
       VALUE "ProductName", "mwptools"
-      VALUE "ProductVersion", "25.02.22"
+      VALUE "ProductVersion", "25.02.23"
       VALUE "Comments", "Licence GPL3 or later"
     }
   }

@@ -200,7 +200,8 @@ namespace Radar {
 				now = new DateTime.now_local();
 			}
 
-			foreach (var acnode in acarry.get_elements ()) {
+			for(var j = 0; j < acarry.get_length(); j++) {
+				var acnode = acarry.get_element(j);
 				var obj = acnode.get_object ();
 				var hex  = obj.get_string_member ("hex");
 				var icao = (uint)  MwpLibC.strtoul(hex, null, 16);  //uint64.parse(hex,16);
