@@ -1006,6 +1006,7 @@ namespace Mwp {
 			at.angx /= 10;
 			at.angy /= 10;
 
+
 			var vdiff = (at.angx != Atti._sx) || (at.angy != Atti._sy);
 
 			if(vdiff) {
