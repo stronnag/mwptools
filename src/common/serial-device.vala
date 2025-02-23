@@ -138,6 +138,38 @@ namespace SportDev {
     }
 }
 
+namespace MavSize {
+	struct MSize {
+        uint32 msgid;
+		uint32 size;
+	}
+    const MSize[] sizes = {
+		{Msp.Cmds.MAVLINK_MSG_ID_HEARTBEAT, 9},
+		{Msp.Cmds.MAVLINK_MSG_ID_SYS_STATUS, 31},
+		{Msp.Cmds.MAVLINK_MSG_GPS_RAW_INT, 52},
+		{Msp.Cmds.MAVLINK_MSG_SCALED_PRESSURE, 16},
+		{Msp.Cmds.MAVLINK_MSG_ATTITUDE, 28},
+		{Msp.Cmds.MAVLINK_MSG_RC_CHANNELS_RAW, 22},
+		{Msp.Cmds.MAVLINK_MSG_GPS_GLOBAL_ORIGIN, 16},
+		{Msp.Cmds.MAVLINK_MSG_VFR_HUD, 20},
+		{Msp.Cmds.MAVLINK_MSG_ID_RADIO_STATUS, 9},
+		{Msp.Cmds.MAVLINK_MSG_ID_RADIO, 9},
+		{Msp.Cmds.MAVLINK_MSG_BATTERY_STATUS, 54},
+		{Msp.Cmds.MAVLINK_MSG_STATUSTEXT, 54},
+		{Msp.Cmds.MAVLINK_MSG_ID_TRAFFIC_REPORT, 38},
+	};
+
+	uint32 find_size(uint cmd) {
+		cmd += Msp.MAV_BASE;
+		for(int i = 0; i < sizes.length; i++) {
+			if(cmd == sizes[i].msgid) {
+				return sizes[i].size;
+			}
+		}
+		return 0;
+	}
+}
+
 private class MavCRC : Object {
     private struct MavCRCList {
         uint32 msgid;
@@ -1872,7 +1904,18 @@ public class MWSerial : Object {
 							rxmavsum |= (devbuf[nc] << 8);
 							if(rxmavsum == mavsum) {
 								stats.msgs++;
-								var msg = INAVEvent(){cmd=cmd+Msp.MAV_BASE, len=csize, flags=0, err=errstate, raw=rxbuf[0:csize+4]};
+								var mcmd = cmd+Msp.MAV_BASE;
+								var mmsize = MavSize.find_size(mcmd);
+								if (mmsize ==  0) {
+									mmsize = csize+128;
+								}
+								mmsize = uint32.min(1024, mmsize);
+								// Mav2 nul supression
+								for(var j = csize; j < mmsize; j++) {
+									rxbuf[j] = 0;
+								}
+
+								var msg = INAVEvent(){cmd=mcmd, len=csize, flags=0, err=errstate, raw=rxbuf[0:mmsize]};
 								msgq.push(msg);
 #if UNIX
 								serial_event();
@@ -2022,6 +2065,10 @@ public class MWSerial : Object {
 			uint8* ptx = txbuf;
 			uint8* pdata = data;
 
+			// Mav2 null supression
+			while (len > 1 && pdata[len-1] == 0) {
+				len--;
+			}
 			check_txbuf_size(len+8);
 			mcrc = mavlink_crc(0xffff, (uint8)len);
 

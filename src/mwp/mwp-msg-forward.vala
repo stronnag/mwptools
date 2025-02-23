@@ -219,7 +219,6 @@ namespace MessageForward {
 		uint8*rp;
 		switch (Mwp.conf.forward) {
 		case Mwp.FWDS.LTM:
-		case Mwp.FWDS.minLTM:
 			msg = new uint8[MSize.LTM_OFRAME];
 			rp = SEDE.serialise_i32(msg, (int32)(Mwp.msp.td.origin.lat*1e7));
 			rp = SEDE.serialise_i32(rp, (int32)(Mwp.msp.td.origin.lon*1e7));
@@ -229,7 +228,6 @@ namespace MessageForward {
 			Mwp.fwddev.forward_ltm('O', msg, MSize.LTM_OFRAME);
 			break;
 
-		case Mwp.FWDS.ALL:
 		case Mwp.FWDS.MSP1:
 		case Mwp.FWDS.MSP2:
 			msg = new uint8[MSize.MSP_WP];
@@ -247,7 +245,6 @@ namespace MessageForward {
 			Mwp.fwddev.forward_command( Msp.Cmds.WP, msg, MSize.MSP_WP, v2);
 			break;
 
-		case Mwp.FWDS.minMAV:
 		case Mwp.FWDS.MAV1:
 		case Mwp.FWDS.MAV2:
 			msg = new uint8[sizeof(Mav.MAVLINK_GPS_GLOBAL_ORIGIN)];

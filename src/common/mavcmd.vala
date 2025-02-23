@@ -16,7 +16,7 @@
  */
 
 public class Mav : Object {
-    public enum Cmds {
+	public enum Cmds {
         MAVLINK_MSG_ID_HEARTBEAT = 0,
         MAVLINK_MSG_ID_SYS_STATUS = 1,
         MAVLINK_MSG_GPS_RAW_INT = 24,
