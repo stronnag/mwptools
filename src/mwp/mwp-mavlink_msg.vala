@@ -112,9 +112,6 @@ namespace Mwp {
 			int fvup = 0;
 			int ttup = 0;
 
-			if (fix > 0) {
-				fix--;
-			}
 			fix = int.min(fix, 3);
 
 			if(m.eph != 65535) {

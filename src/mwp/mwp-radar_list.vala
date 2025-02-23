@@ -156,7 +156,7 @@ namespace Radar {
 		if (haveloc) {
 			astat = C_GCS|A_SOUND|A_TOAST|A_RED;
 		} else {
-			if (Mwp.msp.available && Mwp.msp.td.gps.fix > 0) {
+			if (Mwp.msp.available && Mwp.msp.td.gps.fix > 1) {
 				astat = C_VEHICLE|A_SOUND|A_TOAST|A_RED;
 				lat = Mwp.msp.td.gps.lat;
 				lon = Mwp.msp.td.gps.lon;

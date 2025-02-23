@@ -17,7 +17,11 @@ namespace MessageForward {
 		case Mwp.FWDS.MSP1:
 		case Mwp.FWDS.MSP2:
 			msg = new uint8[MSize.MSP_RAW_GPS];
-			msg[0] = (Mwp.msp.td.gps.fix & 3);
+			uint8 fix = Mwp.msp.td.gps.fix;
+			if (fix > 0) {
+				fix--;
+			}
+			msg[0] = fix;
 			msg[1] = Mwp.msp.td.gps.nsats;
 			rp = SEDE.serialise_i32(msg+2, (int32)(Mwp.msp.td.gps.lat*1e7));
 			rp = SEDE.serialise_i32(rp, (int32)(Mwp.msp.td.gps.lon*1e7));
@@ -49,8 +53,7 @@ namespace MessageForward {
 			rp = SEDE.serialise_u16(rp, (uint16)(0xffff));
 			rp = SEDE.serialise_u16(rp, (uint16)(Mwp.msp.td.gps.gspeed *100));
 			rp = SEDE.serialise_u16(rp, (uint16)(Mwp.msp.td.gps.cog*100));
-			uint8 fix = (Mwp.msp.td.gps.fix == 0) ? 0 : uint8.max(2, Mwp.msp.td.gps.fix-1);
-			*rp++ = fix;
+			*rp++ = Mwp.msp.td.gps.fix;
 			*rp++ = Mwp.msp.td.gps.nsats;
 			var msize = (intptr)rp - (intptr)msg;
 			Mwp.fwddev.forward_mav(cmd_to_ucmd(Msp.Cmds.MAVLINK_MSG_GPS_RAW_INT), msg, msize, (Mwp.conf.forward == Mwp.FWDS.MAV1) ? 1 : 2);
@@ -224,7 +227,7 @@ namespace MessageForward {
 			rp = SEDE.serialise_i32(rp, (int32)(Mwp.msp.td.origin.lon*1e7));
 			rp = SEDE.serialise_i32(rp, (int32)(Mwp.msp.td.origin.alt*1e2));
 			*rp++ = 1;
-			*rp = (uint8)(Mwp.msp.td.gps.fix > 0);
+			*rp = (uint8)(Mwp.msp.td.gps.fix > 1);
 			Mwp.fwddev.forward_ltm('O', msg, MSize.LTM_OFRAME);
 			break;
 
