@@ -402,6 +402,15 @@ namespace Mwp {
         return d;
     }
 
+	private void set_td_origin(double lat, double lon) {
+		Mwp.msp.td.origin.lat = lat;
+		Mwp.msp.td.origin.lon = lon;
+		var elev = DemManager.lookup(lat, lon);
+		if (elev != Hgt.NODATA) {
+			Mwp.msp.td.origin.alt = elev;
+		}
+	}
+
 	private bool home_changed(double lat, double lon) {
         bool ret=false;
 		double hlat, hlon;
@@ -423,7 +432,8 @@ namespace Mwp {
             wp0.lon = lon;
 			HomePoint.set_home(lat, lon);
             have_home = true;
-            ret = true;
+			set_td_origin(lat, lon);
+			ret = true;
         }
         return ret;
     }

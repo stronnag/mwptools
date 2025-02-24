@@ -227,7 +227,7 @@ namespace MessageForward {
 			rp = SEDE.serialise_i32(rp, (int32)(Mwp.msp.td.origin.lon*1e7));
 			rp = SEDE.serialise_i32(rp, (int32)(Mwp.msp.td.origin.alt*1e2));
 			*rp++ = 1;
-			*rp = (uint8)(Mwp.msp.td.gps.fix > 1);
+			*rp = Mwp.msp.td.gps.fix;
 			Mwp.fwddev.forward_ltm('O', msg, MSize.LTM_OFRAME);
 			break;
 

@@ -139,16 +139,15 @@ namespace Mwp {
 
     private void report_special_wp(MSP_WP w) {
         double lat, lon;
-        lat = w.lat/10000000.0;
-        lon = w.lon/10000000.0;
+        lat = w.lat/1e7;
+        lon = w.lon/1e7;
         if (w.wp_no == 0) {
-            wp0.lat = lat;
-            wp0.lon = lon;
-			Mwp.msp.td.origin.lat = lat;
-			Mwp.msp.td.origin.lon = lon;
-			var elev = DemManager.lookup(lat, lon);
-			if (elev != Hgt.NODATA) {
-				Mwp.msp.td.origin.alt = elev;
+			if (w.lat != 0  && w.lon != 0 && w.altitude != 0) {
+				if(lat != wp0.lat && lon != wp0.lon) {
+					wp0.lat = lat;
+					wp0.lon = lon;
+					set_td_origin(lat, lon);
+				}
 			}
 		} else {
             MWPLog.message("Special WP#%d (%d) %.6f %.6f %dm %d°\n", w.wp_no, w.action, lat, lon, w.altitude/100, w.p1);

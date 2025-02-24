@@ -1187,6 +1187,8 @@ namespace Mwp {
 							sflags |=  SPK.GPS;
 							want_special |= POSMODE.HOME;
 							MBus.update_home();
+							Mwp.msp.td.origin.lat = lat;
+							Mwp.msp.td.origin.lon = lon;
 						}
 					}
 					update_pos_info();
