@@ -249,6 +249,10 @@ namespace Msp {
 		if (ostat == true) {
 			Mwp.xarm_flags=0xffff;
 			Mwp.lastrx = Mwp.lastok = Mwp.nticks;
+			if(serdev.has_prefix("udp://:")) {
+				Mwp.nopoll = true;
+				Mwp.zznopoll = true;
+			}
 			MWPLog.message("Connected %s (nopoll %s)\n", serdev, Mwp.nopoll.to_string());
 			Mwp.set_replay_menus(false);
 			if(Mwp.rawlog == true) {
@@ -264,7 +268,7 @@ namespace Msp {
 				set_pmask_poller(pmask);
 				Mwp.msp.setup_reader();
 				//var cmode = Mwp.msp.get_commode();
-				if(Mwp.nopoll == false && !Mwp.mqtt_available) {
+				if(Mwp.nopoll == false) {
 					Mwp.serstate = Mwp.SERSTATE.NORMAL;
 					Mwp.msp.use_v2 = false;
 					Mwp.queue_cmd(Msp.Cmds.IDENT,null,0);
@@ -325,6 +329,7 @@ Error: <i>%s</i>
 					ostat = Mwp.msp.open_async.end(res);
 					serial_complete_setup(serdev,ostat);
 				});
+
 		}
     }
 

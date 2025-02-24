@@ -16,11 +16,8 @@ namespace MessageForward {
 
 		case Mwp.FWDS.MSP1:
 		case Mwp.FWDS.MSP2:
-			msg = new uint8[MSize.MSP_RAW_GPS];
+			msg = new uint8[MSize.MSP_RAW_GPS]{0};
 			uint8 fix = Mwp.msp.td.gps.fix;
-			if (fix > 0) {
-				fix--;
-			}
 			msg[0] = fix;
 			msg[1] = Mwp.msp.td.gps.nsats;
 			rp = SEDE.serialise_i32(msg+2, (int32)(Mwp.msp.td.gps.lat*1e7));
@@ -69,7 +66,7 @@ namespace MessageForward {
 		uint8*rp;
 		switch (Mwp.conf.forward) {
 		case Mwp.FWDS.LTM:
-			msg = new uint8[MSize.LTM_AFRAME];
+			msg = new uint8[MSize.LTM_AFRAME]{0};
 			int16 roll = (int16)Mwp.msp.td.atti.angx;
 			if(roll > 180) {
 				roll -=360;
@@ -141,7 +138,7 @@ namespace MessageForward {
 			rp = SEDE.serialise_u32(msg, (uint32)(Mwp.msp.td.state.state &1));
 			Mwp.fwddev.forward_command( Msp.Cmds.STATUS, msg, MSize.MSP_STATUS);
 			msg = new uint8[MSize.MSP_ANALOG];
-			msg[0] = (uint8)(Mwp.msp.td.power.volts*10);
+			msg[0] = (uint8)((Mwp.msp.td.power.volts+0.05)*10);
 			rp = SEDE.serialise_u16(msg+1, (uint16)(Mwp.msp.td.power.mah));
 			rp = SEDE.serialise_u16(rp, (uint16)Mwp.msp.td.rssi.rssi);
 			rp = SEDE.serialise_u16(rp, 0);
@@ -179,6 +176,9 @@ namespace MessageForward {
 			}
 			if(Mwp.xfailsafe) {
 				f0 |= Mwp.fs_mask;
+			}
+			if(Mwp.armed != 0) {
+				f0 |= Mwp.arm_mask;
 			}
 			rp = SEDE.serialise_u32(rp, (uint32)(f0 & 0xffffffff));
 			rp = SEDE.serialise_u32(rp, (uint32) (f0 >> 32));

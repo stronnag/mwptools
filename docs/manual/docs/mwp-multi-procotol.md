@@ -215,7 +215,7 @@ The following settings, apply to received telemetry of  the specified type. No m
 
 * `all`: Any `MSP`, `LTM` `MAVLink` , All received responses will be forwarded.
 * `minLTM`: Minimal set of received `LTM` (typically for antenna trackers; `G`, `A` and `S` frames) will be forwarded.
- * `minMAV`: Minimal set of `MAVLink` (typically for antenna trackers; `ID_HEARTBEAT`, `ID_SYS_STATUS`, `GPS_RAW_INT`, `VFR_HUD`, `ATTITUDE`) will be forwarded.
+ * `minMAV`: Minimal set of `MAVLink` (typically for antenna trackers; `ID_HEARTBEAT`, `ID_SYS_STATUS`, `GPS_RAW_INT`, `ATTITUDE`) will be forwarded.
 
 ### Translated "capability" messages
 

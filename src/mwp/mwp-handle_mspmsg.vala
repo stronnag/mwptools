@@ -1466,21 +1466,6 @@ namespace Mwp {
         return sb.str;
     }
 
-    private void report_bits(uint64 bits) {
-        string mode = null;
-        if((bits & angle_mask) == angle_mask) {
-            mode = "Angle";
-        }
-        else if((bits & horz_mask) == horz_mask) {
-            mode = "Horizon";
-        } else if((bits & (ph_mask | rth_mask)) == 0) {
-            mode = "Acro";
-        }
-        if(mode != null) {
-            Mwp.window.fmode.set_label(mode);
-        }
-    }
-
     private void update_sensor_array() {
         alert_broken_sensors((uint8)(sensor >> 15));
         for(int i = 0; i < 5; i++) {
@@ -1634,7 +1619,6 @@ namespace Mwp {
                     }
                 }
 				}
-                report_bits(bxflag);
                 Craft.RMIcon ri = 0;
                 if ((rth_mask != 0) && ((bxflag & rth_mask) == 0))
                     ri |= Craft.RMIcon.RTH;
@@ -1657,10 +1641,6 @@ namespace Mwp {
             }
                 // acro/horizon/angle changed
             uint8 ltmflags = 0;
-
-            if((bxflag & lmask) != (xbits & lmask)) {
-                report_bits(bxflag);
-            }
 
             if ((bxflag & horz_mask) != 0)
                 ltmflags = Msp.Ltm.HORIZON;
@@ -1699,7 +1679,7 @@ namespace Mwp {
 						want_special |= POSMODE.PH;
 					}
 					ltmflags = Msp.Ltm.POSHOLD;
-                } else if ((wp_mask != 0) && ((bxflag & wp_mask) != 0)) {
+				} else if ((wp_mask != 0) && ((bxflag & wp_mask) != 0)) {
 					if ((xbits & wp_mask) == 0) {
 						MWPLog.message("set WP on %08x %u %ds\n", bxflag, bxflag, (int)duration);
 						want_special |= POSMODE.WP;
@@ -1708,36 +1688,34 @@ namespace Mwp {
                 } else if ((cr_mask != 0) && ((bxflag & cr_mask) != 0)) {
 					if ((xbits & cr_mask) == 0) {
 						MWPLog.message("set CRUISE on %08x %u %ds\n", bxflag, bxflag,
-                                   (int)duration);
+									   (int)duration);
 						want_special |= POSMODE.CRUISE;
 					}
                     ltmflags = Msp.Ltm.CRUISE;
                 } else if ((xbits != bxflag) && craft != null) {
                     craft.set_normal();
                 }
-
-				if(ltmflags != last_ltmf) {
-					msp.td.state.ltmstate = ltmflags;
-					if (ltmflags !=  Msp.Ltm.POSHOLD &&
-						ltmflags !=  Msp.Ltm.WAYPOINTS &&
-						ltmflags !=  Msp.Ltm.RTH &&
-						ltmflags !=  Msp.Ltm.LAND) { // handled by NAV_STATUS
-						TTS.say(TTS.Vox.LTM_MODE);
-					}
-					//					MWPLog.message(":DBG: update state %d (was %d)\n", ltmflags, last_ltmf);
-					Mwp.window.update_state();
-					last_ltmf = ltmflags;
-				}
-				if (want_special != 0) {
-                    var lmstr = Msp.ltm_mode(ltmflags);
-                    Mwp.window.fmode.set_label(lmstr);
-                }
             }
-            xbits = bxflag;
+
+			if(ltmflags != last_ltmf) {
+				msp.td.state.ltmstate = ltmflags;
+				if (ltmflags !=  Msp.Ltm.POSHOLD &&
+					ltmflags !=  Msp.Ltm.WAYPOINTS &&
+					ltmflags !=  Msp.Ltm.RTH &&
+					ltmflags !=  Msp.Ltm.LAND) { // handled by NAV_STATUS
+					TTS.say(TTS.Vox.LTM_MODE);
+				}
+				Mwp.window.update_state();
+				var lmstr = Msp.ltm_mode(ltmflags);
+				Mwp.window.fmode.set_label(lmstr);
+				last_ltmf = ltmflags;
+			}
+			xbits = bxflag;
             armed_processing(bxflag,"msp");
 			MBus.update_state();
-        }
-    }
+		}
+	}
+
 	private void queue_gzone(int cnt) {
 		uint8 zb=(uint8)cnt;
 		queue_cmd(Msp.Cmds.GEOZONE, &zb, 1);

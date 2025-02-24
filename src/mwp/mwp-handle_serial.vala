@@ -146,6 +146,8 @@ namespace Mwp {
     bool ltm_force_sats;
     NAVCAPS navcap;
 
+	const int MSP_WAITMS = 5;
+
 	void serial_reset() {
 		vi = {};
 		navcap = 0;
@@ -606,12 +608,19 @@ namespace Mwp {
 		}
 
         if(fwddev.available() && conf.forward  != FWDS.NONE) {
-            if(cmd < Msp.LTM_BASE && conf.forward == FWDS.ALL) {
-                fwddev.forward_command(cmd, raw, len);
-            } else if(cmd >= Msp.LTM_BASE && cmd < Msp.MAV_BASE && conf.forward == FWDS.minLTM) {				if (cmd == Msp.Cmds.TG_FRAME || cmd == Msp.Cmds.TA_FRAME || cmd == Msp.Cmds.TS_FRAME ) {
+            if(conf.forward == FWDS.ALL) {
+				if (cmd < Msp.LTM_BASE) {
+					fwddev.forward_command(cmd, raw, len);
+				} else if( cmd >= Msp.LTM_BASE && cmd < Msp.MAV_BASE) {
+					fwddev.forward_ltm((uint16)(cmd - Msp.LTM_BASE), raw, len);
+				} else if (cmd >= Msp.MAV_BASE) {
+					fwddev.forward_mav((uint16)(cmd - Msp.MAV_BASE), raw, len, 0);
+				}
+			} else if ( conf.forward == FWDS.minLTM) {
+				if(cmd == Msp.Cmds.TG_FRAME || cmd == Msp.Cmds.TA_FRAME || cmd == Msp.Cmds.TS_FRAME ) {
 					fwddev.forward_ltm((uint16)(cmd - Msp.LTM_BASE), raw, len);
 				}
-            } else if(cmd >= Msp.MAV_BASE && conf.forward == FWDS.minMAV) {
+            } else if(conf.forward == FWDS.minMAV) {
 				if (cmd == Msp.Cmds.MAVLINK_MSG_ID_HEARTBEAT || cmd == Msp.Cmds.MAVLINK_MSG_ID_SYS_STATUS || cmd == Msp.Cmds.MAVLINK_MSG_GPS_RAW_INT || cmd == Msp.Cmds.MAVLINK_MSG_VFR_HUD || cmd == Msp.Cmds.MAVLINK_MSG_ATTITUDE || cmd == Msp.Cmds.MAVLINK_MSG_RC_CHANNELS_RAW) {
 					fwddev.forward_mav((uint16)(cmd - Msp.MAV_BASE), raw, len, 0);
 				}
@@ -625,7 +634,6 @@ namespace Mwp {
 						   cmd == Msp.Cmds.ATTITUDE) {
 					MessageForward.attitude();
 				} else if (cmd == Msp.Cmds.TS_FRAME ||
-						   cmd == Msp.Cmds.MAVLINK_MSG_VFR_HUD ||
 						   cmd == Msp.Cmds.MAVLINK_MSG_ID_SYS_STATUS ||
 						   cmd == Msp.Cmds.STATUS ||
 						   cmd == Msp.Cmds.STATUS_EX ||
@@ -643,8 +651,8 @@ namespace Mwp {
             if (requests.length > 0) {
 				var et = lastp.elapsed();
 				var twait = (uint)(1000*(et-ptdiff));
-				if (twait < 8) {
-					twait = 8 - twait;
+				if (twait < Mwp.MSP_WAITMS) {
+					twait = Mwp.MSP_WAITMS - twait;
 					Timeout.add(twait, () => { next_poll();return false;});
 				} else {
 					next_poll();
