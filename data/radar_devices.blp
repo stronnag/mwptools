@@ -1,0 +1,70 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $RadarDeviceDialog: Adw.Window {
+  title: "Radar Device List";
+  Gtk.Box  {
+    spacing: 8;
+    orientation: vertical;
+    hexpand: true;
+    vexpand: true;
+
+    [start]
+    Adw.HeaderBar {}
+
+    [end]
+
+    // Items
+
+    ScrolledWindow sw {
+      vexpand: true;
+      hexpand: true;
+      ColumnView rdrlist {
+        show-column-separators: true;
+        show-row-separators: true;
+
+        ColumnViewColumn enable {
+          title: 'Active';
+	  expand: false;
+	  resizable: false;
+        }
+
+        ColumnViewColumn uri {
+          title: 'URI';
+          resizable: true;
+          expand: true;
+        }
+
+        ColumnViewColumn remove {
+          title: '⌦';
+        }
+      }
+    }
+
+    // Buttons
+    Gtk.Box {
+      orientation: horizontal;
+      hexpand: true;
+      spacing: 8;
+      Gtk.Box {
+	orientation: horizontal;
+	hexpand: true;
+	halign: start;
+	spacing: 4;
+	Gtk.Button additem {
+	  label: "Add";
+	}
+      }
+      Gtk.Box {
+	orientation: horizontal;
+	hexpand: true;
+	halign: end;
+	spacing: 4;
+	Gtk.Button savelist {
+	  label: "Save";
+	}
+      }
+    }
+    //
+  }
+}

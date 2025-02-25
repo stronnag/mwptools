@@ -34,6 +34,7 @@
     <file preprocess="xml-stripblanks" compressed="true">gps_stats_dialog.ui</file>
     <file preprocess="xml-stripblanks" compressed="true">vas.ui</file>
     <file preprocess="xml-stripblanks" compressed="true">assistnow.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">radar_devices.ui</file>
     <file preprocess="xml-stripblanks" compressed="true">pixmaps/wind-arrow.svg</file>
     <file preprocess="xml-stripblanks" compressed="true">pixmaps/question-mark.svg</file>
   </gresource>

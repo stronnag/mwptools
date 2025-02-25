@@ -491,6 +491,7 @@ namespace Mwp {
 			var swatcher = new SerialWatcher();
 			swatcher.run();
 #endif
+			Radar.init_readers();
 		}
 
 		public void update_state() {
@@ -576,6 +577,11 @@ namespace Mwp {
 
 		private void launch_radar() {
 			Radar.display();
+		}
+
+		private void launch_radar_devices() {
+			var rdr = new Radar.Device.Dialog();
+			rdr.present();
 		}
 
 		private void launch_bbl() {
@@ -804,6 +810,7 @@ namespace Mwp {
 				{"kml-load", Kml.load_file},
 				{"kml-remove", Kml.remove_kml},
 				{"radar-view", launch_radar},
+				{"radar-devices", launch_radar_devices},
 				{"mission-open", load_mission},
 				{"mission-append", append_mission},
 				{"clifile", do_cli_open},

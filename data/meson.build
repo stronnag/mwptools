@@ -32,6 +32,7 @@ blpfiles = [
   'gps_stats_dialog.blp',
   'vas.blp',
   'assistnow.blp',
+  'radar_devices.blp',
 ]
 
 blueprints_ui = []

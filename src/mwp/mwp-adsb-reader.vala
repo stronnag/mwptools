@@ -30,6 +30,7 @@ public class ADSBReader :Object {
 	private string keyval;
 	public  string suffix;
 	private int id;
+	private Cancellable can;
 
 	static int instance = 0;
 
@@ -37,21 +38,29 @@ public class ADSBReader :Object {
 		id = instance;
 		instance++;
 		interval = 1000;
+		can = new Cancellable();
+	}
+
+	public void cancel()  {
+		can.cancel();
 	}
 
 	public ADSBReader.net(string pn, uint16 _port=30003) {
 		this();
 		nreq = 0;
-		var p = pn[6:pn.length].split(":");
-		port = _port;
 		host = "localhost";
-		if (p.length > 1) {
-			port = (uint16)int.parse(p[1]);
-		}
-		if (p.length > 0) {
-			if(p[0].length > 0)
-				host = p[0];
-		}
+		port = _port;
+		try {
+			var up = Uri.parse(pn, UriFlags.HAS_PASSWORD);
+			var h = up.get_host();
+			var p = up.get_port();
+			if (p != -1) {
+				port = (uint16)p;
+			}
+			if (h != null && h != "") {
+				host = h;
+			}
+		} catch {}
 	}
 
 	public ADSBReader.web(string pn) {
@@ -159,7 +168,7 @@ public class ADSBReader :Object {
 
 		try {
 			nreq++;
-			var byt = yield session.send_and_read_async (msg, Priority.DEFAULT, null);
+			var byt = yield session.send_and_read_async (msg, Priority.DEFAULT, can);
 			if (msg.status_code == 200) {
 				var data =  byt.get_data();
 				log_data(data);
@@ -171,6 +180,9 @@ public class ADSBReader :Object {
 				return false;
 			}
 		} catch (Error e) {
+			if (e.matches(Quark.from_string("g-io-error-quark"), IOError.CANCELLED)) {
+				can.reset();
+			}
 			MWPLog.message("ADSB fetch <%s> : %s\n", ahost, e.message);
 			result(null);
 			return false;
@@ -181,14 +193,16 @@ public class ADSBReader :Object {
 		if (interval == 0) {
 			interval = t;
 		}
-		Timeout.add(interval, () => {
-				fetch.begin((obj, res) => {
-						var ok = fetch.end(res);
-						if(ok) {
+		fetch.begin((obj, res) => {
+				var ok = fetch.end(res);
+				if(ok) {
+					Timeout.add(interval, () => {
 							poll(t);
-						}
-					});
-				return false;
+							return false;
+						});
+				} else {
+					MWPLog.message(":DBG: Not re-polling\n");
+				}
 			});
 	}
 
@@ -207,7 +221,7 @@ public class ADSBReader :Object {
 		var inp = new DataInputStream(conn.input_stream);
 		for(;;) {
 			try {
-				var line = yield inp.read_line_async();
+				var line = yield inp.read_line_async(Priority.DEFAULT, can);
 				if (line == null) {
 					result(null);
 					return false;
@@ -217,6 +231,9 @@ public class ADSBReader :Object {
 					result(line.data);
 				}
 			} catch (Error e) {
+				if (e.matches(Quark.from_string("g-io-error-quark"), IOError.CANCELLED)) {
+					can.reset();
+				}
 				result(null);
 				return false;
 			}
@@ -240,13 +257,13 @@ public class ADSBReader :Object {
 			uint8 sz[4];
 			try {
 				size_t nb = 0;
-				var ok = yield inp.read_all_async(sz, Priority.DEFAULT, null, out nb);
+				var ok = yield inp.read_all_async(sz, Priority.DEFAULT, can, out nb);
 				if(ok && nb == 4) {
 					uint32 msize;
 					SEDE.deserialise_u32(sz, out msize);
 					uint8[]pbuf = new uint8[msize];
 					try {
-						ok = yield inp.read_all_async(pbuf, Priority.DEFAULT, null, out nb);
+						ok = yield inp.read_all_async(pbuf, Priority.DEFAULT, can, out nb);
 						if (ok && nb == msize) {
 							Radar.set_astatus();
 							log_data(pbuf);
@@ -265,6 +282,9 @@ public class ADSBReader :Object {
 					return false;
 				}
 			} catch (Error e) {
+				if (e.matches(Quark.from_string("g-io-error-quark"), IOError.CANCELLED)) {
+					can.reset();
+				}
 				result(null);
 				return false;
 			}

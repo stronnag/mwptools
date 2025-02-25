@@ -1,189 +1,5 @@
-/*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- * (c) Jonathan Hudson <jh+mwptools@daria.co.uk>
- */
 
 namespace Radar {
-	const double TOTHEMOON = 999999.0;
-
-	namespace Toast {
-		uint id;
-		double range;
-		Adw.Toast? toast;
-	}
-
-	private struct RadarDev {
-		MWSerial dev;
-		string name;
-		uint tid;
-	}
-
-	private RadarDev[] radardevs;
-	public RadarCache radar_cache;
-	public RadarView radarv;
-
-	public enum Status {
-		UNDEF = 0,
-		ARMED = 1,
-		HIDDEN = 2,
-		STALE = 3,
-	}
-
-	public enum AStatus {
-		C_MAP=1,
-		C_GCS=2,
-		C_HOME=3,
-		C_VEHICLE=4,
-		A_SOUND=8,
-		A_TOAST=16,
-		A_RED=32
-	}
-
-	public enum LateTime {
-		STALE = 15,
-		HIDE = 30,
-		DELETE = 60,
-	}
-
-	public static AStatus astat;
-	public static double lat;
-	public static double lon;
-
-	public uint8 set_initial_state(uint lq) {
-		uint8 state;
-		if(lq > Radar.LateTime.HIDE) {
-			state = Radar.Status.HIDDEN;
-		} else if(lq > Radar.LateTime.STALE) {
-			state = Radar.Status.STALE;
-		} else {
-			state = 0;
-		}
-		return state;
-	}
-
-	private string format_cat(RadarPlot r) {
-		if((r.source & RadarSource.M_INAV) != 0) {
-			return "B6";
-		}
-		return CatMap.to_category(r.etype);
-	}
-
-	private string format_bearing(RadarPlot r) {
-		string ga;
-		if (r.bearing == 0xffff) {
-			ga = "";
-		} else {
-			ga = "%u°".printf(r.bearing);
-		}
-		return ga;
-	}
-
-	private string format_range(RadarPlot r) {
-		string ga = "";
-		if (r.range != TOTHEMOON && r.range != 0.0) {
-			if((r.source & RadarSource.M_ADSB) != 0) {
-				ga = Units.ga_range(r.range);
-			} else {
-				ga = "%.0f %s".printf(Units.distance(r.range), Units.distance_units());
-			}
-		}
-		return ga;
-	}
-
-	private string format_last(RadarPlot r) {
-		if (r.dt != null) {
-			return r.dt.format("%T");
-		} else {
-			return "";
-		}
-	}
-
-	private string format_status(RadarPlot r) {
-		string sstr = "";
-		if(r.state == 0) {
-			sstr = ((RadarSource)r.source).to_string();
-		} else {
-			sstr = RadarView.status[r.state];
-		}
-		return "%s / %u".printf(sstr, r.lq);
-	}
-
-	private string format_alt(RadarPlot r) {
-		string ga;
-		if((r.source & RadarSource.M_ADSB) != 0) {
-			ga = Units.ga_alt(r.altitude);
-		} else {
-			ga = "%.0f %s".printf(Units.distance(r.altitude), Units.distance_units());
-		}
-		return ga;
-	}
-
-	private string format_speed(RadarPlot r) {
-		string ga;
-		if((r.source & RadarSource.M_ADSB) != 0) {
-			ga = Units.ga_speed(r.speed);
-		} else {
-			ga = "%.0f %s".printf(Units.speed(r.speed), Units.speed_units());
-		}
-		return ga;
-	}
-
-	private string format_course(RadarPlot r) {
-		string ga;
-		if (r.heading ==  0xffff) {
-			ga = "";
-		} else {
-			ga = "%u°".printf(r.heading);
-		}
-		return ga;
-	}
-
-	public static AStatus set_astatus() {
-		astat = 0;
-		bool haveloc = GCS.get_location(out lat, out lon); // always wins
-		if (haveloc) {
-			astat = C_GCS|A_SOUND|A_TOAST|A_RED;
-		} else {
-			if (Mwp.msp.available && Mwp.msp.td.gps.fix > 1) {
-				astat = C_VEHICLE|A_SOUND|A_TOAST|A_RED;
-				lat = Mwp.msp.td.gps.lat;
-				lon = Mwp.msp.td.gps.lon;
-			} else if(HomePoint.is_valid()) {
-				haveloc = HomePoint.get_location(out lat, out lon);
-				if (haveloc) {
-					astat = C_HOME|A_RED;
-				}
-			}
-		}
-		if (astat == 0) {
-			MapUtils.get_centre_location(out lat, out lon);
-			astat = C_MAP;
-		}
-		return astat;
-	}
-
-	public bool lookup_radar(string s) {
-		foreach (var r in radardevs) {
-			if (r.name == s) {
-				MWPLog.message("Found radar %s\n", s);
-				return true;
-			}
-		}
-		return false;
-	}
-
 	public void display() {
 		if(radarv.vis) {
 			radarv.visible=false;
@@ -199,134 +15,6 @@ namespace Radar {
 
 	public bool upsert(uint k, RadarPlot v) {
 		return radar_cache.upsert(k,v);
-	}
-
-	public void init() {
-		radar_cache = new Radar.RadarCache();
-		radarv = new RadarView();
-		Radar.init_icons();
-
-		foreach (var rd in Mwp.radar_device) {
-			var parts = rd.split(",");
-			foreach(var p in parts) {
-				var pn = p.strip();
-				if (pn.has_prefix("sbs://")) {
-					MWPLog.message("Set up SBS radar device %s\n", pn);
-					var sbs = new ADSBReader.net(pn);
-					sbs.suffix="txt";
-					sbs.result.connect((s) => {
-							if (s == null) {
-								Timeout.add_seconds(60, () => {
-										sbs.line_reader.begin();
-										return false;
-									});
-							} else {
-								var px = sbs.parse_csv_message((string)s);
-								if (px != null) {
-									decode_sbs(px);
-								}
-							}
-						});
-					sbs.line_reader.begin();
-				} else if (pn.has_prefix("jsa://")) {
-					MWPLog.message("Set up JSA radar device %s\n", pn);
-					var jsa = new ADSBReader.net(pn, 37007);
-					jsa.suffix="json";
-					jsa.result.connect((s) => {
-							if (s == null) {
-								Timeout.add_seconds(60, () => {
-										jsa.line_reader.begin();
-										return false;
-									});
-							} else {
-								decode_jsa((string)s);
-							}
-						});
-					jsa.line_reader.begin();
-				} else if (pn.has_prefix("pba://")) {
-#if PROTOC
-					MWPLog.message("Set up PSA radar device %s\n", pn);
-					var pba = new ADSBReader.net(pn, 38008);
-					pba.suffix = "pb";
-					pba.result.connect((s) => {
-							if (s == null) {
-								Timeout.add_seconds(60, () => {
-										pba.packet_reader.begin();
-										return false;
-									});
-							} else {
-								decode_pba(s);
-							}
-						});
-					pba.packet_reader.begin();
-#else
-					MWPLog.message("mwp not compiled with protobuf-c\n");
-#endif
-
-				} else if (pn.has_prefix("http://") ||
-						   pn.has_prefix("https://") ||
-						   pn.has_prefix("adsbx://") ) {
-					uint8 htype = 0;
-					if(pn.has_suffix(".pb")) {
-						htype = 1;
-					} else if(pn.has_suffix(".json")) {
-						htype = 2;
-					} else if (pn.has_prefix("adsbx://")) {
-						htype = 3;
-					}
-
-					if(htype != 0) {
-						MWPLog.message("Set up http radar device %s\n", pn);
-						ADSBReader httpa;
-						if(htype == 3) {
-							httpa = new ADSBReader.adsbx(pn);
-						} else  {
-							httpa = new ADSBReader.web(pn);
-						}
-						httpa.suffix = (htype == 1) ? "pb" : "json";
-						httpa.result.connect((s) => {
-								if (s == null) {
-									Timeout.add_seconds(60, () => {
-											httpa.poll();
-											return false;
-										});
-								} else {
-									if(htype == 1) {
-										decode_pba(s);
-									} else {
-										s[s.length-1] = 0;
-										decode_jsa((string)s, (htype == 3));
-									}
-								}
-							});
-						httpa.poll();
-					}
-				} else {
-					RadarDev r = {};
-					r.name = pn;
-					MWPLog.message("Set up radar device %s\n", r.name);
-					r.dev = new MWSerial();
-					r.dev.set_mode(MWSerial.Mode.SIM);
-					r.dev.set_pmask(MWSerial.PMask.INAV);
-					r.dev.serial_event.connect(()  => {
-							MWSerial.INAVEvent? m;
-							while((m = r.dev.msgq.try_pop()) != null) {
-								MspRadar.handle_radar(r.dev, m.cmd,m.raw,m.len,m.flags,m.err);
-							}
-						});
-					radardevs += r;
-				}
-			}
-		}
-
-		foreach (var r in radardevs) {
-			try_radar_dev(r);
-		}
-
-		Timeout.add_seconds(2, () => {
-				radar_periodic();
-				return true;
-			});
 	}
 
 	private static bool do_purge = false;
@@ -438,7 +126,9 @@ namespace Radar {
 				}
 			}
 			if(( Radar.astat & Radar.AStatus.A_SOUND) == Radar.AStatus.A_SOUND) {
-				Audio.play_alarm_sound(MWPAlert.GENERAL);
+				if(Radar.do_audio) {
+					Audio.play_alarm_sound(MWPAlert.GENERAL);
+				}
 			}
 		} else {
 			if(Toast.toast != null) {
@@ -447,28 +137,6 @@ namespace Radar {
 			}
 		}
 	}
-
-    private void try_radar_dev(RadarDev r) {
-		if(!r.dev.available) {
-			r.dev.open_async.begin(r.name, 0, (obj,res) => {
-					var ok = r.dev.open_async.end(res);
-					if (ok) {
-						r.dev.setup_reader();
-						MWPLog.message("start radar reader %s\n", r.name);
-					} else {
-						string fstr;
-						r.dev.get_error_message(out fstr);
-						MWPLog.message("Radar reader %s\n", fstr);
-						r.tid = Timeout.add_seconds(15, () => {
-								r.tid = 0;
-								try_radar_dev(r);
-								return false;
-							});
-					}
-				});
-		}
-    }
-
 
 	public class RadarView : Adw.Window {
 		internal bool vis;
@@ -488,12 +156,14 @@ namespace Radar {
 		}
 
 		~RadarView() {
-			foreach (var r in radardevs) {
+			for (var i = 0; i < items.get_n_items(); i++) {
+				var r = items.get_item(i) as RadarDev;
 				if (r.tid != 0) {
 					Source.remove(r.tid);
 				}
-				if(r.dev != null && r.dev.available)
-					r.dev.close();
+				if(r.dtype == IOType.MSER && r.dev != null && ((MWSerial)r.dev).available) {
+					((MWSerial)r.dev).close();
+				}
 			}
 		}
 
@@ -802,6 +472,13 @@ namespace Radar {
 
 			var sbox = new Gtk.Box(Gtk.Orientation.VERTICAL, 2);
 			var header_bar = new Adw.HeaderBar();
+			var achkb = new Gtk.CheckButton.with_label("Audio Alerts");
+			achkb.active = Radar.do_audio;
+			achkb.toggled.connect(() => {
+					Radar.do_audio = achkb.active;
+				});
+
+			header_bar.pack_end(achkb);
 			sbox.append(header_bar);
 			var scrolled = new Gtk.ScrolledWindow ();
 			set_default_size (900, 400);
