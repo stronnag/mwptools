@@ -200,8 +200,6 @@ public class ADSBReader :Object {
 							poll(t);
 							return false;
 						});
-				} else {
-					MWPLog.message(":DBG: Not re-polling\n");
 				}
 			});
 	}
