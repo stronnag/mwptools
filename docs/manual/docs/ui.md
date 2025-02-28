@@ -71,6 +71,7 @@ The following tables summarise the available menu options. Where usage is not ob
 | Centre on position ... | Shows the ["Centre on Position" selector and "favourite places" editor"](misc-ui-elements.md#favourite-places) |
 | GPS Statistics | Displays FC GPS status (rate, packets, errors, timeouts, HDOP/EPV/EPH) |
 | Radar View | Displays the [Radar (inav radar / ADS-B) view](mwp-Radar-View.md) |
+| Radar Devices| Configure the [Radar (inav radar / ADS-B) devices](mwp-Radar-View.md) |
 | Telemetry Tracker | Displays the [Telemetry Tracker UI](mwp-telemetry-tracker.md) |
 | Flight Statistics | Display the flight statistic dialogue (also automatic on disarm) |
 | Video Stream | Opens the (live) video stream window |

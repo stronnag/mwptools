@@ -283,6 +283,22 @@ The columns are sortable. Note that since the introduction of [Telemetry Trackin
 
 ![inav-radar-sim](images/mwp-inav-radar.png){: width="60%" }
 
+
+## Radar Devices
+
+The Radar Devices menu provides a UI to view, edit, add, remove {{ mwp }} radar device entries.
+
+![radar-devices](images/mwp-radar-devices.png){: width="60%" }
+
+Devices are read from `~/.config/mwp/cmdopts` or provided via the `--radar-device` CLI option. Active devices are listed before non-active devices.
+
+* Devices may be made active or non-active by clicking on the "Active" checkbox.
+* Devices may be removed from the list by clicking the "remove / delete" button.
+* The device name may be edited in place. If the device name is changed, the device will be deactivated if active, the old entry removed and a new entry created.
+
+* The "Add" button allows a new device (URI / device node) to be added to the list.
+* The "Save" button rewrites  `~/.config/mwp/cmdopts` with the (updated) radar device list. The extant file is renamed to  `~/.config/mwp/cmdopts.bak`
+
 ## Simulators
 
 There are simulators for both INAV-radar and MAVLink 'Traffic Report' (e.g. uAvionix PingRX) in the `mwptools/src/samples/radar` directory.
