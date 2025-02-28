@@ -27,7 +27,9 @@ mwp supports the real-time display of adjacent aircraft (GA / other models) usin
 
 * [INAV-radar](https://github.com/OlivierC-FR/ESP32-INAV-Radar/) (INAV UAS).
 * MAVlink Traffic Report (e.g. full-size aviation, typically ADS-B via a device such as uAvionix PingRX) (GA).
-* ADS-B using Dump1090 /  SBS-1 Basestation streaming TCP protocol (GA).
+* INAV `MSP2_ADSB_VEHICLE_LIST` (GA)
+* ADS-B using Dump1090 /  SBS-1 Basestation streaming TCP protocol (GA) / JSON / Protobuf
+* Internet ADSB providers
 * Other mwp supported telemetry protocols (INAV UAS).
 
 mwp provides logging and the replay of:
