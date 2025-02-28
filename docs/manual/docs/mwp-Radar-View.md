@@ -294,7 +294,8 @@ Devices are read from `~/.config/mwp/cmdopts` or provided via the `--radar-devic
 
 * Devices may be made active or non-active by clicking on the "Active" checkbox.
 * Devices may be removed from the list by clicking the "remove / delete" button.
-* The device name may be edited in place. If the device name is changed, the device will be deactivated if active, the old entry removed and a new entry created.
+* The device name may be "inline" edited in place. If the device name is changed, the device will be deactivated (if active), the old entry removed and a new entry created.
+
 
 * The "Add" button allows a new device (URI / device node) to be added to the list.
 * The "Save" button rewrites  `~/.config/mwp/cmdopts` with the (updated) radar device list. The extant file is renamed to  `~/.config/mwp/cmdopts.bak`
