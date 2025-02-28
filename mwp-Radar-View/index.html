@@ -895,6 +895,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#radar-devices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Radar Devices
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#simulators" class="md-nav__link">
     <span class="md-ellipsis">
       Simulators
@@ -1746,6 +1755,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#radar-devices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Radar Devices
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#simulators" class="md-nav__link">
     <span class="md-ellipsis">
       Simulators
@@ -2237,6 +2255,21 @@ where <code>{lat}</code>, <code>{lon}</code> and <code>{range}</code> are the ce
 <p><img alt="Florida-may-2020" src="../images/florida-2020-05.png" width="80%" /></p>
 <h3 id="simulated-inav-radar-view">Simulated INAV radar view<a class="headerlink" href="#simulated-inav-radar-view" title="Permanent link">#</a></h3>
 <p><img alt="inav-radar-sim" src="../images/mwp-inav-radar.png" width="60%" /></p>
+<h2 id="radar-devices">Radar Devices<a class="headerlink" href="#radar-devices" title="Permanent link">#</a></h2>
+<p>The Radar Devices menu provides a UI to view, edit, add, remove <a href="https://github.com/stronnag/mwptools">mwp</a> radar device entries.</p>
+<p><img alt="radar-devices" src="../images/mwp-radar-devices.png" width="60%" /></p>
+<p>Devices are read from <code>~/.config/mwp/cmdopts</code> or provided via the <code>--radar-device</code> CLI option. Active devices are listed before non-active devices.</p>
+<ul>
+<li>Devices may be made active or non-active by clicking on the "Active" checkbox.</li>
+<li>Devices may be removed from the list by clicking the "remove / delete" button.</li>
+<li>
+<p>The device name may be edited in place. If the device name is changed, the device will be deactivated if active, the old entry removed and a new entry created.</p>
+</li>
+<li>
+<p>The "Add" button allows a new device (URI / device node) to be added to the list.</p>
+</li>
+<li>The "Save" button rewrites  <code>~/.config/mwp/cmdopts</code> with the (updated) radar device list. The extant file is renamed to  <code>~/.config/mwp/cmdopts.bak</code></li>
+</ul>
 <h2 id="simulators">Simulators<a class="headerlink" href="#simulators" title="Permanent link">#</a></h2>
 <p>There are simulators for both INAV-radar and MAVLink 'Traffic Report' (e.g. uAvionix PingRX) in the <code>mwptools/src/samples/radar</code> directory.</p>
 <p>There is a replay tool for SBS CSV logs <code>mwptools/src/samples/sbs-test/sbs-player.rb</code>.</p>

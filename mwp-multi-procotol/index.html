@@ -1934,7 +1934,7 @@ Types of message to forward (none, LTM, minLTM, minMAV, all, MSP1, MSP2, MAV1, M
 <ul>
 <li><code>all</code>: Any <code>MSP</code>, <code>LTM</code> <code>MAVLink</code> , All received responses will be forwarded.</li>
 <li><code>minLTM</code>: Minimal set of received <code>LTM</code> (typically for antenna trackers; <code>G</code>, <code>A</code> and <code>S</code> frames) will be forwarded.</li>
-<li><code>minMAV</code>: Minimal set of <code>MAVLink</code> (typically for antenna trackers; <code>ID_HEARTBEAT</code>, <code>ID_SYS_STATUS</code>, <code>GPS_RAW_INT</code>, <code>VFR_HUD</code>, <code>ATTITUDE</code>) will be forwarded.</li>
+<li><code>minMAV</code>: Minimal set of <code>MAVLink</code> (typically for antenna trackers; <code>ID_HEARTBEAT</code>, <code>ID_SYS_STATUS</code>, <code>GPS_RAW_INT</code>, <code>ATTITUDE</code>) will be forwarded.</li>
 </ul>
 <h3 id="translated-capability-messages">Translated "capability" messages<a class="headerlink" href="#translated-capability-messages" title="Permanent link">#</a></h3>
 <p>The following settings are "capability" based and may involve translation of a forwarded protocol into a different protocol. For example, a MSP <code>MSP_RAW_GPS</code> might be forwarded to a <code>LTM</code> consumer as LTM <code>G_FRAME</code> or to a MAVLink consumer as <code>MAVLINK_MSG_GPS_RAW_INT</code>. Messages are grouped into the following "capailities":</p>
