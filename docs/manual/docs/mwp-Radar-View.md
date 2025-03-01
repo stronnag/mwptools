@@ -286,7 +286,7 @@ The columns are sortable. Note that since the introduction of [Telemetry Trackin
 
 ## Radar Devices
 
-The Radar Devices menu provides a UI to view, edit, add, remove {{ mwp }} radar device entries.
+The Radar Devices menu option provides a UI to view, edit, add, remove {{ mwp }} radar device entries.
 
 ![radar-devices](images/mwp-radar-devices.png){: width="60%" }
 
@@ -299,6 +299,18 @@ Devices are read from `~/.config/mwp/cmdopts` or provided via the `--radar-devic
 
 * The "Add" button allows a new device (URI / device node) to be added to the list.
 * The "Save" button rewrites  `~/.config/mwp/cmdopts` with the (updated) radar device list. The extant file is renamed to  `~/.config/mwp/cmdopts.bak`
+
+In the above image, mwp was invoked as `mwp --radar-device 35:53:17:04:14:BA` and `~/.config/mwp/cmdopts` contained the following definitions:
+
+```
+--radar-device adsbx://opendata.adsb.fi?range=40&interval=1000&format=api/v2/lat/{}/lon/{}/dist/{}
+--radar-device http://jagular.daria.co.uk/dump1090/data/aircraft.json
+# --radar-device adsbx://api.adsb.lol?range=40&interval=1000
+# --radar-device adsbx://api.adsb.one?range=40&interval=1000
+# --radar-device http://woozle/readsb/data/aircraft.pb
+# --radar-device jsa://woozle
+# --radar-device pba://woozle
+```
 
 ## Simulators
 
