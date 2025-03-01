@@ -769,6 +769,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#keyboard-accelerators" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard Accelerators
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#panel-settings" class="md-nav__link">
     <span class="md-ellipsis">
       Panel settings
@@ -1677,6 +1686,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#keyboard-accelerators" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard Accelerators
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#panel-settings" class="md-nav__link">
     <span class="md-ellipsis">
       Panel settings
@@ -2000,6 +2018,14 @@ Beaulieu|50.8047104|-1.4942621|17
 Jurby:54.353974:-4.523600:-1
 </code></pre>
 <p>The user may maintain these files manually if used, or use the <a href="../misc-ui-elements/#favourite-places">graphic places editor</a>. The command line option <code>--centre</code> accepts a place name as well as a geographic coordinates.</p>
+<h2 id="keyboard-accelerators">Keyboard Accelerators<a class="headerlink" href="#keyboard-accelerators" title="Permanent link">#</a></h2>
+<p>The keyboard accelerators (to invoke functions) may be defined / overwritten by the file <code>~/.config/mwp/accels</code>. This file consists of lines listing the action name and the accelerator key, for example:</p>
+<div class="highlight"><pre><span></span><code># Action name (with or without &quot;win.&quot; prefix), a space, key definition
+radar-devices &lt;control&gt;&lt;shift&gt;d
+win.vlegend &lt;control&gt;&lt;shift&gt;v
+</code></pre></div>
+<p>The first (non-comment) line adds a new accelerator, the second replaces the existing <code>&lt;control&gt;&lt;shift&gt;v</code> for toggle the ADSB altitude / colour legend.</p>
+<p>The list of recognised action names and accelerators (aka shortcuts) may be found in <a href="https://github.com/stronnag/mwptools/blob/5cdfa86c2b2300f971fff52a9ee11c3405540ffd/src/mwp/mwp-window.vala#L803">mwp-window.vala</a>.</p>
 <h2 id="panel-settings">Panel settings<a class="headerlink" href="#panel-settings" title="Permanent link">#</a></h2>
 <p>See the <a href="../mwp-Gtk4-migration-guide/">migration guide</a> for information concerning:</p>
 <ul>
