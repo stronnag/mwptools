@@ -2256,7 +2256,7 @@ where <code>{lat}</code>, <code>{lon}</code> and <code>{range}</code> are the ce
 <h3 id="simulated-inav-radar-view">Simulated INAV radar view<a class="headerlink" href="#simulated-inav-radar-view" title="Permanent link">#</a></h3>
 <p><img alt="inav-radar-sim" src="../images/mwp-inav-radar.png" width="60%" /></p>
 <h2 id="radar-devices">Radar Devices<a class="headerlink" href="#radar-devices" title="Permanent link">#</a></h2>
-<p>The Radar Devices menu provides a UI to view, edit, add, remove <a href="https://github.com/stronnag/mwptools">mwp</a> radar device entries.</p>
+<p>The Radar Devices menu option provides a UI to view, edit, add, remove <a href="https://github.com/stronnag/mwptools">mwp</a> radar device entries.</p>
 <p><img alt="radar-devices" src="../images/mwp-radar-devices.png" width="60%" /></p>
 <p>Devices are read from <code>~/.config/mwp/cmdopts</code> or provided via the <code>--radar-device</code> CLI option. Active devices are listed before non-active devices.</p>
 <ul>
@@ -2270,6 +2270,15 @@ where <code>{lat}</code>, <code>{lon}</code> and <code>{range}</code> are the ce
 </li>
 <li>The "Save" button rewrites  <code>~/.config/mwp/cmdopts</code> with the (updated) radar device list. The extant file is renamed to  <code>~/.config/mwp/cmdopts.bak</code></li>
 </ul>
+<p>In the above image, mwp was invoked as <code>mwp --radar-device 35:53:17:04:14:BA</code> and <code>~/.config/mwp/cmdopts</code> contained the following definitions:</p>
+<div class="highlight"><pre><span></span><code>--radar-device adsbx://opendata.adsb.fi?range=40&amp;interval=1000&amp;format=api/v2/lat/{}/lon/{}/dist/{}
+--radar-device http://jagular.daria.co.uk/dump1090/data/aircraft.json
+# --radar-device adsbx://api.adsb.lol?range=40&amp;interval=1000
+# --radar-device adsbx://api.adsb.one?range=40&amp;interval=1000
+# --radar-device http://woozle/readsb/data/aircraft.pb
+# --radar-device jsa://woozle
+# --radar-device pba://woozle
+</code></pre></div>
 <h2 id="simulators">Simulators<a class="headerlink" href="#simulators" title="Permanent link">#</a></h2>
 <p>There are simulators for both INAV-radar and MAVLink 'Traffic Report' (e.g. uAvionix PingRX) in the <code>mwptools/src/samples/radar</code> directory.</p>
 <p>There is a replay tool for SBS CSV logs <code>mwptools/src/samples/sbs-test/sbs-player.rb</code>.</p>
