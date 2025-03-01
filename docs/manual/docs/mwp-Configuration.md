@@ -190,6 +190,20 @@ Example `places`
 
 The user may maintain these files manually if used, or use the [graphic places editor](misc-ui-elements.md#favourite-places). The command line option `--centre` accepts a place name as well as a geographic coordinates.
 
+## Keyboard Accelerators
+
+The keyboard accelerators (to invoke functions) may be defined / overwritten by the file `~/.config/mwp/accels`. This file consists of lines listing the action name and the accelerator key, for example:
+
+```
+# Action name (with or without "win." prefix), a space, key definition
+radar-devices <control><shift>d
+win.vlegend <control><shift>v
+```
+
+The first (non-comment) line adds a new accelerator, the second replaces the existing `<control><shift>v` for toggle the ADSB altitude / colour legend.
+
+The list of recognised action names and accelerators (aka shortcuts) may be found in [mwp-window.vala](https://github.com/stronnag/mwptools/blob/5cdfa86c2b2300f971fff52a9ee11c3405540ffd/src/mwp/mwp-window.vala#L803).
+
 ## Panel settings
 
 See the [migration guide](mwp-Gtk4-migration-guide.md) for information concerning:

@@ -905,6 +905,34 @@ namespace Mwp {
 				MwpMenu.set_menu_state(Mwp.window, "followme", true);
 			}
 
+			var fn = MWPUtils.find_conf_file("accels");
+			if (fn != null) {
+				//var aplist = app.list_action_descriptions();
+				if(fn != null) {
+					var fs = FileStream.open(fn, "r");
+					if (fs != null) {
+						string line;
+						while ((line = fs.read_line()) != null) {
+							line = line.strip();
+							if(line.has_prefix("#")) {
+								continue;
+							}
+							var parts = line.split(" ");
+							if (parts.length == 2) {
+								var act = parts[0];
+								if(!act.has_prefix("win.")) {
+									act = "win.%s".printf(act);
+								}
+								var accel = parts[1];
+								uint u1,u2;
+								if (Gtk.accelerator_parse (accel,out u1, out u2)) {
+									app.set_accels_for_action(act, {accel});
+								}
+							}
+						}
+					}
+				}
+			}
 #if WINDOWS
         MwpMenu.set_menu_state(Mwp.window, "terminal", false);
 #endif
