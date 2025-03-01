@@ -196,7 +196,7 @@ The keyboard accelerators (to invoke functions) may be defined / overwritten by 
 
 ```
 # Action name (with or without "win." prefix), a space, key definition
-radar-devices <control><shift>d
+radar-devices <control><shift>r
 win.vlegend <control><shift>v
 ```
 
