@@ -8,7 +8,9 @@ template $RawWindow : Adw.Window {
   Box vbox {
     orientation: vertical;
     [start]
-    Adw.HeaderBar {}
+    Adw.HeaderBar {
+      decoration-layout: "icon:close";
+    }
     [End]
     // Row 1
     Box {

@@ -10,7 +10,9 @@ template $TADialog: Adw.Window {
     orientation: vertical;
 
     [start]
-    Adw.HeaderBar {}
+    Adw.HeaderBar {
+      decoration-layout: "icon:close";
+    }
 
     [end]
     Box {

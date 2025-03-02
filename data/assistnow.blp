@@ -8,7 +8,9 @@ template $AssistWindow: Adw.Window {
   Box {
     orientation: vertical;
     [start]
-    Adw.HeaderBar {}
+    Adw.HeaderBar {
+      decoration-layout: "icon:close";
+    }
 
     [end]
     Box {

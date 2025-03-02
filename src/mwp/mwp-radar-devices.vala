@@ -375,7 +375,7 @@ namespace Radar {
 			var ser =  new MWSerial();
 			r.dev =  ser;
 			r.dtype = IOType.MSER;
-			r.enabled = (enable);
+			r.enabled = enable;
 			ser.set_mode(MWSerial.Mode.SIM);
 			ser.set_pmask(MWSerial.PMask.INAV);
 			ser.serial_event.connect(()  => {
@@ -384,9 +384,15 @@ namespace Radar {
 						MspRadar.handle_radar(ser, m.cmd,m.raw,m.len,m.flags,m.err);
 					}
 				});
+
+			ser.serial_lost.connect(() => {
+					MWPLog.message(":DBG: Radar IOSER %s lost\n", r.name);
+					queue_remove(r);
+				});
+
 			try_radar_dev(r);
 		}
-		items.append((Object)r);
+		items.insert_sorted(r, cmpfunc);
 	}
 
 	public void update_active(int j, bool  active, bool qdel = false) {
@@ -399,11 +405,10 @@ namespace Radar {
 				r.tid = 0;
 			}
 			if (r.dtype == IOType.MSER) {
-				((MWSerial)r.dev).close();
-				if (qdel) {
+				if (prev) {
+					((MWSerial)r.dev).close();
 					Radar.items.remove(j);
 				}
-
 			} else {
 				if (prev) {
 					r.qdel = qdel;
@@ -433,7 +438,6 @@ namespace Radar {
 	}
 
 	public void init() {
-		do_audio = (Mwp.conf.radar_alert_range > 0 && Mwp.conf.radar_alert_altitude > 0);
 		radar_cache = new Radar.RadarCache();
 		radarv = new RadarView();
 		Radar.init_icons();
@@ -441,6 +445,7 @@ namespace Radar {
 	}
 
 	public void init_readers() {
+		do_audio = (Mwp.conf.radar_alert_range > 0 && Mwp.conf.radar_alert_altitude > 0);
 		foreach (var rd in Mwp.radar_device) {
 			var parts = rd.split(",");
 			foreach(var p in parts) {

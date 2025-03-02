@@ -275,6 +275,7 @@ namespace Mwp {
 			}
 			show_locale();
 			TelemTracker.init();
+			Radar.init();
 			devman = new DevManager(conf.bluez_disco);
 			devman.device_added.connect((dd) => {
 					string s = devname_for_dd(dd);
@@ -479,7 +480,6 @@ namespace Mwp {
 
 			dtnotify = new MwpNotify();
 			Cli.handle_options();
-			Radar.init();
 			craft = new Craft();
 			DND.init();
 			GCS.init();

@@ -165,10 +165,7 @@ namespace Radar {
 						w.close_request.connect(() => {
 								if (w.applied) {
 									if(w.dn.text != "") {
-										var rd = new RadarDev();
-										rd.name = w.dn.text;
-										rd.enabled = false;
-										Radar.items.insert_sorted(rd, cmpfunc);
+										Radar.add_radar(w.dn.text, false);
 									}
 								}
 								additem.sensitive = true;

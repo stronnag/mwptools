@@ -35,7 +35,9 @@ namespace MissionManager {
 		private void create_widgets (Mission []_msx) {
 			cbs = new Gtk.CheckButton[msx.length];
 			var vbox = new Box (Orientation.VERTICAL, 2);
-			vbox.append(new Adw.HeaderBar());
+			var hb = new Adw.HeaderBar();
+			hb.decoration_layout = "icon:close";
+			vbox.append(hb);
 			int k = 0;
 			if (_msx.length > 0) {
 				foreach (var m in _msx) {

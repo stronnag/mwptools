@@ -257,6 +257,7 @@ public class  ScrollView : Adw.Window {
 
 		var box = new Gtk.Box(Gtk.Orientation.VERTICAL, 0);
 		var header_bar = new Adw.HeaderBar();
+		header_bar.decoration_layout = "icon:close";
 		box.append(header_bar);
 
 		var win = new Gtk.ScrolledWindow();

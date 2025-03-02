@@ -3,7 +3,6 @@ using Adw 1;
 
 template $RadarDeviceDialog: Adw.Window {
   title: "Radar Device List";
-  modal: true;
 
   Gtk.Box  {
     spacing: 8;
@@ -12,8 +11,9 @@ template $RadarDeviceDialog: Adw.Window {
     vexpand: true;
 
     [start]
-    Adw.HeaderBar {}
-
+    Adw.HeaderBar {
+      decoration-layout: "icon:close";
+    }
     [end]
 
     // Items
@@ -54,7 +54,8 @@ template $RadarDeviceDialog: Adw.Window {
 	halign: start;
 	spacing: 4;
 	Gtk.Button additem {
-	  label: "Add";
+	  icon-name: "list-add";
+	  tooltip-text: "Add new entry";
 	}
       }
       Gtk.Box {
