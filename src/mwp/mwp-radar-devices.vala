@@ -405,10 +405,10 @@ namespace Radar {
 				r.tid = 0;
 			}
 			if (r.dtype == IOType.MSER) {
-				if (prev) {
-					((MWSerial)r.dev).close();
-					Radar.items.remove(j);
-				}
+				((MWSerial)r.dev).close();
+				 if (qdel) {
+					 Radar.items.remove(j);
+				 }
 			} else {
 				if (prev) {
 					r.qdel = qdel;
