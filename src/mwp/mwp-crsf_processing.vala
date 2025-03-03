@@ -29,7 +29,6 @@ namespace CRSF {
 	const uint8 LINKSTATS_ID = 0x14;
 	const double ATTITODEG = (57.29578 / 10000.0);
 
-	[Compact]
 	public class Teledata : Object {
 		public char id;
 		public double lat;

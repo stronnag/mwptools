@@ -16,7 +16,6 @@
  */
 
 namespace Frsky {
-	[Compact]
 	public class Sportdata : Object {
 		public char id;
 		public bool active;

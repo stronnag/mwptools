@@ -180,7 +180,7 @@ public class ADSBReader :Object {
 				return false;
 			}
 		} catch (Error e) {
-			if (e.matches(Quark.from_string("g-io-error-quark"), IOError.CANCELLED)) {
+			if (can.is_cancelled()) {
 				can.reset();
 			}
 			MWPLog.message("ADSB fetch <%s> : %s\n", ahost, e.message);
