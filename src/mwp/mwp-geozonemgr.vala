@@ -83,7 +83,7 @@ public class GeoZoneManager {
 	private int8 _nextz;
 	private int8 _nextv;
 
-	internal Utils.Warning_box wb;
+	private Utils.Warning_box wb;
 
 	public void reset() {
 		for(var k = 0; k < MAXGZ; k++) {

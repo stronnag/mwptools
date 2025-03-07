@@ -21,11 +21,6 @@ using Gtk;
 
 public delegate void ActionFunc ();
 
-namespace MWPWarn {
-	Utils.Warning_box wb6;
-	Utils.Warning_box wb7;
-}
-
 namespace Mwp {
 	MWPSettings conf;
 	MwpCombox dev_combox;
@@ -701,8 +696,8 @@ namespace Mwp {
 
 		private void do_gz_check() {
 			var s = gzr.validate_shapes("Zones fail validation", "Zones validate");
-			MWPWarn.wb6 = new Utils.Warning_box(s);
-			MWPWarn.wb6.present();
+			var wb6 = new Utils.Warning_box(s);
+			wb6.present();
 		}
 
 		private void gz_upload_dialog() {
@@ -729,8 +724,8 @@ namespace Mwp {
 			if (s.length == 0) {
 				gz_upload_dialog();
 			} else {
-				MWPWarn.wb7 = new Utils.Warning_box(s);
-				MWPWarn.wb7.present();
+				var wb7 = new Utils.Warning_box(s);
+				wb7.present();
 			}
 		}
 

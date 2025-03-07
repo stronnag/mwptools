@@ -22,13 +22,6 @@ namespace Atti {
         int _sy;
 }
 
-namespace MWPWarn {
-	internal Utils.Warning_box wb1;
-	internal Utils.Warning_box wb2;
-	internal Utils.Warning_box wb3;
-	internal Utils.Warning_box wb4;
-}
-
 namespace Mwp {
 	uint32 feature_mask;
 	uint32 capability;
@@ -437,8 +430,8 @@ namespace Mwp {
 				var pct = 100 * used  / fsize;
 				MWPLog.message ("Data Flash %u /  %u (%u%%)\n", used, fsize, pct);
 				if(conf.flash_warn > 0 && pct > conf.flash_warn) {
-					MWPWarn.wb1 = new Utils.Warning_box("Data flash is %u%% full".printf(pct));
-					MWPWarn.wb1.present();
+					var wb1 = new Utils.Warning_box("Data flash is %u%% full".printf(pct));
+					wb1.present();
 				}
 			} else
 				MWPLog.message("Flash claims to be 0 bytes!!\n");
@@ -941,8 +934,8 @@ namespace Mwp {
 			last_wp_pts = wpi.wp_count;
 			if((wpmgr.wp_flag & WPDL.GETINFO) != 0) {
 				string s = "Waypoints in FC\nMax: %u / Mission points: %u Valid: %s".printf(wpi.max_wp, wpi.wp_count, (wpi.wps_valid==1) ? "Yes" : "No");
-				MWPWarn.wb2 = new Utils.Warning_box(s, 5);
-				MWPWarn.wb2.present();
+				var wb2 = new Utils.Warning_box(s, 5);
+				wb2.present();
 				wpmgr.wp_flag &= ~WPDL.GETINFO;
 			}
 			if((wpmgr.wp_flag & WPDL.SAVE_FWA) != 0) {
@@ -1230,8 +1223,8 @@ namespace Mwp {
 							wp_reset_poller();
 						}
 						Mwp.window.validatelab.set_text("✔"); // u+2714
-						MWPWarn.wb3 = new Utils.Warning_box("Mission uploaded", 5);
-						MWPWarn.wb3.present();
+						var wb3 = new Utils.Warning_box("Mission uploaded", 5);
+						wb3.present();
 					} else if ((wpmgr.wp_flag & WPDL.FOLLOW_ME) !=0 ) {
 						request_wp(254);
 						wpmgr.wp_flag &= ~WPDL.FOLLOW_ME;
@@ -1319,8 +1312,8 @@ namespace Mwp {
 					queue_cmd(Msp.Cmds.WP_GETINFO, null, 0);
 				}
 				Mwp.window.validatelab.set_text("✔"); // u+2714
-				MWPWarn.wb4 = new Utils.Warning_box("Mission uploaded", 5);
-				MWPWarn.wb4.present();
+				var wb4 = new Utils.Warning_box("Mission uploaded", 5);
+				wb4.present();
 			}
 			break;
 

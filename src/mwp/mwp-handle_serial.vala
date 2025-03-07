@@ -17,10 +17,6 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-namespace MWPWarn {
-	Utils.Warning_box wb5;
-}
-
 namespace Mwp {
 	bool telem;
 	bool seenMSP;
@@ -383,8 +379,8 @@ namespace Mwp {
 										idcount++;
 										if(idcount == Mwp.conf.ident_limit) {
 											Msp.close_serial();
-											MWPWarn.wb5 = new Utils.Warning_box("No response received from the FC\nPlesae check connection and protocol\nConsider <tt>--no-poll</tt> if this is intentional\nSee also the <tt>ident-limit</tt> setting");
-											MWPWarn.wb5.present();
+											var wb5 = new Utils.Warning_box("No response received from the FC\nPlesae check connection and protocol\nConsider <tt>--no-poll</tt> if this is intentional\nSee also the <tt>ident-limit</tt> setting");
+											wb5.present();
 											idcount = 0;
 										}
 									}

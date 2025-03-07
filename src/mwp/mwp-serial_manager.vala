@@ -46,8 +46,6 @@ namespace Mwp  {
 }
 
 namespace Msp {
-	Utils.Warning_box wb0;
-	Utils.Warning_box wb1;
 
 	public void init() {
 		Mwp.mqtt_available = false;
@@ -282,7 +280,7 @@ namespace Msp {
 		} else {
 			string estr = null;
 			Mwp.msp.get_error_message(out estr);
-			wb0 = new Utils.Warning_box("""Unable to open serial device:
+			var wb0 = new Utils.Warning_box("""Unable to open serial device:
 Error: <i>%s</i>
 
 * Check that <u>%s</u> is available / connected.
@@ -299,7 +297,7 @@ Error: <i>%s</i>
 		Mwp.serstate = Mwp.SERSTATE.NONE;
 		Mwp.clear_sidebar(Mwp.msp);
 		if(Radar.lookup_radar(serdev) || serdev == Mwp.forward_device) {
-			wb1 = new Utils.Warning_box("The selected device is assigned to a special function (radar / forwarding).\nPlease choose another device", 60);
+			var wb1 = new Utils.Warning_box("The selected device is assigned to a special function (radar / forwarding).\nPlease choose another device", 60);
 			wb1.present();
 			return;
 		} else if (serdev.has_prefix("mqtt://") ||

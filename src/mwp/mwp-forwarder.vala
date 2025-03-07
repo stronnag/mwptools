@@ -21,7 +21,7 @@ public class Forwarder : Object {
 	private string devname;
 	private MWSerial? fdev;
 	private uint8 rcount;
-	internal Utils.Warning_box wb;
+	private Utils.Warning_box wb;
 
 	public Forwarder(string? _dev) {
 		if (_dev != null) {

@@ -25,7 +25,6 @@ namespace BBLError {
 namespace BBL {
 	BBL.Window bbl;
 	MapUtils.BoundingBox bbox;
-	Utils.Warning_box wb;
 
 	public void replay_bbl(string? s) {
 		bbl = new BBL.Window();
@@ -491,7 +490,7 @@ namespace BBL {
 					sw.set_child(l);
 					sw.propagate_natural_height = true;
 					sw.propagate_natural_width = true;
-					wb = new Utils.Warning_box(title, 0, this, sw);
+					var wb = new Utils.Warning_box(title, 0, this, sw);
 					wb.present();
 				}
 				return;

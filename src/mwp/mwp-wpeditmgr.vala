@@ -34,8 +34,6 @@ namespace EditWP {
 		OPT
 	}
 
-	internal Utils.Warning_box wb;
-
 	private EditItem create(int no) {
 		EditItem ei ={};
 		MissionItem mi;
@@ -274,7 +272,7 @@ namespace EditWP {
 							dlg.set_jump_dst(orig.jump1);
 							var msg = "Invalid jump target (#%d).".printf(ei.jump1);
 							var buri = new Gtk.LinkButton.with_label("https://github.com/iNavFlight/inav/wiki/MSP-Navigation-Messages#jump", "INAV Wiki jump validation rules");
-							wb = new Utils.Warning_box(msg, 0, dlg, buri);
+							var wb = new Utils.Warning_box(msg, 0, dlg, buri);
 							wb.present();
 						}
 						orig = ei;
