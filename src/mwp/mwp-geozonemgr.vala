@@ -758,7 +758,7 @@ public class GeoZoneManager {
 		return sb.str;
 	}
 
-	public void dump(Overlay ov, string _vname) {
+	public void dump(Overlay ov, string? _vname) {
 		var vname  = _vname;
 		if (length() > 0) {
 			time_t currtime;
