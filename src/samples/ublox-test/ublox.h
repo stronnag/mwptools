@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * (c) Jonathan Hudson <jh+mwptools@daria.co.uk>
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 struct  __attribute__ ((__packed__))  _ubx_header  {

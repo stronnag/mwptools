@@ -13,6 +13,8 @@
 
  *
  * (c) Jonathan Hudson <jh+mwptools@daria.co.uk>
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 public class LOSPoint : Object {
