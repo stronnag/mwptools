@@ -232,6 +232,14 @@ private class MavCRC : Object {
         }
         return res;
     }
+
+	public static uint16 crc(uint16 acc, uint8 val) {
+		uint8 tmp;
+		tmp = val ^ (uint8)(acc&0xff);
+		tmp ^= (tmp<<4);
+		acc = (acc>>8) ^ (tmp<<8) ^ (tmp<<3) ^ (tmp>>4);
+		return acc;
+	}
 }
 
 namespace CRSF {
@@ -457,7 +465,7 @@ public class MWSerial : Object {
     private bool errstate;
     private int commerr;
     private bool rawlog;
-    private int raws;
+	private FileStream raws;
     private Timer timer;
     private bool print_raw=false;
     public uint baudrate  {private set; get;}
@@ -683,7 +691,16 @@ public class MWSerial : Object {
         return devname;
     }
 
-    public MWSerial.forwarder() {
+
+	public bool get_ro() {
+		return ro;
+	}
+
+	public void set_ro(bool _ro) {
+		ro = _ro;
+	}
+
+	public MWSerial.forwarder() {
         fwd = true;
         available = false;
         set_txbuf(MemAlloc.TX);
@@ -749,18 +766,6 @@ public class MWSerial : Object {
     public void clear_counters() {
         ltime = stime = 0;
         stats =  {0.0, 0, 0, 0.0, 0.0};
-    }
-
-    private void setup_fd (uint rate) {
-        if((commode & ComMode.TTY) == ComMode.TTY) {
-            baudrate = rate;
-			if (rate > 0 && rate < 19200) {
-				commode |= ComMode.WEAK;
-			}
-            MwpSerial.set_speed(fd, (int)rate);
-        }
-        available = true;
-		setup_reader();
     }
 
 	public void setup_reader() {
@@ -1036,7 +1041,7 @@ public class MWSerial : Object {
 							commode |= (ComMode.WEAK|ComMode.WEAKBLE);
 						}
 					}
-					if(!bleok){
+					if(!bleok || fd == -1){
 						fd = -1;
 						available = false;
 						lasterr = Posix.ETIMEDOUT;
@@ -1127,6 +1132,7 @@ public class MWSerial : Object {
 		return available;
     }
 
+	/*
     public bool open_fd(int _fd, int rate, bool rawfd = false) {
         devname = "fd #%d".printf(_fd);
         fd = wrfd = _fd;
@@ -1139,6 +1145,7 @@ public class MWSerial : Object {
         setup_fd(rate);
         return available;
     }
+	*/
 
     ~MWSerial() {
         if(fd != -1)
@@ -1766,7 +1773,7 @@ public class MWSerial : Object {
 
 						case States.S_M_SIZE:
 							csize = needed = devbuf[nc];
-							mavsum = mavlink_crc(0xffff, (uint8)csize);
+							mavsum = MavCRC.crc(0xffff, (uint8)csize);
 							if(needed > 0) {
 								irxbufp= 0;
 								check_rxbuf_size();
@@ -1774,27 +1781,27 @@ public class MWSerial : Object {
 							state = States.S_M_SEQ;
 							break;
 						case States.S_M_SEQ:
-							mavsum = mavlink_crc(mavsum, devbuf[nc]);
+							mavsum = MavCRC.crc(mavsum, devbuf[nc]);
 							state = States.S_M_ID1;
 							break;
 						case States.S_M_ID1:
-							mavsum = mavlink_crc(mavsum, devbuf[nc]);
+							mavsum = MavCRC.crc(mavsum, devbuf[nc]);
 							state = States.S_M_ID2;
 							break;
 						case States.S_M_ID2:
-							mavsum = mavlink_crc(mavsum, devbuf[nc]);
+							mavsum = MavCRC.crc(mavsum, devbuf[nc]);
 							state = States.S_M_MSGID;
 							break;
 						case States.S_M_MSGID:
 							cmd = (Msp.Cmds)devbuf[nc];
-							mavsum = mavlink_crc(mavsum, cmd);
+							mavsum = MavCRC.crc(mavsum, cmd);
 							if (csize == 0)
 								state = States.S_M_CRC1;
 							else
 								state = States.S_M_DATA;
                             break;
 						case States.S_M_DATA:
-							mavsum = mavlink_crc(mavsum, devbuf[nc]);
+							mavsum = MavCRC.crc(mavsum, devbuf[nc]);
 							rxbuf[irxbufp++] = devbuf[nc];
 							needed--;
 							if(needed == 0)
@@ -1802,7 +1809,7 @@ public class MWSerial : Object {
 							break;
 						case States.S_M_CRC1:
 							var seed  = MavCRC.lookup(cmd);
-							mavsum = mavlink_crc(mavsum, seed);
+							mavsum = MavCRC.crc(mavsum, seed);
 							irxbufp = 0;
 							rxmavsum = devbuf[nc];
 							state = States.S_M_CRC2;
@@ -1835,7 +1842,7 @@ public class MWSerial : Object {
 							break;
 						case States.S_M2_SIZE:
 							csize = needed = devbuf[nc];
-							mavsum = mavlink_crc(0xffff, (uint8)csize);
+							mavsum = MavCRC.crc(0xffff, (uint8)csize);
 							if(needed > 0) {
 								irxbufp= 0;
 								check_rxbuf_size();
@@ -1843,7 +1850,7 @@ public class MWSerial : Object {
 							state = States.S_M2_FLG1;
 							break;
 						case States.S_M2_FLG1:
-							mavsum = mavlink_crc(mavsum, devbuf[nc]);
+							mavsum = MavCRC.crc(mavsum, devbuf[nc]);
 							if((devbuf[nc] & 1) == 1)
 								mavsig = 13;
 							else
@@ -1851,43 +1858,43 @@ public class MWSerial : Object {
 							state = States.S_M2_FLG2;
 							break;
 						case States.S_M2_FLG2:
-							mavsum = mavlink_crc(mavsum, devbuf[nc]);
+							mavsum = MavCRC.crc(mavsum, devbuf[nc]);
 							state = States.S_M2_SEQ;
 							break;
 						case States.S_M2_SEQ:
-							mavsum = mavlink_crc(mavsum, devbuf[nc]);
+							mavsum = MavCRC.crc(mavsum, devbuf[nc]);
 							state = States.S_M2_ID1;
 							break;
 						case States.S_M2_ID1:
-							mavsum = mavlink_crc(mavsum, devbuf[nc]);
+							mavsum = MavCRC.crc(mavsum, devbuf[nc]);
 							state = States.S_M2_ID2;
 							break;
 						case States.S_M2_ID2:
-							mavsum = mavlink_crc(mavsum, devbuf[nc]);
+							mavsum = MavCRC.crc(mavsum, devbuf[nc]);
 							state = States.S_M2_MSGID0;
 							break;
 						case States.S_M2_MSGID0:
 							cmd = (Msp.Cmds)devbuf[nc];
-							mavsum = mavlink_crc(mavsum, devbuf[nc]);
+							mavsum = MavCRC.crc(mavsum, devbuf[nc]);
 							state = States.S_M2_MSGID1;
 							break;
 
 						case States.S_M2_MSGID1:
 							cmd |= (Msp.Cmds)(devbuf[nc] << 8);
-							mavsum = mavlink_crc(mavsum, devbuf[nc]);
+							mavsum = MavCRC.crc(mavsum, devbuf[nc]);
 							state = States.S_M2_MSGID2;
 							break;
 
 						case States.S_M2_MSGID2:
 							cmd |= (Msp.Cmds)(devbuf[nc] << 16);
-							mavsum = mavlink_crc(mavsum, devbuf[nc]);
+							mavsum = MavCRC.crc(mavsum, devbuf[nc]);
 							if (csize == 0)
 								state = States.S_M2_CRC1;
 							else
 								state = States.S_M2_DATA;
 							break;
 						case States.S_M2_DATA:
-							mavsum = mavlink_crc(mavsum, devbuf[nc]);
+							mavsum = MavCRC.crc(mavsum, devbuf[nc]);
 							rxbuf[irxbufp++] = devbuf[nc];
 							needed--;
 							if(needed == 0)
@@ -1895,7 +1902,7 @@ public class MWSerial : Object {
 							break;
 						case States.S_M2_CRC1:
 							var seed  = MavCRC.lookup(cmd);
-							mavsum = mavlink_crc(mavsum, seed);
+							mavsum = MavCRC.crc(mavsum, seed);
 							irxbufp = 0;
 							rxmavsum = devbuf[nc];
 							state = States.S_M2_CRC2;
@@ -1947,14 +1954,6 @@ public class MWSerial : Object {
 				}
 			}
 			return true;
-	}
-
-	public uint16 mavlink_crc(uint16 acc, uint8 val) {
-		uint8 tmp;
-		tmp = val ^ (uint8)(acc&0xff);
-		tmp ^= (tmp<<4);
-		acc = (acc>>8) ^ (tmp<<8) ^ (tmp<<3) ^ (tmp>>4);
-		return acc;
 	}
 
 	public ssize_t write(void *buf, size_t count) {
@@ -2034,130 +2033,136 @@ public class MWSerial : Object {
 	public void send_ltm(uint8 cmd, void *data, size_t len) {
 		if(available == true && !ro) {
 			if(len != 0 && data != null) {
-				uint8 *ptx = txbuf;
-				uint8* pdata = (uint8*)data;
 				check_txbuf_size(len+4);
-				uint8 ck = 0;
-				*ptx++ ='$';
-				*ptx++ = 'T';
-				*ptx++ = cmd;
-				for(var i = 0; i < len; i++) {
-					*ptx = *pdata++;
-					ck ^= *ptx++;
-				}
-				*ptx = ck;
-				write(txbuf, (len+4));
+				var nb = generate_ltm(cmd, data, len, ref txbuf);
+				write(txbuf, nb);
 			}
 		}
 	}
 
 	public void send_mav(uint16 cmd, void *data, size_t len) {
-		if(mavvid == 2 || cmd > 256) {
-			send_mav2(cmd, data, len);
-		} else {
-			send_mav1(cmd, data, len);
-		}
-	}
-
-	public void send_mav2(uint16 cmd, void *data, size_t len) {
 		if(available == true && !ro) {
-			uint16 mcrc;
-			uint8* ptx = txbuf;
-			uint8* pdata = data;
-
-			// Mav2 null supression
-			while (len > 1 && pdata[len-1] == 0) {
-				len--;
+			size_t nb = 0;
+			check_txbuf_size(len+12);
+			if(mavvid == 2 || cmd > 256) {
+				nb = generate_mav2(cmd, data, len, mavseqno, mavsysid, ref txbuf);
+			} else {
+				nb = generate_mav1(cmd, data, len, mavseqno, mavsysid, ref txbuf);
 			}
-			check_txbuf_size(len+8);
-			mcrc = mavlink_crc(0xffff, (uint8)len);
-
-			*ptx++ = 0xfd;
-			*ptx++ = (uint8)len;
-
-			*ptx++ = 0;
-			mcrc = mavlink_crc(mcrc, 0);
-			*ptx++ = 0;
-			mcrc = mavlink_crc(mcrc, 0);
-
-			*ptx++ = mavseqno;
-			mcrc = mavlink_crc(mcrc, mavseqno);
-
-			*ptx++ = mavsysid;
-			mcrc = mavlink_crc(mcrc, mavsysid);
-			*ptx++ = MAVID2;
-			mcrc = mavlink_crc(mcrc, MAVID2);
-
-			uint8 c = (uint8)(cmd & 0xff);
-			*ptx++ = c;
-			mcrc = mavlink_crc(mcrc, c);
-
-			c = (uint8)(cmd >> 8);
-			*ptx++ = c;
-			mcrc = mavlink_crc(mcrc, c);
-
-			c = 0;
-			*ptx++ = c;
-			mcrc = mavlink_crc(mcrc, c);
-
-			for(var j = 0; j < len; j++) {
-				*ptx = *pdata++;
-				mcrc = mavlink_crc(mcrc, *ptx);
-				ptx++;
-			}
-			var seed  = MavCRC.lookup(cmd);
-			mcrc = mavlink_crc(mcrc, seed);
-			*ptx++ = (uint8)(mcrc&0xff);
-			*ptx++ = (uint8)(mcrc >> 8);
-			write(txbuf, (len+12));
+			write(txbuf, nb);
 			mavseqno++;
 		}
 	}
 
-	public void send_mav1(uint16 cmd, void *data, size_t len) {
-		if(available == true && !ro) {
-			uint16 mcrc;
-			uint8* ptx = txbuf;
-			uint8* pdata = data;
 
-			check_txbuf_size(len+8);
-			mcrc = mavlink_crc(0xffff, (uint8)len);
-
-			*ptx++ = 0xfe;
-			*ptx++ = (uint8)len;
-
-			*ptx++ = mavseqno;
-			mcrc = mavlink_crc(mcrc, mavseqno);
-			mavseqno++;
-			*ptx++ = mavsysid;
-			mcrc = mavlink_crc(mcrc, mavsysid);
-			*ptx++ = MAVID2;
-			mcrc = mavlink_crc(mcrc, MAVID2);
-			*ptx++ = (uint8)cmd;
-			mcrc = mavlink_crc(mcrc, (uint8)cmd);
-			for(var j = 0; j < len; j++) {
-				*ptx = *pdata++;
-				mcrc = mavlink_crc(mcrc, *ptx);
-				ptx++;
-			}
-			var seed  = MavCRC.lookup(cmd);
-			mcrc = mavlink_crc(mcrc, seed);
-			*ptx++ = (uint8)(mcrc&0xff);
-			*ptx++ = (uint8)(mcrc >> 8);
-			write(txbuf, (len+8));
-		}
-	}
-
-	private size_t generate_v1(uint8 cmd, void *data, size_t len) {
+	public static size_t generate_ltm(uint8 cmd, void *data, size_t len, ref uint8[] _txbuf) {
+		uint8 *ptx = _txbuf;
+		uint8* pdata = (uint8*)data;
 		uint8 ck = 0;
+		*ptx++ ='$';
+		*ptx++ = 'T';
+		*ptx++ = cmd;
+		for(var i = 0; i < len; i++) {
+			*ptx = *pdata++;
+			ck ^= *ptx++;
+		}
+		*ptx++ = ck;
+		return (ptx - (uint8*)_txbuf);
+	}
 
-		check_txbuf_size(len+6);
-		uint8* ptx = txbuf;
+	public static size_t generate_mav2(uint16 cmd, void *data, size_t len,
+									   uint8 _mavseqno, uint8 _mavsysid,
+									   ref uint8[] _txbuf) {
+		uint16 mcrc;
+		uint8* ptx = _txbuf;
+		uint8* pdata = data;
+
+		// Mav2 null supression
+		while (len > 1 && pdata[len-1] == 0) {
+			len--;
+		}
+		mcrc = MavCRC.crc(0xffff, (uint8)len);
+
+		*ptx++ = 0xfd;
+		*ptx++ = (uint8)len;
+
+		*ptx++ = 0;
+		mcrc = MavCRC.crc(mcrc, 0);
+		*ptx++ = 0;
+		mcrc = MavCRC.crc(mcrc, 0);
+
+		*ptx++ = _mavseqno;
+		mcrc = MavCRC.crc(mcrc, _mavseqno);
+
+		*ptx++ = _mavsysid;
+		mcrc = MavCRC.crc(mcrc, _mavsysid);
+		*ptx++ = MAVID2;
+		mcrc = MavCRC.crc(mcrc, MAVID2);
+
+		uint8 c = (uint8)(cmd & 0xff);
+		*ptx++ = c;
+		mcrc = MavCRC.crc(mcrc, c);
+
+		c = (uint8)(cmd >> 8);
+		*ptx++ = c;
+		mcrc = MavCRC.crc(mcrc, c);
+
+		c = 0;
+		*ptx++ = c;
+		mcrc = MavCRC.crc(mcrc, c);
+
+		for(var j = 0; j < len; j++) {
+			*ptx = *pdata++;
+			mcrc = MavCRC.crc(mcrc, *ptx);
+			ptx++;
+		}
+		var seed  = MavCRC.lookup(cmd);
+		mcrc = MavCRC.crc(mcrc, seed);
+		*ptx++ = (uint8)(mcrc&0xff);
+		*ptx++ = (uint8)(mcrc >> 8);
+		return (ptx - (uint8*)_txbuf);
+	}
+
+	public static size_t generate_mav1(uint16 cmd, void *data, size_t len,
+									   uint8 _mavseqno, uint8 _mavsysid,
+									   ref uint8[] _txbuf) {
+		uint16 mcrc;
+		uint8* ptx = _txbuf;
+		uint8* pdata = data;
+
+		mcrc = MavCRC.crc(0xffff, (uint8)len);
+
+		*ptx++ = 0xfe;
+		*ptx++ = (uint8)len;
+
+		*ptx++ = _mavseqno;
+		mcrc = MavCRC.crc(mcrc, _mavseqno);
+		*ptx++ = _mavsysid;
+		mcrc = MavCRC.crc(mcrc, _mavsysid);
+		*ptx++ = MAVID2;
+		mcrc = MavCRC.crc(mcrc, MAVID2);
+		*ptx++ = (uint8)cmd;
+		mcrc = MavCRC.crc(mcrc, (uint8)cmd);
+		for(var j = 0; j < len; j++) {
+			*ptx = *pdata++;
+			mcrc = MavCRC.crc(mcrc, *ptx);
+			ptx++;
+		}
+		var seed  = MavCRC.lookup(cmd);
+		mcrc = MavCRC.crc(mcrc, seed);
+		*ptx++ = (uint8)(mcrc&0xff);
+		*ptx++ = (uint8)(mcrc >> 8);
+		return (ptx - (uint8*)_txbuf);
+	}
+
+    public static size_t generate_v1(uint8 cmd, void *data, size_t len, char _writed, ref uint8[] _txbuf) {
+		uint8 ck = 0;
+		uint8* ptx = _txbuf;
 		uint8* pdata = data;
 
 		*ptx++ = '$';
 		*ptx++ = 'M';
-		*ptx++ = writedirn;
+		*ptx++ = _writed;
 		ck ^= (uint8)len;
 		*ptx++ = (uint8)len;
 		ck ^=  cmd;
@@ -2170,25 +2175,23 @@ public class MWSerial : Object {
 		return len+6;
 	}
 
-	public size_t generate_v2(uint16 cmd, void *data, size_t len) {
+	public static size_t generate_v2(uint16 cmd, void *data, size_t len, char _writed, ref uint8[] _txbuf) {
 		uint8 ck2=0;
 
-		check_txbuf_size(len+9);
-
-		uint8* ptx = txbuf;
+		uint8* ptx = _txbuf;
 		uint8* pdata = data;
 
 		*ptx++ ='$';
 		*ptx++ ='X';
-		*ptx++ = writedirn;
+		*ptx++ = _writed;
 		*ptx++ = 0; // flags
 		ptx = SEDE.serialise_u16(ptx, cmd);
 		ptx = SEDE.serialise_u16(ptx, (uint16)len);
-		ck2 = CRC8.dvb_s2(ck2, txbuf[3]);
-		ck2 = CRC8.dvb_s2(ck2, txbuf[4]);
-		ck2 = CRC8.dvb_s2(ck2, txbuf[5]);
-		ck2 = CRC8.dvb_s2(ck2, txbuf[6]);
-		ck2 = CRC8.dvb_s2(ck2, txbuf[7]);
+		ck2 = CRC8.dvb_s2(ck2, _txbuf[3]);
+		ck2 = CRC8.dvb_s2(ck2, _txbuf[4]);
+		ck2 = CRC8.dvb_s2(ck2, _txbuf[5]);
+		ck2 = CRC8.dvb_s2(ck2, _txbuf[6]);
+		ck2 = CRC8.dvb_s2(ck2, _txbuf[7]);
 
 		for (var i = 0; i < len; i++) {
 			*ptx = *pdata++;
@@ -2203,13 +2206,13 @@ public class MWSerial : Object {
 		if(available == true && !ro) {
 			char tmp = writedirn;
 			if (sim) // forces SIM mode (inav-radar)
-				writedirn = '>';
+				tmp = '>';
 			size_t mlen;
 			if(use_v2 || cmd > 254 || len > 254)
-				mlen = generate_v2(cmd,data,len);
+				mlen = generate_v2(cmd,data,len, tmp, ref txbuf);
 			else
-				mlen  = generate_v1((uint8)cmd, data, len);
-			writedirn = tmp;
+				mlen  = generate_v1((uint8)cmd, data, len, tmp, ref txbuf);
+
 			return write(txbuf, mlen);
 		} else {
 			return -1;
@@ -2226,10 +2229,10 @@ public class MWSerial : Object {
 	private void log_raw(uint8 dirn, void *buf, int len) {
 		double dt = timer.elapsed ();
 		uint16 blen = (uint16)len;
-		Posix.write(raws, &dt, sizeof(double));
-		Posix.write(raws, &blen, 2);
-		Posix.write(raws, &dirn, 1);
-		Posix.write(raws, buf,len);
+		raws.write((uint8[])&dt, sizeof(double));
+		raws.write((uint8[])&blen, 2);
+		raws.write((uint8[])&dirn, 1);
+		raws.write((uint8[])buf,len);
 	}
 
 	public void raw_logging(bool state) {
@@ -2243,16 +2246,13 @@ public class MWSerial : Object {
 			var lfn = Path.build_filename(logdir, fn);
 
 			MWPLog.message("raw log for %s %s\n", devname, lfn);
-			int modes = Posix.O_TRUNC|Posix.O_CREAT|Posix.O_WRONLY;
-#if WINDOWS
-			modes = WinFix.set_bin_mode(modes);
-#endif
-			raws = Posix.open (lfn, modes, 0640);
+			raws = FileStream.open (lfn, "wb");
 			timer = new Timer();
 			rawlog = true;
-			Posix.write(raws, "v2\n" , 3);
+			raws.write("v2\n".data , 3);
 		} else {
-			Posix.close(raws);
+			raws.flush();
+			raws = null;
 			timer.stop();
 			rawlog = false;
 		}

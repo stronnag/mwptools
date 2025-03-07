@@ -241,15 +241,10 @@ namespace Mwp {
         xlog = conf.logarmed;
         xaudio = conf.audioarmed;
         int sr = 0;
-        bool rawfd = false;
         xnopoll = nopoll;
         nopoll = true;
 
 		RSSI.set_title(RSSI.Title.RSSI);
-
-        if ((rtype & Player.MWP) != 0 || (rtype & Player.BBOX) != 0 && x_fl2ltm == false) {
-            rawfd = true;
-        }
 
         if(msp.available) {
 			Msp.close_serial();
@@ -257,12 +252,9 @@ namespace Mwp {
 
 		Mwp.clear_sidebar(Mwp.msp);
 
-        if (rawfd) {
-            sr = MwpPipe.pipe(playfd);
-        } else {
-            sr = msp.randomUDP(playfd);
-			set_pmask_poller(MWSerial.PMask.AUTO);
-        }
+		sr = msp.randomUDP(playfd);
+		set_pmask_poller(MWSerial.PMask.AUTO);
+		msp.set_ro(true);
 
         if(sr == 0) {
             replay_paused = false;
@@ -285,10 +277,6 @@ namespace Mwp {
             if(delay == false)
                 replayer |= Player.FAST_MASK;
 
-            if(rawfd) {
-                msp.open_fd(playfd[0],-1, true);
-				set_pmask_poller(MWSerial.PMask.INAV);
-			}
             set_replay_menus(false);
 			Mwp.hard_display_reset();
             MwpMenu.set_menu_state(Mwp.window, "stop-replay", true);
@@ -298,7 +286,9 @@ namespace Mwp {
             case Player.MWP_FAST:
                 Mwpjs.check_mission(fn);
                 robj = new ReplayThread();
+				MWPLog.message(":DBG: create thread\n");
                 thr = robj.run(playfd[1], fn, delay);
+				MWPLog.message(":DBG: got thread %p\n", thr);
                 break;
             case Player.BBOX:
             case Player.BBOX_FAST:
@@ -315,7 +305,7 @@ namespace Mwp {
                 break;
             }
         } else {
-			MWPLog.message("[replayer]: get replay fd failed %d (raw %s)\n", sr, rawfd.to_string());
+			MWPLog.message("[replayer]: get replay fd failed %d\n", sr);
 		}
     }
 
@@ -331,11 +321,10 @@ namespace Mwp {
 			//            if (is_shutdown) FIXME
             //    return;
 			Msp.close_serial();
+			msp.set_ro(false);
 
             set_replay_menus(true);
             MwpMenu.set_menu_state(Mwp.window, "stop-replay", false);
-            if (replayer != Player.OTX && replayer != Player.RAW)
-                Posix.close(playfd[1]);
 
             if (conf.audioarmed == true) {
                 Mwp.window.audio_cb.active = false;

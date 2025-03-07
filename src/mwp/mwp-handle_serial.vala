@@ -520,20 +520,22 @@ namespace Mwp {
     }
 
 	public void telem_init(Msp.Cmds cmd) {
-		var mtype= (cmd >= Msp.MAV_BASE) ? "MAVLink" : "LTM";
-		var mstr = "%s telemetry".printf(mtype);
-		MWPLog.message("Init %s\n", mstr);
-		if (conf.manage_power && inhibit_cookie == 0) {
-			inhibit_cookie = MwpIdle.inhibit();
-			MWPLog.message("Managing screen idle and suspend (%x)\n", inhibit_cookie);
-		}
-		Mwp.window.mmode.label = mtype;
-		serstate = SERSTATE.TELEM;
-		init_sstats();
-		last_tm = nticks;
-		last_gps = nticks;
-		if(last_tm == 0) {
-			last_tm = 1;
+		if ((Mwp.replayer & Mwp.Player.MWP) == 0) {
+			var mtype= (cmd >= Msp.MAV_BASE) ? "MAVLink" : "LTM";
+			var mstr = "%s telemetry".printf(mtype);
+			MWPLog.message("Init %s\n", mstr);
+			if (conf.manage_power && inhibit_cookie == 0) {
+				inhibit_cookie = MwpIdle.inhibit();
+				MWPLog.message("Managing screen idle and suspend (%x)\n", inhibit_cookie);
+			}
+			Mwp.window.mmode.label = mtype;
+			serstate = SERSTATE.TELEM;
+			init_sstats();
+			last_tm = nticks;
+			last_gps = nticks;
+			if(last_tm == 0) {
+				last_tm = 1;
+			}
 		}
 	}
 
