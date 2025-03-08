@@ -388,8 +388,7 @@ namespace Radar {
 				});
 
 			ser.serial_lost.connect(() => {
-					MWPLog.message(":DBG: Radar IOSER %s lost\n", r.name);
-					queue_remove(r);
+					MWPLog.message(":DBG: Radar IOSER %s closed\n", r.name);
 				});
 
 			try_radar_dev(r);
@@ -407,8 +406,11 @@ namespace Radar {
 				r.tid = 0;
 			}
 			if (r.dtype == IOType.MSER) {
-				((MWSerial)r.dev).close();
-				 if (qdel) {
+				((MWSerial)r.dev).close_async.begin((obj,res) => {
+						((MWSerial)r.dev).close_async.end(res);
+					});
+
+				if (qdel) {
 					 Radar.items.remove(j);
 				 }
 			} else {

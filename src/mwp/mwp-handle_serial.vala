@@ -49,7 +49,7 @@ namespace Mwp {
     bool xfailsafe;
 
     uint8 gpscnt;
-    uint8 want_special;
+    Mwp.POSMODE want_special;
     uint8 last_ltmf;
     uint8 mavc;
     uint16 mavsensors;
@@ -773,10 +773,11 @@ namespace Mwp {
 
     public void show_serial_stats() {
         gen_serial_stats();
+		double mrate = (telstats.s.elapsed > 0) ? telstats.s.msgs / telstats.s.elapsed : 0.0;
         MWPLog.message("%.3fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %d wait %d, avg poll loop %lu ms messages %d msg/s %.1f\n",
                        telstats.s.elapsed, telstats.s.rxbytes, telstats.s.txbytes,
                        telstats.s.rxrate, telstats.s.txrate,
                        telstats.toc, telstats.tot, telstats.avg ,
-                       telstats.s.msgs, telstats.s.msgs / telstats.s.elapsed);
+                       telstats.s.msgs, mrate);
     }
 }

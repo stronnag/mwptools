@@ -389,19 +389,20 @@ namespace Mwp {
 							want_special |= POSMODE.WP;
 							//if (NavStatus.nm_pts == 0 || NavStatus.nm_pts == 255)
 							//	NavStatus.nm_pts = last_wp_pts; // FIXME
-						} else if(ltmflags == Msp.Ltm.RTH)
+						} else if(ltmflags == Msp.Ltm.RTH) {
 							want_special |= POSMODE.RTH;
-						else if(ltmflags == Msp.Ltm.ALTHOLD)
+						} else if(ltmflags == Msp.Ltm.ALTHOLD) {
 							want_special |= POSMODE.ALTH;
-						else if(ltmflags == Msp.Ltm.CRUISE)
+						} else if(ltmflags == Msp.Ltm.CRUISE) {
 							want_special |= POSMODE.CRUISE;
-						else if(ltmflags == Msp.Ltm.LAND)
+						} else if(ltmflags == Msp.Ltm.LAND) {
 							want_special |= POSMODE.LAND;
-						else if (ltmflags == Msp.Ltm.UNDEFINED)
+						} else if (ltmflags == Msp.Ltm.UNDEFINED) {
 							want_special |= POSMODE.UNDEF;
-						else if(ltmflags != Msp.Ltm.LAND) {
-							if(craft != null)
+						} else if(ltmflags != Msp.Ltm.LAND) {
+							if(craft != null) {
 								craft.set_normal();
+							}
 						} else {
 							MWPLog.message("::DBG:: Unknown LTM %d\n", ltmflags);
 						}

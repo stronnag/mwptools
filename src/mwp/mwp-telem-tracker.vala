@@ -184,11 +184,13 @@ namespace TelemTracker {
 				s.pmask = pmask;
 				lstore.append(s);
 
-				s.notify["inuse"].connect((s, p) => {
-						if (((SecDev)s).inuse) {
-							start_reader((SecDev)s);
-						} else {
-							stop_reader((SecDev)s);
+				s.notify["inuse"].connect((_s, p) => {
+						if (((SecDev)_s).inuse) {
+							start_reader((SecDev)_s);
+						} else if (((SecDev)_s).dev!= null && ((SecDev)_s).dev.available) {
+							((SecDev)_s).dev.close_async.begin((obj,res) => {
+									((SecDev)_s).dev.close_async.end(res);
+								});
 						}
 					});
 
@@ -380,18 +382,14 @@ namespace TelemTracker {
 		}
 
 		public void stop_reader(SecDev s) {
-			if (s.dev!= null && s.dev.available) {
-				MWPLog.message("stopping secondary reader %s\n", s.name);
-				pending(true);
-				s.dev.close_async.begin((obj,res) => {
-						s.dev.close_async.end(res);
-						s.inuse = false;
-						s.available = true;
-						s.dev = null;
-						pending(false);
-					});
-			}
+			MWPLog.message("stopped secondary reader %s\n", s.name);
+			pending(true);
+			s.inuse = false;
+			s.available = true;
+			s.dev = null;
+			pending(false);
 		}
+
 		private Radar.RadarPlot? get_ri(uint rk) {
 			Radar.RadarPlot? ri = Radar.radar_cache.lookup(rk);
 			if (ri == null) {
