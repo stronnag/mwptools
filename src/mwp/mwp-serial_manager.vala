@@ -26,6 +26,7 @@ namespace Mwp  {
 #if MQTT
     MwpMQTT mqtt;
 #endif
+	uint stag = 0;
 
 	public void clear_sidebar(MWSerial s) {
 		if(s != null) {
@@ -169,7 +170,11 @@ namespace Msp {
             if (Mwp.conf.audioarmed == true) {
                 Mwp.window.audio_cb.active = false;
             }
-            Mwp.show_serial_stats();
+			if(Mwp.stag != 0) {
+				Source.remove(Mwp.stag);
+				Mwp.stag = 0;
+			}
+			Mwp.show_serial_stats();
             if(Mwp.rawlog == true) {
                 Mwp.msp.raw_logging(false);
             }
@@ -266,6 +271,18 @@ namespace Msp {
 				}
 				Mwp.msp.setup_reader();
 				//var cmode = Mwp.msp.get_commode();
+
+				var stimer = Environment.get_variable("MWP_STATS_LOG");
+				if(stimer != null) {
+					var ssecs = uint.parse(stimer);
+					if(ssecs > 0) {
+						Mwp.stag = Timeout.add_seconds(ssecs, () => {
+								Mwp.show_serial_stats();
+								return true;
+							});
+					}
+				}
+
 				MWPLog.message("Connected %s (nopoll %s)\n", serdev, Mwp.nopoll.to_string());
 				if(Mwp.nopoll == false) {
 					Mwp.serstate = Mwp.SERSTATE.NORMAL;

@@ -813,7 +813,7 @@
 #endif
 				 }
 			 } catch (Error e) {
-				 MWPLog.message("Read async error: %s\n", e.message);
+				 MWPLog.message("Read async: %s\n", e.message);
 				 if (!can.is_cancelled()) {
 					 serial_lost();
 				 }
