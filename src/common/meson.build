@@ -55,10 +55,17 @@ endif
 
 dopts += ['--vapidir', meson.current_source_dir() ]
 
+deps += dependency('gio-2.0')
+if host_machine.system() != 'windows'
+  deps += dependency('gio-unix-2.0')
+else
+  deps += dependency('gio-windows-2.0')
+endif
+
 libargs = {
   'sources': vcommon,
   'include_directories':  common_inc_dir,
-  'dependencies': [ deps, dependency('gio-2.0'),
+  'dependencies': [ deps,
                     meson.get_compiler('vala').find_library('posix'),
                     meson.get_compiler('vala').find_library('linux'),
                   ],
