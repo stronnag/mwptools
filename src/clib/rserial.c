@@ -325,7 +325,6 @@ int open_serial(const char *device, int baudrate) {
 
   if(hfd != INVALID_HANDLE_VALUE) {
     set_timeout((intptr_t)hfd, (uint32_t)MAXDWORD, (uint32_t)MAXDWORD, (uint32_t)5);
-    set_timeout((intptr_t)hfd, 0, 1);
     set_fd_speed((intptr_t)hfd, baudrate);
   }
   return (intptr_t)hfd;
