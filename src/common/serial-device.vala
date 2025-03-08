@@ -442,8 +442,9 @@
 	 private string devname;
 	 private int fd=-1;
 	 private int wrfd=-1;
-	 private Socket skt;
+	 private Socket socket;
 	 private SocketAddress sockaddr;
+	 private SocketConnection conn;
 	 public  States state {private set; get;}
 	 private uint8 xflags;
 	 private uint8 checksum;
@@ -497,16 +498,17 @@
  #if LINUX
 	 private BleSerial gs;
  #endif
- #if UNIX
 	 private uint tag;
 	 private IOChannel io_chan;
- #else
-	 private bool foad;
- #endif
+
 	 public uint8 mavvid;
 	 public uint8 mavsysid;
 
-	 private const int WEAKSIZE = 1;
+	 public DataInputStream? dis;
+	 public DataOutputStream? dos;
+	 public Cancellable can;
+
+	 private const int WEAKSIZE = 16;
 
 	 public enum MemAlloc {
 		 RX=1024,
@@ -524,7 +526,9 @@
 		 WEAK,
 		 WEAKBLE,
 		 UDP,
-		 TCP
+		 TCP,
+		 UDPSERVER,
+		 IPCONN
 	 }
 
 	 public enum Mode {
@@ -671,7 +675,7 @@
 		 setup_ip(null,0);
 		 if (fd > -1) {
 			 try {
-				 var xsa = skt.get_local_address();
+				 var xsa = socket.get_local_address();
 				 var outp = ((InetSocketAddress)xsa).get_port();
 				 res[0] = fd;
 				 res[1] = (int)outp;
@@ -690,7 +694,6 @@
 	 public string get_devname() {
 		 return devname;
 	 }
-
 
 	 public bool get_ro() {
 		 return ro;
@@ -765,7 +768,7 @@
 
 	 public void clear_counters() {
 		 ltime = stime = 0;
-		 stats =  {0.0, 0, 0, 0.0, 0.0};
+		 stats =  {0};
 	 }
 
 	 public void setup_reader() {
@@ -773,34 +776,121 @@
 		 state = States.S_HEADER;
 		 msgq = new AsyncQueue<INAVEvent?>();
 		 td = {};
- #if UNIX
+		 can = new Cancellable();
+		//		MWPLog.message(":DBG: Setup reader %x %s %d %d\n", commode, commode.to_string(), fd, wrfd);
+		 if((commode & (ComMode.UDPSERVER|ComMode.IPCONN)) == 0) {
+			//MWPLog.message("Setup reader iostream SERIAL\n");
+			 bool dosclose = (fd != wrfd);
+#if !WINDOWS
+			 if(!fwd) {
+				 dis = new DataInputStream(new UnixInputStream(fd, true));
+			 }
+			 dos = new DataOutputStream(new UnixOutputStream(wrfd, dosclose));
+#else
+			 if (!fwd) {
+				 dis = new DataInputStream (new Win32InputStream((void *)((intptr)fd), true));
+			 }
+			 dos = new DataOutputStream (new Win32OutputStream((void *)((intptr)wrfd), dosclose));
+#endif
+		 }
+		 if(!fwd) {
+			 device_io();
+		 }
+	 }
+
+	 public async bool sfetch() {
+		 for(;;) {
+			 try {
+				 var len = yield dis.read_async(devbuf, Priority.DEFAULT, can);
+				 if (len >  0) {
+					process_input(len);
+				 } else {
+#if WINDOWS
+					 var err = MwpSerial.get_error_number();
+					 if (err != 0 && err != ERROR_TIMEOUT) {
+						 return false;
+					 }
+#endif
+				 }
+			 } catch (Error e) {
+				 MWPLog.message("Read async error: %s\n", e.message);
+				 if (!can.is_cancelled()) {
+					 serial_lost();
+				 }
+				 return false;
+			 }
+		 }
+	}
+
+	 private void ufetch() {
+#if WINDOWS
+		 io_chan = new IOChannel.win32_socket(socket.fd);
+#else
+		 io_chan = new IOChannel.unix_new(socket.fd);
+#endif
 		 try {
-			 io_chan = new IOChannel.unix_new(fd);
 			 if(io_chan.set_encoding(null) != IOStatus.NORMAL)
 				 error("Failed to set encoding");
 			 io_chan.set_buffered(false);
-			 tag = io_chan.add_watch(IOCondition.IN|IOCondition.HUP|IOCondition.NVAL|IOCondition.ERR, device_read);
-		 } catch(IOChannelError e) {
-			 error("IOChannel: %s", e.message);
-		 }
- #else
-		 if ((commode & ComMode.UDP) == ComMode.UDP) {
-			 skt.timeout = 1;
-		 }
-		 if ((commode & ComMode.TTY) == ComMode.TTY) {
-			 MwpSerial.set_timeout(fd, 0, 5);
-		 }
+			 tag = io_chan.add_watch(IOCondition.IN|
+									 IOCondition.HUP|
+									 IOCondition.ERR|
+									 IOCondition.NVAL, (chan, cond) => {
+										 if(cond == 0) {
+											 MWPLog.message(":DBG: UDP zero condition %s\n", cond.to_string());
+											 return true;
+										 }
 
-
-		 foad = false;
-		 new Thread<bool>("reader", () => {
-				 MWPLog.message(":DBG: Open I/O thread\n");
-				 thr_io();
-				 MWPLog.message(":DBG: Close I/O thread\n");
-				 return false;
-			 });
- #endif
+										 if((cond & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0) {
+											 MWPLog.message(":DBG: UDP close on %s\n", cond.to_string());
+											 clearup();
+											 return false;
+										 }
+										 try {
+											 var sz = socket.receive_from(out sockaddr, devbuf);
+											 if (sz <= 0) {
+												 return false;
+											 }
+											 process_input(sz);
+											 return true;
+										 } catch (Error e) {
+											 MWPLog.message(":DBG: UDP recv_from: %s\n", e.message);
+											 serial_lost();
+											 return false;
+										 }
+									 });
+		 } catch (Error e) {
+			 MWPLog.message(":DBG: UDP setup %s\n", e.message);
+		 }
 	 }
+
+	 public void device_io() {
+		 if((commode & ComMode.UDPSERVER) == 0) {
+			 sfetch.begin((obj, res) => {
+					 var ok = sfetch.end(res);
+					 if(!ok) {
+						 try {
+							 dos.close();
+							 dis.close();
+						 } catch (Error e) {
+							 MWPLog.message("SFetch close: %s\n", e.message);
+						 }
+#if LINUX
+						 if((commode & ComMode.BLE) == ComMode.BLE) {
+							 var dd = DevManager.get_dd_for_name(devname);
+							 if (dd != null) {
+								 DevManager.btmgr.set_device_connected(dd.id, false);
+							 }
+						 }
+						 clearup();
+#endif
+					 }
+				 });
+		 } else {
+			 ufetch();
+		 }
+	 }
+
 
 	 private void setup_ip(string? host, uint16 port, string? rhost=null, uint16 rport = 0) {
 		 fd = -1;
@@ -815,27 +905,27 @@
 			 foreach(var ifam in fams) {
 				 try {
 					 var sa = sockaddr= new InetSocketAddress (new InetAddress.any(ifam), (uint16)port);
-					 skt = new Socket (ifam, SocketType.DATAGRAM, SocketProtocol.UDP);
-					 if (skt != null) {
+					 socket = new Socket (ifam, SocketType.DATAGRAM, SocketProtocol.UDP);
+					 if (socket != null) {
  #if WINDOWS
 						 if (ifam == SocketFamily.IPV6) {
-							 int err = WinFix.set_v6_dual_stack(skt.fd);
+							 int err = WinFix.set_v6_dual_stack(socket.fd);
 							 if (err != 0) {
 								 var _lerr = MwpSerial.get_error_number();
 								 uint8 [] sbuf = new uint8[1024];
 								 var s = MwpSerial.error_text(_lerr, sbuf, 1024);
 								 MWPLog.message("::DBG:: Windwos IPV6 trainwreck %s\n", s);
 							 } else {
-								 MWPLog.message("::DBG:: Fixup Windwos IPV6 trainwreck %d\n", err);
+								 MWPLog.message("::DBG:: Fixup Windwos IPV6 %d\n", err);
 							 }
 						 }
  #endif
-						 skt.bind (sa, true);
-						 fd = skt.fd;
+						 socket.bind (sa, true);
+						 fd = socket.fd;
 						 //						if(debug) {
-						 MWPLog.message(":DBG: UDP bound: %s fd=%d\n", skt.get_local_address().to_string(), fd);
+						 MWPLog.message(":DBG: UDP bound: %s fd=%d\n", socket.get_local_address().to_string(), fd);
 							 //}
-						 commode |= ComMode.UDP;
+						 commode |= ComMode.UDP|ComMode.UDPSERVER;
 						 break;
 					 }
 				 } catch (Error e) {
@@ -888,43 +978,33 @@
 							 sproto = SocketProtocol.UDP;
 							 commode |= ComMode.UDP;
 						 }
-						 skt = new Socket (fam, stype, sproto);
-						 if(skt != null) {
-							 fd = skt.fd;
-							 if(fd != -1) {
-								 try {
-									 if (sproto != SocketProtocol.UDP) {
-										 skt.connect(sockaddr);
-									 } else {
-										 skt.set_blocking(false);
-									 }
-									 //set_noblock();
-								 } catch (Error e) {
-									 MWPLog.message("connection fails %s %d\n", e.message, lasterr);
-									 errstr = e.message;
-									 lasterr = MwpSerial.get_error_number();
-									 skt.close();
-									 fd = -1;
-								 }
-							 }
-							 break;
-						 }
+						 commode |= ComMode.IPCONN;
+						 var client =  new SocketClient ();
+						 client.family = fam;
+						 client.protocol = sproto;
+						 client.type = stype;
+						 conn = client.connect(sockaddr);
+						 fd = conn.socket.fd;
+						 dis = new DataInputStream(conn.input_stream);
+						 dos = new DataOutputStream (conn.output_stream);
+						 break;
 					 }
 				 }
 			 } catch(Error e) {
 				 MWPLog.message("client socket: %s %d: %s\n", host, port, e.message);
 				 lasterr = MwpSerial.get_error_number();
-				 if (fd > 0)
-					 try { skt.close(); } catch {}
 				 fd = -1;
 			 }
 		 }
+		 if (fd != -1) {
+			available = true;
+		}
 	 }
 
-	 private void set_noblock() {
+	 private void set_noblock(int _fd) {
  #if UNIX
 		 try {
-			 Unix.set_fd_nonblocking(fd, true);
+			 Unix.set_fd_nonblocking(_fd, true);
 		 } catch {};
  #endif
 	 }
@@ -959,7 +1039,7 @@
 			 if(fwd == false) {
 				 setup_reader();
 			 } else {
-				 set_noblock();
+				 set_noblock(fd);
 			 }
 		 } else  {
 			 get_error_message(out estr);
@@ -1045,19 +1125,26 @@
 						 fd = -1;
 						 available = false;
 						 lasterr = Posix.ETIMEDOUT;
+					 } else {
+						 set_noblock(fd);
+						 if (fd != wrfd) {
+							 set_noblock(wrfd);
+						 }
 					 }
 				 } else
  #endif
-				 {
+					 {
 					 fd = BTSocket.connect(device, &lasterr);
 					 if (fd != -1) {
+						 wrfd = fd;
 						 commode = ComMode.FD|ComMode.STREAM|ComMode.BT;
-						 set_noblock();
 						 lasterr = 0;
+						 set_noblock(fd);
 					 } else {
 						 lasterr=MwpSerial.get_error_number();
 					 }
 				 }
+				 available = true;
 			 } else {
 				 fd = -1;
 				 available = false;
@@ -1117,35 +1204,15 @@
 				 fd = MwpSerial.open(device, (int)rate);
 				 if(fd < 0) {
 					 lasterr = MwpSerial.get_error_number();
+				 } else {
+					 available = true;
+					 wrfd = fd;
+					 set_noblock(fd);
 				 }
 			 }
 		 }
-		 if(fd < 0) {
-			 fd = -1;
-			 available = false;
-		 } else {
-			 if (wrfd == -1) {
-				 wrfd = fd;
-			 }
-			 available = true;
-		 }
 		 return available;
 	 }
-
-	 /*
-	 public bool open_fd(int _fd, int rate, bool rawfd = false) {
-		 devname = "fd #%d".printf(_fd);
-		 fd = wrfd = _fd;
-		 fwd =  false;
-		 if(rate != -1) {
-			 commode = ComMode.TTY|ComMode.STREAM;
-		 } else {
-			 commode = ComMode.FD|ComMode.STREAM;
-		 }
-		 setup_fd(rate);
-		 return available;
-	 }
-	 */
 
 	 ~MWSerial() {
 		 if(fd != -1)
@@ -1155,49 +1222,29 @@
 	 public void close() {
 		 if(available) {
 			 available = false;
-			 if((commode & ComMode.TTY) == ComMode.TTY) {
-				 MwpSerial.close(fd);
-			 } else if ((commode & ComMode.FD) == ComMode.FD) {
-				 Posix.close(fd);
- #if LINUX
-				 if((commode & ComMode.BLE) == ComMode.BLE) {
-					 Posix.close(wrfd);
-					 wrfd = -1;
-					 var dd = DevManager.get_dd_for_name(devname);
-					 if (dd != null) {
-						 DevManager.btmgr.set_device_connected(dd.id, false);
-					 }
-				 }
- #endif
+			 if((commode & ComMode.UDPSERVER) == 0) {
+				 can.cancel();
 			 } else {
-				 MWPLog.message(":DBG: Close for socket closed=%s\n", skt.is_closed().to_string());
-				 if (!skt.is_closed()) {
-					 try {
-						 if ((commode & ComMode.UDP) == 0) {
-							 skt.shutdown(true, true);
-						 }
-						 skt.close();
-					 } catch (Error e) {
-						 warning ("sock close %s", e.message);
-					 }
-				 }
+				 try {
+					 io_chan.shutdown(true);
+				 } catch {}
 			 }
 		 }
 		 closing |= 2;
-		 clearup();
- #if WINDOWS
-		 foad = true;
- #endif
-	 }
+    }
 
 	 private void clearup() {
 		 MWPLog.message(":DBG: clearup closing %x\n", closing);
-		 if(closing == 3) {
+		 if(closing > 1) {
 			 closing = 0;
 			 fd = -1;
 			 commode = 0;
 			 sockaddr=null;
-			 skt = null;
+			 socket = null;
+			 if (tag > 0) {
+				 Source.remove(tag);
+				 tag = 0;
+			 }
 			 td.r = null;
 			 td = {};
 		 }
@@ -1262,118 +1309,7 @@
 		 return res;
 	 }
 
- #if UNIX
-	 private bool device_read(IOChannel gio, IOCondition cond) {
-		 if(IOCondition.IN in cond) {
-			 return device_io();
-		 } else {
-			 closing |= 1;
-			 clearup();
-			 if (available) {
-				 serial_lost();
-			 }
-			 tag = 0; // REMOVE will remove the iochannel watch
-			 return Source.REMOVE;
-		 }
-	 }
- #else
-	 private bool thr_io() {
-		 var res = true;
-		 var wcond = IOCondition.IN|IOCondition.HUP|IOCondition.NVAL|IOCondition.ERR;
-		 do {
-			 if ((commode & ComMode.UDP) == ComMode.UDP) {
-				 try {
-					 skt.condition_wait(wcond);
-				 } catch (Error e){
-					 MWPLog.message(":DBG: WCond : %s foad: %s\n", e.message, foad.to_string());
-				 }
-				 var cond = skt.condition_check(wcond);
-				 if(IOCondition.IN in cond) {
-					 res = device_io();
-				 }
-			 } else {
-				 res = device_io();
-			 }
-			 if (foad) {
-				 closing |= 1;
-				 clearup();
-				 if (available) {
-					 serial_lost();
-				 }
-				 res = false;
-			 }
-		 } while (res);
-		 return res;
-	 }
- #endif
-
-	 private bool device_io() {
-		 ssize_t res = 0;
- #if LINUX
-		 if((commode & ComMode.BT) == ComMode.BT) {
-			 res = Posix.recv(fd, devbuf, MemAlloc.DEV, 0);
-			 if (res <= 0) {
-				 lasterr = Posix.errno;
-				 if (lasterr == 0 || lasterr == Posix.EAGAIN || lasterr == Posix.EINTR) {
-					 return true;
-				 }
-			 }
-		 } else
- #endif
-			 if ((commode & ComMode.TTY) == ComMode.TTY) {
-				 res = MwpSerial.read(fd, devbuf, MemAlloc.DEV);
- #if WINDOWS
-				 if (res == 0) {
-					 var err = MwpSerial.get_error_number();
-					 if (err == 0 || err == ERROR_TIMEOUT) {
-						 Thread.usleep(1000*5);
-						 return true;
-					 } else {
-						 MWPLog.message(":DBG: WIN32: FIXME %d %x\n", err, err);
-						 Thread.usleep(1000*10);
-						 return true;
-					 }
-				 }
- #endif
-			 } else if ((commode & ComMode.UDP) == ComMode.UDP) {
-				 try {
-					 res = skt.receive_from(out sockaddr, devbuf);
-					 if (res <= 0) {
-						 var err = MwpSerial.get_error_number();
-						 MWPLog.message("Received 0 or fewer (%d) [errno %d] bytes\n", res, err);
-					 }
-				 } catch(Error e) {
-					 res = 0;
-				 }
-			 } else if((commode & ComMode.TCP) == ComMode.TCP) {
-				 try {
-					 if(!skt.is_closed()) {
-						 res = skt.receive(devbuf);
-						 if (res <= 0) {
-							 var err = MwpSerial.get_error_number();
-							 MWPLog.message(":DBG: TCP read %d (errno %d)\n", res, err);
-						 }
-					 }
-				 } catch (Error e) {
-					 MWPLog.message(":DBG: TCP %s\n", e.message);
-					 res = 0;
-				 }
-			 } else {
-				 res = Posix.read(fd, devbuf, MemAlloc.DEV);
-			 }
-
-		 if(res <= 0) {
-			 closing |= 1;
-			 clearup();
-			 if (available) {
-				 Idle.add(() => { serial_lost();return false; });
-			 }
-			 return false;
-		 }
-		 return parse_input(res);
-	 }
-
-	 private bool parse_input(size_t res) {
+	 private bool process_input(size_t res) {
 		 if(pmode == ProtoMode.CLI) {
 			 csize = (uint16)res;
 			 var msg = INAVEvent(){cmd=0, len=csize, flags=0, err=false, raw=devbuf};
@@ -1681,7 +1617,7 @@
 							 }
 							 irxbufp = 0;
 						 } else {
-							 error_counter("MSP/CRC");
+							 error_counter("MSP %s CRC: ".printf(cmd.to_string()));
 							 if(debug) {
 								 MWPLog.message("CRC Fail, got %d != %d (cmd=%d)\n",
 												devbuf[nc],checksum,cmd);
@@ -1961,79 +1897,44 @@
 		 return true;
 	 }
 
-	 public ssize_t write(void *buf, size_t count) {
-		 ssize_t size = 0;
-		 if(ro || !available)
-			 return 0;
-
-		 if(stime == 0 && pmode == ProtoMode.NORMAL)
-			 stime =  GLib.get_monotonic_time();
-
-		 stats.txbytes += count;
-
-		 if(rawlog == true) {
-			 log_raw('o',buf,(int)count);
-		 }
-
-		 if((commode & ComMode.UDP) == ComMode.UDP) {
-			 try {
-				 if(!skt.is_closed()) {
-					 size = skt.send_to (sockaddr, ((uint8[])buf)[0:count]);
-				 }
-			 } catch(Error e) {
-				 size = 0;
-			 }
- #if LINUX
-		 } else if((commode & ComMode.BT) == ComMode.BT) {
-			 if((commode & ComMode.WEAKBLE) == ComMode.WEAKBLE) {
-				 for(int n = (int)count; n > 0; ) {
-					 var nc = (n > WEAKSIZE) ? WEAKSIZE : n;
-					 size += Posix.send(wrfd, buf, nc, 0);
-					 n -= nc;
-					 buf = (void*)((uint8*)buf + nc);
-					 if (n > 0 && ((commode & ComMode.WEAK) == ComMode.WEAK)) {
-						 Thread.usleep(1000*WEAKSIZE);
-					 }
-				 }
-			 } else {
-				 size = Posix.send(wrfd, buf, count, 0);
-			 }
- #endif
-		 } else if((commode & ComMode.STREAM) == ComMode.STREAM) {
+	 private size_t stream_writer(uint8[]buf, int count) {
+		 size_t tsz, sz;
+		 tsz = 0;
+		 try {
 			 if((commode & ComMode.WEAK) == ComMode.WEAK) {
+				 int j = 0;
 				 for(int n = (int)count; n > 0; ) {
 					 var nc = (n > WEAKSIZE) ? WEAKSIZE : n;
-					 size += stream_write(buf, nc);
+					 dos.write_all (buf[j:j+nc], out sz, null);
+					 tsz += sz;
+					 j += nc;
 					 n -= nc;
-					 buf = (void*)((uint8*)buf + nc);
-					 if (n > 0) {
-						 Thread.usleep(1000);
-					 }
 				 }
 			 } else {
-				 size = stream_write(buf, count);
+				 dos.write_all (buf, out tsz, null);
 			 }
+		 } catch (Error e) {
+			 MWPLog.message("Streem writer: %s\n", e.message);
 		 }
-		 return size;
-	 }
+		return tsz;
+	}
 
-	 private ssize_t stream_write(void *buf, size_t count) {
-		 if((commode & ComMode.TTY) == ComMode.TTY) {
-			 return MwpSerial.write(fd, buf, count);
-		 } else if((commode & ComMode.TCP) == ComMode.TCP) {
-			 try {
-				 if(!skt.is_closed()) {
-					 return skt.send(((uint8[])buf)[0:count]);
-				 } else {
-					 return 0;
-				 }
-			 } catch {
-				 return 0;
-			 }
-		 } else {
-			 return Posix.write(wrfd, buf, count);
-		 }
-	 }
+	public ssize_t write(void *buf, size_t count) {
+		if(stime == 0 && pmode == ProtoMode.NORMAL)
+            stime =  GLib.get_monotonic_time();
+        stats.txbytes += count;
+		ssize_t sz = 0;
+		try {
+			if((commode & ComMode.UDPSERVER) != 0) {
+				sz = socket.send_to(sockaddr, ((uint8[])buf)[:count]);
+			} else {
+				sz = (ssize_t)stream_writer(((uint8[])buf)[:count], (int)count);
+			}
+		} catch (Error e) {
+			stderr.printf("Write fails: %s\n", e.message);
+		}
+		return sz;
+	}
 
 	 public void send_ltm(uint8 cmd, void *data, size_t len) {
 		 if(available == true && !ro) {
@@ -2058,7 +1959,6 @@
 			 mavseqno++;
 		 }
 	 }
-
 
 	 public static size_t generate_ltm(uint8 cmd, void *data, size_t len, ref uint8[] _txbuf) {
 		 uint8 *ptx = _txbuf;

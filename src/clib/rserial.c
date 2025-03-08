@@ -184,7 +184,8 @@ int open_serial(const char *device, int baudrate) {
   return fd;
 }
 
-void set_timeout(int fd, int tenths, int number) {
+/*
+static void set_timeout(int fd, int tenths, int number) {
   struct termios tio = {0};
 #ifdef __linux__
   ioctl(fd, TCGETS, &tio);
@@ -199,7 +200,7 @@ void set_timeout(int fd, int tenths, int number) {
   tcsetattr(fd,TCSANOW,&tio);
 #endif
 }
-
+*/
 void close_serial(int fd) {
   flush_serial(fd);
   struct termios tio = {0};
@@ -258,7 +259,6 @@ int get_error_number() {
   return errno;
 }
 
-
 #else
 #include <windows.h>
 #include <time.h>
@@ -291,30 +291,14 @@ int set_fd_speed(int hfd, int baudrate) {
      return -1;
 }
 
-void set_timeout(int hfd, int timetenths, int number) {
-     COMMTIMEOUTS ctout;
-     GetCommTimeouts((HANDLE)((intptr_t)hfd), &ctout);
-     ctout.WriteTotalTimeoutMultiplier = 0;
-     ctout.WriteTotalTimeoutConstant = 0;
-     if(timetenths == 0) {
-       ctout.ReadIntervalTimeout = MAXDWORD;
-       ctout.ReadTotalTimeoutMultiplier = 0;
-       ctout.ReadTotalTimeoutConstant = 0;
-
-       /*
-       ctout.ReadTotalTimeoutMultiplier = MAXDWORD;
-       if(number == 0) {
-	 ctout.ReadTotalTimeoutConstant = MAXDWORD-1;
-       } else {
-	 ctout.ReadTotalTimeoutConstant = number;
-       }
-       */
-     } else {
-       ctout.ReadIntervalTimeout = timetenths*10;
-       ctout.ReadTotalTimeoutMultiplier = (number > 1) ? number : 1;
-       ctout.ReadTotalTimeoutConstant = timetenths*10;
-     }
-     SetCommTimeouts((HANDLE)((intptr_t)hfd), &ctout);
+void set_timeout(int hfd, uint32_t readint, uint32_t readmult, uint32_t readconst) {
+  COMMTIMEOUTS ctout = {0};
+  ctout.WriteTotalTimeoutMultiplier = 0;
+  ctout.WriteTotalTimeoutConstant = 0;
+  ctout.ReadIntervalTimeout = readint;
+  ctout.ReadTotalTimeoutMultiplier = readmult;
+  ctout.ReadTotalTimeoutConstant = readconst;
+  SetCommTimeouts((HANDLE)((intptr_t)hfd), &ctout);
 }
 
 int open_serial(const char *device, int baudrate) {
@@ -340,6 +324,7 @@ int open_serial(const char *device, int baudrate) {
   }
 
   if(hfd != INVALID_HANDLE_VALUE) {
+    set_timeout((intptr_t)hfd, (uint32_t)MAXDWORD, (uint32_t)MAXDWORD, (uint32_t)5);
     set_timeout((intptr_t)hfd, 0, 1);
     set_fd_speed((intptr_t)hfd, baudrate);
   }

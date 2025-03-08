@@ -107,8 +107,6 @@ namespace MwpSerial {
 	ssize_t write(int fd, uint8 *buf, size_t buflen);
 	[CCode (cname = "flush_serial")]
     void flush(int fd);
-    [CCode (cname = "set_timeout")]
-    void set_timeout(int fd, int tenths, int number);
     [CCode (cname = "set_fd_speed")]
     void set_speed(int fd, int rate);
     [CCode (cname="close_serial")]

@@ -264,14 +264,15 @@ class ClITerm : Object {
 #endif
 	}
 
+	private uint obuf[2];
+
 	private void process_input(uchar c) {
 		if (msp.available) {
 			if(c == 13 && eolm != 0) {
-				msp.write(eol.data,eol.length);
+				msp.write(eol.data, eol.length);
 			} else {
-				uint8 buf[2];
-				buf[0] = c;
-				msp.write(buf,1);
+				obuf[0] = c;
+				msp.write(obuf, 1);
 			}
 		}
 	}
