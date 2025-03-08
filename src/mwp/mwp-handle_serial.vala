@@ -49,7 +49,7 @@ namespace Mwp {
     bool xfailsafe;
 
     uint8 gpscnt;
-    uint8 want_special;
+    Mwp.POSMODE want_special;
     uint8 last_ltmf;
     uint8 mavc;
     uint16 mavsensors;

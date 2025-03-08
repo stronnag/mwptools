@@ -61,19 +61,20 @@ namespace Cli {
 			}
 		}
 		parse_options();
-		Timeout.add(50, () => {
-				if(Gis.map != null) {
-					var w = Gis.map.get_width();
-					if ( w > 0) {
-						if(Mwp.current_lat == 0 && Mwp.current_lon == 0) {
-							MapUtils.get_centre_location(out Mwp.current_lat, out Mwp.current_lon);
-						}
-						parse_cli_files();
-						return false;
-					}
+	}
+
+	public bool main_window_ready() {
+		if(Gis.map != null) {
+			var w = Gis.map.get_width();
+			if ( w > 0) {
+				if(Mwp.current_lat == 0 && Mwp.current_lon == 0) {
+					MapUtils.get_centre_location(out Mwp.current_lat, out Mwp.current_lon);
 				}
+				parse_cli_files();
 				return true;
-			});
+			}
+		}
+		return false;
 	}
 
 	private bool get_app_status(string app, out string bblhelp) {

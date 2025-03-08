@@ -84,8 +84,6 @@ namespace Mwp {
 		internal unowned Gtk.ToggleButton wpeditbutton;
 		[GtkChild]
 		internal unowned Gtk.Button conbutton;
-		//[GtkChild]
-		//		internal unowned  Gtk.CheckButton autocon;
 		[GtkChild]
 		internal unowned Gtk.Label gpslab;
 		[GtkChild]
@@ -133,7 +131,6 @@ namespace Mwp {
 		private Mwp.GotoDialog posdialog;
 		private Mwp.SCWindow scwindow;
 		private bool close_check;
-
 
 		public signal void armed_state(bool armed);
 		public signal void status_change(uint8 lflags);
@@ -194,6 +191,15 @@ namespace Mwp {
 
 			Mwp.window = this;
 			Mwp.toaster = toaster;
+			bool winit = false;
+			ulong active_id = 0;
+			active_id = this.notify["is-active"].connect(() => {
+					if(!winit && this.is_active) {
+						winit = Cli.main_window_ready();
+						MWPLog.message("Main window activated %s\n", winit.to_string());
+						this.disconnect (active_id);
+					}
+				});
 
 			var builder = new Builder.from_resource ("/org/stronnag/mwp/mwpmenu.ui");
 			var menubar = builder.get_object("menubar") as MenuModel;

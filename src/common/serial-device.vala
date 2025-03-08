@@ -842,7 +842,7 @@
 										 }
 
 										 if((cond & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0) {
-											 MWPLog.message(":DBG: UDP close on %s\n", cond.to_string());
+											 // MWPLog.message(":DBG: UDP close on %s\n", cond.to_string());
 											 clearup();
 											 return false;
 										 }
