@@ -315,6 +315,7 @@ Note also that for mwp to load SVG icons, `librsvg` requires that the `svg` elem
 | `MWP_BLACK_TILE` | Specify a black tile to be used by the Black Tiles map proxy |
 | `MWP_LOG_DIR` | Location of console logs ($HOME if undefined) |
 | `MWP_PRINT_RAW` | If defined, output hex bytes from serial I/O |
+| `MWP_STATS_LOG` | Time (seconds, >0) to automatically log "serial" statistics |
 | `MWP_TIME_FMT` | The time format for log output; by default "%FT%T%z", any GLib2 DateTime (strftime-like) format may be used; "%T.%f" works well on modern GLib. |
 
 ## Mime types for common file formats
