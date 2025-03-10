@@ -152,6 +152,6 @@ namespace MwpRaw {
 	[CCode (cname = "_mwprawhdr_t ")]
 	public struct Header {
 		SHeader s;
-		uint8 bytes[sizeof(SHeader)];
+		uint8 bytes[11];
 	}
 }
