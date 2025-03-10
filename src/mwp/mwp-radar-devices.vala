@@ -443,13 +443,13 @@ namespace Radar {
 
 	public void init() {
 		radar_cache = new Radar.RadarCache();
+		do_audio = (Mwp.conf.radar_alert_range > 0 && Mwp.conf.radar_alert_altitude > 0);
 		radarv = new RadarView();
 		Radar.init_icons();
 		items = new GLib.ListStore(typeof(RadarDev));
 	}
 
 	public void init_readers() {
-		do_audio = (Mwp.conf.radar_alert_range > 0 && Mwp.conf.radar_alert_altitude > 0);
 		foreach (var rd in Mwp.radar_device) {
 			var parts = rd.split(",");
 			foreach(var p in parts) {
