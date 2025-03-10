@@ -143,10 +143,15 @@ public const int ERROR_TIMEOUT;
 
 [CCode (cheader_filename = "mwpfuncs.h")]
 namespace MwpRaw {
-	[CCode (cname = "_mwprawhdr_t ")]
-	public struct Header {
+	[CCode (cname = "_smwprawhdr_t ")]
+	public struct SHeader {
 		double et;
 		uint16 len;
 		uint8 dirn;
+	}
+	[CCode (cname = "_mwprawhdr_t ")]
+	public struct Header {
+		SHeader s;
+		uint8 bytes[sizeof(SHeader)];
 	}
 }

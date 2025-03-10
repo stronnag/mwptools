@@ -33,4 +33,10 @@ typedef struct  __attribute__ ((__packed__))   {
   double et;
   uint16_t len;
   uint8_t dirn;
+} _smwprawhdr_t;
+
+
+typedef union  {
+  _smwprawhdr_t s;
+  uint8_t bytes[sizeof(_smwprawhdr_t)];
 } _mwprawhdr_t;
