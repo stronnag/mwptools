@@ -465,7 +465,7 @@
 	 private bool errstate;
 	 private int commerr;
 	 private bool rawlog;
-	 private FileStream raws;
+	 private int raws;
 	 private Timer timer;
 	 private bool print_raw=false;
 	 public uint baudrate  {private set; get;}
@@ -2184,10 +2184,10 @@
 	 private void log_raw(uint8 dirn, void *buf, int len) {
 		 double dt = timer.elapsed ();
 		 uint16 blen = (uint16)len;
-		 raws.write((uint8[])&dt, sizeof(double));
-		 raws.write((uint8[])&blen, 2);
-		 raws.write((uint8[])&dirn, 1);
-		 raws.write((uint8[])buf,len);
+		 Posix.write(raws, &dt, sizeof(double));
+		 Posix.write(raws, &blen, 2);
+		 Posix.write(raws, &dirn, 1);
+		 Posix.write(raws, buf,len);
 	 }
 
 	 public void raw_logging(bool state) {
@@ -2201,13 +2201,16 @@
 			 var lfn = Path.build_filename(logdir, fn);
 
 			 MWPLog.message("raw log for %s %s\n", devname, lfn);
-			 raws = FileStream.open (lfn, "wb");
+			 int modes = Posix.O_TRUNC|Posix.O_CREAT|Posix.O_WRONLY;
+#if WINDOWS
+			 modes = WinFix.set_bin_mode(modes);
+#endif
+			 raws = Posix.open (lfn, modes, 0640);
 			 timer = new Timer();
 			 rawlog = true;
-			 raws.write("v2\n".data , 3);
+			 Posix.write(raws, "v2\n".data, 3);
 		 } else {
-			 raws.flush();
-			 raws = null;
+			 Posix.close(raws);
 			 timer.stop();
 			 rawlog = false;
 		 }
