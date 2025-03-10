@@ -35,8 +35,9 @@ typedef struct  __attribute__ ((__packed__))   {
   uint8_t dirn;
 } _smwprawhdr_t;
 
+#define MWP_RAW_HSIZE sizeof(_smwprawhdr_t)
 
 typedef union  {
   _smwprawhdr_t s;
-  uint8_t bytes[sizeof(_smwprawhdr_t)];
+  uint8_t bytes[MWP_RAW_HSIZE];
 } _mwprawhdr_t;

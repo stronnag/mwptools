@@ -143,6 +143,7 @@ public const int ERROR_TIMEOUT;
 
 [CCode (cheader_filename = "mwpfuncs.h")]
 namespace MwpRaw {
+	public const uint HSIZE;
 	[CCode (cname = "_smwprawhdr_t ")]
 	public struct SHeader {
 		double et;
@@ -152,6 +153,6 @@ namespace MwpRaw {
 	[CCode (cname = "_mwprawhdr_t ")]
 	public struct Header {
 		SHeader s;
-		uint8 bytes[11];
+		uint8 bytes[HSIZE];
 	}
 }
