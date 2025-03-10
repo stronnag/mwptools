@@ -26,6 +26,7 @@ namespace Mwp  {
 #if MQTT
     MwpMQTT mqtt;
 #endif
+	uint stag = 0;
 
 	public void clear_sidebar(MWSerial s) {
 		if(s != null) {
@@ -135,18 +136,19 @@ namespace Msp {
 	}
 
 	public void handle_connect() {
-		//if(Mwp.msp.available || Mwp.mqtt_available) {
+		Mwp.window.conbutton.sensitive = false;
 		if (Mwp.window.conbutton.label == "Disconnect") {
-			close_serial();
+			Mwp.msp.close_async.begin((obj,res) => {
+					Mwp.msp.close_async.end(res);
+				});
 		} else {
 			connect_serial();
 		}
 	}
 
 	public void close_serial() {
-		// FIXME
 		if(Mwp.cleaned == true) {
-			    return;
+			return;
 		}
 		Assist.Window.instance().gps_available(false);
 		if(!Mwp.zznopoll) {
@@ -169,7 +171,11 @@ namespace Msp {
             if (Mwp.conf.audioarmed == true) {
                 Mwp.window.audio_cb.active = false;
             }
-            Mwp.show_serial_stats();
+			if(Mwp.stag != 0) {
+				Source.remove(Mwp.stag);
+				Mwp.stag = 0;
+			}
+			Mwp.show_serial_stats();
             if(Mwp.rawlog == true) {
                 Mwp.msp.raw_logging(false);
             }
@@ -179,18 +185,13 @@ namespace Msp {
             Mwp._nsats = 0;
             Mwp.last_tm = 0;
             Mwp.last_ga = 0;
-            if (Mwp.msp.available) {
-				Mwp.msp.td.alt.vario = 0;
-                Mwp.msp.close();
-                TelemTracker.ttrk.enable(Mwp.msp.get_devname());
+			Mwp.msp.td.alt.vario = 0;
+			TelemTracker.ttrk.enable(Mwp.msp.get_devname());
 #if MQTT
-			} else if (Mwp.mqtt_available) {
+			if (Mwp.mqtt_available) {
 				Mwp.mqtt_available = Mwp.mqtt.mdisconnect();
-#endif
-            } else {
-				MWPLog.message(" Already closed %s\n", Mwp.msp.get_devname());
 			}
-
+#endif
             Mwp.window.conbutton.set_label("Connect");
             Mwp.set_mission_menus(false);
             MwpMenu.set_menu_state(Mwp.window, "navconfig", false);
@@ -201,9 +202,6 @@ namespace Msp {
             Mwp.clear_sensor_array();
         } else {
             Mwp.show_serial_stats();
-            if (Mwp.msp.available) {
-                Mwp.msp.close();
-			}
 			Mwp.replayer = Mwp.Player.NONE;
         }
 
@@ -232,6 +230,7 @@ namespace Msp {
 		Mwp.window.typlab.set_label("");
 		Mwp.window.mmode.set_label("");
 		MwpMenu.set_menu_state(Mwp.window, "followme", false);
+		Mwp.window.conbutton.sensitive = true;
 	}
 
 	private uint8 pmask_to_mask(uint j) {
@@ -249,11 +248,6 @@ namespace Msp {
 		if (ostat == true) {
 			Mwp.xarm_flags=0xffff;
 			Mwp.lastrx = Mwp.lastok = Mwp.nticks;
-			if(serdev.has_prefix("udp://:")) {
-				Mwp.nopoll = true;
-				Mwp.zznopoll = true;
-			}
-			MWPLog.message("Connected %s (nopoll %s)\n", serdev, Mwp.nopoll.to_string());
 			Mwp.set_replay_menus(false);
 			if(Mwp.rawlog == true) {
 				Mwp.msp.raw_logging(true);
@@ -266,8 +260,24 @@ namespace Msp {
 				var pmsk = Mwp.window.protodrop.selected;
 				var pmask = (MWSerial.PMask)pmask_to_mask(pmsk);
 				set_pmask_poller(pmask);
+				if(serdev.has_prefix("udp://:")) {
+					Mwp.nopoll = true;
+				}
 				Mwp.msp.setup_reader();
 				//var cmode = Mwp.msp.get_commode();
+
+				var stimer = Environment.get_variable("MWP_STATS_LOG");
+				if(stimer != null) {
+					var ssecs = uint.parse(stimer);
+					if(ssecs > 0) {
+						Mwp.stag = Timeout.add_seconds(ssecs, () => {
+								Mwp.show_serial_stats();
+								return true;
+							});
+					}
+				}
+
+				MWPLog.message("Connected %s (nopoll %s)\n", serdev, Mwp.nopoll.to_string());
 				if(Mwp.nopoll == false) {
 					Mwp.serstate = Mwp.SERSTATE.NORMAL;
 					Mwp.msp.use_v2 = false;
@@ -324,7 +334,6 @@ Error: <i>%s</i>
 			Mwp.init_state();
 			Mwp.init_sstats();
 			MWPLog.message("Trying OS open for %s\n", serdev);
-			Mwp.window.conbutton.sensitive = false;
 			Mwp.msp.open_async.begin(serdev, Mwp.conf.baudrate, (obj,res) => {
 					ostat = Mwp.msp.open_async.end(res);
 					serial_complete_setup(serdev,ostat);

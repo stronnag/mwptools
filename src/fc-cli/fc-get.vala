@@ -69,6 +69,8 @@ class FCMgr :Object {
 	private static Timer timer;
 	private static FileStream tstream;
 
+	private static string cmd;
+
 	public FCMgr() {
 		if(itest) {
 			timer = new Timer();
@@ -89,7 +91,7 @@ class FCMgr :Object {
 
     private void force_exit() {
         state = State.EXIT;
-        string cmd="exit\n";
+        cmd="exit\n";
         msp.write(cmd.data, cmd.length);
         Timeout.add(250,  () => { ml.quit(); return false;});
     }
@@ -160,7 +162,7 @@ class FCMgr :Object {
     }
 
     private void start_cli() {
-        string cmd = "#";
+        cmd = "#";
         MWPLog.message("Establishing CLI\n");
         inp = linp = 0;
         state = State.CLI;
@@ -172,7 +174,7 @@ class FCMgr :Object {
 		var act = (ddump) ? "dump" : "diff";
 
 		MWPLog.message("Starting \"%s all\"\n", act);
-        string cmd="%s all\n".printf(act);
+        cmd="%s all\n".printf(act);
         state = State.DIFF;
         inbuf[0] = '#';
         inbuf[1] = ' ';
@@ -231,7 +233,7 @@ class FCMgr :Object {
 				timer.start();
 			}
 
-            msp.write(lines[lp], lines[lp].length);
+            msp.write(lines[lp].data, lines[lp].length);
             msp.write("\n".data, 1);
             lp++;
         } else {
@@ -239,7 +241,7 @@ class FCMgr :Object {
             if(errors.length == 0) {
 				MWPLog.fputs("start save\n");
 				set_save_state();
-                string cmd="save\n";
+                cmd="save\n";
                 msp.write(cmd.data,cmd.length);
             }
         }
@@ -278,7 +280,7 @@ class FCMgr :Object {
 	private void set_cli_delay() {
 		if (fc == Fc.INAV && fc_vers > 0x4ffff) {
 			state = State.VERS;
-			string cmd="cli_delay=1\n";
+			cmd="cli_delay=1\n";
 			msp.write(cmd.data, cmd.length);
 		}
 	}

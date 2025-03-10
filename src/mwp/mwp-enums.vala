@@ -186,17 +186,16 @@ namespace Mwp {
         FLAG
     }
 
-	[Flags]
-    private enum POSMODE {
-		NIL,
-        HOME,
-        PH,
-        RTH,
-        WP,
-        ALTH,
-        CRUISE,
-		UNDEF, // emergency maybe
-		LAND,
+    public enum POSMODE {
+		NONE = 0,
+        HOME = 1,
+        PH = 2,
+        RTH = 4,
+        WP = 8,
+        ALTH = 16,
+        CRUISE = 32,
+		UNDEF = 64, // emergency maybe
+		LAND = 128,
     }
 
         // ./src/main/fc/runtime_config.h
