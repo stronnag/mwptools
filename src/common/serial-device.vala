@@ -1341,11 +1341,8 @@
 		 if(res) {
 			 var msg = INAVEvent(){cmd=0, len=0, flags=0, err=false, raw=buf};
 			 msgq.push(msg);
- #if UNIX
 			 sport_event();
- #else
-			 Idle.add(() => { sport_event(); return false;});
- #endif
+			 stats.msgs++;
 		 }
 		 return res;
 	 }
@@ -1379,6 +1376,7 @@
 						 var msg = INAVEvent(){cmd=0, len=0, flags=0, err=false, raw=fbuf};
 						 msgq.push(msg);
 						 flysky_event();
+						 stats.msgs++;
 					 }
 				 } else {
 					 switch(state) {
@@ -1475,6 +1473,7 @@
 								 var msg = INAVEvent(){cmd=0, len=crsf_len, flags=0, err=false, raw=CRSF.crsf_buffer};
 								 msgq.push(msg);
 								 crsf_event();
+								 stats.msgs++;
 							 }
 						 }
 						 if (crsf_len == -1) {
@@ -2182,11 +2181,11 @@
 	 }
 
 	 private void log_raw(uint8 dirn, void *buf, int len) {
-		 double dt = timer.elapsed ();
-		 uint16 blen = (uint16)len;
-		 Posix.write(raws, &dt, sizeof(double));
-		 Posix.write(raws, &blen, 2);
-		 Posix.write(raws, &dirn, 1);
+		 MwpRaw.Header hdr = MwpRaw.Header(){};
+		 hdr.et = timer.elapsed();
+		 hdr.len = (uint16)len;
+		 hdr.dirn = dirn;
+		 Posix.write(raws, &hdr, sizeof(MwpRaw.Header));
 		 Posix.write(raws, buf,len);
 	 }
 

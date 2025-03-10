@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stdint.h>
 
 extern int connect_bt_device (const char *dev, int* lasterr);
 
@@ -27,3 +28,9 @@ extern int set_v6_dual_stack(int fd);
 extern int set_bin_mode(int m);
 
 #define MWP_MISC_MWP_MAX_WP 60
+
+typedef struct  __attribute__ ((__packed__))   {
+  double et;
+  uint16_t len;
+  uint8_t dirn;
+} _mwprawhdr_t;

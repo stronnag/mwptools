@@ -139,3 +139,14 @@ namespace WinFix {
 [CCode (cheader_filename = "winerror.h")]
 public const int ERROR_TIMEOUT;
 #endif
+
+
+[CCode (cheader_filename = "mwpfuncs.h")]
+namespace MwpRaw {
+	[CCode (cname = "_mwprawhdr_t ")]
+	public struct Header {
+		double et;
+		uint16 len;
+		uint8 dirn;
+	}
+}
