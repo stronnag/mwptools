@@ -1915,74 +1915,64 @@
 		 return true;
 	 }
 
-	 private ssize_t stream_writer(uint8[]buf, size_t count) {
-		 ssize_t tsz;
-		 size_t sz;
-		 tsz = 0;
+	 private ssize_t io_write(uint8[]buf, size_t count) {
+		 ssize_t sz;
+		 size_t ssz;
+		 sz = -1;
 		 try {
-			 uint j = 0;
-			 for(uint n = (uint)count; n > 0; ) {
-				 var nc = (n > WEAKSIZE) ? WEAKSIZE : n;
-				 if ((commode & ComMode.TTY) == ComMode.TTY) {
+			 if((commode & ComMode.UDP) != 0) {
+				 sz = socket.send_to(sockaddr, buf[:count]);
+			 } else if ((commode & ComMode.TTY) == ComMode.TTY) {
 #if !WINDOWS
-					 sz = MwpSerial.write(wrfd,buf[j:j+nc], nc);
+				 sz = MwpSerial.write(wrfd, buf, count);
 #else
-					 dos.write_all (buf[j:j+nc], out sz, null);
+				 dos.write_all (buf, out ssz, null);
+				 sz = (ssize_t)ssz;
 #endif
-				 } else if ((commode & ComMode.BT) == ComMode.BT) {
-					 sz = Posix.write(wrfd, buf[j:j+nc], nc);
-				 } else {
-					 var iostat = io_chan.write_chars((char[])buf[j:j+nc], out sz);
-					 if(iostat != IOStatus.NORMAL) {
-						 stderr.printf("IOSTAT write fails: %s\n", iostat.to_string());
+			 } else if ((commode & ComMode.BT) == ComMode.BT) {
+				 sz = Posix.write(wrfd, buf[:count], count);
+			 } else {
+				 var iostat = io_chan.write_chars((char[])buf[:count], out ssz);
+				 sz = (ssize_t)ssz;
+				 if(iostat != IOStatus.NORMAL) {
+					 stderr.printf("IOSTAT write fails: %s\n", iostat.to_string());
 						 return -1;
-					 }
 				 }
-				 tsz += (ssize_t)sz;
-				 j += nc;
-				 n -= nc;
 			 }
 		 } catch (Error e) {
-			 print("Streem writer: %s\n", e.message);
+			 stderr.printf("Write fails: %s\n", e.message);
+		 }
+		 return sz;
+	 }
+
+	 private ssize_t stream_writer(uint8[]buf, size_t count) {
+		 ssize_t tsz;
+		 ssize_t sz;
+		 tsz = 0;
+		 uint j = 0;
+		 for(uint n = (uint)count; n > 0; ) {
+			 var nc = (n > WEAKSIZE) ? WEAKSIZE : n;
+			 sz = io_write(buf[j:j+nc], nc);
+			 if (sz == -1) {
+				 return -1;
+			 }
+			 tsz += sz;
+			 j += nc;
+			 n -= nc;
 		 }
 		 return tsz;
 	 }
 
 	 public ssize_t write(uint8[]buf, size_t count) {
-		 ssize_t sz = 0;
-		 size_t ssz = 0;
-
-		 if(!available) {
-			 return -1;
-		 }
-		 if((commode & ComMode.WEAK) == ComMode.WEAK) {
-			 sz = stream_writer(buf, count);
-		 } else {
-			 try {
-				 if((commode & ComMode.UDP) != 0) {
-					 sz = socket.send_to(sockaddr, buf[:count]);
-				 } else if ((commode & ComMode.TTY) == ComMode.TTY) {
-#if !WINDOWS
-					 sz = MwpSerial.write(wrfd, buf, count);
-#else
-					 dos.write_all (buf, out ssz, null);
-					 sz = (ssize_t)ssz;
-#endif
-				 } else if ((commode & ComMode.BT) == ComMode.BT) {
-					 sz = Posix.write(wrfd, buf[:count], count);
-				 } else {
-					 var iostat = io_chan.write_chars((char[])buf[:count], out ssz);
-					 sz = (ssize_t)ssz;
-					 if(iostat != IOStatus.NORMAL) {
-						 stderr.printf("IOSTAT write fails: %s\n", iostat.to_string());
-						 return -1;
-					 }
-				 }
-			 } catch (Error e) {
-				 stderr.printf("Write fails: %s\n", e.message);
+		 ssize_t sz = -1;
+		 if(available) {
+			 if((commode & ComMode.WEAK) == ComMode.WEAK) {
+				 sz = stream_writer(buf, count);
+			 } else {
+				 sz = io_write(buf, count);
 			 }
+			 stats.txbytes += sz;
 		 }
-		 stats.txbytes += sz;
 		 return sz;
 	 }
 
