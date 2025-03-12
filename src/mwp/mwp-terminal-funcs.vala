@@ -18,6 +18,7 @@
  */
 
 namespace Mwp {
+
 	public void setup_terminal_reboot()  {
         var saq = new GLib.SimpleAction("reboot",null);
         saq.activate.connect(() => {
@@ -31,7 +32,6 @@ namespace Mwp {
         saq.activate.connect(() => {
 				var txpoll = nopoll;
 				var in_cli = false;
-				var devname = msp.get_devname();
 				if(msp.available && armed == 0) {
 					mq.clear();
 					serstate = SERSTATE.NONE;
@@ -39,24 +39,18 @@ namespace Mwp {
 					CLITerm t = new CLITerm(window);
 					t.on_exit.connect(() => {
 							MWPLog.message("Dead  terminal\n");
-							//							if (in_cli) {
-							Msp.close_serial();
-							Timeout.add_seconds(2, () => {
+							Mwp.msp.close();
+							Timeout.add_seconds(4, () => {
+									var devname = Mwp.msp.get_devname();
 									Msp.try_reopen(devname);
 									nopoll = txpoll;
-									//serstate = SERSTATE.NORMAL;
 									return false;
 								});
 							t=null;
 						});
 					t.reboot.connect(() => {
 							MWPLog.message("Terminal reboot signalled\n");
-							in_cli = false;
-							Timeout.add_seconds(2, () => {
-									Msp.try_reopen(devname);
-									nopoll = txpoll;
-									return false;
-								});
+							t.on_exit();
 						});
 
 					t.enter_cli.connect(() => {
@@ -70,7 +64,6 @@ namespace Mwp {
 				}
 			});
 		window.add_action(saq);
-
 #endif
 	}
 }

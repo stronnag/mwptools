@@ -1356,12 +1356,11 @@ namespace Mwp {
 
 		case Msp.Cmds.REBOOT:
 			MWPLog.message("Reboot scheduled\n");
-			Msp.close_serial();
-			Timeout.add_seconds(2, () => {
-					var serdev = Mwp.dev_entry.text;
+			msp.close();
+			Timeout.add_seconds(4, () => {
+					var serdev = msp.get_devname();
 					MWPLog.message("Reconnecting %s\n", serdev);
-					var sparts = serdev.split(" ");
-					Msp.try_reopen(sparts[0]);
+					Msp.try_reopen(serdev);
 					return false;
 				});
 			break;
