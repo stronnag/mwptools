@@ -108,12 +108,14 @@
     </key>
 
     <key name="default-zoom" type="u">
+      <range min="0" max="22"/>
       <default>15</default>
       <summary>Default Map zoom</summary>
       <description>Default map zoom</description>
     </key>
 
     <key name="speak-interval" type="u">
+      <range min="0" max="255"/>
       <default>15</default>
       <summary>Interval between voice prompts</summary>
       <description>Interval between voice prompts, 0 disables</description>
@@ -215,12 +217,14 @@
     </key>
 
     <key name="display-distance" type="u">
+      <range min="0" max="2"/>
       <default>0</default>
       <summary>Distance units</summary>
       <description>0=metres, 1=feet, 2=yards</description>
     </key>
 
     <key name="display-speed" type="u">
+      <range min="0" max="3"/>
       <default>0</default>
       <summary>Speed units</summary>
       <description>0=metres/sec, 1=kilometres/hour, 2=miles/hour, 3=knots</description>
@@ -236,12 +240,6 @@
       <default>""</default>
       <summary>Language Handling</summary>
       <description>"en" do everything as English (UI numeric decimal points, voice), "ev" do voice as English (so say 'point' for decimals even when shown as 'comma')</description>
-    </key>
-
-    <key name="led" type="s">
-      <default>"#60ff00"</default>
-      <summary>GPS LED colour</summary>
-      <description>GPS LED colour as well know string or #RRGGBB</description>
     </key>
 
     <key name="rings-colour" type="s">
@@ -367,6 +365,7 @@
     </key>
 
     <key name="osd-mode" type="u">
+      <range min="0" max="3"/>
       <default>3</default>
       <summary>Data items overlaid on the map</summary>
       <description>
@@ -561,7 +560,7 @@
 
     <key name="sidebar-type" enum="org.stronnag.mwp.panetype">
       <default>"auto"</default>
-      <summary>Sidebar type</summary>
+      <summary>Internal setting</summary>
       <description>Options for the sidebar type. Unless you know better, leave at auto</description>
     </key>
 
@@ -578,6 +577,7 @@
     </key>
 
     <key name="ga-alt" type="i">
+      <range min="0" max="2"/>
       <default>0</default>
       <summary>Units for GA Altiude</summary>
       <description>0=m, 1=ft, 2=FL</description>
@@ -607,12 +607,14 @@
     </key>
 
     <key name="ga-range" type="i">
+      <range min="0" max="3"/>
       <default>0</default>
       <summary>Units for GA Range</summary>
       <description>0=m, 1=km, 2=miles, 3=nautical miles</description>
     </key>
 
     <key name="ga-speed" type="i">
+      <range min="0" max="3"/>
       <default>0</default>
       <summary>Units for GA Speed</summary>
       <description>0=m/s, 1=kph, 2=mph, 3=knots</description>
@@ -685,6 +687,5 @@
       <default>106</default>
       <description>System ID in the range 2-255 (see &lt;a href=&quot;https://ardupilot.org/dev/docs/mavlink-basics.html#message-format&quot;&gt;MAVlink documentation&lt;/a&gt; and particularly the GCS guidance, 2nd paragraph &lt;i&gt;ibid&lt;/i&gt;)</description>
    </key>
-
   </schema>
 </schemalist>

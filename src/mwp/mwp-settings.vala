@@ -50,7 +50,6 @@ public class MWPSettings : GLib.Object {
     public uint p_speed {get; set; default=0;}
     public uint gpsintvl {get; set; default = 2000;}
     public string uilang {get; set; default="";}
-    public string led {get; set; default="";}
     public string rcolstr {get; set; default="";}
     public bool rth_autoland {get; set; default=false;}
     public string missionpath {get; set; default="";}
@@ -191,7 +190,6 @@ public class MWPSettings : GLib.Object {
 		settings.bind("ident-limit", this, "ident_limit", SettingsBindFlags.DEFAULT);
 		settings.bind("ignore-nm", this, "ignore-nm", SettingsBindFlags.DEFAULT);
 		settings.bind("kml-path", this, "kmlpath", SettingsBindFlags.DEFAULT);
-		settings.bind("led", this, "led", SettingsBindFlags.DEFAULT);
 		settings.bind("autoload-safehomes", this, "autoload-safehomes", SettingsBindFlags.DEFAULT);
 		settings.bind("log-on-arm", this, "logarmed", SettingsBindFlags.DEFAULT);
 		settings.bind("log-path", this, "logpath", SettingsBindFlags.DEFAULT);
