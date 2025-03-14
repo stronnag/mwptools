@@ -249,7 +249,7 @@ namespace Mwp {
 		RSSI.set_title(RSSI.Title.RSSI);
 
         if(msp.available) {
-			Msp.close_serial();
+			msp.close();
 		}
 
 		Mwp.clear_sidebar(Mwp.msp);
@@ -320,9 +320,7 @@ namespace Mwp {
                     thr = null;
                 }
             }
-			//            if (is_shutdown) FIXME
-            //    return;
-			Msp.close_serial();
+			msp.close();
 			msp.set_ro(false);
 
             set_replay_menus(true);
