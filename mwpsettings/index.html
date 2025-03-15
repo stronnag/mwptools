@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/mwp_icon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.8">
     
     
       
@@ -1330,7 +1330,7 @@
 <tr>
 <td>adjust-tz</td>
 <td>Adjust FC's TZ (and DST)</td>
-<td>mwp should adjust FC's TZ (and DST) based on the local clock</td>
+<td>Option for whether mwp should adjust FC's TZ (and DST) based on the local clock</td>
 <td>true</td>
 </tr>
 <tr>
@@ -1347,14 +1347,14 @@
 </tr>
 <tr>
 <td>arming-speak</td>
-<td>speak arming states</td>
-<td>whether to reporting arming state by audio</td>
+<td>Speak arming states</td>
+<td>Whether to reporting arming state by audio</td>
 <td>false</td>
 </tr>
 <tr>
 <td>assist-key</td>
 <td>Ublox Assist now key</td>
-<td>Ublox Assist now key.</td>
+<td>Ublox Assist now key. Setting blank ('') disables, unless the API key is in the <code>libsecret</code> credential store.</td>
 <td>""</td>
 </tr>
 <tr>
@@ -1371,14 +1371,14 @@
 </tr>
 <tr>
 <td>audio-on-arm</td>
-<td>start audio on arm</td>
-<td>start audio on arm (and stop on disarm)</td>
+<td>Start audio on arm</td>
+<td>Option to start audio on arm (and stop on disarm)</td>
 <td>true</td>
 </tr>
 <tr>
 <td>auto-follow</td>
-<td>set auto-follow</td>
-<td>set auto-follow on start</td>
+<td>Set auto-follow</td>
+<td>Option to set auto-follow on start (track vehicle)</td>
 <td>true</td>
 </tr>
 <tr>
@@ -1390,13 +1390,13 @@
 <tr>
 <td>autoload-geozones</td>
 <td>Autoload geozones from FC</td>
-<td>Autoload geozones from FC on connect, remove from display on disconnect</td>
+<td>Autoload geozones from FC on FC connect, remove from display on FC disconnect</td>
 <td>false</td>
 </tr>
 <tr>
 <td>autoload-safehomes</td>
 <td>Load safehomes on connect</td>
-<td>. If true, then safehomes will be loaded from the FC on connection.</td>
+<td>If true, then safehomes will be loaded from the FC on connection.</td>
 <td>false</td>
 </tr>
 <tr>
@@ -1408,7 +1408,7 @@
 <tr>
 <td>beep</td>
 <td>Beep for alerts</td>
-<td>Whether to emit an alert sound for alerts.</td>
+<td>Option to emit an alert sound for alerts.</td>
 <td>true</td>
 </tr>
 <tr>
@@ -1420,7 +1420,7 @@
 <tr>
 <td>bluez-disco</td>
 <td>Use Bluetooth discovery</td>
-<td>Only discovered Bluetooth serial devices with non-zero RSSI will be offered</td>
+<td>(Linux only) Only discovered Bluetooth serial devices with non-zero RSSI will be offered</td>
 <td>true</td>
 </tr>
 <tr>
@@ -1527,19 +1527,19 @@
 </tr>
 <tr>
 <td>ga-alt</td>
-<td>Units for GA Altiude</td>
+<td>Units for GA (ADSB) Altiude</td>
 <td>0=m, 1=ft, 2=FL</td>
 <td>0</td>
 </tr>
 <tr>
 <td>ga-range</td>
-<td>Units for GA Range</td>
+<td>Units for GA (ADSB) Range</td>
 <td>0=m, 1=km, 2=miles, 3=nautical miles</td>
 <td>0</td>
 </tr>
 <tr>
 <td>ga-speed</td>
-<td>Units for GA Speed</td>
+<td>Units for GA (ADSB) Speed</td>
 <td>0=m/s, 1=kph, 2=mph, 3=knots</td>
 <td>0</td>
 </tr>
@@ -1551,14 +1551,14 @@
 </tr>
 <tr>
 <td>gpsd-host</td>
-<td>gpsd provider</td>
-<td>Provider for GCS location via gpsd. Default is "localhost", can be set to other host name or IP address. Setting blank ("") disables.</td>
+<td>Gpsd provider</td>
+<td>Provider for GCS icon location via gpsd. Default is "localhost", can be set to other host name or IP address. Setting blank ('') disables.</td>
 <td>"localhost"</td>
 </tr>
 <tr>
 <td>gpsintvl</td>
-<td>gps sanity time (m/s)</td>
-<td>gps sanity time (m/s), check for current fix</td>
+<td>Gps sanity time (m/s)</td>
+<td>Gps sanity time (m/s), check for current fix</td>
 <td>2000</td>
 </tr>
 <tr>
@@ -1570,25 +1570,19 @@
 <tr>
 <td>ignore-nm</td>
 <td>Ignore Network Manager</td>
-<td>Set to true to always ignore NM status (may slow down startup)</td>
+<td>Linux / FreeBSD : Set to true to always ignore NM status (may slow down startup)</td>
 <td>false</td>
 </tr>
 <tr>
 <td>kml-path</td>
 <td>Directory for KML overlays</td>
-<td>Directory for KML overlays, default = current directory</td>
+<td>Directory for KML overlays, default / not set = current directory</td>
 <td>""</td>
 </tr>
 <tr>
-<td>led</td>
-<td>GPS LED colour</td>
-<td>GPS LED colour as well know string or #RRGGBB</td>
-<td>"#60ff00"</td>
-</tr>
-<tr>
 <td>log-on-arm</td>
-<td>start logging on arm</td>
-<td>start logging on arm (and stop on disarm)</td>
+<td>Start logging on arm</td>
+<td>Option to start logging on arm (and stop on disarm)</td>
 <td>false</td>
 </tr>
 <tr>
@@ -1600,7 +1594,7 @@
 <tr>
 <td>log-save-path</td>
 <td>Directory for storing log files</td>
-<td>Directory for log files (for save), default = current directory</td>
+<td>Directory for log files (for save), default / not set = current directory</td>
 <td>""</td>
 </tr>
 <tr>
@@ -1612,13 +1606,13 @@
 <tr>
 <td>mag-sanity</td>
 <td>Enable mag sanity checking</td>
-<td>mwp offers a primitive mag sanity checker that compares compass heading with GPS course over the ground using LTM (only). There are various hard-coded constraints (speed &gt; 3m/s, certain flight modes) and two configurable parameters that should be set here in order to enable this check. The parameters are angular difference (⁰) and duration (s). The author finds a settings of 45,3 (i.e. 45⁰ over 3 seconds) works OK, detecting real instances (a momentarily breaking cable) and not reporting false positives.</td>
+<td>Mwp offers a primitive mag sanity checker that compares compass heading with GPS course over the ground using LTM (only). There are various hard-coded constraints (speed &gt; 3m/s, certain flight modes) and two configurable parameters that should be set here in order to enable this check. The parameters are angular difference (⁰) and duration (s). The author finds a settings of 45,3 (i.e. 45⁰ over 3 seconds) works OK, detecting real instances (a momentarily breaking cable) and not reporting false positives.</td>
 <td>""</td>
 </tr>
 <tr>
 <td>manage-power</td>
-<td>manage power and screen</td>
-<td>whether to manage idle and screen saver</td>
+<td>Manage power and screen</td>
+<td>Whether to manage idle and screen saver</td>
 <td>false</td>
 </tr>
 <tr>
@@ -1630,19 +1624,19 @@
 <tr>
 <td>mapbox-apikey</td>
 <td>Mapbox API Key</td>
-<td>Mapbox API key, enables Mapbox as a map Provider. Setting blank ("") disables.</td>
+<td>Mapbox API key, enables Mapbox as a map Provider. Setting blank ('') disables, unless the API key is in the <code>libsecret</code> credential store.</td>
 <td>""</td>
 </tr>
 <tr>
 <td>mavlink-sysid</td>
 <td>Sysid for synthesised MAVLink</td>
-<td>System ID in the range 2-255 (see <a href="https://ardupilot.org/dev/docs/mavlink-basics.html#message-format">MAVlink documentation</a> and particularly the GCS guidance, 2nd paragraph <em>ibid</em>)</td>
+<td>System ID in the range 2-255 (see <a href="https://ardupilot.org/dev/docs/mavlink-basics.html#message-format">MAVlink documentation</a> and particularly the GCS guidance, 2nd paragraph <i>ibid</i>)</td>
 <td>106</td>
 </tr>
 <tr>
 <td>max-climb-angle</td>
 <td>Maximum climb angle highlight for terrain analysis</td>
-<td>If non-zero, any climb angles exceeding the specified value will be highlighted in Terrain Analysis Climb / Dive report. Note that the absolute value is taken as a positive (climb) angle</td>
+<td>If non-zero, any climb angles exceeding the specified value will be highlighted in Terrain Analysis - Climb / Dive report. Note that the absolute value is taken as a positive (climb) angle</td>
 <td>0.0</td>
 </tr>
 <tr>
@@ -1653,7 +1647,7 @@
 </tr>
 <tr>
 <td>max-home-delta</td>
-<td>home position delta (m)</td>
+<td>Home position delta (m)</td>
 <td>Maximum variation of home position without verbal alert</td>
 <td>2.5</td>
 </tr>
@@ -1666,7 +1660,7 @@
 <tr>
 <td>max-wps</td>
 <td>Maximum number of WP supported</td>
-<td>Maximum number of WP supported</td>
+<td>Maximum number of WP supported (should match most capable FC firmware)</td>
 <td>120</td>
 </tr>
 <tr>
@@ -1678,19 +1672,19 @@
 <tr>
 <td>mission-icon-alpha</td>
 <td>Alpha for mission icons</td>
-<td>Alpha for mission icons in the range 0 - 255.</td>
+<td>Alpha (opacity) for mission icons in the range 0 - 255.</td>
 <td>160</td>
 </tr>
 <tr>
 <td>mission-meta-tag</td>
-<td>use meta vice mwp in mission file</td>
-<td>If true, the legacy 'mwp' tag is named 'meta'</td>
+<td>Use meta vice mwp in mission file</td>
+<td>If true, the legacy 'mwp' tag for optional data in mission files is named 'meta'</td>
 <td>false</td>
 </tr>
 <tr>
 <td>mission-path</td>
 <td>Directory for mission files</td>
-<td>Directory for mission files, default = current directory</td>
+<td>Directory for mission files, default / not set = current directory</td>
 <td>""</td>
 </tr>
 <tr>
@@ -1701,7 +1695,7 @@
 </tr>
 <tr>
 <td>osd-mode</td>
-<td>Data items overlaid on the map</td>
+<td>Data items overlaid on the map OSD</td>
 <td>0 = none, 1 = current WP/Max WP, 2 = next WP distance and course. This is a mask, so 3 means both OSD items.</td>
 <td>3</td>
 </tr>
@@ -1738,13 +1732,13 @@
 <tr>
 <td>poll-timeout</td>
 <td>Poll messages timeout (ms)</td>
-<td>Timeout in milliseconds for telemetry poll messages. Note that timer loop has a resolution of 100ms.</td>
+<td>Timeout in milliseconds for telemetry poll messages. Note that timer loop has a resolution of 100ms, so 900ms == 1s message poller loop</td>
 <td>900</td>
 </tr>
 <tr>
 <td>pos-is-centre</td>
 <td>Determines position label content</td>
-<td>Whether the position label is the centre or pointer location</td>
+<td>Whether the position label is the map centre or the pointer location</td>
 <td>false</td>
 </tr>
 <tr>
@@ -1773,8 +1767,8 @@
 </tr>
 <tr>
 <td>rings-colour</td>
-<td>range rings colour</td>
-<td>range rings colour as well know string or #RRGGBBAA</td>
+<td>Range rings colour</td>
+<td>Range rings colour as well know string or #RRGGBBAA</td>
 <td>"#ffffff20"</td>
 </tr>
 <tr>
@@ -1791,13 +1785,13 @@
 </tr>
 <tr>
 <td>show-sticks</td>
-<td>Whether to show sticks in log replay</td>
+<td>Whether to show stick poisitons in log replay</td>
 <td>If "yes", stick position is shown bottom right during log replay, if "no" , never shown. If "icon", then it shown iconified (bottom right)</td>
 <td>"icon"</td>
 </tr>
 <tr>
 <td>sidebar-type</td>
-<td>Sidebar type</td>
+<td>Internal setting</td>
 <td>Options for the sidebar type. Unless you know better, leave at auto</td>
 <td>"auto"</td>
 </tr>
@@ -1810,7 +1804,7 @@
 <tr>
 <td>speak-amps</td>
 <td>When to speak amps/hr used</td>
-<td>none, live-n, all-n n=1,2,4 : n = how often spoken (modulus basically)</td>
+<td>Enumeration of none, live-n, all-n n=1,2,4 : n = how often spoken (modulus basically)</td>
 <td>"none"</td>
 </tr>
 <tr>
@@ -1822,7 +1816,7 @@
 <tr>
 <td>speech-api</td>
 <td>API for speech synthesis</td>
-<td>espeak, speechd, flite. Only change this if you know you have the required development files at build time</td>
+<td>On of espeak, speechd, flite. Only change this if you know you have the required development files at build time</td>
 <td>"espeak"</td>
 </tr>
 <tr>
@@ -1833,20 +1827,20 @@
 </tr>
 <tr>
 <td>stats-timeout</td>
-<td>timeout for flight statistics display (s)</td>
+<td>Timeout for flight statistics display (s)</td>
 <td>Timeout before the flight statistics popup automatically closes. A value of 0 means no timeout.</td>
 <td>30</td>
 </tr>
 <tr>
 <td>symbol-scale</td>
 <td>Symbol scale</td>
-<td>Symbol scale factor, scales map symbols as multiplier.</td>
+<td>Symbol scale factor, scales map symbols as multiplier (see also <code>touch-scale</code>),</td>
 <td>1.0</td>
 </tr>
 <tr>
 <td>touch-scale</td>
 <td>Touch symbol scale</td>
-<td>Symbol scale factor, scales map symbols as multiplier (for touch screens)</td>
+<td>Symbol scale factor, scales map symbols as multiplier (for touch screens); (see also <code>symbol-scale</code>),</td>
 <td>1.0</td>
 </tr>
 <tr>
@@ -1864,7 +1858,7 @@
 <tr>
 <td>view-mode</td>
 <td>UAV view mode</td>
-<td>Options for model view</td>
+<td>Options for model view map display</td>
 <td>"inview"</td>
 </tr>
 <tr>
