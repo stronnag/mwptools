@@ -62,7 +62,6 @@ exargs = {
   'c_args': [mwp_c_args, dev_args, vcargs ],
   'install' : true,
   'win_subsystem' : 'windows',
-  'gui_app' : true,
 }
 
 if dynalib
@@ -80,7 +79,6 @@ if host_machine.system() == 'windows'
     'c_args': [mwp_c_args, dev_args, vcargs ],
     'install' : true,
     'win_subsystem' : 'console',
-    'gui_app' : false,
     'build_by_default': false,
   }
   executable('mwp-console', kwargs: exargs)
