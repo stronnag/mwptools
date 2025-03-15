@@ -435,13 +435,24 @@ namespace TelemTracker {
 			g.attach (an, 1, 1);
 
 			var box = new Gtk.Box(Gtk.Orientation.VERTICAL, 2);
+			var tbox = new Adw.ToolbarView();
 			var headerBar = new Adw.HeaderBar();
-			box.append(headerBar);
+			tbox.add_top_bar(headerBar);
+
 			box.append(g);
+
+			var bbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL,2);
 			ok.hexpand = false;
 			ok.halign = Gtk.Align.END;
-			box.append(ok);
-			set_content(box);
+
+			bbox.halign = Gtk.Align.END;
+			bbox.hexpand = true;
+			bbox.append(ok);
+			bbox.add_css_class("toolbar");
+			tbox.add_bottom_bar(bbox);
+
+			tbox.set_content(box);
+			set_content(tbox);
 			ok.clicked.connect(() => {
 					apply = true;
 					close();
@@ -500,10 +511,14 @@ namespace TelemTracker {
 			bbox.halign=Gtk.Align.END;
 			Gtk.Box box = new Gtk.Box (Gtk.Orientation.VERTICAL, 2);
 			var headerBar = new Adw.HeaderBar();
-			box.append(headerBar);
+			var tbox = new Adw.ToolbarView();
+			tbox.add_top_bar(headerBar);
 			box.append(grid);
-			box.append (bbox);
-			set_content(box);
+			bbox.add_css_class("toolbar");
+			tbox.add_bottom_bar(bbox);
+
+			tbox.set_content(box);
+			set_content(tbox);
 			ttrk.pending.connect((v) => {
 					this.sensitive = !v;
 				});

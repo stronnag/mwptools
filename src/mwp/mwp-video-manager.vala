@@ -83,8 +83,11 @@ public class VideoPlayer : Adw.Window {
 		transient_for=Mwp.window;
 		default_width = 640;
 		default_height = 480;
-		var header_bar = new Adw.HeaderBar();
-		vbox.append(header_bar);
+
+		var tbox = new Adw.ToolbarView();
+		var headerBar = new Adw.HeaderBar();
+		tbox.add_top_bar(headerBar);
+
 		File f;
 		if(uri.contains("://")) {
 			f = File.new_for_uri(uri);
@@ -107,7 +110,8 @@ public class VideoPlayer : Adw.Window {
 			});
 
 		vbox.append(v);
-		set_content(vbox);
+		tbox.set_content(vbox);
+		set_content(tbox);
 	}
 
 	public void start_at(int64 tstart = 0) {
@@ -141,9 +145,12 @@ public class V4L2_dialog : Adw.Window {
 	public V4L2_dialog(Gtk.DropDown viddev_c) {
 		rb0 = null;
 		transient_for = Mwp.window;
-		var box = new Gtk.Box(Gtk.Orientation.VERTICAL,2);
+
+		var tbox = new Adw.ToolbarView();
 		var header_bar = new Adw.HeaderBar();
-		box.append(header_bar);
+		tbox.add_top_bar(header_bar);
+
+		var box = new Gtk.Box(Gtk.Orientation.VERTICAL,2);
 		set_icon_name("mwp_icon");
 		title = "Select Video Source";
 		rb0  = new Gtk.CheckButton.with_label ("Webcams");
@@ -190,8 +197,11 @@ public class V4L2_dialog : Adw.Window {
 			});
 
 		grid.vexpand = true;
-		box.append(bbox);
-		set_content(box);
+
+		tbox.set_content(box);
+		bbox.add_css_class("toolbar");
+		tbox.add_bottom_bar(bbox);
+		set_content(tbox);
 	}
 
 	public int result(out string uri) {

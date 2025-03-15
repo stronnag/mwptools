@@ -28,8 +28,11 @@ namespace Radar {
 			applied = false;
 			var box = new Gtk.Box(Gtk.Orientation.VERTICAL, 2);
 			box.vexpand = false;
+
+			var tbox = new Adw.ToolbarView();
 			var headerBar = new Adw.HeaderBar();
-			box.append(headerBar);
+			tbox.add_top_bar(headerBar);
+
 			dn = new Gtk.Entry();
 			dn.width_chars = 80;
 			dn.placeholder_text = "Device URI/Name";
@@ -39,13 +42,22 @@ namespace Radar {
 			g.append (new Gtk.Label("Name: "));
 			g.append (dn);
 			box.append(g);
+
+			var bbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL,2);
 			ok = new Gtk.Button.with_label("Apply");
 			ok.hexpand = false;
 			ok.vexpand = true;
 			ok.halign = Gtk.Align.END;
 			ok.valign = Gtk.Align.END;
-			box.append(ok);
-			set_content(box);
+
+			bbox.halign = Gtk.Align.END;
+			bbox.hexpand = true;
+			bbox.append(ok);
+			bbox.add_css_class("toolbar");
+			tbox.add_bottom_bar(bbox);
+
+			tbox.set_content(box);
+			set_content(tbox);
 			ok.clicked.connect(() => {
 					applied = true;
 					close();

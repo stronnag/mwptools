@@ -260,7 +260,7 @@ public class  SafeHomeDialog : Adw.Window {
 		title = "Safehomes Manager";
 		set_transient_for(Mwp.window);
 		var sbox = new Gtk.Box(Gtk.Orientation.VERTICAL, 4);
-
+		var tbox = new Adw.ToolbarView();
 		var header_bar = new Adw.HeaderBar();
 		var fsmenu_button = new Gtk.MenuButton();
 		fsmenu_button.icon_name = "open-menu-symbolic";
@@ -268,7 +268,7 @@ public class  SafeHomeDialog : Adw.Window {
 		switcher =	new Gtk.Switch();
 		header_bar.pack_end (switcher);
 		header_bar.pack_end (new Gtk.Label("Persistent map display"));
-		sbox.append(header_bar);
+		tbox.add_top_bar(header_bar);
 
 		var sbuilder = new Gtk.Builder.from_resource ("/org/stronnag/mwp/safehmenu.ui");
 		SHPop.mmodel = sbuilder.get_object("shpop-menu") as GLib.MenuModel;
@@ -365,7 +365,8 @@ public class  SafeHomeDialog : Adw.Window {
 			});
 
 		menu_armed_state((Mwp.armed !=0));
-		set_content(sbox);
+		tbox.set_content(sbox);
+		set_content(tbox);
 	}
 
 	private void menu_armed_state(bool s) {
