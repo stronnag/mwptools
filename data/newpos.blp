@@ -5,16 +5,13 @@ template $NewPosWindow: Adw.Window {
   icon-name: "mwp_icon";
   title: "Edit Place";
 
-  Box {
-    orientation: vertical;
-
-    [start]
+  Adw.ToolbarView {
+    [top]
     Adw.HeaderBar {
       decoration-layout: "icon:close";
     }
 
-    [end]
-    Box {
+    content: Box {
       spacing: 8;
       orientation: vertical;
 
@@ -86,24 +83,24 @@ template $NewPosWindow: Adw.Window {
           }
         }
       }
+    };
+    [bottom]
+    Box {
+      orientation: horizontal;
+      halign: end;
+      hexpand: true;
+      spacing: 8;
+      styles [ "toolbar" ]
 
-      [end]
-      Box {
-        orientation: horizontal;
+      Button goapp {
         halign: end;
-        hexpand: true;
-        spacing: 8;
+        label: 'Apply';
+        receives-default: true;
+      }
 
-        Button goapp {
-          halign: end;
-          label: 'Apply';
-          receives-default: true;
-        }
-
-        Button gocan {
-          halign: end;
-          label: 'Cancel';
-        }
+      Button gocan {
+        halign: end;
+        label: 'Cancel';
       }
     }
   }

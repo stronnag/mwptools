@@ -5,16 +5,12 @@ template $GPSStatsWindow: Adw.Window {
   title: _("GPS Statistics");
   icon-name: "mwp_icon";
 
-  Box vbox {
-    orientation: vertical;
-
-    [start]
+  Adw.ToolbarView {
+    [top]
     Adw.HeaderBar {
       decoration-layout: "icon:close";
     }
-
-    [End]
-    Grid {
+    content: Grid {
        row-spacing: 4;
        column-spacing: 8;
 
@@ -144,20 +140,6 @@ template $GPSStatsWindow: Adw.Window {
           column: '1';
         }
       }
-    }
-    /*
-    Box {
-      visible: true;
-      can-focus: false;
-      halign: end;
-      hexpand: false;
-      Button gps_stats_close {
-        label: 'Close';
-        visible: true;
-        can-focus: true;
-        receives-default: true;
-      }
-    }
-    */
+    };
   }
 }

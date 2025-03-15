@@ -13,17 +13,13 @@ template $FollowWindow : Adw.Window {
   title: _("mwp Follow Me");
   default-width: 480;
 
-  Box vbox {
-    orientation: vertical;
-    spacing: 8;
-
-    [start]
-    Adw.HeaderBar {
+ Adw.ToolbarView {
+   [top]
+   Adw.HeaderBar {
       decoration-layout: "icon:close";
     }
 
-    [End]
-    Box {
+    content: Box {
       orientation: vertical;
       hexpand: false;
 
@@ -55,18 +51,19 @@ template $FollowWindow : Adw.Window {
         label: _("00:00:00N 000:00:00W");
 	use-markup: true;
       }
+    };
+    [bottom]
+    Box {
+      hexpand: false;
+      halign: end;
+      styles [ "toolbar" ]
 
-      Box {
-        hexpand: false;
-        halign: end;
+      Button fm_toggle {
+        label: _("Toggle");
+      }
 
-        Button fm_toggle {
-          label: _("Toggle");
-        }
-
-        Button fm_ok {
-          label: _("OK");
-        }
+      Button fm_ok {
+        label: _("OK");
       }
     }
   }

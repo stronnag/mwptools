@@ -5,46 +5,49 @@ template $MwpjsWindow : Adw.Window {
   title: "mwp JSON Log selector";
   icon-name: "mwp_icon";
 
-  Box vbox {
-    orientation: vertical;
-    [start]
+  Adw.ToolbarView {
+    [top]
     Adw.HeaderBar {
       decoration-layout: "icon:close";
     }
-    [End]
-    // Row 1
-    Box {
-      orientation: horizontal;
-      Label {
-	label: "Json Log: ";
-      }
-      Button log_btn {
-	Box {
-	  spacing: 4;
 
-          Label log_name {
-            label: "(none)";
-            halign: fill;
-            hexpand: true;
-            tooltip-text: "JSON log file";
-          }
-	  [End]
-          Image {
-            icon-name: "document-open-symbolic";
-          }
+    content: Box {
+      orientation: vertical;
+      Box {
+	orientation: horizontal;
+	Label {
+	  label: "Json Log: ";
+	}
+	Button log_btn {
+	  Box {
+	    spacing: 4;
+
+            Label log_name {
+              label: "(none)";
+              halign: fill;
+              hexpand: true;
+              tooltip-text: "JSON log file";
+            }
+	    [End]
+            Image {
+              icon-name: "document-open-symbolic";
+            }
+	  }
 	}
       }
-    }
-    // Row 2
-    Box {
-      Gtk.CheckButton speedup {
-	hexpand: true;
-	halign: end;
-        label: "Speedup";
+      // Row 2
+      Box {
+	Gtk.CheckButton speedup {
+	  hexpand: true;
+	  halign: end;
+          label: "Speedup";
+	}
       }
-    }
-    // Row 4
+    };
+
+    [bottom]
     Box  {
+      styles [ "toolbar" ]
       hexpand: false;
       vexpand: true;
       halign: end;

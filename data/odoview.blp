@@ -5,312 +5,308 @@ template $OdoWindow: Adw.Window {
   title: _("Odo View");
   icon-name: "mwp_icon";
 
-  Box vbox {
-    orientation: vertical;
-
-    [start]
+  Adw.ToolbarView {
+    [top]
     Adw.HeaderBar {
       decoration-layout: "icon:close";
     }
 
-    [End]
-    Grid {
-      visible: true;
-      can-focus: false;
-      row-spacing: 4;
-      column-spacing: 8;
+    content: Box {
+      orientation: vertical;
+      Grid {
+	visible: true;
+	can-focus: false;
+	row-spacing: 4;
+	column-spacing: 8;
 
-      Label {
-        visible: true;
-        can-focus: false;
-        halign: start;
-        label: _("Elapsed Time");
+	Label {
+          visible: true;
+          can-focus: false;
+          halign: start;
+          label: _("Elapsed Time");
 
-        layout {
-          row: 0;
-          column: 0;
-        }
+          layout {
+            row: 0;
+            column: 0;
+          }
+	}
+
+	Label odotime {
+          visible: true;
+          can-focus: false;
+          halign: end;
+          hexpand: false;
+          label: _("0:00");
+          justify: right;
+
+          layout {
+            row: 0;
+            column: 1;
+          }
+	}
+
+	Label {
+          visible: true;
+          can-focus: false;
+          halign: start;
+          label: _("mm:ss");
+
+          layout {
+            row: 0;
+            column: 2;
+          }
+	}
+
+	Label {
+          visible: true;
+          can-focus: false;
+          halign: start;
+          label: _("Distance");
+
+          layout {
+            row: '1';
+            column: '0';
+          }
+	}
+
+	Label ododist {
+          visible: true;
+          can-focus: false;
+          halign: end;
+          hexpand: false;
+          label: _("0");
+          justify: right;
+
+          layout {
+            row: 1;
+            column: 1;
+          }
+	}
+
+	Label ododist_u {
+          visible: true;
+          can-focus: false;
+          halign: start;
+          label: _("metres");
+
+          layout {
+            row: '1';
+            column: '2';
+          }
+	}
+
+	Label {
+          visible: true;
+          can-focus: false;
+          halign: start;
+          label: _("Maximum Speed");
+
+          layout {
+            row: '2';
+            column: '0';
+          }
+	}
+
+	Label odospeed {
+          visible: true;
+          can-focus: false;
+          halign: end;
+          hexpand: false;
+          label: _("0");
+
+          layout {
+            row: 2;
+            column: 1;
+          }
+	  justify: right;
+	}
+
+	Label odospeed_u {
+          visible: true;
+          can-focus: false;
+          halign: start;
+          label: _("m/s");
+
+          layout {
+            row: '2';
+            column: '2';
+          }
+	}
+
+	Label {
+          visible: true;
+          can-focus: false;
+          halign: start;
+          label: _("Maximum Range");
+
+          layout {
+            row: 3;
+            column: 0;
+          }
+	}
+
+	Label odorange {
+          visible: true;
+          can-focus: false;
+          halign: end;
+          label: _("0");
+
+          layout {
+            row: 3;
+            column: 1;
+          }
+	}
+
+	Label odorange_u {
+          visible: true;
+          can-focus: false;
+          halign: start;
+          label: _("metres");
+
+          layout {
+            row: 3;
+            column: 2;
+          }
+	}
+
+	Label {
+          visible: true;
+          can-focus: false;
+          label: _("Maximum Altitude");
+
+          layout {
+            row: 4;
+            column: 0;
+          }
+	}
+
+	Label odoalt {
+          visible: true;
+          can-focus: false;
+          halign: end;
+          label: _("0");
+
+          layout {
+            row: 4;
+            column: 1;
+          }
+	}
+
+	Label odoalt_u {
+          visible: true;
+          can-focus: false;
+          halign: start;
+          label: _("metres");
+
+          layout {
+            row: 4;
+            column: 2;
+          }
+	}
+
+	Label odo_ca0 {
+          visible: true;
+          can-focus: false;
+          tooltip-text: _("Only updated for blackbox replay");
+          halign: start;
+          label: _("Maximum Current");
+
+          layout {
+            row: 5;
+            column: 0;
+          }
+	}
+
+	Label odoamps {
+          visible: true;
+          can-focus: false;
+          tooltip-text: _("Only updated for blackbox replay");
+          halign: end;
+          label: _("n/a");
+
+          layout {
+            row: 5;
+            column: 1;
+          }
+	}
+
+	Label odo_ca2 {
+          visible: true;
+          can-focus: false;
+          tooltip-text: _("Only updated for blackbox replay");
+          label: _("Amps");
+
+          layout {
+            row: 5;
+            column: 2;
+          }
+	}
+
+	Label odospeed_tm {
+          visible: true;
+          can-focus: false;
+	  layout {
+            row: 2;
+            column: 3;
+          }
+	}
+
+	Label odorange_tm {
+          visible: true;
+          can-focus: false;
+
+          layout {
+            row: 3;
+            column: 3;
+          }
+	}
+
+	Label odoalt_tm {
+          visible: true;
+          can-focus: false;
+
+          layout {
+            row: 4;
+            column: 3;
+          }
+	}
       }
+      Frame odoframe {
+	visible: true;
+	can-focus: false;
+	label-xalign: 0;
 
-      Label odotime {
-        visible: true;
-        can-focus: false;
-        halign: end;
-        hexpand: false;
-        label: _("0:00");
-        justify: right;
-
-        layout {
-          row: 0;
-          column: 1;
-        }
-      }
-
-      Label {
-        visible: true;
-        can-focus: false;
-        halign: start;
-        label: _("mm:ss");
-
-        layout {
-          row: 0;
-          column: 2;
-        }
-      }
-
-      Label {
-        visible: true;
-        can-focus: false;
-        halign: start;
-        label: _("Distance");
-
-        layout {
-          row: '1';
-          column: '0';
-        }
-      }
-
-      Label ododist {
-        visible: true;
-        can-focus: false;
-        halign: end;
-        hexpand: false;
-        label: _("0");
-        justify: right;
-
-        layout {
-          row: 1;
-          column: 1;
-        }
-      }
-
-      Label ododist_u {
-        visible: true;
-        can-focus: false;
-        halign: start;
-        label: _("metres");
-
-        layout {
-          row: '1';
-          column: '2';
-        }
-      }
-
-      Label {
-        visible: true;
-        can-focus: false;
-        halign: start;
-        label: _("Maximum Speed");
-
-        layout {
-          row: '2';
-          column: '0';
-        }
-      }
-
-      Label odospeed {
-        visible: true;
-        can-focus: false;
-        halign: end;
-        hexpand: false;
-        label: _("0");
-
-        layout {
-          row: 2;
-          column: 1;
-        }
-
-        justify: right;
-      }
-
-      Label odospeed_u {
-        visible: true;
-        can-focus: false;
-        halign: start;
-        label: _("m/s");
-
-        layout {
-          row: '2';
-          column: '2';
-        }
-      }
-
-      Label {
-        visible: true;
-        can-focus: false;
-        halign: start;
-        label: _("Maximum Range");
-
-        layout {
-          row: 3;
-          column: 0;
-        }
-      }
-
-      Label odorange {
-        visible: true;
-        can-focus: false;
-        halign: end;
-        label: _("0");
-
-        layout {
-          row: 3;
-          column: 1;
-        }
-      }
-
-      Label odorange_u {
-        visible: true;
-        can-focus: false;
-        halign: start;
-        label: _("metres");
-
-        layout {
-          row: 3;
-          column: 2;
-        }
-      }
-
-      Label {
-        visible: true;
-        can-focus: false;
-        label: _("Maximum Altitude");
-
-        layout {
-          row: 4;
-          column: 0;
-        }
-      }
-
-      Label odoalt {
-        visible: true;
-        can-focus: false;
-        halign: end;
-        label: _("0");
-
-        layout {
-          row: 4;
-          column: 1;
-        }
-      }
-
-      Label odoalt_u {
-        visible: true;
-        can-focus: false;
-        halign: start;
-        label: _("metres");
-
-        layout {
-          row: 4;
-          column: 2;
-        }
-      }
-
-      Label odo_ca0 {
-        visible: true;
-        can-focus: false;
-        tooltip-text: _("Only updated for blackbox replay");
-        halign: start;
-        label: _("Maximum Current");
-
-        layout {
-          row: 5;
-          column: 0;
-        }
-      }
-
-      Label odoamps {
-        visible: true;
-        can-focus: false;
-        tooltip-text: _("Only updated for blackbox replay");
-        halign: end;
-        label: _("n/a");
-
-        layout {
-          row: 5;
-          column: 1;
-        }
-      }
-
-      Label odo_ca2 {
-        visible: true;
-        can-focus: false;
-        tooltip-text: _("Only updated for blackbox replay");
-        label: _("Amps");
-
-        layout {
-          row: 5;
-          column: 2;
-        }
-      }
-
-      Label odospeed_tm {
-        visible: true;
-        can-focus: false;
-
-        layout {
-          row: 2;
-          column: 3;
-        }
-      }
-
-      Label odorange_tm {
-        visible: true;
-        can-focus: false;
-
-        layout {
-          row: 3;
-          column: 3;
-        }
-      }
-
-      Label odoalt_tm {
-        visible: true;
-        can-focus: false;
-
-        layout {
-          row: 4;
-          column: 3;
-        }
-      }
-    }
-
-    Frame odoframe {
-      visible: true;
-      can-focus: false;
-      label-xalign: 0;
-
-      ScrolledWindow {
-        visible: true;
-        can-focus: true;
-        min-content-width: 400;
-        min-content-height: 200;
-
-        TextView odotview {
+	ScrolledWindow {
           visible: true;
           can-focus: true;
-          hexpand: true;
-          vexpand: true;
-        }
-      }
+          min-content-width: 400;
+          min-content-height: 200;
 
-      [label]
-      Label {
-        visible: true;
-        can-focus: false;
-        label: _("Notes:");
-      }
-    }
+          TextView odotview {
+            visible: true;
+            can-focus: true;
+            hexpand: true;
+            vexpand: true;
+          }
+	}
 
+	[label]
+	Label {
+          visible: true;
+          can-focus: false;
+          label: _("Notes:");
+	}
+      }
+    };
+
+    [bottom]
     Box {
       hexpand: false;
       halign: end;
+      styles [ "toolbar" ]
 
       Button odoclose {
         label: 'Close';
-        visible: true;
-        can-focus: true;
-        receives-default: true;
       }
     }
   }

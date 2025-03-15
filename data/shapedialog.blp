@@ -29,16 +29,13 @@ template $ShapeDialog: Adw.Window {
   icon-name: "mwp_icon";
   title: "Define Shape";
 
-  Box {
-    orientation: vertical;
-
-    [start]
+  Adw.ToolbarView {
+    [top]
     Adw.HeaderBar {
       decoration-layout: "icon:close";
     }
 
-    [end]
-    Box {
+    content: Box {
       orientation: vertical;
       spacing: 8;
 
@@ -124,22 +121,24 @@ template $ShapeDialog: Adw.Window {
           }
         }
       }
+    };
 
-      Box {
-        orientation: horizontal;
-        spacing: 4;
+    [bottom]
+    Box {
+      orientation: horizontal;
+      spacing: 4;
+      halign: end;
+      hexpand: true;
+      styles [ "toolbar" ]
+
+      Button shapeapply {
         halign: end;
-        hexpand: true;
+        label: _("Apply");
+      }
 
-        Button shapeapply {
-          halign: end;
-          label: _("Apply");
-        }
-
-        Button shapecancel {
-          halign: end;
-          label: _("Cancel");
-        }
+      Button shapecancel {
+        halign: end;
+        label: _("Cancel");
       }
     }
   }

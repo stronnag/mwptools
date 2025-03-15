@@ -5,17 +5,13 @@ template $TADialog: Adw.Window {
   icon-name: "mwp_icon";
   title: _("Terrain Analysis");
 
-  Box {
-    spacing: 4;
-    orientation: vertical;
 
-    [start]
+  Adw.ToolbarView {
+    [top]
     Adw.HeaderBar {
       decoration-layout: "icon:close";
     }
-
-    [end]
-    Box {
+    content: Box {
       spacing: 4;
       orientation: vertical;
 
@@ -193,26 +189,22 @@ template $TADialog: Adw.Window {
           }
         }
       }
-
-      Box {
-        valign: center;
-        can-focus: false;
-        spacing: 8;
-        orientation: horizontal;
-        halign: fill;
+    };
+    [bottom]
+    Box {
+      styles [ "toolbar" ]
+      orientation: horizontal;
+      spacing: 8;
+      Button pe_ok {
         hexpand: true;
+        label: _("Apply");
+        // 	  sensitive: false;
+      }
 
-        Button pe_ok {
-          hexpand: true;
-          label: _("Apply");
-          // 	  sensitive: false;
-        }
-
-        Button pe_close {
-          label: _("Close");
-          hexpand: true;
-          receives-default: true;
-        }
+      Button pe_close {
+        label: _("Close");
+        hexpand: true;
+        receives-default: true;
       }
     }
   }
