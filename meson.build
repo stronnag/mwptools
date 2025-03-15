@@ -61,6 +61,7 @@ exargs = {
   'vala_args': [dopts, mwp_v_args ],
   'c_args': [mwp_c_args, dev_args, vcargs ],
   'install' : true,
+  'win_subsystem' : 'windows',
   'gui_app' : true,
 }
 
@@ -78,6 +79,7 @@ if host_machine.system() == 'windows'
     'vala_args': [dopts, mwp_v_args ],
     'c_args': [mwp_c_args, dev_args, vcargs ],
     'install' : true,
+    'win_subsystem' : 'console',
     'gui_app' : false,
     'build_by_default': false,
   }
