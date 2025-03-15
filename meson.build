@@ -61,12 +61,28 @@ exargs = {
   'vala_args': [dopts, mwp_v_args ],
   'c_args': [mwp_c_args, dev_args, vcargs ],
   'install' : true,
-  'win_subsystem': 'windows',
+  'gui_app' : true,
 }
+
 if dynalib
     exargs += { 'install_rpath': '$ORIGIN/../lib',}
 endif
 executable('mwp', kwargs: exargs)
+
+if host_machine.system() == 'windows'
+  exargs = {
+    'sources': [mwpsrcs, mwpcommon, mwpvers_h, mresources],
+    'dependencies': [mwpdeps ],
+    'link_with': [mwpclib, libmwpvers, mwpvlib ],
+    'include_directories': [common_inc_dir, configuration_inc],
+    'vala_args': [dopts, mwp_v_args ],
+    'c_args': [mwp_c_args, dev_args, vcargs ],
+    'install' : true,
+    'gui_app' : false,
+    'build_by_default': false,
+  }
+  executable('mwp-console', kwargs: exargs)
+endif
 
 executable('bproxy',
            sources: bproxsrc,
