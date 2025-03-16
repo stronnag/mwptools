@@ -18,7 +18,6 @@
  */
 
 namespace Mwp {
-
 	bool handle_ltm(MWSerial ser, Msp.Cmds cmd, uint8[]raw, uint len) {
 		bool handled = true;
 		lastrx = nticks;
@@ -32,7 +31,8 @@ namespace Mwp {
 			rp = SEDE.deserialise_i32(rp, out of.alt);
 			ser.td.origin.lat = of.lat/10000000.0;
 			ser.td.origin.lon = of.lon/10000000.0;
-			ser.td.origin.alt = of.alt/100.0;
+			set_td_origin(ser.td.origin.lat, ser.td.origin.lon);
+
 			of.fix = raw[13];
 			if(ser.is_main) {
 				wp0.lat = ser.td.origin.lat;
@@ -116,7 +116,7 @@ namespace Mwp {
 				fvup |= FlightBox.Update.ALT;
 				ttup |= TelemTracker.Fields.ALT;
 				ser.td.alt.alt = gf.alt;
-				ser.td.gps.alt = gf.alt;
+				ser.td.gps.alt = gf.alt; // + homealt
 			}
 
 			if(Math.fabs(ser.td.gps.gspeed - gf.speed) > 0.1) {

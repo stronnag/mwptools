@@ -9,7 +9,7 @@ namespace MessageForward {
 			rp = SEDE.serialise_i32(msg, (int32)(Mwp.msp.td.gps.lat*1e7));
 			rp = SEDE.serialise_i32(rp, (int32)(Mwp.msp.td.gps.lon*1e7));
 			*rp++ = (uint8)Mwp.msp.td.gps.gspeed;
-			rp = SEDE.serialise_i32(rp, (int32)(Mwp.msp.td.gps.alt*1e2));
+			rp = SEDE.serialise_i32(rp, (int32)(Mwp.msp.td.alt.alt*1e2));
 			*rp = (Mwp.msp.td.gps.fix & 3) | (Mwp.msp.td.gps.nsats << 2);
 			Mwp.fwddev.forward_ltm('G', msg, MSize.LTM_GFRAME);
 			break;
@@ -38,13 +38,15 @@ namespace MessageForward {
 		case Mwp.FWDS.MAV1:
 		case Mwp.FWDS.MAV2:
 			msg = new uint8[sizeof(Mav.MAVLINK_GPS_RAW_INT)];
+			msg = {0};
 			var now = new DateTime.now_utc();
 			int64 ms = now.to_unix()*1000;
 			rp = SEDE.serialise_u32(msg, (uint32)(ms & 0xffffffff));
 			rp = SEDE.serialise_u32(rp, (uint32) (ms >> 32));
 			rp = SEDE.serialise_i32(rp, (int32)(Mwp.msp.td.gps.lat*1e7));
 			rp = SEDE.serialise_i32(rp, (int32)(Mwp.msp.td.gps.lon*1e7));
-			var alt = 1000*(Mwp.msp.td.gps.alt + Mwp.msp.td.origin.alt);
+			// (mm)	Altitude (MSL). Positive for up.
+			int32 alt = (int32)(1000*Mwp.msp.td.gps.alt);
 			rp = SEDE.serialise_i32(rp, (int32)(alt));
 			rp = SEDE.serialise_u16(rp, (uint16)(Mwp.msp.td.gps.hdop*100));
 			rp = SEDE.serialise_u16(rp, (uint16)(0xffff));

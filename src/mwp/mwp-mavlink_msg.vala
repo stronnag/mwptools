@@ -152,7 +152,7 @@ namespace Mwp {
 				fvup |= FlightBox.Update.ALT;
 				ttup |= TelemTracker.Fields.ALT;
 				ser.td.alt.alt = dalt;
-				ser.td.gps.alt = dalt;
+				ser.td.gps.alt = m.alt/1000.0;
 			}
 
 			if(Math.fabs(ser.td.gps.gspeed - spd) > 0.1) {

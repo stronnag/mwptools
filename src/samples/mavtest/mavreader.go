@@ -424,8 +424,12 @@ func (m *MavReader) mav_show() {
 				float64(int32(binary.LittleEndian.Uint32(m.payload[12:16])))/1e7)
 			if hdg != 65535 {
 				hdg /= 100
-				fmt.Printf(" cog: %v\n", hdg)
+				fmt.Printf(" cog: %v", hdg)
 			}
+
+			var alt int32
+			alt = int32(binary.LittleEndian.Uint32(m.payload[16:20]))
+			fmt.Printf(" alt (msl,mm): %v\n", alt)
 			fmt.Println()
 
 		case MAVLINK_MSG_SCALED_PRESSURE: // scaled_pressure
@@ -477,9 +481,10 @@ func (m *MavReader) mav_show() {
 				m.payload[21])
 
 		case MAVLINK_MSG_GPS_GLOBAL_ORIGIN:
-			fmt.Printf("Origin: la: %.7f lo: %.7f\n",
+			fmt.Printf("Origin: la: %.7f lo: %.7f alt (msl,mm): %d\n",
 				float64(int32(binary.LittleEndian.Uint32(m.payload[0:4])))/1e7,
-				float64(int32(binary.LittleEndian.Uint32(m.payload[4:8])))/1e7)
+				float64(int32(binary.LittleEndian.Uint32(m.payload[4:8])))/1e7,
+				int32(binary.LittleEndian.Uint32(m.payload[8:12])))
 
 		case MAVLINK_MSG_VFR_HUD: // vfr_hud
 			var as, gs, alt, climb float32
