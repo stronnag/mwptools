@@ -102,6 +102,8 @@ namespace Mwp {
 			break;
 
 		case Msp.Cmds.MAVLINK_MSG_GPS_GLOBAL_INT:
+			Mav.MAVLINK_GPS_GLOBAL_INT *m = (Mav.MAVLINK_GPS_GLOBAL_INT*)raw;
+			ser.td.alt.alt = 1000*m->relative_alt;
 			break;
 
 		case Msp.Cmds.MAVLINK_MSG_RC_CHANNELS:

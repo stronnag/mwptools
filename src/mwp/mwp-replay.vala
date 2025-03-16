@@ -448,7 +448,7 @@ public class ReplayThread : GLib.Object {
                                 case "analog2":
                                     var volts = obj.get_double_member("voltage");
                                     var amps = obj.get_double_member("amps");
-                                    var mahdraw = obj.get_int_member("mah");
+                                    var mahdraw = obj.get_int_member("power");
                                     var rssi = obj.get_int_member("rssi");
                                     MSP_ANALOG2 a = MSP_ANALOG2();
                                     a.vbat = (uint16)(Math.lround(volts*100));
