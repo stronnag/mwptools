@@ -5,16 +5,13 @@ template $SpeedDialog: Adw.Window {
   icon-name: "mwp_icon";
   title: "Delta Speed";
 
-  Box {
-    orientation: vertical;
-
-    [start]
+  Adw.ToolbarView {
+    [top]
     Adw.HeaderBar {
       decoration-layout: "icon:close";
     }
 
-    [end]
-    Box {
+    content:     Box {
       orientation: vertical;
       spacing: 8;
 
@@ -31,18 +28,19 @@ template $SpeedDialog: Adw.Window {
           input-purpose: number;
         }
       }
+    };
+    [bottom]
+    Box {
+      hexpand: false;
+      halign: end;
+      styles [ "toolbar" ]
 
-      Box {
-        hexpand: false;
-        halign: end;
+      Button apply {
+        label: _("Apply");
+      }
 
-        Button apply {
-          label: _("Apply");
-        }
-
-        Button cancel {
-          label: _("Cancel");
-        }
+      Button cancel {
+        label: _("Cancel");
       }
     }
   }

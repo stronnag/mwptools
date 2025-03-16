@@ -4,14 +4,14 @@ using Adw 1;
 template $SafehomeEditor: Adw.Window {
   icon-name: "mwp_icon";
   title: "Edit Safehome";
-  Box {
-    orientation: vertical;
-    [start]
+
+  Adw.ToolbarView {
+    [top]
     Adw.HeaderBar {
       decoration-layout: "icon:close";
     }
-    [end]
-    Box {
+
+    content: Box {
       spacing: 8;
       orientation: vertical;
 
@@ -197,19 +197,17 @@ template $SafehomeEditor: Adw.Window {
           }
         }
       }
-
-      [end]
-      Box {
-        orientation: horizontal;
+    };
+    [bottom]
+    Box {
+      orientation: horizontal;
+      spacing: 8;
+      styles [ "toolbar" ]
+      halign: end;
+      Button shapp {
         halign: end;
-        hexpand: true;
-        spacing: 8;
-
-        Button shapp {
-          halign: end;
-          label: 'Apply';
-          receives-default: true;
-        }
+        label: 'Apply';
+        receives-default: true;
       }
     }
   }

@@ -277,8 +277,11 @@ class PlaceEdit : Adw.Window {
         var scrolled = new Gtk.ScrolledWindow ();
         title = "Edit Stored Places";
         Gtk.Box box = new Gtk.Box (Gtk.Orientation.VERTICAL, 2);
+
+		var tbox = new Adw.ToolbarView();
 		var headerBar = new Adw.HeaderBar();
-		box.append(headerBar);
+		tbox.add_top_bar(headerBar);
+
 		setup_cv();
         cv.vexpand = true;
         cv.hexpand = true;
@@ -310,9 +313,12 @@ class PlaceEdit : Adw.Window {
 				pop.popup();
             });
 
+
 		box.append(scrolled);
-        box.append (bbox);
-		set_content (box);
+		tbox.set_content (box);
+		bbox.add_css_class("toolbar");
+		tbox.add_bottom_bar(bbox);
+		set_content(tbox);
 
 		set_transient_for(Mwp.window);
         close_request.connect (() => {

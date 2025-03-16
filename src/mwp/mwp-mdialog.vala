@@ -37,9 +37,11 @@ namespace MissionManager {
 		private void create_widgets (Mission []_msx) {
 			cbs = new Gtk.CheckButton[msx.length];
 			var vbox = new Box (Orientation.VERTICAL, 2);
+			var tbox = new Adw.ToolbarView();
 			var hb = new Adw.HeaderBar();
 			hb.decoration_layout = "icon:close";
-			vbox.append(hb);
+			tbox.add_top_bar(hb);
+
 			int k = 0;
 			if (_msx.length > 0) {
 				foreach (var m in _msx) {
@@ -70,8 +72,14 @@ namespace MissionManager {
 					close();
 				});
 
-			vbox.append(button);
-			set_content(vbox);
+			var bbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL,2);
+			bbox.halign = Gtk.Align.END;
+			bbox.hexpand = true;
+			bbox.add_css_class("toolbar");
+			bbox.append(button);
+			tbox.set_content(vbox);
+			tbox.add_bottom_bar(bbox);
+			set_content(tbox);
 		}
 
 		private void get_rem_items() {

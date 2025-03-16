@@ -5,20 +5,16 @@ template $DeltaDialog: Adw.Window {
   icon-name: "mwp_icon";
   title: "Delta updates";
 
-  Box {
-    orientation: vertical;
-
-    [start]
+  Adw.ToolbarView {
+    [top]
     Adw.HeaderBar {
       decoration-layout: "icon:close";
     }
 
-    [end]
-    Box {
+    content: Box {
       orientation: vertical;
       spacing: 8;
 
-      [start]
       Grid {
         hexpand: false;
         column-spacing: 8;
@@ -100,22 +96,23 @@ template $DeltaDialog: Adw.Window {
           }
         }
       }
+    };
+    [bottom]
+    Box {
+      styles [ "toolbar" ]
+      orientation: horizontal;
+      spacing: 4;
+      halign: end;
+      hexpand: true;
 
-      Box {
-        orientation: horizontal;
-        spacing: 4;
+      Button apply {
         halign: end;
-        hexpand: true;
+        label: _("Apply");
+      }
 
-        Button apply {
-          halign: end;
-          label: _("Apply");
-        }
-
-        Button cancel {
-          halign: end;
-          label: _("Cancel");
-        }
+      Button cancel {
+        halign: end;
+        label: _("Cancel");
       }
     }
   }

@@ -7,87 +7,86 @@ template $ETXWindow: Adw.Window {
   default-width: 600;
   default-height: 400;
 
-  Box vbox {
-    orientation: vertical;
-
-    [start]
+  Adw.ToolbarView {
+    [top]
     Adw.HeaderBar {
       decoration-layout: "icon:close";
     }
 
-    [End]
-    // Row 1
-    Box {
-      orientation: horizontal;
-      Label {
-	label: "ETX Log: ";
+    content: Box vbox {
+      orientation: vertical;
+      Box {
+	orientation: horizontal;
+	Label {
+	  label: "ETX Log: ";
+	}
+	Button log_btn {
+	  Box {
+	    spacing: 4;
+	    Label log_name {
+              label: "(none)";
+              halign: fill;
+              hexpand: true;
+              tooltip-text: "EdgeTX/OpenTX log file";
+            }
+	    [End]
+            Image {
+              icon-name: "document-open-symbolic";
+            }
+	  }
+	}
       }
-      Button log_btn {
-	Box {
-	  spacing: 4;
+      Box {
+	hexpand: false;
+	halign: end;
+	Gtk.CheckButton speedup {
+	  hexpand: false;
+	  halign: end;
+          label: "Speedup";
+	}
+      }
+      // Row 2
+      ScrolledWindow {
+	hexpand: true;
+	vexpand: true;
 
-          Label log_name {
-            label: "(none)";
-            halign: fill;
-            hexpand: true;
-            tooltip-text: "EdgeTX/OpenTX log file";
+	ColumnView etxlist {
+          show-column-separators: true;
+          show-row-separators: true;
+
+          ColumnViewColumn index {
+            title: 'Index';
+            resizable: true;
+            expand: true;
           }
-	  [End]
-          Image {
-            icon-name: "document-open-symbolic";
+
+          ColumnViewColumn duration {
+            title: 'Duration';
+            expand: true;
+          }
+
+          ColumnViewColumn timestamp {
+            title: 'Time Stamp';
+            expand: true;
+          }
+
+          ColumnViewColumn lines {
+            title: 'No. Lines';
+            expand: true;
+          }
+
+	  ColumnViewColumn cb {
+            title: '☑';
           }
 	}
       }
-    }
-    Box {
-      hexpand: false;
-      halign: end;
-      Gtk.CheckButton speedup {
-	hexpand: false;
-	halign: end;
-        label: "Speedup";
-      }
-    }
-    // Row 2
-    ScrolledWindow {
-      hexpand: true;
-      vexpand: true;
-
-      ColumnView etxlist {
-        show-column-separators: true;
-        show-row-separators: true;
-
-        ColumnViewColumn index {
-          title: 'Index';
-          resizable: true;
-          expand: true;
-        }
-
-        ColumnViewColumn duration {
-          title: 'Duration';
-          expand: true;
-        }
-
-        ColumnViewColumn timestamp {
-          title: 'Time Stamp';
-          expand: true;
-        }
-
-        ColumnViewColumn lines {
-          title: 'No. Lines';
-          expand: true;
-        }
-
-	ColumnViewColumn cb {
-          title: '☑';
-        }
-      }
-    }
-
+    };
     // Row 4
+    [bottom]
     Box {
       hexpand: false;
       halign: end;
+      styles [ "toolbar" ]
 
       Button cancel {
         label: _("Cancel");

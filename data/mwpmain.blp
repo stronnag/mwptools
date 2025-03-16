@@ -13,10 +13,8 @@ template $MwpWindow: Adw.ApplicationWindow {
   icon-name: "mwp_icon";
   title: "mwp";
 
-  Box {
-    orientation: vertical;
-
-    [start]
+  Adw.ToolbarView {
+    [top]
     Adw.HeaderBar {
       [start]
       Gtk.Box {
@@ -117,24 +115,21 @@ template $MwpWindow: Adw.ApplicationWindow {
       }
     }
 
-    Box {
-      orientation: vertical;
 
-      [start]
       // Row 1
-      Adw.ToastOverlay toaster {
-//        Adw.OverlaySplitView split_view {
-//          vexpand: true;
-//          sidebar-position: end;
-//          show-sidebar: bind show_sidebar_button.active bidirectional;
-//        }
-      }
+      content: Box {
+	orientation: vertical;
+	Adw.ToastOverlay toaster {
+	}
+      };
 
       //    Row 2
+      [bottom]
       Gtk.Box {
         hexpand: true;
         vexpand: false;
         spacing: 1;
+	styles [ "toolbar" ]
 
         Gtk.Label poslabel {
 	  //               1         2         3
@@ -332,7 +327,6 @@ template $MwpWindow: Adw.ApplicationWindow {
             ]
           }
 	}
-      }
     }
   }
 }

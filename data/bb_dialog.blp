@@ -7,136 +7,29 @@ template $BBLWindow: Adw.Window {
   default-width: 640;
   default-height: 640;
 
-  Box vbox {
-    orientation: vertical;
-
-    [start]
+  Adw.ToolbarView {
+    [top]
     Adw.HeaderBar {
       decoration-layout: "icon:close";
     }
 
-    [End]
-    // Row 1
-    Box {
-      orientation: horizontal;
-      Label {
-	label: "BBL: ";
-      }
-      Button log_btn {
-	Box {
-	  spacing: 4;
+    content: Box vbox {
+      orientation: vertical;
 
-          Label log_name {
-            label: "(none)";
-            halign: fill;
-            hexpand: true;
-            tooltip-text: "Blackbox log file";
-          }
-	  [End]
-          Image {
-            icon-name: "document-open-symbolic";
-          }
-	}
-      }
-    }
-
-    // Row 2
-    Box {
-      orientation: horizontal;
-      Label {
-	halign: start;
-        label: "Log list time zones";
-      }
-
-      DropDown tzoption {
-	halign: start;
-        model: StringList {
-          strings [
-            "Log",
-            "Local"
-          ]
-        };
-      }
-      Gtk.CheckButton speedup {
-	hexpand: true;
-	halign: end;
-        label: "Speedup";
-      }
-    }
-    Box {
-      Label bb_items {
-	halign: start;
-	use-markup: true;
-	wrap: true;
-      }
-    }
-    // Row 3
-    ScrolledWindow {
-      vexpand: true;
-
-      ColumnView bblist {
-        show-column-separators: true;
-        show-row-separators: true;
-
-        ColumnViewColumn index {
-          title: 'Index';
-          resizable: true;
-          expand: true;
-        }
-
-        ColumnViewColumn duration {
-          title: 'Duration';
-          expand: true;
-        }
-
-        ColumnViewColumn timestamp {
-          title: 'Time Stamp';
-          expand: true;
-        }
-
-        ColumnViewColumn cb {
-          title: '☑';
-        }
-      }
-    }
-
-    // Row 5
-    Box {
-      orientation: horizontal;
-      hexpand: false;
-      halign: end;
-      spacing: 8;
-      [End]
-      Label {
-	halign: end;
-	label: "Jump to (ms): ";
-      }
-      Entry skip_entry {
-        hexpand: true;
-        halign: end;
-        editable: true;
-        max-width-chars: 20;
-        placeholder-text: "000000";
-      }
-    }
-    // Row 5
-    Box {
-      orientation: horizontal;
-      [start]
       Box {
-        orientation: horizontal;
+	orientation: horizontal;
 	Label {
-	  label: "Video: ";
+	  label: "BBL: ";
 	}
-	Button video_btn {
+	Button log_btn {
 	  Box {
 	    spacing: 4;
 
-            Label video_name {
+            Label log_name {
               label: "(none)";
               halign: fill;
               hexpand: true;
-              tooltip-text: "Optional Video file";
+              tooltip-text: "Blackbox log file";
             }
 	    [End]
             Image {
@@ -145,46 +38,154 @@ template $BBLWindow: Adw.Window {
 	  }
 	}
       }
-      [End]
+
+      // Row 2
       Box {
-        orientation: horizontal;
-        halign: end;
-        hexpand: false;
-	spacing: 8;
+	orientation: horizontal;
+	Label {
+	  halign: start;
+          label: "Log list time zones";
+	}
 
-        CheckButton vidbutton {
-          hexpand: false;
-          halign: end;
-          label: "Start @ ";
-          active: false;
-        }
-
-        Entry min_entry {
-          hexpand: false;
-          halign: end;
-          editable: true;
-          max-width-chars: 4;
-          placeholder-text: "(MM)";
-        }
-
-        Label {
-          label: ":";
-        }
-
-        Entry sec_entry {
-          hexpand: false;
-          halign: end;
-          editable: true;
-          max-width-chars: 6;
-          placeholder-text: "(SS.sss)";
-        }
+	DropDown tzoption {
+	  halign: start;
+          model: StringList {
+            strings [
+              "Log",
+              "Local"
+            ]
+          };
+	}
+	Gtk.CheckButton speedup {
+	  hexpand: true;
+	  halign: end;
+          label: "Speedup";
+	}
       }
-    }
+      Box {
+	Label bb_items {
+	  halign: start;
+	  use-markup: true;
+	  wrap: true;
+	}
+      }
+      // Row 3
+      ScrolledWindow {
+	vexpand: true;
 
+	ColumnView bblist {
+          show-column-separators: true;
+          show-row-separators: true;
+
+          ColumnViewColumn index {
+            title: 'Index';
+            resizable: true;
+            expand: true;
+          }
+
+          ColumnViewColumn duration {
+            title: 'Duration';
+            expand: true;
+          }
+
+          ColumnViewColumn timestamp {
+            title: 'Time Stamp';
+            expand: true;
+          }
+
+          ColumnViewColumn cb {
+            title: '☑';
+          }
+	}
+      }
+      // Row 5
+      Box {
+	orientation: horizontal;
+	hexpand: false;
+	halign: end;
+	spacing: 8;
+	[End]
+	Label {
+	  halign: end;
+	  label: "Jump to (ms): ";
+	}
+	Entry skip_entry {
+          hexpand: true;
+          halign: end;
+          editable: true;
+          max-width-chars: 20;
+          placeholder-text: "000000";
+	}
+      }
+      // Row 5
+      Box {
+	orientation: horizontal;
+	[start]
+	Box {
+          orientation: horizontal;
+	  Label {
+	    label: "Video: ";
+	  }
+	  Button video_btn {
+	    Box {
+	      spacing: 4;
+
+              Label video_name {
+		label: "(none)";
+		halign: fill;
+		hexpand: true;
+		tooltip-text: "Optional Video file";
+              }
+	      [End]
+              Image {
+		icon-name: "document-open-symbolic";
+              }
+	    }
+	  }
+	}
+	[End]
+	Box {
+          orientation: horizontal;
+          halign: end;
+          hexpand: false;
+	  spacing: 8;
+
+          CheckButton vidbutton {
+            hexpand: false;
+            halign: end;
+            label: "Start @ ";
+            active: false;
+          }
+
+          Entry min_entry {
+            hexpand: false;
+            halign: end;
+            editable: true;
+            max-width-chars: 4;
+            placeholder-text: "(MM)";
+          }
+
+          Label {
+            label: ":";
+          }
+
+          Entry sec_entry {
+            hexpand: false;
+            halign: end;
+            editable: true;
+            max-width-chars: 6;
+            placeholder-text: "(SS.sss)";
+          }
+	}
+      }
+    };
+    [bottom]
     // Row 5
     Box {
       hexpand: true;
       halign: end;
+      orientation: horizontal;
+      styles [ "toolbar" ]
 
       Button cancel {
 	hexpand: false;

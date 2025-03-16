@@ -265,9 +265,12 @@ public class LOSSlider : Adw.Window {
 		_margin = lmargin;
 		atimer = new Timer();
 		this.title = "LOS Analysis";
+
+		var tbox = new Adw.ToolbarView();
+		var headerBar = new Adw.HeaderBar();
+		tbox.add_top_bar(headerBar);
+
 		var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 2);
-		var header_bar = new Adw.HeaderBar();
-		box.append(header_bar);
 
 		slider = new Gtk.Scale.with_range (Gtk.Orientation.HORIZONTAL, 0, 1000, 1);
 		slider.set_format_value_func ((s,v) => {
@@ -377,7 +380,6 @@ public class LOSSlider : Adw.Window {
 		hbox.append (mentry);
 		hbox.append (incbutton);
 		box.append(hbox);
-		box.append(bbox);
 		default_width = 600;
 		set_transient_for (Mwp.window);
 
@@ -399,8 +401,12 @@ public class LOSSlider : Adw.Window {
 				}
 				return false;
 			});
-		this.set_content(box);
-		this.present();
+
+		bbox.add_css_class("toolbar");
+		tbox.add_bottom_bar(bbox);
+		tbox.set_content(box);
+		set_content(tbox);
+		present();
 	}
 
 	public void run(Mission ms, int wpno, bool auto) {

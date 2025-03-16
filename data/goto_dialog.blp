@@ -5,16 +5,13 @@ template $MwpGotoDialog: Adw.Window {
   icon-name: "mwp_icon";
   title: "Stored Places";
 
-  Box {
-    orientation: vertical;
-
-    [start]
+  Adw.ToolbarView {
+    [top]
     Adw.HeaderBar {
       decoration-layout: "icon:close";
     }
 
-    [end]
-    Box {
+    content: Box {
       spacing: 8;
       orientation: vertical;
 
@@ -84,30 +81,31 @@ template $MwpGotoDialog: Adw.Window {
           }
         }
       }
+    };
 
-      [end]
-      Box {
-        orientation: horizontal;
+    [bottom]
+    Box {
+      styles [ "toolbar" ]
+      orientation: horizontal;
+      halign: end;
+      hexpand: true;
+      spacing: 8;
+
+      Button place_edit {
         halign: end;
-        hexpand: true;
-        spacing: 8;
+        label: _("Editor ...");
+        tooltip-text: _("Opens the stored places editor");
+      }
 
-        Button place_edit {
-          halign: end;
-          label: _("Editor ...");
-          tooltip-text: _("Opens the stored places editor");
-        }
+      Button gotoapp {
+        halign: end;
+        label: 'Apply';
+        receives-default: true;
+      }
 
-        Button gotoapp {
-          halign: end;
-          label: 'Apply';
-          receives-default: true;
-        }
-
-        Button gotocan {
-          halign: end;
-          label: 'Cancel';
-        }
+      Button gotocan {
+        halign: end;
+        label: 'Cancel';
       }
     }
   }

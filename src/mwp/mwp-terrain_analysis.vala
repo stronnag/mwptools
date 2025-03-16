@@ -260,13 +260,12 @@ public class  ScrollView : Adw.Window {
 		var box = new Gtk.Box(Gtk.Orientation.VERTICAL, 0);
 		var header_bar = new Adw.HeaderBar();
 		header_bar.decoration_layout = "icon:close";
-		box.append(header_bar);
-
+		var tbox = new Adw.ToolbarView();
+		tbox.add_top_bar(header_bar);
 		var win = new Gtk.ScrolledWindow();
 
 		label = new Gtk.Label (null);
         label.set_use_markup(true);
-
 
 		win.has_frame = true;
 		win.min_content_height = 400;
@@ -274,15 +273,24 @@ public class  ScrollView : Adw.Window {
 		win.propagate_natural_height = true;
 		win.propagate_natural_width = true;
 
+		var bbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL,2);
 		var button = new Gtk.Button.with_label ("OK");
 		button.clicked.connect (() => {
 				close();
 			});
 
+		button.halign = Gtk.Align.END;
+		button.hexpand = true;
+		bbox.halign = Gtk.Align.END;
+		bbox.append(button);
+		bbox.hexpand = true;
+		bbox.add_css_class("toolbar");
 		win.set_child (label);
+
 		box.append(win);
-		box.append(button);
-		set_content(box);
+		tbox.set_content(box);
+		tbox.add_bottom_bar(bbox);
+		set_content(tbox);
 	}
 
 	public void generate_climb_dive(string[]lines, double maxclimb, double maxdive) {

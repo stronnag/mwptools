@@ -234,10 +234,11 @@ namespace MissionManager {
 			mmodel = sbuilder.get_object("ms-menu") as GLib.MenuModel;
 
 			var sw = new Gtk.ScrolledWindow();
+			var tbox = new Adw.ToolbarView();
 
 			var box = new Gtk.Box(Gtk.Orientation.VERTICAL,4);
 			var header_bar = new Adw.HeaderBar();
-			box.append(header_bar);
+			tbox.add_top_bar(header_bar);
 
 			cv = new Gtk.ColumnView(null);
 			cv.show_column_separators = true;
@@ -260,7 +261,9 @@ namespace MissionManager {
 			//box.hexpand = true;
 			box.vexpand = true;
 			box.append(sw);
-			set_content(box);
+			tbox.set_content(box);
+
+			set_content(tbox);
 			set_default_size(640,640);
 			set_transient_for(Mwp.window);
 			set_tote_action();

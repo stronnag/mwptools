@@ -5,15 +5,13 @@ template $AssistWindow: Adw.Window {
   icon-name: "mwp_icon";
   title: "Ublox AssistNow";
 
-  Box {
-    orientation: vertical;
-    [start]
+  Adw.ToolbarView {
+    [top]
     Adw.HeaderBar {
       decoration-layout: "icon:close";
     }
 
-    [end]
-    Box {
+    content: Box {
       orientation: vertical;
       spacing: 8;
       Frame  {
@@ -76,37 +74,38 @@ template $AssistWindow: Adw.Window {
           }
         }
       }
+    };
 
-      [end]
-      Box {
-        valign: end;
+    [bottom]
+    Box {
+      valign: end;
+      halign: end;
+      vexpand: true;
+      hexpand: true;
+      spacing: 8;
+      styles [ "toolbar" ]
+
+      Button fileload {
         halign: end;
-        vexpand: true;
-        hexpand: true;
-	spacing: 8;
+	hexpand: false;
+	label: _("From Cache");
+	tooltip-text: "Last download (if valid, <= 4 hours for online, <= 35 days offline)";
+	sensitive: false;
+      }
 
-        Button fileload {
-          halign: end;
-	  hexpand: false;
-	  label: _("From Cache");
-	  tooltip-text: "Last download (if valid, <= 4 hours for online, <= 35 days offline)";
-	  sensitive: false;
-        }
+      Button download {
+        halign: end;
+	hexpand: false;
+	label: _("Download (Network)");
+	tooltip-text: "Down data from AssistNow website";
+      }
 
-	Button download {
-          halign: end;
-	  hexpand: false;
-	  label: _("Download (Network)");
-	  tooltip-text: "Down data from AssistNow website";
-        }
-
-        Button apply {
-          halign: end;
-	  hexpand: false;
-          label: _("Apply to FC's GPS");
-	  tooltip-text: "Apply AssistNow date to GPS (via the FC)";
-	  sensitive: false;
-        }
+      Button apply {
+        halign: end;
+	hexpand: false;
+        label: _("Apply to FC's GPS");
+	tooltip-text: "Apply AssistNow date to GPS (via the FC)";
+	sensitive: false;
       }
     }
   }

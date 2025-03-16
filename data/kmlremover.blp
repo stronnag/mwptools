@@ -5,38 +5,35 @@ template $KmlRemover: Adw.Window {
   icon-name: "mwp_icon";
   title: "Remove Overlays";
 
-  Box {
-    orientation: vertical;
-
-    [start]
+  Adw.ToolbarView {
+    [top]
     Adw.HeaderBar {
       decoration-layout: "icon:close";
     }
 
-    [end]
-    Box {
+    content: Box {
       orientation: vertical;
 
       Box kmlitems {
         spacing: 8;
         orientation: vertical;
       }
+    };
 
-      Box buttons {
-        spacing: 8;
-        orientation: horizontal;
-        halign: fill;
+    [bottom]
+    Box buttons {
+      spacing: 8;
+      orientation: horizontal;
+      styles [ "toolbar" ]
+
+      Button kmlcan {
         hexpand: true;
+        label: _("Cancel");
+      }
 
-        Button kmlcan {
-          hexpand: true;
-          label: _("Cancel");
-        }
-
-        Button kmlok {
-          hexpand: true;
-          label: _("OK");
-        }
+      Button kmlok {
+        hexpand: true;
+        label: _("OK");
       }
     }
   }

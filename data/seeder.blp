@@ -23,17 +23,13 @@ template $TileUtilsDialog: Adw.Window {
   title: _("mwp map seeder");
   icon-name: "mwp_icon";
 
-  Box vbox {
-    orientation: vertical;
-    spacing: 8;
-
-    [start]
+  Adw.ToolbarView {
+    [top]
     Adw.HeaderBar {
       decoration-layout: "icon:close";
     }
 
-    [End]
-    Box box4 {
+    content: Box box4 {
       spacing: 4;
       orientation: vertical;
 
@@ -100,12 +96,14 @@ template $TileUtilsDialog: Adw.Window {
         margin-bottom: 2;
         label: _("0/0/0");
       }
-    }
+    };
 
+    [bottom]
     Box seederbb {
       hexpand: false;
       halign: end;
       spacing: 8;
+      styles [ "toolbar" ]
 
       Button tile_stop {
         label: 'Close';

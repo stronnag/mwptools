@@ -471,6 +471,7 @@ namespace Radar {
 			last_sec = 0;
 
 			var sbox = new Gtk.Box(Gtk.Orientation.VERTICAL, 2);
+			var tbox = new Adw.ToolbarView();
 			var header_bar = new Adw.HeaderBar();
 			var achkb = new Gtk.CheckButton.with_label("Audio Alerts");
 			achkb.active = Radar.do_audio;
@@ -479,12 +480,12 @@ namespace Radar {
 				});
 
 			header_bar.pack_end(achkb);
-			sbox.append(header_bar);
+			tbox.add_top_bar(header_bar);
+
 			var scrolled = new Gtk.ScrolledWindow ();
 			set_default_size (900, 400);
 			title = "Radar & Telemetry Tracking";
 			label = new Gtk.Label ("");
-			var grid = new Gtk.Grid ();
 			create_cv();
 			cv.hexpand = true;
 			cv.vexpand = true;
@@ -533,15 +534,21 @@ namespace Radar {
 
 			Gtk.Box box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 5);
 			box.append(label);
+			label.xalign = 0;
+			label.hexpand = true;
+
 			bbox.halign = Gtk.Align.END;
 			bbox.hexpand = true;
-			box.append (bbox);
-			grid.hexpand = true;
-			grid.vexpand = true;
-			grid.attach (scrolled, 0, 0, 1, 1);
-			grid.attach (box, 0, 1, 1, 1);
-			sbox.append(grid);
-			set_content (sbox);
+
+			sbox.append(scrolled);
+
+			box.add_css_class("toolbar");
+			box.append(bbox);
+
+			tbox.add_bottom_bar(box);
+
+			tbox.set_content (sbox);
+			set_content (tbox);
 			close_request.connect (() => {
 					visible=false;
 					vis = false;

@@ -5,16 +5,13 @@ template $AltDialog: Adw.Window {
   icon-name: "mwp_icon";
   title: "Delta Altitude";
 
-  Box {
-    orientation: vertical;
-
-    [start]
+  Adw.ToolbarView {
+    [top]
     Adw.HeaderBar {
       decoration-layout: "icon:close";
     }
 
-    [end]
-    Box {
+    content: Box {
       orientation: vertical;
       spacing: 8;
 
@@ -58,25 +55,25 @@ template $AltDialog: Adw.Window {
           }
 	}
       }
+    };
+    [bottom]
+    Box {
+      styles [ "toolbar" ]
+      valign: end;
+      halign: end;
+      vexpand: true;
+      hexpand: true;
 
-      [end]
-      Box {
-        valign: end;
+      Button apply {
         halign: end;
-        vexpand: true;
-        hexpand: true;
+	hexpand: false;
+        label: _("Apply");
+      }
 
-        Button apply {
-          halign: end;
-	  hexpand: false;
-          label: _("Apply");
-        }
-
-        Button cancel {
-          halign: end;
-	  hexpand: false;
-          label: _("Cancel");
-        }
+      Button cancel {
+        halign: end;
+	hexpand: false;
+        label: _("Cancel");
       }
     }
   }

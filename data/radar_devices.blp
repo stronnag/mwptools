@@ -4,21 +4,14 @@ using Adw 1;
 template $RadarDeviceDialog: Adw.Window {
   title: "Radar Device List";
 
-  Gtk.Box  {
-    spacing: 8;
-    orientation: vertical;
-    hexpand: true;
-    vexpand: true;
-
-    [start]
+  Adw.ToolbarView {
+    [top]
     Adw.HeaderBar {
       decoration-layout: "icon:close";
     }
-    [end]
 
     // Items
-
-    ScrolledWindow sw {
+    content: ScrolledWindow sw {
       vexpand: true;
       hexpand: true;
       ColumnView rdrlist {
@@ -41,33 +34,22 @@ template $RadarDeviceDialog: Adw.Window {
           title: '⌦';
         }
       }
-    }
-
-    // Buttons
+    };
+    [bottom]
     Gtk.Box {
+      styles [ "toolbar" ]
       orientation: horizontal;
       hexpand: true;
       spacing: 8;
-      Gtk.Box {
-	orientation: horizontal;
-	hexpand: true;
-	halign: start;
-	spacing: 4;
-	Gtk.Button additem {
-	  icon-name: "list-add";
-	  tooltip-text: "Add new entry";
-	}
+      Gtk.Button additem {
+	icon-name: "list-add";
+	tooltip-text: "Add new entry";
       }
-      Gtk.Box {
-	orientation: horizontal;
+      Gtk.Button savelist {
 	hexpand: true;
 	halign: end;
-	spacing: 4;
-	Gtk.Button savelist {
-	  label: "Save";
-	}
+	label: "Save";
       }
     }
-    //
   }
 }

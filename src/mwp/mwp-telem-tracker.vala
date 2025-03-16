@@ -89,7 +89,7 @@ namespace TelemTracker {
 						if(line.strip().length > 0 &&
 						   !line.has_prefix("#") &&
 						   !line.has_prefix(";")) {
-							add(line);
+							add(line.chomp());
 						}
 					}
 				} catch (Error e) {
@@ -413,7 +413,6 @@ namespace TelemTracker {
 		private Gtk.Button ok;
 		public static bool apply;
 		public SecItemWindow(SecDev s) {
-			vexpand = false;
 			title = "Tracked Device";
 			apply = false;
 			var g = new Gtk.Grid();
@@ -435,13 +434,24 @@ namespace TelemTracker {
 			g.attach (an, 1, 1);
 
 			var box = new Gtk.Box(Gtk.Orientation.VERTICAL, 2);
+			var tbox = new Adw.ToolbarView();
 			var headerBar = new Adw.HeaderBar();
-			box.append(headerBar);
+			tbox.add_top_bar(headerBar);
+
 			box.append(g);
+
+			var bbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL,2);
 			ok.hexpand = false;
 			ok.halign = Gtk.Align.END;
-			box.append(ok);
-			set_content(box);
+
+			bbox.halign = Gtk.Align.END;
+			bbox.hexpand = true;
+			bbox.append(ok);
+			bbox.add_css_class("toolbar");
+			tbox.add_bottom_bar(bbox);
+
+			tbox.set_content(box);
+			set_content(tbox);
 			ok.clicked.connect(() => {
 					apply = true;
 					close();
@@ -450,7 +460,6 @@ namespace TelemTracker {
 	}
 
 	public class  SecDevDialog : Adw.Window {
-		private Gtk.Grid grid;
 		Gtk.ColumnView cv;
 		Gtk.MultiSelection lsel;
 
@@ -489,7 +498,13 @@ namespace TelemTracker {
 					}
 				});
 
-			create_view();
+			var cv = create_view();
+
+			var scrolled = new Gtk.ScrolledWindow ();
+			scrolled.propagate_natural_height = true;
+			scrolled.propagate_natural_width = true;
+			scrolled.set_child(cv);
+
 			Gtk.Box bbox = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 2);
 			radd.set_halign(Gtk.Align.END);
 			rdel.set_halign(Gtk.Align.END);
@@ -498,20 +513,21 @@ namespace TelemTracker {
 			bbox.append(radd);
 			bbox.append(rdel);
 			bbox.halign=Gtk.Align.END;
-			Gtk.Box box = new Gtk.Box (Gtk.Orientation.VERTICAL, 2);
+
 			var headerBar = new Adw.HeaderBar();
-			box.append(headerBar);
-			box.append(grid);
-			box.append (bbox);
-			set_content(box);
+			var tbox = new Adw.ToolbarView();
+			tbox.add_top_bar(headerBar);
+			bbox.add_css_class("toolbar");
+			tbox.add_bottom_bar(bbox);
+
+			tbox.set_content(scrolled);
+			set_content(tbox);
 			ttrk.pending.connect((v) => {
 					this.sensitive = !v;
 				});
 		}
 
-		private void create_view() {
-			grid = new Gtk.Grid ();
-			grid.set_vexpand (true);
+		private Gtk.ColumnView create_view() {
 			cv = new Gtk.ColumnView(null);
 			var sm = new Gtk.SortListModel(lstore, cv.sorter);
 			lsel = new Gtk.MultiSelection(sm);
@@ -526,6 +542,8 @@ namespace TelemTracker {
 			f0.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
 					var label=new Gtk.Label("");
+					label.valign = Gtk.Align.START;
+					label.xalign = 0;
 					list_item.set_child(label);
 				});
 			f0.bind.connect((f,o) => {
@@ -543,6 +561,8 @@ namespace TelemTracker {
 			f1.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
 					var label=new Gtk.Label("");
+					label.valign = Gtk.Align.START;
+					label.xalign = 0;
 					list_item.set_child(label);
 				});
 			f1.bind.connect((f,o) => {
@@ -560,6 +580,8 @@ namespace TelemTracker {
 			f2.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
 					var cbtn = new Gtk.CheckButton();
+					cbtn.valign = Gtk.Align.START;
+					cbtn.vexpand = false;
 					list_item.set_child(cbtn);
 				});
 			f2.bind.connect((f,o) => {
@@ -580,6 +602,8 @@ namespace TelemTracker {
 			f3.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
 					var dd = new Gtk.DropDown(masksl, null);
+					dd.valign = Gtk.Align.START;
+					dd.vexpand = false;
 					dd.notify["selected"].connect(() => {
 							SecDev sd = list_item.get_item() as SecDev;
 							var i =  dd.get_selected();
@@ -607,6 +631,8 @@ namespace TelemTracker {
 			f4.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
 					var btn = new Gtk.Button.from_icon_name("document-edit");
+					btn.valign = Gtk.Align.START;
+					btn.vexpand = false;
 					list_item.set_child(btn);
 					btn.clicked.connect(() => {
 							var sd = list_item.get_item() as SecDev;
@@ -643,16 +669,7 @@ namespace TelemTracker {
 
 			c0.set_sorter(t0sorter);
 			c1.set_sorter(t1sorter);
-
-			var scrolled = new Gtk.ScrolledWindow ();
-			scrolled.set_policy (Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC);
-			//scrolled.min_content_height = (2+n)*30;
-			//scrolled.min_content_width = 320;
-			scrolled.set_child(cv);
-			scrolled.propagate_natural_height = true;
-			scrolled.propagate_natural_width = true;
-			grid.attach (scrolled, 0, 0, 1, 1);
-			grid.vexpand = true;
+			return cv;
 		}
 	}
 }

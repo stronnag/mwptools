@@ -5,9 +5,8 @@ template $SurveyDialog: Adw.Window {
   icon-name: "mwp_icon";
   title: "Survey Definition";
 
-  Box {
-    orientation: vertical;
-    [start]
+  Adw.ToolbarView {
+    [top]
     Adw.HeaderBar {
       decoration-layout: "icon:close";
       [start]
@@ -27,8 +26,8 @@ template $SurveyDialog: Adw.Window {
 	  };
 	}
     }
-    [end]
-    Box {
+
+    content: Box {
       orientation: vertical;
       spacing: 8;
 
@@ -294,6 +293,6 @@ template $SurveyDialog: Adw.Window {
 	  tooltip-text: 'Generates a mission from the outline survey view. Requires that the row separation is consitent with maximum mission size';
         }
       }
-    }
+    };
   }
 }

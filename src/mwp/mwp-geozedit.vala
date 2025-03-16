@@ -66,12 +66,14 @@ public class GZEdit : Adw.Window {
 
 	public GZEdit() {
 		var gbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 2);
+
+		var tbox = new Adw.ToolbarView();
 		var header_bar = new Adw.HeaderBar();
+		tbox.add_top_bar(header_bar);
+
 		GLib.SimpleAction aq;
 		dg = new GLib.SimpleActionGroup();
 
-		gbox.append(header_bar);
-		gbox.hexpand = false;
 		default_width = 600;
 
 		gzmgr = Mwp.gzr;
@@ -174,6 +176,8 @@ public class GZEdit : Adw.Window {
 		bbox.set_spacing (16);
 		bbox.hexpand = true;
 		bbox.halign = Gtk.Align.FILL;
+		bbox.add_css_class("toolbar");
+		tbox.add_bottom_bar(bbox);
 
 		foreach (unowned Gtk.Button button in buttons) {
 			bbox.append (button);
@@ -190,7 +194,6 @@ public class GZEdit : Adw.Window {
 		var vbox = new Gtk.Box(Gtk.Orientation.VERTICAL, 2);
 		vbox.hexpand = false;
 
-		vbox.append (bbox);
 		grid = new Gtk.Grid ();
 
 		zidx = new Gtk.Label("-");
@@ -239,8 +242,11 @@ public class GZEdit : Adw.Window {
 		grid.column_homogeneous = true;
 		vbox.append (grid);
 		set_transient_for (Mwp.window);
+
 		gbox.append(vbox);
-		set_content(gbox);
+		tbox.set_content(gbox);
+		set_content(tbox);
+
 		nitem = 0;
 		buttons[Buttons.PREV].clicked.connect(() => {
 				if(Mwp.gzr.length() > 0) {

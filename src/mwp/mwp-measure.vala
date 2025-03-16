@@ -34,9 +34,14 @@ namespace Measurer {
 		public Measure() {
 			title="Measure";
 			tdist = 0.0;
+
 			var vbox = new Gtk.Box(Gtk.Orientation.VERTICAL, 4);
 			vbox.vexpand = true;
-			vbox.append(new Adw.HeaderBar());
+
+			var tbox = new Adw.ToolbarView();
+			var headerBar = new Adw.HeaderBar();
+			tbox.add_top_bar(headerBar);
+
 			label = new Gtk.Label("");
 			label.set_use_markup (true);
 			label.label = format_distance();
@@ -62,12 +67,19 @@ namespace Measurer {
 					close();
 				});
 			cbutton.halign=Gtk.Align.END;
+
 			hbox.append(cbutton);
-			vbox.append(hbox);
-			set_content(vbox);
+			tbox.set_content(vbox);
+
 			hbox.vexpand = true;
 			hbox.valign = Gtk.Align.END;
 			hbox.halign = Gtk.Align.END;
+
+			hbox.add_css_class("toolbar");
+			tbox.add_bottom_bar(hbox);
+
+			set_content(tbox);
+
 			close_request.connect (() => {
 					Measurer.active = false;
 					clean_up();

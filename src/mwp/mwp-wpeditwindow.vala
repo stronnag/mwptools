@@ -113,13 +113,27 @@ public class WPPopEdit : Adw.Window {
 	public WPPopEdit(int no) {
 		posupd = 0;
 		var sbox = new Gtk.Box(Gtk.Orientation.VERTICAL, 2);
-		var header_bar = new Adw.HeaderBar();
-		sbox.append(header_bar);
-        title = "WP Edit";
+
+		var tbox = new Adw.ToolbarView();
+		var headerBar = new Adw.HeaderBar();
+		tbox.add_top_bar(headerBar);
+
+		title = "WP Edit";
         set_transient_for(Mwp.window);
         build_box();
 		sbox.append(vbox);
-		set_content(sbox);
+
+		var bbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL,2);
+		bbox.halign = Gtk.Align.END;
+		bbox.hexpand = true;
+		bbox.append(apply);
+		bbox.add_css_class("toolbar");
+
+		tbox.set_content(sbox);
+		tbox.add_bottom_bar(bbox);
+
+		set_content(tbox);
+
 		apply.clicked.connect(()=>{
 				completed(true);
 			});
@@ -160,7 +174,6 @@ public class WPPopEdit : Adw.Window {
 
 		vbox.append (grid0);
         vbox.append (grid);
-        vbox.append (apply);
     }
 
     private void add_grid(EditItem wpt) {
