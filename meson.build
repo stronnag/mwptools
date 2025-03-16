@@ -36,6 +36,12 @@ configure_file(
   configuration : conf_data
 )
 
+configure_file(
+  input : 'src/mwpset/mwpset-config.h.in',
+  output : 'mwpset-config.h',
+  configuration : conf_data
+)
+
 configuration_inc = []
 common_inc_dir = []
 
@@ -77,7 +83,7 @@ if host_machine.system() == 'windows'
     'include_directories': [common_inc_dir, configuration_inc],
     'vala_args': [dopts, mwp_v_args ],
     'c_args': [mwp_c_args, dev_args, vcargs ],
-    'install' : true,
+    'install' : false,
     'win_subsystem' : 'console',
     'build_by_default': false,
   }
@@ -182,6 +188,17 @@ if with_gatt
   endif
   executable('mwp-ble-bridge', kwargs: exargs)
 endif
+
+subdir('src/mwpset')
+exargs = {
+  'sources': [mwpsetsrc, msetresources ],
+  'dependencies': [ mwpsetdeps ],
+  'include_directories': [ configuration_inc],
+  'vala_args': [ mwpsetargs ],
+  'install' : true,
+  'win_subsystem' : 'windows',
+}
+executable('mwpset', kwargs: exargs)
 
 subdir('src/bbox-replay')
 

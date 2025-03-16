@@ -1,0 +1,113 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $MwpsetEditWindow: Adw.Window {
+  title: "Edit Setting" ;
+  modal: true;
+
+  Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      decoration-layout: "icon:close";
+    }
+
+    content: Gtk.Box {
+	orientation: vertical;
+	spacing: 8;
+	  margin-top: 4;
+	  margin-bottom: 4;
+	  margin-start: 4;
+	  margin-end: 4;
+
+	Gtk.Frame  {
+	  Gtk.Grid setgrid {
+	    margin-top: 4;
+	    margin-bottom: 4;
+	    margin-start: 4;
+	    margin-end: 4;
+	    row-spacing: 4;
+	    column-spacing: 4;
+
+	  Gtk.Label {
+            label: "<b>Summary :</b>";
+	    halign: start;
+	    use-markup: true;
+            layout {
+              row: '0';
+              column: '0';
+            }
+          }
+	  Gtk.Label sumtext {
+            label: "...";
+	    halign: start;
+            layout {
+              row: '0';
+              column: '1';
+            }
+          }
+
+	  Gtk.Label {
+            label: "<b>Description : </b>";
+	    use-markup: true;
+	    halign: start;
+            layout {
+              row: '1';
+              column: '0';
+            }
+          }
+	  Gtk.Label desctext {
+            label: "...";
+	    halign: start;
+            layout {
+              row: '1';
+              column: '1';
+            }
+          }
+
+	  Gtk.Label {
+            label: "<b>Default :</b>";
+	    use-markup: true;
+	    halign: start;
+            layout {
+              row: '2';
+              column: '0';
+            }
+          }
+	  Gtk.Label deftext {
+            label: "...";
+	    halign: start;
+            layout {
+              row: '2';
+              column: '1';
+            }
+          }
+
+	  Gtk.Label {
+            label: "<b>Value :</b>";
+	    use-markup: true;
+	    halign: start;
+            layout {
+              row: '4';
+              column: '0';
+            }
+          }
+	}
+      }
+      // Button bar
+      Gtk.Box {
+	styles [ "toolbar" ]
+	orientation: horizontal;
+	Gtk.Button usedef {
+	  halign: start;
+	  label: "Default";
+          tooltip-text: "Set value to default";
+	}
+	Gtk.Button appset {
+	  halign: end;
+	  hexpand: true;
+          label: "Apply";
+	}
+      }
+    };
+  }
+}

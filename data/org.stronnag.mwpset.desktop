@@ -1,0 +1,10 @@
+[Desktop Entry]
+Terminal=false
+Type=Application
+Name=Mwp settings manager
+Exec=mwpset %F
+Icon=mwp_icon
+Categories=GTK;GNOME;Utility;
+Comment=A mission planner for the rest of us
+StartupNotify=true
+Keywords=mwp

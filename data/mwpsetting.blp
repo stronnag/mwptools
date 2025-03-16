@@ -1,0 +1,79 @@
+using Gtk 4.0;
+using Adw 1;
+
+menu mset_menu {
+  section {
+    item {
+      label: 'Backup';
+      action: 'win.backup';
+    }
+    item {
+      label: 'Restore';
+      action: 'win.restore';
+    }
+  }
+  section {
+    item {
+      label: 'Quit';
+      action: 'win.quit';
+    }
+  }
+}
+
+template $MwpsetWindow: Adw.ApplicationWindow {
+  default-width: 800;
+  default-height: 1024;
+  icon-name: "mwp_icon";
+
+  title: "MWP Settings";
+
+
+  Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      [end]
+      MenuButton msetbutton {
+	menu-model: mset_menu;
+
+        icon-name: "open-menu";
+        primary: true;
+        always-show-arrow: false;
+      }
+    }
+
+    content: Gtk.Box  {
+      spacing: 8;
+      orientation: vertical;
+      hexpand: true;
+      vexpand: true;
+
+      Adw.ToastOverlay toaster {
+	Gtk.Box mbox {
+	  spacing: 8;
+	  orientation: horizontal;
+	  vexpand: true;
+	  Gtk.ScrolledWindow sw {
+	    vexpand: false;
+	    hexpand: true;
+	    Gtk.ListBox lbox {
+	      activate-on-single-click: false;
+	      vexpand: false;
+	      styles ["rich-list", "boxed-list" ]
+	    }
+	  }
+	}
+      }
+    };
+    [bottom]
+    Gtk.Box {
+      styles [ "toolbar" ]
+      orientation: horizontal;
+      hexpand: true;
+      halign: end;
+      spacing: 4;
+      Gtk.Button savelist {
+	label: "Save";
+      }
+    }
+  }
+}

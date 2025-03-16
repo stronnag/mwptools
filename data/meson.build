@@ -33,6 +33,8 @@ blpfiles = [
   'vas.blp',
   'assistnow.blp',
   'radar_devices.blp',
+  'mwpsetting.blp',
+  'mwpsetedit.blp',
 ]
 
 blueprints_ui = []
@@ -63,6 +65,14 @@ mresources = gnome.compile_resources(
   dependencies: [blueprints, ]
 )
 
+msetresources = gnome.compile_resources(
+  'mset-resources',
+  'mwpset.gresource.xml',
+  source_dir: 'data',
+  c_name: 'mset',
+  dependencies: [blueprints, ]
+)
+
 install_data (
   ['volts.css', 'beep-sound.ogg', 'bleet.ogg', 'orange.ogg', 'sat_alert.ogg'],
   install_dir: join_paths(get_option('datadir'), 'mwp')
@@ -75,7 +85,8 @@ install_data (
   install_dir: join_paths(get_option('datadir'), 'glib-2.0', 'schemas'),
 )
 
-install_data('org.stronnag.mwp.desktop', install_dir : join_paths(get_option('datadir') , 'applications'))
+install_data(['org.stronnag.mwp.desktop', 'org.stronnag.mwpset.desktop'],
+             install_dir : join_paths(get_option('datadir') , 'applications'))
 
 bcd =  dependency('bash-completion', required: false)
 if bcd.found()
