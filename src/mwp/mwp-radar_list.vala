@@ -486,7 +486,6 @@ namespace Radar {
 			set_default_size (900, 400);
 			title = "Radar & Telemetry Tracking";
 			label = new Gtk.Label ("");
-			var grid = new Gtk.Grid ();
 			create_cv();
 			cv.hexpand = true;
 			cv.vexpand = true;
@@ -541,10 +540,7 @@ namespace Radar {
 			bbox.halign = Gtk.Align.END;
 			bbox.hexpand = true;
 
-			grid.hexpand = true;
-			grid.vexpand = true;
-			grid.attach (scrolled, 0, 0, 1, 1);
-			sbox.append(grid);
+			sbox.append(scrolled);
 
 			box.add_css_class("toolbar");
 			box.append(bbox);
