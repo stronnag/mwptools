@@ -116,8 +116,12 @@ namespace Mwpset {
 												disp = "%.8g".printf(dbl);
 											}
 											update_row((int)idx, parts[0], disp);
-											var ty = new VariantType(x.keys.data[idx].type);
-											x.keys.data[idx].value = Variant.parse(ty, parts[1]);
+											if(x.keys.data[idx].type == null) {
+											} else {
+												x.keys.data[idx].value = new Variant.string(parts[1]);
+												var ty = new VariantType(x.keys.data[idx].type);
+												x.keys.data[idx].value = Variant.parse(ty, parts[1]);
+											}
 											x.keys.data[idx].is_changed = true;
 										}
 									}
