@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/mwp_icon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.8">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.9">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.8608ea7d.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.4af4bdda.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -1276,6 +1276,28 @@
   
   
     <li class="md-nav__item">
+      <a href="../mwpset/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    mwp Settings Editor
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../mwpsettings/" class="md-nav__link">
         
   
@@ -2036,13 +2058,14 @@ win.vlegend &lt;control&gt;&lt;shift&gt;v
 <p>The underlying infrastructure used by <a href="https://github.com/stronnag/mwptools">mwp</a> has a facility for storing configuration items in a registry like store. This is used extensively by <a href="https://github.com/stronnag/mwptools">mwp</a>. The items can viewed and modified using a number of tools:</p>
 <ul>
 <li><a href="https://github.com/stronnag/mwptools">mwp</a> preference dialogue (for a small subset of the items)</li>
+<li>The <a href="../mwpset/">mwpset</a> graphical settings editor (all platforms).</li>
 <li>The <code>dconf-editor</code> graphical settings editor (Linux, FreeBSD)</li>
 <li>The command line <code>gsettings</code> tool (Linux, FreeBSD, Windows)</li>
 <li>Regedit (Windows)</li>
 <li>Text Editor (MacOS)</li>
 </ul>
 <h3 id="macos-exception">MacOS (exception)<a class="headerlink" href="#macos-exception" title="Permanent link">#</a></h3>
-<p>Gtk on MacOS does not support <code>gsettings</code> in a useful way. As a work around, MacOS settings are stored in a text <code>.ini</code> file, <code>$HOME/.config/mwp/mwp.ini</code>. This may be (carefully) edited with a text editor.</p>
+<p>Gtk on MacOS does not support <code>gsettings</code> in a useful way. As a work around, MacOS settings are stored in a text <code>.ini</code> file, <code>$HOME/.config/mwp/mwp.ini</code>. This may be edited with <a href="../mwpset/">mwpset</a>.</p>
 <h3 id="linux-freebsd-windows">Linux, FreeBSD, Windows<a class="headerlink" href="#linux-freebsd-windows" title="Permanent link">#</a></h3>
 <p>For <code>gsettings</code> and <code>dconf-editor</code>, the name-space is <code>org.stronnag.mwp</code>, so to view the list of items:</p>
 <pre><code>$ gsettings list-recursively  org.stronnag.mwp
