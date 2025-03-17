@@ -177,6 +177,8 @@ namespace Mwpset {
 			var sname = new Gtk.Label(x.keys.data[i].name);
 			string rs = XReader.format_variant(x.keys.data[i]);
 
+			lb.set_tooltip_text(x.keys.data[i].summary);
+
 			var sval = new Gtk.Label(rs);
 
 			btn.halign = Gtk.Align.START;
