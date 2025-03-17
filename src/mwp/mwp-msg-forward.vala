@@ -110,8 +110,7 @@ namespace MessageForward {
 
 		case Mwp.FWDS.MAV1:
 		case Mwp.FWDS.MAV2:
-			msg = {0};
-			Mav.MAVLINK_ATTITUDE m = {0};
+			Mav.MAVLINK_ATTITUDE *m = (Mav.MAVLINK_ATTITUDE*)msg;
 			float f;
 			f = Mwp.mhead;
 			if (f > 180) {
