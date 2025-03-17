@@ -32,6 +32,7 @@ namespace Mwp {
     bool x_aplog;
     bool x_fl2ltm;
     bool x_rawreplay;
+    bool x_mwpset;
     bool x_plot_elevations_rb;
 	bool sticks_ok;
 	bool bblosd_ok;
@@ -111,11 +112,14 @@ namespace Cli {
 			null,
 			"gnuplot",
 			"mwp-plot-elevations",
-			"unzip", null,
+			"unzip",
+			null,
 			"fl2ltm",
 			"mavlogdump.py",
-            "mwp-log-replay"};
-        bool appsts[9];
+            "mwp-log-replay",
+			"mwpset"
+		};
+        bool appsts[10];
         var si = 0;
 		var pnf = 0;
         foreach (var s in ext_apps) {
@@ -208,6 +212,8 @@ namespace Cli {
 		Mwp.x_fl2ltm = Mwp.x_otxlog = appsts[6];
 		Mwp.x_aplog = appsts[7];
         Mwp.x_rawreplay = appsts[8];
+		Mwp.x_mwpset = appsts[9];
+		MwpMenu.set_menu_state(Mwp.window, "mwpset", Mwp.x_mwpset);
 
 		if(Mwp.x_plot_elevations_rb == false) {
 			MWPLog.message(":DBG: No TA for you!\n");

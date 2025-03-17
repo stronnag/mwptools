@@ -740,6 +740,12 @@ namespace Mwp {
 			TTS.say(TTS.Vox.AUDIO_TEST);
 		}
 
+		private void run_mwpset() {
+			var subp = new ProcessLauncher();
+			subp.run_argv({"mwpset"}, 0);
+			subp.complete.connect(() => {});
+		}
+
 		private void run_prefs() {
 			var prefs = new Prefs.Window();
 			prefs.present();
@@ -854,6 +860,7 @@ namespace Mwp {
 				{"followme", Follow.run},
 				{"audio-test", test_audio},
 				{"prefs", run_prefs},
+				{"mwpset", run_mwpset},
 				{"toggle-fs", toggle_fs},
 				{"go-base", go_base},
 				{"go-home", go_home},
