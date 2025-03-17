@@ -37,8 +37,10 @@ namespace Mwpset {
 					for(int i = 0; i < x.keys.length; i++) {
 						if(x.keys.data[i].is_changed) {
 							x.settings.set_value(x.keys.data[i].name, x.keys.data[i].value);
-							var w = find_value_label(i, x.keys.data[i].name) as Gtk.Label;
+							var w = find_value_labels(i, x.keys.data[i].name) as Gtk.Label;
 							if (w != null) {
+								w.remove_css_class("error");
+								w = ((Gtk.Widget)w).get_next_sibling() as Gtk.Label;
 								w.remove_css_class("error");
 							}
 						}
@@ -109,16 +111,15 @@ namespace Mwpset {
 									if (ok) {
 										string rs = x.keys.data[idx].value.print(false);
 										if (rs != parts[1]) {
-											rs = XReader.format_variant(x.keys.data[idx]);
-											var disp = parts[1];
+											var disp = XReader.format_variant(x.keys.data[idx]);
 											if(x.keys.data[idx].type == "d") {
 												var dbl = DStr.strtod(parts[1], null);
 												disp = "%.8g".printf(dbl);
 											}
 											update_row((int)idx, parts[0], disp);
 											if(x.keys.data[idx].type == null) {
-											} else {
 												x.keys.data[idx].value = new Variant.string(parts[1]);
+											} else {
 												var ty = new VariantType(x.keys.data[idx].type);
 												x.keys.data[idx].value = Variant.parse(ty, parts[1]);
 											}
@@ -136,7 +137,7 @@ namespace Mwpset {
 				});;
 		}
 
-		private unowned Gtk.Widget find_value_label(int n, string name) {
+		private unowned Gtk.Widget find_value_labels(int n, string name) {
 			unowned Gtk.Widget? child = null;
 			var lr = lbox.get_row_at_index(n);
 			if(lr != null) {
@@ -147,7 +148,7 @@ namespace Mwpset {
 						child = child.get_next_sibling();
 						var sname = ((Gtk.Label)child).label;
 						if(name == sname) {
-							child = child.get_next_sibling();
+							return child;
 						}
 					}
 				}
@@ -156,8 +157,10 @@ namespace Mwpset {
 		}
 
 		private void update_row(int n, string name, string nvalue) {
-			var w = find_value_label(n, name) as Gtk.Label;
+			var w = find_value_labels(n, name) as Gtk.Label;
 			if (w != null) {
+				w.add_css_class("error");
+				w = ((Gtk.Widget)w).get_next_sibling() as Gtk.Label;
 				w.label = nvalue;
 				w.add_css_class("error");
 			}
