@@ -28,6 +28,7 @@ namespace Mwpset {
         }
 
 		public Window() {
+			title = schm;
 			add_action_entries (ACTION_ENTRIES, this);
 			x = new XReader(schm);
 			x.parse_schema();
