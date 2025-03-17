@@ -109,3 +109,6 @@ Once a suitable value is found:
 On Ventura, the menus may behave strangely, to the point of being almost unusable. This may be mitigated by setting the environment variable `MWP_MAC_NO_NEST` (to anything).
 
 `libsrecret` and other Dbus related services are not available.
+
+
+[mwpset](mwpset.md) is recommended to edit mwp's `gsettinngs`.

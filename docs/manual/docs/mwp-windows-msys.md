@@ -159,6 +159,8 @@ Neither of these locations are cleared by an uninstall.
 	PS C:\Users\win11> gsettings set org.stronnag.mwp smartport-fuel-unit 'mAh'
     ```
 
+You may also the graphical [mwpset](mwpset.md) application to maintain settings.
+
 ## Other
 
 Note that mwp creates and consumes IP services. It may be necessary to ensure that `mwp.exe` is white-listed in the Windows firewall.

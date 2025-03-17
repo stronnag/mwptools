@@ -101,6 +101,7 @@ nav:
       - 'MacOS (Homebrew)' : mwp-macos.md
       - 'Windows (MSys2)' : mwp-windows-msys.md
   - Miscellaneous:
+      - 'mwp Settings Editor' : mwpset.md
       - 'mwp Gsettings' : mwpsettings.md
       - mwp-Power-and-screen-management.md
       - 'UBlox AssistNow' : mwp-assist-now.md
