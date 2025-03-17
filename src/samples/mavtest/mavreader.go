@@ -429,7 +429,7 @@ func (m *MavReader) mav_show() {
 
 			var alt int32
 			alt = int32(binary.LittleEndian.Uint32(m.payload[16:20]))
-			fmt.Printf(" alt (msl,mm): %v\n", alt)
+			fmt.Printf(" alt (msl,mm): %v", alt)
 			fmt.Println()
 
 		case MAVLINK_MSG_SCALED_PRESSURE: // scaled_pressure
@@ -462,12 +462,14 @@ func (m *MavReader) mav_show() {
 		case MAVLINK_MSG_GLOBAL_POSITION_INT:
 			var hdg uint16
 			hdg = binary.LittleEndian.Uint16(m.payload[26:28])
-			fmt.Printf("Gbl Pos: la: %.7f lo: %.7f",
+			fmt.Printf("Gbl Pos: la: %.7f lo: %.7f alt (msl,mm): %v alt (baro,mm): %v  ",
 				float64(int32(binary.LittleEndian.Uint32(m.payload[4:8])))/1e7,
-				float64(int32(binary.LittleEndian.Uint32(m.payload[8:12])))/1e7)
+				float64(int32(binary.LittleEndian.Uint32(m.payload[8:12])))/1e7,
+				int32(binary.LittleEndian.Uint32(m.payload[12:16])),
+				int32(binary.LittleEndian.Uint32(m.payload[16:20])))
 			if hdg != 65535 {
 				hdg /= 100
-				fmt.Printf(" hdg: %v\n", hdg)
+				fmt.Printf(" hdg: %v", hdg)
 			}
 			fmt.Println()
 

@@ -1,11 +1,10 @@
 namespace MessageForward {
-
+	uint8 msg[512];
 	void position() {
-		uint8[]msg;
 		uint8*rp;
 		switch (Mwp.conf.forward) {
 		case Mwp.FWDS.LTM:
-			msg = new uint8[MSize.LTM_GFRAME];
+			msg = {0};
 			rp = SEDE.serialise_i32(msg, (int32)(Mwp.msp.td.gps.lat*1e7));
 			rp = SEDE.serialise_i32(rp, (int32)(Mwp.msp.td.gps.lon*1e7));
 			*rp++ = (uint8)Mwp.msp.td.gps.gspeed;
@@ -16,11 +15,12 @@ namespace MessageForward {
 
 		case Mwp.FWDS.MSP1:
 		case Mwp.FWDS.MSP2:
-			msg = new uint8[MSize.MSP_RAW_GPS]{0};
+			msg = {0};
 			uint8 fix = Mwp.msp.td.gps.fix;
-			msg[0] = fix;
-			msg[1] = Mwp.msp.td.gps.nsats;
-			rp = SEDE.serialise_i32(msg+2, (int32)(Mwp.msp.td.gps.lat*1e7));
+			rp = msg;
+			*rp ++ = fix;
+			*rp++ = Mwp.msp.td.gps.nsats;
+			rp = SEDE.serialise_i32(rp, (int32)(Mwp.msp.td.gps.lat*1e7));
 			rp = SEDE.serialise_i32(rp, (int32)(Mwp.msp.td.gps.lon*1e7));
 			var alt = (int16)Mwp.msp.td.gps.alt;
 			rp = SEDE.serialise_i16(rp, alt);
@@ -29,7 +29,7 @@ namespace MessageForward {
 			SEDE.serialise_u16(rp, (uint16)(Mwp.msp.td.gps.hdop*100));
 			bool v2 = (Mwp.conf.forward !=  Mwp.FWDS.MSP1);
 			Mwp.fwddev.forward_command( Msp.Cmds.RAW_GPS, msg, MSize.MSP_RAW_GPS, v2);
-			msg = new uint8[MSize.MSP_ALTITUDE];
+			msg = {0};
 			rp = SEDE.serialise_i32(msg, (int32)(Mwp.msp.td.alt.alt * 100));
 			rp = SEDE.serialise_i16(rp, (int16)(Mwp.msp.td.alt.vario * 100));
 			Mwp.fwddev.forward_command( Msp.Cmds.ALTITUDE, msg, MSize.MSP_ALTITUDE, v2);
@@ -37,7 +37,6 @@ namespace MessageForward {
 
 		case Mwp.FWDS.MAV1:
 		case Mwp.FWDS.MAV2:
-			msg = new uint8[sizeof(Mav.MAVLINK_GPS_RAW_INT)];
 			msg = {0};
 			var now = new DateTime.now_utc();
 			int64 ms = now.to_unix()*1000;
@@ -56,6 +55,19 @@ namespace MessageForward {
 			*rp++ = Mwp.msp.td.gps.nsats;
 			var msize = (intptr)rp - (intptr)msg;
 			Mwp.fwddev.forward_mav(cmd_to_ucmd(Msp.Cmds.MAVLINK_MSG_GPS_RAW_INT), msg, msize, (Mwp.conf.forward == Mwp.FWDS.MAV1) ? 1 : 2);
+			msg = {0};
+			rp = SEDE.serialise_u32(msg, (uint32)(Mwp.duration*1000)); // fixme;
+			rp = SEDE.serialise_i32(rp, (int32)(Mwp.msp.td.gps.lat*1e7));
+			rp = SEDE.serialise_i32(rp, (int32)(Mwp.msp.td.gps.lon*1e7));
+			rp = SEDE.serialise_i32(rp, (int32)(alt)); // GPS
+			alt = (int32)(1000*Mwp.msp.td.alt.alt);
+			rp = SEDE.serialise_i32(rp, (int32)(alt)); // Baro
+			rp = SEDE.serialise_u16(rp, 0);
+			rp = SEDE.serialise_u16(rp, 0);
+			rp = SEDE.serialise_u16(rp, 0);
+			rp = SEDE.serialise_i16(rp, (int16)(100*Mwp.msp.td.atti.yaw));
+			msize = (intptr)rp - (intptr)msg;
+			Mwp.fwddev.forward_mav(cmd_to_ucmd(Msp.Cmds.MAVLINK_MSG_GPS_GLOBAL_INT), msg, msize, (Mwp.conf.forward == Mwp.FWDS.MAV1) ? 1 : 2);
 			break;
 
 		default:
@@ -64,25 +76,23 @@ namespace MessageForward {
 	}
 
 	void attitude() {
-		uint8[]msg;
 		uint8*rp;
 		switch (Mwp.conf.forward) {
 		case Mwp.FWDS.LTM:
-			msg = new uint8[MSize.LTM_AFRAME]{0};
+			msg = {0};
 			int16 roll = (int16)Mwp.msp.td.atti.angx;
 			if(roll > 180) {
 				roll -=360;
 			}
 			rp = SEDE.serialise_i16(msg, (int16)(-Mwp.msp.td.atti.angy));
 			rp = SEDE.serialise_i16(rp,-roll);
-
 			SEDE.serialise_i16(rp, (int16)Mwp.msp.td.atti.yaw);
 			Mwp.fwddev.forward_ltm('A', msg, MSize.LTM_AFRAME);
 			break;
 
 		case Mwp.FWDS.MSP1:
 		case Mwp.FWDS.MSP2:
-			msg = new uint8[MSize.MSP_ATTITUDE];
+			msg = {0};
 			int16 atx = (int16)( -Mwp.msp.td.atti.angx);
 			if (atx > 180) {
 				atx -= 360;
@@ -100,6 +110,7 @@ namespace MessageForward {
 
 		case Mwp.FWDS.MAV1:
 		case Mwp.FWDS.MAV2:
+			msg = {0};
 			Mav.MAVLINK_ATTITUDE m = {0};
 			float f;
 			f = Mwp.mhead;
@@ -119,11 +130,10 @@ namespace MessageForward {
 	}
 
 	void status() {
-		uint8[]msg;
 		uint8*rp;
 		switch (Mwp.conf.forward) {
 		case Mwp.FWDS.LTM:
-			msg = new uint8[MSize.LTM_SFRAME];
+			msg = {0};
 			rp = SEDE.serialise_u16(msg, (uint16)(Mwp.msp.td.power.volts*1000));
 			rp = SEDE.serialise_u16(rp, (uint16)(Mwp.msp.td.power.mah));
 			*rp++ =  Mwp.msp.td.rssi.rssi*255/1023;
@@ -133,21 +143,22 @@ namespace MessageForward {
 			break;
 
 		case Mwp.FWDS.MSP1:
-			msg = new uint8[MSize.MSP_STATUS];
+			msg = {0};
 			rp = SEDE.serialise_u16(msg, 0);
 			rp = SEDE.serialise_u16(rp, 0);
 			rp = SEDE.serialise_u16(rp, Mwp.xsensor);
-			rp = SEDE.serialise_u32(msg, (uint32)(Mwp.msp.td.state.state &1));
+			rp = SEDE.serialise_u32(rp, (uint32)(Mwp.msp.td.state.state &1));
 			Mwp.fwddev.forward_command( Msp.Cmds.STATUS, msg, MSize.MSP_STATUS);
-			msg = new uint8[MSize.MSP_ANALOG];
-			msg[0] = (uint8)((Mwp.msp.td.power.volts+0.05)*10);
-			rp = SEDE.serialise_u16(msg+1, (uint16)(Mwp.msp.td.power.mah));
+			msg = {0};
+			rp = msg;
+			*rp++ = (uint8)((Mwp.msp.td.power.volts+0.05)*10);
+			rp = SEDE.serialise_u16(rp, (uint16)(Mwp.msp.td.power.mah));
 			rp = SEDE.serialise_u16(rp, (uint16)Mwp.msp.td.rssi.rssi);
 			rp = SEDE.serialise_u16(rp, 0);
 			Mwp.fwddev.forward_command( Msp.Cmds.ANALOG, msg, MSize.MSP_ANALOG);
 			break;
 		case Mwp.FWDS.MSP2:
-			msg = new uint8[MSize.MSP2_INAV_STATUS];
+			msg = {0};
 			rp = SEDE.serialise_u16(msg, 0);
 			rp = SEDE.serialise_u16(rp, 0);
 			rp = SEDE.serialise_u16(rp, Mwp.xsensor);  // sensor status ...
@@ -186,16 +197,16 @@ namespace MessageForward {
 			rp = SEDE.serialise_u32(rp, (uint32) (f0 >> 32));
 			*rp = 0;
 			Mwp.fwddev.forward_command(Msp.Cmds.INAV_STATUS, msg, MSize.MSP2_INAV_STATUS, true);
-			msg = new uint8[MSize.MSP_ANALOG2]{0};
-			SEDE.serialise_u16(msg+1, (uint16)Mwp.msp.td.power.volts*100);
-			SEDE.serialise_u16(msg+9, (uint16)Mwp.msp.td.power.mah);
-			SEDE.serialise_u16(msg+22, (uint16)Mwp.msp.td.rssi.rssi);
+			msg = {0};
+			SEDE.serialise_u16(&msg[1], (uint16)Mwp.msp.td.power.volts*100);
+			SEDE.serialise_u16(&msg[9], (uint16)Mwp.msp.td.power.mah);
+			SEDE.serialise_u16(&msg[22], (uint16)Mwp.msp.td.rssi.rssi);
 			Mwp.fwddev.forward_command( Msp.Cmds.ANALOG2, msg, MSize.MSP_ANALOG2, true);
 			break;
 
 		case Mwp.FWDS.MAV1:
 		case Mwp.FWDS.MAV2:
-			msg = new uint8[sizeof(Mav.MAVLINK_SYS_STATUS)]{0};
+			msg = {0};
 			uint32 flag = 0; // fixme
 			rp = SEDE.serialise_u32(msg, flag); // sensors, fixme, maybe
 			rp = SEDE.serialise_u32(rp, 0);
@@ -209,7 +220,7 @@ namespace MessageForward {
 			*rp++ = 0;
 			var msize = (intptr)rp - (intptr)msg;
 			Mwp.fwddev.forward_mav(cmd_to_ucmd(Msp.Cmds.MAVLINK_MSG_ID_SYS_STATUS), msg, msize, (Mwp.conf.forward == Mwp.FWDS.MAV1) ? 1 : 2);
-			msg = new uint8[sizeof(Mav.MAVLINK_RC_CHANNELS)]{0};
+			msg = {0};
 			msg[21] =  (uint8)(Mwp.msp.td.rssi.rssi*100/1023);
 			Mwp.fwddev.forward_mav(cmd_to_ucmd(Msp.Cmds.MAVLINK_MSG_RC_CHANNELS), msg, 22, (Mwp.conf.forward == Mwp.FWDS.MAV1) ? 1 : 2);
 			break;
@@ -220,11 +231,10 @@ namespace MessageForward {
 	}
 
 	void origin() {
-		uint8[]msg;
 		uint8*rp;
 		switch (Mwp.conf.forward) {
 		case Mwp.FWDS.LTM:
-			msg = new uint8[MSize.LTM_OFRAME];
+			msg = {0};
 			rp = SEDE.serialise_i32(msg, (int32)(Mwp.msp.td.origin.lat*1e7));
 			rp = SEDE.serialise_i32(rp, (int32)(Mwp.msp.td.origin.lon*1e7));
 			rp = SEDE.serialise_i32(rp, (int32)(Mwp.msp.td.origin.alt*1e2));
@@ -235,7 +245,7 @@ namespace MessageForward {
 
 		case Mwp.FWDS.MSP1:
 		case Mwp.FWDS.MSP2:
-			msg = new uint8[MSize.MSP_WP];
+			msg = {0};
 			rp = msg;
 			*rp++ = 0;
 			*rp++ = Msp.Action.WAYPOINT;
@@ -252,7 +262,7 @@ namespace MessageForward {
 
 		case Mwp.FWDS.MAV1:
 		case Mwp.FWDS.MAV2:
-			msg = new uint8[sizeof(Mav.MAVLINK_GPS_GLOBAL_ORIGIN)];
+			msg = {0};
 			rp = SEDE.serialise_i32(msg, (int32)(Mwp.msp.td.origin.lat*1e7));
 			rp = SEDE.serialise_i32(rp, (int32)(Mwp.msp.td.origin.lon*1e7));
 			rp = SEDE.serialise_i32(rp, (int32)(Mwp.msp.td.origin.alt*1e3));

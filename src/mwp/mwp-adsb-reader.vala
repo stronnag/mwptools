@@ -33,6 +33,7 @@ public class ADSBReader :Object {
 	public  string suffix;
 	private int id;
 	private Cancellable can;
+	private int ecount;
 
 	static int instance = 0;
 
@@ -40,6 +41,7 @@ public class ADSBReader :Object {
 		id = instance;
 		instance++;
 		interval = 1000;
+		ecount = 0;
 		can = new Cancellable();
 	}
 
@@ -175,9 +177,13 @@ public class ADSBReader :Object {
 				var data =  byt.get_data();
 				log_data(data);
 				result(data);
+				ecount = 0;
 				return true;
 			} else {
-				MWPLog.message("ADSB fetch <%s> : %u %s (%u)\n", ahost, msg.status_code, msg.reason_phrase, nreq);
+				if(ecount == 0) {
+					MWPLog.message("ADSB fetch <%s> : %u %s (%u)\n", ahost, msg.status_code, msg.reason_phrase, nreq);
+				}
+				ecount++;
 				result(null);
 				return false;
 			}
@@ -185,7 +191,10 @@ public class ADSBReader :Object {
 			if (can.is_cancelled()) {
 				can.reset();
 			}
-			MWPLog.message("ADSB fetch <%s> : %s\n", ahost, e.message);
+			if(ecount == 0) {
+				MWPLog.message("ADSB fetch <%s> : %s\n", ahost, e.message);
+			}
+			ecount++;
 			result(null);
 			return false;
 		}
