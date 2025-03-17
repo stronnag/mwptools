@@ -220,8 +220,9 @@ namespace MessageForward {
 			var msize = (intptr)rp - (intptr)msg;
 			Mwp.fwddev.forward_mav(cmd_to_ucmd(Msp.Cmds.MAVLINK_MSG_ID_SYS_STATUS), msg, msize, (Mwp.conf.forward == Mwp.FWDS.MAV1) ? 1 : 2);
 			msg = {0};
-			msg[21] =  (uint8)(Mwp.msp.td.rssi.rssi*100/1023);
-			Mwp.fwddev.forward_mav(cmd_to_ucmd(Msp.Cmds.MAVLINK_MSG_RC_CHANNELS), msg, 22, (Mwp.conf.forward == Mwp.FWDS.MAV1) ? 1 : 2);
+			rp = SEDE.serialise_u32(msg, (uint32)(Mwp.duration*1000)); // fixme;
+			msg[41] =  (uint8)(Mwp.msp.td.rssi.rssi*100/1023);
+			Mwp.fwddev.forward_mav(cmd_to_ucmd(Msp.Cmds.MAVLINK_MSG_RC_CHANNELS), msg, 42, (Mwp.conf.forward == Mwp.FWDS.MAV1) ? 1 : 2);
 			break;
 
 		default:

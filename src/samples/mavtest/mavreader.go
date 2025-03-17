@@ -101,6 +101,7 @@ const (
 	MAVLINK_MSG_GLOBAL_POSITION_INT = 33
 	MAVLINK_MSG_RC_CHANNELS_RAW     = 35
 	MAVLINK_MSG_GPS_GLOBAL_ORIGIN   = 49
+	MAVLINK_MSG_RC_CHANNELS         = 65
 	MAVLINK_MSG_VFR_HUD             = 74
 	MAVLINK_MSG_RADIO_STATUS        = 109
 	MAVLINK_MSG_BATTERY_STATUS      = 147
@@ -482,6 +483,9 @@ func (m *MavReader) mav_show() {
 				binary.LittleEndian.Uint16(m.payload[10:12]),
 				m.payload[21])
 
+		case MAVLINK_MSG_RC_CHANNELS:
+			fmt.Printf("RC chans rssi: %d\n", m.payload[41])
+
 		case MAVLINK_MSG_GPS_GLOBAL_ORIGIN:
 			fmt.Printf("Origin: la: %.7f lo: %.7f alt (msl,mm): %d\n",
 				float64(int32(binary.LittleEndian.Uint32(m.payload[0:4])))/1e7,
@@ -581,6 +585,7 @@ func (m *MavReader) load_meta() {
 		MAVLINK_MSG_GLOBAL_POSITION_INT: {"mavlink_msg_global_position_int", 28},
 		MAVLINK_MSG_RC_CHANNELS_RAW:     {"mavlink_msg_rc_channels_raw", 22},
 		MAVLINK_MSG_GPS_GLOBAL_ORIGIN:   {"mavlink_msg_gps_global_origin", 16},
+		MAVLINK_MSG_RC_CHANNELS:         {"mavlink_msg_rc_channels", 42},
 		MAVLINK_MSG_VFR_HUD:             {"mavlink_msg_vfr_hud", 20},
 		MAVLINK_MSG_RADIO_STATUS:        {"mavlink_msg_radio_status", 9},
 		MAVLINK_MSG_ID_RADIO:            {"mavlink_msg_id_radio", 9},
