@@ -751,6 +751,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#mwpcss" class="md-nav__link">
+    <span class="md-ellipsis">
+      mwp.css
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#voltscss" class="md-nav__link">
     <span class="md-ellipsis">
       volts.css
@@ -1690,6 +1699,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#mwpcss" class="md-nav__link">
+    <span class="md-ellipsis">
+      mwp.css
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#voltscss" class="md-nav__link">
     <span class="md-ellipsis">
       volts.css
@@ -2030,8 +2048,10 @@ Password: *************************************************
 }
 </code></pre>
 <p>See also <a href="../Black-Ops/#custom-tile">anonymous maps</a> to customise the "black tile". The <code>spawn</code> stanza uses a proxy for non-TMS formats (see <code>mwptools/src/qproxy</code> for some examples).</p>
+<h2 id="mwpcss"><code>mwp.css</code><a class="headerlink" href="#mwpcss" title="Permanent link">#</a></h2>
+<p><code>mwp.css</code> contains alternate CSS themeing for the application. It is largely a placeholder, and just defines the <code>monospace</code> font. An example file is provided as <code>&lt;PREFIX&gt;/share/mwp/mwp.css</code> which can be copied into <code>~/.config/mwp/</code> if modifications are required (i.e. also set <code>font-size</code>, especially on Windows where it's too large (in the developer's opinion)).</p>
 <h2 id="voltscss"><code>volts.css</code><a class="headerlink" href="#voltscss" title="Permanent link">#</a></h2>
-<p><code>vol.css</code> contains alternate CSS themeing for the battery voltage dock item that may work better on dark desktop themes. An example file is provided as <code>mwp/vcol.css</code> which can be copied into <code>.config/mwp/</code>.</p>
+<p><code>vol.css</code> contains alternate CSS themeing for the battery voltage dock item that may work better on dark desktop themes. An default file is provided as <code>&lt;PREFIX&gt;/share/mwp/mwp/vcol.css</code> which can be copied into <code>~/.config/mwp/</code> if modifications are required.</p>
 <h2 id="places"><code>places</code><a class="headerlink" href="#places" title="Permanent link">#</a></h2>
 <p>The <code>places</code> (<code>~/.config/mwp/places</code>) file is a delimited (CSV) file that defines a list of "shortcut" home locations used by the "View / Centre on Position ..." menu item. It consists of a Name, Latitude, Longitude and optionally zoom level, separated by a <code>TAB</code>,<code>|</code>,<code>:</code> or <code>;</code>. Note that positions may be localised in the file and thus <code>.</code> is no longer recognised as a field separator.</p>
 <p>Example <code>places</code></p>
