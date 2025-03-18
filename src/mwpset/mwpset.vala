@@ -122,7 +122,7 @@ namespace Mwpset {
 										}
 										if (rs != disp) {
 											update_row((int)idx, parts[0], disp);
-											if(x.keys.data[idx].type == null) {
+											if(x.keys.data[idx].type == null || x.keys.data[idx].type == "s") {
 												x.keys.data[idx].value = new Variant.string(disp);
 											} else {
 												var ty = new VariantType(x.keys.data[idx].type);
