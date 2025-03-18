@@ -206,6 +206,9 @@ namespace Mwpset {
 		private void run_edit(int i) {
 			var ew = new EditWindow(this);
 			ew.changed.connect((s) => {
+					if (x.keys.data[i].type == "as" && (s == null || s == "")) {
+						s="[]";
+					}
 					update_row(i, x.keys.data[i].name, s);
 					set_value_from_string(i, s);
 					x.keys.data[i].is_changed = true;
