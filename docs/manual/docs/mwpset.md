@@ -69,3 +69,5 @@ When settings are restored, any changed settings  compared to the current values
 Any floating point numbers will be displayed using either point or comma as the radix point according to the user's locale. Floating point numbers should be edited using the locale specific radix.
 
 The backup file is a `dconf` compatible `.ini` file. This is always written with a "point" radix and should not changed.
+
+Backup files are portable between machines / operating systems and may be used to transfer settings between machines.

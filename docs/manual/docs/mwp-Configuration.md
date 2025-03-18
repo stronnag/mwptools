@@ -261,7 +261,7 @@ The full list of settings is maintained in a [separate article](mwpsettings.md),
 
 ### Replicating gsettings between machines or users
 
-The standard system `dconf` application can be used to back up and restore the above `gsettings`.
+Either [mwpset](mwpset.md) or the standard system `dconf` application can be used to back up and restore the above `gsettings`.
 To backup the settings:
 
     dconf dump /org/stronnag/mwp  >/tmp/mwp-dconf.txt

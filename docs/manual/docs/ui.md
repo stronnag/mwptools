@@ -29,9 +29,9 @@ The following tables summarise the available menu options. Where usage is not ob
 | ----                                         | -----                                                                                                                                                         |
 | Open Mission                                 | Offers a dialog to [open a mission file](inav-4.0-multi-missions.md#open-mission-file)                                                                           |
 | Append Mission file                          | [Appends a mission](inav-4.0-multi-missions.md#append-mission-file) to the current mission set (creates a multi-mission element)                                                                                    |
-| CLI File | Loads [CLI artefacts](running.md#cli-files) from a CLI File |
 | Save Mission                                 | Saves the mission to the current mission file, overwriting any extant content                                                                                 |
 | Save Mission As                              | Saves the mission to a user selected file. For a [multi-mission](inav-4.0-multi-missions.md#save-as-mission-file) the user can choose not to save specified mission segments.                                                                                                                     |
+| CLI File | Loads [CLI artefacts](running.md#cli-files) from a CLI File |
 | Download Mission from FC                     | [Downs a (multi-) mission](inav-4.0-multi-missions.md#upload-download-menu-options) from the flight controller                                                                                                           |
 | Upload Mission to FC > Upload Active Mission | [Uploads the current mission segment](inav-4.0-multi-missions.md#upload-download-menu-options) to the flight controller                                                                                                  |
 | Upload Mission to FC > Upload All Missions   | [Uploads all mission segments](inav-4.0-multi-missions.md#upload-download-menu-options) to the flight controller                                                                                                         |
@@ -46,6 +46,7 @@ The following tables summarise the available menu options. Where usage is not ob
 | Static Overlay > Remove                      | Removes a loaded KML file from the display                                                                                                                    |
 | Geozones                                   | Invokes the {{inav }} [Geozones editor](mwp-geozones.md)                                                                                                |
 | Safe Homes                                   | Invokes the {{inav }} [safe-home editor](mwp-safehomes-editor.md)                                                                                                |
+| UBlox Assist Now | Invokes the Assist Now dialog (download / store / restore / upload GPS data |
 | Quit                                         | Cleanly quits the application, saving the display layout                                                                                                      |
 
 ### Edit Menu
@@ -54,6 +55,7 @@ The following tables summarise the available menu options. Where usage is not ob
 | ---- | ----- |
 | Set FollowMe Point | Displays the [Follow Me](mwp-follow-me.md) dialogue |
 | Preferences | Displays the [preferences](misc-ui-elements.md#preferences) dialogue |
+| All Settings | Runs [mwpset](mwpset.md) providing access to all of mwp's [`gsettings`](mwp-Configuration.md/#dconf-gsettings) |
 | Survey / Area Planner | Invokes the [area-planner](mwp-area-planner.md) to generate search or survey plans as a mission.
 | Mission Manager | Display the multi-mission dialogue to remove segments from a multi-mission |
 | CLI serial terminal | Displays the {{ inav }} CLI using the current connection |
@@ -69,12 +71,14 @@ The following tables summarise the available menu options. Where usage is not ob
 | Zoom to Mission | Zooms the map to the currently loaded mission |
 | Set location as default | Sets the current location as the default (startup) location |
 | Centre on position ... | Shows the ["Centre on Position" selector and "favourite places" editor"](misc-ui-elements.md#favourite-places) |
+| Measure Distance | Invokes the distance measurement tool |
 | GPS Statistics | Displays FC GPS status (rate, packets, errors, timeouts, HDOP/EPV/EPH) |
 | Radar View | Displays the [Radar (inav radar / ADS-B) view](mwp-Radar-View.md) |
 | Radar Devices| Configure the [Radar (inav radar / ADS-B) devices](mwp-Radar-View.md) |
 | Telemetry Tracker | Displays the [Telemetry Tracker UI](mwp-telemetry-tracker.md) |
 | Flight Statistics | Display the flight statistic dialogue (also automatic on disarm) |
 | Video Stream | Opens the (live) video stream window |
+| ADSB altitude legend | Toggles display of the ADSB altitude legend |
 | GCS Location | Displays the indicative [GCS location icon](gcs-features.md#gcs-location-icon) |
 
 ### Help Menu
@@ -108,8 +112,6 @@ The **Device** drop-down offers detected and pre-set (**Preferences**) devices f
 The **Protocol Selection** drop-down (showing **Auto** in the reference image) allows the user to provide a hint as to communication protocols available on **Device**. These are further described in the [Device and Protocol definition](mwp-multi-procotol.md) article.
 
 The **Connect / Disconnect** button connects / disconnects the displayed device.
-
-The **auto** button causes {{ mwp }} to automatically attempt to connect to the nominated device.
 
 ## Side Bar Visibility (4)
 

@@ -237,7 +237,7 @@ When a telemetry message via MSP, LTM or MAVlink is received that matches one of
 Caveat:
 
 * The association between an incoming message, its "capability" and the appropriate outgoing message(s) is necessarily "fuzzy"; not all data in one message protocol can be represented in a different message protocol
-* Simple cases e.g. receiving MSPv2 and forwarding to an antenna or head tracker that uses a different protocol (`LTM`, `MSP1`, `MAV1`, `MAV2`) should be satisfactory, as a tracker doesn't require much information.
+* Simple cases e.g. receiving MSPv2 and forwarding to an antenna or head tracker that uses a different protocol (`LTM`, `MSP1`, `MAV1`, `MAV2`) should be satisfactory, as a tracker doesn't require that much information.
 * Forwarding translated data to another GCS will most likely result in a degraded view on the consumer GCS.
 
 Other Notes:
