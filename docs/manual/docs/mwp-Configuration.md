@@ -174,9 +174,13 @@ Here is an example `mwptools/src/samples/sources.json`.
 
 See also [anonymous maps](Black-Ops.md#custom-tile) to customise the "black tile". The `spawn` stanza uses a proxy for non-TMS formats (see `mwptools/src/qproxy` for some examples).
 
+## `mwp.css`
+
+`mwp.css` contains alternate CSS themeing for the application. It is largely a placeholder, and just defines the `monospace` font. An example file is provided as `<PREFIX>/share/mwp/mwp.css` which can be copied into `~/.config/mwp/` if modifications are required (i.e. also set `font-size`, especially on Windows where it's too large (in the developer's opinion)).
+
 ## `volts.css`
 
-`vol.css` contains alternate CSS themeing for the battery voltage dock item that may work better on dark desktop themes. An example file is provided as `mwp/vcol.css` which can be copied into `.config/mwp/`.
+`vol.css` contains alternate CSS themeing for the battery voltage dock item that may work better on dark desktop themes. An default file is provided as `<PREFIX>/share/mwp/mwp/vcol.css` which can be copied into `~/.config/mwp/` if modifications are required.
 
 ## `places`
 

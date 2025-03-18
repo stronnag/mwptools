@@ -191,6 +191,14 @@ namespace Mwp {
 
 			Mwp.window = this;
 			Mwp.toaster = toaster;
+
+			var provider = new Gtk.CssProvider ();
+			string cssfile = MWPUtils.find_conf_file("mwp.css");
+			if(cssfile != null) {
+				MWPLog.message("Loaded %s\n", cssfile);
+				provider.load_from_file(File.new_for_path(cssfile));
+				Gtk.StyleContext.add_provider_for_display(Gdk.Display.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
+			}
 			bool winit = false;
 			ulong active_id = 0;
 			active_id = this.notify["is-active"].connect(() => {
