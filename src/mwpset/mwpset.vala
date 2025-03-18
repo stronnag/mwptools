@@ -109,19 +109,24 @@ namespace Mwpset {
 									uint idx = 0;
 									var ok = x.keys.find_custom(parts[0], (ArraySearchFunc)XReader.k_search, out idx);
 									if (ok) {
-										string rs = x.keys.data[idx].value.print(false);
-										if (rs != parts[1]) {
-											var disp = XReader.format_variant(x.keys.data[idx]);
-											if(x.keys.data[idx].type == "d") {
-												var dbl = DStr.strtod(parts[1], null);
-												disp = "%.8g".printf(dbl);
+										string rs = XReader.format_variant(x.keys.data[idx]);
+										var disp = parts[1];
+										if(x.keys.data[idx].type == "s" || x.keys.data[idx].type == null) {
+											var n = disp.length;
+											if (n > 1) {
+												disp = disp[1:n-1];
 											}
+										} else if(x.keys.data[idx].type == "d") {
+											var dbl = DStr.strtod(parts[1], null);
+											disp = "%.8g".printf(dbl);
+										}
+										if (rs != disp) {
 											update_row((int)idx, parts[0], disp);
 											if(x.keys.data[idx].type == null) {
-												x.keys.data[idx].value = new Variant.string(parts[1]);
+												x.keys.data[idx].value = new Variant.string(disp);
 											} else {
 												var ty = new VariantType(x.keys.data[idx].type);
-												x.keys.data[idx].value = Variant.parse(ty, parts[1]);
+												x.keys.data[idx].value = Variant.parse(ty, disp);
 											}
 											x.keys.data[idx].is_changed = true;
 										}
