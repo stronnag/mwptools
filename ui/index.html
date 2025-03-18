@@ -1643,16 +1643,16 @@
 <td><a href="../inav-4.0-multi-missions/#append-mission-file">Appends a mission</a> to the current mission set (creates a multi-mission element)</td>
 </tr>
 <tr>
-<td>CLI File</td>
-<td>Loads <a href="../running/#cli-files">CLI artefacts</a> from a CLI File</td>
-</tr>
-<tr>
 <td>Save Mission</td>
 <td>Saves the mission to the current mission file, overwriting any extant content</td>
 </tr>
 <tr>
 <td>Save Mission As</td>
 <td>Saves the mission to a user selected file. For a <a href="../inav-4.0-multi-missions/#save-as-mission-file">multi-mission</a> the user can choose not to save specified mission segments.</td>
+</tr>
+<tr>
+<td>CLI File</td>
+<td>Loads <a href="../running/#cli-files">CLI artefacts</a> from a CLI File</td>
 </tr>
 <tr>
 <td>Download Mission from FC</td>
@@ -1711,6 +1711,10 @@
 <td>Invokes the <a href="https://github.com/iNavFlight/inav">INAV</a> <a href="../mwp-safehomes-editor/">safe-home editor</a></td>
 </tr>
 <tr>
+<td>UBlox Assist Now</td>
+<td>Invokes the Assist Now dialog (download / store / restore / upload GPS data</td>
+</tr>
+<tr>
 <td>Quit</td>
 <td>Cleanly quits the application, saving the display layout</td>
 </tr>
@@ -1732,6 +1736,10 @@
 <tr>
 <td>Preferences</td>
 <td>Displays the <a href="../misc-ui-elements/#preferences">preferences</a> dialogue</td>
+</tr>
+<tr>
+<td>All Settings</td>
+<td>Runs <a href="../mwpset/">mwpset</a> providing access to all of mwp's <a href="../mwp-Configuration/#dconf-gsettings"><code>gsettings</code></a></td>
 </tr>
 <tr>
 <td>Survey / Area Planner</td>
@@ -1785,6 +1793,10 @@
 <td>Shows the <a href="../misc-ui-elements/#favourite-places">"Centre on Position" selector and "favourite places" editor"</a></td>
 </tr>
 <tr>
+<td>Measure Distance</td>
+<td>Invokes the distance measurement tool</td>
+</tr>
+<tr>
 <td>GPS Statistics</td>
 <td>Displays FC GPS status (rate, packets, errors, timeouts, HDOP/EPV/EPH)</td>
 </tr>
@@ -1807,6 +1819,10 @@
 <tr>
 <td>Video Stream</td>
 <td>Opens the (live) video stream window</td>
+</tr>
+<tr>
+<td>ADSB altitude legend</td>
+<td>Toggles display of the ADSB altitude legend</td>
 </tr>
 <tr>
 <td>GCS Location</td>
@@ -1849,7 +1865,6 @@
 <p>The <strong>Device</strong> drop-down offers detected and pre-set (<strong>Preferences</strong>) devices for the FC / telemetry port. The device syntax is described the <a href="../mwp-multi-procotol/">Device and Protocol definition</a> chapter.</p>
 <p>The <strong>Protocol Selection</strong> drop-down (showing <strong>Auto</strong> in the reference image) allows the user to provide a hint as to communication protocols available on <strong>Device</strong>. These are further described in the <a href="../mwp-multi-procotol/">Device and Protocol definition</a> article.</p>
 <p>The <strong>Connect / Disconnect</strong> button connects / disconnects the displayed device.</p>
-<p>The <strong>auto</strong> button causes <a href="https://github.com/stronnag/mwptools">mwp</a> to automatically attempt to connect to the nominated device.</p>
 <h2 id="side-bar-visibility-4">Side Bar Visibility (4)<a class="headerlink" href="#side-bar-visibility-4" title="Permanent link">#</a></h2>
 <p>Toggling this button will hide or show the side bar (6).</p>
 <h2 id="map-area-5">Map Area (5)<a class="headerlink" href="#map-area-5" title="Permanent link">#</a></h2>

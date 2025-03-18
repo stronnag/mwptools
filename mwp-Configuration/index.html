@@ -2089,7 +2089,7 @@ $ gsettings set org.stronnag.mwp log-save-path ~/flight-logs/
 <h3 id="gsettings-description">Gsettings Description<a class="headerlink" href="#gsettings-description" title="Permanent link">#</a></h3>
 <p>The full list of settings is maintained in a <a href="../mwpsettings/">separate article</a>, machine generated from the source code.</p>
 <h3 id="replicating-gsettings-between-machines-or-users">Replicating gsettings between machines or users<a class="headerlink" href="#replicating-gsettings-between-machines-or-users" title="Permanent link">#</a></h3>
-<p>The standard system <code>dconf</code> application can be used to back up and restore the above <code>gsettings</code>.
+<p>Either <a href="../mwpset/">mwpset</a> or the standard system <code>dconf</code> application can be used to back up and restore the above <code>gsettings</code>.
 To backup the settings:</p>
 <pre><code>dconf dump /org/stronnag/mwp  &gt;/tmp/mwp-dconf.txt
 </code></pre>
