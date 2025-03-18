@@ -585,7 +585,6 @@ public class WPPopEdit : Adw.Window {
         }
 		var provider = new CssProvider();
 		provider.load_from_string(css);
-		var stylec = w.get_style_context();
-		stylec.add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
+		w.get_style_context().add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
     }
 }

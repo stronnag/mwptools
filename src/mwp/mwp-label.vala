@@ -174,8 +174,7 @@ public class MWPLabel : MWPMarker {
 		provider = new Gtk.CssProvider ();
 		label = new Gtk.Label(txt);
 		label.use_markup = true;
-        var stylec = label.get_style_context();
-		stylec.add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
+        label.get_style_context().add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
 		var fs = Mwp.conf.symbol_scale;
 		if(MwpScreen.has_touch_screen()) {
 			fs *= Mwp.conf.touch_scale;

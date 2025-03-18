@@ -236,9 +236,8 @@ public class MWPPoint: MWPMarker {
 
 	public void set_css_style (string cssstr) {
 		var provider = new Gtk.CssProvider ();
-		var stylec = this.get_style_context();
-		stylec.add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
 		provider.load_from_string(cssstr);
+		this.get_style_context().add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
 		this.add_css_class("map-point");
 	}
 }
