@@ -292,14 +292,13 @@ namespace Mwp {
         have_wp = false;
         buf[0] = wp;
         queue_cmd(Msp.Cmds.WP,buf,1);
-		run_queue();
+		//run_queue();
     }
 
 	void msg_poller() {
         if(msp.available && serstate == SERSTATE.POLLER) {
 			ptdiff = 0.0;
             send_poll();
-			run_queue();
         }
     }
 
@@ -494,16 +493,18 @@ namespace Mwp {
 				}
 			} while (skip);
 
-			if(req == Msp.Cmds.WP)
-                request_wp(0);
-            else if (req != Msp.Cmds.NOOP)
+			if(req == Msp.Cmds.WP) {
+				uint8 buf[1] = {0};
+				queue_cmd(req, buf, 1);
+			} else if (req != Msp.Cmds.NOOP) {
 				queue_cmd(req, null, 0);
+			}
         }
     }
 
     private void reset_poller() {
 		if(msp.available) {
-			MWPLog.message(":DBG: Reset Poller\n");
+			MWPLog.message(":DBG: Reset Poller %s\n", serstate.to_string());
 			if(starttasks == 0) {
 					if(serstate != SERSTATE.NONE && serstate != SERSTATE.TELEM) {
 					if(nopoll == false) { // FIXNOPOLL

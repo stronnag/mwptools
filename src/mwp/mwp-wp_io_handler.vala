@@ -303,6 +303,7 @@ namespace Mwp {
 
 	public void pause_poller(SERSTATE s) {
 		if (msp.available) {
+			MWPLog.message(":DBG: Pause poller %s\n", s.to_string());
 			serstate = s;
 			mq.clear();
 		}
