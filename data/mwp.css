@@ -1,3 +1,11 @@
+/*
+ * Mwp theming css file sourced at startup
+ * Copy this file ro ~/.config/mwp/ (Windows: %LOCALAPPDATA%\mwp\) and uncomment / edit / add as required to override Gtk theme elements.
+ */
+
+/* For example, custom  monospace font / size
 .monospace {
     font-family: Monospace;
+    font-size: 10pt;
 }
+*/

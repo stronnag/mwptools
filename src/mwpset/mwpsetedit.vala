@@ -127,7 +127,23 @@ namespace Mwpset {
 			}
 			if(sb.str.length > 0) {
 				have_range = true;
-				setgrid.attach (new Gtk.Label(sb.str), 1, RROW);
+				var l1 = new Gtk.Label(sb.str);
+				l1.xalign = 0;
+				setgrid.attach (l1, 1, RROW);
+				var l0 = new Gtk.Label("<b>Range:</b>");
+				l0.use_markup = true;
+				l0.xalign = 0;
+				setgrid.attach (l0, 0, RROW);
+			} else if(k.type == "as") {
+				var l0 = new Gtk.Label("<b>Array format:</b>");
+				l0.use_markup = true;
+				l0.xalign = 0;
+				setgrid.attach (l0, 0, RROW);
+				var l1 = new Gtk.Label( "<b><tt>['item1','item2','itemN']</tt></b>. Brackets, commas, quotes are required. <b><tt>[]</tt></b> denotes empty array");
+				l1.xalign = 0;
+				l1.use_markup = true;
+				l1.wrap = true;
+				setgrid.attach (l1, 1, RROW);
 			}
 
 			appset.clicked.connect(() => {
