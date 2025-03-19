@@ -176,7 +176,7 @@ See also [anonymous maps](Black-Ops.md#custom-tile) to customise the "black tile
 
 ## `mwp.css`
 
-`mwp.css` contains alternate CSS themeing for the application. It is largely a placeholder, and just defines the `monospace` font. An example file is provided as `<PREFIX>/share/mwp/mwp.css` which can be copied into `~/.config/mwp/` if modifications are required (i.e. also set `font-size`, especially on Windows where it's too large (in the developer's opinion)).
+`mwp.css` contains alternate CSS themeing for the application. An example file is provided as `<PREFIX>/share/mwp/mwp.css` which can be copied into `~/.config/mwp/` if modifications are required (i.e. override the `Monospace` font, especially on Windows where it's too large and ugly (in the developer's opinion)).
 
 ## `volts.css`
 

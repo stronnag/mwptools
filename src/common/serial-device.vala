@@ -765,7 +765,6 @@
 		 state = States.S_HEADER;
 		 msgq = new AsyncQueue<INAVEvent?>();
 		 td = {};
-		 MWPLog.message(":DBG: Setup reader %d %d\n", fd, wrfd);
 #if WINDOWS
 		 if((commode & ComMode.TTY) != 0) {
 			 can = new Cancellable();
@@ -822,13 +821,11 @@
 									 IOCondition.ERR|
 									 IOCondition.NVAL, (chan, cond) => {
 										 if(cond == 0) {
-											 MWPLog.message(":DBG: UDP zero condition %s\n", cond.to_string());
 											 return true;
 										 }
 
 										 var acond = cond & ~IOCondition.IN;
 										 if (acond != 0) {
-											 MWPLog.message(":DBG: UFetch close on %s\r\n", acond.to_string());
 											 serial_lost();
 											 return false;
 										 }
@@ -853,7 +850,6 @@
 											 process_input(sz);
 											 return true;
 										 } catch (Error e) {
-											 MWPLog.message(":DBG: UDP recv_from: %s\r\n", e.message);
 											 serial_lost();
 											 return false;
 										 }
@@ -1248,7 +1244,6 @@
 			 slcid = 0;
 		 }
 
-		 MWPLog.message(":DBG: clearup %s\r\n", devname);
 		 try {
 			 if (ComMode.TTY in commode) {
 				 MwpSerial.close(fd);
