@@ -23,6 +23,7 @@ namespace Mwp {
     private uint8 last_wp_pts =0;
 	private uint upltid;
 	private uint timeo;
+	private uint8 mleave = 0;
 
     private void remove_tid(ref uint tid) {
         if(tid > 0)
@@ -209,6 +210,7 @@ namespace Mwp {
 		} else {
             Mwp.window.validatelab.set_text("WP:%3d".printf(w.wp_no));
 			request_wp(w.wp_no+1);
+			//MWPLog.message(":DBG: Request WP %d\n", w.wp_no+1);
 		}
 	}
 
@@ -224,6 +226,7 @@ namespace Mwp {
 		rwp = (wpi.wp_count > 0) ? wpi.wp_count : wp_max;
 		timeo = 1500+(rwp*1000);
 		start_wp_timer(timeo);
+        wpmgr.wp_flag |= WPDL.ACTIVE;
 		MWPLog.message("Start download for %d WP\n", rwp);
 		request_wp(1);
 	}
@@ -303,9 +306,14 @@ namespace Mwp {
 
 	public void pause_poller(SERSTATE s) {
 		if (msp.available) {
-			MWPLog.message(":DBG: Pause poller %s\n", s.to_string());
-			//serstate = s;
-			//mq.clear();
+			if (Mwp.conf.no_poller_pause) {
+				MWPLog.message(":DBG: Poller state %s\n", s.to_string());
+				mleave = 1;
+			} else {
+				MWPLog.message(":DBG: Pause poller %s\n", s.to_string());
+				serstate = s;
+				mq.clear();
+			}
 		}
 	}
 

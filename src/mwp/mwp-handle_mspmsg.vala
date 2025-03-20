@@ -1726,7 +1726,6 @@ namespace Mwp {
 		run_queue();
 	}
 
-
 	private void reset_gzvertex(bool has_vertex) {
 		reset_poller();
 		if (has_vertex) {

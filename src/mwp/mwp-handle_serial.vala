@@ -292,6 +292,7 @@ namespace Mwp {
         have_wp = false;
         buf[0] = wp;
         queue_cmd(Msp.Cmds.WP,buf,1);
+		//		run_queue();
     }
 
 	void msg_poller() {
@@ -502,20 +503,25 @@ namespace Mwp {
     }
 
     private void reset_poller() {
+		mleave = 0;
 		if(msp.available) {
-			MWPLog.message(":DBG: Reset Poller %s\n", serstate.to_string());
-			if(starttasks == 0) {
+			if(Mwp.conf.no_poller_pause) {
+				MWPLog.message(":DBG: Clear poller state %s\n", serstate.to_string());
+			} else {
+				MWPLog.message(":DBG: Reset Poller %s\n", serstate.to_string());
+				if(starttasks == 0) {
 					if(serstate != SERSTATE.NONE && serstate != SERSTATE.TELEM) {
-					if(nopoll == false) { // FIXNOPOLL
-						lastok = lastrx = last_gps = nticks;
-						tcycle = 0;
-						serstate = SERSTATE.POLLER;
-						msg_poller();
+						if(nopoll == false) { // FIXNOPOLL
+							lastok = lastrx = last_gps = nticks;
+							tcycle = 0;
+							serstate = SERSTATE.POLLER;
+							msg_poller();
+						}
 					}
 				}
 			}
 		}
-    }
+	}
 
 	public void telem_init(Msp.Cmds cmd) {
 		if ((Mwp.replayer & Mwp.Player.MWP) == 0) {
@@ -647,23 +653,40 @@ namespace Mwp {
 			}
         }
 
-        if(mq.is_empty() && serstate == SERSTATE.POLLER) {
-            if (requests.length > 0) {
-				var et = lastp.elapsed();
-				var twait = (uint)(1000*(et-ptdiff));
-				if (twait < Mwp.MSP_WAITMS) {
-					twait = Mwp.MSP_WAITMS - twait;
-					Timeout.add(twait, () => { next_poll();return false;});
-				} else {
-					next_poll();
-				}
-				acycle += twait;
-				anvals++;
+		if(serstate == SERSTATE.POLLER) {
+			if(mleave == 1 && !mq.is_empty()) {
+				mleave = 2;
+				// MWPLog.message(":DBG: 1 Interleaved %s %u => QUE\n", cmd.format(), raw[0]);
+				run_queue();
+			} else if (mleave == 2) {
+				// MWPLog.message(":DBG: 2 Interleaved %s %u => POLL\n", cmd.format(), raw[0]);
+				timed_poll();
+				mleave = 1;
+			} else if(!mq.is_empty()) {
+				run_queue();
+			} else {
+				timed_poll();
 			}
-		} else {
+		} else if(!mq.is_empty()) {
 			run_queue();
 		}
+
     }
+
+	private void timed_poll() {
+		if (requests.length > 0) {
+			var et = lastp.elapsed();
+			var twait = (uint)(1000*(et-ptdiff));
+			if (twait < Mwp.MSP_WAITMS) {
+				twait = Mwp.MSP_WAITMS - twait;
+				Timeout.add(twait, () => { next_poll();return false;});
+			} else {
+				next_poll();
+			}
+			acycle += twait;
+			anvals++;
+		}
+	}
 
 	private void next_poll() {
 		ptdiff = lastp.elapsed();

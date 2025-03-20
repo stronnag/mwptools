@@ -165,6 +165,7 @@ namespace Mwp {
         FOLLOW_ME,
 		SAVE_FWA,
 		REBOOT,
+		ACTIVE,
     }
 
     private struct WPMGR {

@@ -687,5 +687,10 @@
       <default>106</default>
       <description>System ID in the range 2-255 (see &lt;a href=&quot;https://ardupilot.org/dev/docs/mavlink-basics.html#message-format&quot;&gt;MAVlink documentation&lt;/a&gt; and particularly the GCS guidance, 2nd paragraph &lt;i&gt;ibid&lt;/i&gt;)</description>
    </key>
-  </schema>
+   <key name="no-poller-pause" type="b">
+     <summary>Don't pause the MSP poller for bulk transfers</summary>
+     <description>Traditionally, mwp pauses the MSP poller for bulk transfers (WP, Geozone, Safehome). This option allows polling to continue, interleaved with the bulk transfer.</description>
+     <default>false</default>
+   </key>
+ </schema>
 </schemalist>
