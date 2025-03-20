@@ -68,7 +68,7 @@ namespace Mwp {
 				queue_cmd(Msp.Cmds.EEPROM_WRITE,null, 0);
 			}
 		}
-        run_queue();
+		//        run_queue();
     }
 
 	private void set_typlab() {
@@ -1246,6 +1246,8 @@ namespace Mwp {
 				if(id ==Safehome.MAXHOMES-1) {
 					Safehome.manager.reset_fwa();
 					Safehome.manager.set_status(sh_disp);
+					reset_poller();
+					MWPLog.message("Save home d/l done\n");
 				} else {
 					wp_get_approaches(id+1-Safehome.MAXHOMES);
 				}
@@ -1292,6 +1294,7 @@ namespace Mwp {
 			if(safeindex == last_safehome) {
 				if(safeindex <= Safehome.MAXHOMES) {
 					queue_cmd(Msp.Cmds.EEPROM_WRITE,null, 0);
+					reset_poller();
 				} else {
 					wp_set_approaches(safeindex-Safehome.MAXHOMES);
 				}
@@ -1715,7 +1718,6 @@ namespace Mwp {
 	private void queue_gzone(int cnt) {
 		uint8 zb=(uint8)cnt;
 		queue_cmd(Msp.Cmds.GEOZONE, &zb, 1);
-		run_queue();
 	}
 
 	private void queue_gzvertex(int8 nz, int8 nv) {
@@ -1723,7 +1725,6 @@ namespace Mwp {
 		zb[0] = (uint8) nz;
 		zb[1] = (uint8) nv;
 		queue_cmd(Msp.Cmds.GEOZONE_VERTEX, zb, 2);
-		run_queue();
 	}
 
 	private void reset_gzvertex(bool has_vertex) {
@@ -1757,12 +1758,16 @@ namespace Mwp {
 	public void request_fc_safehomes() {
 		last_safehome = Safehome.MAXHOMES;
 		uint8 shid = 0;
+
 		MWPLog.message("Load FC safehomes\n");
+		pause_poller(SERSTATE.MISC_BULK);
 		queue_cmd(Msp.Cmds.SAFEHOME,&shid,1);
 	}
 
 	public void save_safehomes_fc() {
 		safeindex = 0;
+		MWPLog.message("Save FC safehomes\n");
+		pause_poller(SERSTATE.MISC_BULK);
 		msp_publish_home(0);
 	}
 
