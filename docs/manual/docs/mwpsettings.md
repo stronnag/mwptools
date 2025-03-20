@@ -63,6 +63,7 @@
 | mission-meta-tag | Use meta vice mwp in mission file | If true, the legacy 'mwp' tag for optional data in mission files is named 'meta' | false |
 | mission-path | Directory for mission files | Directory for mission files, default / not set = current directory | "" |
 | msp2-adsb | MSP2_ADSB_VEHICLE_LIST usage | Options for requesting MSP2_ADSB_VEHICLE_LIST. "off": never request, "on:" always request, "auto:" heuristic based on serial settings / bandwidth | "off" |
+| no-poller-pause | Don't pause the MSP poller for bulk transfers | Traditionally, mwp pauses the MSP poller for bulk transfers (WP, Geozone, Safehome). This option allows polling to continue, interleaved with the bulk transfer. | false |
 | osd-mode | Data items overlaid on the map OSD | 0 = none, 1 = current WP/Max WP, 2 = next WP distance and course. This is a mask, so 3 means both OSD items. | 3 |
 | p-height | Internal setting |  | 720 |
 | p-is-fullscreen | Internal setting |  | false |
