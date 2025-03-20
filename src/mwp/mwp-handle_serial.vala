@@ -292,7 +292,6 @@ namespace Mwp {
         have_wp = false;
         buf[0] = wp;
         queue_cmd(Msp.Cmds.WP,buf,1);
-		//run_queue();
     }
 
 	void msg_poller() {

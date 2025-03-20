@@ -83,6 +83,7 @@ namespace Mwp {
         NORMAL,
         POLLER,
 		SET_WP,
+		GET_WP,
 		EXTRA_WP,
 		MISC_BULK,
         TELEM,

@@ -218,7 +218,7 @@ namespace Mwp {
 	}
 
 	private void start_download() {
-		pause_poller(SERSTATE.NORMAL);
+		pause_poller(SERSTATE.GET_WP);
 		int rwp;
 		//		wpi.max_wp, wpi.wp_count
 		rwp = (wpi.wp_count > 0) ? wpi.wp_count : wp_max;
@@ -304,8 +304,8 @@ namespace Mwp {
 	public void pause_poller(SERSTATE s) {
 		if (msp.available) {
 			MWPLog.message(":DBG: Pause poller %s\n", s.to_string());
-			serstate = s;
-			mq.clear();
+			//serstate = s;
+			//mq.clear();
 		}
 	}
 
