@@ -27,6 +27,31 @@ namespace Mwpset {
 			toaster.add_toast(t);
         }
 
+		private bool is_dirty()  {
+			for(int i = 0; i < x.keys.length; i++) {
+				if(x.keys.data[i].is_changed) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		private void save_settings() {
+			for(int i = 0; i < x.keys.length; i++) {
+				if(x.keys.data[i].is_changed) {
+					x.settings.set_value(x.keys.data[i].name, x.keys.data[i].value);
+					var w = find_value_labels(i, x.keys.data[i].name) as Gtk.Label;
+					if (w != null) {
+						w.remove_css_class("error");
+						w = ((Gtk.Widget)w).get_next_sibling() as Gtk.Label;
+						w.remove_css_class("error");
+					}
+					x.keys.data[i].is_changed = false;
+				}
+			}
+		}
+
+
 		public Window() {
 			title = schm;
 			add_action_entries (ACTION_ENTRIES, this);
@@ -34,17 +59,7 @@ namespace Mwpset {
 			x.parse_schema();
 
 			savelist.clicked.connect(() => {
-					for(int i = 0; i < x.keys.length; i++) {
-						if(x.keys.data[i].is_changed) {
-							x.settings.set_value(x.keys.data[i].name, x.keys.data[i].value);
-							var w = find_value_labels(i, x.keys.data[i].name) as Gtk.Label;
-							if (w != null) {
-								w.remove_css_class("error");
-								w = ((Gtk.Widget)w).get_next_sibling() as Gtk.Label;
-								w.remove_css_class("error");
-							}
-						}
-					}
+					save_settings();
 				});
 
 			for(int i = 0; i < x.keys.length; i++) {
@@ -58,6 +73,42 @@ namespace Mwpset {
 					int i = l.get_index();
 					run_edit(i);
 				});
+
+
+			bool close_check = false;
+			close_request.connect(() => {
+					if(close_check || !is_dirty()) {
+						return false;
+					} else {
+						checker.begin((o,res) => {
+								var ok = checker.end(res);
+								if(ok) {
+									close_check = true;
+									close();
+								}
+							});
+						return true;
+					}
+				});
+		}
+
+		private async bool checker() {
+			bool ok = false;
+			var am = new Adw.AlertDialog("Warning", "Settings have  uncommitted changes");
+			am. set_body_use_markup (true);
+			am.add_response ("continue", "Cancel");
+			am.add_response ("ok", "Save");
+			am.add_response ("cancel", "Don't Save");
+			string s = yield am.choose(this, null);
+			if(s == "cancel") {
+				ok = true;
+			} else if (s == "continue") {
+				ok = false;
+			} else {
+				save_settings();
+				ok = true;
+			}
+			return ok;
 		}
 
 		private void do_backup() {

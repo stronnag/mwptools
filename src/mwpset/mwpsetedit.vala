@@ -151,7 +151,8 @@ namespace Mwpset {
 						var dd = setgrid.get_child_at(1, VROW) as Gtk.DropDown;
 						var i = dd.selected;
 						var c = ((Gtk.StringList)dd.model).get_string(i);
-						var rs = k.value.get_string();
+						//var rs = k.value.get_string();
+						string rs = XReader.format_variant(k);
 						if(rs != c) {
 							changed(c);
 						};
