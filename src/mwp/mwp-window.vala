@@ -218,25 +218,21 @@ namespace Mwp {
 #endif
 			setup_accels(app);
 			setup_misc_controls();
+
 			close_check = false;
 			close_request.connect(() => {
-					if(close_check) {
+					if(close_check || !MissionManager.is_dirty) {
 						Mwp.cleanup();
 						return false;
 					} else {
-						if(!MissionManager.is_dirty) {
-                            Mwp.cleanup();
-							return false;
-						} else {
-							checker.begin((o,res) => {
-									var ok = checker.end(res);
-									if(ok) {
-                                        close_check = true;
-										close();
-									}
-								});
-							return true;
-						}
+						checker.begin((o,res) => {
+								var ok = checker.end(res);
+								if(ok) {
+									close_check = true;
+									close();
+								}
+							});
+						return true;
 					}
 				});
 
