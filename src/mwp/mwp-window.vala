@@ -142,31 +142,23 @@ namespace Mwp {
 			am.add_response ("continue", "Cancel");
 			am.add_response ("ok", "Save");
 			am.add_response ("cancel", "Don't Save");
-			am.response.connect((s) => {
-					if(s == "cancel") {
-						ok = true;
-						checker.callback();
-					} else if (s == "continue") {
-						ok = false;
-						checker.callback();
-					} else {
-						var fc = MissionManager.setup_save_mission_file_as();
-						fc.save.begin (this, null, (o,r) => {
-								try {
-									var fh = fc.save.end(r);
-									var fn = fh.get_path ();
-									MissionManager.last_file = fn;
-									MissionManager.write_mission_file(fn, 0);
-									ok = true;
-								} catch (Error e) {
-									print("Failed to save file: %s\n", e.message);
-								}
-								checker.callback();
-							});
-					}
-				});
-			am.present(this);
-			yield;
+			string s = yield am.choose(this, null);
+			if(s == "cancel") {
+				ok = true;
+			} else if (s == "continue") {
+				ok = false;
+			} else {
+				var fc = MissionManager.setup_save_mission_file_as();
+				try {
+					var fh = yield fc.save(this,null);
+					var fn = fh.get_path ();
+					MissionManager.last_file = fn;
+					MissionManager.write_mission_file(fn, 0);
+					ok = true;
+				} catch (Error e) {
+					print("Failed to save file: %s\n", e.message);
+				}
+			}
 			return ok;
 		}
 
@@ -174,8 +166,8 @@ namespace Mwp {
 			if(!MissionManager.is_dirty) {
 				func();
 			} else {
-				waiter.begin((o,res) => {
-						var ok = waiter.end(res);
+				checker.begin((o,res) => {
+						var ok = checker.end(res);
 						if(ok) {
 							func();
 						}
@@ -236,8 +228,8 @@ namespace Mwp {
                             Mwp.cleanup();
 							return false;
 						} else {
-							waiter.begin((o,res) => {
-									var ok = waiter.end(res);
+							checker.begin((o,res) => {
+									var ok = checker.end(res);
 									if(ok) {
                                         close_check = true;
 										close();
@@ -263,11 +255,6 @@ namespace Mwp {
 			setup_terminal_reboot();
 			follow_button.active = conf.autofollow;
 			show_window();
-		}
-
-		public async bool waiter() {
-			var ok = yield checker ();
-			return ok;
 		}
 
 		private void show_locale() {
