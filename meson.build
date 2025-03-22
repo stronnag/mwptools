@@ -1,4 +1,4 @@
-project('mwptools', 'vala', 'c', version : '25.03.21', meson_version : '>= 1.4.0')
+project('mwptools', 'vala', 'c', version : '25.03.22', meson_version : '>= 1.4.0')
 
 nogo = get_option('nogo')
 pointy_labels = get_option('pointy-labels')
