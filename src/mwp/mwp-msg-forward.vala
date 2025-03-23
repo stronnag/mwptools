@@ -38,6 +38,7 @@ namespace MessageForward {
 		case Mwp.FWDS.MAV1:
 		case Mwp.FWDS.MAV2:
 			msg = {0};
+			var mavver =  (Mwp.conf.forward == Mwp.FWDS.MAV1) ? 1 : 2;
 			var now = new DateTime.now_utc();
 			int64 ms = now.to_unix()*1000;
 			rp = SEDE.serialise_u32(msg, (uint32)(ms & 0xffffffff));
@@ -54,7 +55,7 @@ namespace MessageForward {
 			*rp++ = Mwp.msp.td.gps.fix;
 			*rp++ = Mwp.msp.td.gps.nsats;
 			var msize = (intptr)rp - (intptr)msg;
-			Mwp.fwddev.forward_mav(cmd_to_ucmd(Msp.Cmds.MAVLINK_MSG_GPS_RAW_INT), msg, msize, (Mwp.conf.forward == Mwp.FWDS.MAV1) ? 1 : 2);
+			Mwp.fwddev.forward_mav(cmd_to_ucmd(Msp.Cmds.MAVLINK_MSG_GPS_RAW_INT), msg, msize, mavver);
 			msg = {0};
 			rp = SEDE.serialise_u32(msg, (uint32)(Mwp.duration*1000)); // fixme;
 			rp = SEDE.serialise_i32(rp, (int32)(Mwp.msp.td.gps.lat*1e7));
@@ -67,7 +68,7 @@ namespace MessageForward {
 			rp = SEDE.serialise_u16(rp, 0);
 			rp = SEDE.serialise_i16(rp, (int16)(100*Mwp.msp.td.atti.yaw));
 			msize = (intptr)rp - (intptr)msg;
-			Mwp.fwddev.forward_mav(cmd_to_ucmd(Msp.Cmds.MAVLINK_MSG_GPS_GLOBAL_INT), msg, msize, (Mwp.conf.forward == Mwp.FWDS.MAV1) ? 1 : 2);
+			Mwp.fwddev.forward_mav(cmd_to_ucmd(Msp.Cmds.MAVLINK_MSG_GPS_GLOBAL_INT), msg, msize, mavver);
 			break;
 
 		default:
@@ -110,6 +111,7 @@ namespace MessageForward {
 
 		case Mwp.FWDS.MAV1:
 		case Mwp.FWDS.MAV2:
+			var mavver = (Mwp.conf.forward == Mwp.FWDS.MAV1) ? 1 : 2;
 			Mav.MAVLINK_ATTITUDE *m = (Mav.MAVLINK_ATTITUDE*)msg;
 			float f;
 			f = Mwp.mhead;
@@ -120,7 +122,7 @@ namespace MessageForward {
 			f = (float)(-Mwp.msp.td.atti.angx) / (float)Mwp.RAD2DEG;
 			m.roll = f;
 			m.pitch = (float)Mwp.msp.td.atti.angy / (float)Mwp.RAD2DEG;
-			Mwp.fwddev.forward_mav(cmd_to_ucmd(Msp.Cmds.MAVLINK_MSG_ATTITUDE), (uint8[])&m, 28, (Mwp.conf.forward == Mwp.FWDS.MAV1) ? 1 : 2);
+			Mwp.fwddev.forward_mav(cmd_to_ucmd(Msp.Cmds.MAVLINK_MSG_ATTITUDE), (uint8[])&m, 28, mavver);
 			break;
 
 		default:
@@ -205,6 +207,7 @@ namespace MessageForward {
 
 		case Mwp.FWDS.MAV1:
 		case Mwp.FWDS.MAV2:
+			var mavver = (Mwp.conf.forward == Mwp.FWDS.MAV1) ? 1 : 2;
 			msg = {0};
 			uint32 flag = 0; // fixme
 			rp = SEDE.serialise_u32(msg, flag); // sensors, fixme, maybe
@@ -218,11 +221,11 @@ namespace MessageForward {
 			rp = SEDE.serialise_u32(rp, 0);
 			*rp++ = 0;
 			var msize = (intptr)rp - (intptr)msg;
-			Mwp.fwddev.forward_mav(cmd_to_ucmd(Msp.Cmds.MAVLINK_MSG_ID_SYS_STATUS), msg, msize, (Mwp.conf.forward == Mwp.FWDS.MAV1) ? 1 : 2);
+			Mwp.fwddev.forward_mav(cmd_to_ucmd(Msp.Cmds.MAVLINK_MSG_ID_SYS_STATUS), msg, msize, mavver);
 			msg = {0};
 			rp = SEDE.serialise_u32(msg, (uint32)(Mwp.duration*1000)); // fixme;
 			msg[41] =  (uint8)(Mwp.msp.td.rssi.rssi*100/1023);
-			Mwp.fwddev.forward_mav(cmd_to_ucmd(Msp.Cmds.MAVLINK_MSG_RC_CHANNELS), msg, 42, (Mwp.conf.forward == Mwp.FWDS.MAV1) ? 1 : 2);
+			Mwp.fwddev.forward_mav(cmd_to_ucmd(Msp.Cmds.MAVLINK_MSG_RC_CHANNELS), msg, 42, mavver);
 			msg = {0};
 			flag = 0;
 			if (Mwp.vi.mrtype != 0) {
@@ -234,7 +237,7 @@ namespace MessageForward {
 			*rp++ = (Mwp.armed == 0) ? 0 : Mav.MODE_FLAG.MAV_MODE_FLAG_SAFETY_ARMED;
 			*rp++ = 4; //Mav.MAV_STATE.MAV_STATE_ACTIVE;
 			*rp++ = (Mwp.conf.forward ==  Mwp.FWDS.MAV1) ? 1 : 2;
-			Mwp.fwddev.forward_mav(cmd_to_ucmd( Msp.Cmds.MAVLINK_MSG_ID_HEARTBEAT), msg,  (intptr)rp - (intptr)msg, (Mwp.conf.forward == Mwp.FWDS.MAV1) ? 1 : 2);
+			Mwp.fwddev.forward_mav(cmd_to_ucmd( Msp.Cmds.MAVLINK_MSG_ID_HEARTBEAT), msg,  (intptr)rp - (intptr)msg, mavver);
 			break;
 
 		default:
@@ -279,7 +282,8 @@ namespace MessageForward {
 			rp = SEDE.serialise_i32(rp, (int32)(Mwp.msp.td.origin.lon*1e7));
 			rp = SEDE.serialise_i32(rp, (int32)(Mwp.msp.td.origin.alt*1e3));
 			var msize = (intptr)rp - (intptr)msg;
-			Mwp.fwddev.forward_mav(cmd_to_ucmd(Msp.Cmds.MAVLINK_MSG_GPS_GLOBAL_ORIGIN), msg, msize, (Mwp.conf.forward == Mwp.FWDS.MAV1) ? 1 : 2);
+			var mavver = (Mwp.conf.forward == Mwp.FWDS.MAV1) ? 1 : 2;
+			Mwp.fwddev.forward_mav(cmd_to_ucmd(Msp.Cmds.MAVLINK_MSG_GPS_GLOBAL_ORIGIN), msg, msize, mavver);
 			break;
 
 		default:
