@@ -29,36 +29,33 @@ namespace Mwp {
 			rp = SEDE.deserialise_i32(raw, out of.lat);
 			rp = SEDE.deserialise_i32(rp, out of.lon);
 			rp = SEDE.deserialise_i32(rp, out of.alt);
-			ser.td.origin.lat = of.lat/10000000.0;
-			ser.td.origin.lon = of.lon/10000000.0;
-			set_td_origin(ser.td.origin.lat, ser.td.origin.lon);
+			double lat = of.lat/10000000.0;
+			double lon = of.lon/10000000.0;
 
 			of.fix = raw[13];
 			if(ser.is_main) {
-				wp0.lat = ser.td.origin.lat;
-				wp0.lon = ser.td.origin.lon;
 				if (Rebase.has_reloc()) {
-					if (wp0.lat != 0.0 && wp0.lon != 0.0) {
+					if (lat != 0.0 && lon != 0.0) {
 						if (!Rebase.has_origin()) {
-							Rebase.set_origin(wp0.lat, wp0.lon);
+							Rebase.set_origin(lat, lon);
 						}
-						Rebase.relocate(ref wp0.lat, ref wp0.lon);
+						Rebase.relocate(ref lat, ref lon);
 					}
 				}
-				if(home_changed(wp0.lat, wp0.lon)) {
+				if(home_changed(lat, lon)) {
 					if(of.fix == 0) {
 						no_ofix++;
 					} else {
 						//navstatus.cg_on(); // FIXME
 						sflags |=  SPK.GPS;
 						want_special |= POSMODE.HOME;
-						process_pos_states(wp0.lat, wp0.lon, ser.td.origin.alt, "LTM OFrame");
+						process_pos_states(lat, lon, ser.td.origin.alt, "LTM OFrame");
 					}
 				} else if (!have_home) {
 					have_home = true;
 					sflags |=  SPK.GPS;
 					want_special |= POSMODE.HOME;
-					process_pos_states(wp0.lat, wp0.lon, ser.td.origin.alt, "LTM OFrame");
+					process_pos_states(lat, lon, ser.td.origin.alt, "LTM OFrame");
 				}
 				if(Logger.is_logging) {
 					Logger.ltm_oframe(of);
@@ -116,7 +113,7 @@ namespace Mwp {
 				fvup |= FlightBox.Update.ALT;
 				ttup |= TelemTracker.Fields.ALT;
 				ser.td.alt.alt = gf.alt;
-				ser.td.gps.alt = gf.alt; // + homealt
+				ser.td.gps.alt = gf.alt + ser.td.origin.alt;
 			}
 
 			if(Math.fabs(ser.td.gps.gspeed - gf.speed) > 0.1) {

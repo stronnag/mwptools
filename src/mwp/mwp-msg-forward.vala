@@ -223,6 +223,18 @@ namespace MessageForward {
 			rp = SEDE.serialise_u32(msg, (uint32)(Mwp.duration*1000)); // fixme;
 			msg[41] =  (uint8)(Mwp.msp.td.rssi.rssi*100/1023);
 			Mwp.fwddev.forward_mav(cmd_to_ucmd(Msp.Cmds.MAVLINK_MSG_RC_CHANNELS), msg, 42, (Mwp.conf.forward == Mwp.FWDS.MAV1) ? 1 : 2);
+			msg = {0};
+			flag = 0;
+			if (Mwp.vi.mrtype != 0) {
+				flag = Mav.inav2mav(Mwp.msp.td.state.ltmstate, ((Mwp.Vehicle)Mwp.vi.mrtype).is_fw());
+			}
+			rp = SEDE.serialise_u32(msg, flag); // custom_mode
+			*rp++ = 0; // type
+			*rp++ = 0; // autopilot
+			*rp++ = (Mwp.armed == 0) ? 0 : Mav.MODE_FLAG.MAV_MODE_FLAG_SAFETY_ARMED;
+			*rp++ = 4; //Mav.MAV_STATE.MAV_STATE_ACTIVE;
+			*rp++ = (Mwp.conf.forward ==  Mwp.FWDS.MAV1) ? 1 : 2;
+			Mwp.fwddev.forward_mav(cmd_to_ucmd( Msp.Cmds.MAVLINK_MSG_ID_HEARTBEAT), msg,  (intptr)rp - (intptr)msg, (Mwp.conf.forward == Mwp.FWDS.MAV1) ? 1 : 2);
 			break;
 
 		default:

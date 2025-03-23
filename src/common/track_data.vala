@@ -49,7 +49,14 @@ public struct GPSData {
 		nsats = 0;
 		fix = 0;
 	}
+
+	public string to_string() {
+		var sb = new StringBuilder("GPS: ");
+		sb.append_printf("lat: %.6f, lon: %.6f, alt: %.2f, cog: %.1f, gspd: %.1f, sats: %u, fix: %u, hdop: %.1f", this.lat, this.lon, this.alt, this.cog, this.gspeed, this.nsats, this.fix, this.hdop);
+		return sb.str;
+	}
 }
+
 
 public struct OriginData {
 	public double lat ;
@@ -60,6 +67,12 @@ public struct OriginData {
 		lon = 0.0;
 		alt = 0.0;
 	}
+
+	public string to_string() {
+		var sb = new StringBuilder("Origin: ");
+		sb.append_printf("olat: %.6f, olon: %.6f, o.alt: %.2f", this.lat, this.lon, this.alt);
+		return sb.str;
+	}
 }
 
 public struct CompData {
@@ -69,6 +82,11 @@ public struct CompData {
 		range = 0;
 		bearing = 0;
 	}
+	public string to_string() {
+		var sb = new StringBuilder("Comp: ");
+		sb.append_printf("range: %d, bearing: %d", this.range, this.bearing);
+		return sb.str;
+	}
 }
 
 public struct AltData {
@@ -77,6 +95,11 @@ public struct AltData {
 	public void annul() {
 		alt = 0;
 		vario = 0;
+	}
+	public string to_string() {
+		var sb = new StringBuilder("Alt: ");
+		sb.append_printf("alt %.1f, vario: %.1f", this.alt, this.vario);
+		return sb.str;
 	}
 }
 
@@ -88,6 +111,11 @@ public struct AttiData {
 		angx = 0;
 		angy = 0;
 		yaw = 0;
+	}
+	public string to_string() {
+		var sb = new StringBuilder("Atti: ");
+		sb.append_printf("angx %d, angy: %d, yaw: %d", this.angx, this.angy, this.yaw);
+		return sb.str;
 	}
 }
 
@@ -102,6 +130,11 @@ public struct WindData {
 		w_y = 0;
 		w_z = 0;
 	}
+	public string to_string() {
+		var sb = new StringBuilder("Wind: ");
+		sb.append_printf("ok: %s, w_x: %d, w_y: %d, w_z: %d", this.has_wind.to_string(), this.w_x, this.w_y, this.w_z);
+		return sb.str;
+	}
 }
 
 public struct  PowerData {
@@ -111,12 +144,22 @@ public struct  PowerData {
 		volts = 0;
 		mah = 0;
 	}
+	public string to_string() {
+		var sb = new StringBuilder("Power: ");
+		sb.append_printf("volts: %.2f, mah: %d\n", this.volts, this.mah);
+		return sb.str;
+	}
 }
 
 public struct RSSIData  {
 	public int rssi ;
 	public void annul() {
 		rssi = 0;
+	}
+	public string to_string() {
+		var sb = new StringBuilder("RSSI: ");
+		sb.append_printf("rssi: %d", this.rssi);
+		return sb.str;
 	}
 }
 
@@ -130,6 +173,11 @@ public struct StateData {
 		navmode = 0;
 		ltmstate = 0;
 		wpno = 0;
+	}
+	public string to_string() {
+		var sb = new StringBuilder("State: ");
+		sb.append_printf("state %x, ltmstate: %x, navmode: %d, wpno: %d", this.state, this.ltmstate, this.navmode, this.wpno);
+		return sb.str;
 	}
 }
 
@@ -155,5 +203,54 @@ public struct TrackData {
 		atti.annul();
 		state.annul();
 		wind.annul();
+	}
+
+	public void to_log(TrackDataSet ts = 0xff) {
+		MWPLog.message(to_string(ts));
+	}
+
+	public string to_string(TrackDataSet ts = 0xff) {
+		var sb = new StringBuilder("Telem Data\n");
+		if (TrackDataSet.GPS in ts) {
+			sb.append("  ");
+			sb.append(gps.to_string());
+			sb.append_c('\n');
+		}
+		if (TrackDataSet.ORIGIN in ts) {
+			sb.append("  ");
+			sb.append(origin.to_string());
+			sb.append_c('\n');
+		}
+		if (TrackDataSet.ALT in ts) {
+			sb.append("  ");
+			sb.append(alt.to_string());
+			sb.append_c('\n');
+		}
+		if (TrackDataSet.COMP in ts) {
+			sb.append("  ");
+			sb.append(comp.to_string());
+			sb.append_c('\n');
+		}
+		if (TrackDataSet.ATTI in ts) {
+			sb.append("  ");
+			sb.append(atti.to_string());
+			sb.append_c('\n');
+		}
+		if (TrackDataSet.STATE in ts) {
+			sb.append("  ");
+			sb.append(state.to_string());
+			sb.append_c('\n');
+		}
+		if (TrackDataSet.RSSI in ts) {
+			sb.append("  ");
+			sb.append(rssi.to_string());
+			sb.append_c('\n');
+		}
+		if (TrackDataSet.WIND in ts) {
+			sb.append("  ");
+			sb.append(wind.to_string());
+			sb.append_c('\n');
+		}
+		return sb.str;
 	}
 }

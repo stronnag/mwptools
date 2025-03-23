@@ -800,6 +800,12 @@ namespace Mwp {
 				});
 		}
 
+		private void do_trackdump() {
+			if(msp != null) {
+				msp.td.to_log(0xff);
+			}
+		}
+
 		private void setup_accels(Adw.Application app) {
 			GLib.ActionEntry[] winacts = {
 				{"quit",  Mwp.window.close},
@@ -862,6 +868,7 @@ namespace Mwp {
 				{"gps-stats", show_gps_stats},
 				{"vlegend", Gis.toggle_vlegend},
 				{"assistnow", do_assist},
+				{"trackdump", do_trackdump},
 			};
 
             add_action_entries (winacts, this);

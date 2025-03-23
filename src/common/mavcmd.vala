@@ -418,4 +418,41 @@ public class Mav : Object {
         }
         return ltmmode;
     }
+
+	public static uint32 inav2mav(uint8 imode, bool is_fw) {
+		uint32 mavmode = (is_fw) ? (uint32)APM_PLANE_MODE.PLANE_MODE_ACRO : (uint32)APM_COPTER_MODE.COPTER_MODE_ACRO;
+		switch (imode) {
+		case Msp.Ltm.MANUAL:
+			mavmode = (is_fw) ? (uint32)APM_PLANE_MODE.PLANE_MODE_MANUAL : (uint32)APM_COPTER_MODE.COPTER_MODE_ACRO;
+			break;
+		case Msp.Ltm.ANGLE:
+			mavmode = (is_fw) ?	(uint32)APM_PLANE_MODE.PLANE_MODE_FLY_BY_WIRE_A : (uint32)APM_COPTER_MODE.COPTER_MODE_STABILIZE;
+			break;
+		case Msp.Ltm.HORIZON:
+			mavmode = (is_fw) ?	(uint32)APM_PLANE_MODE.PLANE_MODE_STABILIZE : (uint32)APM_COPTER_MODE.COPTER_MODE_STABILIZE;
+			break;
+		case Msp.Ltm.ALTHOLD:
+			mavmode = (is_fw) ?	(uint32)APM_PLANE_MODE.PLANE_MODE_FLY_BY_WIRE_B : (uint32)APM_COPTER_MODE.COPTER_MODE_ALT_HOLD;
+			break;
+		case Msp.Ltm.POSHOLD:
+			mavmode = (is_fw) ? (uint32)APM_PLANE_MODE.PLANE_MODE_LOITER : (uint32)APM_COPTER_MODE.COPTER_MODE_POSHOLD;
+			break;
+		case Msp.Ltm.RTH:
+			mavmode = (is_fw) ? (uint32)APM_PLANE_MODE.PLANE_MODE_RTL : (uint32)APM_COPTER_MODE.COPTER_MODE_RTL;
+			break;
+		case Msp.Ltm.WAYPOINTS:
+			mavmode = (is_fw) ? (uint32)APM_PLANE_MODE.PLANE_MODE_AUTO: (uint32)APM_COPTER_MODE.COPTER_MODE_AUTO;
+			break;
+		case Msp.Ltm.CRUISE:
+			mavmode = (is_fw) ? (uint32)APM_PLANE_MODE.PLANE_MODE_CRUISE :  (uint32)APM_COPTER_MODE.COPTER_MODE_STABILIZE;
+			break;
+		case Msp.Ltm.LAUNCH:
+			mavmode = (is_fw) ? (uint32)APM_PLANE_MODE.PLANE_MODE_TAKEOFF: (uint32)APM_COPTER_MODE.COPTER_MODE_ACRO;
+			break;
+		case Msp.Ltm.ACRO:
+		default:
+			break;
+		}
+		return mavmode;
+	}
 }

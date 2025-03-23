@@ -138,11 +138,9 @@ namespace Mwp {
         lon = w.lon/1e7;
         if (w.wp_no == 0) {
 			if (w.lat != 0  && w.lon != 0 && w.altitude != 0) {
-				if(lat != wp0.lat && lon != wp0.lon) {
-					wp0.lat = lat;
-					wp0.lon = lon;
-					set_td_origin(lat, lon);
-				}
+				wp0.lat = lat;
+				wp0.lon = lon;
+				set_td_origin(lat, lon);
 			}
 		} else {
             MWPLog.message("Special WP#%d (%d) %.6f %.6f %dm %d°\n", w.wp_no, w.action, lat, lon, w.altitude/100, w.p1);

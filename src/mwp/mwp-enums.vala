@@ -324,4 +324,42 @@ namespace Mwp {
         show_mission = 1,
         show_dist = 2
     }
+
+    public enum Vehicle {
+        UNDEFINED = 0,
+        TRI = 1,
+        QUADP = 2,
+        QUADX = 3,
+        BICOPTER = 4,
+        GIMBAL = 5,
+        Y6 = 6,
+        HEX6 = 7,
+        FLYING_WING = 8,
+        Y4 = 9,
+        HEX6X = 10,
+        OCTOX8 = 11,
+        OCTOFLATP = 12,
+        OCTOFLATX = 13,
+        AIRPLANE = 14,
+        HELI_120_CCPM = 15,
+        HELI_90_DEG = 16,
+        VTAIL4 = 17,
+        HEX6H = 18,
+        PPM_TO_SERVO = 19,
+        DUALCOPTER = 20,
+        SINGLECOPTER = 21,
+        ATAIL4 = 22,
+        CUSTOM = 23,
+        CUSTOM_AIRPLANE = 24,
+        CUSTOM_TRI = 25,
+        LAST;
+
+		public bool is_fw() {
+			return (this == Vehicle.FLYING_WING || this == Vehicle.AIRPLANE || this == Vehicle.CUSTOM_AIRPLANE);
+		}
+		public bool is_mr() {
+			return !is_fw();
+		}
+
+	}
 }

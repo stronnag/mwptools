@@ -1178,12 +1178,10 @@ namespace Mwp {
 
 					if(armed == 1) {
 						update_odo(ser.td.gps.gspeed, ser.td.comp.range);
-						if(have_home == false && home_changed(wp0.lat, wp0.lon)) {
+						if(have_home == false && home_changed(lat, lon)) {
 							sflags |=  SPK.GPS;
 							want_special |= POSMODE.HOME;
 							MBus.update_home();
-							Mwp.msp.td.origin.lat = lat;
-							Mwp.msp.td.origin.lon = lon;
 						}
 					}
 					update_pos_info();

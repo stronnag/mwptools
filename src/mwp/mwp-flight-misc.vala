@@ -410,7 +410,14 @@ namespace Mwp {
 		var elev = DemManager.lookup(lat, lon);
 		if (elev != Hgt.NODATA) {
 			Mwp.msp.td.origin.alt = elev;
+		} else {
+			Mwp.msp.td.origin.alt = 0;
 		}
+		MWPLog.message(":DBG: Set td alt %f %f %.0f\n",
+					   Mwp.msp.td.origin.lat,
+					   Mwp.msp.td.origin.lon,
+					   Mwp.msp.td.origin.alt
+			);
 	}
 
 	private bool home_changed(double lat, double lon) {
