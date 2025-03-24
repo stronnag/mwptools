@@ -107,7 +107,6 @@ namespace Mwp {
 	uint inhibit_cookie;
 
 	bool have_home;
-    Position home_pos;
     Position rth_pos;
     Position ph_pos;
     Position wp0;
@@ -241,7 +240,6 @@ namespace Mwp {
 		inhibit_cookie = 0;
 		HomePoint.try_hide();
 
-		home_pos = {};
 		have_home = false;
 		rth_pos = {};
 		ph_pos = {};

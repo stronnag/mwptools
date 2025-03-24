@@ -258,8 +258,6 @@ namespace Mwp {
         have_home = false;
 		//        markers.negate_home();
         //ls.calc_mission(0);
-        home_pos.lat = 0;
-        home_pos.lon = 0;
         wp0.lon = xlon = 0;
         wp0.lat = xlat = 0;
         want_special = 0;
