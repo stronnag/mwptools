@@ -258,8 +258,8 @@ namespace Mwp {
         have_home = false;
 		//        markers.negate_home();
         //ls.calc_mission(0);
-        wp0.lon = xlon = 0;
-        wp0.lat = xlat = 0;
+        xlon = 0;
+        xlat = 0;
         want_special = 0;
     }
 
@@ -435,8 +435,6 @@ namespace Mwp {
                         d, lat, lon, hlat, hlon);
                 }
             }
-            wp0.lat = lat;
-            wp0.lon = lon;
 			HomePoint.set_home(lat, lon);
             have_home = true;
 			set_td_origin(lat, lon);
@@ -454,13 +452,13 @@ namespace Mwp {
         if((armed != 0) && ((want_special & POSMODE.HOME) != 0)) {
             have_home = true;
             want_special &= ~POSMODE.HOME;
-            xlat = wp0.lat = lat;
-            xlon = wp0.lon = lon;
+            xlat = lat;
+            xlon = lon;
 
 			if(nrings != 0) {
 				RangeCircles.initiate_rings(lat,lon, nrings, ringint);
             }
-			craft.special_wp(Craft.Special.HOME, wp0.lat, wp0.lon);
+			craft.special_wp(Craft.Special.HOME, lat, lon);
             if(chome) {
 				MapUtils.centre_on(lat, lon);
 			}
@@ -471,12 +469,12 @@ namespace Mwp {
                 sb.append_c(' ');
             }
             sb.append(have_home.to_string());
-            MWPLog.message("Set home %f %f (%s)\n", wp0.lat, wp0.lon, sb.str);
+            MWPLog.message("Set home %f %f (%s)\n", lat, lon, sb.str);
 			/* FIXME
-            mss.h_lat = wp0.lat;
-            mss.h_long = wp0.lon;
+            mss.h_lat = lat;
+            mss.h_long = lon;
             mss.h_alt = (int32)alt;
-            mss.home_changed(wp0.lat, wp0.lon, mss.h_alt);
+            mss.home_changed(lat, lon, mss.h_alt);
 			*/
 
 			double dist,cse;

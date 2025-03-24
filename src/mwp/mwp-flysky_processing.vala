@@ -123,12 +123,9 @@ namespace Flysky {
 						Mwp._nsats = (uint8)nsat;
 						Mwp.update_odo(spd, ddm);
 						if(Mwp.have_home == false && (nsat > 5) && (t.ilat != 0 && t.ilon != 0) ) {
-							Mwp.wp0.lat = dlat;
-							Mwp.wp0.lon = dlon;
+							Mwp.home_changed(dlat, dlon);
 							Mwp.sflags |=  Mwp.SPK.GPS;
 							Mwp.want_special |= Mwp.POSMODE.HOME;
-							ser.td.origin.lat = dlat;
-							ser.td.origin.lon = dlat;
 							MBus.update_home();
 						}
 

@@ -148,7 +148,7 @@ namespace CRSF {
 			}
 
 			if(Math.fabs(ser.td.alt.alt - alt) > 1.0) {
-				ser.td.gps.alt = alt;
+				ser.td.gps.alt = alt + ser.td.origin.alt;
 				ser.td.alt.alt = alt;
 				fvup |= FlightBox.Update.ALT;
 				ttup |= TelemTracker.Fields.ALT;
@@ -210,8 +210,8 @@ namespace CRSF {
 								}
 							}
 						} else if(Mwp.have_home == false && (nsat > 5) && (lat != 0 && lon != 0) ) {
-							Mwp.wp0.lat = dlat;
-							Mwp.wp0.lon = dlon;
+
+							Mwp.home_changed(dlat, dlon);
 							Mwp.sflags |= Mwp.SPK.GPS;
 							Mwp.want_special |= Mwp.POSMODE.HOME;
 							MBus.update_home();
@@ -489,12 +489,6 @@ namespace CRSF {
 				if(achg || mchg)
 					MBus.update_state();
 
-				if(Mwp.wp0.lat == 0.0 && Mwp.wp0.lon == 0.0) {
-					if(d.fix > 1) {
-						Mwp.wp0.lat = d.lat;
-						Mwp.wp0.lon = d.lon;
-					}
-				}
 				if(Mwp.want_special != 0 /* && have_home*/) {
 					Mwp.process_pos_states(Mwp.xlat, Mwp.xlon, 0, "CRSF status");
 				}

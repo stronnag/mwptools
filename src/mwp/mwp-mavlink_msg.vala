@@ -280,17 +280,12 @@ namespace Mwp {
 					Rebase.relocate(ref mlat, ref mlon);
 				}
 			}
-			ser.td.origin.lat = mlat;
-			ser.td.origin.lon = mlon;
-			ser.td.origin.alt = m.altitude/1000;
-
 			if (ser.is_main) {
-				wp0.lat  = ser.td.origin.lat;
-				wp0.lon  = ser.td.origin.lon;
-				if(home_changed(wp0.lat, wp0.lon)) {
+				if(home_changed(mlat, mlon)) {
+					ser.td.origin.alt = m.altitude/1000;
 					sflags |=  SPK.GPS;
 					want_special |= POSMODE.HOME;
-					process_pos_states(wp0.lat, wp0.lon, m.altitude / 1000.0, "MAvOrig");
+					process_pos_states(mlat, mlon, m.altitude / 1000.0, "MAvOrig");
 				}
 				if(Logger.is_logging) {
 					Logger.mav_gps_global_origin(m);

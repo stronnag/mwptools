@@ -109,7 +109,6 @@ namespace Mwp {
 	bool have_home;
     Position rth_pos;
     Position ph_pos;
-    Position wp0;
 
     uint64 ph_mask;
     uint64 arm_mask;
@@ -243,7 +242,6 @@ namespace Mwp {
 		have_home = false;
 		rth_pos = {};
 		ph_pos = {};
-		wp0 = {};
 
 		ph_mask=0;
 		arm_mask=0;

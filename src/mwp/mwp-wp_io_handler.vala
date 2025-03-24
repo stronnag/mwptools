@@ -138,8 +138,6 @@ namespace Mwp {
         lon = w.lon/1e7;
         if (w.wp_no == 0) {
 			if (w.lat != 0  && w.lon != 0 && w.altitude != 0) {
-				wp0.lat = lat;
-				wp0.lon = lon;
 				set_td_origin(lat, lon);
 			}
 		} else {
