@@ -681,6 +681,12 @@
       <description>Ublox Assist now key. Setting blank ('') disables, unless the API key is in the `libsecret` credential store.</description>
     </key>
 
+    <key name="mwxml-version" type="s">
+      <summary>MultiMission XML version</summary>
+      <default>""</default>
+      <description>Version value in MW XML mission files. Legacy MW requires `2.3 pre8`. Note that INAV mission files may not be NOT compatible with legacy MW (and vice versa). If not set, the mwp version number is used.</description>
+    </key>
+
     <key name="mavlink-sysid" type="u">
      <summary>Sysid for synthesised MAVLink</summary>
      <range min="2" max="255"/>

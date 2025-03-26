@@ -289,13 +289,15 @@ namespace XmlIO {
 
         Xml.Node* subnode;
 
-        if (msx[0].version != null) {
-            mstr = "version";
-            if (uc)
-                mstr = mstr.ascii_up();
-            subnode = root->new_text_child (ns, mstr, "");
-            subnode->new_prop ("value", msx[0].version);
-        }
+		mstr = "version";
+		if (uc) {
+			mstr = mstr.ascii_up();
+		}
+		string vstr;
+		vstr =  (Mwp.conf.mwxml_version == "") ? MwpVers.get_id() :  Mwp.conf.mwxml_version;
+		subnode = root->new_text_child (ns, mstr, "");
+		subnode->new_prop ("value", vstr);
+
 		int wpno = 0;
 		int mxno = 0;
 		foreach (var ms in msx) {

@@ -113,6 +113,7 @@ public class MWPSettings : GLib.Object {
 	public uint mission_icon_alpha {get; set; default=160;}
 	public string assist_key {get; set; default="";}
 	public bool no_poller_pause {get; set; default=false;}
+	public string mwxml_version {get; set; default="";}
 	construct {
 #if DARWIN
 		string uc =  Environment.get_user_config_dir();
@@ -209,6 +210,7 @@ public class MWPSettings : GLib.Object {
 		settings.bind("min-dem-zoom", this, "min-dem-zoom", SettingsBindFlags.DEFAULT);
 		settings.bind("mission-path", this, "missionpath", SettingsBindFlags.DEFAULT);
 		settings.bind("mission-meta-tag", this, "missionmetatag", SettingsBindFlags.DEFAULT);
+		settings.bind("mwxml-version", this, "mwxml-version", SettingsBindFlags.DEFAULT);
 		settings.bind("no-poller-pause", this, "no-poller-pause", SettingsBindFlags.DEFAULT);
 		settings.bind("osd-mode", this, "osd-mode", SettingsBindFlags.DEFAULT);
 		settings.bind("p-pane-width", this, "p-pane-width", SettingsBindFlags.DEFAULT);
