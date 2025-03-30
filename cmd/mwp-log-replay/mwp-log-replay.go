@@ -277,6 +277,43 @@ func main() {
 	st := time.Now()
 	nbuf := 0
 
+	go func() {
+		file, err := os.CreateTemp("", ".mwp-log-replay.")
+		if err != nil {
+			return
+		}
+		defer func() {
+			st, err := file.Stat()
+			file.Close()
+			if err == nil && st.Size() == 0 {
+				os.Remove(file.Name())
+			}
+		}()
+
+		var start time.Time
+		buf := make([]byte, 1024)
+		n := 0
+		for {
+			n, err = sd.Read(buf)
+			if err == nil {
+				if start.IsZero() {
+					start = time.Now()
+					file.Write([]byte("v2\n"))
+				}
+				diff := float64(time.Now().Sub(start)) / 1000000000.0
+				var header = struct {
+					offset float64
+					size   uint16
+					dirn   byte
+				}{offset: diff, size: uint16(n), dirn: 'o'}
+				binary.Write(file, binary.LittleEndian, header)
+				file.Write(buf[0:n])
+			} else {
+				break
+			}
+		}
+	}()
+
 	for {
 		buf, err := logf.readlog()
 		if err == nil {
