@@ -112,6 +112,7 @@ nav:
       - mwp-Dbus-API.md
       - mwp_support.md
       - mwp-miscellaneous-tools.md
+      - 'mwp telemtry and URI specifics' :  mwp-telemetry-usage.md
       - licence-misc-info.md
 
 extra:
