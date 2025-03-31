@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -135,6 +136,7 @@ type MavReader struct {
 	firstoff float64
 	elapsed  float64
 	nbytes   uint
+	dirn     byte
 }
 
 type V2Header struct {
@@ -149,6 +151,11 @@ type JSItem struct {
 	Dirn     byte    `json:"direction"`
 	RawBytes []byte  `json:"rawdata"`
 }
+
+var (
+	dirntype = flag.String("direction", "i", "direction")
+	dodump   = flag.Bool("hexdump", false, "hexdump playload")
+)
 
 func lookup(id uint32) uint8 {
 	res := uint8(0)
@@ -198,11 +205,12 @@ func (m *MavReader) get_data() ([]byte, error) {
 			err = binary.Read(m.reader, binary.LittleEndian, &hdr)
 			nr := int(hdr.Size)
 			if err == nil {
-				if hdr.Dirn == 'i' {
+				if hdr.Dirn == (*dirntype)[0] || *dirntype == "a" {
 					dat = make([]byte, nr)
 					_, err = io.ReadFull(m.reader, dat)
 					m.elapsed = hdr.Offset
 					m.nbytes += uint(hdr.Size)
+					m.dirn = hdr.Dirn
 					return dat, err
 				} else {
 					_, err = m.reader.Discard(nr)
@@ -386,9 +394,15 @@ func (m *MavReader) process(dat []byte) {
 
 func (m *MavReader) mav_len_check() bool {
 	mm, ok := m.mavmeta[m.cmd]
+	var cdirn byte
+	if m.dirn == 'i' {
+		cdirn = '<'
+	} else {
+		cdirn = '>'
+	}
+	fmt.Printf("%07.2f %c ", m.elapsed, cdirn)
+	fmt.Printf("Mav%d: %s %d", m.vers, mm.name, m.csize)
 	if ok {
-		fmt.Printf("%07.2f ", m.elapsed)
-		fmt.Printf("Mav%d: %s %d", m.vers, mm.name, m.csize)
 		if m.csize > mm.expect {
 			fmt.Printf("!%d", mm.expect)
 		} else if m.csize < mm.expect {
@@ -400,6 +414,7 @@ func (m *MavReader) mav_len_check() bool {
 		fmt.Print(" : ")
 		return true
 	} else {
+		fmt.Print(" : ")
 		return false
 	}
 }
@@ -571,7 +586,10 @@ func (m *MavReader) mav_show() {
 			fmt.Printf("** Unhandled **\n")
 		}
 	} else {
-		fmt.Printf("Mav%d: Unrecognised %d %d\n", m.vers, m.cmd, m.csize)
+		fmt.Printf("Unrecognised CmdId %d\n", m.cmd)
+	}
+	if *dodump {
+		fmt.Printf("\t%+v\n", m.payload[:m.csize])
 	}
 }
 
@@ -596,35 +614,48 @@ func (m *MavReader) load_meta() {
 }
 
 func main() {
-	if len(os.Args) > 1 {
-		rfh, err := os.Open(os.Args[1])
-		if err == nil {
-			defer rfh.Close()
-			m := MavReader{}
-			m.load_meta()
-			err := m.set_reader(rfh)
-			if err == nil {
-				for {
-					dat, err := m.get_data()
-					if err == nil {
-						m.process(dat)
-					} else {
-						break
-					}
-				}
 
-				if m.m1_ok+m.m1_fail > 0 {
-					fmt.Printf("V1 OK %d, fail %d\n", m.m1_ok, m.m1_fail)
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage of mavreader [options] file\n")
+		fmt.Fprintf(os.Stderr, "Options:\n")
+		flag.PrintDefaults()
+	}
+
+	flag.Parse()
+
+	files := flag.Args()
+	if len(files) == 0 {
+		flag.Usage()
+		os.Exit(-1)
+	}
+
+	rfh, err := os.Open(files[0])
+	if err == nil {
+		defer rfh.Close()
+		m := MavReader{}
+		m.load_meta()
+		err := m.set_reader(rfh)
+		if err == nil {
+			for {
+				dat, err := m.get_data()
+				if err == nil {
+					m.process(dat)
+				} else {
+					break
 				}
-				if m.m2_ok+m.m2_fail > 0 {
-					fmt.Printf("V2 OK %d, fail %d\n", m.m2_ok, m.m2_fail)
-				}
-				m.elapsed -= m.firstoff
-				if m.elapsed > 0 {
-					nmsg := m.m1_ok + m.m1_fail + m.m2_ok + m.m2_fail
-					fmt.Printf("%d bytes, %d messages in %.1fsec\n", m.nbytes, nmsg, m.elapsed)
-					fmt.Printf("%.0f messages/sec, %.0f bytes/sec\n", float64(nmsg)/m.elapsed, float64(m.nbytes)/m.elapsed)
-				}
+			}
+
+			if m.m1_ok+m.m1_fail > 0 {
+				fmt.Printf("V1 OK %d, fail %d\n", m.m1_ok, m.m1_fail)
+			}
+			if m.m2_ok+m.m2_fail > 0 {
+				fmt.Printf("V2 OK %d, fail %d\n", m.m2_ok, m.m2_fail)
+			}
+			m.elapsed -= m.firstoff
+			if m.elapsed > 0 {
+				nmsg := m.m1_ok + m.m1_fail + m.m2_ok + m.m2_fail
+				fmt.Printf("%d bytes, %d messages in %.1fsec\n", m.nbytes, nmsg, m.elapsed)
+				fmt.Printf("%.0f messages/sec, %.0f bytes/sec\n", float64(nmsg)/m.elapsed, float64(m.nbytes)/m.elapsed)
 			}
 		} else {
 			fmt.Fprintf(os.Stderr, "File %v\n", err)

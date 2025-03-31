@@ -154,6 +154,33 @@ Some UDP devices (typically ESP8266 transparent serial) require that the port nu
     # both sides use port 14014, remote (FC) is esp-air, blank local name is understood as INADDR_AN
     udp://esp-air:14014/?bind=14014
 
+## URI Conventions
+
+The device definitions for TCP and UDP follow an explicit URI format. Device descriptions for "serial" devices have an implied URI format as well, e.g:
+
+* `bt:xx:xx:xx:xx:xx:xx`
+* `tty:/dev/ttyUSB0`
+* `tty:COM33`
+
+The following URI "query" values are supported:
+
+* `baud=NNNN` (`NNNN` is a valid baud rate), examples:
+
+        /dev/ttyUSB0?baud=9600
+	    COM17?baud=9600
+
+* `mavlink=N` (`N` is 1 or 2 for required Mavlink version). This causes mwp to send a Mavlink "beacon" (`HEARTBEAT` and `AUTOPILOT_VERSION`) which will improve the behaviours of some Mavlink based products (such as PicoADSB). It may also provoke some other (non-INAV) Mavlink based telemetry devices to geneate data. Examples:
+
+        /dev/ttyUSB0?mavlink=2
+	    udp://acme.org:12345?mavlink=1
+
+* `bind=PORT` As discussed above for UDP.
+
+Note that values may be combined using standard URI syntax:
+
+    tty:/dev/ttyuSB1?baud=57600&mavlink=2
+	udp://mandy.fly.me:30001?bind=30001&mavlink=2
+
 ### MQTT / BulletGCSS
 
 See the [mwp's MQTT support](mqtt---bulletgcss-telemetry.md) article for a detailed description of the URI format:

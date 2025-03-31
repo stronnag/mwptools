@@ -58,7 +58,7 @@ namespace Mwp {
 			if (MBus.svc != null)
                 MBus.svc.quit();
 
-            MapManager.killall();
+            ProxyPids.killall();
 		}
 	}
 
@@ -321,6 +321,7 @@ namespace Mwp {
 
 		private void show_window() {
 
+			ProxyPids.init();
 			DemManager.init();
 
 			Gis.init();

@@ -1,5 +1,6 @@
 namespace MessageForward {
 	uint8 msg[512];
+
 	void position() {
 		uint8*rp;
 		switch (Mwp.conf.forward) {
@@ -227,17 +228,8 @@ namespace MessageForward {
 			msg[41] =  (uint8)(Mwp.msp.td.rssi.rssi*100/1023);
 			Mwp.fwddev.forward_mav(cmd_to_ucmd(Msp.Cmds.MAVLINK_MSG_RC_CHANNELS), msg, 42, mavver);
 			msg = {0};
-			flag = 0;
-			if (Mwp.vi.mrtype != 0) {
-				flag = Mav.inav2mav(Mwp.msp.td.state.ltmstate, ((Mwp.Vehicle)Mwp.vi.mrtype).is_fw());
-			}
-			rp = SEDE.serialise_u32(msg, flag); // custom_mode
-			*rp++ = 0; // type
-			*rp++ = 0; // autopilot
-			*rp++ = (Mwp.armed == 0) ? 0 : Mav.MODE_FLAG.MAV_MODE_FLAG_SAFETY_ARMED;
-			*rp++ = 4; //Mav.MAV_STATE.MAV_STATE_ACTIVE;
-			*rp++ = (Mwp.conf.forward ==  Mwp.FWDS.MAV1) ? 1 : 2;
-			Mwp.fwddev.forward_mav(cmd_to_ucmd( Msp.Cmds.MAVLINK_MSG_ID_HEARTBEAT), msg,  (intptr)rp - (intptr)msg, mavver);
+			msize = Mav.make_mav_heartbeat(msg);
+			Mwp.fwddev.forward_mav(cmd_to_ucmd( Msp.Cmds.MAVLINK_MSG_ID_HEARTBEAT), msg, msize, mavver);
 			break;
 
 		default:
@@ -291,7 +283,7 @@ namespace MessageForward {
 		}
 	}
 
-	private uint16 cmd_to_ucmd(uint c) {
+	uint16 cmd_to_ucmd(uint c) {
 		if (c > Msp.MAV_BASE) {
 			return (uint16)(c - Msp.MAV_BASE);
 		}

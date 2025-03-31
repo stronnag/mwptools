@@ -49,22 +49,19 @@ public class ADSBReader :Object {
 		can.cancel();
 	}
 
-	public ADSBReader.net(string pn, uint16 _port=30003) {
+	public ADSBReader.net(UriParser.UriParts u, uint16 _port=30003) {
 		this();
 		nreq = 0;
 		host = "localhost";
 		port = _port;
-		try {
-			var up = Uri.parse(pn, UriFlags.HAS_PASSWORD);
-			var h = up.get_host();
-			var p = up.get_port();
-			if (p != -1) {
-				port = (uint16)p;
-			}
-			if (h != null && h != "") {
-				host = h;
-			}
-		} catch {}
+		var h = u.host;
+		var p = u.port;
+		if (p != -1) {
+			port = (uint16)p;
+		}
+		if (h != null && h != "") {
+			host = h;
+		}
 	}
 
 	public ADSBReader.web(string pn) {
@@ -73,52 +70,41 @@ public class ADSBReader :Object {
 		host = pn;
 	}
 
-	public ADSBReader.adsbx(string pn) {
+	public ADSBReader.adsbx(UriParser.UriParts u) {
 		this();
 		format="v2/point/%s/%s/%s";
 		session = new Soup.Session ();
-		try {
-			var up = Uri.parse(pn, UriFlags.HAS_PASSWORD);
-			var h = up.get_host();
-			host = "https://%s".printf(h);
-			var q = up.get_query();
-			if (q != null) {
-				var items = q.split("&");
-				foreach(var s in items) {
-					var parts = s.split("=", 2);
-					if (parts.length == 2) {
-						switch (parts[0]) {
-						case "range":
-							range = uint.parse(parts[1]);
-							if (range > 250) {
-								range = 250;
-							}
-							break;
-						case "interval":
-							interval = uint.parse(parts[1]);
-							if(interval < 1000) {
-								interval = 1000;
-							}
-							break;
-						case "format":
-							format=parts[1];
-							format = format.replace("{}", "%s");
-							break;
-						case "api-key":
-							var kp = parts[1].split(":", 2);
-							if(kp.length == 2) {
-								keyid = kp[0];
-								keyval = kp[1];
-							}
-							break;
-						default:
-							break;
-						}
-					}
+		var h = u.host;
+		host = "https://%s".printf(h);
+		if (u.qhash != null) {
+			string? v;
+			v = u.qhash.get("range");
+			if (v != null) {
+				range = uint.parse(v);
+				if (range > 250) {
+					range = 250;
 				}
 			}
-		} catch (Error e) {
-			MWPLog.message("adsbx: parse %s %s\n", pn, e.message);
+			v = u.qhash.get("interval");
+			if (v != null) {
+				interval = uint.parse(v);
+				if(interval < 1000) {
+					interval = 1000;
+				}
+			}
+			v = u.qhash.get("format");
+			if (v != null) {
+				format = v.replace("{}", "%s");
+			}
+
+			v = u.qhash.get("api-key");
+			if (v != null) {
+				var kp = v.split(":", 2);
+				if(kp.length == 2) {
+					keyid = kp[0];
+					keyval = kp[1];
+				}
+			}
 		}
 	}
 

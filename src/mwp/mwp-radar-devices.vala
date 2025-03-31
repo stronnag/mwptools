@@ -238,9 +238,11 @@ namespace Radar {
 	public void add_radar(string pn, bool enable) {
 		RadarDev r = new RadarDev();
 		r.name = pn;
-		if (pn.has_prefix("sbs://")) {
+		var u = UriParser.dev_parse(pn);
+
+		if (u.scheme == "sbs") {
 			MWPLog.message("Set up SBS radar device %s\n", pn);
-			var sbs = new ADSBReader.net(pn);
+			var sbs = new ADSBReader.net(u);
 			r.enabled = enable;
 			r.dtype = IOType.LINE_READER;
 			r.dev = sbs;
@@ -267,9 +269,9 @@ namespace Radar {
 			if(r.is_enabled()) {
 				sbs.line_reader.begin();
 			}
-		} else if (pn.has_prefix("jsa://")) {
+		} else if (u.scheme == "jsa") {
 			MWPLog.message("Set up JSA radar device %s\n", pn);
-			var jsa = new ADSBReader.net(pn, 37007);
+			var jsa = new ADSBReader.net(u, 37007);
 			r.enabled = enable;
 			r.dtype = IOType.LINE_READER;
 			r.dev = jsa;
@@ -293,10 +295,10 @@ namespace Radar {
 			if(r.is_enabled()) {
 				jsa.line_reader.begin();
 			}
-		} else if (pn.has_prefix("pba://")) {
+		} else if (u.scheme == "pba") {
 #if PROTOC
 			MWPLog.message("Set up PSA radar device %s\n", pn);
-			var pba = new ADSBReader.net(pn, 38008);
+			var pba = new ADSBReader.net(u, 38008);
 			r.enabled = enable;
 			r.dtype = IOType.PACKET_READER;
 			r.dev = pba;
@@ -323,15 +325,15 @@ namespace Radar {
 #else
 			MWPLog.message("mwp not compiled with protobuf-c\n");
 #endif
-		} else if (pn.has_prefix("http://") ||
-				   pn.has_prefix("https://") ||
-				   pn.has_prefix("adsbx://") ) {
+		} else if (u.scheme == "http" ||
+				   u.scheme == "https" ||
+				   u.scheme == "adsbx" ) {
 			uint8 htype = 0;
 			if(pn.has_suffix(".pb")) {
 				htype = 1;
 			} else if(pn.has_suffix(".json")) {
 				htype = 2;
-			} else if (pn.has_prefix("adsbx://")) {
+			} else if (u.scheme == "adsbx") {
 				htype = 3;
 			}
 
@@ -339,7 +341,7 @@ namespace Radar {
 				MWPLog.message("Set up http radar device %s\n", pn);
 				ADSBReader httpa;
 				if(htype == 3) {
-					httpa = new ADSBReader.adsbx(pn);
+					httpa = new ADSBReader.adsbx(u);
 				} else  {
 					httpa = new ADSBReader.web(pn);
 				}
@@ -378,6 +380,17 @@ namespace Radar {
 			r.dev =  ser;
 			r.dtype = IOType.MSER;
 			r.enabled = enable;
+			if (u.qhash != null) {
+				var v = u.qhash.get("mavlink");
+				if (v != null) {
+					uint8 mvers = (uint8)uint.parse(v);
+					if(mvers < 1)
+						mvers = 1;
+					if(mvers > 2)
+						mvers = 2;
+					ser.mavvid = mvers;
+				}
+			}
 			ser.set_mode(MWSerial.Mode.SIM);
 			ser.set_pmask(MWSerial.PMask.INAV);
 			ser.serial_event.connect(()  => {
@@ -482,6 +495,9 @@ namespace Radar {
 						if (ok) {
 							((MWSerial)r.dev).setup_reader();
 							MWPLog.message("start radar reader %s\n", r.name);
+							if(((MWSerial)r.dev).mavvid != 0) {
+								Mav.send_mav_beacon((MWSerial)r.dev);
+							}
 						} else {
 						string fstr;
 						((MWSerial)r.dev).get_error_message(out fstr);

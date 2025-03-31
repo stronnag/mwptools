@@ -158,6 +158,7 @@
 		 {Msp.Cmds.MAVLINK_MSG_BATTERY_STATUS, 54},
 		 {Msp.Cmds.MAVLINK_MSG_STATUSTEXT, 54},
 		 {Msp.Cmds.MAVLINK_MSG_ID_TRAFFIC_REPORT, 38},
+		 {Msp.Cmds.MAVLINK_MSG_ID_AUTOPILOT_VERSION, 78},
 	 };
 
 	 uint32 find_size(uint cmd) {
@@ -707,9 +708,11 @@
 		 set_txbuf(MemAlloc.TX);
 		 pmask = PMask.AUTO;
 		 mavsysid = 'j';
+		 mavvid = 0;
 	 }
 
 	 public MWSerial() {
+		 mavvid = 0;
 		 fwd =  available = false;
 		 rxbuf_alloc = MemAlloc.RX;
 		 rxbuf = new uint8[rxbuf_alloc];
@@ -1070,139 +1073,142 @@
 		 } else {
 			 device = _device.substring(0,n);
 		 }
+
 		 devname = device;
 		 print_raw = (Environment.get_variable("MWP_PRINT_RAW") != null);
 		 commode = 0;
-		 var dd = DevManager.get_dd_for_name(devname);
-		 if (DevUtils.valid_bt_name(device)) {
-			 if (dd != null) {
+		 var u = UriParser.dev_parse(device);
+		 //MWPLog.message("UPARSE %s", u.to_string());
+		 var dd = DevManager.get_dd_for_name(u.path);
+		 if(dd != null && DevMask.BT in dd.type) {
+			 //MWPLog.message("DD %s %s\n", dd.name, dd.alias);
 #if LINUX
-				 bool bleok = false;
-				 if ((dd.type & DevMask.BTLE) == DevMask.BTLE) {
-					 gs = new BleSerial(dd.gid);
-					 commode = ComMode.BLE|ComMode.BT;
-					 if(DevManager.btmgr.set_device_connected(dd.id, true)) {
-						 var tc = 0;
-						 while (!DevManager.btmgr.get_device(dd.id).is_connected) {
-							 Thread.usleep(5000);
-							 tc++;
-							 if(tc > 200) {
-								 break;
-							 }
-						 }
-						 tc = 0;
-						 while(!gs.find_service(DevManager.btmgr, dd.id)) {
-							 Thread.usleep(5000);
-							 tc++;
-							 if(tc > 100) {
-								 break;
-							 }
-						 }
-						 var cset = gs.get_chipset();
-						 Thread.usleep(10000); // 10ms
-						 var mtu = gs.get_bridge_fds(DevManager.btmgr, dd.id, out fd, out wrfd);
-						 var xstr = "";
-						 if (mtu < 200) {
-							 xstr = " (unlikely to end well)";
-						 }
-						 MWPLog.message("BLE chipset %s, mtu %d%s\n", cset, mtu, xstr);
-						 bleok = (mtu > 0);
-						 if (mtu < 64) {
-							 commode |= (ComMode.WEAK|ComMode.WEAKBLE);
+			 bool bleok = false;
+			 if ((dd.type & DevMask.BTLE) == DevMask.BTLE) {
+				 //MWPLog.message("BTLE device\n");
+				 gs = new BleSerial(dd.gid);
+				 commode = ComMode.BLE|ComMode.BT;
+				 if(DevManager.btmgr.set_device_connected(dd.id, true)) {
+					 var tc = 0;
+					 while (!DevManager.btmgr.get_device(dd.id).is_connected) {
+						 Thread.usleep(5000);
+						 tc++;
+						 if(tc > 200) {
+							 break;
 						 }
 					 }
-					 if(!bleok || fd == -1){
-						 fd = -1;
-						 available = false;
-						 lasterr = Posix.ETIMEDOUT;
-					 } else {
-						 set_noblock(fd);
-						 if (fd != wrfd) {
-							 set_noblock(wrfd);
+					 tc = 0;
+					 while(!gs.find_service(DevManager.btmgr, dd.id)) {
+						 Thread.usleep(5000);
+						 tc++;
+						 if(tc > 100) {
+							 break;
 						 }
-						 available = true;
 					 }
-				 } else
+					 var cset = gs.get_chipset();
+					 Thread.usleep(10000); // 10ms
+					 var mtu = gs.get_bridge_fds(DevManager.btmgr, dd.id, out fd, out wrfd);
+					 var xstr = "";
+					 if (mtu < 200) {
+						 xstr = " (unlikely to end well)";
+					 }
+					 MWPLog.message("BLE chipset %s, mtu %d%s\n", cset, mtu, xstr);
+					 bleok = (mtu > 0);
+					 if (mtu < 64) {
+						 commode |= (ComMode.WEAK|ComMode.WEAKBLE);
+					 }
+				 }
+				 if(!bleok || fd == -1){
+					 fd = -1;
+					 available = false;
+					 lasterr = Posix.ETIMEDOUT;
+				 } else {
+					 set_noblock(fd);
+					 if (fd != wrfd) {
+						 set_noblock(wrfd);
+					 }
+					 available = true;
+				 }
+			 } else
 #endif
-					 {
-						 fd = BTSocket.connect(device, &lasterr);
-						 if (fd != -1) {
-							 wrfd = fd;
-							 commode = ComMode.BT;
-							 lasterr = 0;
-							 set_noblock(fd);
-							 available = true;
-						 } else {
-							 lasterr=MwpSerial.get_error_number();
-						 }
-					 }
-			 } else {
-				 fd = -1;
-				 available = false;
-				 lasterr = Posix.ETIMEDOUT;
+			 {
+				 //				 MWPLog.message("BT Legacy %s\n", dd.name);
+				 fd = BTSocket.connect(dd.name, &lasterr);
+				 if (fd != -1) {
+					 wrfd = fd;
+					 commode = ComMode.BT;
+					 lasterr = 0;
+					 set_noblock(fd);
+					 available = true;
+				 } else {
+					 lasterr=MwpSerial.get_error_number();
+				 }
 			 }
 			 if(!available) {
 				 clearup();
 			 }
-		 } else {
-			 var u = UriParser.parse(device);
-			 if (u != null) {
-				 string host = null;
-				 uint16 port = 0;
-				 string remhost = null;
-				 uint16 remport = 0;
-				 if(u.scheme == "tcp") {
-					 commode = ComMode.TCP;
-				 }
-				 if(u.port != -1) {
-					 port = (uint16)u.port;
-				 }
+		 } else if (u.scheme == "tcp" || u.scheme == "udp") {
+			 string host = null;
+			 uint16 port = 0;
+			 string remhost = null;
+			 uint16 remport = 0;
 
-				 if (u.host == null) {
-					 host = "";
-				 } else {
-					 host = u.host;
-				 }
+			 if(u.scheme == "tcp") {
+				 commode = ComMode.TCP;
+			 }
+			 if(u.port != -1) {
+				 port = (uint16)u.port;
+			 }
 
-				 /* sort out new and legacy rem stuff */
-				 if (u.path != null) {
-					 var parts = u.path.split(":");
-					 if (parts.length == 2) {
-						 remhost = parts[0][1:parts[0].length];
-						 remport = (uint16)int.parse(parts[1]);
-					 }
-				 }
-
-				 if (u.query != null) {
-					 var parts = u.query.split("=");
-					 if(parts.length == 2 && parts[0]=="bind") {
-						 remhost = u.host;
-						 remport = (uint16)u.port;
-						 port = (uint16)int.parse(parts[1]);
-						 host = "";
-					 }
-				 }
-				 if(host != null) {
-					 if (u.host == "__MWP_SERIAL_HOST") {
-						 host = resolve_mwp_serial_host();
-					 }
-					 setup_ip(host, port, remhost, remport);
-				 }
+			 if (u.host == null) {
+				 host = "";
 			 } else {
-				 commode = ComMode.TTY;
-				 var parts = device.split ("@");
-				 if(parts.length == 2) {
-					 device  = parts[0];
-					 rate = int.parse(parts[1]);
+				 host = u.host;
+			 }
+
+			 /* sort out new and legacy rem stuff */
+			 if (u.path != null) {
+				 var parts = u.path.split(":");
+				 if (parts.length == 2) {
+					 remhost = parts[0][1:parts[0].length];
+					 remport = (uint16)int.parse(parts[1]);
 				 }
-				 fd = MwpSerial.open(device, (int)rate);
-				 if(fd < 0) {
-					 lasterr = MwpSerial.get_error_number();
-				 } else {
-					 available = true;
-					 wrfd = fd;
-					 set_noblock(fd);
+			 }
+			 if (u.qhash != null) {
+				 var v = u.qhash.get("bind");
+				 if (v != null) {
+					 remhost = u.host;
+					 remport = (uint16)u.port;
+					 port = (uint16)int.parse(v);
+					 host = "";
 				 }
+			 }
+			 if(host != null) {
+				 if (u.host == "__MWP_SERIAL_HOST") {
+					 host = resolve_mwp_serial_host();
+				 }
+				 setup_ip(host, port, remhost, remport);
+			 }
+		 } else {
+			 commode = ComMode.TTY;
+			 var parts = u.path.split ("@");
+			 if(parts.length == 2) {
+				 device  = parts[0];
+				 rate = int.parse(parts[1]);
+			 } else {
+				 device  = u.path;
+				 var v = u.qhash.get("bind");
+				 if (v != null) {
+					 baudrate = int.parse(v);
+				 }
+			 }
+			 fd = MwpSerial.open(device, (int)rate);
+			 if(fd < 0) {
+				 lasterr = MwpSerial.get_error_number();
+			 } else {
+				 available = true;
+				 wrfd = fd;
+				 set_noblock(fd);
 			 }
 		 }
 		 return available;
@@ -1969,6 +1975,9 @@
 			 }
 			 stats.txbytes += sz;
 		 }
+		 if(rawlog) {
+			 log_raw('o', buf, (int)count);
+		 }
 		 return sz;
 	 }
 
@@ -2024,32 +2033,32 @@
 		 }
 		 mcrc = MavCRC.crc(0xffff, (uint8)len);
 
-		 *ptx++ = 0xfd;
-		 *ptx++ = (uint8)len;
+		 *ptx++ = 0xfd;           // STX
+		 *ptx++ = (uint8)len;     // len
 
-		 *ptx++ = 0;
+		 *ptx++ = 0;              // incomp
 		 mcrc = MavCRC.crc(mcrc, 0);
-		 *ptx++ = 0;
+		 *ptx++ = 0;             // comp
 		 mcrc = MavCRC.crc(mcrc, 0);
 
-		 *ptx++ = _mavseqno;
+		 *ptx++ = _mavseqno;     // seqno
 		 mcrc = MavCRC.crc(mcrc, _mavseqno);
 
-		 *ptx++ = _mavsysid;
+		 *ptx++ = _mavsysid;     // sysid
 		 mcrc = MavCRC.crc(mcrc, _mavsysid);
-		 *ptx++ = MAVID2;
+		 *ptx++ = MAVID2;        // compid
 		 mcrc = MavCRC.crc(mcrc, MAVID2);
 
 		 uint8 c = (uint8)(cmd & 0xff);
-		 *ptx++ = c;
+		 *ptx++ = c;  // id0
 		 mcrc = MavCRC.crc(mcrc, c);
 
 		 c = (uint8)(cmd >> 8);
-		 *ptx++ = c;
+		 *ptx++ = c; // id1
 		 mcrc = MavCRC.crc(mcrc, c);
 
 		 c = 0;
-		 *ptx++ = c;
+		 *ptx++ = c; // id2
 		 mcrc = MavCRC.crc(mcrc, c);
 
 		 for(var j = 0; j < len; j++) {
@@ -2059,8 +2068,8 @@
 		 }
 		 var seed  = MavCRC.lookup(cmd);
 		 mcrc = MavCRC.crc(mcrc, seed);
-		 *ptx++ = (uint8)(mcrc&0xff);
-		 *ptx++ = (uint8)(mcrc >> 8);
+		 *ptx++ = (uint8)(mcrc&0xff); // crc
+		 *ptx++ = (uint8)(mcrc >> 8); // crc
 		 return (ptx - (uint8*)_txbuf);
 	 }
 
@@ -2180,7 +2189,7 @@
 		 if(state == true) {
 			 time_t currtime;
 			 time_t(out currtime);
-			 string dstr = devname.delimit("""\:@/[]""", '_');
+			 string dstr = devname.delimit("""\:@/[]?=""", '_');
 			 var dt = new DateTime.from_unix_local(currtime);
 			 var logdir = UserDirs.get_default();
 			 var fn  = "mwp.%s.%s.raw".printf(dstr, dt.format("%FT%H%M%S"));

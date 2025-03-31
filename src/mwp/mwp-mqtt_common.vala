@@ -493,17 +493,15 @@ public class MwpMQTT : Object {
     }
 
     public bool setup(string s) {
-		string cafile = null;
+		string? cafile = null;
 		string topic = null;
 
 		int port;
 		var u = UriParser.parse(s);
-        if (u.query != null) {
-            var parts = u.query.split("=");
-            if (parts.length == 2 && parts[0] == "cafile") {
-                cafile = parts[1];
-            }
-        }
+        if (u.qhash != null) {
+			var v = u.qhash.get("cafile");
+			cafile = v;
+		}
 		port = u.port;
 		topic = u.path;
 
