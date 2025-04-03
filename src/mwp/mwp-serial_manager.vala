@@ -62,7 +62,7 @@ namespace Msp {
 		string? rcdef = Environment.get_variable("MWP_MSP_RC");
 		if(rcdef != null) {
 			var pl = new ProcessLauncher();
-			var cmd = "mwp-js-server %s".printf(rcdef);
+			var cmd = "mwp-hid-server %s".printf(rcdef);
 			var res = pl.run_command(cmd, 0);
 			if(res) {
 				pid = pl.get_pid();
