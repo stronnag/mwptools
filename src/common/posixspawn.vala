@@ -101,6 +101,7 @@ public class ProcessLauncher : Object {
 
 	public static void kill(int pid) {
 		Posix.kill(pid, ProcessSignal.TERM);
+		Posix.kill(pid, ProcessSignal.QUIT);
 	}
 
 	public static void suspend(int pid) {

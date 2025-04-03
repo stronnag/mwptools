@@ -17,7 +17,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-public class Mav : Object {
+namespace Mav {
 	public enum Cmds {
         MAVLINK_MSG_ID_HEARTBEAT = 0,
         MAVLINK_MSG_ID_SYS_STATUS = 1,
@@ -263,7 +263,7 @@ public class Mav : Object {
         uint16 throttle; ///< Current throttle setting in integer percent, 0 to 100
     }
 
-    public static uint8 mav2mw(uint8 mav) {
+    public uint8 mav2mw(uint8 mav) {
         uint8 mw;
         switch(mav) {
             case Mav.TYPE.MAV_TYPE_FIXED_WING:
@@ -289,7 +289,7 @@ public class Mav : Object {
         return mw;
     }
 
-    public static uint8 xmav2inav(uint32 mavmode, bool is_fw) {
+    public uint8 xmav2inav(uint32 mavmode, bool is_fw) {
         uint8 ltmmode = 0;
         if(is_fw) {
                 // I don't believe the iNav mapping for FW ...
@@ -353,7 +353,7 @@ public class Mav : Object {
         return ltmmode;
     }
 
-    public static uint8 mav2inav(uint32 mavmode, bool is_fw) {
+    public uint8 mav2inav(uint32 mavmode, bool is_fw) {
         uint8 ltmmode = 0;
         if(is_fw) {
             switch (mavmode) {
@@ -419,7 +419,7 @@ public class Mav : Object {
         return ltmmode;
     }
 
-	public static uint32 inav2mav(uint8 imode, bool is_fw) {
+	public uint32 inav2mav(uint8 imode, bool is_fw) {
 		uint32 mavmode = (is_fw) ? (uint32)APM_PLANE_MODE.PLANE_MODE_ACRO : (uint32)APM_COPTER_MODE.COPTER_MODE_ACRO;
 		switch (imode) {
 		case Msp.Ltm.MANUAL:

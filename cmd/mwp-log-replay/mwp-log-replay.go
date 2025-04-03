@@ -305,7 +305,7 @@ func main() {
 					offset float64
 					size   uint16
 					dirn   byte
-				}{offset: diff, size: uint16(n), dirn: 'o'}
+				}{offset: diff, size: uint16(n), dirn: 'i'}
 				binary.Write(file, binary.LittleEndian, header)
 				file.Write(buf[0:n])
 			} else {

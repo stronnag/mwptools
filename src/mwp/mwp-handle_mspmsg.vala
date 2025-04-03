@@ -68,7 +68,6 @@ namespace Mwp {
 				queue_cmd(Msp.Cmds.EEPROM_WRITE,null, 0);
 			}
 		}
-		//        run_queue();
     }
 
 	private void set_typlab() {
@@ -1393,6 +1392,9 @@ namespace Mwp {
 			Assist.Window.instance().send_assist();
 			break;
 
+		case Msp.Cmds.SET_RAW_RC:
+			break;
+
 		default:
 			handled = false;
 			break;
@@ -1775,7 +1777,7 @@ namespace Mwp {
 				MWPLog.message("Inital starttask %x\n", starttasks);
 				starttasks -= StartupTasks.STATUS;
 				queue_cmd(msp_get_status,null,0);
-				run_queue();
+				//run_queue();
 			} else if (SAFEHOMES in starttasks) {
 				sh_disp = true;
 				starttasks -= StartupTasks.SAFEHOMES;
@@ -1783,14 +1785,14 @@ namespace Mwp {
 				uint8 shid = 0;
 				MWPLog.message("Load FC safehomes\n");
 				queue_cmd(Msp.Cmds.SAFEHOME,&shid,1);
-				run_queue();
+				//run_queue();
 			} else if (GEOZONES in starttasks) {
 				starttasks -= StartupTasks.GEOZONES;
 				MWPLog.message("Load FC Geozones\n");
 				gzr.reset();
 				queue_gzone(0);
 				gz_from_msp = true;
-				run_queue();
+				//run_queue();
 			} else if (MISSION in starttasks) {
 				starttasks -= StartupTasks.MISSION;
 				MWPLog.message("Auto-download FC mission\n");
@@ -1799,14 +1801,14 @@ namespace Mwp {
 				starttasks -= StartupTasks.STATUSX;
 				have_status = false;
 				queue_cmd(msp_get_status,null,0);
-				run_queue();
+				//run_queue();
 			}
 		} else {
 			MWPLog.message("Armed, skipping start tasks\n");
 			starttasks = 0;
 			have_status= false;
 			queue_cmd(msp_get_status,null,0);
-			run_queue();
+			//run_queue();
 		}
 	}
 }

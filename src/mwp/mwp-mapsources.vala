@@ -221,19 +221,30 @@ namespace BingMap {
 	}
 }
 
-namespace MapManager {
-    public string id = null;
-	private int [] proxypids;
-	private SoupProxy sp;
+namespace ProxyPids {
+	private int [] pids;
 	private bool ikill = false;
+
+	public void init() {
+		pids = {};
+	}
+
+	public void add(int p) {
+		pids += p;
+	}
 
 	public void killall() {
 		ikill = true;
-		foreach(var p in proxypids) {
+		foreach(var p in pids) {
 			ProcessLauncher.kill(p);
 		}
-		proxypids = {};
+		pids = {};
 	}
+}
+
+namespace MapManager {
+    public string id = null;
+	private SoupProxy sp;
 
 	private string? fixup_template_uri(string a) {
 		var parts = a.split("#");
@@ -256,7 +267,6 @@ namespace MapManager {
 
 	public MwpMapDesc[] read_json_sources(string? fn, bool offline=false) {
 		MwpMapDesc[] sources = {};
-		proxypids = {};
 
 		sources += 	EsriWorld.get_source();
 
@@ -374,7 +384,7 @@ namespace MapManager {
 				try { sout.shutdown(false);} catch {}
 				var pid = pl.get_pid();
 				if(pid != 0) {
-					proxypids += pid;
+					ProxyPids.add(pid);
 					pl.complete.connect(() => {
 							MWPLog.message("Terminated %s\n",cmd);
 						});
