@@ -284,7 +284,7 @@ static int main(string? []args) {
 			if (JoyManager.verbose) {
 				Timeout.add_seconds(10, () => {
 						jm.show_start();
-						print(jm.print_channels());
+						print("%s\n", jm.print_channels());
 						return true;
 					});
 			}
