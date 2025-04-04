@@ -1,7 +1,7 @@
 static MainLoop ml;
 
 public class JoyManager : Object {
-	public static bool dumper;
+	public static bool verbose;
 	public static bool fake;
 	public static int port;
 
@@ -49,6 +49,16 @@ public class JoyManager : Object {
 		}
 	}
 
+	public void show_start() {
+		if(!tinit) {
+			tinit = true;
+			for(var j = 1; j < 17; j++) {
+				print(" Ch%02d", j);
+			}
+			print("\n");
+		}
+	}
+
 	public void read_all() {
 		if (js != null) {
 			for(var j = 0; j < jrdr.axes.length; j++) {
@@ -85,19 +95,31 @@ public class JoyManager : Object {
 				jrdr.set_button(event.jbutton.button, false);
 				break;
 			case SDL.EventType.JOYHATMOTION:
-				print("Hat %d value %d.\n", event.jhat.hat, event.jhat.value);
+				if (verbose)
+					print("Hat %d value %d.\n", event.jhat.hat, event.jhat.value);
 				break;
 			case SDL.EventType.JOYDEVICEADDED:
-				print("Joystick %d connected\n", event.jdevice.which);
+				if (verbose)
+					print("Joystick #%d connected\n", event.jdevice.which);
 				js = new SDL.Input.Joystick(0);
-				print("%s\n", get_info());
+				if (verbose)
+					print("%s\n", get_info());
 				jrdr.set_sizes(js.num_axes(), js.num_buttons());
 				jrdr.reader(mf);
 				read_all();
-				print(print_channels());
+				Timeout.add(1000, () => {
+						read_all();
+						if(verbose) {
+							show_start();
+							print("%s\n", print_channels());
+						}
+						return false;
+					});
 				break;
 			case SDL.EventType.JOYDEVICEREMOVED:
-				print("Joystick %d removed.\n", event.jdevice.which);
+				if(verbose) {
+					print("Joystick %d removed.\n", event.jdevice.which);
+				}
 				jrdr.reset_all();
 				js = null;
 				jrdr = null;
@@ -109,11 +131,13 @@ public class JoyManager : Object {
 				//print("Joystick %d update complete\n", event.jdevice.which);
 				break;
 			default:
-				print("Unhandled %d %x\n", event.type, event.type);
+				if (verbose)
+					print("Unhandled %d %x\n", event.type, event.type);
 				break;
 			}
 		}
-		print("sdl done\n");
+		if (verbose)
+			print("sdl done\n");
 		ml.quit();
 	}
 
@@ -131,19 +155,10 @@ public class JoyManager : Object {
 
 	public string print_channels() {
 		StringBuilder sb = new StringBuilder();
-		if (!tinit) {
-			for(var j = 1; j < 17; j++) {
-				sb.append_printf(" Ch%02d", j);
-			}
-			sb.append_c('\n');
-			tinit = true;
-		}
-
 		var chans = get_channels();
 		for(var k = 0; k < chans.length; k++) {
 			sb.append_printf(" %4d", chans[k]);
 		}
-		sb.append_c('\n');
 		return sb.str;
 	}
 
@@ -229,7 +244,7 @@ public class JoyManager : Object {
 }
 
 const OptionEntry[] options = {
-	{"dump", 'v', 0, OptionArg.NONE, ref JoyManager.dumper, "Periodic dump", null},
+	{"verbose", 'v', 0, OptionArg.NONE, ref JoyManager.verbose, "Verbose mode", null},
 	{"fake", 'f', 0, OptionArg.NONE, ref JoyManager.fake, "Fake values", null},
 	{"port", 'p', 0, OptionArg.INT, ref JoyManager.port, "Udp port", "31025"},
 	{null}
@@ -266,8 +281,9 @@ static int main(string? []args) {
 		ok = jm.setup_ip((uint16)JoyManager.port);
 		if(ok) {
 			jm.ufetch();
-			if (JoyManager.dumper) {
+			if (JoyManager.verbose) {
 				Timeout.add_seconds(10, () => {
+						jm.show_start();
 						print(jm.print_channels());
 						return true;
 					});
