@@ -218,6 +218,7 @@ public class JoyManager : Object {
 									  }
 									  string cmd = ((string)buf[:sz]).strip();
 									  if(cmd == "quit") {
+										  socket.send_to(remaddr, {});
 										  SDL.quit();
 										  ml.quit();
 									  } else if (cmd == "raw") {
@@ -230,6 +231,9 @@ public class JoyManager : Object {
 										  socket.send_to(remaddr, get_info().data);
 									  } else if (cmd.has_prefix("set ")) {
 										  set_chans(cmd);
+										  socket.send_to(remaddr, {});
+									  } else {
+										  socket.send_to(remaddr, {});
 									  }
 									  return true;
 								  } catch (Error e) {
