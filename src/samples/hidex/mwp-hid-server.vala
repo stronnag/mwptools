@@ -240,7 +240,7 @@ static int main(string? []args) {
 	JoyManager.port = 31025;
 
 	try {
-		var opt = new OptionContext(" - mapfile");
+		var opt = new OptionContext(" mapfile");
 		opt.set_help_enabled(true);
 		opt.add_main_entries(options, null);
 		opt.parse(ref args);
