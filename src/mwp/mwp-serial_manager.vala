@@ -27,7 +27,6 @@ namespace Mwp  {
     MwpMQTT mqtt;
 #endif
 	uint stag = 0;
-	Timer rctimer;
 	const int CHNSIZE = 32;
 
 	public void clear_sidebar(MWSerial s) {
@@ -53,30 +52,10 @@ namespace Msp {
 	const uint16 JSTKPORT=31025;
 
 	public void init() {
-		int pid = 0;
 		Mwp.mqtt_available = false;
 		Mwp.msp = new MWSerial();
         Mwp.lastp = new Timer();
 		Mwp.lastp.start();
-		Mwp.rctimer = new Timer();
-		string? rcdef = Environment.get_variable("MWP_MSP_RC");
-		if(rcdef != null) {
-			var pl = new ProcessLauncher();
-			var cmd = "mwp-hid-server %s".printf(rcdef);
-			var res = pl.run_command(cmd, 0);
-			if(res) {
-				pid = pl.get_pid();
-				if(pid != 0) {
-					ProxyPids.add(pid);
-					Mwp.rctimer.start();
-					JSMisc.setup_ip(JSTKHOST, JSTKPORT);
-				}
-			}
-			MWPLog.message(":DBG: rcdef=%s, pid=%d\n", rcdef, pid);
-		}
-		if (pid == 0) {
-			Mwp.rctimer.stop();
-		}
 		Mwp.msp.is_main = true;
 		Mwp.mq = new Queue<Mwp.MQI?>();
         Mwp.lastmsg = Mwp.MQI(); //{cmd = Msp.Cmds.INVALID};
@@ -255,11 +234,6 @@ namespace Msp {
 		Mwp.window.mmode.set_label("");
 		MwpMenu.set_menu_state(Mwp.window, "followme", false);
 		Mwp.window.conbutton.sensitive = true;
-		if(Mwp.rctimer.is_active()) {
-			if(Mwp.conf.show_sticks != 1) {
-				Sticks.done();
-			}
-		}
 	}
 
 	private uint8 pmask_to_mask(uint j) {
@@ -324,17 +298,8 @@ namespace Msp {
 					} else {
 						Mwp.serstate = Mwp.SERSTATE.NORMAL;
 						Mwp.msp.use_v2 = false;
-						if (Mwp.rctimer.is_active()) {
-							var joyid = JSMisc.get_info();
-							MWPLog.message("Raw RC: %s\n", joyid);
-						}
 						Mwp.queue_cmd(Msp.Cmds.IDENT,null,0);
 						Mwp.run_queue();
-						if(Mwp.rctimer.is_active()) {
-							if(Mwp.conf.show_sticks != 1) {
-								Sticks.create_sticks();
-							}
-						}
 					}
 				} else {
 					Mwp.serstate = Mwp.SERSTATE.TELEM;

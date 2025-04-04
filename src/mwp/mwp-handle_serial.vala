@@ -651,46 +651,25 @@ namespace Mwp {
         }
 
 		if(serstate == SERSTATE.POLLER) {
-			if(!send_msp_rc()) {
-				if(mleave == 1 && !mq.is_empty()) {
-					mleave = 2;
-					// MWPLog.message(":DBG: 1 Interleaved %s %u => QUE\n", cmd.format(), raw[0]);
-					run_queue();
-				} else if (mleave == 2) {
-					// MWPLog.message(":DBG: 2 Interleaved %s %u => POLL\n", cmd.format(), raw[0]);
-					timed_poll();
-					mleave = 1;
-				} else if(!mq.is_empty()) {
-					run_queue();
-				} else {
-					timed_poll();
-				}
+			if(mleave == 1 && !mq.is_empty()) {
+				mleave = 2;
+				// MWPLog.message(":DBG: 1 Interleaved %s %u => QUE\n", cmd.format(), raw[0]);
+				run_queue();
+			} else if (mleave == 2) {
+				// MWPLog.message(":DBG: 2 Interleaved %s %u => POLL\n", cmd.format(), raw[0]);
+				timed_poll();
+				mleave = 1;
+			} else if(!mq.is_empty()) {
+				run_queue();
+			} else {
+				timed_poll();
 			}
 		} else {
-			if(!send_msp_rc()) {
-				if(!mq.is_empty()) {
-					run_queue();
-				}
+			if(!mq.is_empty()) {
+				run_queue();
 			}
 		}
     }
-
-	private bool send_msp_rc() {
-		int16 chans[16];
-		if(rctimer.is_active() && rctimer.elapsed() > Mwp.JSTKINTVL) {
-			var socket = JSMisc.make_connection();
-			if (socket != null) {
-				if(JSMisc.read_chans(chans) == JSCHANSIZE && chans[0] > 0) {
-					msp.send_command(Msp.Cmds.SET_RAW_RC, (uint8[])chans, JSCHANSIZE);
-					rctimer.start();
-					Sticks.update(chans[0], chans[1], chans[3], chans[2]);
-					return true;
-				}
-			}
-			rctimer.stop();
-		}
-		return false;
-	}
 
 	private void timed_poll() {
 		if (requests.length > 0) {
