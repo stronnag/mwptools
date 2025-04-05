@@ -378,9 +378,9 @@ namespace Mwp {
 }
 
 namespace Mav {
+	/*
 	uint32 swvers = 0;
 	uint8 gitid[8];
-
 	void genvers() {
 		if (swvers == 0) {
 			var v1 = MwpVers.get_id();
@@ -394,6 +394,22 @@ namespace Mav {
 			gitid = v2.data[0:8];
 		}
 	}
+	void send_mav_autopilot(MWSerial m) {
+		uint8 msg[128] = {0};
+		var len = make_mav_autopilot(msg);
+		m.send_mav(((uint16)Msp.Cmds.MAVLINK_MSG_ID_AUTOPILOT_VERSION-(uint16)Msp.MAV_BASE), msg[:len], len);
+	}
+	uint make_mav_autopilot(uint8[] msg) {
+		uint8*rp;
+		genvers();
+		SEDE.serialise_u32(msg+16, swvers); // sw_version
+		rp = msg+52;
+		for(var i = 0; i < 8; i++) {
+			*rp++ = gitid[i];
+		}
+		return (uint)((intptr)rp - (intptr)msg);
+	}
+	*/
 
 	uint make_mav_heartbeat(uint8[] msg) {
 		uint32 flag = 0;
@@ -410,32 +426,14 @@ namespace Mav {
 		return (uint)((intptr)rp - (intptr)msg);
 	}
 
-	uint make_mav_autopilot(uint8[] msg) {
-		uint8*rp;
-		genvers();
-		SEDE.serialise_u32(msg+16, swvers); // sw_version
-		rp = msg+52;
-		for(var i = 0; i < 8; i++) {
-			*rp++ = gitid[i];
-		}
-		return (uint)((intptr)rp - (intptr)msg);
-	}
-
 	void send_mav_heartbeat(MWSerial m) {
 		uint8 msg[16] = {0};
 		var len = make_mav_heartbeat(msg);
 		m.send_mav(((uint16)Msp.Cmds.MAVLINK_MSG_ID_HEARTBEAT-(uint16)Msp.MAV_BASE), msg[:len], len);
 	}
 
-	void send_mav_autopilot(MWSerial m) {
-		uint8 msg[128] = {0};
-		var len = make_mav_autopilot(msg);
-		m.send_mav(((uint16)Msp.Cmds.MAVLINK_MSG_ID_AUTOPILOT_VERSION-(uint16)Msp.MAV_BASE), msg[:len], len);
-	}
-
 	void send_mav_beacon(MWSerial m) {
 		send_mav_heartbeat(m);
-		send_mav_autopilot(m);
+		//send_mav_autopilot(m);
 	}
-
 }
