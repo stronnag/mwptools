@@ -160,9 +160,9 @@ public class ADSBReader :Object {
 			nreq++;
 			var byt = yield session.send_and_read_async (msg, Priority.DEFAULT, can);
 			if (msg.status_code == 200) {
-				var data =  byt.get_data();
-				log_data(data);
+				var data = byt.get_data();
 				result(data);
+				log_data(data);
 				ecount = 0;
 				return true;
 			} else {
@@ -222,8 +222,8 @@ public class ADSBReader :Object {
 					return false;
 				} else {
 					Radar.set_astatus();
-					log_data(line.data);
 					result(line.data);
+					log_data(line.data);
 				}
 			} catch (Error e) {
 				if (e.matches(Quark.from_string("g-io-error-quark"), IOError.CANCELLED)) {
@@ -261,8 +261,8 @@ public class ADSBReader :Object {
 						ok = yield inp.read_all_async(pbuf, Priority.DEFAULT, can, out nb);
 						if (ok && nb == msize) {
 							Radar.set_astatus();
-							log_data(pbuf);
 							result(pbuf);
+							log_data(pbuf);
 						} else {
 							MWPLog.message("PB read %d %d\n", (int)msize, (int)nb);
 							result(null);

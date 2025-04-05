@@ -27,8 +27,9 @@ namespace Radar {
 		MAVLINK,  // 4,
 		SBS,      //  8,
 		ADSBX,      //  16,
+		PICO, // 32
 		M_INAV = (INAV|TELEM),
-		M_ADSB = (MAVLINK|SBS|ADSBX);
+		M_ADSB = (MAVLINK|SBS|ADSBX|PICO);
 
 		public string to_string() {
 			string sstr;
@@ -42,6 +43,8 @@ namespace Radar {
 				sstr = "ADSBX";
 			} else if((this & TELEM) != 0) {
 				sstr = "TELEM";
+			} else if((this & TELEM) != 0) {
+				sstr = "PICO";
 			} else {
 				sstr = "UnKnown";
 			}
@@ -60,6 +63,8 @@ namespace Radar {
 				return "S";
 			case RadarSource.ADSBX:
 				return "X";
+			case RadarSource.PICO:
+				return "P";
 			default:
 				return "?";
 			}

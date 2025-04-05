@@ -335,10 +335,15 @@ namespace Radar {
 				htype = 2;
 			} else if (u.scheme == "adsbx") {
 				htype = 3;
+			} else if (u.qhash != null) {
+				var v = u.qhash.get("source");
+				if (v != null && v == "picoadsb") {
+					htype = 4;
+				}
 			}
 
 			if(htype != 0) {
-				MWPLog.message("Set up http radar device %s\n", pn);
+				MWPLog.message("Set up http %d radar device %s\n", htype, pn);
 				ADSBReader httpa;
 				if(htype == 3) {
 					httpa = new ADSBReader.adsbx(u);
@@ -362,11 +367,16 @@ namespace Radar {
 								queue_remove(r);
 							}
 						} else {
+							var sz = s.length;
+							var data =  new uint8[sz+1];
+							Memory.copy(data,s, sz);
+							data[sz] = 0;
 							if(htype == 1) {
-								decode_pba(s);
+								decode_pba(data);
+							} else if (htype == 4) {
+								decode_pico((string)data);
 							} else {
-								s[s.length-1] = 0;
-								decode_jsa((string)s, (htype == 3));
+								decode_jsa((string)data, (htype == 3));
 							}
 						}
 					});
