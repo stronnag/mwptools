@@ -162,9 +162,10 @@ namespace MspRadar {
 
 		var maxvl = *rp++;
 		var maxcs = *rp++;
+		rp += 8;
 		var now = new DateTime.now_local();
 
-		var maxml = (mlen-2)/30;
+		var maxml = (mlen-10)/30;
 		if (maxvl > maxml)
 			maxvl = (uint8)maxml;
 
