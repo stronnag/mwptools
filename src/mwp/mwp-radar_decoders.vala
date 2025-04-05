@@ -20,6 +20,116 @@
 namespace Radar {
 	public const uint32 ADSB_DISTNDEF = (uint32)0xffffffff;
 
+	public void decode_pico(string js) {
+		var parser = new Json.Parser();
+		var now = new DateTime.now_local();
+		Json.Array acarry;
+
+		try {
+			parser.load_from_data (js);
+			var root = parser.get_root().get_object();
+			if(root.has_member("aircraft")) {
+				acarry = root.get_array_member ("aircraft");
+				for(var j = 0; j < acarry.get_length(); j++) {
+					var acnode = acarry.get_element(j);
+					var obj = acnode.get_object ();
+					var hex  = obj.get_string_member ("icao");
+					var icao = (uint)  MwpLibC.strtoul(hex, null, 16);  //uint64.parse(hex,16);
+					var tsource = Radar.RadarSource.PICO;
+					bool is_valid = false;
+
+					if(obj.has_member("lat")) {
+						double _lon = 0.0;
+						var _lat = obj.get_double_member("lat");
+						if(obj.has_member("lon")) {
+							_lon = obj.get_double_member("lon");
+						}
+						if(_lat != 0.0 && _lon != 0.0) {
+							is_valid = true;
+						}
+					}
+
+					if(is_valid) {
+						var ri = radar_cache.lookup(icao);
+						if (ri == null) {
+							ri = new RadarPlot();
+							ri.source = tsource;
+							ri.srange = Radar.ADSB_DISTNDEF;
+						}
+						int64 seen=0;
+						bool is_seen = false;
+
+						if(obj.has_member("age")) {
+							seen = obj.get_int_member ("age");
+							is_seen = true;
+						}
+						if(is_seen) {
+							int64 lts = (int64)seen;
+							TimeSpan ts = -1*TimeSpan.MILLISECOND*lts;
+							var xdt = now.add(ts);
+							if(tsource != ri.source && ri.dt != null) {
+								// MWPLog.message("MULTI %x %s this=%s/%.12s db=%s/%.12s\n", icao, ri.name.strip(), tsource.source_id(), xdt.format("%T.%f"), ((Radar.RadarSource)ri.source).source_id(), ri.dt.format("%T.%f"));
+								if(xdt.compare(ri.dt) == -1) {
+									// MWPLog.message(" *** SKIP this\n");
+									continue;
+								}
+							}
+							ri.dt = xdt;
+							seen /= 1000;
+							ri.lq = (seen < 256) ? (uint8)seen : 255;
+						} else {
+							ri.dt = now;
+							ri.lq = 255;
+						}
+						ri.posvalid = true;
+						ri.latitude = obj.get_double_member("lat");
+						if(obj.has_member("lon")) {
+							ri.longitude = obj.get_double_member("lon");
+						}
+						if(obj.has_member("et")) {
+							var s = obj.get_string_member("et");
+							var et = CatMap.from_category(s);
+							if (et != ri.etype) {
+								ri.alert |= Radar.RadarAlert.SET;
+							}
+							ri.etype = et;
+						}
+						if(obj.has_member("cs")) {
+							var s = obj.get_string_member("cs");
+							ri.name = s;
+						} else if(ri.name == null || ri.name.length == 0) {
+							  ri.name = "[%u]".printf(icao);
+						}
+
+						int alt = 0;
+						if(obj.has_member("alt")) {
+							alt = (int)obj.get_int_member ("alt");
+							ri.altitude = alt * 0.3048;
+						}
+						if(obj.has_member("balt")) {
+							if(alt == 0) {
+								alt =(int) obj.get_int_member ("balt");
+								ri.altitude = alt / 1000.0;
+							}
+						}
+						if(obj.has_member("hdg")) {
+							ri.heading = (uint16)obj.get_int_member("hdg")/100;
+						}
+						if(obj.has_member("hvel")) {
+							double spd = obj.get_int_member("hvel")*1852.0/3600.0/100.0;
+							ri.speed = spd;
+						}
+						Radar.upsert(icao, ri);
+						Radar.update(icao, false);
+						Radar.update_marker(icao);
+					  }
+				}
+			}
+		} catch (Error e) {
+			stderr.printf("Pico JSON: !%s! %s\n", js, e.message);
+		}
+	}
+
 	public void decode_sbs(string[] p) {
 		var rdebug = ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE);
 		bool posrep = (p[1] == "2" || p[1] == "3");
@@ -325,7 +435,7 @@ namespace Radar {
 				}
 			}
 		} catch (Error e) {
-			print("parser: %s\n%s\n", e.message, js);
+			print("JSA parser (%s): %s\n%s\n", adsbx.to_string(), e.message, js);
 		}
 	}
 
