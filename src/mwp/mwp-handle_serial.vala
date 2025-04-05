@@ -752,7 +752,7 @@ namespace Mwp {
 			if((conf.msp2_adsb == 1) || // "on"
 			   (conf.msp2_adsb == 2 && have_mavlink && !msp.is_weak())) {
 				requests +=  Msp.Cmds.ADSB_VEHICLE_LIST;
-				reqsize += 152; // or more ...
+				reqsize += 160; // or more ...
 			}
 		}
 
