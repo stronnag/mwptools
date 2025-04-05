@@ -1197,9 +1197,11 @@
 				 rate = int.parse(parts[1]);
 			 } else {
 				 device  = u.path;
-				 var v = u.qhash.get("bind");
-				 if (v != null) {
-					 baudrate = int.parse(v);
+				 if (u.qhash != null) {
+					 var v = u.qhash.get("baud");
+					 if (v != null) {
+						 baudrate = int.parse(v);
+					 }
 				 }
 			 }
 			 fd = MwpSerial.open(device, (int)rate);
