@@ -145,6 +145,7 @@ namespace Mwp {
 	const int MSP_WAITMS = 5;
 	const double JSTKINTVL = 0.15;
 	const int JSCHANSIZE = 32;
+	int16 rcchans[16];
 
 	void serial_reset() {
 		vi = {};
@@ -676,18 +677,18 @@ namespace Mwp {
     }
 
 	private bool send_msp_rc() {
-		int16 chans[16];
 		if(rctimer.is_active() && rctimer.elapsed() > Mwp.JSTKINTVL) {
-			var socket = JSMisc.make_connection();
-			if (socket != null) {
-				if(JSMisc.read_chans(chans) == JSCHANSIZE && chans[0] > 0) {
-					msp.send_command(Msp.Cmds.SET_RAW_RC, (uint8[])chans, JSCHANSIZE);
-					rctimer.start();
-					Sticks.update(chans[0], chans[1], chans[3], chans[2]);
-					return true;
-				}
-			}
-			rctimer.stop();
+			JSMisc.read_hid_async.begin((uint8[])rcchans, "raw",  (o, r) => {
+					var sz = JSMisc.read_hid_async.end(r);
+					if(sz  == JSCHANSIZE && rcchans[0] > 0) {
+						msp.send_command(Msp.Cmds.SET_RAW_RC, (uint8[])rcchans, JSCHANSIZE);
+						rctimer.start();
+						Sticks.update(rcchans[0], rcchans[1], rcchans[3], rcchans[2]);
+					} else {
+						rctimer.stop();
+					}
+				});
+			return true;
 		}
 		return false;
 	}

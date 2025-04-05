@@ -28,6 +28,8 @@ namespace Mwp  {
 #endif
 	uint stag = 0;
 	Timer rctimer;
+	bool use_msp_rc;
+
 	const int CHNSIZE = 32;
 
 	public void clear_sidebar(MWSerial s) {
@@ -51,6 +53,7 @@ namespace Mwp  {
 namespace Msp {
 	const string JSTKHOST="localhost";
 	const uint16 JSTKPORT=31025;
+	uint8 jbuf[512];
 
 	public void init() {
 		int pid = 0;
@@ -58,7 +61,6 @@ namespace Msp {
 		Mwp.msp = new MWSerial();
         Mwp.lastp = new Timer();
 		Mwp.lastp.start();
-		Mwp.rctimer = new Timer();
 		string? rcdef = Environment.get_variable("MWP_MSP_RC");
 		if(rcdef != null) {
 			var pl = new ProcessLauncher();
@@ -67,15 +69,14 @@ namespace Msp {
 			if(res) {
 				pid = pl.get_pid();
 				if(pid != 0) {
+					Mwp.rctimer = new Timer();
+					Mwp.rctimer.stop();
 					ProxyPids.add(pid);
-					Mwp.rctimer.start();
 					JSMisc.setup_ip(JSTKHOST, JSTKPORT);
+					Mwp.use_msp_rc = true;
 				}
 			}
 			MWPLog.message(":DBG: rcdef=%s, pid=%d\n", rcdef, pid);
-		}
-		if (pid == 0) {
-			Mwp.rctimer.stop();
 		}
 		Mwp.msp.is_main = true;
 		Mwp.mq = new Queue<Mwp.MQI?>();
@@ -255,7 +256,7 @@ namespace Msp {
 		Mwp.window.mmode.set_label("");
 		MwpMenu.set_menu_state(Mwp.window, "followme", false);
 		Mwp.window.conbutton.sensitive = true;
-		if(Mwp.rctimer.is_active()) {
+		if(Mwp.use_msp_rc) {
 			if(Mwp.conf.show_sticks != 1) {
 				Sticks.done();
 			}
@@ -324,17 +325,18 @@ namespace Msp {
 					} else {
 						Mwp.serstate = Mwp.SERSTATE.NORMAL;
 						Mwp.msp.use_v2 = false;
-						if (Mwp.rctimer.is_active()) {
-							var joyid = JSMisc.get_info();
-							MWPLog.message("Raw RC: %s\n", joyid);
+						if (Mwp.use_msp_rc) {
+							JSMisc.read_hid_async.begin(jbuf, "info",  (o, r) => {
+									var sz = JSMisc.read_hid_async.end(r);
+									MWPLog.message("Raw RC: %d %s\n", sz, (string)jbuf[:sz]);
+									Mwp.rctimer.start();
+									if(Mwp.conf.show_sticks != 1) {
+										Sticks.create_sticks();
+									}
+								});
 						}
 						Mwp.queue_cmd(Msp.Cmds.IDENT,null,0);
 						Mwp.run_queue();
-						if(Mwp.rctimer.is_active()) {
-							if(Mwp.conf.show_sticks != 1) {
-								Sticks.create_sticks();
-							}
-						}
 					}
 				} else {
 					Mwp.serstate = Mwp.SERSTATE.TELEM;

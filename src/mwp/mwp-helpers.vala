@@ -620,6 +620,9 @@ namespace CatMap {
 namespace JSMisc {
 	SocketAddress sockaddr;
 	Socket socket;
+	DataInputStream dis;
+	DataOutputStream dos;
+
 	private bool setup_ip(string host, uint16 port) {
         try {
                 var resolver = Resolver.get_default ();
@@ -627,6 +630,14 @@ namespace JSMisc {
                 var address = addresses.nth_data (0);
                 sockaddr = new InetSocketAddress (address, port);
 				socket = new Socket (sockaddr.get_family(), SocketType.DATAGRAM, SocketProtocol.UDP);
+				socket.connect(sockaddr);
+#if !WINDOWS
+				dis = new DataInputStream(new UnixInputStream(socket.fd, true));
+				dos = new DataOutputStream(new UnixOutputStream(socket.fd, true));
+#else
+				dis = new DataInputStream (new Win32InputStream((void *)socket.fd, true));
+				dos = new DataOutputStream (new Win32OutputStream((void *)socket.fd, true));
+#endif
                 return true;
         } catch(Error e) {
                 stderr.printf("err: %s\n", e.message);
@@ -634,34 +645,16 @@ namespace JSMisc {
         }
 	}
 
-	private Socket? make_connection() {
-		return socket;
-	}
-
-	public ssize_t read_chans(int16[]chans) {
-		ssize_t sz;
+	private async ssize_t read_hid_async(uint8 []buf, string cmd) {
+		ssize_t sz = -1;
 		try {
-			socket.send_to(sockaddr, "raw".data);
-			sz = socket.receive ((uint8[])chans, null);
-		} catch (Error e) {
-			sz = -1;
-			MWPLog.message("Read js: %s\n", e.message);
-		}
-		return sz;
-	}
-
-	public string get_info() {
-		string jstrg = "Unknown";
-		uint8 jbytes[128];
-		try {
-			socket.send_to(sockaddr, "info".data);
-			var sz = socket.receive (jbytes, null);
-			if(sz > 0) {
-				jstrg = (string)jbytes[:sz];
+			sz = yield dos.write_async (cmd.data, Priority.DEFAULT, null);
+			if (sz > 0) {
+				sz = yield dis.read_async(buf, Priority.DEFAULT, null);
 			}
 		} catch (Error e) {
-			MWPLog.message("Read js: %s\n", e.message);
+			MWPLog.message("HID Read <%s> %s\n", cmd, e.message);
 		}
-		return jstrg;
+		return sz;
 	}
 }
