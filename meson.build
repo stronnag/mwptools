@@ -202,6 +202,27 @@ executable('mwpset', kwargs: exargs)
 
 subdir('src/bbox-replay')
 
+executable(
+  'mwp-hid-test',
+  hidtestsrcs,
+  dependencies: hidtestdeps,
+  install : true,
+)
+
+executable(
+  'mwp-hid-server',
+  hidsrvsrcs,
+  dependencies: hidsrvdeps,
+  install : true,
+)
+
+executable(
+  'mwp-hid-cli',
+  hidclisrcs,
+  dependencies: hidclideps,
+  install : true,
+)
+
 exe=''
 if build_machine.system() == 'windows'
   exe='.exe'
