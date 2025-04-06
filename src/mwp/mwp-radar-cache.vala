@@ -43,7 +43,7 @@ namespace Radar {
 				sstr = "ADSBX";
 			} else if((this & TELEM) != 0) {
 				sstr = "TELEM";
-			} else if((this & TELEM) != 0) {
+			} else if((this & PICO) != 0) {
 				sstr = "PICO";
 			} else {
 				sstr = "UnKnown";

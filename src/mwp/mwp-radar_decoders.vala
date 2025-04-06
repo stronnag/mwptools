@@ -96,27 +96,28 @@ namespace Radar {
 						}
 						if(obj.has_member("cs")) {
 							var s = obj.get_string_member("cs");
-							ri.name = s;
-						} else if(ri.name == null || ri.name.length == 0) {
+							ri.name = s.strip();
+						}
+						if (ri.name == null || ri.name.length == 0) {
 							  ri.name = "[%u]".printf(icao);
 						}
 
 						int alt = 0;
 						if(obj.has_member("alt")) {
 							alt = (int)obj.get_int_member ("alt");
-							ri.altitude = alt * 0.3048;
+							ri.altitude = alt * 0.3048; // => m
 						}
 						if(obj.has_member("balt")) {
 							if(alt == 0) {
 								alt =(int) obj.get_int_member ("balt");
-								ri.altitude = alt / 1000.0;
+								ri.altitude = alt / 1000.0;  // => m
 							}
 						}
 						if(obj.has_member("hdg")) {
-							ri.heading = (uint16)obj.get_int_member("hdg")/100;
+							ri.heading = (uint16)obj.get_int_member("hdg")/100; // => deg
 						}
 						if(obj.has_member("hvel")) {
-							double spd = obj.get_int_member("hvel")*1852.0/3600.0/100.0;
+							double spd = obj.get_int_member("hvel")/100.0; // -> m/s
 							ri.speed = spd;
 						}
 						Radar.upsert(icao, ri);
