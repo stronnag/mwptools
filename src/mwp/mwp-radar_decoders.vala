@@ -87,12 +87,14 @@ namespace Radar {
 							ri.longitude = obj.get_double_member("lon");
 						}
 						if(obj.has_member("et")) {
+							/*
 							var s = obj.get_string_member("et");
 							var et = CatMap.from_category(s);
 							if (et != ri.etype) {
 								ri.alert |= Radar.RadarAlert.SET;
 							}
 							ri.etype = et;
+							*/
 						}
 						if(obj.has_member("cs")) {
 							var s = obj.get_string_member("cs");
