@@ -384,8 +384,10 @@ namespace Radar {
 								s = obj.get_string_member("r");
 							}
 						}
-						ri.name = s;
-					} else if(ri.name == null || ri.name.length == 0) {
+						ri.name = s.strip();
+					}
+
+					if(ri.name == null || ri.name.length == 0) {
 						ri.name = "[%u]".printf(icao);
 					}
 					sb.append_printf(" name: %s", ri.name);
