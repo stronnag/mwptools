@@ -11,4 +11,4 @@ hidtestdeps = [deps, dependency('sdl2') ]
 
 hidsrvdeps = [ hidtestdeps, giodep, dependency('gio-2.0'), meson.get_compiler('c').find_library('m'), ]
 
-hidclideps = [ dependency('gio-2.0'), dependency('readline'), meson.get_compiler('c').find_library('readline') ]
+hidclideps = [ dependency('gio-2.0'), dependency('readline'), meson.get_compiler('c').find_library('readline', dirs: libdir) ]
