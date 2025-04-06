@@ -1998,7 +1998,7 @@ COM17?baud=9600
 </code></pre>
 </li>
 <li>
-<p><code>mavlink=N</code> (<code>N</code> is 1 or 2 for required Mavlink version). This causes mwp to send a Mavlink "beacon" (<code>HEARTBEAT</code> and <code>AUTOPILOT_VERSION</code>) which will improve the behaviours of some Mavlink based products (such as PicoADSB). It may also provoke some other (non-INAV) Mavlink based telemetry devices to geneate data. Examples:</p>
+<p><code>mavlink=N</code> (<code>N</code> is 1 or 2 for required Mavlink version). This causes mwp to send a Mavlink "beacon" (<code>HEARTBEAT</code>) which will improve the behaviours of some Mavlink based products (such as PicoADSB). It may also provoke some other (non-INAV) Mavlink based telemetry devices to geneate data. Examples:</p>
 <pre><code>/dev/ttyUSB0?mavlink=2
 udp://acme.org:12345?mavlink=1
 </code></pre>
