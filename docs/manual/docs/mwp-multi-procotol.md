@@ -169,7 +169,7 @@ The following URI "query" values are supported:
         /dev/ttyUSB0?baud=9600
 	    COM17?baud=9600
 
-* `mavlink=N` (`N` is 1 or 2 for required Mavlink version). This causes mwp to send a Mavlink "beacon" (`HEARTBEAT` and `AUTOPILOT_VERSION`) which will improve the behaviours of some Mavlink based products (such as PicoADSB). It may also provoke some other (non-INAV) Mavlink based telemetry devices to geneate data. Examples:
+* `mavlink=N` (`N` is 1 or 2 for required Mavlink version). This causes mwp to send a Mavlink "beacon" (`HEARTBEAT`) which will improve the behaviours of some Mavlink based products (such as PicoADSB). It may also provoke some other (non-INAV) Mavlink based telemetry devices to geneate data. Examples:
 
         /dev/ttyUSB0?mavlink=2
 	    udp://acme.org:12345?mavlink=1
