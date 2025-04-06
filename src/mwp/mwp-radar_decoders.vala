@@ -101,7 +101,7 @@ namespace Radar {
 							ri.name = s.strip();
 						}
 						if (ri.name == null || ri.name.length == 0) {
-							  ri.name = "[%u]".printf(icao);
+							  ri.name = "[%X]".printf(icao);
 						}
 
 						int alt = 0;
@@ -388,7 +388,7 @@ namespace Radar {
 					}
 
 					if(ri.name == null || ri.name.length == 0) {
-						ri.name = "[%u]".printf(icao);
+						ri.name = "[%X]".printf(icao);
 					}
 					sb.append_printf(" name: %s", ri.name);
 					if(obj.has_member("mag_heading")) {

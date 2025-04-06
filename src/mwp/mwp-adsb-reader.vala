@@ -19,7 +19,7 @@
 
 
 public class ADSBReader :Object {
-	public signal void result(uint8[]? d);
+	public signal void result(bool ok);
 	private SocketConnection conn;
 	private string host;
 	private uint16 port;
@@ -34,6 +34,7 @@ public class ADSBReader :Object {
 	private int id;
 	private Cancellable can;
 	private int ecount;
+	public Radar.DecType dtype;
 
 	static int instance = 0;
 
@@ -42,6 +43,7 @@ public class ADSBReader :Object {
 		instance++;
 		interval = 1000;
 		ecount = 0;
+		dtype = Radar.DecType.NONE;
 		can = new Cancellable();
 	}
 
@@ -108,6 +110,25 @@ public class ADSBReader :Object {
 		}
 	}
 
+	public void set_dtype(Radar.DecType d) {
+		dtype = d;
+		switch(dtype) {
+		case Radar.DecType.SBS:
+			suffix = "txt";
+			break;
+		case Radar.DecType.JSON:
+		case Radar.DecType.JSONX:
+		case Radar.DecType.PICOJS:
+			suffix = "json";
+			break;
+		case Radar.DecType.PROTOB:
+			suffix = "pb";
+			break;
+		default:
+			break;
+		}
+	}
+
 	private void log_data(uint8[]data) {
 		if(Mwp.rawlog && suffix != null) {
 			FileStream fs;
@@ -136,6 +157,14 @@ public class ADSBReader :Object {
 		}
 	}
 
+	private string make_string(uint8[]data) {
+		var sz = data.length;
+		uint8[] sdata = new uint8[sz+1];
+		Memory.copy(sdata, data, sz);
+		sdata[sz] = 0;
+		return (string)sdata;
+	}
+
 	private async bool fetch() {
 		Soup.Message msg;
 		string ahost;
@@ -161,8 +190,29 @@ public class ADSBReader :Object {
 			var byt = yield session.send_and_read_async (msg, Priority.DEFAULT, can);
 			if (msg.status_code == 200) {
 				var data = byt.get_data();
-				result(data);
+				var sz = byt.length;
+				switch (dtype) {
+				case Radar.DecType.PROTOB:
+					Radar.decode_pba(data[:sz]);
+					break;
+				case Radar.DecType.PICOJS:
+					var s = make_string(data);
+					Radar.decode_pico(s);
+					break;
+				case Radar.DecType.JSON:
+					var s = make_string(data);
+					Radar.decode_jsa(s);
+					break;
+				case Radar.DecType.JSONX:
+					var s = make_string(data);
+					Radar.decode_jsa(s, true);
+					break;
+				default:
+					MWPLog.message("::ERROR:: httpx reader %s\n", dtype.to_string());
+					break;
+				}
 				log_data(data);
+				result(true);
 				ecount = 0;
 				return true;
 			} else {
@@ -170,7 +220,7 @@ public class ADSBReader :Object {
 					MWPLog.message("ADSB fetch <%s> : %u %s (%u)\n", ahost, msg.status_code, msg.reason_phrase, nreq);
 				}
 				ecount++;
-				result(null);
+				result(false);
 				return false;
 			}
 		} catch (Error e) {
@@ -181,7 +231,7 @@ public class ADSBReader :Object {
 				MWPLog.message("ADSB fetch <%s> : %s\n", ahost, e.message);
 			}
 			ecount++;
-			result(null);
+			result(false);
 			return false;
 		}
 	}
@@ -209,7 +259,7 @@ public class ADSBReader :Object {
 			var  client = new SocketClient ();
 			conn = yield client.connect_async (new InetSocketAddress (address, port));
 		} catch (Error e) {
-			result(null);
+			result(false);
 			return false;
 		}
 		MWPLog.message("start %s %u async line reader\n", host, port);
@@ -218,18 +268,32 @@ public class ADSBReader :Object {
 			try {
 				var line = yield inp.read_line_async(Priority.DEFAULT, can);
 				if (line == null) {
-					result(null);
+					result(false);
 					return false;
 				} else {
 					Radar.set_astatus();
-					result(line.data);
+					switch(dtype) {
+					case Radar.DecType.JSON:
+						Radar.decode_jsa((string)line.data);
+						break;
+					case Radar.DecType.SBS:
+						var px = parse_csv_message((string)line);
+						if (px != null) {
+							Radar.decode_sbs(px);
+						}
+						break;
+					default:
+						MWPLog.message("::ERROR:: line reader %s\n", dtype.to_string());
+						break;
+					}
 					log_data(line.data);
+					result(true);
 				}
 			} catch (Error e) {
 				if (e.matches(Quark.from_string("g-io-error-quark"), IOError.CANCELLED)) {
 					can.reset();
 				}
-				result(null);
+				result(false);
 				return false;
 			}
 		}
@@ -243,7 +307,7 @@ public class ADSBReader :Object {
 			var  client = new SocketClient ();
 			conn = yield client.connect_async (new InetSocketAddress (address, port));
 		} catch (Error e) {
-			result(null);
+			result(false);
 			return false;
 		}
 		MWPLog.message("start %s %u async packet reader\n", host, port);
@@ -261,26 +325,26 @@ public class ADSBReader :Object {
 						ok = yield inp.read_all_async(pbuf, Priority.DEFAULT, can, out nb);
 						if (ok && nb == msize) {
 							Radar.set_astatus();
-							result(pbuf);
 							log_data(pbuf);
+							result(true);
 						} else {
 							MWPLog.message("PB read %d %d\n", (int)msize, (int)nb);
-							result(null);
+							result(false);
 							return false;
 						}
 					} catch (Error e) {
-						result(null);
+						result(false);
 						return false;
 					}
 				} else {
-					result(null);
+					result(false);
 					return false;
 				}
 			} catch (Error e) {
 				if (e.matches(Quark.from_string("g-io-error-quark"), IOError.CANCELLED)) {
 					can.reset();
 				}
-				result(null);
+				result(false);
 				return false;
 			}
 		}
