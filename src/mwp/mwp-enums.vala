@@ -362,4 +362,19 @@ namespace Mwp {
 		}
 
 	}
+
+	[Flags]
+	public enum MavADSBFlags {
+		NONE = 0,
+		LATLON = 1,
+		ALTITUDE = 2,
+		HEADING = 4,
+		VELOCITY = 8,
+		CALLSIGN = 0x10,
+		IDENT = 0x20,
+		SIMULATED = 0x40,
+		VERTVELOCITY = 0x80,
+		BARO = 0x100,
+		UAT = 0x8000,
+	}
 }

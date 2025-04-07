@@ -155,14 +155,16 @@ namespace MspRadar {
         }
     }
 
-	void process_msp2_adsb(uint8 *rp, uint mlen) {
+	void process_msp2_adsb(uint8 *msg, uint mlen) {
         var sb = new StringBuilder("MSP2 ADSB:");
         uint32 v;
-        int32 i;
+        int32 i,ila,ilo;
+
+		uint8 *rp = msg;
 
 		var maxvl = *rp++;
 		var maxcs = *rp++;
-		rp += 8;
+
 		var now = new DateTime.now_local();
 
 		var maxml = (mlen-10)/30;
@@ -178,6 +180,8 @@ namespace MspRadar {
             uint8 *csp = cs;
 			string callsign = "";
 
+			rp = msg+ (10+k+30);
+
 			for(var j = 0; j < maxcs; j++) {
 				*csp++ = *rp++;
 			}
@@ -189,6 +193,16 @@ namespace MspRadar {
 					callsign = "[%X]".printf(v);
 				}
 				sb.append_printf("callsign <%s> ", callsign);
+				double lat = 0;
+				double lon = 0;
+
+				rp = SEDE.deserialise_i32(rp, out ila);
+				rp = SEDE.deserialise_i32(rp, out ilo);
+
+				if(ila == 0 && ilo == 0) {
+					continue;
+				}
+
 				var ri = Radar.radar_cache.lookup(v);
 				if (ri == null) {
 					ri = new Radar.RadarPlot();
@@ -199,15 +213,10 @@ namespace MspRadar {
 				}
 				ri.name = callsign;
 
-				double lat = 0;
-				double lon = 0;
+				lat = ila / 1e7;
+				lon = ilo / 1e7;
 
-				rp = SEDE.deserialise_i32(rp, out i);
-				lat = i / 1e7;
 				sb.append_printf("lat %.6f ", lat);
-
-				rp = SEDE.deserialise_i32(rp, out i);
-				lon = i / 1e7;
 				sb.append_printf("lon %.6f ", lon);
 
 				ri.lasttick = Mwp.nticks;
@@ -247,9 +256,6 @@ namespace MspRadar {
 				Radar.update_marker(v);
 				if((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE)
 					MWPLog.message(sb.str);
-			} else {
-				// We've read 13 already ...
-				rp += 17; // FIXME
 			}
 		}
 	}
@@ -258,7 +264,7 @@ namespace MspRadar {
         var sb = new StringBuilder("MAV radar:");
         uint32 v;
         int32 i;
-        uint16 valid;
+        Mwp.MavADSBFlags valid;
 		var now = new DateTime.now_local();
 
         SEDE.deserialise_u16(rp+22, out valid);
@@ -269,7 +275,7 @@ namespace MspRadar {
         double lat = 0;
         double lon = 0;
 
-        if ((valid & 0x10) == 0x10) {
+        if (Mwp.MavADSBFlags.CALLSIGN in valid) {
             uint8 cs[10];
             uint8 *csp = cs;
             for(var j=0; j < 8; j++) {
@@ -287,7 +293,7 @@ namespace MspRadar {
         }
         sb.append_printf("callsign <%s> ", callsign);
 
-        if ((valid & 1)  == 1) {
+        if (Mwp.MavADSBFlags.LATLON in valid) {
 			var ri = Radar.radar_cache.lookup(v);
 			if (ri == null) {
 				ri = new Radar.RadarPlot();
@@ -309,20 +315,20 @@ namespace MspRadar {
             ri.longitude = lon;
             ri.lasttick = Mwp.nticks;
 
-            if((valid & 2) == 2) {
+            if (Mwp.MavADSBFlags.ALTITUDE in valid) {
                 SEDE.deserialise_i32(rp+12, out i);
                 var l = i / 1000.0;
                 sb.append_printf("alt %.1f ", l);
                 ri.altitude = l;
             }
 
-            if((valid & 4) == 4) {
+            if (Mwp.MavADSBFlags.HEADING in valid) {
                 uint16 h;
                 SEDE.deserialise_u16(rp+16, out h);
                 sb.append_printf("heading %u ", h);
                 ri.heading = h/100;
             }
-            if((valid & 8) == 8) {
+            if (Mwp.MavADSBFlags.VELOCITY in valid) {
                 uint16 hv;
                 SEDE.deserialise_u16(rp+18, out hv);
                 ri.speed = hv/100.0;
