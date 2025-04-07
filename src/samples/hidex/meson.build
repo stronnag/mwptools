@@ -2,8 +2,10 @@ hidclisrcs = files('mwp-hid-cli.vala')
 hidtestsrcs = files('mwp-hid-test.vala')
 hidsrvsrcs =  files('mwp-hid-server.vala', 'hid-reader.vala')
 
-giodep = dependency('gio-unix-2.0')
-if host_machine.system() == 'windows'
+
+if host_machine.system() != 'windows'
+  giodep = dependency('gio-unix-2.0')
+else
   giodep = dependency('gio-windows-2.0')
 endif
 
