@@ -157,13 +157,18 @@ namespace Radar {
 	}
 
 	public void decode_sbs(string[] p) {
+		if(p.length < 16) {
+			return;
+		}
 		var rdebug = ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE);
 		bool posrep = (p[1] == "2" || p[1] == "3");
 		bool isvalid = false;
 		string s4 = "0x%s".printf(p[4]);
 		uint v = (uint)uint64.parse(s4);
-		var name = p[10].strip();
-
+		string? name = null;
+		if (p[10] != null) {
+			name = p[10].strip();
+		}
 		var ri = radar_cache.lookup(v);
 		if (ri == null) {
 			ri = new RadarPlot();
@@ -171,7 +176,7 @@ namespace Radar {
 			ri.srange = ADSB_DISTNDEF;
 		}
 
-		if (name.length > 0) {
+		if (name != null && name.length > 0) {
 			ri.name = name;
 		}
 
