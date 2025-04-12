@@ -16,7 +16,7 @@ public class JoyManager : Object {
 
 	public JoyManager(string _mf, bool fake = false) {
 		tinit = false;
-		int njoy = SDL.init (SDL.InitFlag.JOYSTICK);
+		int njoy = SDL.init (SDL.InitFlag.JOYSTICK|SDL.InitFlag.GAMECONTROLLER);
 		if (njoy < 0) {
 			print("Unable to initialize the joystick subsystem.\n");
 		}

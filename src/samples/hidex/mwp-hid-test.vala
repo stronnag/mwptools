@@ -3,7 +3,7 @@ using SDL;
 int main(string?[]args) {
 	bool []gcs = new bool[16];
 
-	int njoy = SDL.init (SDL.InitFlag.JOYSTICK);
+	int njoy = SDL.init (SDL.InitFlag.JOYSTICK|SDL.InitFlag.GAMECONTROLLER);
 	if (njoy < 0) {
 		print("Unable to initialize the joystick subsystem.\n");
         return 127;
