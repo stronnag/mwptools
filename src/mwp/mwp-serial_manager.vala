@@ -290,7 +290,8 @@ namespace Msp {
 				var pmsk = Mwp.window.protodrop.selected;
 				var pmask = (MWSerial.PMask)pmask_to_mask(pmsk);
 				set_pmask_poller(pmask);
-				if(serdev.has_prefix("udp://:")) {
+				var u = UriParser.dev_parse(serdev);
+				if(u.scheme == "udp" && (u.host == null || u.host == "")) {
 					Mwp.nopoll = true;
 				}
 				Mwp.msp.setup_reader();
@@ -309,7 +310,7 @@ namespace Msp {
 
 				MWPLog.message("Connected %s (nopoll %s)\n", serdev, Mwp.nopoll.to_string());
 				if(Mwp.nopoll == false) {
-					var u = UriParser.dev_parse(serdev);
+					bool forced_mav = false;
 					if (u.qhash != null) {
 						var v = u.qhash.get("mavlink");
 						if (v != null) {
@@ -319,10 +320,12 @@ namespace Msp {
 							if(mvers > 2)
 								mvers = 2;
 							Mwp.msp.mavvid = mvers;
+							forced_mav = true;
 							Mwp.serstate = Mwp.SERSTATE.TELEM;
 							Mav.send_mav_beacon(Mwp.msp);
 						}
-					} else {
+					}
+					if (!forced_mav) {
 						Mwp.serstate = Mwp.SERSTATE.NORMAL;
 						Mwp.msp.use_v2 = false;
 						if (Mwp.use_msp_rc) {
