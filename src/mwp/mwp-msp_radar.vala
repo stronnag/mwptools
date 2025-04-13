@@ -275,25 +275,37 @@ namespace MspRadar {
         double lat = 0;
         double lon = 0;
 
-        if (Mwp.MavADSBFlags.CALLSIGN in valid) {
-            uint8 cs[10];
-            uint8 *csp = cs;
-            for(var j=0; j < 8; j++) {
-                if (*(rp+27+j) != ' ') {
-                    *csp++ = *(rp+27+j);
-				}
+        if (Mwp.MavADSBFlags.LATLON in valid) {
+			int ila, ilo;
+            SEDE.deserialise_i32(rp+4, out ila);
+            SEDE.deserialise_i32(rp+8, out ilo);
+			if (ila == 0 && ilo == 0) {
+				return;
 			}
-			*csp  = 0;
-			callsign = ((string)cs).strip();
-			if(callsign.length == 0) {
+			lat = ila / 1e7;
+            lon = ilo / 1e7;
+
+
+			if (Mwp.MavADSBFlags.CALLSIGN in valid) {
+				uint8 cs[10];
+				uint8 *csp = cs;
+				for(var j=0; j < 8; j++) {
+					if (*(rp+27+j) != ' ') {
+						*csp++ = *(rp+27+j);
+					}
+				}
+				*csp  = 0;
+				callsign = ((string)cs).strip();
+				if(callsign.length == 0) {
+					callsign = "[%X]".printf(v);
+				}
+			} else {
 				callsign = "[%X]".printf(v);
 			}
-        } else {
-            callsign = "[%X]".printf(v);
-        }
-        sb.append_printf("callsign <%s> ", callsign);
+			sb.append_printf("callsign <%s> ", callsign);
+			sb.append_printf("lat %.6f ", lat);
+            sb.append_printf("lon %.6f ", lon);
 
-        if (Mwp.MavADSBFlags.LATLON in valid) {
 			var ri = Radar.radar_cache.lookup(v);
 			if (ri == null) {
 				ri = new Radar.RadarPlot();
@@ -303,14 +315,6 @@ namespace MspRadar {
 				sb.append(" * ");
 			}
 			ri.name = callsign;
-            SEDE.deserialise_i32(rp+4, out i);
-            lat = i / 1e7;
-            sb.append_printf("lat %.6f ", lat);
-
-            SEDE.deserialise_i32(rp+8, out i);
-            lon = i / 1e7;
-            sb.append_printf("lon %.6f ", lon);
-
             ri.latitude = lat;
             ri.longitude = lon;
             ri.lasttick = Mwp.nticks;
