@@ -33,19 +33,28 @@ namespace Radar {
 				for(var j = 0; j < acarry.get_length(); j++) {
 					var acnode = acarry.get_element(j);
 					var obj = acnode.get_object ();
+
+					Mwp.MavADSBFlags valid = (Mwp.MavADSBFlags)obj.get_int_member ("fl");
+
+					if(!(Mwp.MavADSBFlags.LATLON in valid)) {
+						continue;
+					}
+
 					var hex  = obj.get_string_member ("icao");
 					var icao = (uint)  MwpLibC.strtoul(hex, null, 16);  //uint64.parse(hex,16);
 					var tsource = Radar.RadarSource.PICO;
 					bool is_valid = false;
 
-					if(obj.has_member("lat")) {
-						double _lon = 0.0;
-						var _lat = obj.get_double_member("lat");
-						if(obj.has_member("lon")) {
-							_lon = obj.get_double_member("lon");
-						}
-						if(_lat != 0.0 && _lon != 0.0) {
-							is_valid = true;
+					if(Mwp.MavADSBFlags.LATLON in valid) {
+						if(obj.has_member("lat")) {
+							double _lon = 0.0;
+							var _lat = obj.get_double_member("lat");
+							if(obj.has_member("lon")) {
+								_lon = obj.get_double_member("lon");
+							}
+							if(_lat != 0.0 && _lon != 0.0) {
+								is_valid = true;
+							}
 						}
 					}
 
@@ -96,31 +105,45 @@ namespace Radar {
 							ri.etype = et;
 							*/
 						}
-						if(obj.has_member("cs")) {
-							var s = obj.get_string_member("cs");
-							ri.name = s.strip();
+
+						if(Mwp.MavADSBFlags.CALLSIGN in valid) {
+							if(obj.has_member("cs")) {
+								var s = obj.get_string_member("cs");
+								ri.name = s.strip();
+							}
 						}
 						if (ri.name == null || ri.name.length == 0) {
-							  ri.name = "[%u]".printf(icao);
+							  ri.name = "[%X]".printf(icao);
 						}
 
 						int alt = 0;
-						if(obj.has_member("alt")) {
-							alt = (int)obj.get_int_member ("alt");
-							ri.altitude = alt * 0.3048; // => m
-						}
-						if(obj.has_member("balt")) {
-							if(alt == 0) {
-								alt =(int) obj.get_int_member ("balt");
-								ri.altitude = alt / 1000.0;  // => m
+						if(Mwp.MavADSBFlags.ALTITUDE in valid) {
+							if(obj.has_member("alt")) {
+								alt = (int)obj.get_int_member ("alt");
+								ri.altitude = alt * 0.3048; // => m
 							}
 						}
-						if(obj.has_member("hdg")) {
-							ri.heading = (uint16)obj.get_int_member("hdg")/100; // => deg
+
+						if(Mwp.MavADSBFlags.BARO in valid) {
+							if(obj.has_member("balt")) {
+								if(alt == 0) {
+									alt =(int) obj.get_int_member ("balt");
+									ri.altitude = alt / 1000.0;  // => m
+								}
+							}
 						}
-						if(obj.has_member("hvel")) {
-							double spd = obj.get_int_member("hvel")/100.0; // -> m/s
-							ri.speed = spd;
+
+						if(Mwp.MavADSBFlags.HEADING in valid) {
+							if(obj.has_member("hdg")) {
+								ri.heading = (uint16)obj.get_int_member("hdg")/100; // => deg
+							}
+						}
+
+						if(Mwp.MavADSBFlags.VELOCITY in valid) {
+							if(obj.has_member("hvel")) {
+								double spd = obj.get_int_member("hvel")/100.0; // -> m/s
+								ri.speed = spd;
+							}
 						}
 						Radar.upsert(icao, ri);
 						Radar.update(icao, false);
@@ -134,13 +157,18 @@ namespace Radar {
 	}
 
 	public void decode_sbs(string[] p) {
+		if(p.length < 16) {
+			return;
+		}
 		var rdebug = ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE);
 		bool posrep = (p[1] == "2" || p[1] == "3");
 		bool isvalid = false;
 		string s4 = "0x%s".printf(p[4]);
 		uint v = (uint)uint64.parse(s4);
-		var name = p[10].strip();
-
+		string? name = null;
+		if (p[10] != null) {
+			name = p[10].strip();
+		}
 		var ri = radar_cache.lookup(v);
 		if (ri == null) {
 			ri = new RadarPlot();
@@ -148,7 +176,7 @@ namespace Radar {
 			ri.srange = ADSB_DISTNDEF;
 		}
 
-		if (name.length > 0) {
+		if (name != null && name.length > 0) {
 			ri.name = name;
 		}
 
@@ -178,6 +206,7 @@ namespace Radar {
 				ri.speed = spd * (1852.0/3600.0);
 				ri.heading = hdg;
 			}
+
 			if(isvalid) {
 				if (lat != 0 && lng != 0) {
 					ri.latitude = lat;
@@ -384,9 +413,11 @@ namespace Radar {
 								s = obj.get_string_member("r");
 							}
 						}
-						ri.name = s;
-					} else if(ri.name == null || ri.name.length == 0) {
-						ri.name = "[%u]".printf(icao);
+						ri.name = s.strip();
+					}
+
+					if(ri.name == null || ri.name.length == 0) {
+						ri.name = "[%X]".printf(icao);
 					}
 					sb.append_printf(" name: %s", ri.name);
 					if(obj.has_member("mag_heading")) {
@@ -443,8 +474,23 @@ namespace Radar {
 	}
 
 	private DateTime make_sbs_time(string d, string t) {
+		DateTime? ct = null;
 		var p = d.split("/");
-		var ts = "%s-%s-%sT%s+00".printf(p[0], p[1], p[2], t);
-		return new DateTime.from_iso8601(ts, null);
+		if(p.length == 3) {
+			var yr = int.parse(p[0]);
+			var mo = int.parse(p[1]);
+			var da = int.parse(p[2]);
+			if(p.length == 3) {
+				p = t.split(":");
+				var hr = int.parse(p[0]);
+				var mi = int.parse(p[1]);
+				var sc = double.parse(p[2]);
+				ct = new DateTime.local (yr, mo, da, hr, mi, sc);
+			}
+		}
+		if (ct == null) {
+			ct = new DateTime.now_local();
+		}
+		return ct;
 	}
 }

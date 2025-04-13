@@ -12,6 +12,7 @@ import (
 	"net"
 	"os"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -72,6 +73,9 @@ func check_device() (string, int) {
 		baud = *_baud
 	}
 	if name != "" {
+		if runtime.GOOS == "windows" && strings.HasPrefix(name, "COM") {
+			name = "\\\\.\\" + name
+		}
 		fmt.Fprintf(os.Stderr, "Using device %s\n", name)
 	}
 	return name, baud
@@ -244,15 +248,21 @@ func main() {
 			if len(name) == 17 && name[2] == ':' && name[8] == ':' && name[14] == ':' {
 				sd = NewBT(name)
 			} else {
+				var dname string
+				if strings.HasPrefix(name, "COM") {
+					dname = "\\\\.\\" + name
+				} else {
+					dname = name
+				}
 				mode := &serial.Mode{BaudRate: baud}
-				sd, err = serial.Open(name, mode)
+				sd, err = serial.Open(dname, mode)
 				if err != nil {
 					sd, err = os.OpenFile(name, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0777)
 					if err != nil {
 						log.Fatal(err)
 					}
 				}
-				if strings.Contains(name, "rfcomm") {
+				if strings.HasPrefix(name, "/dev/rfcomm") {
 					time.Sleep(2 * time.Second)
 				}
 			}

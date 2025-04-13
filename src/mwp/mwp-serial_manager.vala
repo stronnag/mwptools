@@ -27,6 +27,9 @@ namespace Mwp  {
     MwpMQTT mqtt;
 #endif
 	uint stag = 0;
+	Timer rctimer;
+	bool use_msp_rc;
+
 	const int CHNSIZE = 32;
 
 	public void clear_sidebar(MWSerial s) {
@@ -50,12 +53,31 @@ namespace Mwp  {
 namespace Msp {
 	const string JSTKHOST="localhost";
 	const uint16 JSTKPORT=31025;
+	uint8 jbuf[512];
 
 	public void init() {
+		int pid = 0;
 		Mwp.mqtt_available = false;
 		Mwp.msp = new MWSerial();
         Mwp.lastp = new Timer();
 		Mwp.lastp.start();
+		string? rcdef = Environment.get_variable("MWP_MSP_RC");
+		if(rcdef != null) {
+			var pl = new ProcessLauncher();
+			var cmd = "mwp-hid-server %s".printf(rcdef);
+			var res = pl.run_command(cmd, 0);
+			if(res) {
+				pid = pl.get_pid();
+				if(pid != 0) {
+					Mwp.rctimer = new Timer();
+					Mwp.rctimer.stop();
+					ProxyPids.add(pid);
+					JSMisc.setup_ip(JSTKHOST, JSTKPORT);
+					Mwp.use_msp_rc = true;
+				}
+			}
+			MWPLog.message(":DBG: rcdef=%s, pid=%d\n", rcdef, pid);
+		}
 		Mwp.msp.is_main = true;
 		Mwp.mq = new Queue<Mwp.MQI?>();
         Mwp.lastmsg = Mwp.MQI(); //{cmd = Msp.Cmds.INVALID};
@@ -234,6 +256,11 @@ namespace Msp {
 		Mwp.window.mmode.set_label("");
 		MwpMenu.set_menu_state(Mwp.window, "followme", false);
 		Mwp.window.conbutton.sensitive = true;
+		if(Mwp.use_msp_rc) {
+			if(Mwp.conf.show_sticks != 1) {
+				Sticks.done();
+			}
+		}
 	}
 
 	private uint8 pmask_to_mask(uint j) {
@@ -263,7 +290,8 @@ namespace Msp {
 				var pmsk = Mwp.window.protodrop.selected;
 				var pmask = (MWSerial.PMask)pmask_to_mask(pmsk);
 				set_pmask_poller(pmask);
-				if(serdev.has_prefix("udp://:")) {
+				var u = UriParser.dev_parse(serdev);
+				if(u.scheme == "udp" && (u.host == null || u.host == "")) {
 					Mwp.nopoll = true;
 				}
 				Mwp.msp.setup_reader();
@@ -282,7 +310,7 @@ namespace Msp {
 
 				MWPLog.message("Connected %s (nopoll %s)\n", serdev, Mwp.nopoll.to_string());
 				if(Mwp.nopoll == false) {
-					var u = UriParser.dev_parse(serdev);
+					bool forced_mav = false;
 					if (u.qhash != null) {
 						var v = u.qhash.get("mavlink");
 						if (v != null) {
@@ -292,12 +320,24 @@ namespace Msp {
 							if(mvers > 2)
 								mvers = 2;
 							Mwp.msp.mavvid = mvers;
+							forced_mav = true;
 							Mwp.serstate = Mwp.SERSTATE.TELEM;
 							Mav.send_mav_beacon(Mwp.msp);
 						}
-					} else {
+					}
+					if (!forced_mav) {
 						Mwp.serstate = Mwp.SERSTATE.NORMAL;
 						Mwp.msp.use_v2 = false;
+						if (Mwp.use_msp_rc) {
+							JSMisc.read_hid_async.begin(jbuf, "info",  (o, r) => {
+									var sz = JSMisc.read_hid_async.end(r);
+									MWPLog.message("Raw RC: %d %s\n", sz, (string)jbuf[:sz]);
+									Mwp.rctimer.start();
+									if(Mwp.conf.show_sticks != 1) {
+										Sticks.create_sticks();
+									}
+								});
+						}
 						Mwp.queue_cmd(Msp.Cmds.IDENT,null,0);
 						Mwp.run_queue();
 					}

@@ -20,6 +20,15 @@
 namespace Radar {
 	const double TOTHEMOON = 999999.0;
 
+	public enum DecType {
+		NONE=0,
+		PROTOB,
+		JSON,
+		JSONX,
+		PICOJS,
+		SBS,
+	}
+
 	namespace Toast {
 		uint id;
 		double range;
@@ -243,12 +252,12 @@ namespace Radar {
 		if (u.scheme == "sbs") {
 			MWPLog.message("Set up SBS radar device %s\n", pn);
 			var sbs = new ADSBReader.net(u);
+			sbs.set_dtype(DecType.SBS);
 			r.enabled = enable;
 			r.dtype = IOType.LINE_READER;
 			r.dev = sbs;
-			sbs.suffix="txt";
 			sbs.result.connect((s) => {
-					if (s == null) {
+					if (s == false) {
 						if(r.is_enabled()) {
 							r.tid = Timeout.add_seconds(60, () => {
 									r.tid = 0;
@@ -258,11 +267,6 @@ namespace Radar {
 						}
 						if (r.qdel) {
 							queue_remove(r);
-						}
-					} else {
-						var px = sbs.parse_csv_message((string)s);
-						if (px != null) {
-							decode_sbs(px);
 						}
 					}
 				});
@@ -275,9 +279,8 @@ namespace Radar {
 			r.enabled = enable;
 			r.dtype = IOType.LINE_READER;
 			r.dev = jsa;
-			jsa.suffix="json";
 			jsa.result.connect((s) => {
-					if (s == null) {
+					if (s == false) {
 						if(r.is_enabled()) {
 							r.tid = Timeout.add_seconds(60, () => {
 									r.tid = 0;
@@ -288,8 +291,6 @@ namespace Radar {
 						if (r.qdel) {
 							queue_remove(r);
 						}
-					} else {
-						decode_jsa((string)s);
 					}
 				});
 			if(r.is_enabled()) {
@@ -299,12 +300,13 @@ namespace Radar {
 #if PROTOC
 			MWPLog.message("Set up PSA radar device %s\n", pn);
 			var pba = new ADSBReader.net(u, 38008);
+			pba.set_dtype(DecType.PROTOB);
 			r.enabled = enable;
 			r.dtype = IOType.PACKET_READER;
 			r.dev = pba;
-			pba.suffix = "pb";
+
 			pba.result.connect((s) => {
-					if (s == null) {
+					if (s == false) {
 						if(r.is_enabled()) {
 							r.tid = Timeout.add_seconds(60, () => {
 									r.tid = 0;
@@ -315,8 +317,6 @@ namespace Radar {
 						if (r.qdel) {
 							queue_remove(r);
 						}
-					} else {
-						decode_pba(s);
 					}
 				});
 			if(r.is_enabled()) {
@@ -328,34 +328,35 @@ namespace Radar {
 		} else if (u.scheme == "http" ||
 				   u.scheme == "https" ||
 				   u.scheme == "adsbx" ) {
-			uint8 htype = 0;
+			DecType htype = 0;
 			if(pn.has_suffix(".pb")) {
-				htype = 1;
+				htype = DecType.PROTOB;
 			} else if(pn.has_suffix(".json")) {
-				htype = 2;
+				htype = DecType.JSON;
 			} else if (u.scheme == "adsbx") {
-				htype = 3;
+				htype = DecType.JSONX;
 			} else if (u.qhash != null) {
 				var v = u.qhash.get("source");
 				if (v != null && v == "picoadsb") {
-					htype = 4;
+					htype = DecType.PICOJS;
 				}
 			}
 
 			if(htype != 0) {
 				MWPLog.message("Set up http %d radar device %s\n", htype, pn);
 				ADSBReader httpa;
-				if(htype == 3) {
+				if(htype == DecType.JSONX) {
 					httpa = new ADSBReader.adsbx(u);
+					httpa.set_dtype(DecType.JSONX);
 				} else  {
 					httpa = new ADSBReader.web(pn);
+					httpa.set_dtype(htype);
 				}
 				r.enabled = enable;
 				r.dtype = IOType.POLLER;
 				r.dev = httpa;
-				httpa.suffix = (htype == 1) ? "pb" : "json";
 				httpa.result.connect((s) => {
-						if (s == null) {
+						if (s == false) {
 							if(r.is_enabled()) {
 								r.tid = Timeout.add_seconds(60, () => {
 										r.tid = 0;
@@ -365,18 +366,6 @@ namespace Radar {
 							}
 							if (r.qdel) {
 								queue_remove(r);
-							}
-						} else {
-							var sz = s.length;
-							var data =  new uint8[sz+1];
-							Memory.copy(data,s, sz);
-							data[sz] = 0;
-							if(htype == 1) {
-								decode_pba(data);
-							} else if (htype == 4) {
-								decode_pico((string)data);
-							} else {
-								decode_jsa((string)data, (htype == 3));
 							}
 						}
 					});
