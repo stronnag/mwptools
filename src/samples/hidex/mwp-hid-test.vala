@@ -1,7 +1,28 @@
 using SDL;
 
+
+static int deadband = 0;
+
+const OptionEntry[] options = {
+	{"deadband", 'd', 0, OptionArg.INT, ref deadband, "Deadband (in SDL frame of reference)", null},
+	{null}
+};
+
 int main(string?[]args) {
 	bool []gcs = new bool[16];
+	int []last = new int[16];
+
+	try {
+		var opt = new OptionContext("");
+		opt.set_help_enabled(true);
+		opt.add_main_entries(options, null);
+		opt.parse(ref args);
+	}
+	catch (OptionError e) {
+		stderr.printf("Error: %s\n", e.message);
+		stderr.printf("Run '%s --help' to see a full list of available options\n", args[0]);
+		return 1;
+	}
 
 	int njoy = SDL.init (SDL.InitFlag.JOYSTICK|SDL.InitFlag.GAMECONTROLLER);
 	if (njoy < 0) {
@@ -17,6 +38,8 @@ int main(string?[]args) {
 		gcs[i] = SDL.Input.GameController.is_game_controller(i);
 		print("Entry %d, %s guid=%s game controller=%s\n", i, SDL.Input.Joystick.get_name_for_index(i),gstr,  gcs[i].to_string());
 	}
+
+	print("Deadband: %d\n", deadband);
 
 	SDL.Input.Joystick js;
 	int jid = 0;
@@ -60,7 +83,15 @@ int main(string?[]args) {
 			break;
 		switch(event.type) {
 		case SDL.EventType.JOYAXISMOTION:
-			print("Joy Axis %d value %d.\n", event.jaxis.axis, event.jaxis.value);
+			if(deadband == 0) {
+				print("Joy Axis %d value %d.\n", event.jaxis.axis, event.jaxis.value);
+			} else {
+				var ilast = last[event.jaxis.axis];
+				if((event.jaxis.value-ilast).abs() > deadband) {
+					print("Joy Axis %d value %d.\n", event.jaxis.axis, event.jaxis.value);
+					last[event.jaxis.axis] = event.jaxis.value;
+				}
+			}
 			break;
 		case SDL.EventType.JOYHATMOTION:
 			print("Joy Hat %d value %d.\n", event.jhat.hat, event.jhat.value);

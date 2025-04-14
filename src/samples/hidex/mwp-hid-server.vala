@@ -62,14 +62,13 @@ public class JoyManager : Object {
 	public void read_all() {
 		if (js != null) {
 			for(var j = 0; j < jrdr.axes.length; j++) {
-				int chn = jrdr.axes[j];
-				if(chn != 0) {
+				if (jrdr.axes[j].channel != 0) {
 					var v = js.get_axis(j);
 					jrdr.set_axis(j, v);
 				}
 			}
 			for(var j = 0; j < jrdr.buttons.length; j++) {
-				if(jrdr.buttons[j] != 0) {
+				if(jrdr.buttons[j].channel != 0) {
 					var v = js.get_button(j);
 					jrdr.set_button(j, (v ==  SDL.Input.ButtonState.PRESSED));
 				}
@@ -86,7 +85,15 @@ public class JoyManager : Object {
 				ml.quit();
 				return;
 			case SDL.EventType.JOYAXISMOTION:
-				jrdr.set_axis(event.jaxis.axis, event.jaxis.value);
+				if(jrdr.deadband == 0) {
+					jrdr.set_axis(event.jaxis.axis, event.jaxis.value);
+				} else {
+					var last = jrdr.axes[event.jaxis.axis].last;
+					if((event.jaxis.value - last).abs() > jrdr.deadband) {
+						jrdr.axes[event.jaxis.axis].last = event.jaxis.value;
+						jrdr.set_axis(event.jaxis.axis, event.jaxis.value);
+					}
+				}
 				break;
 			case SDL.EventType.JOYBUTTONDOWN:
 				jrdr.set_button(event.jbutton.button, true);
@@ -102,14 +109,16 @@ public class JoyManager : Object {
 				if (verbose)
 					print("Joystick #%d connected\n", event.jdevice.which);
 				js = new SDL.Input.Joystick(0);
-				if (verbose)
+				if (verbose) {
 					print("%s\n", get_info());
+				}
 				jrdr.set_sizes(js.num_axes(), js.num_buttons());
 				jrdr.reader(mf);
 				read_all();
 				Timeout.add(1000, () => {
 						read_all();
 						if(verbose) {
+							print("Deadband: %d\n", jrdr.deadband);
 							show_start();
 							print("%s\n", print_channels());
 						}
@@ -128,7 +137,13 @@ public class JoyManager : Object {
 				//	print("Joystick %d battery update\n", event.jdevice.which);
 				break;
 			case 0x608:
-				//print("Joystick %d update complete\n", event.jdevice.which);
+				// print("Joystick %d update complete\n", event.jdevice.which);
+				break;
+			case SDL.EventType.CONTROLLERDEVICEADDED:
+				// print("Controller %d connected\n", event.cdevice.which);
+				break;
+			case SDL.EventType.CONTROLLERDEVICEREMOVED:
+				// print("Controller %d removed.\n", event.cdevice.which);
 				break;
 			default:
 				if (verbose)
