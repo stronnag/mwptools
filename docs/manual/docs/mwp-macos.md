@@ -44,6 +44,8 @@ brew install gtk4 \
  vte3 \
  librsvg \
  adwaita-icon-theme \
+ sdl2 \
+ readline \
  gnuplot
 ```
 

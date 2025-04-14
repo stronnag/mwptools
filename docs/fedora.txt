@@ -7,7 +7,8 @@ dnf install gstreamer1-devel \
     gobject-introspection-devel vala vala-devel vala-doc \
     libgudev-devel espeak-devel \
     ncurses-devel ninja-build meson desktop-file-utils \
-    protobuf-c-devel protobuf-c librsvg2-devel
+    protobuf-c-devel protobuf-c librsvg2-devel \
+    sdl2-compat-devel readline-devel
 
 # To build mwp-plot-elevation and other tools, golang
 dnf install golang

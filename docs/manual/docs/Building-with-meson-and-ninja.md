@@ -31,6 +31,8 @@ For any other distribution / platform / OS, any of the above documents should gi
 * libadwaita-1 (1.5)
 * libsecret-1
 * librsvg
+* sdl2
+* readline
 
 Numbers is parenthesis indicate a minimum version. Modern OS should be able to satisfy these requirements.
 

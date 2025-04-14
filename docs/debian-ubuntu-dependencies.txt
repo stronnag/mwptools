@@ -32,7 +32,8 @@ apt $CONFIRM install \
     libprotobuf-c-dev \
     libxml2-utils \
     desktop-file-utils \
-    librsvg2-dev
+    librsvg2-dev \
+    libsdl2-compat-dev libreadline-dev
 
 # vanity, prettier terminal progress bars (fcset, flashdl)
 apt $CONFIRM install libncurses5-dev

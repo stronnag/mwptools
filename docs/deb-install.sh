@@ -54,6 +54,7 @@ sudo apt update && sudo apt full-upgrade && \
     libprotobuf-c-dev \
     libxml2-utils \
     librsvg2-dev \
+    libsdl2-compat-dev libreadline-dev \
     gnuplot ruby-nokogiri unzip
 
 [ -n "$DEPSONLY" ] && exit
