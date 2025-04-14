@@ -26,7 +26,8 @@ Then install dependencies.
    mingw-w64-ucrt-x86_64-pango mingw-w64-ucrt-x86_64-mosquitto mingw-w64-ucrt-x86_64-libshumate \
    mingw-w64-ucrt-x86_64-libadwaita mingw-w64-ucrt-x86_64-libsecret mingw-w64-ucrt-x86_64-libsoup3 git \
    mingw-w64-ucrt-x86_64-vala mingw-w64-ucrt-x86_64-meson mingw-w64-ucrt-x86_64-go \
-   mingw-w64-ucrt-x86_64-blueprint-compiler mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-gtk4-media-gstreamer mingw-w64-ucrt-x86_64-librsvg
+   mingw-w64-ucrt-x86_64-blueprint-compiler mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-gtk4-media-gstreamer mingw-w64-ucrt-x86_64-librsvg \
+   mingw-w64-ucrt-x86_64-sdl2-compat mingw-w64-ucrt-x86_64-readline
 ```
 
 Optional, but recommended:
