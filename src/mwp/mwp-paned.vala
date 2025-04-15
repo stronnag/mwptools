@@ -359,6 +359,12 @@ namespace Panel {
 				load_widget("dirn", 1, 1);
 				load_widget("flight", 2, 0);
 				load_widget("volts", 3, 0);
+				var uc =  Environment.get_user_config_dir();
+				var cfile = GLib.Path.build_filename(uc,"mwp","panel.conf");
+				var fp = FileStream.open (cfile, "w");
+				if (fp != null) {
+					fp.write("# default widgets\nahi,0,1,100\nrssi, 1, 0\ndirn, 1, 1\nflight, 2, 0\nvolts, 3, 0\n".data);
+				}
 			}
 			return ok;
 		}
