@@ -32,6 +32,12 @@ namespace Panel {
 
 	View status;
 
+	private struct WidgetMap {
+		string aname;
+		string wname;
+	}
+	private WidgetMap []wmap;
+
 	Direction.View dirnv;
 	FlightBox.View fboxv;
 	AHI.View ahiv;
@@ -49,6 +55,11 @@ namespace Panel {
 		private Gtk.Paned v0h0h0;
 		private Gtk.Paned v1h0;
 		private Gtk.Paned v1h1;
+
+		Gtk.Widget popwidget;
+		private Gtk.Paned []upanes;
+		private GLib.SimpleActionGroup dg;
+        private Gtk.PopoverMenu pop;
 
 		public Box() {
 			v = new Gtk.Paned(Gtk.Orientation.VERTICAL);
@@ -92,6 +103,17 @@ namespace Panel {
 			v.end_child = v1;
 			v.resize_start_child = true;
 			v.resize_end_child = true;
+			build_mm();
+			upanes = {v0h0h0, v0h0, v0h1, v1h0, v1h1};
+			wmap = {
+				{"ahi", "AHIView"},
+				{"dirn", "DirectionView"},
+				{"flight", "FlightBoxView"},
+				{"rssi", "RSSIView"},
+				{"vario", "VarioView"},
+				{"volts",  "VoltageView"},
+				{"wind", "WindEstimateView"},
+			};
 			this.set_child(v);
 			init();
 			Mwp.window.close_request.connect(() => {
@@ -305,6 +327,7 @@ namespace Panel {
 				break;
 			}
 			if(w != null) {
+				add_event_controller(w, true);
 				this.insert(w, row, col);
 				if(sz != -1) {
 					w.height_request = sz;
@@ -320,11 +343,86 @@ namespace Panel {
 			fs.printf("v %u\n", v.position);
 			fs.printf("v0 %u\n", v0.position);
 			fs.printf("v0h0 %u\n", v0h0.position);
-			fs.printf("v0h0h0 %u\n", v0h0h0.position);											 			fs.printf("v0h0 %u\n", v0h0.position);
+			fs.printf("v0h0h0 %u\n", v0h0h0.position);
+			fs.printf("v0h0 %u\n", v0h0.position);
 			fs.printf("v0h1 %u\n", v0h1.position);
 			fs.printf("v1 %u\n", v1.position);
  			fs.printf("v1h0 %u\n", v1h0.position);
 			fs.printf("v1h1 %u\n", v1h1.position);
+		}
+
+		private string? from_widget(string wname) {
+			foreach(var w in wmap) {
+				if(wname == w.wname)
+					return w.aname;
+			}
+			return null;
+		}
+
+		private string? check_widget(Gtk.Widget ws, int r, int c) {
+			if(ws.name != "GtkLabel") {
+				string aname;
+				aname = from_widget(ws.name);
+				if(aname != null) {
+					StringBuilder sb = new StringBuilder();
+					sb.append_printf("%s, %d, %d", aname, r, c);
+					if (aname == "ahi") {
+						var w = ahiv.get_width();
+						var h = ahiv.get_height();
+						sb.append_printf(", %d", int.min(w,h));
+					}
+					sb.append_c('\n');
+					return sb.str;
+				}
+			}
+			return null;
+		}
+
+		public void write_panel_conf() {
+			var fp = FileStream.open ("panel.conf", "w");
+			string s;
+			if (fp != null) {
+				fp.write("# mwp panel.conf\n".data);
+				s = check_widget(v0h0h0.start_child, 0, 0);
+				if (s != null) {
+					fp.write(s.data);
+				}
+				s = check_widget(v0h0h0.end_child, 0, 1);
+				if (s != null) {
+					fp.write(s.data);
+				}
+				s = check_widget(v0h0.end_child, 0, 2);
+				if (s != null) {
+					fp.write(s.data);
+				}
+
+				s = check_widget(v0h1.start_child, 1, 0);
+				if (s != null) {
+					fp.write(s.data);
+				}
+				s =check_widget(v0h1.end_child, 1, 1);
+				if (s != null) {
+					fp.write(s.data);
+				}
+
+				s = check_widget(v1h0.start_child, 2, 0);
+				if (s != null) {
+					fp.write(s.data);
+				}
+				s = check_widget(v1h0.end_child, 2, 1);
+				if (s != null) {
+					fp.write(s.data);
+				}
+
+				s = check_widget(v1h1.start_child, 3, 0);
+				if (s != null) {
+					fp.write(s.data);
+				}
+				s = check_widget(v1h1.end_child, 3, 1);
+				if (s != null) {
+					fp.write(s.data);
+				}
+			}
 		}
 
 	   private bool read_panel_config() {
@@ -369,7 +467,239 @@ namespace Panel {
 			return ok;
 		}
 
-		private bool read_paned_config() {
+		private void build_mm() {
+			var xml = """
+				<?xml version="1.0" encoding="UTF-8"?>
+				<interface>
+				<menu id="panel-menu">
+				<section>
+				<item>
+				<attribute name="label">AHI</attribute>
+				<attribute name="action">paned.ahi</attribute>
+				</item>
+				<item>
+				<attribute name="label">Direction</attribute>
+				<attribute name="action">paned.dirn</attribute>
+				</item>
+				<item>
+				<attribute name="label">FlghtView</attribute>
+				<attribute name="action">paned.flight</attribute>
+				</item>
+				<item>
+				<attribute name="label">RSSI</attribute>
+				<attribute name="action">paned.rssi</attribute>
+				</item>
+				<item>
+				<attribute name="label">Vario</attribute>
+				<attribute name="action">paned.vario</attribute>
+				</item>
+				<item>
+				<attribute name="label">Voltage</attribute>
+				<attribute name="action">paned.volts</attribute>
+				</item>
+				<item>
+				<attribute name="label">WindSpeed</attribute>
+				<attribute name="action">paned.wind</attribute>
+				</item>
+				<item>
+				<attribute name="label">Remove Item</attribute>
+				<attribute name="action">paned.remove</attribute>
+				</item>
+				</section>
+				</menu>
+				</interface>
+				""";
+				dg = new GLib.SimpleActionGroup();
+			var sbuilder = new Gtk.Builder.from_string(xml, -1);
+			var menu = sbuilder.get_object("panel-menu") as GLib.MenuModel;
+			pop = new Gtk.PopoverMenu.from_model(menu);
+
+			var aq = new GLib.SimpleAction("ahi",null);
+			aq.activate.connect(() => {
+					if(ahiv == null) {
+						ahiv = new AHI.View();
+						add_event_controller(ahiv, true);
+						Panel.status |= Panel.View.AHI;
+					}
+					replace(popwidget, ahiv);
+				});
+			dg.add_action(aq);
+
+			aq = new GLib.SimpleAction("dirn",null);
+			aq.activate.connect(() => {
+					if(dirnv == null) {
+						dirnv = new Direction.View();
+						add_event_controller(dirnv, true);
+						Panel.status |= Panel.View.DIRN;
+					}
+					replace(popwidget, dirnv);
+				});
+			dg.add_action(aq);
+
+			aq = new GLib.SimpleAction("flight",null);
+			aq.activate.connect(() => {
+					if(fboxv == null) {
+						fboxv = new FlightBox.View();
+						add_event_controller(fboxv, true);
+						Panel.status |= Panel.View.FVIEW;
+					}
+					replace(popwidget, fboxv);
+				});
+			dg.add_action(aq);
+
+			aq = new GLib.SimpleAction("rssi",null);
+			aq.activate.connect(() => {
+					if(rssiv == null) {
+						rssiv = new RSSI.View();
+						add_event_controller(rssiv, true);
+						Panel.status |= Panel.View.RSSI;
+					}
+					replace(popwidget, rssiv);
+				});
+			dg.add_action(aq);
+
+			aq = new GLib.SimpleAction("volts",null);
+			aq.activate.connect(() => {
+					if(powerv == null) {
+						powerv = new Voltage.View();
+						add_event_controller(powerv, true);
+						Panel.status |= Panel.View.VOLTS;
+					}
+					replace(popwidget, powerv);
+				});
+			dg.add_action(aq);
+
+			aq = new GLib.SimpleAction("wind", null);
+			aq.activate.connect(() => {
+					if(wind == null) {
+						wind = new WindEstimate.View();
+						add_event_controller(wind, true);
+						Panel.status |= Panel.View.WIND;
+					}
+					replace(popwidget, wind);
+				});
+			dg.add_action(aq);
+
+			aq = new GLib.SimpleAction("vario",null);
+			aq.activate.connect(() => {
+					if(vario == null) {
+						vario= new Vario.View();
+						Panel.status |= Panel.View.VARIO;
+						add_event_controller(vario, true);
+					}
+					replace(popwidget, vario);
+				});
+			dg.add_action(aq);
+
+			aq = new GLib.SimpleAction("remove",null);
+			aq.activate.connect(() => {
+					var lbl =  new Gtk.Label("");
+					replace(popwidget, lbl);
+					add_event_controller(lbl, false);
+				});
+			dg.add_action(aq);
+			pop.set_parent(v);
+			this.insert_action_group("paned", dg);
+		}
+
+		private void add_event_controller(Gtk.Widget w, bool act) {
+			var gestc = new Gtk.GestureClick();
+			w.add_controller(gestc);
+			gestc.set_button(0);
+			gestc.pressed.connect((n,x,y) => {
+					var bn = gestc.get_current_button();
+					if(bn == 3) {
+						popup_menu(w,x, y, act);
+					}
+				});
+		}
+
+		private bool acontains(string[]arry, string name) {
+			foreach(var a in arry) {
+				if (a == name) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		private void popup_menu(Gtk.Widget w, double x, double y, bool remitem) {
+			var names = unames();
+			if(remitem) {
+				MwpMenu.set_menu_state(dg, "remove", true);
+				foreach (var wm in wmap) {
+					MwpMenu.set_menu_state(dg, wm.aname, false);
+				}
+			} else {
+				MwpMenu.set_menu_state(dg, "remove", false);
+				foreach (var wm in wmap) {
+					bool state = !acontains(names, wm.wname);
+					MwpMenu.set_menu_state(dg, wm.aname, state);
+				}
+			}
+			int ix,iy;
+			cpos(w, out ix, out iy);
+			Gdk.Rectangle rect = { (int)x-ix, (int)y-iy, 1, 1};
+			pop.set_pointing_to(rect);
+			popwidget = w;
+			pop.popup();
+		}
+
+		private string []unames () {
+			string[] arry={};
+			for(var j = 0; j < upanes.length; j++) {
+				var w = upanes[j].start_child;
+				arry += w.name;
+				w = upanes[j].end_child;
+				arry += w.name;
+			}
+			return arry;
+		}
+
+		private void replace (Gtk.Widget old, Gtk.Widget _new) {
+			bool save = false;
+			for(var j = 0; j < upanes.length; j++) {
+				var w = upanes[j].start_child;
+				if (w == old) {
+					upanes[j].start_child = _new;
+					save = true;
+					break;
+				}
+				w = upanes[j].end_child;
+				if (w == old) {
+					upanes[j].end_child = _new;
+					save = true;
+					break;
+				}
+			}
+			if (save) {
+				write_panel_conf();
+			}
+		}
+
+		private void cpos(Gtk.Widget wx, out int xp, out int yp) {
+			xp = -1;
+			yp = -1;
+			Graphene.Rect rect = {};
+			for(var j = 0; j < upanes.length; j++) {
+				var w = upanes[j].start_child;
+				if (w == wx) {
+					child.compute_bounds(w, out rect);
+					xp = (int)rect.get_x();
+					yp = (int)rect.get_y();
+					break;
+				}
+				w = upanes[j].end_child;
+				if (w == wx) {
+					child.compute_bounds(w, out rect);
+					xp = (int)rect.get_x();
+					yp = (int)rect.get_y();
+					break;
+				}
+			}
+		}
+
+	   private bool read_paned_config() {
 			bool ok = false;
 			var fn = MWPUtils.find_conf_file(".paned");
 			if (fn != null) {
@@ -395,19 +725,20 @@ namespace Panel {
 			}
 			return ok;
 		}
-		// minimally populate unused cells so we can drag them
+
 		private void  validate() {
-			Gtk.Paned []panes = {v0h0h0, v0h0, v0h1, v1h0, v1h1};
-			for(var j = 0; j < panes.length; j++) {
-				if (panes[j].start_child == null) {
+			for(var j = 0; j < upanes.length; j++) {
+				if (upanes[j].start_child == null) {
 					var lbl = new Gtk.Label("");
-					panes[j].start_child=lbl;
-					panes[j].resize_start_child=true;
+					upanes[j].start_child=lbl;
+					upanes[j].resize_start_child=true;
+					add_event_controller(lbl, false);
 				}
-				if (panes[j].end_child == null) {
+				if (upanes[j].end_child == null) {
 					var lbl = new Gtk.Label("");
-					panes[j].end_child=lbl;
-					panes[j].resize_end_child=true;
+					upanes[j].end_child=lbl;
+					upanes[j].resize_end_child=true;
+					add_event_controller(lbl, false);
 				}
 			}
 		}
