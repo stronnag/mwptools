@@ -70,36 +70,36 @@ public class GstMonitor : Gst.Object {
 			var bus  = monitor.get_bus();
 			bus.add_watch(Priority.DEFAULT, (b, msg) => {
 					if(msg != null) {
-					Gst.Device device;
-					switch (((Gst.Message)msg).type) {
-					case Gst.MessageType.DEVICE_ADDED:
-						msg.parse_device_added (out device);
-						var ds = get_node_info(device);
-						if (ds != null) {
-							source_changed("add", ds);
+						Gst.Device device;
+						switch (((Gst.Message)msg).type) {
+						case Gst.MessageType.DEVICE_ADDED:
+							msg.parse_device_added (out device);
+							var ds = get_node_info(device);
+							if (ds != null) {
+								source_changed("add", ds);
+							}
+							break;
+						case Gst.MessageType.DEVICE_REMOVED:
+							msg.parse_device_removed (out device);
+							var ds = get_node_info(device);
+							if (ds != null) {
+								source_changed("remove", ds);
+							}
+							break;
+						default:
+							break;
 						}
-						break;
-
-//	case Gst.MessageType.DEVICE_REMOVED:
-					default:
-						msg.parse_device_removed (out device);
-						var ds = get_node_info(device);
-						if (ds != null) {
-							source_changed("remove", ds);
-						}
-						break;
-					}
 					}
 					return true;
 				});
 
-//		var caps = new Caps.any(); //gst_caps_new_empty_simple ("video/x-raw");
-			var caps = new Gst.Caps.empty();
-			caps.append(new Gst.Caps.empty_simple ("video/x-raw"));
-			caps.append(new Gst.Caps.empty_simple ("image/jpeg"));
+
+			var caps = new Gst.Caps.empty_simple ("video/x-raw");
+			monitor.add_filter ("Video/Source", caps);
+			caps = new Gst.Caps.empty_simple ("image/jpeg");
 			monitor.add_filter ("Video/Source", caps);
 			var devs = monitor.get_devices();
-		//		devs.@foreach((dv) => {
+			//devs.@foreach((dv) => { /* Suppress some C noise */
 			for (unowned GLib.List<Gst.Device>? lp = devs.first(); lp != null; lp = lp.next) {
 				var dv = lp.data;
 				var ds = get_node_info(dv);
