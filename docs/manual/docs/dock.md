@@ -44,7 +44,6 @@ The following items are provided.
 
 ## Side Bar Configuration
 
-
 A very simple, bespoke panel comprising embedded resizeable panes has been implemented. The configuration may be user defined by a simple text file `~/.config/mwp/panel.conf`.
 
 * The panel consists for four vertical panels
@@ -64,6 +63,22 @@ volts, 3, 0
 
 Which appears as:
 ![mwp4-panel-0](images/mwp4-panel-0.png)
+
+### In line editor
+
+From 25.04.15, it is possible to edit the panel in-line. A popup menu is displayed on right mouse press on a panel pane. Note that in the default configuration, some of the pane dividers may be flush against an edge, and it will be necessary to drag the dividers to expose all the unused panels.
+
+On a blank pane, the popup menu offers all non-deployed widgets. Here only "WindSpeed" is available to be added.
+
+![mwp4-panel-e0](images/panel-edit-0.png)
+
+The result after adding "WindSpeed":
+
+![mwp4-panel-e1](images/panel-edit-1.png)
+
+When the popup menu is invoked for a populated pane, only "Remove Item" is available.
+
+### Available Widgets
 
 The available panel widgets are named as:
 
