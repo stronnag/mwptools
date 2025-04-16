@@ -1638,7 +1638,14 @@
 <h2 id="side-bar-overview">Side Bar Overview<a class="headerlink" href="#side-bar-overview" title="Permanent link">#</a></h2>
 <p>The <strong>Side Bar</strong>, items 4 and 6 in the main window guide provides an area for optional widgets.</p>
 <p><img alt="main" src="../images/main-window.png" width="100%" /></p>
-<p>The main dock controls are shown below. Please note these images are from the legacy version of <a href="https://github.com/stronnag/mwptools">mwp</a>.:</p>
+<p>A very simple, bespoke panel comprising embedded resizeable panes has been implemented.</p>
+<ul>
+<li>The panel consists for four vertical panels</li>
+<li>The top panel can hold three horizontal panes</li>
+<li>The other panels can hold two horizontal panes.</li>
+</ul>
+<p>Each pane has a divider line between it and adjacent panels. <strong>The size of individual panes may be adjusted by moving the dividers.</strong> mwp will remember the relative sizing of the panels.</p>
+<p>The main sidebar (dock) controls are shown below. Please note some of these images are from the legacy version of <a href="https://github.com/stronnag/mwptools">mwp</a>.:</p>
 <h2 id="side-bar-items-dockets">Side Bar Items (Dockets)<a class="headerlink" href="#side-bar-items-dockets" title="Permanent link">#</a></h2>
 <p>The following items are provided.</p>
 <h3 id="artificial-horizon">Artificial Horizon<a class="headerlink" href="#artificial-horizon" title="Permanent link">#</a></h3>
@@ -1658,13 +1665,9 @@
 <h3 id="wind-estimator-new-gtk4">Wind Estimator (new / Gtk4)<a class="headerlink" href="#wind-estimator-new-gtk4" title="Permanent link">#</a></h3>
 <p><img alt="dockwind" src="../images/panel-vas.png" width="25%" /></p>
 <h2 id="side-bar-configuration">Side Bar Configuration<a class="headerlink" href="#side-bar-configuration" title="Permanent link">#</a></h2>
-<p>A very simple, bespoke panel comprising embedded resizeable panes has been implemented. The configuration may be user defined by a simple text file <code>~/.config/mwp/panel.conf</code>.</p>
-<ul>
-<li>The panel consists for four vertical panels</li>
-<li>The top panel can hold three horizontal panes</li>
-<li>The other panels can hold two horizontal panes.</li>
-</ul>
-<p>Each entry is defined by a comma separated line defining the panel widget name, the row (0-3) and the column (0-2) and an optional minimum size (only required for the artificial horizon). The default panel is defined (in the absence of a configuration file) as:</p>
+<p>The configuration may be user defined by a simple text file <code>~/.config/mwp/panel.conf</code>.</p>
+<p>Each entry is defined by a comma separated line defining the panel widget name, the row (0-3) and the column (0-2) and an optional minimum size (only required for the artificial horizon).</p>
+<p>The default panel is defined (in the absence of a configuration file) as:</p>
 <div class="highlight"><pre><span></span><code># default widgets
 ahi,0,1,100
 rssi, 1, 0
@@ -1730,6 +1733,7 @@ volts, 3, 0
 </code></pre></div>
 <p>would appear as:
 <img alt="mwp4-panel-1" src="../images/mwp4-panel-1.png" /></p>
+<p>Panel sizes have been adjusted to make best use of available space.</p>
 
 
 
