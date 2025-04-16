@@ -367,9 +367,9 @@ namespace Panel {
 					StringBuilder sb = new StringBuilder();
 					sb.append_printf("%s, %d, %d", aname, r, c);
 					if (aname == "ahi") {
-						var w = ahiv.get_width();
-						var h = ahiv.get_height();
-						sb.append_printf(", %d", int.min(w,h));
+						//var w = ahiv.get_width();
+						//var h = ahiv.get_height();
+						sb.append_printf(", %d", /*int.min(w,h)*/ 100);
 					}
 					sb.append_c('\n');
 					return sb.str;
@@ -662,23 +662,48 @@ namespace Panel {
 		}
 
 		private void replace (Gtk.Widget old, Gtk.Widget _new) {
-			bool save = false;
-			for(var j = 0; j < upanes.length; j++) {
+			uint8 save = 0;
+			int j = 0;
+			for(j = 0; j < upanes.length; j++) {
 				var w = upanes[j].start_child;
 				if (w == old) {
 					upanes[j].start_child = _new;
-					save = true;
+					save = 1;
 					break;
 				}
 				w = upanes[j].end_child;
 				if (w == old) {
 					upanes[j].end_child = _new;
-					save = true;
+					save = 2;
 					break;
 				}
 			}
-			if (save) {
+			if (save != 0) {
 				write_panel_conf();
+				Timeout.add(20, () => {
+						var ww = _new.get_width();
+						if(ww > 0) {
+							var pp = upanes[j].position;
+							Graphene.Rect rect = {};
+							upanes[j].compute_bounds(_new, out rect);
+							var tw = (int)rect.get_width();
+							if(save == 1) {
+								if(ww > pp && ww < tw) {
+									upanes[j].position = ww;
+								}
+							} else {
+								int fw = tw-pp;
+								if(ww > fw) {
+									int np = tw-ww;
+									if (np > 0) {
+										upanes[j].position = np;
+									}
+								}
+							}
+							return false;
+						}
+						return true;
+					});
 			}
 		}
 
