@@ -98,6 +98,7 @@ public class GstMonitor : Gst.Object {
 			monitor.add_filter ("Video/Source", caps);
 			caps = new Gst.Caps.empty_simple ("image/jpeg");
 			monitor.add_filter ("Video/Source", caps);
+			monitor.start();
 			var devs = monitor.get_devices();
 			//devs.@foreach((dv) => { /* Suppress some C noise */
 			for (unowned GLib.List<Gst.Device>? lp = devs.first(); lp != null; lp = lp.next) {
@@ -106,7 +107,6 @@ public class GstMonitor : Gst.Object {
 				if(ds != null)
 					source_changed("init", ds);
 			}
-			monitor.start();
 			return monitor;
 	}
 
