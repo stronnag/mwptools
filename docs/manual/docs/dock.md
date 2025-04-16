@@ -6,7 +6,15 @@ The **Side Bar**, items 4 and 6 in the main window guide provides an area for op
 
 ![main](images/main-window.png){: width="100%" }
 
-The main dock controls are shown below. Please note these images are from the legacy version of {{ mwp }}.:
+A very simple, bespoke panel comprising embedded resizeable panes has been implemented.
+
+* The panel consists for four vertical panels
+* The top panel can hold three horizontal panes
+* The other panels can hold two horizontal panes.
+
+Each pane has a divider line between it and adjacent panels. **The size of individual panes may be adjusted by moving the dividers.** mwp will remember the relative sizing of the panels.
+
+The main sidebar (dock) controls are shown below. Please note some of these images are from the legacy version of {{ mwp }}.:
 
 ## Side Bar Items (Dockets)
 
@@ -44,13 +52,11 @@ The following items are provided.
 
 ## Side Bar Configuration
 
-A very simple, bespoke panel comprising embedded resizeable panes has been implemented. The configuration may be user defined by a simple text file `~/.config/mwp/panel.conf`.
+The configuration may be user defined by a simple text file `~/.config/mwp/panel.conf`.
 
-* The panel consists for four vertical panels
-* The top panel can hold three horizontal panes
-* The other panels can hold two horizontal panes.
+Each entry is defined by a comma separated line defining the panel widget name, the row (0-3) and the column (0-2) and an optional minimum size (only required for the artificial horizon).
 
-Each entry is defined by a comma separated line defining the panel widget name, the row (0-3) and the column (0-2) and an optional minimum size (only required for the artificial horizon). The default panel is defined (in the absence of a configuration file) as:
+The default panel is defined (in the absence of a configuration file) as:
 
 ```
 # default widgets
@@ -108,3 +114,5 @@ volts, 3, 0
 
 would appear as:
 ![mwp4-panel-1](images/mwp4-panel-1.png)
+
+Panel sizes have been adjusted to make best use of available space.
