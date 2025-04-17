@@ -23,38 +23,41 @@ namespace WindEstimate {
 		ANY,
 	}
 
+	const string []dirs = {"(N) ", "(NE)", "(E) ", "(SE)", "(S) ", "(SW)", "(W) ", "(NW)"};
+
 	[GtkTemplate (ui = "/org/stronnag/mwp/vas.ui")]
-	public class View : Gtk.Grid {
+	public class View : Gtk.Box {
 		[GtkChild]
 		private unowned Gtk.Label vasl;
 		[GtkChild]
 		private unowned Gtk.Label wdirnl;
 		[GtkChild]
 		private unowned Gtk.Label wspdl;
-		private Gtk.Image ico;
+		private Gtk.Picture ico;
 		private Gdk.Pixbuf pix;
 
 		public View() {
 			 try {
 				 pix = new Gdk.Pixbuf.from_resource_at_scale ("/org/stronnag/mwp/pixmaps/wind-arrow.svg", 64, 64, true);
 				 var tex = Gdk.Texture.for_pixbuf(pix);
-				 ico = new Gtk.Image.from_paintable(tex);
+				 ico = new Gtk.Picture.for_paintable(tex);
 			 } catch (Error e){
 				 error(e.message);
 			 }
-			 ico.set_pixel_size(64);
-			 ico.hexpand = false;
-			 ico.vexpand = false;
-			 ico.halign = Gtk.Align.END;
+
+			 ico.can_shrink = false;
+			 ico.content_fit = Gtk.ContentFit.COVER;
+			 ico.hexpand = true;
+			 ico.vexpand = true;
+			 ico.halign = Gtk.Align.CENTER;
 			 ico.valign = Gtk.Align.CENTER;
-			 this.attach(ico, 0, 0, 1, 3);
-			 column_homogeneous = false;
-			 column_spacing = 2;
+
+			 this.prepend(ico);
 			 update(Update.ANY);
 		}
 
 		public void update(Update what) {
-			string []dirs = {"N", "NE", "E", "SE", "S", "SW", "W", "NW"};
+
 			TrackData t = Mwp.msp.td;
 
 			double w_x = (double)t.wind.w_x;
@@ -79,7 +82,7 @@ namespace WindEstimate {
 			var su = Units.speed_units();
 
 			vasl.label = "<span size='150%%'>%5.1f</span><span size='x-small'>%s</span>".printf(sp, su);
-			wdirnl.label = "<span size='150%%'> %03d°(%s)</span>".printf((int)w_dirn, dirs[ndir]);
+			wdirnl.label = "<span size='150%%'> %03d°%s</span>".printf((int)w_dirn, dirs[ndir]);
 			sp = Units.speed(w_ms);
 			wspdl.label = "<span size='150%%'>%5.1f</span><span size='x-small'>%s</span>".printf(sp, su);
 			rotate(w_dirn);

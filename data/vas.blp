@@ -1,70 +1,77 @@
 using Gtk 4.0;
 
-template $WindEstimateView : Gtk.Grid {
+template $WindEstimateView : Gtk.Box {
   orientation: horizontal;
   hexpand: false;
   halign: start;
-  Label {
-    use-markup: true;
-    label: '<span size="150%">VAS</span>';
-    halign: start;
+  Gtk.Grid {
+    orientation: horizontal;
     hexpand: false;
-    layout {
-      row: 0;
-      column: 1;
+    halign: start;
+    Label {
+      use-markup: true;
+      label: '<span size="150%">VAS</span>';
+      halign: start;
+      hexpand: false;
+      layout {
+	row: 0;
+	column: 0;
+      }
     }
-  }
-  Label vasl {
-    label: '0.0';
-    halign: start;
-    hexpand: false;
-    use-markup: true;
-    styles [ "monospace" ]
-    layout {
-      row: 0;
-      column: 2;
+    Label vasl {
+      label: '0.0';
+      halign: start;
+      hexpand: false;
+      use-markup: true;
+      styles [ "monospace" ]
+      layout {
+	row: 0;
+	column: 1;
+      }
     }
-  }
-  Label {
-    use-markup: true;
-    label: '<span size="150%">WDirn</span>';
-    halign: start;
-    hexpand: false;
-    layout {
-      row: 1;
-      column: 1;
+    Label {
+      use-markup: true;
+      label: '<span size="150%">WDirn</span>';
+      halign: start;
+      hexpand: false;
+      layout {
+	row: 1;
+	column: 0;
+      }
     }
-  }
-  Label wdirnl {
-    use-markup: true;
-    label: '0.0';
-    halign: start;
-    hexpand: false;
-    styles [ "monospace" ]
-    layout {
-      row: 1;
-      column: 2;
+    Label wdirnl {
+      use-markup: true;
+      label: '0.0';
+      halign: start;
+      hexpand: false;
+      width-chars: 8;
+      max-width-chars: 8;
+      styles [ "monospace" ]
+      layout {
+	row: 1;
+	column: 1;
+      }
     }
-  }
-  Label {
-    use-markup: true;
-    label: '<span size="150%">WSpd</span>';
-    halign: start;
-    hexpand: false;
-    layout {
-      row: 2;
-      column: 1;
+    Label {
+      use-markup: true;
+      label: '<span size="150%">WSpd</span>';
+      halign: start;
+      hexpand: false;
+      layout {
+	row: 2;
+	column: 0;
+      }
     }
-  }
-  Label wspdl {
-    use-markup: true;
-    label: '0.0';
-    halign: start;
-    hexpand: false;
-    styles [ "monospace" ]
-    layout {
-      row: 2;
-      column: 2;
+    Label wspdl {
+      use-markup: true;
+      label: '0.0';
+      halign: start;
+      hexpand: false;
+      styles [ "monospace" ]
+      layout {
+	row: 2;
+	column: 1;
+      }
     }
   }
 }
