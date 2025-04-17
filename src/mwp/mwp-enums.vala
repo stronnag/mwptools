@@ -92,7 +92,7 @@ namespace Mwp {
     }
 
 	[Flags]
-    public enum DEBUG_FLAGS {
+    public enum DebugFlags {
         NONE=0,
         WP,         // 1
         INIT,       // 2

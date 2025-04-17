@@ -109,7 +109,7 @@ namespace Mwp {
                 if (conf.audioarmed == true) {
                     Mwp.window.audio_cb.active = false;
                     TTS.say_state &= ~SAY_WHAT.Nav;
-                    if((debug_flags & DEBUG_FLAGS.ADHOC) != 0) {
+                    if((debug_flags & DebugFlags.ADHOC) != 0) {
                         MWPLog.message("Disable nav speak\n");
 					}
                 }

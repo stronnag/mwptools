@@ -90,7 +90,7 @@ namespace Msp {
         Mwp.msp.serial_event.connect(() => {
 				MWSerial.INAVEvent? m;
 				while((m = Mwp.msp.msgq.try_pop()) != null) {
-					if(Mwp.DEBUG_FLAGS.MSP in Mwp.debug_flags) {
+					if(Mwp.DebugFlags.MSP in Mwp.debug_flags) {
 						MWPLog.message(":DBG: MSP recv: %s %u\n", m.cmd.format(), Mwp.msp.msgq.length());
 					}
 					Mwp.handle_serial(Mwp.msp, m.cmd,m.raw,m.len,m.flags,m.err);

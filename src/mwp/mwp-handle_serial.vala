@@ -315,7 +315,7 @@ namespace Mwp {
         } else if(msp.available && !mq.is_empty()) {
 			lastmsg = mq.pop_head();
 			msp.send_command((uint16)lastmsg.cmd, lastmsg.data, lastmsg.len);
-			if(Mwp.DEBUG_FLAGS.MSP in Mwp.debug_flags) {
+			if(Mwp.DebugFlags.MSP in Mwp.debug_flags) {
 				MWPLog.message(":DBG: MSP send: %s\n", lastmsg.cmd.format());
 			}
         }
@@ -444,7 +444,7 @@ namespace Mwp {
     }
 
     public void queue_cmd(Msp.Cmds cmd, void* buf, size_t len) {
-        if(((debug_flags & DEBUG_FLAGS.INIT) != DEBUG_FLAGS.NONE)
+        if(((debug_flags & DebugFlags.INIT) != DebugFlags.NONE)
            && (serstate == SERSTATE.NORMAL))
             MWPLog.message("Init MSP %s (%u)\n", cmd.to_string(), cmd);
 

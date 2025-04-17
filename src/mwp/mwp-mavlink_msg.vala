@@ -20,7 +20,7 @@
 namespace Mwp {
 	bool handle_mavlink(MWSerial ser, Msp.Cmds cmd, uint8[]raw, uint len) {
 		bool handled = true;
-		if((Mwp.DEBUG_FLAGS.MAVLINK in Mwp.debug_flags)) {
+		if((Mwp.DebugFlags.MAVLINK in Mwp.debug_flags)) {
 			MWPLog.message("::DBG:: [%x, %u] %s\n", cmd, len, cmd.format());
 		}
 		switch (cmd) {

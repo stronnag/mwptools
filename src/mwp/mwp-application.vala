@@ -38,7 +38,7 @@ namespace Mwp {
     private int dmrtype=0;
     private bool force4 = false;
     private bool chome = false;
-    public DEBUG_FLAGS debug_flags = 0;
+    public DebugFlags debug_flags = 0;
     private string llstr=null;
     private string rebasestr=null;
     private int stack_size = 0;
@@ -358,7 +358,7 @@ namespace Mwp {
 			}
 
 			if (o.contains("debug-help")) {
-				foreach (FlagsValue value in ((FlagsClass) typeof (Mwp.DEBUG_FLAGS).class_ref()).values) {
+				foreach (FlagsValue value in ((FlagsClass) typeof (Mwp.DebugFlags).class_ref()).values) {
 					stderr.printf ("%5u : %s\n", value.value, value.value_nick);
 				}
 				return 0;

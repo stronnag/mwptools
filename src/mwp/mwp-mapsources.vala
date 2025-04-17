@@ -116,7 +116,7 @@ public class SoupProxy : Soup.Server {
             return;
         }
         var method = msg.get_method();
-		if(Mwp.DEBUG_FLAGS.MAPS in Mwp.debug_flags) {
+		if(Mwp.DebugFlags.MAPS in Mwp.debug_flags) {
 			MWPLog.message(":DBG: Method %s\n", method);
 		}
         if (method == "HEAD") {
@@ -142,7 +142,7 @@ public class SoupProxy : Soup.Server {
             }
         } else if (method == "GET") {
 			var xpath = rewrite_path(path);
-			if(Mwp.DEBUG_FLAGS.MAPS in Mwp.debug_flags) {
+			if(Mwp.DebugFlags.MAPS in Mwp.debug_flags) {
 					MWPLog.message(":DBG: URI %s\n", xpath);
 			}
 

@@ -160,7 +160,7 @@ namespace Radar {
 		if(p.length < 16) {
 			return;
 		}
-		var rdebug = ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE);
+		var rdebug = ((Mwp.debug_flags & Mwp.DebugFlags.RADAR) != Mwp.DebugFlags.NONE);
 		bool posrep = (p[1] == "2" || p[1] == "3");
 		bool isvalid = false;
 		string s4 = "0x%s".printf(p[4]);
@@ -249,7 +249,7 @@ namespace Radar {
 #if PROTOC
 	public void decode_pba(uint8[] buf) {
 		ReadSB.Pbuf[] acs={};
-		var rdebug = ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE);
+		var rdebug = ((Mwp.debug_flags & Mwp.DebugFlags.RADAR) != Mwp.DebugFlags.NONE);
 		var nac = ReadSB.decode_ac_pb(buf, out acs);
 		for(int k = 0; k < nac; k++) {
 			var a = acs[k];
@@ -317,7 +317,7 @@ namespace Radar {
 
 	public void decode_jsa(string js, bool adsbx = false) {
 		var parser = new Json.Parser();
-		var rdebug = ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE);
+		var rdebug = ((Mwp.debug_flags & Mwp.DebugFlags.RADAR) != Mwp.DebugFlags.NONE);
 		try {
 			parser.load_from_data (js);
 			Json.Array acarry;

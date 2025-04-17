@@ -22,7 +22,7 @@ namespace MspRadar {
                               uint8 xflags, bool errs) {
 		double rlat, rlon;
         Mwp.nopoll = true;
-		if((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE) {
+		if((Mwp.debug_flags & Mwp.DebugFlags.RADAR) != Mwp.DebugFlags.NONE) {
 			MWPLog.message("RDR-msg: %s\n", cmd.to_string());
 		}
 
@@ -51,7 +51,7 @@ namespace MspRadar {
 			p = SEDE.serialise_u16(p, 0);
 			p = SEDE.serialise_u16(p, 0);
 			SEDE.serialise_u16(p, 99);
-			if((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE) {
+			if((Mwp.debug_flags & Mwp.DebugFlags.RADAR) != Mwp.DebugFlags.NONE) {
 				MWPLog.message("RDR-rgps: Lat, Lon %f %f\n", rlat, rlon);
 				StringBuilder sb = new StringBuilder("RDR-rgps:");
 				foreach(var r in oraw)
@@ -102,7 +102,7 @@ namespace MspRadar {
 			break;
 
 		default:
-			if((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE) {
+			if((Mwp.debug_flags & Mwp.DebugFlags.RADAR) != Mwp.DebugFlags.NONE) {
 				MWPLog.message("RADAR: %s %d (%u)\n", cmd.to_string(), cmd, len);
 			}
 			break;
@@ -145,7 +145,7 @@ namespace MspRadar {
         Radar.update((uint)id, false);
         Radar.update_marker((uint)id);
 
-        if((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE) {
+        if((Mwp.debug_flags & Mwp.DebugFlags.RADAR) != Mwp.DebugFlags.NONE) {
             StringBuilder sb = new StringBuilder("RDR-recv:");
             MWPLog.message("RDR-recv %d: Lat, Lon %f %f\n", id, ri.latitude, ri.longitude);
             foreach(var r in raw[0:len])
@@ -252,9 +252,9 @@ namespace MspRadar {
 				ri.posvalid = true;
 
 				Radar.upsert(v, ri);
-				Radar.update(v, ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE));
+				Radar.update(v, ((Mwp.debug_flags & Mwp.DebugFlags.RADAR) != Mwp.DebugFlags.NONE));
 				Radar.update_marker(v);
-				if((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE)
+				if((Mwp.debug_flags & Mwp.DebugFlags.RADAR) != Mwp.DebugFlags.NONE)
 					MWPLog.message(sb.str);
 			}
 		}
@@ -358,13 +358,13 @@ namespace MspRadar {
 			Radar.set_astatus();
 
 			Radar.upsert(v, ri);
-			Radar.update(v, ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE));
+			Radar.update(v, ((Mwp.debug_flags & Mwp.DebugFlags.RADAR) != Mwp.DebugFlags.NONE));
 			Radar.update_marker(v);
 		} else {
             sb.append("invald pos ");
         }
 
-        if((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE)
+        if((Mwp.debug_flags & Mwp.DebugFlags.RADAR) != Mwp.DebugFlags.NONE)
             MWPLog.message(sb.str);
     }
 }

@@ -74,7 +74,7 @@ namespace WindEstimate {
 				w_diff += 360;
 			}
 			var vas = t.gps.gspeed - w_ms * Math.cos(w_diff*Math.PI/180.0);
-			if((Mwp.DEBUG_FLAGS.ADHOC in Mwp.debug_flags)) {
+			if((Mwp.DebugFlags.ADHOC in Mwp.debug_flags)) {
 				MWPLog.message(":DBG: Vas %.1f (%.1fm/s %.0f°)\n", vas, w_ms, w_dirn);
 			}
 

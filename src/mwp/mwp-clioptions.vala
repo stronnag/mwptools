@@ -102,7 +102,7 @@ namespace Cli {
 
 	private void parse_options() {
 		Mwp.gpsstats = {0, 0, 0, 0, 9999, 9999, 9999};
-		MWSerial.debug = ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.SERIAL) == Mwp.DEBUG_FLAGS.SERIAL);
+		MWSerial.debug = ((Mwp.debug_flags & Mwp.DebugFlags.SERIAL) == Mwp.DebugFlags.SERIAL);
 #if MQTT
         MWPLog.message("MQTT enabled via the \"%s\" library\n", MwpMQTT.provider());
 #endif
@@ -134,7 +134,7 @@ namespace Cli {
 					vsb.append_c('\n');
 					MWPLog.message(vsb.str);
 					pnf += 1;
-				} else if  (Mwp.DEBUG_FLAGS.INIT in Mwp.debug_flags)  {
+				} else if  (Mwp.DebugFlags.INIT in Mwp.debug_flags)  {
 					MWPLog.message(":DBG: Path %s => %s\n", s, ppath);
 				}
             }

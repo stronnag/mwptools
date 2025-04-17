@@ -516,7 +516,7 @@ namespace CRSF {
 			break;
 
 		case CRSF.DEV_ID:
-			if((Mwp.debug_flags & Mwp.DEBUG_FLAGS.SERIAL) != Mwp.DEBUG_FLAGS.NONE) {
+			if((Mwp.debug_flags & Mwp.DebugFlags.SERIAL) != Mwp.DebugFlags.NONE) {
 				MWPLog.message("CRSF-DEV %s\n", (string)(ptr+5));
 			}
 			break;

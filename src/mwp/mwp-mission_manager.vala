@@ -504,7 +504,7 @@ namespace MissionManager {
 		var ms = MissionManager.current();
 		validate_elevations(ms);
 		var losa = new LOSSlider(Mwp.conf.los_margin);
-		if((Mwp.debug_flags & Mwp.DEBUG_FLAGS.LOSANA) != Mwp.DEBUG_FLAGS.NONE) {
+		if((Mwp.debug_flags & Mwp.DebugFlags.LOSANA) != Mwp.DebugFlags.NONE) {
 			losa.set_log(true);
 		}
 		losa.run(ms, no, false);

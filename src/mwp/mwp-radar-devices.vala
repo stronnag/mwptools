@@ -478,7 +478,7 @@ namespace Radar {
 	}
 
 	private void dump_radars() {
-		if(Mwp.DEBUG_FLAGS.RDRLIST in Mwp.debug_flags) {
+		if(Mwp.DebugFlags.RDRLIST in Mwp.debug_flags) {
 			var sb = new StringBuilder(":DBG: Radar list\n");
 			for (var i = 0; i < items.get_n_items(); i++) {
 				var r = items.get_item(i) as RadarDev;

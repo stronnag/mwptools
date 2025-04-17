@@ -72,7 +72,7 @@ namespace GstDev {
 				if(act) {
 					MWPLog.message("GST: \"%s\" <%s> <%s>\n", a, d.displayname, d.devicename);
 				}
-				if((Mwp.debug_flags & Mwp.DEBUG_FLAGS.VIDEO) == Mwp.DEBUG_FLAGS.VIDEO) {
+				if((Mwp.debug_flags & Mwp.DebugFlags.VIDEO) == Mwp.DebugFlags.VIDEO) {
 					//					viddevs.@foreach((d) =>
 					for (unowned List<GstMonitor.VideoDev?>lp = viddevs.first(); lp != null; lp = lp.next)  {
 						var dv = lp.data;

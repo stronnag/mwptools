@@ -39,7 +39,7 @@ namespace Radar {
 						hided *= 10;
 					}
 					var delta = now.difference(r.dt);
-					bool rdebug = ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE);
+					bool rdebug = ((Mwp.debug_flags & Mwp.DebugFlags.RADAR) != Mwp.DebugFlags.NONE);
 					var xstate = r.state;
 					if (delta > deled) {
 						if (rdebug) {
@@ -66,7 +66,7 @@ namespace Radar {
 								r.alert = RadarAlert.SET;
 							}
 							radar_cache.upsert(rk, r);
-							radarv.update(rk, ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE));
+							radarv.update(rk, ((Mwp.debug_flags & Mwp.DebugFlags.RADAR) != Mwp.DebugFlags.NONE));
 							if (r.posvalid) {
 								Radar.set_radar_hidden(rk);
 							}
@@ -79,7 +79,7 @@ namespace Radar {
 							r.alert = RadarAlert.SET;
 						}
 						radar_cache.upsert(rk, r);
-						radarv.update(rk, ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE));
+						radarv.update(rk, ((Mwp.debug_flags & Mwp.DebugFlags.RADAR) != Mwp.DebugFlags.NONE));
 						if(r.posvalid) {
 							Radar.set_radar_stale(rk);
 						}
@@ -90,7 +90,7 @@ namespace Radar {
 								r.alert = RadarAlert.SET;
 							}
 							radar_cache.upsert(rk, r);
-							radarv.update(rk, ((Mwp.debug_flags & Mwp.DEBUG_FLAGS.RADAR) != Mwp.DEBUG_FLAGS.NONE));
+							radarv.update(rk, ((Mwp.debug_flags & Mwp.DebugFlags.RADAR) != Mwp.DebugFlags.NONE));
 						}
 					}
 				}
