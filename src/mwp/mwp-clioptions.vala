@@ -42,7 +42,6 @@ namespace Mwp {
 	uint gpsintvl = 0;
     int nrings = 0;
     double ringint = 0;
-	//    TelemTracker ttrk; // FIXME
 }
 
 namespace Cli {
@@ -135,7 +134,7 @@ namespace Cli {
 					vsb.append_c('\n');
 					MWPLog.message(vsb.str);
 					pnf += 1;
-				} else {
+				} else if  (Mwp.DEBUG_FLAGS.INIT in Mwp.debug_flags)  {
 					MWPLog.message(":DBG: Path %s => %s\n", s, ppath);
 				}
             }

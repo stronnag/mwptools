@@ -478,12 +478,14 @@ namespace Radar {
 	}
 
 	private void dump_radars() {
-		var sb = new StringBuilder(":DBG: Radar list\n");
-		for (var i = 0; i < items.get_n_items(); i++) {
-			var r = items.get_item(i) as RadarDev;
-			sb.append_printf("\t%s %s %s\n", r.name, r.enabled.to_string(), r.dtype.to_string());
+		if(Mwp.DEBUG_FLAGS.RDRLIST in Mwp.debug_flags) {
+			var sb = new StringBuilder(":DBG: Radar list\n");
+			for (var i = 0; i < items.get_n_items(); i++) {
+				var r = items.get_item(i) as RadarDev;
+				sb.append_printf("\t%s %s %s\n", r.name, r.enabled.to_string(), r.dtype.to_string());
+			}
+			MWPLog.message(sb.str);
 		}
-		MWPLog.message(sb.str);
 	}
 
     private void try_radar_dev(RadarDev r) {

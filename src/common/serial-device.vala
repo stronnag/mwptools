@@ -16,7 +16,6 @@
   * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
   */
 
-
  public struct SerialStats {
 	 double elapsed;
 	 ulong rxbytes;
@@ -915,9 +914,9 @@
  #endif
 						 socket.bind (sa, true);
 						 fd = socket.fd;
-						 //						if(debug) {
-						 MWPLog.message(":DBG: UDP bound: %s fd=%d\n", socket.get_local_address().to_string(), fd);
-							 //}
+						 if(debug) {
+							 MWPLog.message(":DBG: UDP bound: %s fd=%d\n", socket.get_local_address().to_string(), fd);
+						 }
 						 commode |= ComMode.UDP|ComMode.UDPSERVER;
 						 break;
 					 }
