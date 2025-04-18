@@ -617,6 +617,13 @@ namespace Panel {
 						popup_menu(w,x, y, act);
 					}
 				});
+
+			var gestl = new Gtk.GestureLongPress();
+			gestl.touch_only = true;
+			w.add_controller(gestl);
+			gestl.pressed.connect((x,y) => {
+                    popup_menu(w,x, y, act);
+				});
 		}
 
 		private bool acontains(string[]arry, string name) {

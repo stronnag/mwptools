@@ -278,6 +278,15 @@ namespace MissionManager {
 					popmenuat(cv, x, y);
 				});
 
+			var gestl = new Gtk.GestureLongPress();
+			gestl.touch_only = true;
+			((Gtk.Widget)cv).add_controller(gestl);
+			gestl.pressed.connect((x,y) => {
+					int rn = Utils.get_row_at(cv, y);
+					MT.mtno = rn+1;
+					popmenuat(cv, x, y);
+				});
+
 			model.selection_changed.connect((n,l) => {
 					var bs = model.get_selection_in_range (0, ms.npoints);
 					if (bs.is_empty())
