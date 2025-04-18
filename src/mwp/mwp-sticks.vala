@@ -87,6 +87,15 @@ namespace Sticks {
 				pop.popup();
 			});
 
+         var gestl = new Gtk.GestureLongPress();
+		 gestl.touch_only = true;
+		 sb.add_controller(gestl);
+		 gestl.pressed.connect((x,y) => {
+				 Gdk.Rectangle rect = { (int)x, (int)y, 1, 1};
+				 pop.set_pointing_to(rect);
+				 pop.popup();
+			 });
+
 		if(Mwp.conf.show_sticks == 0) {
 			Gis.overlay.add_overlay(sb);
 		} else {

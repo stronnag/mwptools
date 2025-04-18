@@ -306,13 +306,23 @@ class PlaceEdit : Adw.Window {
 		((Gtk.Widget)cv).add_controller(gestc);
 		gestc.set_button(3);
 		gestc.released.connect((n,x,y) => {
+				handle_mb3(cv, x, y);
+				/*
 				poprow = Utils.get_row_at(cv, y);
 				Gdk.Rectangle rect = { (int)x, (int)y, 1, 1};
 				pop.has_arrow = false;
 				pop.set_pointing_to(rect);
 				pop.popup();
+				*/
             });
 
+
+		var gestl = new Gtk.GestureLongPress();
+		gestl.touch_only = true;
+		((Gtk.Widget)cv).add_controller(gestl);
+		gestl.pressed.connect((x,y) => {
+				handle_mb3(cv, x, y);
+			});
 
 		box.append(scrolled);
 		tbox.set_content (box);
@@ -351,6 +361,14 @@ class PlaceEdit : Adw.Window {
 				visible=false;
             });
     }
+
+	private void handle_mb3(Gtk.Widget cv, double x, double y) {
+		poprow = Utils.get_row_at(cv, y);
+		Gdk.Rectangle rect = { (int)x, (int)y, 1, 1};
+		pop.has_arrow = false;
+		pop.set_pointing_to(rect);
+		pop.popup();
+	}
 
 	private void edit_position(Places.PosItem pi, bool insert) {
 		var w = new NewPos.Window(pi);
