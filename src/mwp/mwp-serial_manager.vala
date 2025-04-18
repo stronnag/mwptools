@@ -61,7 +61,7 @@ namespace Msp {
 		Mwp.msp = new MWSerial();
         Mwp.lastp = new Timer();
 		Mwp.lastp.start();
-		string? rcdef = Environment.get_variable("MWP_MSP_RC");
+		string? rcdef = null; //Environment.get_variable("MWP_MSP_RC");
 		if(rcdef != null) {
 			var pl = new ProcessLauncher();
 			var cmd = "mwp-hid-server %s".printf(rcdef);
