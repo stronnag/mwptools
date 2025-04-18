@@ -84,6 +84,15 @@ The result after adding "WindSpeed":
 
 When the popup menu is invoked for a populated pane, only "Remove Item" is available.
 
+[Video example](https://youtu.be/U7EpvuZLQ74) showing right mouse button menu usage.
+
+<iframe width="827" height="594"
+src="https://www.youtube.com/embed/U7EpvuZLQ74" title="mwp panel"
+frameborder="0" allow="accelerometer; autoplay; clipboard-write;
+encrypted-media; gyroscope; picture-in-picture; web-share"
+referrerpolicy="strict-origin-when-cross-origin"
+allowfullscreen></iframe>
+
 ### Available Widgets
 
 The available panel widgets are named as:
