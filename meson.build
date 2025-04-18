@@ -206,21 +206,21 @@ executable(
   'mwp-hid-test',
   hidtestsrcs,
   dependencies: hidtestdeps,
-  install : true,
+  install : false,
 )
 
 executable(
   'mwp-hid-server',
   hidsrvsrcs,
   dependencies: hidsrvdeps,
-  install : true,
+  install : false,
 )
 
 executable(
   'mwp-hid-cli',
   hidclisrcs,
   dependencies: hidclideps,
-  install : true,
+  install : false,
 )
 
 exe=''
