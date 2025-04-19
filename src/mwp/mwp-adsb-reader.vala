@@ -181,7 +181,11 @@ public class ADSBReader :Object {
 						Source.remove(tid);
 						tid = 0;
 					}
-					Radar.decode_pico((string)message.get_data());
+					//
+					var s = (string)message.get_data();
+					if (s.has_prefix("""{"aircraft":""")) {
+						Radar.decode_pico(s);
+					}
 					tid = Timeout.add_seconds(2, () => {
 							tid = 0;
 							can.cancel();
