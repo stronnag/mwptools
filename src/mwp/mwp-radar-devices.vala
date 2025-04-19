@@ -27,7 +27,7 @@ namespace Radar {
 		JSONX,
 		PICOJS,
 		SBS,
-		WS.
+		WS,
 	}
 
 	namespace Toast {
@@ -42,7 +42,7 @@ namespace Radar {
 		LINE_READER,
 		PACKET_READER,
 		POLLER,
-		WS.
+		WS,
 	}
 
 	public class RadarDev : Object {
@@ -277,7 +277,7 @@ namespace Radar {
 			}
 		} else if (u.scheme == "ws") {
 			MWPLog.message("Set up WS radar device %s\n", pn);
-			var wsa = new ADSBReader.ws(u);
+			var wsa = new ADSBReader.ws(pn);
 			r.enabled = enable;
 			r.dtype = IOType.WS;
 			r.dev = wsa;
@@ -471,7 +471,7 @@ namespace Radar {
 				((ADSBReader)r.dev).poll();
 				break;
 			case IOType.WS:
-				((ADSBReader)r.dev)ws_reader();
+				((ADSBReader)r.dev).ws_reader.begin();
 				break;
 			default:
 				break;
