@@ -27,6 +27,7 @@ namespace Radar {
 		JSONX,
 		PICOJS,
 		SBS,
+		WS.
 	}
 
 	namespace Toast {
@@ -41,6 +42,7 @@ namespace Radar {
 		LINE_READER,
 		PACKET_READER,
 		POLLER,
+		WS.
 	}
 
 	public class RadarDev : Object {
@@ -273,6 +275,27 @@ namespace Radar {
 			if(r.is_enabled()) {
 				sbs.line_reader.begin();
 			}
+		} else if (u.scheme == "ws") {
+			MWPLog.message("Set up WS radar device %s\n", pn);
+			var wsa = new ADSBReader.ws(u);
+			r.enabled = enable;
+			r.dtype = IOType.WS;
+			r.dev = wsa;
+			wsa.result.connect((s) => {
+					if(r.is_enabled()) {
+						r.tid = Timeout.add_seconds(60, () => {
+								r.tid = 0;
+								wsa.ws_reader.begin();
+								return false;
+							});
+						if (r.qdel) {
+							queue_remove(r);
+						}
+					}
+				});
+			if(r.is_enabled()) {
+				wsa.ws_reader.begin();
+			}
 		} else if (u.scheme == "jsa") {
 			MWPLog.message("Set up JSA radar device %s\n", pn);
 			var jsa = new ADSBReader.net(u, 37007);
@@ -446,6 +469,9 @@ namespace Radar {
 				break;
 			case IOType.POLLER:
 				((ADSBReader)r.dev).poll();
+				break;
+			case IOType.WS:
+				((ADSBReader)r.dev)ws_reader();
 				break;
 			default:
 				break;
