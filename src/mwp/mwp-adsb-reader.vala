@@ -35,6 +35,7 @@ public class ADSBReader :Object {
 	private Cancellable can;
 	private int ecount;
 	public Radar.DecType dtype;
+	private uint tid = 0;
 
 	static int instance = 0;
 
@@ -170,12 +171,18 @@ public class ADSBReader :Object {
 		return (string)sdata;
 	}
 
+	public void ws_cancel() {
+		if(websocket.state == Soup.WebsocketState.OPEN) {
+			websocket.close(Soup.WebsocketCloseCode.NO_STATUS, null);
+		}
+	}
+
 	public async void ws_reader() {
 		session = new Soup.Session ();
 		session.idle_timeout = 5;
 		session.timeout = 2;
+		can.reset();
 		var msg = new Soup.Message("GET", host);
-		uint tid = 0;
 		try {
 			MWPLog.message("start %s web socket reader\n", host);
 			websocket =  yield session.websocket_connect_async(msg, "localhost", null, Priority.DEFAULT, can);
@@ -189,33 +196,45 @@ public class ADSBReader :Object {
 					if (s.has_prefix("""{"aircraft":""")) {
 						Radar.decode_pico(s);
 					}
-					tid = Timeout.add_seconds(2, () => {
+					tid = Timeout.add_seconds(10, () => {
 							tid = 0;
-							can.cancel();
+							MWPLog.message("WS: timeout\n");
+							if(websocket.state == Soup.WebsocketState.OPEN) {
+								websocket.close(Soup.WebsocketCloseCode.NO_STATUS, null);
+							}
 							return false;
 						});
 				});
 			websocket.error.connect((e) => {
 					MWPLog.message("WS Error: %s\n", e.message);
+					if(websocket.state == Soup.WebsocketState.OPEN) {
+						websocket.close(Soup.WebsocketCloseCode.NO_STATUS, null);
+					}
 				});
 			websocket.closing.connect(() => {
 					MWPLog.message("** WS Closing\n");
 				});
 			websocket.closed.connect(() => {
 					MWPLog.message ("*** WS Closed\n");
-					session.abort();
-					result(false);
+					ws_reset();
 				});
 		} catch (Error e) {
-			MWPLog.message("WS Connecr: %s\n",e.message);
-			if(websocket != null) {
+			MWPLog.message("WS Except: %s\n",e.message);
+			if(websocket != null &&  websocket.state != Soup.WebsocketState.CLOSED) {
 				websocket.close(Soup.WebsocketCloseCode.NO_STATUS, null);
 			}
-			if (can.is_cancelled()) {
-				can.reset();
-			}
+			ws_reset();
 			result(false);
 		}
+	}
+
+	private void ws_reset() {
+		can.reset();
+		if(tid != 0) {
+			Source.remove(tid);
+			tid = 0;
+		}
+		result(false);
 	}
 
 	private async bool fetch() {

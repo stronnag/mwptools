@@ -283,7 +283,7 @@ namespace Radar {
 			r.dev = wsa;
 			wsa.result.connect((s) => {
 					if(r.is_enabled()) {
-						r.tid = Timeout.add_seconds(60, () => {
+						r.tid = Timeout.add_seconds(10, () => {
 								r.tid = 0;
 								wsa.ws_reader.begin();
 								return false;
@@ -451,7 +451,11 @@ namespace Radar {
 			} else {
 				if (prev) {
 					r.qdel = qdel;
-					((ADSBReader)r.dev).cancel();
+					if(r.dtype == IOType.WS) {
+						((ADSBReader)r.dev).ws_cancel();
+					} else {
+						((ADSBReader)r.dev).cancel();
+					}
 				} else {
 					Radar.items.remove(j);
 				}
