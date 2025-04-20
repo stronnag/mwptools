@@ -378,7 +378,6 @@ namespace Mwp {
 }
 
 namespace Mav {
-	/*
 	uint32 swvers = 0;
 	uint8 gitid[8];
 	void genvers() {
@@ -409,7 +408,6 @@ namespace Mav {
 		}
 		return (uint)((intptr)rp - (intptr)msg);
 	}
-	*/
 
 	uint make_mav_heartbeat(uint8[] msg) {
 		uint32 flag = 0;
@@ -434,6 +432,6 @@ namespace Mav {
 
 	void send_mav_beacon(MWSerial m) {
 		send_mav_heartbeat(m);
-		//send_mav_autopilot(m);
+		send_mav_autopilot(m);
 	}
 }

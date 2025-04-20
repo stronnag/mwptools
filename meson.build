@@ -1,4 +1,4 @@
-project('mwptools', 'vala', 'c', version : '25.04.18', meson_version : '>= 1.4.0')
+project('mwptools', 'vala', 'c', version : '25.04.20', meson_version : '>= 1.4.0')
 
 nogo = get_option('nogo')
 pointy_labels = get_option('pointy-labels')
@@ -206,21 +206,21 @@ executable(
   'mwp-hid-test',
   hidtestsrcs,
   dependencies: hidtestdeps,
-  install : true,
+  install : false,
 )
 
 executable(
   'mwp-hid-server',
   hidsrvsrcs,
   dependencies: hidsrvdeps,
-  install : true,
+  install : false,
 )
 
 executable(
   'mwp-hid-cli',
   hidclisrcs,
   dependencies: hidclideps,
-  install : true,
+  install : false,
 )
 
 exe=''

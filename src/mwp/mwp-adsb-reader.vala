@@ -17,13 +17,13 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-
 public class ADSBReader :Object {
 	public signal void result(bool ok);
 	private SocketConnection conn;
 	private string host;
 	private uint16 port;
 	private Soup.Session session;
+	private Soup.WebsocketConnection websocket;
 	private uint range;
 	private uint interval;
 	private uint nreq;
@@ -67,6 +67,12 @@ public class ADSBReader :Object {
 	}
 
 	public ADSBReader.web(string pn) {
+		this();
+		session = new Soup.Session ();
+		host = pn;
+	}
+
+	public ADSBReader.ws(string pn) {
 		this();
 		session = new Soup.Session ();
 		host = pn;
@@ -163,6 +169,50 @@ public class ADSBReader :Object {
 		Memory.copy(sdata, data, sz);
 		sdata[sz] = 0;
 		return (string)sdata;
+	}
+
+	public async void ws_reader() {
+		var msg = new Soup.Message("GET", host);
+		uint tid = 0;
+		try {
+			MWPLog.message("start %s web socket reader\n", host);
+			websocket =  yield session.websocket_connect_async(msg, "localhost", null, Priority.DEFAULT, can);
+			websocket.message.connect((typ, message) => {
+					if(tid != 0) {
+						Source.remove(tid);
+						tid = 0;
+					}
+					var s = (string)message.get_data();
+					//					MWPLog.message("WS: %s\n", s);
+					if (s.has_prefix("""{"aircraft":""")) {
+						Radar.decode_pico(s);
+					}
+					tid = Timeout.add_seconds(2, () => {
+							tid = 0;
+							can.cancel();
+							return false;
+						});
+				});
+			websocket.error.connect((e) => {
+					MWPLog.message("WS Error: %s\n", e.message);
+				});
+			websocket.closing.connect(() => {
+					MWPLog.message("** WS Closing\n");
+				});
+			websocket.closed.connect(() => {
+					MWPLog.message ("*** WS Closed\n");
+					result(false);
+				});
+		} catch (Error e) {
+			MWPLog.message("WS Connecr: %s\n",e.message);
+			if(websocket != null) {
+				websocket.close(Soup.WebsocketCloseCode.NO_STATUS, null);
+			}
+			if (can.is_cancelled()) {
+				can.reset();
+			}
+			result(false);
+		}
 	}
 
 	private async bool fetch() {
