@@ -74,7 +74,6 @@ public class ADSBReader :Object {
 
 	public ADSBReader.ws(string pn) {
 		this();
-		session = new Soup.Session ();
 		host = pn;
 	}
 
@@ -172,6 +171,9 @@ public class ADSBReader :Object {
 	}
 
 	public async void ws_reader() {
+		session = new Soup.Session ();
+		session.idle_timeout = 5;
+		session.timeout = 2;
 		var msg = new Soup.Message("GET", host);
 		uint tid = 0;
 		try {
@@ -201,6 +203,7 @@ public class ADSBReader :Object {
 				});
 			websocket.closed.connect(() => {
 					MWPLog.message ("*** WS Closed\n");
+					session.abort();
 					result(false);
 				});
 		} catch (Error e) {
