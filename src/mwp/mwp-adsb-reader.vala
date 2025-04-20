@@ -23,6 +23,7 @@ public class ADSBReader :Object {
 	private string host;
 	private uint16 port;
 	private Soup.Session session;
+	private Soup.WebsocketConnection websocket;
 	private uint range;
 	private uint interval;
 	private uint nreq;
@@ -172,17 +173,17 @@ public class ADSBReader :Object {
 
 	public async void ws_reader() {
 		var msg = new Soup.Message("GET", host);
-		Soup.WebsocketConnection websocket = null;
 		uint tid = 0;
 		try {
+			MWPLog.message("start %s web socket reader\n", host);
 			websocket =  yield session.websocket_connect_async(msg, "localhost", null, Priority.DEFAULT, can);
 			websocket.message.connect((typ, message) => {
 					if(tid != 0) {
 						Source.remove(tid);
 						tid = 0;
 					}
-					//
 					var s = (string)message.get_data();
+					//					MWPLog.message("WS: %s\n", s);
 					if (s.has_prefix("""{"aircraft":""")) {
 						Radar.decode_pico(s);
 					}
@@ -206,6 +207,9 @@ public class ADSBReader :Object {
 			MWPLog.message("WS Connecr: %s\n",e.message);
 			if(websocket != null) {
 				websocket.close(Soup.WebsocketCloseCode.NO_STATUS, null);
+			}
+			if (can.is_cancelled()) {
+				can.reset();
 			}
 			result(false);
 		}
