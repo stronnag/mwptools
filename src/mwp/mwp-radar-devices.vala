@@ -283,7 +283,8 @@ namespace Radar {
 			r.dev = wsa;
 			wsa.result.connect((s) => {
 					if(r.is_enabled()) {
-						r.tid = Timeout.add_seconds(10, () => {
+						int tos = (s) ? 10 : 60;
+						r.tid = Timeout.add_seconds(tos, () => {
 								r.tid = 0;
 								wsa.ws_reader.begin();
 								return false;
