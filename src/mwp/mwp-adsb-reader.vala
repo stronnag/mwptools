@@ -199,42 +199,37 @@ public class ADSBReader :Object {
 					tid = Timeout.add_seconds(10, () => {
 							tid = 0;
 							MWPLog.message("WS: timeout\n");
-							if(websocket.state == Soup.WebsocketState.OPEN) {
-								websocket.close(Soup.WebsocketCloseCode.NO_STATUS, null);
-							}
+							ws_cancel();
 							return false;
 						});
 				});
 			websocket.error.connect((e) => {
 					MWPLog.message("WS Error: %s\n", e.message);
-					if(websocket.state == Soup.WebsocketState.OPEN) {
-						websocket.close(Soup.WebsocketCloseCode.NO_STATUS, null);
-					}
+					ws_cancel();
 				});
 			websocket.closing.connect(() => {
 					MWPLog.message("** WS Closing\n");
 				});
 			websocket.closed.connect(() => {
 					MWPLog.message ("*** WS Closed\n");
-					ws_reset();
+					ws_reset(true);
 				});
 		} catch (Error e) {
 			MWPLog.message("WS Except: %s\n",e.message);
 			if(websocket != null &&  websocket.state != Soup.WebsocketState.CLOSED) {
 				websocket.close(Soup.WebsocketCloseCode.NO_STATUS, null);
 			}
-			ws_reset();
-			result(false);
+			ws_reset(false);
 		}
 	}
 
-	private void ws_reset() {
+	private void ws_reset(bool s) {
 		can.reset();
 		if(tid != 0) {
 			Source.remove(tid);
 			tid = 0;
 		}
-		result(false);
+		result(s);
 	}
 
 	private async bool fetch() {
