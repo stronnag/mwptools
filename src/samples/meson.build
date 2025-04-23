@@ -1,7 +1,6 @@
 subdir('cliterm')
 subdir('ublox-test')
 subdir('flashdl')
-subdir('hidex')
 
 install_data(
   'flash.sh',
