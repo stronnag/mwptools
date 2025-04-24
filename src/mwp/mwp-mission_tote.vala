@@ -250,7 +250,6 @@ namespace MissionManager {
 				lstore.append(ms.points[i]);
 			}
 			ms.changed.connect(() => {
-					build_cv(); // (Experimental) to rebuild drop targets
 					reload();
 				});
 
@@ -324,12 +323,12 @@ namespace MissionManager {
 
 		void popmenuat(Gtk.Widget w, double x, double y) {
 			var pop = new Gtk.PopoverMenu.from_model(mmodel);
-            MwpMenu.set_menu_state(dg, "addshape", set_poi_ok());
+			pop.set_parent(w);
 			Gdk.Rectangle rect = { (int)x, (int)y, 1, 1,};
 			pop.set_pointing_to(rect);
-			pop.set_parent(w);
 			pop.margin_top = 8;
 			pop.margin_bottom = 8;
+            MwpMenu.set_menu_state(dg, "addshape", set_poi_ok());
 			pop.popup();
 		}
 
