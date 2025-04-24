@@ -3,6 +3,8 @@ project('mwptools', 'vala', 'c', version : '25.04.24', meson_version : '>= 1.4.0
 nogo = get_option('nogo')
 pointy_labels = get_option('pointy-labels')
 
+with_hid = get_option('enable-hid')
+
 force_s = get_option('force-static')
 dynalib = true
 if force_s
@@ -202,6 +204,8 @@ executable('mwpset', kwargs: exargs)
 
 subdir('src/bbox-replay')
 
+if with_hid
+
 executable(
   'mwp-hid-test',
   hidtestsrcs,
@@ -222,6 +226,7 @@ executable(
   dependencies: hidclideps,
   install : false,
 )
+endif
 
 exe=''
 if build_machine.system() == 'windows'

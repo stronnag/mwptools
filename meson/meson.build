@@ -13,6 +13,11 @@ if host_machine.system() == 'linux'
   deps += dependency('gio-unix-2.0')
 endif
 
+
+if with_hid
+  dopts += '--define=USE_HID'
+endif
+
 if host_machine.system() == 'freebsd'
   dopts += '--define=FREEBSD'
 endif
