@@ -143,6 +143,11 @@ namespace Mwp {
     NAVCAPS navcap;
 
 	const int MSP_WAITMS = 5;
+#if USE_HID
+	const double JSTKINTVL = 0.15;
+	const int JSCHANSIZE = 32;
+	int16 rcchans[16];
+#endif
 
 	void serial_reset() {
 		vi = {};
@@ -649,25 +654,54 @@ namespace Mwp {
         }
 
 		if(serstate == SERSTATE.POLLER) {
-			if(mleave == 1 && !mq.is_empty()) {
-				mleave = 2;
-				// MWPLog.message(":DBG: 1 Interleaved %s %u => QUE\n", cmd.format(), raw[0]);
-				run_queue();
-			} else if (mleave == 2) {
-				// MWPLog.message(":DBG: 2 Interleaved %s %u => POLL\n", cmd.format(), raw[0]);
-				timed_poll();
-				mleave = 1;
-			} else if(!mq.is_empty()) {
-				run_queue();
-			} else {
-				timed_poll();
+#if USE_HID
+			if(!send_msp_rc())
+#endif
+			{
+				if(mleave == 1 && !mq.is_empty()) {
+					mleave = 2;
+					// MWPLog.message(":DBG: 1 Interleaved %s %u => QUE\n", cmd.format(), raw[0]);
+					run_queue();
+				} else if (mleave == 2) {
+					// MWPLog.message(":DBG: 2 Interleaved %s %u => POLL\n", cmd.format(), raw[0]);
+					timed_poll();
+					mleave = 1;
+				} else if(!mq.is_empty()) {
+					run_queue();
+				} else {
+					timed_poll();
+				}
 			}
 		} else {
-			if(!mq.is_empty()) {
-				run_queue();
+#if USE_HID
+			if(!send_msp_rc())
+#endif
+			{
+				if(!mq.is_empty()) {
+					run_queue();
+				}
 			}
 		}
     }
+
+#if USE_HID
+	private bool send_msp_rc() {
+		if(Mwp.use_msp_rc && rctimer.is_active() && rctimer.elapsed() > Mwp.JSTKINTVL) {
+			JSMisc.read_hid_async.begin((uint8[])rcchans, "raw",  (o, r) => {
+					var sz = JSMisc.read_hid_async.end(r);
+					if(sz  == JSCHANSIZE && rcchans[0] > 0) {
+						msp.send_command(Msp.Cmds.SET_RAW_RC, (uint8[])rcchans, JSCHANSIZE);
+						rctimer.start();
+						Sticks.update(rcchans[0], rcchans[1], rcchans[3], rcchans[2]);
+					} else {
+						rctimer.stop();
+					}
+				});
+			return true;
+		}
+		return false;
+	}
+#endif
 
 	private void timed_poll() {
 		if (requests.length > 0) {

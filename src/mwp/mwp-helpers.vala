@@ -616,3 +616,47 @@ namespace CatMap {
 		return (string)s;
 	}
 }
+
+#if USE_HID
+namespace JSMisc {
+	SocketAddress sockaddr;
+	Socket socket;
+	DataInputStream dis;
+	DataOutputStream dos;
+
+	private bool setup_ip(string host, uint16 port) {
+        try {
+                var resolver = Resolver.get_default ();
+                var addresses = resolver.lookup_by_name (host, null);
+                var address = addresses.nth_data (0);
+                sockaddr = new InetSocketAddress (address, port);
+				socket = new Socket (sockaddr.get_family(), SocketType.DATAGRAM, SocketProtocol.UDP);
+				socket.connect(sockaddr);
+#if !WINDOWS
+				dis = new DataInputStream(new UnixInputStream(socket.fd, true));
+				dos = new DataOutputStream(new UnixOutputStream(socket.fd, true));
+#else
+				dis = new DataInputStream (new Win32InputStream((void *)socket.fd, true));
+				dos = new DataOutputStream (new Win32OutputStream((void *)socket.fd, true));
+#endif
+                return true;
+        } catch(Error e) {
+                stderr.printf("err: %s\n", e.message);
+                return false;
+        }
+	}
+
+	private async ssize_t read_hid_async(uint8 []buf, string cmd) {
+		ssize_t sz = -1;
+		try {
+			sz = yield dos.write_async (cmd.data, Priority.DEFAULT, null);
+			if (sz > 0) {
+				sz = yield dis.read_async(buf, Priority.DEFAULT, null);
+			}
+		} catch (Error e) {
+			MWPLog.message("HID Read <%s> %s\n", cmd, e.message);
+		}
+		return sz;
+	}
+}
+#endif

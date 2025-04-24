@@ -249,6 +249,7 @@ namespace MissionManager {
 			for(var i = 0; i < ms.npoints; i++) {
 				lstore.append(ms.points[i]);
 			}
+
 			ms.changed.connect(() => {
 					reload();
 				});

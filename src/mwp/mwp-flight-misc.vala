@@ -105,6 +105,7 @@ namespace Mwp {
         //    scflags = SAT_FLAGS.NEEDED;
         //}
         if(scflags != SAT_FLAGS.NONE) {
+			//MWPLog.message(":DBG: gps alert %x\n", scflags);
             gps_alert(scflags);
         }
 	}
