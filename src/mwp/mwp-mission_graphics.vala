@@ -673,6 +673,8 @@ namespace MsnTools {
 					for(var k = 0; k < m.npoints; k++) {
 						if ((m.points[k]._mflag & IFlags.FLYBY) != 0) {
 							ll += m.points[k].no;
+							m.points[k].lat = la;
+							m.points[k].lon = lo;
 						}
 					}
 					if(ll.length > 0) {

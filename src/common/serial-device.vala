@@ -1199,7 +1199,7 @@
 				 if (u.qhash != null) {
 					 var v = u.qhash.get("baud");
 					 if (v != null) {
-						 baudrate = int.parse(v);
+						 rate = int.parse(v);
 					 }
 				 }
 			 }
