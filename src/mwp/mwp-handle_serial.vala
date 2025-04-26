@@ -345,7 +345,7 @@ namespace Mwp {
                                 Mwp.add_toast_text("No data for 5s");
                                 rxerr=true;
                             }
-							MWPLog.message("No data for 5s %s\n", rxerr.to_string());
+							MWPLog.message("No data for 5s %s\n", lastmsg.cmd.format());
 							resend_last();
                         }
 
