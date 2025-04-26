@@ -339,17 +339,19 @@ namespace Mwp {
 							tlimit *= 4;
 						}
 
-						if((serstate == SERSTATE.POLLER || serstate == SERSTATE.TELEM) &&
+						if(((serstate == SERSTATE.POLLER || serstate == SERSTATE.TELEM)) &&
                            (nticks - lastrx) > NODATAINTVL) {
                             if(rxerr == false) {
                                 Mwp.add_toast_text("No data for 5s");
                                 rxerr=true;
                             }
+							MWPLog.message("No data for 5s %s\n", rxerr.to_string());
+							resend_last();
                         }
 
                         if(serstate != SERSTATE.TELEM) {
 							// Long timeout
-                            if(serstate == SERSTATE.POLLER && nticks - lastrx > RESTARTINTVL) {
+                            if(serstate == SERSTATE.POLLER && (nticks - lastrx) > RESTARTINTVL) {
                                 serstate = SERSTATE.NONE;
                                 MWPLog.message("Restart poll loop\n");
                                 init_state();
@@ -609,9 +611,8 @@ namespace Mwp {
 		}
 		if(!handled) {
 			show_unhandled(cmd, raw, len);
-        } else {
-			lastrx = nticks;
-		}
+        }
+		lastrx = nticks;
 
         if(fwddev.available() && conf.forward  != FWDS.NONE) {
             if(conf.forward == FWDS.ALL) {
