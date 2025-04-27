@@ -1192,7 +1192,6 @@ namespace Mwp {
 
 		case Msp.Cmds.SET_WP:
 			if(wpmgr.wps.length > 0) {
-				lastok = lastrx = nticks;
 				wpmgr.wpidx++;
 				if(wpmgr.wpidx < wpmgr.npts) {
 					uint8 wtmp[32];

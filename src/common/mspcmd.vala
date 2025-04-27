@@ -51,6 +51,7 @@ namespace Msp {
 
 	public const uint LTM_BASE  = 0x10000;
 	public const uint MAV_BASE  = 0x20000;
+	public const uint MAV_TOP   = 0x21000;
 
 	public enum Cmds {
         NOOP = 0,
@@ -210,10 +211,13 @@ namespace Msp {
 				n++;
 				id -= LTM_BASE;
 				sb.append("LTM");
-			} else {
+			} else if (this < MAV_TOP) {
 				n += 8;
 				id -= MAV_BASE;
 				sb.append("Navlink");
+			} else {
+				n = 0;
+				sb.append("Unknown");
 			}
 			sb.append(":");
 			sb.append(a[n:]);

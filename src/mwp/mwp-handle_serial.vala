@@ -141,6 +141,7 @@ namespace Mwp {
     bool gpsfix;
     bool ltm_force_sats;
     NAVCAPS navcap;
+	uint lmin = 0;
 
 	const int MSP_WAITMS = 5;
 #if USE_HID
@@ -306,6 +307,9 @@ namespace Mwp {
         if(msp.available) {
             if(lastmsg.cmd != Msp.Cmds.INVALID) {
                 msp.send_command((uint16)lastmsg.cmd, lastmsg.data, lastmsg.len);
+				if(Mwp.DebugFlags.MSP in Mwp.debug_flags) {
+					MWPLog.message(":DBG: MSP resend: %s\n", lastmsg.cmd.format());
+				}
             } else
                 run_queue();
 		}
@@ -323,53 +327,55 @@ namespace Mwp {
         }
     }
 
-	 void start_poll_timer() {
-        var lmin = 0;
+	void start_poll_timer() {
+		MWPLog.message("Start poller sanity timer\n");
 		Timeout.add(TIMINTVL, () => {
-                nticks++;
-                if(msp.available) {
-                    if(serstate != SERSTATE.NONE) {
-                        var tlimit = conf.polltimeout / TIMINTVL;
+				nticks++;
+				if(msp.available) {
+					if(serstate != SERSTATE.NONE) {
+						var mintvl = nticks - lastrx;
+						var tlimit = conf.polltimeout / TIMINTVL;
 						if (lastmsg.cmd == Msp.Cmds.WP_MISSION_SAVE ||
 							lastmsg.cmd == Msp.Cmds.EEPROM_WRITE ||
 							lastmsg.cmd == Msp.Cmds.ADSB_VEHICLE_LIST) {
 							tlimit += MAVINTVL;
 						}
-						if(msp.is_weak() ) {
+						if(msp.is_weakble() ) {
 							tlimit *= 4;
 						}
 
-						if(((serstate == SERSTATE.POLLER || serstate == SERSTATE.TELEM)) &&
-                           (nticks - lastrx) > NODATAINTVL) {
-                            if(rxerr == false) {
-                                Mwp.add_toast_text("No data for 5s");
-                                rxerr=true;
-                            }
+						if(((serstate == SERSTATE.POLLER || serstate == SERSTATE.TELEM)) && mintvl > NODATAINTVL) {
+							if(rxerr == false) {
+								Mwp.add_toast_text("No data for 5s");
+								rxerr=true;
+							}
 							MWPLog.message("No data for 5s %s\n", lastmsg.cmd.format());
-							resend_last();
-                        }
+							if (lastmsg.cmd != Msp.Cmds.INVALID) {
+								resend_last();
+							}
+						}
 
-                        if(serstate != SERSTATE.TELEM) {
+						if(serstate != SERSTATE.TELEM) {
 							// Long timeout
-                            if(serstate == SERSTATE.POLLER && (nticks - lastrx) > RESTARTINTVL) {
-                                serstate = SERSTATE.NONE;
-                                MWPLog.message("Restart poll loop\n");
-                                init_state();
-                                init_sstats();
-                                serstate = SERSTATE.NORMAL;
+							if(serstate == SERSTATE.POLLER && mintvl > RESTARTINTVL) {
+								serstate = SERSTATE.NONE;
+								MWPLog.message("Restart poll loop last = %s\n", lastmsg.cmd.format());
+								init_state();
+								init_sstats();
+								serstate = SERSTATE.NORMAL;
 								idcount = 0;
-                                queue_cmd(Msp.Cmds.IDENT,null,0);
-                                if(inhibit_cookie != 0) {
-									MWPLog.message("Not managing screen / power settings\n");
-									MwpIdle.uninhibit(inhibit_cookie);
-                                    inhibit_cookie = 0;
-                                }
-                                run_queue();
-                            } else if ((nticks - lastok) > tlimit ) {
+								queue_cmd(Msp.Cmds.IDENT,null,0);
+							if(inhibit_cookie != 0) {
+								MWPLog.message("Not managing screen / power settings\n");
+								MwpIdle.uninhibit(inhibit_cookie);
+								inhibit_cookie = 0;
+							}
+							run_queue();
+							} else if ((nticks - lastok) > tlimit ) {
 								if (lastmsg.cmd != Msp.Cmds.INVALID) {
 									telstats.toc++;
 									string res;
-                                    res = lastmsg.cmd.format();
+									res = lastmsg.cmd.format();
 									if(nopoll == false)
 										MWPLog.message("MSP Timeout %u %u %u (%s %s)\n",
 													   nticks, lastok, lastrx, res, serstate.to_string());
@@ -389,63 +395,58 @@ namespace Mwp {
 									tcycle = 0;
 									resend_last();
 								}
-                            }
-                        } else {
-                            if(armed != 0 && msp.available && gpsintvl != 0 && last_gps != 0) {
-                                if (nticks - last_gps > gpsintvl) {
-                                    if(replayer == Player.NONE)
-                                        Audio.play_alarm_sound(MWPAlert.SAT);
-                                    if(replay_paused == false)
-                                        MWPLog.message("GPS stalled\n");
+							}
+						} else { // TELEM
+							if(armed != 0 && msp.available && gpsintvl != 0 && last_gps != 0) {
+								if (nticks - last_gps > gpsintvl) {
+									if(replayer == Player.NONE)
+										Audio.play_alarm_sound(MWPAlert.SAT);
+									if(replay_paused == false)
+										MWPLog.message("GPS stalled\n");
                                     Mwp.window.gpslab.label = "!";
                                     last_gps = nticks;
-                                }
-                            }
+								}
+							}
 
-                            if(serstate == SERSTATE.TELEM && nopoll == false &&
-                               last_tm > 0 &&
-                               ((nticks - last_tm) > MAVINTVL)
-                               && msp.available && replayer == Player.NONE) {
-                                MWPLog.message("Restart poller on telemetry timeout\n");
-                                have_status = false;
-                                xbits = icount = api_cnt = 0;
-                                init_sstats();
-                                last_tm = 0;
-                                serstate = SERSTATE.NORMAL;
-                                queue_cmd(msp_get_status,null,0);
-                                run_queue();
-                            }
-                        }
-                    } else {
-                        lastok = lastrx = nticks;
+							if(serstate == SERSTATE.TELEM && nopoll == false &&
+							   last_tm > 0 &&
+							   ((nticks - last_tm) > MAVINTVL)
+							   && msp.available && replayer == Player.NONE) {
+								MWPLog.message("Restart poller on telemetry timeout\n");
+								have_status = false;
+								xbits = icount = api_cnt = 0;
+								init_sstats();
+								last_tm = 0;
+								serstate = SERSTATE.NORMAL;
+								queue_cmd(msp_get_status,null,0);
+								run_queue();
+							}
+						}
+					} else {
+						lastok = lastrx = nticks;
 					}
+				}
 
-                    if((nticks % STATINTVL) == 0) {
-                        //gen_serial_stats(); // FIXME
-                        //telemstatus.update(telstats, item_visible(DOCKLETS.TELEMETRY)); FIXME
-                    }
-                }
-
-                if(duration != 0 && duration != last_dura) {
-                    int mins;
-                    int secs;
-                    if(duration < 0) {
-                        mins = secs = 0;
-                        duration = 0;
+				if(duration != 0 && duration != last_dura) {
+					int mins;
+					int secs;
+					if(duration < 0) {
+						mins = secs = 0;
+						duration = 0;
                     } else {
-                        mins = (int)duration / 60;
-                        secs = (int)duration % 60;
-                        if(mins != lmin) {
+						mins = (int)duration / 60;
+						secs = (int)duration % 60;
+						if(mins != lmin) {
 							//navstatus.update_duration(mins); // FIXME
 							lmin = mins;
-                        }
-                    }
-                    Mwp.window.elapsedlab.set_text("%02d:%02d".printf(mins,secs));
-                    last_dura = duration;
-                }
-                return Source.CONTINUE;
-            });
-    }
+						}
+					}
+					Mwp.window.elapsedlab.set_text("%02d:%02d".printf(mins,secs));
+					last_dura = duration;
+				}
+				return Source.CONTINUE;
+			});
+	}
 
     public void queue_cmd(Msp.Cmds cmd, void* buf, size_t len) {
         if(((debug_flags & DebugFlags.INIT) != DebugFlags.NONE)
@@ -691,7 +692,8 @@ namespace Mwp {
 			JSMisc.read_hid_async.begin((uint8[])rcchans, "raw",  (o, r) => {
 					var sz = JSMisc.read_hid_async.end(r);
 					if(sz  == JSCHANSIZE && rcchans[0] > 0) {
-						msp.send_command(Msp.Cmds.SET_RAW_RC, (uint8[])rcchans, JSCHANSIZE);
+						queue_cmd(Msp.Cmds.SET_RAW_RC, (uint8[])rcchans, JSCHANSIZE);
+						run_queue();
 						rctimer.start();
 						Sticks.update(rcchans[0], rcchans[1], rcchans[3], rcchans[2]);
 					} else {

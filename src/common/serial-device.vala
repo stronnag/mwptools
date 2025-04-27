@@ -724,6 +724,10 @@
 		 return ((commode & ComMode.WEAK) == ComMode.WEAK);
 	 }
 
+	 public bool is_weakble() {
+		 return ((commode & ComMode.WEAKBLE) == ComMode.WEAKBLE);
+	 }
+
 	 public void set_weak() {
 		 commode |= ComMode.WEAK;
 	 }
@@ -1969,7 +1973,7 @@
 	 public ssize_t write(uint8[]buf, size_t count) {
 		 ssize_t sz = -1;
 		 if(available) {
-			 if((commode & ComMode.WEAK) == ComMode.WEAK) {
+			 if((commode & ComMode.WEAKBLE) == ComMode.WEAKBLE) {
 				 sz = stream_writer(buf, count);
 			 } else {
 				 sz = io_write(buf, count);
