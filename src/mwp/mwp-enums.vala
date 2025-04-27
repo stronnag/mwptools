@@ -29,7 +29,7 @@ namespace Mwp {
 	   gpsintvl     : gps-data timeout (default 150ms)
 	 */
 
-	const uint TIMINTVL     = 100;              // 100 milliseconds
+	const uint TIMINTVL     = 10;              // 10 milliseconds
 	const uint STATINTVL    = ( 1000/TIMINTVL); //  1 sec, status update
 	const uint USATINTVL    = ( 2000/TIMINTVL); //  2 sec, change in sats message
 	const uint MAVINTVL     = ( 2500/TIMINTVL); //  2.5 sec, push telemetry t/o

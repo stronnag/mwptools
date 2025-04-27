@@ -377,8 +377,7 @@ namespace Mwp {
 									string res;
 									res = lastmsg.cmd.format();
 									if(nopoll == false)
-										MWPLog.message("MSP Timeout %u %u %u (%s %s)\n",
-													   nticks, lastok, lastrx, res, serstate.to_string());
+										MWPLog.message("MSP Timeout %.3f (%s %s)\n", (nticks - lastok)/100.0, lastrx, res, serstate.to_string());
 									if (lastmsg.cmd == Msp.Cmds.ADSB_VEHICLE_LIST) {
 										clear_poller_item(Msp.Cmds.ADSB_VEHICLE_LIST);
 									}
