@@ -42,25 +42,32 @@ namespace Mwp {
 	private Overlay? gzone;
 	private GZEdit gzedit;
 	private bool cleaned;
-	//	internal uint mtid;
 
 	public void cleanup() {
 		if (!cleaned) {
 			cleaned =true;
 			Mwp.stop_replayer();
 			if(msp != null && msp.available) {
-				msp.close();
+				final_clean();
+					msp.close_async.begin((o,r) => {
+							msp.close_async.end(r);
+						});
+			} else {
+				final_clean();
 			}
-			TTS.stop_audio();
-			if (inhibit_cookie != 0) {
-                MwpIdle.uninhibit(inhibit_cookie);
-			}
-			if (MBus.svc != null)
-                MBus.svc.quit();
-
-            ProxyPids.killall();
 		}
 	}
+
+	private void final_clean() {
+		TTS.stop_audio();
+		if (inhibit_cookie != 0) {
+			MwpIdle.uninhibit(inhibit_cookie);
+		}
+		if (MBus.svc != null)
+			MBus.svc.quit();
+		ProxyPids.killall();
+	}
+
 
 	[GtkTemplate (ui = "/org/stronnag/mwp/mwpmain.ui")]
 	public class Window : Adw.ApplicationWindow {

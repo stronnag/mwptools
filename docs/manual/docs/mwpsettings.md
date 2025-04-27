@@ -71,7 +71,7 @@
 | p-is-maximised | Internal setting |  | true |
 | p-pane-width | Internal setting | Please do not change this unless you appreciate the consequences | 0 |
 | p-width | Internal setting |  | 1280 |
-| poll-timeout | Poll messages timeout (ms) | Timeout in milliseconds for telemetry poll messages. Note that timer loop has a resolution of 100ms, so 900ms == 1s message poller loop | 900 |
+| poll-timeout | Poll messages timeout (ms) | Timeout in milliseconds for telemetry poll messages. Note that timer loop has a resolution of 10ms. | 900 |
 | pos-is-centre | Determines position label content | Whether the position label is the map centre or the pointer location | false |
 | radar-alert-altitude | Altitude below which ADS-B alerts may be generated | Target altitude (metres) below which ADS-B proximity alerts may be generated. Requires that 'radar-alert-range' is also set (non-zero). Setting to 0 disables. Note that ADS-B altitudes are AMSL (or geoid). | 0 |
 | radar-alert-min-speed | Speed above which ADS-B alerts may be generated | Target speed (metres/sec) above which ADS-B proximity alerts may be generated. Requires that 'radar-alert-altitude' and "radar-alert-range" are also set. | 10 |

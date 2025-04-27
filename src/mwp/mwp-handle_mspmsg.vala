@@ -96,9 +96,9 @@ namespace Mwp {
 	bool handle_msp(MWSerial ser, Msp.Cmds cmd, uint8[] raw, uint len, uint8 xflags, bool errs) {
 		Mwp.window.mmode.label = "MSP";
 		bool handled = true;
+		lastrx = lastok = nticks;
 
 		if(errs == true) {
-            lastrx = lastok = nticks;
             MWPLog.message("Msp Error: %s [%db] %s\n", cmd.format(), len, (cmd == Msp.Cmds.COMMON_SETTING) ? (string)lastmsg.data : "");
             switch(cmd) {
 			case Msp.Cmds.INAV_GPS_UBLOX_COMMAND:
@@ -195,7 +195,6 @@ namespace Mwp {
 		   Logger.log_time();
 		}
 
-		lastrx = lastok = nticks;
 		lastmsg.cmd = Msp.Cmds.INVALID;
         switch(cmd) {
 		case Msp.Cmds.API_VERSION:
@@ -1193,7 +1192,6 @@ namespace Mwp {
 
 		case Msp.Cmds.SET_WP:
 			if(wpmgr.wps.length > 0) {
-				lastok = lastrx = nticks;
 				wpmgr.wpidx++;
 				if(wpmgr.wpidx < wpmgr.npts) {
 					uint8 wtmp[32];
