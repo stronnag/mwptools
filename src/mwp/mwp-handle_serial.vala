@@ -341,17 +341,18 @@ namespace Mwp {
 							tlimit += MAVINTVL;
 						}
 						if(msp.is_weakble() ) {
-							tlimit *= 4;
+							tlimit *= 2;
+						}
+						var ndata = NODATAINTVL;
+						if(ndata < tlimit) {
+							ndata = tlimit + 1;
 						}
 
-						if(((serstate == SERSTATE.POLLER || serstate == SERSTATE.TELEM)) && mintvl > NODATAINTVL) {
+						if(((serstate == SERSTATE.POLLER || serstate == SERSTATE.TELEM)) && mintvl > ndata) {
 							if(rxerr == false) {
 								Mwp.add_toast_text("No data for 5s");
+								MWPLog.message("No data for 5s\n");
 								rxerr=true;
-							}
-							MWPLog.message("No data for 5s %s\n", lastmsg.cmd.format());
-							if (lastmsg.cmd != Msp.Cmds.INVALID) {
-								resend_last();
 							}
 						}
 
@@ -377,7 +378,7 @@ namespace Mwp {
 									string res;
 									res = lastmsg.cmd.format();
 									if(nopoll == false)
-										MWPLog.message("MSP Timeout %.3f (%s %s)\n", (nticks - lastok)/100.0, lastrx, res, serstate.to_string());
+										MWPLog.message("MSP Timeout %.3f (%s %s)\n", (nticks - lastok)/100.0, res, serstate.to_string());
 									if (lastmsg.cmd == Msp.Cmds.ADSB_VEHICLE_LIST) {
 										clear_poller_item(Msp.Cmds.ADSB_VEHICLE_LIST);
 									}
