@@ -1220,7 +1220,7 @@
 	 }
 
 	 ~MWSerial() {
-		 if(fd != 0) {
+		 if(fd != -1) {
 			 close();
 		 }
 	 }
