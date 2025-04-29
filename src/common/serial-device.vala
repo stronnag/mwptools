@@ -1220,8 +1220,9 @@
 	 }
 
 	 ~MWSerial() {
-		 if(fd != -1)
+		 if(fd != 0) {
 			 close();
+		 }
 	 }
 
 	 public void close() {
@@ -1255,26 +1256,32 @@
 			 slcid = 0;
 		 }
 
-		 try {
-			 if (ComMode.TTY in commode) {
-				 MwpSerial.close(fd);
-			 } else if (ComMode.TCP in commode) {
-				 socket.shutdown(true, true);
-			 } else if (ComMode.BT in commode) {
-				 Posix.close(fd);
+		 if(fd != -1) {
+			 try {
+				 if (ComMode.TTY in commode) {
+					 MwpSerial.close(fd);
+				 } else if (ComMode.TCP in commode) {
+					 socket.shutdown(true, true);
+				 } else if (ComMode.BT in commode && ((commode & ComMode.BLE) == 0)) {
+					 Posix.close(fd);
+				 }
+				 if (ComMode.IPCONN in commode) {
+					 socket.close();
+				 }
+#if LINUX
+				 if((commode & ComMode.BLE) == ComMode.BLE) {
+					 Posix.close(fd);
+					 if (wrfd != fd) {
+						 Posix.close(wrfd);
+					 }
+				 }
+#endif
+			 } catch (Error e) {
+				 MWPLog.message("Closedown: %s\r\n", e.message);
 			 }
-			 if (ComMode.IPCONN in commode) {
-				 socket.close();
-			 }
-		 } catch (Error e) {
-			 //MWPLog.message("Closedown: %s\r\n", e.message);
 		 }
 #if LINUX
 		 if((commode & ComMode.BLE) == ComMode.BLE) {
-			 Posix.close(fd);
-			 if (wrfd != fd) {
-				 Posix.close(wrfd);
-			 }
 			 var dd = DevManager.get_dd_for_name(devname);
 			 if (dd != null) {
 				 DevManager.btmgr.set_device_connected(dd.id, false);

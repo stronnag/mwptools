@@ -233,7 +233,7 @@ class ClITerm : Object {
 					rc = Posix.read(0, buf, 1);
 				}
 				if (err || buf[0] == 3 || rc <0) {
-					ml.quit();
+					shutdown();
 					return false;
 				}
 				process_input(buf[0]);
@@ -251,7 +251,7 @@ class ClITerm : Object {
 						continue;
 					}
 					if(c < 5) {
-						ml.quit();
+						shutdown();
 						return false;
 					} else {
 						Idle.add(() => {
@@ -278,10 +278,13 @@ class ClITerm : Object {
 	}
 
 	public void shutdown() {
-		msp.close();
 #if UNIX
 		Posix.tcsetattr(0, Posix.TCSANOW, oldtio);
 #endif
+		msp.close_async.begin((o,r) => {
+				msp.close_async.end(r);
+				ml.quit();
+			});
 	}
 
 	public static string[]? set_def_args() {
@@ -363,7 +366,6 @@ class ClITerm : Object {
 				return false;
 			});
 		ml.run();
-		cli.shutdown();
 		return 0;
 	}
 }
