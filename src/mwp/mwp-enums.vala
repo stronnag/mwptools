@@ -69,6 +69,15 @@ namespace Mwp {
     }
 
 	[Flags]
+	public enum CloseCheck {
+		NONE=0,
+		MISSION=1,
+		SERIAL=2,
+		MISSIONX=0x10,
+		SERIALX=0x20,
+	}
+
+	[Flags]
 	public enum WPS {
         isINAV,
         isFW,

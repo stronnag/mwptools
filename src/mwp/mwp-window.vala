@@ -47,14 +47,7 @@ namespace Mwp {
 		if (!cleaned) {
 			cleaned =true;
 			Mwp.stop_replayer();
-			if(msp != null && msp.available) {
-				final_clean();
-					msp.close_async.begin((o,r) => {
-							msp.close_async.end(r);
-						});
-			} else {
-				final_clean();
-			}
+			final_clean();
 		}
 	}
 
@@ -137,7 +130,7 @@ namespace Mwp {
 		private StrIntStore pis;
 		private Mwp.GotoDialog posdialog;
 		private Mwp.SCWindow scwindow;
-		private bool close_check;
+		private CloseCheck close_check;
 
 		public signal void armed_state(bool armed);
 		public signal void status_change(uint8 lflags);
@@ -226,19 +219,36 @@ namespace Mwp {
 			setup_accels(app);
 			setup_misc_controls();
 
-			close_check = false;
+			close_check = CloseCheck.NONE;
 			close_request.connect(() => {
-					if(close_check || !MissionManager.is_dirty) {
+					if (MissionManager.is_dirty && !(CloseCheck.MISSIONX in close_check)) {
+						close_check |= CloseCheck.MISSION;
+					}
+					if(msp != null && msp.available) {
+						close_check |= CloseCheck.SERIAL;
+					}
+					if( (close_check & (CloseCheck.SERIAL|CloseCheck.MISSION)) == 0) {
 						Mwp.cleanup();
 						return false;
 					} else {
-						checker.begin((o,res) => {
-								var ok = checker.end(res);
-								if(ok) {
-									close_check = true;
+						if(CloseCheck.MISSION in close_check)  {
+							close_check |= CloseCheck.MISSIONX;
+							close_check &= ~CloseCheck.MISSION;
+							checker.begin((o,res) => {
+									var ok = checker.end(res);
+									if(ok) {
+										close();
+									} else {
+										close_check -= CloseCheck.MISSIONX;
+									}
+								});
+						} else if(CloseCheck.SERIAL in close_check) {
+							msp.close_async.begin((o,r) => {
+									msp.close_async.end(r);
+									close_check &= ~CloseCheck.SERIAL;
 									close();
-								}
-							});
+								});
+						}
 						return true;
 					}
 				});
