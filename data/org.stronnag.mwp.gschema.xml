@@ -260,12 +260,6 @@
       <description>Linux / FreeBSD : Set to true to always ignore NM status (may slow down startup)</description>
     </key>
 
-    <key name="ah-invert-roll" type="b">
-      <default>false</default>
-      <summary>Invert AH roll</summary>
-      <description>Set to true to invert roll in the AH (so it becomes an attitude indicator)</description>
-    </key>
-
     <key name="mission-path" type="s">
       <default>""</default>
       <summary>Directory for mission files</summary>
