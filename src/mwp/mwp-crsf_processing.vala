@@ -288,8 +288,9 @@ namespace CRSF {
 			bool fvup = (ser.td.atti.yaw != (int)yaw);
 			if(ser.is_main) {
 				d.yaw = Mwp.mhead = (int16)yaw ;
-				d.pitch = (int16)pitch;
-				d.roll = (int16)roll;
+				d.pitch = -(int16)pitch;
+				d.roll = -(int16)roll;
+
 				LTM_AFRAME af = LTM_AFRAME();
 				af.pitch = d.pitch;
 				af.roll = d.roll;
