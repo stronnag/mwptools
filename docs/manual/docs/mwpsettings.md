@@ -3,7 +3,6 @@
 | Name | Summary | Description | Default |
 | ---- | ------- | ----------- | ------ |
 | adjust-tz | Adjust FC's TZ (and DST) | Option for whether mwp should adjust FC's TZ (and DST) based on the local clock | true |
-| ah-invert-roll | Invert AH roll | Set to true to invert roll in the AH (so it becomes an attitude indicator) | false |
 | armed-msp-placebo | Antidote to armed menus placebo | Whether to suppress desensitising of MSP action items when armed. | false |
 | arming-speak | Speak arming states | Whether to reporting arming state by audio | false |
 | assist-key | Ublox Assist now key | Ublox Assist now key. Setting blank ('') disables, unless the API key is in the `libsecret` credential store. | "" |
