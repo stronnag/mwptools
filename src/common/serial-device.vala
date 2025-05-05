@@ -832,6 +832,10 @@
 
 										 var acond = cond & ~IOCondition.IN;
 										 if (acond != 0) {
+											 lasterr = MwpSerial.get_error_number();
+											 var estr = format_last_err();
+											 var cstr = format_condition(cond);
+											 MWPLog.message("Serial Condition: %s %s\n", estr, cstr);
 											 serial_lost();
 											 return false;
 										 }
@@ -850,12 +854,18 @@
 												 }
 											 }
 											 if (sz <= 0) {
+												 MWPLog.message("Serial read: %d\n", sz);
+												 lasterr = MwpSerial.get_error_number();
+												 var estr = format_last_err();
+												 var cstr = format_condition(cond);
+												 MWPLog.message("Serial Read Condition: %s %s\n", estr, cstr);
 												 serial_lost();
 												 return false;
 											 }
 											 process_input(sz);
 											 return true;
 										 } catch (Error e) {
+											 MWPLog.message(":DBG: IORead %s\n", e.message);
 											 serial_lost();
 											 return false;
 										 }
@@ -1006,12 +1016,16 @@
  #endif
 	 }
 
+	 private string format_last_err() {
+		 uint8 [] sbuf = new uint8[1024];
+		 var s = MwpSerial.error_text(lasterr, sbuf, 1024);
+		 return "%s %s (%d)".printf(devname, s, lasterr);
+	 }
+
 	 public void get_error_message(out string estr) {
 		 estr = "";
 		 if(errstr == null) {
-			 uint8 [] sbuf = new uint8[1024];
-			 var s = MwpSerial.error_text(lasterr, sbuf, 1024);
-			 estr = "%s %s (%d)".printf(devname, s, lasterr);
+			 estr = format_last_err();
 		 } else {
 			 estr = errstr;
 			 errstr = null;
@@ -1211,6 +1225,7 @@
 			 if(fd < 0) {
 				 lasterr = MwpSerial.get_error_number();
 			 } else {
+				 clear_counters();
 				 available = true;
 				 wrfd = fd;
 				 set_noblock(fd);
@@ -2240,5 +2255,32 @@
 
 	 public void set_relaxed(bool _rlx) {
 		 relaxed = _rlx;
+	 }
+
+	 public static string format_condition(IOCondition cond) {
+		 string [] conds = {};
+		 if(IOCondition.IN in cond) {
+			 conds += "IN";
+		 }
+		 if(IOCondition.OUT in cond) {
+			 conds += "OUT";
+		 }
+		 if(IOCondition.PRI in cond) {
+			 conds += "PRI";
+		 }
+		 if(IOCondition.ERR in cond) {
+			 conds += "ERR";
+		 }
+		 if(IOCondition.HUP in cond) {
+			 conds += "HUP";
+		 }
+		 if(IOCondition.NVAL in cond) {
+			 conds += "NVAL";
+		 }
+		 if(conds.length > 0) {
+			 return string.joinv(" ", conds);
+		 } else {
+			 return "";
+		 }
 	 }
  }
