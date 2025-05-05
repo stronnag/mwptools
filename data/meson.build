@@ -35,6 +35,7 @@ blpfiles = [
   'radar_devices.blp',
   'mwpsetting.blp',
   'mwpsetedit.blp',
+  'msprc_dialog.blp',
 ]
 
 blueprints_ui = []

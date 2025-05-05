@@ -1,0 +1,84 @@
+using Gtk 4.0;
+using Adw 1;
+
+Adjustment adjustment_cms {
+  upper: 180;
+  lower: 30;
+  step-increment: 1;
+  page-increment: 10;
+}
+
+template $MsprcWindow:   Adw.Window {
+  title: "mwp MSPRC Control";
+  icon-name: "mwp_icon";
+
+  Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      decoration-layout: "icon:close";
+    }
+
+    content: Box vbox {
+      orientation: vertical;
+      spacing: 8;
+      Box {
+	spacing: 4;
+	orientation: horizontal;
+	Label {
+	  label: "Mapping file: ";
+	}
+	Button log_btn {
+	  Box {
+	    spacing: 4;
+
+            Label log_name {
+              label: "(rc-mapping.txt)";
+              halign: fill;
+              hexpand: true;
+              tooltip-text: "Mapping file";
+            }
+	    [End]
+            Image {
+              icon-name: "document-open-symbolic";
+            }
+	  }
+	}
+      }
+
+      // Row 2
+      Box {
+	spacing: 4;
+	orientation: horizontal;
+	Label {
+	  halign: start;
+          label: "Cycle time (ms)";
+	}
+
+	SpinButton cycle_ms {
+          value: 150;
+	  numeric: true;
+          adjustment: adjustment_cms;
+	  tooltip-text: "MSP_SET_RAW_RC cycle time, min 30ms, max 180ms, default 150ms";
+        }
+
+	Gtk.CheckButton enable {
+	  hexpand: true;
+	  halign: end;
+          label: "Enable";
+	}
+      }
+    };
+    [bottom]
+    Box {
+      hexpand: true;
+      halign: end;
+      orientation: horizontal;
+      styles [ "toolbar" ]
+
+      Button apply {
+	hexpand: false;
+        label: _("Apply");
+      }
+    }
+  }
+}

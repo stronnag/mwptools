@@ -114,6 +114,11 @@ public class MWPSettings : GLib.Object {
 	public string assist_key {get; set; default="";}
 	public bool no_poller_pause {get; set; default=false;}
 	public string mwxml_version {get; set; default="";}
+
+	public bool msprc_enabled {get; set; default=false;}
+	public uint msprc_cycletime {get; set; default=150;}
+	public string msprc_settings {get; set; default="";}
+
 	construct {
 #if DARWIN
 		string uc =  Environment.get_user_config_dir();
@@ -237,6 +242,9 @@ public class MWPSettings : GLib.Object {
 		settings.bind("zone-detect", this, "zone-detect", SettingsBindFlags.DEFAULT);
 		settings.bind("assist-key", this, "assist-key", SettingsBindFlags.DEFAULT);
 		settings.bind("mission-icon-alpha", this, "mission-icon-alpha", SettingsBindFlags.DEFAULT);
+		settings.bind("msprc-enabled", this, "msprc-enabled", SettingsBindFlags.DEFAULT);
+		settings.bind("msprc-cycletime", this, "msprc-cycletime", SettingsBindFlags.DEFAULT);
+		settings.bind("msprc-settings", this, "msprc-settings", SettingsBindFlags.DEFAULT);
 
 		settings.bind("p-width", Mwp.window, "default-width", SettingsBindFlags.DEFAULT);
 		settings.bind("p-height", Mwp.window, "default-height", SettingsBindFlags.DEFAULT);

@@ -692,5 +692,25 @@
      <description>Traditionally, mwp pauses the MSP poller for bulk transfers (WP, Geozone, Safehome). This option allows polling to continue, interleaved with the bulk transfer.</description>
      <default>false</default>
    </key>
+
+   <key name="msprc-enabled" type="b">
+     <summary>MSP_SET_RAW_RC enablement</summary>
+     <description>Whether MSP_SET_RAW_RC message transmission is enabled. Requires a mapping file</description>
+     <default>false</default>
+   </key>
+
+    <key name="msprc-cycletime" type="u">
+     <summary>MSP_SET_RAW_RC cycle time (microseconds)</summary>
+     <range min="30" max="180"/>
+      <default>150</default>
+      <description>Cycle time (ms) for MSP_SET_RAW_RC messages (if enabled). INAV requires a minimum of 5Hz refresh (200ms). A lower cycle time will improve RC response but reduce the MSP telemetry refresh rate</description>
+   </key>
+
+   <key name="msprc-settings" type="s">
+      <summary>Handset Mapping file</summary>
+      <default>""</default>
+      <description>Mapping file defining the mapping between handset input devices to RC channels for MSP_SET_RAW_RC messages</description>
+    </key>
+
  </schema>
 </schemalist>

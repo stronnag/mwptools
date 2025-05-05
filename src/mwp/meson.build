@@ -73,6 +73,7 @@ mwpsrcs = files('mwp-about.vala', 'mwp-ah_widget.vala',
                 'mwp-msg-forward.vala',
                 'mwp-radar-devices.vala',
                 'mwp-radar-devices-dialog.vala',
+                'mwp-msprcui.vala',
                )
 
 mwpdeps = [deps,

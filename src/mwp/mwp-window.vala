@@ -802,6 +802,11 @@ namespace Mwp {
 			a.present();
 		}
 
+		private void do_msprc() {
+			var m = new Msprc.Window();
+			m.present();
+		}
+
 		private void do_cli_open() {
 			IChooser.Filter []ifm = { {"CLI File", {"txt"}}, };
 			var fc = IChooser.chooser(Mwp.conf.missionpath, ifm);
@@ -887,6 +892,7 @@ namespace Mwp {
 				{"vlegend", Gis.toggle_vlegend},
 				{"assistnow", do_assist},
 				{"trackdump", do_trackdump},
+				{"msprc", do_msprc},
 			};
 
             add_action_entries (winacts, this);
