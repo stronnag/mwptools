@@ -84,9 +84,7 @@ namespace Mwp {
 		if(vstr != null && vstr.length >  0) {
 			MWPLog.message("hypervisor: %s\n", vstr);
 		}
-#if USE_HID
 		MWPLog.message("mwp is HID enabled\n");
-#endif
 	}
 
 	public void get_gl_info() {

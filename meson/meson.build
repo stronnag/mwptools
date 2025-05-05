@@ -14,10 +14,6 @@ if host_machine.system() == 'linux'
 endif
 
 
-if with_hid
-  dopts += '--define=USE_HID'
-endif
-
 if host_machine.system() == 'freebsd'
   dopts += '--define=FREEBSD'
 endif

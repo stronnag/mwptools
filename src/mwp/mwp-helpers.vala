@@ -617,7 +617,6 @@ namespace CatMap {
 	}
 }
 
-#if USE_HID
 namespace JSMisc {
 	SocketAddress sockaddr;
 	Socket socket;
@@ -659,4 +658,3 @@ namespace JSMisc {
 		return sz;
 	}
 }
-#endif

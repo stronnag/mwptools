@@ -233,10 +233,21 @@ namespace ProxyPids {
 		pids += p;
 	}
 
+	public void remove(int p) {
+		for(var j = 0; j < pids.length; j++) {
+			if(pids[j] == p) {
+				pids[j] = 0;
+				break;
+			}
+		}
+	}
+
 	public void killall() {
 		ikill = true;
 		foreach(var p in pids) {
-			ProcessLauncher.kill(p);
+			if(p > 0) {
+				ProcessLauncher.kill(p);
+			}
 		}
 		pids = {};
 	}

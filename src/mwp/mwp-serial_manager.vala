@@ -27,11 +27,8 @@ namespace Mwp  {
     MwpMQTT mqtt;
 #endif
 	uint stag = 0;
-#if USE_HID
 	Timer rctimer;
-	bool use_msp_rc;
 	const int CHNSIZE = 32;
-#endif
 
 	public void clear_sidebar(MWSerial s) {
 		if(s != null) {
@@ -52,37 +49,49 @@ namespace Mwp  {
 }
 
 namespace Msp {
-#if USE_HID
 	const string JSTKHOST="localhost";
 	const uint16 JSTKPORT=31025;
 	uint8 jbuf[512];
-#endif
+	int hpid = 0;
+
+	public void stop_hid() {
+		ProxyPids.add(hpid);
+		ProcessLauncher.kill(hpid);
+		hpid = 0;
+		Mwp.rctimer.stop();
+	}
+
+	public void start_hid() {
+		if(hpid == 0) {
+			var pl = new ProcessLauncher();
+			var hidopt = Environment.get_variable("MWP_HIDOPT");
+			if(hidopt == null) {
+				hidopt = "";
+			}
+			var cmd = "mwp-hid-server %s %s".printf(hidopt, Mwp.conf.msprc_settings);
+			var res = pl.run_command(cmd, 0);
+			if(res) {
+				hpid = pl.get_pid();
+				if(hpid != 0) {
+					Mwp.rctimer.stop();
+					ProxyPids.add(hpid);
+					JSMisc.setup_ip(JSTKHOST, JSTKPORT);
+				}
+			}
+			MWPLog.message(":HID DBG: pid=%d\n", hpid);
+		}
+	}
 
 	public void init() {
 		Mwp.mqtt_available = false;
 		Mwp.msp = new MWSerial();
         Mwp.lastp = new Timer();
 		Mwp.lastp.start();
-#if USE_HID
-		int pid = 0;
-		string? rcdef = Environment.get_variable("MWP_MSP_RC");
-		if(rcdef != null) {
-			var pl = new ProcessLauncher();
-			var cmd = "mwp-hid-server %s".printf(rcdef);
-			var res = pl.run_command(cmd, 0);
-			if(res) {
-				pid = pl.get_pid();
-				if(pid != 0) {
-					Mwp.rctimer = new Timer();
-					Mwp.rctimer.stop();
-					ProxyPids.add(pid);
-					JSMisc.setup_ip(JSTKHOST, JSTKPORT);
-					Mwp.use_msp_rc = true;
-				}
-			}
-			MWPLog.message(":DBG: rcdef=%s, pid=%d\n", rcdef, pid);
+		Mwp.rctimer = new Timer();
+
+		if(Mwp.conf.msprc_enabled && Mwp.conf.msprc_settings.length > 0) {
+			start_hid();
 		}
-#endif
 		Mwp.msp.is_main = true;
 		Mwp.mq = new Queue<Mwp.MQI?>();
         Mwp.lastmsg = Mwp.MQI(); //{cmd = Msp.Cmds.INVALID};
@@ -261,13 +270,11 @@ namespace Msp {
 		Mwp.window.mmode.set_label("");
 		MwpMenu.set_menu_state(Mwp.window, "followme", false);
 		Mwp.window.conbutton.sensitive = true;
-#if USE_HID
-		if(Mwp.use_msp_rc) {
+		if(Mwp.conf.msprc_enabled) {
 			if(Mwp.conf.show_sticks != 1) {
 				Sticks.done();
 			}
 		}
-#endif
 	}
 
 	private uint8 pmask_to_mask(uint j) {
@@ -335,8 +342,7 @@ namespace Msp {
 					if (!forced_mav) {
 						Mwp.serstate = Mwp.SERSTATE.NORMAL;
 						Mwp.msp.use_v2 = false;
-#if USE_HID
-						if (Mwp.use_msp_rc) {
+						if (Mwp.conf.msprc_enabled) {
 							JSMisc.read_hid_async.begin(jbuf, "info",  (o, r) => {
 									var sz = JSMisc.read_hid_async.end(r);
 									MWPLog.message("Raw RC: %d %s\n", sz, (string)jbuf[:sz]);
@@ -346,7 +352,6 @@ namespace Msp {
 									}
 								});
 						}
-#endif
 						Mwp.queue_cmd(Msp.Cmds.IDENT,null,0);
 						Mwp.run_queue();
 					}

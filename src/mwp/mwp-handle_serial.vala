@@ -144,11 +144,9 @@ namespace Mwp {
 	uint lmin = 0;
 
 	const int MSP_WAITMS = 5;
-#if USE_HID
 	const double JSTKINTVL = 0.15;
 	const int JSCHANSIZE = 32;
 	int16 rcchans[16];
-#endif
 
 	void serial_reset() {
 		vi = {};
@@ -656,10 +654,7 @@ namespace Mwp {
         }
 
 		if(serstate == SERSTATE.POLLER) {
-#if USE_HID
-			if(!send_msp_rc())
-#endif
-			{
+			if(!send_msp_rc()) {
 				if(mleave == 1 && !mq.is_empty()) {
 					mleave = 2;
 					// MWPLog.message(":DBG: 1 Interleaved %s %u => QUE\n", cmd.format(), raw[0]);
@@ -675,10 +670,7 @@ namespace Mwp {
 				}
 			}
 		} else {
-#if USE_HID
-			if(!send_msp_rc())
-#endif
-			{
+			if(!send_msp_rc()) {
 				if(!mq.is_empty()) {
 					run_queue();
 				}
@@ -686,9 +678,8 @@ namespace Mwp {
 		}
     }
 
-#if USE_HID
 	private bool send_msp_rc() {
-		if(Mwp.use_msp_rc && rctimer.is_active() && rctimer.elapsed() > Mwp.JSTKINTVL) {
+		if(Mwp.conf.msprc_enabled && rctimer.is_active() && rctimer.elapsed() > Mwp.JSTKINTVL) {
 			JSMisc.read_hid_async.begin((uint8[])rcchans, "raw",  (o, r) => {
 					var sz = JSMisc.read_hid_async.end(r);
 					if(sz  == JSCHANSIZE && rcchans[0] > 0) {
@@ -704,7 +695,6 @@ namespace Mwp {
 		}
 		return false;
 	}
-#endif
 
 	private void timed_poll() {
 		if (requests.length > 0) {
