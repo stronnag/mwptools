@@ -281,6 +281,9 @@ namespace Mwp {
 
 		private void init_basics() {
 			conf = new MWPSettings();
+			if(conf.msprc_enabled) {
+				MWPLog.message("mwp is HID enabled\n");
+			}
 			if(conf.uilang == "en") {
 				Intl.setlocale(LocaleCategory.NUMERIC, "C");
 			}
@@ -1070,6 +1073,7 @@ namespace Mwp {
             MwpMenu.set_menu_state(Mwp.window, s, istate);
             n++;
         }
+		MwpMenu.set_menu_state(Mwp.window, "msprc", state);
     }
 
 	private void set_mission_menus(bool state) {
@@ -1083,7 +1087,6 @@ namespace Mwp {
         foreach(var s in ms0) {
             MwpMenu.set_menu_state(Mwp.window, s, state);
 		}
-
 		if(Mwp.vi.fc_vers == 0 || Mwp.vi.fc_vers >= Mwp.FCVERS.hasWP_V4) {
 			MwpMenu.set_menu_state(Mwp.window, "upload-missions", state);
 		}
