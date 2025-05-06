@@ -37,9 +37,15 @@ namespace Msprc {
 			enable.active = Mwp.conf.msprc_enabled;
 
 			apply.clicked.connect(() => {
-					Mwp.conf.msprc_enabled = enable.active;
-					Mwp.conf.msprc_settings = settings_name;
-					Mwp.conf.msprc_cycletime = (uint)cycle_ms.get_value_as_int();
+					if(Mwp.conf.msprc_settings != settings_name) {
+						Mwp.conf.msprc_settings = settings_name;
+					}
+					if(Mwp.conf.msprc_cycletime != (uint)cycle_ms.get_value_as_int()) {
+						Mwp.conf.msprc_cycletime = (uint)cycle_ms.get_value_as_int();
+					}
+					if(Mwp.conf.msprc_enabled != enable.active) {
+						Mwp.conf.msprc_enabled = enable.active;
+					}
 				});
 
 			log_btn.clicked.connect(() => {

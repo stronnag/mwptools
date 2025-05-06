@@ -29,6 +29,7 @@ namespace Mwp  {
 	uint stag = 0;
 	Timer rctimer;
 	const int CHNSIZE = 32;
+	bool use_rc = false;
 
 	public void clear_sidebar(MWSerial s) {
 		if(s != null) {
@@ -55,14 +56,18 @@ namespace Msp {
 	int hpid = 0;
 
 	public void stop_hid() {
-		ProxyPids.add(hpid);
-		ProcessLauncher.kill(hpid);
-		hpid = 0;
-		Mwp.rctimer.stop();
+		if (hpid != 0) {
+			ProxyPids.remove(hpid);
+			ProcessLauncher.kill(hpid);
+			hpid = 0;
+			Mwp.rctimer.stop();
+		}
+		Mwp.use_rc = false;
 	}
 
-	public void start_hid() {
-		if(hpid == 0) {
+	public bool start_hid() {
+		bool ok = false;
+		if (hpid == 0) {
 			var pl = new ProcessLauncher();
 			var hidopt = Environment.get_variable("MWP_HIDOPT");
 			if(hidopt == null) {
@@ -76,10 +81,17 @@ namespace Msp {
 					Mwp.rctimer.stop();
 					ProxyPids.add(hpid);
 					JSMisc.setup_ip(JSTKHOST, JSTKPORT);
+					pl.complete.connect(() => {
+							Mwp.use_rc = false;
+						});
+					ok = true;
 				}
 			}
-			MWPLog.message(":HID DBG: pid=%d\n", hpid);
+		} else {
+			ok = true;
 		}
+		MWPLog.message(":HID DBG: pid=%d %s\n", hpid, ok.to_string());
+		return ok;
 	}
 
 	public void init() {
@@ -88,10 +100,7 @@ namespace Msp {
         Mwp.lastp = new Timer();
 		Mwp.lastp.start();
 		Mwp.rctimer = new Timer();
-
-		if(Mwp.conf.msprc_enabled && Mwp.conf.msprc_settings.length > 0) {
-			start_hid();
-		}
+		Mwp.rctimer.stop();
 		Mwp.msp.is_main = true;
 		Mwp.mq = new Queue<Mwp.MQI?>();
         Mwp.lastmsg = Mwp.MQI(); //{cmd = Msp.Cmds.INVALID};
@@ -270,10 +279,11 @@ namespace Msp {
 		Mwp.window.mmode.set_label("");
 		MwpMenu.set_menu_state(Mwp.window, "followme", false);
 		Mwp.window.conbutton.sensitive = true;
-		if(Mwp.conf.msprc_enabled) {
+		if(Mwp.use_rc) {
 			if(Mwp.conf.show_sticks != 1) {
 				Sticks.done();
 			}
+			Msp.stop_hid();
 		}
 	}
 
@@ -342,15 +352,21 @@ namespace Msp {
 					if (!forced_mav) {
 						Mwp.serstate = Mwp.SERSTATE.NORMAL;
 						Mwp.msp.use_v2 = false;
-						if (Mwp.conf.msprc_enabled) {
-							JSMisc.read_hid_async.begin(jbuf, "info",  (o, r) => {
-									var sz = JSMisc.read_hid_async.end(r);
-									MWPLog.message("Raw RC: %d %s\n", sz, (string)jbuf[:sz]);
-									Mwp.rctimer.start();
-									if(Mwp.conf.show_sticks != 1) {
-										Sticks.create_sticks();
-									}
-								});
+						if(Mwp.conf.msprc_enabled && Mwp.conf.msprc_settings.length > 0) {
+							Mwp.use_rc = start_hid();
+							if (Mwp.use_rc) {
+								Timeout.add(100, () => {
+										JSMisc.read_hid_async.begin(jbuf, "info",  (o, r) => {
+												var sz = JSMisc.read_hid_async.end(r);
+												MWPLog.message("Raw RC: %d %s\n", sz, (string)jbuf[:sz]);
+												Mwp.rctimer.start();
+												if(Mwp.conf.show_sticks != 1) {
+													Sticks.create_sticks();
+												}
+											});
+										return false;
+									});
+							}
 						}
 						Mwp.queue_cmd(Msp.Cmds.IDENT,null,0);
 						Mwp.run_queue();
