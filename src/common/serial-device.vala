@@ -826,10 +826,6 @@
 									 IOCondition.HUP|
 									 IOCondition.ERR|
 									 IOCondition.NVAL, (chan, cond) => {
-										 if(cond == 0) {
-											 return true;
-										 }
-
 										 var acond = cond & ~IOCondition.IN;
 										 if (acond != 0) {
 											 lasterr = MwpSerial.get_error_number();
