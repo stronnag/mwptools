@@ -455,7 +455,7 @@ char *get_error_text(int lerr, char *pBuf, size_t bufSize) {
       LocalFree((HLOCAL)pTemp);
     }
   } else {
-    strcpy(GENERR, pBuf);
+    strcpy(pBuf, GENERR);
   }
   return (pBuf);
 }
