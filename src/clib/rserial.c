@@ -250,7 +250,7 @@ char *get_error_text(int errnum, char *buf, size_t buflen) {
     *buf = 0;
     strerror_r(errnum, buf, buflen);
   } else {
-    strcpy(GENERR, buf);
+    strcpy(buf, GENERR);
   }
   return buf;
 }
@@ -455,7 +455,7 @@ char *get_error_text(int lerr, char *pBuf, size_t bufSize) {
       LocalFree((HLOCAL)pTemp);
     }
   } else {
-    strcpy(GENERR, pBuf);
+    strcpy(pBuf, GENERR);
   }
   return (pBuf);
 }
