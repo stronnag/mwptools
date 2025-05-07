@@ -101,6 +101,10 @@ namespace Mwp {
 		if(errs == true) {
             MWPLog.message("Msp Error: %s [%db] %s\n", cmd.format(), len, (cmd == Msp.Cmds.COMMON_SETTING) ? (string)lastmsg.data : "");
             switch(cmd) {
+			case Msp.Cmds.SET_RAW_RC:
+				Mwp.use_rc = false;
+				break;
+
 			case Msp.Cmds.INAV_GPS_UBLOX_COMMAND:
 				Assist.Window.instance().show_error();
 				break;
@@ -132,6 +136,7 @@ namespace Mwp {
 
 			case Msp.Cmds.API_VERSION:
 			case Msp.Cmds.BOXIDS:
+				Mwp.use_rc = false;
 				queue_cmd(Msp.Cmds.BOXNAMES, null,0);
 				run_queue();
 				break;
