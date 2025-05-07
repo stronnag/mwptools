@@ -1966,6 +1966,7 @@
 			 }
 		 } catch (Error e) {
 			 stderr.printf("Write fails: %s\n", e.message);
+			 sz = -1;
 		 }
 		 return sz;
 	 }
@@ -2000,6 +2001,9 @@
 		 }
 		 if(rawlog) {
 			 log_raw('o', buf, (int)count);
+		 }
+		 if(sz < 0) {
+			 close();
 		 }
 		 return sz;
 	 }
