@@ -232,6 +232,14 @@ If enabled, `mwp-hid-server` is invoked with the provided mapping file. If you n
 
 By default (if no mapping file has been previously set), the settings UI looks for the mapping file in the mwp configuration directory (`$XDG_CONFIG_HOME/mwp` i.e. `~/.config/mwp` on POSIX OS). The user may choose any other suitable location.
 
+With mwp's HID / `MSP_SET_RAW_RC` enabled, when the **main telemetry channel is started**, the "stick display" icon will show in the bottom right of the map:
+
+![SticksIcon](images/mwp-rc-stick-icon.png)
+
+This may be expanded (click on the icon) to show the sticks.
+
+![stick-open](images/mwp-rc-stick-open.png)
+
 ### mwp settings
 
 The MSP RC settings are persisted via the following settings:
@@ -268,6 +276,12 @@ Telemetry device: Ebyte E220 LoRa, 115200 ground speed, 38400 air speed, USB con
 13:13:30.168812 900.267s, rx 341851b, tx 139948b, (380b/s, 155b/s) to 0 wait 0, avg poll loop 62 ms messages 15046 msg/s 16.7
 ...
 13:14:15.113726 945.195s, rx 358998b, tx 146799b, (380b/s, 155b/s) to 0 wait 0, avg poll loop 62 ms messages 15797 msg/s 16.7
+```
+
+Telemetry device: Ebyte E220 LoRa, 115200 ground speed, 62500 air speed, USB connection to GCS. Slightly higher throughput at the expense of some message timeouts (and maybe also range).
+
+```
+11:36:04.735320 2100.442s, rx 659187b, tx 712573b, (314b/s, 339b/s) to 2 wait 0, avg poll loop 88 ms messages 36053 msg/s 17.2
 ```
 
 This device appears usable.
