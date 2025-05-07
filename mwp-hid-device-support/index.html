@@ -1937,6 +1937,10 @@ OpenTX Radiomaster Boxer Joystick Axes: 8 Buttons: 24
 <p><img alt="settings" src="../images/mwp-rc-set.png" width="30%" /></p>
 <p>If enabled, <code>mwp-hid-server</code> is invoked with the provided mapping file. If you need to pass another option (for example <code>-f</code> for testing), this may be done using the environment variable <code>MWP_HIDOPT</code>, for example <code>MWP_HIDOPT="-f"</code>.</p>
 <p>By default (if no mapping file has been previously set), the settings UI looks for the mapping file in the mwp configuration directory (<code>$XDG_CONFIG_HOME/mwp</code> i.e. <code>~/.config/mwp</code> on POSIX OS). The user may choose any other suitable location.</p>
+<p>With mwp's HID / <code>MSP_SET_RAW_RC</code> enabled, when the <strong>main telemetry channel is started</strong>, the "stick display" icon will show in the bottom right of the map:</p>
+<p><img alt="SticksIcon" src="../images/mwp-rc-stick-icon.png" /></p>
+<p>This may be expanded (click on the icon) to show the sticks.</p>
+<p><img alt="stick-open" src="../images/mwp-rc-stick-open.png" /></p>
 <h3 id="mwp-settings">mwp settings<a class="headerlink" href="#mwp-settings" title="Permanent link">#</a></h3>
 <p>The MSP RC settings are persisted via the following settings:</p>
 <ul>
@@ -1962,6 +1966,9 @@ OpenTX Radiomaster Boxer Joystick Axes: 8 Buttons: 24
 <div class="highlight"><pre><span></span><code>13:13:30.168812 900.267s, rx 341851b, tx 139948b, (380b/s, 155b/s) to 0 wait 0, avg poll loop 62 ms messages 15046 msg/s 16.7
 ...
 13:14:15.113726 945.195s, rx 358998b, tx 146799b, (380b/s, 155b/s) to 0 wait 0, avg poll loop 62 ms messages 15797 msg/s 16.7
+</code></pre></div>
+<p>Telemetry device: Ebyte E220 LoRa, 115200 ground speed, 62500 air speed, USB connection to GCS. Slightly higher throughput at the expense of some message timeouts (and maybe also range).</p>
+<div class="highlight"><pre><span></span><code>11:36:04.735320 2100.442s, rx 659187b, tx 712573b, (314b/s, 339b/s) to 2 wait 0, avg poll loop 88 ms messages 36053 msg/s 17.2
 </code></pre></div>
 <p>This device appears usable.</p>
 
