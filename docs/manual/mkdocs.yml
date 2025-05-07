@@ -106,6 +106,7 @@ nav:
       - 'mwp Settings Editor' : mwpset.md
       - 'mwp Gsettings' : mwpsettings.md
       - mwp-Power-and-screen-management.md
+      - mwp-hid-device-support.md
       - 'UBlox AssistNow' : mwp-assist-now.md
       - inav-4.0-multi-missions.md
       - mqtt---bulletgcss-telemetry.md
