@@ -534,6 +534,7 @@ namespace Mwp {
 				if ((raw[3] & 0x10) == 0x10) {
 					navcap = NAVCAPS.WAYPOINTS|NAVCAPS.NAVSTATUS|NAVCAPS.NAVCONFIG;
 					wp_max = 120;
+					Mwp.use_rc = false;
 				} else {
 					navcap = NAVCAPS.NONE;
 				}

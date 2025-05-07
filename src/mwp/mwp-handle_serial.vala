@@ -689,6 +689,8 @@ namespace Mwp {
 						Sticks.update(rcchans[0], rcchans[1], rcchans[3], rcchans[2]);
 					} else {
 						rctimer.stop();
+						MWPLog.message("Disabling raw rc, raise a GH Issue if necessary\n");
+						Mwp.use_rc = false;
 					}
 				});
 			return true;

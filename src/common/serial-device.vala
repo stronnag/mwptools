@@ -836,18 +836,20 @@
 											 return false;
 										 }
 										 try {
-											 size_t sz = 0;
+											 ssize_t sz = 0;
 											 if(ComMode.UDP in commode) {
 												 sz = socket.receive_from(out sockaddr, devbuf);
 											 } else if (ComMode.TTY in commode) {
 												 sz = MwpSerial.read(fd, devbuf, MemAlloc.DEV);
 											 } else {
-												 var iostat = io_chan.read_chars((char[])devbuf, out sz);
+												 size_t ssz;
+												 var iostat = io_chan.read_chars((char[])devbuf, out ssz);
 												 if(iostat != IOStatus.NORMAL) {
 													 MWPLog.message("Read IOStatus %x %s\r\n", iostat, iostat.to_string());
 													 serial_lost();
 													 return false;
 												 }
+												 sz = (ssize_t)ssz;
 											 }
 											 if (sz <= 0) {
 												 MWPLog.message("Serial read: %d\n", sz);
@@ -1373,7 +1375,7 @@
 		 return res;
 	 }
 
-	 private bool process_input(size_t res) {
+	 private bool process_input(ssize_t res) {
 		 if(pmode == ProtoMode.CLI) {
 			 csize = (uint16)res;
 			 var msg = INAVEvent(){cmd=0, len=csize, flags=0, err=false, raw=devbuf};

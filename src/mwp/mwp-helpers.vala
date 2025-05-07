@@ -650,6 +650,7 @@ namespace JSMisc {
 		try {
 			sz = yield dos.write_async (cmd.data, Priority.DEFAULT, null);
 			if (sz > 0) {
+				sz = -1;
 				sz = yield dis.read_async(buf, Priority.DEFAULT, null);
 			}
 		} catch (Error e) {
