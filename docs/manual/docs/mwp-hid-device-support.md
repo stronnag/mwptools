@@ -1,4 +1,4 @@
-# MWP HID Device Support
+# mwp HID Device Support
 
 ## Overview
 
