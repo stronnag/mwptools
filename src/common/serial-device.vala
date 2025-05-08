@@ -23,6 +23,8 @@
 	 double rxrate;
 	 double txrate;
 	 ulong  msgs;
+	 int64 stime;
+	 int64 ltime;
  }
 
  namespace SportDev {
@@ -472,8 +474,6 @@
 	 private bool print_raw=false;
 	 public uint baudrate  {private set; get;}
 	 private int sp = 0;
-	 private int64 stime;
-	 private int64 ltime;
 	 private SerialStats stats;
 	 private int commode;
 	 private uint16 mavsum;
@@ -762,12 +762,10 @@
 	 }
 
 	 public void clear_counters() {
-		 ltime = stime = 0;
-		 stats =  {0};
+		 stats = {};
 	 }
 
 	 public void setup_reader() {
-		 clear_counters();
 		 state = States.S_HEADER;
 		 msgq = new AsyncQueue<INAVEvent?>();
 		 td = {};
@@ -1223,12 +1221,12 @@
 			 if(fd < 0) {
 				 lasterr = MwpSerial.get_error_number();
 			 } else {
-				 clear_counters();
 				 available = true;
 				 wrfd = fd;
 				 set_noblock(fd);
 			 }
 		 }
+		 clear_counters();
 		 return available;
 	 }
 
@@ -1330,11 +1328,11 @@
 	 }
 
 	 public SerialStats dump_stats() {
-		 if(stime == 0)
-			 stime =  GLib.get_monotonic_time();
-		 if(ltime == 0 || ltime == stime)
-			 ltime =  GLib.get_monotonic_time();
-		 stats.elapsed = (ltime - stime)/1000000.0;
+		 if(stats.stime == 0)
+			 stats.stime =  GLib.get_monotonic_time();
+		 if(stats.ltime == 0 || stats.ltime == stats.stime)
+			 stats.ltime =  GLib.get_monotonic_time();
+		 stats.elapsed = (stats.ltime - stats.stime)/1000000.0;
 		 if (stats.elapsed > 0) {
 			 stats.txrate = stats.txbytes / stats.elapsed;
 			 stats.rxrate = stats.rxbytes / stats.elapsed;
@@ -1382,10 +1380,10 @@
 			 msgq.push(msg);
 			 Idle.add(() => {cli_event();return false;});
 		 } else {
-			 if(stime == 0) {
-				 stime =  GLib.get_monotonic_time();
+			 if(stats.stime == 0) {
+				 stats.stime =  GLib.get_monotonic_time();
 			 }
-			 ltime =  GLib.get_monotonic_time();
+			 stats.ltime =  GLib.get_monotonic_time();
 			 stats.rxbytes += res;
 			 if(print_raw == true) {
 				 dump_raw_data(devbuf, (int)res);
