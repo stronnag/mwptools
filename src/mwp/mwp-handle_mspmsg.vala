@@ -554,14 +554,15 @@ namespace Mwp {
 				return true;
 			}
 			if(vi.fc_vers >= FCVERS.hasMoreWP) {
-				gen_serial_stats();
-				var nbyte = telstats.s.rxbytes + telstats.s.txbytes;
-				var rcyt = nbyte/telstats.s.elapsed;
-				if(telstats.s.elapsed > 0.5) {
+				var stats = msp.getstats();
+				var et = msp.stimer.elapsed();
+				var nbyte = stats.rxbytes + stats.txbytes;
+				var rcyt = nbyte/et;
+				if(et > 0.5) {
 					ser.set_weak();
 				}
 				MWPLog.message("Initial cycle %f (b=%u r=%.1f, bi=%.1f) %s\n",
-							   telstats.s.elapsed, nbyte, rcyt, 8*rcyt, (ser.is_weak()) ? "*" : "");
+							   et, nbyte, rcyt, 8*rcyt, (ser.is_weak()) ? "*" : "");
 			}
 
 			if(replayer == Player.NONE) {

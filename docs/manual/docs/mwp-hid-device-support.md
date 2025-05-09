@@ -80,9 +80,9 @@ Notes:
 * Blank lines, lines starting with # or ; are ignored
 * Trailing items after ; or # are ignored (comments / notes).
 
-Definition lines are of the form Axis N = Channel X or Button M = Channel Y.
+Definition lines are of the form `Axis N = Channel X` or `Button M = Channel Y`.
 
-* The Axis N or Button M data is that shown by `mwp-hid-test`. The Channel is the RC channel for that input.
+* The `Axis N` or `Button M` data is that shown by `mwp-hid-test`. The Channel is the RC channel for that input.
 * mwp maps the value from SDL (-32608 to 32607) to RC range 1000-2000. Buttons are mapped from off = 1000 to on = 2000.
 * It is possible to set an input as inverted or define a deadband.
 
@@ -124,7 +124,7 @@ Button 3 = Channel 16 ; SL (Y)
 # Maybe use for local configurations and triggers
 ```
 
-Note the use of `invert`. Mapping file courtesy of GH user @alrealmess.
+Note the use of `invert`. Mapping file courtesy of GH user @arealmess.
 
 
 ### mwp-hid-test usage
@@ -220,11 +220,11 @@ OpenTX Radiomaster Boxer Joystick Axes: 8 Buttons: 24
 > quit
 ```
 
-You should ensure that any test `mwp-hid-server` is closed before using the HID function with mwp. It is not advisable to issue the `raw` command in the test environment, as your terminal may not handle the raw data with any elegance.
+You should ensure that any manually invoked test `mwp-hid-server` is closed before using the HID function with mwp. It is not advisable to issue the `raw` command in the test environment, as your terminal may not handle the raw data with any elegance.
 
 ## mwp UI
 
-HID support is selectable at run time via `Edit > MSP RC Setting` menu option. Note, this option is only sensitive when the main serial port is closed, so you cannot change an open MSP session.
+HID support is selectable at run time via mwp's `Edit > MSP RC Setting` menu option. Note, this option is only sensitive when the main serial port is closed, so you cannot change an open MSP session.
 
 ![settings](images/mwp-rc-set.png){: width="30%" }
 
@@ -246,7 +246,7 @@ The MSP RC settings are persisted via the following settings:
 
 * `msprc-cycletime` (default 150ms)
 * `msprc-enabled` (default false)
-* `msprc-settings rc` mapping file (default not set)
+* `msprc-settings` RC mapping file (default not set)
 
 The  `msprc-cycletime` option defines how often mwp sends `MSP_SET_RAW_RC` messages. INAV requires at least 5Hz (200ms) to avoid fail-safe. Time slots used for `MSP_SET_RAW_RC` reduces the time available for MSP telemetry data displayed by mwp, so the user needs to choose a compromise setting that balances RC responsiveness with telemetry data refresh within the constraint of the available bandwidth.
 

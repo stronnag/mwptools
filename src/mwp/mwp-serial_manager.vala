@@ -349,6 +349,9 @@ namespace Msp {
 							Mav.send_mav_beacon(Mwp.msp);
 						}
 					}
+					Mwp.init_state();
+					Mwp.init_sstats();
+
 					if (!forced_mav) {
 						Mwp.serstate = Mwp.SERSTATE.NORMAL;
 						Mwp.msp.use_v2 = false;
@@ -419,8 +422,6 @@ Error: <i>%s</i>
 				return;
 			}
 			TelemTracker.ttrk.disable(serdev);
-			Mwp.init_state();
-			Mwp.init_sstats();
 			MWPLog.message("Trying OS open for %s\n", serdev);
 			Mwp.msp.open_async.begin(serdev, Mwp.conf.baudrate, (obj,res) => {
 					ostat = Mwp.msp.open_async.end(res);

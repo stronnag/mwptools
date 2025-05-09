@@ -120,7 +120,7 @@ namespace Mwp {
     uint64 fs_mask;
     uint no_ofix;
 
-    TelemStats telstats;
+    TelemStats telstats={};
 
 	bool seen_msp;
 
@@ -256,20 +256,11 @@ namespace Mwp {
 		cr_mask=0;
 		fs_mask=0;
 		no_ofix = 0;
-		telstats = {};
+		telstats={};
 		seen_msp = false;
 	}
 
     private void init_sstats() {
-        if(telstats.s.msgs != 0) {
-            gen_serial_stats();
-		}
-		/* FIXME */
-		/*
-		telemstatus.annul();
-        radstatus.annul();
-		*/
-
 		anvals = acycle = 0;
         telstats = {};
     }
@@ -689,7 +680,7 @@ namespace Mwp {
 						Sticks.update(rcchans[0], rcchans[1], rcchans[3], rcchans[2]);
 					} else {
 						rctimer.stop();
-						MWPLog.message("Disabling raw rc, raise a GH Issue if necessary\n");
+						MWPLog.message("Disabling raw rc\n");
 						Mwp.use_rc = false;
 					}
 				});
@@ -813,19 +804,22 @@ namespace Mwp {
 		}
 	}
 
-    void  gen_serial_stats() {
-        if(msp.available)
-            telstats.s = msp.dump_stats();
-        telstats.avg = (anvals > 0) ? (ulong)(acycle/anvals) : 0;
-    }
-
     public void show_serial_stats() {
-        gen_serial_stats();
-		double mrate = (telstats.s.elapsed > 0) ? telstats.s.msgs / telstats.s.elapsed : 0.0;
-        MWPLog.message("%.3fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %d wait %d, avg poll loop %lu ms messages %d msg/s %.1f\n",
-                       telstats.s.elapsed, telstats.s.rxbytes, telstats.s.txbytes,
-                       telstats.s.rxrate, telstats.s.txrate,
-                       telstats.toc, telstats.tot, telstats.avg ,
-                       telstats.s.msgs, mrate);
-    }
+		if(msp.available) {
+			telstats.avg = (anvals > 0) ? (ulong)(acycle/anvals) : 0;
+			var stats = msp.getstats();
+			var et = msp.stimer.elapsed();
+			double mrate = 0.0;
+			if (et > 0) {
+				mrate = stats.msgs / et;
+				stats.rxrate = stats.rxbytes/et;
+				stats.txrate = stats.txbytes/et;
+			}
+			MWPLog.message("%.3fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %d wait %d, avg poll loop %lu ms messages %d msg/s %.1f\n",
+						   et, stats.rxbytes, stats.txbytes,
+						   stats.rxrate, stats.txrate,
+						   telstats.toc, telstats.tot, telstats.avg ,
+						   stats.msgs, mrate);
+		}
+	}
 }
