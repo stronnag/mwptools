@@ -1817,9 +1817,9 @@ Notes:</p>
 <li>Blank lines, lines starting with # or ; are ignored</li>
 <li>Trailing items after ; or # are ignored (comments / notes).</li>
 </ul>
-<p>Definition lines are of the form Axis N = Channel X or Button M = Channel Y.</p>
+<p>Definition lines are of the form <code>Axis N = Channel X</code> or <code>Button M = Channel Y</code>.</p>
 <ul>
-<li>The Axis N or Button M data is that shown by <code>mwp-hid-test</code>. The Channel is the RC channel for that input.</li>
+<li>The <code>Axis N</code> or <code>Button M</code> data is that shown by <code>mwp-hid-test</code>. The Channel is the RC channel for that input.</li>
 <li>mwp maps the value from SDL (-32608 to 32607) to RC range 1000-2000. Buttons are mapped from off = 1000 to on = 2000.</li>
 <li>It is possible to set an input as inverted or define a deadband.</li>
 </ul>
@@ -1856,7 +1856,7 @@ Button 3 = Channel 16 ; SL (Y)
 # Touchpads, D-Pad, Menu, Stick Press
 # Maybe use for local configurations and triggers
 </code></pre></div>
-<p>Note the use of <code>invert</code>. Mapping file courtesy of GH user @alrealmess.</p>
+<p>Note the use of <code>invert</code>. Mapping file courtesy of GH user @arealmess.</p>
 <h3 id="mwp-hid-test-usage">mwp-hid-test usage<a class="headerlink" href="#mwp-hid-test-usage" title="Permanent link">#</a></h3>
 <div class="highlight"><pre><span></span><code>$ mwp-hid-test --help
 Usage:
@@ -1931,9 +1931,9 @@ OpenTX Radiomaster Boxer Joystick Axes: 8 Buttons: 24
  1500 1500 1000 1500 1000 1001 1002 1003 1004 1005 1006 1007 1009 1010 1011 1012
 &gt; quit
 </code></pre></div>
-<p>You should ensure that any test <code>mwp-hid-server</code> is closed before using the HID function with mwp. It is not advisable to issue the <code>raw</code> command in the test environment, as your terminal may not handle the raw data with any elegance.</p>
+<p>You should ensure that any manually invoked test <code>mwp-hid-server</code> is closed before using the HID function with mwp. It is not advisable to issue the <code>raw</code> command in the test environment, as your terminal may not handle the raw data with any elegance.</p>
 <h2 id="mwp-ui">mwp UI<a class="headerlink" href="#mwp-ui" title="Permanent link">#</a></h2>
-<p>HID support is selectable at run time via <code>Edit &gt; MSP RC Setting</code> menu option. Note, this option is only sensitive when the main serial port is closed, so you cannot change an open MSP session.</p>
+<p>HID support is selectable at run time via mwp's <code>Edit &gt; MSP RC Setting</code> menu option. Note, this option is only sensitive when the main serial port is closed, so you cannot change an open MSP session.</p>
 <p><img alt="settings" src="../images/mwp-rc-set.png" width="30%" /></p>
 <p>If enabled, <code>mwp-hid-server</code> is invoked with the provided mapping file. If you need to pass another option (for example <code>-f</code> for testing), this may be done using the environment variable <code>MWP_HIDOPT</code>, for example <code>MWP_HIDOPT="-f"</code>.</p>
 <p>By default (if no mapping file has been previously set), the settings UI looks for the mapping file in the mwp configuration directory (<code>$XDG_CONFIG_HOME/mwp</code> i.e. <code>~/.config/mwp</code> on POSIX OS). The user may choose any other suitable location.</p>
@@ -1946,7 +1946,7 @@ OpenTX Radiomaster Boxer Joystick Axes: 8 Buttons: 24
 <ul>
 <li><code>msprc-cycletime</code> (default 150ms)</li>
 <li><code>msprc-enabled</code> (default false)</li>
-<li><code>msprc-settings rc</code> mapping file (default not set)</li>
+<li><code>msprc-settings</code> RC mapping file (default not set)</li>
 </ul>
 <p>The  <code>msprc-cycletime</code> option defines how often mwp sends <code>MSP_SET_RAW_RC</code> messages. INAV requires at least 5Hz (200ms) to avoid fail-safe. Time slots used for <code>MSP_SET_RAW_RC</code> reduces the time available for MSP telemetry data displayed by mwp, so the user needs to choose a compromise setting that balances RC responsiveness with telemetry data refresh within the constraint of the available bandwidth.</p>
 <h2 id="miscellaneous-notes">Miscellaneous notes<a class="headerlink" href="#miscellaneous-notes" title="Permanent link">#</a></h2>
