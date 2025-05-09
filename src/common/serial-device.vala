@@ -1237,7 +1237,7 @@ public class MWSerial : Object {
 				set_noblock(fd);
 			}
 		}
-		Mwpserial.flush(fd);
+		MwpSerial.flush(fd);
 		clear_counters();
 		return available;
 	}
