@@ -78,6 +78,7 @@ namespace Radar {
 		public double longitude  {get; construct set;}
 		public double altitude  {get; construct set;}
 		public double range  {get; construct set;}
+		public double last_range  {get; construct set;}
 		public uint16 bearing  {get; construct set;}
 		public uint16 heading  {get; construct set;}
 		public double speed  {get; construct set;}

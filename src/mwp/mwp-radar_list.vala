@@ -124,10 +124,10 @@ namespace Radar {
 						Toast.toast = null;
 					}
 				}
-			}
-			if(( Radar.astat & Radar.AStatus.A_SOUND) == Radar.AStatus.A_SOUND) {
-				if(Radar.do_audio) {
-					Audio.play_alarm_sound(MWPAlert.GENERAL);
+				if(((Radar.astat & Radar.AStatus.A_SOUND) == Radar.AStatus.A_SOUND) && r.range < r.last_range) {
+					if(Radar.do_audio) {
+						Audio.play_alarm_sound(MWPAlert.GENERAL);
+					}
 				}
 			}
 		} else {
@@ -635,6 +635,7 @@ namespace Radar {
 			var alert = r.alert;
 			var xalert = r.alert;
 
+			r.last_range = r.range;
 			if(Radar.astat > Radar.AStatus.C_MAP) {
 				double c,d;
 				Geo.csedist(Radar.lat, Radar.lon, r.latitude, r.longitude, out d, out c);
