@@ -14,12 +14,7 @@ public class JoyManager : Object {
 	private string mf;
 	private bool tinit;
 
-	private struct ButtonState {
-		bool toggled;
-		bool locked;
-	}
-
-	private GLib.HashTable<int, ButtonState?> btn_states = new GLib.HashTable<int, ButtonState?>(GLib.direct_hash, GLib.direct_equal);
+	private GLib.HashTable<int, bool> btn_states = new GLib.HashTable<int, bool>(GLib.direct_hash, GLib.direct_equal);
  
 	private void init_latched_buttons() {
 		btn_states.remove_all();
@@ -35,10 +30,7 @@ public class JoyManager : Object {
 					var parts = stripped.split(" ");
 					if (parts.length > 1) {
 						var button_id = int.parse(parts[1]);
-						ButtonState state = ButtonState();
-						state.toggled = false;
-						state.locked = false;
-						btn_states.insert(button_id, state);
+						btn_states.insert(button_id, false);
 					}
 				}
 			}
@@ -49,14 +41,9 @@ public class JoyManager : Object {
 	}
 
 	private void edge_latch(int btn, bool pressed) {
-		var state = (ButtonState) btn_states.lookup(btn);
-		if (pressed && !state.locked) {
-			state.toggled = !state.toggled;
-			jrdr.set_button(btn, state.toggled);
-			state.locked = true;
-		} else if (!pressed) {
-			state.locked = false;
-		}
+		var state = btn_states.lookup(btn); 
+		if (pressed) state = !state;
+		jrdr.set_button(btn, state); 
 		btn_states.replace(btn, state);
 	}
 
@@ -68,6 +55,7 @@ public class JoyManager : Object {
 		}
 		jrdr = new JoyReader(fake);
 		mf = _mf;
+		init_latched_buttons();
 	}
 
 	public string? get_info() {
@@ -167,8 +155,7 @@ public class JoyManager : Object {
 					print("%s\n", get_info());
 				}
 				jrdr.set_sizes(js.num_axes(), js.num_buttons());
-				jrdr.reader(mf);
-				init_latched_buttons();
+				jrdr.reader(mf); 
 				read_all();
 				Timeout.add(1000, () => {
 						read_all();
