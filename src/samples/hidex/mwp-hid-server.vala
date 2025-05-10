@@ -14,6 +14,39 @@ public class JoyManager : Object {
 	private string mf;
 	private bool tinit;
 
+	private GLib.HashTable<int, bool> btn_states = new GLib.HashTable<int, bool>(GLib.direct_hash, GLib.direct_equal);
+ 
+	private void init_latched_buttons() {
+		btn_states.remove_all();
+		if (this.mf == null || this.mf.length == 0) return;
+	
+		try {
+			var file = File.new_for_path(this.mf);
+			var dis = new DataInputStream(file.read(null));
+			string? line;
+			while ((line = dis.read_line()) != null) {
+				var stripped = line.strip();
+				if (stripped.has_prefix("Button") && stripped.has_suffix("*")) {
+					var parts = stripped.split(" ");
+					if (parts.length > 1) {
+						var button_id = int.parse(parts[1]);
+						btn_states.insert(button_id, false);
+					}
+				}
+			}
+			dis.close(null);
+		} catch (Error e) {
+			stderr.printf("Error reading mapping file in init_latched_buttons: %s\n", e.message);
+		}
+	}
+
+	private void edge_latch(int btn, bool pressed) {
+		var state = btn_states.lookup(btn); 
+		if (pressed) state = !state;
+		jrdr.set_button(btn, state); 
+		btn_states.replace(btn, state);
+	}
+
 	public JoyManager(string _mf, bool fake = false) {
 		tinit = false;
 		int njoy = SDL.init (SDL.InitFlag.JOYSTICK|SDL.InitFlag.GAMECONTROLLER);
@@ -22,6 +55,7 @@ public class JoyManager : Object {
 		}
 		jrdr = new JoyReader(fake);
 		mf = _mf;
+		init_latched_buttons();
 	}
 
 	public string? get_info() {
@@ -96,10 +130,18 @@ public class JoyManager : Object {
 				}
 				break;
 			case SDL.EventType.JOYBUTTONDOWN:
-				jrdr.set_button(event.jbutton.button, true);
+				if (btn_states.contains(event.jbutton.button)){
+					edge_latch(event.jbutton.button, true);
+				} else {
+					jrdr.set_button(event.jbutton.button, true);
+				} 
 				break;
 			case SDL.EventType.JOYBUTTONUP:
-				jrdr.set_button(event.jbutton.button, false);
+				if (btn_states.contains(event.jbutton.button)){
+					edge_latch(event.jbutton.button, false);
+				} else {
+					jrdr.set_button(event.jbutton.button, false);
+				} 
 				break;
 			case SDL.EventType.JOYHATMOTION:
 				if (verbose)
@@ -113,7 +155,7 @@ public class JoyManager : Object {
 					print("%s\n", get_info());
 				}
 				jrdr.set_sizes(js.num_axes(), js.num_buttons());
-				jrdr.reader(mf);
+				jrdr.reader(mf); 
 				read_all();
 				Timeout.add(1000, () => {
 						read_all();
