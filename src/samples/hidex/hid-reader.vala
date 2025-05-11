@@ -92,13 +92,13 @@ public class JoyReader {
 					MatchInfo mi;
 					uint nf;
 					int nc = 0;
-					bool? latch = null;
 					if(rx.match(line, 0, out mi)) {
 						nf = uint.parse(mi.fetch(2));
 						nc = int.parse(mi.fetch(3));
 						if(nc > 0 && nc < 17) {
 							var extra = mi.fetch(4);
 							bool invert = false;
+							bool? latch = null;
 							if(extra != null) {
 								var parts = extra.split(" ");
 								foreach(var p in parts) {
