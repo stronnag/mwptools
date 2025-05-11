@@ -4,7 +4,7 @@
 
 From 25.05.07, {{ mwp }} supports using a HID (Human Input Device) to provide RC (stick / switch inputs) to the FC.  An example of this might be running mwp on a game console such as SteamDeck and using the SteamDeck HID (sticks, buttons) to provide TX functions.
 
-While mwp provides functionality for doing this, it is not condoned as an acceptable way of controlling a UAS. Using `NSP_SET_RAW_RC` (aka `MSPRC`) over a MSP telemetry link cannot provide the update rate / performance / reliability / safety of a standard RC TX/RX.
+While mwp provides functionality for doing this, it is not condoned as an acceptable way of controlling a UAS. Using `MSP_SET_RAW_RC` (aka `MSPRC`) over a MSP telemetry link cannot provide the update rate / performance / reliability / safety of a standard RC TX/RX.
 
 ## Prerequisites
 
@@ -84,7 +84,7 @@ Definition lines are of the form `Axis N = Channel X` or `Button M = Channel Y`.
 
 * The `Axis N` or `Button M` data is that shown by `mwp-hid-test`. The Channel is the RC channel for that input.
 * mwp maps the value from SDL (-32608 to 32607) to RC range 1000-2000. Buttons are mapped from off = 1000 to on = 2000.
-* It is possible to set an input as inverted or define a deadband.
+* It is possible to set an input as inverted, make buttons toggleable with "latch", or define a deadband.
 
 Currently the mapping is fixed; if necessary this could be expanded to allow the user to further define the mapping (change ranges, etc.), if that is found necessary.
 For Game Controllers, it is (probably) possible to provide a SDL Mapping file as a parameter to mwp-hid-test (for example, see https://github.com/mdqinc/SDL_GameControllerDB), that will (possibly) help the SDL library to manage the device.
@@ -102,16 +102,16 @@ Axis 1 = Channel 3 invert ; Throttle
 Axis 0 = Channel 4 ; Rudder
 
 # Switches
-Button 9 = Channel 5 ; SE (Arming) (L1)
+Button 9 = Channel 5 latch ; SE (Arming) (L1)
 Axis 4 = Channel 6 ; SA (L2)
-Button 10 = Channel 7 ; SB (R1)
+Button 10 = Channel 7 latch ; SB (R1)
 Axis 5 = Channel 8 ; SC (R2)
 
 # More switches
-Button 12 = Channel 9 ; SD (R3)
-Button 13 = Channel 10 ; SF (L3)
-Button 14 = Channel 11 ; SG (R4)
-Button 15 = Channel 12 ; SH (L4)
+Button 12 = Channel 9 latch ; SD (R3)
+Button 13 = Channel 10 latch ; SF (L3)
+Button 14 = Channel 11 latch ; SG (R4)
+Button 15 = Channel 12 latch ; SH (L4)
 
 # Buttons
 Button 0 = Channel 13 ; SI (A)
@@ -124,7 +124,7 @@ Button 3 = Channel 16 ; SL (Y)
 # Maybe use for local configurations and triggers
 ```
 
-Note the use of `invert`. Mapping file courtesy of GH user @arealmess.
+Note the use of `invert` and `latch`. Mapping file courtesy of GH user @arealmess.
 
 
 ### mwp-hid-test usage

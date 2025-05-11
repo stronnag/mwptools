@@ -3,6 +3,7 @@ public class JoyReader {
 		int channel;
 		int last;
 		bool invert;
+		bool? latch;
 	}
 
 	public ChanDef []axes;
@@ -52,6 +53,12 @@ public class JoyReader {
 	public void set_button(int na, bool val) {
 		var chn = buttons[na].channel;
 		int cval;
+		if (buttons[na].latch != null) {  
+			if (val) { 
+				buttons[na].latch = (buttons[na].latch == true) ? false : true;
+			} 
+			val = buttons[na].latch ?? false;
+		} 
 		if (buttons[na].invert) {
 			cval = (val) ? 1000 : 2000;
 		} else {
@@ -85,6 +92,7 @@ public class JoyReader {
 					MatchInfo mi;
 					uint nf;
 					int nc = 0;
+					bool? latch = null;
 					if(rx.match(line, 0, out mi)) {
 						nf = uint.parse(mi.fetch(2));
 						nc = int.parse(mi.fetch(3));
@@ -98,9 +106,13 @@ public class JoyReader {
 										invert = true;
 										break;
 									}
+									if (p == "latch") {
+										latch = false;
+										break;
+									}
 								}
 							}
-							ChanDef chdef = {nc, 0, invert};
+							ChanDef chdef = {nc, 0, invert, latch};
 
 							switch(mi.fetch(1)) {
 							case "Axis":
