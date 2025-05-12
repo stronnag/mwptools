@@ -50,8 +50,6 @@ namespace Mwp  {
 }
 
 namespace Msp {
-	const string JSTKHOST="localhost";
-	const uint16 JSTKPORT=31025;
 	uint8 jbuf[512];
 	int hpid = 0;
 
@@ -74,13 +72,13 @@ namespace Msp {
 				hidopt = "";
 			}
 			var cmd = "mwp-hid-server %s %s".printf(hidopt, Mwp.conf.msprc_settings);
-			var res = pl.run_command(cmd, 0);
+			var res = pl.run_command(cmd, ProcessLaunch.STDIN|ProcessLaunch.STDOUT);
 			if(res) {
 				hpid = pl.get_pid();
 				if(hpid != 0) {
 					Mwp.rctimer.stop();
 					ProxyPids.add(hpid);
-					JSMisc.setup_ip(JSTKHOST, JSTKPORT);
+					JSMisc.setup(pl);
 					pl.complete.connect(() => {
 							Mwp.use_rc = false;
 						});
@@ -358,16 +356,14 @@ namespace Msp {
 						if(Mwp.conf.msprc_enabled && Mwp.conf.msprc_settings.length > 0) {
 							Mwp.use_rc = start_hid();
 							if (Mwp.use_rc) {
-								Timeout.add(100, () => {
-										JSMisc.read_hid_async.begin(jbuf, "info",  (o, r) => {
-												var sz = JSMisc.read_hid_async.end(r);
-												MWPLog.message("Raw RC: %d %s\n", sz, (string)jbuf[:sz]);
-												Mwp.rctimer.start();
-												if(Mwp.conf.show_sticks != 1) {
-													Sticks.create_sticks();
-												}
-											});
-										return false;
+								MWPLog.message("Send HID Info\n");
+								JSMisc.read_hid_async.begin(jbuf, "info\n",  (o, r) => {
+										var sz = JSMisc.read_hid_async.end(r);
+										MWPLog.message("Raw RC: %d %s", sz, (string)jbuf[:sz]);
+										Mwp.rctimer.start();
+										if(Mwp.conf.show_sticks != 1) {
+											Sticks.create_sticks();
+										}
 									});
 							}
 						}

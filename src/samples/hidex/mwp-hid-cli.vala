@@ -15,7 +15,11 @@ public Socket? setup_ip(string host, uint16 port) {
 }
 
 int main(string? []args) {
-	var socket = setup_ip("localhost", 31025);
+	var host = "localhost";
+	if (args.length > 1) {
+		host = args[1];
+	}
+	var socket = setup_ip(host, 31025);
 	if(socket != null) {
 		string? ln;
 		uint8 buf[256];
@@ -29,6 +33,7 @@ int main(string? []args) {
 					if(buf[0] == 0) {
 						rep = "ok";
 					} else {
+						buf[sz] = 0;
 						rep = (string)buf[:sz];
 					}
 					print("%s\n", rep);

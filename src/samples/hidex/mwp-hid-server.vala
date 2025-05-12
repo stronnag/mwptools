@@ -5,14 +5,14 @@ public class JoyManager : Object {
 	public static bool fake;
 	public static int port;
 
-	private Socket socket;
-	private SocketAddress remaddr;
 	private IOChannel io_read;
-
 	private SDL.Input.Joystick js;
 	private JoyReader jrdr;
 	private string mf;
 	private bool tinit;
+
+	private Socket socket;
+	private SocketAddress remaddr;
 
 	public JoyManager(string _mf, bool fake = false) {
 		tinit = false;
@@ -177,24 +177,6 @@ public class JoyManager : Object {
 		return sb.str;
 	}
 
-	public bool setup_ip(uint16 port) {
-		try {
-			SocketFamily[] fam_arry = {SocketFamily.IPV6, SocketFamily.IPV4};
-			foreach(var fam in fam_arry) {
-				var sa = new InetSocketAddress (new InetAddress.any(fam), (uint16)port);
-				if (sa != null) {
-					socket = new Socket (fam, SocketType.DATAGRAM, SocketProtocol.UDP);
-				//WinFix.set_v6_dual_stack(socket.fd);
-					socket.bind (sa, true);
-					return true;
-				}
-			}
-		} catch (Error e) {
-			stderr.printf ("%s\n",e.message);
-		}
-		return false;
-	}
-
 	private void set_chans(string cmd) {
 		var parts = cmd.split(" ");
 		if(parts.length > 1 && parts.length < 6) {
@@ -206,6 +188,25 @@ public class JoyManager : Object {
 			}
 		}
 	}
+
+	public bool setup_ip(uint16 port) {
+		try {
+			SocketFamily[] fam_arry = {SocketFamily.IPV6, SocketFamily.IPV4};
+			foreach(var fam in fam_arry) {
+				var sa = new InetSocketAddress (new InetAddress.any(fam), (uint16)port);
+				if (sa != null) {
+					socket = new Socket (fam, SocketType.DATAGRAM, SocketProtocol.UDP);
+					//WinFix.set_v6_dual_stack(socket.fd);
+					socket.bind (sa, true);
+					return true;
+				}
+			}
+		} catch (Error e) {
+			stderr.printf ("%s\n",e.message);
+		}
+		return false;
+	}
+
 
 	public void ufetch() {
 #if WINDOWS
@@ -233,7 +234,7 @@ public class JoyManager : Object {
 									  }
 									  string cmd = ((string)buf[:sz]).strip();
 									  if(cmd == "quit") {
-										  socket.send_to(remaddr, {});
+										  socket.send_to(remaddr, "ok".data);
 										  SDL.quit();
 										  ml.quit();
 									  } else if (cmd == "raw") {
@@ -246,13 +247,70 @@ public class JoyManager : Object {
 										  socket.send_to(remaddr, get_info().data);
 									  } else if (cmd.has_prefix("set ")) {
 										  set_chans(cmd);
-										  socket.send_to(remaddr, {});
+										  socket.send_to(remaddr, "ok".data);
 									  } else {
-										  socket.send_to(remaddr, {});
+										  socket.send_to(remaddr, "err".data);
 									  }
 									  return true;
 								  } catch (Error e) {
 									  stderr.printf("recv_from: %s\n", e.message);
+									  return false;
+								  }
+							  });
+		} catch (Error e) {
+			stderr.printf("ioreader: %s\n", e.message);
+		}
+	}
+
+	public void sfetch() {
+#if !WINDOWS
+		io_read = new IOChannel.unix_new(stdin.fileno());
+#else
+		io_read = new IOChannel.win32_new_fd(stdin.fileno());
+#endif
+
+		try {
+			if(io_read.set_encoding(null) != IOStatus.NORMAL) {
+				error("Failed to set encoding");
+			}
+			io_read.add_watch(IOCondition.IN|
+							  IOCondition.HUP|
+							  IOCondition.ERR|
+							  IOCondition.NVAL, (chan, cond) => {
+								  if((cond & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0) {
+									  return false;
+								  }
+								  string buf;
+
+								  try {
+									  var iostat = chan.read_line(out buf, null, null);
+									  if(iostat != IOStatus.NORMAL) {
+										  ml.quit();
+										  return false;
+									  }
+									  string cmd = buf.strip();
+									  if(cmd == "quit") {
+										  print("ok\n");
+										  SDL.quit();
+										  ml.quit();
+									  } else if (cmd == "raw") {
+										  var chans = get_channels();
+										  stdout.write ((uint8[])chans);
+										  stdout.flush();
+									  } else if (cmd == "text") {
+										  var s = print_channels();
+										  print("%s\n", s);
+									  } else if (cmd == "info") {
+										  print("%s\n", get_info());
+									  } else if (cmd.has_prefix("set ")) {
+										  set_chans(cmd);
+										  print("ok\n");
+									  } else {
+										  print("err\n");
+									  }
+									  return true;
+								  } catch (Error e) {
+									  stderr.printf("Reader: %s\n", e.message);
 									  return false;
 								  }
 							  });
@@ -287,7 +345,6 @@ static int main(string? []args) {
 	}
 
 	if (args.length > 1) {
-		bool ok = true;
 		ml = new MainLoop();
 
 		jm = new JoyManager(args[1], JoyManager.fake);
@@ -297,19 +354,20 @@ static int main(string? []args) {
 				return 0;
 			});
 
-		ok = jm.setup_ip((uint16)JoyManager.port);
-		if(ok) {
+		jm.sfetch();
+		if(jm.setup_ip((uint16)JoyManager.port)) {
 			jm.ufetch();
-			if (JoyManager.verbose) {
-				Timeout.add_seconds(10, () => {
-						jm.show_start();
-						print("%s\n", jm.print_channels());
-						return true;
-					});
-			}
-			ml.run();
-			SDL.quit();
 		}
+
+		if (JoyManager.verbose) {
+			Timeout.add_seconds(10, () => {
+					jm.show_start();
+					print("%s\n", jm.print_channels());
+					return true;
+					});
+		}
+		ml.run();
+		SDL.quit();
 	} else {
 		print("no mapping file\n");
 	}

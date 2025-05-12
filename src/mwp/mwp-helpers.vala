@@ -618,31 +618,14 @@ namespace CatMap {
 }
 
 namespace JSMisc {
-	SocketAddress sockaddr;
-	Socket socket;
+#if !WINDOWS
 	DataInputStream dis;
 	DataOutputStream dos;
 
-	private bool setup_ip(string host, uint16 port) {
-        try {
-                var resolver = Resolver.get_default ();
-                var addresses = resolver.lookup_by_name (host, null);
-                var address = addresses.nth_data (0);
-                sockaddr = new InetSocketAddress (address, port);
-				socket = new Socket (sockaddr.get_family(), SocketType.DATAGRAM, SocketProtocol.UDP);
-				socket.connect(sockaddr);
-#if !WINDOWS
-				dis = new DataInputStream(new UnixInputStream(socket.fd, true));
-				dos = new DataOutputStream(new UnixOutputStream(socket.fd, true));
-#else
-				dis = new DataInputStream (new Win32InputStream((void *)socket.fd, true));
-				dos = new DataOutputStream (new Win32OutputStream((void *)socket.fd, true));
-#endif
-                return true;
-        } catch(Error e) {
-                stderr.printf("err: %s\n", e.message);
-                return false;
-        }
+	private bool setup(ProcessLauncher p) {
+		dis = new DataInputStream(new UnixInputStream(p.get_stdout_pipe(), true));
+		dos = new DataOutputStream(new UnixOutputStream(p.get_stdin_pipe(), true));
+		return true;
 	}
 
 	private async ssize_t read_hid_async(uint8 []buf, string cmd) {
@@ -650,12 +633,34 @@ namespace JSMisc {
 		try {
 			sz = yield dos.write_async (cmd.data, Priority.DEFAULT, null);
 			if (sz > 0) {
-				sz = -1;
 				sz = yield dis.read_async(buf, Priority.DEFAULT, null);
 			}
 		} catch (Error e) {
-			MWPLog.message("HID Read <%s> %s\n", cmd, e.message);
+			MWPLog.message("HID Read <%s> %s\n", cmd.strip(), e.message);
 		}
 		return sz;
 	}
+#else
+	int hstdin;
+	int hstdout;
+	private bool setup(ProcessLauncher p) {
+		hstdin = p.get_stdin_pipe();
+		hstdout =  p.get_stdout_pipe();
+		return true;
+	}
+	// This is ludicrous ...
+	private async ssize_t read_hid_async(uint8 []buf, string cmd) {
+		ssize_t sz = -1;
+		new Thread<bool>("fake-win-async", () => {
+				sz = Posix.write(hstdin,  cmd.data, cmd.length);
+				if(sz > 0) {
+					sz = Posix.read(hstdout,  buf, 256);
+				}
+				Idle.add(read_hid_async.callback);
+				return true;
+			});
+		yield;
+		return sz;
+	}
+#endif
 }
