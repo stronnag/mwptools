@@ -69,6 +69,14 @@ namespace Mwp {
     }
 
 	[Flags]
+	public enum MspRC {
+		OFF=0,
+		ON,
+		GET,
+		SET
+	}
+
+	[Flags]
 	public enum CloseCheck {
 		NONE=0,
 		MISSION=1,

@@ -910,6 +910,14 @@ namespace Mwp {
 					lsaq.set_state (s);
 				});
 			window.add_action(lsaq);
+
+			var msprcact = new GLib.SimpleAction.stateful ("usemsprc", null, false);
+			msprcact.change_state.connect((s) => {
+					// var b = s.get_boolean();
+					msprcact.set_state (s);
+				});
+			window.add_action(msprcact);
+
 			app.set_accels_for_action ("win.vlegend", { "<primary>v" });
 			app.set_accels_for_action ("win.about", { "<primary>a" });
 			app.set_accels_for_action ("win.cliploc", { "<primary>l" });
