@@ -154,6 +154,16 @@ namespace Misc {
             ret = false;
         return ret;
     }
+
+	public bool is_msprc_enabled() {
+		if(Mwp.conf.msprc_enabled) {
+			if(Mwp.conf.msprc_settings != "") {
+				var file = File.new_for_path(Mwp.conf.msprc_settings);
+				return file.query_exists();
+			}
+		}
+		return false;
+	}
 }
 
 

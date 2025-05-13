@@ -102,7 +102,9 @@ namespace Mwp {
             MWPLog.message("Msp Error: %s [%db] %s\n", cmd.format(), len, (cmd == Msp.Cmds.COMMON_SETTING) ? (string)lastmsg.data : "");
             switch(cmd) {
 			case Msp.Cmds.SET_RAW_RC:
-				Mwp.use_rc = false;
+			case Msp.Cmds.RC:
+				Mwp.use_rc &= (Mwp.MspRC.SET|Mwp.MspRC.GET);
+				MwpMenu.set_menu_state(Mwp.window, "usemsprc", false);
 				break;
 
 			case Msp.Cmds.INAV_GPS_UBLOX_COMMAND:
@@ -136,7 +138,8 @@ namespace Mwp {
 
 			case Msp.Cmds.API_VERSION:
 			case Msp.Cmds.BOXIDS:
-				Mwp.use_rc = false;
+				Mwp.use_rc &= (Mwp.MspRC.SET|Mwp.MspRC.GET);
+				MwpMenu.set_menu_state(Mwp.window, "usemsprc", false);
 				queue_cmd(Msp.Cmds.BOXNAMES, null,0);
 				run_queue();
 				break;
@@ -534,7 +537,8 @@ namespace Mwp {
 				if ((raw[3] & 0x10) == 0x10) {
 					navcap = NAVCAPS.WAYPOINTS|NAVCAPS.NAVSTATUS|NAVCAPS.NAVCONFIG;
 					wp_max = 120;
-					Mwp.use_rc = false;
+					Mwp.use_rc &= (Mwp.MspRC.SET|Mwp.MspRC.GET);
+					MwpMenu.set_menu_state(Mwp.window, "usemsprc", false);
 				} else {
 					navcap = NAVCAPS.NONE;
 				}
@@ -1398,6 +1402,11 @@ namespace Mwp {
 			break;
 
 		case Msp.Cmds.SET_RAW_RC:
+			break;
+
+		case Msp.Cmds.RC:
+			MWPLog.message(":DBG: MSP_RC size %d\n", len);
+			Mwp.use_rc |= Mwp.MspRC.SET;
 			break;
 
 		default:

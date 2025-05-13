@@ -29,7 +29,7 @@ namespace Mwp  {
 	uint stag = 0;
 	Timer rctimer;
 	const int CHNSIZE = 32;
-	bool use_rc = false;
+	MspRC use_rc;
 
 	public void clear_sidebar(MWSerial s) {
 		if(s != null) {
@@ -57,14 +57,13 @@ namespace Msp {
 		if (hpid != 0) {
 			ProxyPids.remove(hpid);
 			ProcessLauncher.kill(hpid);
-			hpid = 0;
-			Mwp.rctimer.stop();
 		}
-		Mwp.use_rc = false;
+		hpid = 0;
+		Mwp.rctimer.stop();
+		Mwp.use_rc &= ~(Mwp.MspRC.ON|Mwp.MspRC.SET|Mwp.MspRC.GET);
 	}
 
-	public bool start_hid() {
-		bool ok = false;
+	public void start_hid() {
 		if (hpid == 0) {
 			var pl = new ProcessLauncher();
 			var hidopt = Environment.get_variable("MWP_HIDOPT");
@@ -79,17 +78,17 @@ namespace Msp {
 					Mwp.rctimer.stop();
 					ProxyPids.add(hpid);
 					JSMisc.setup(pl);
+					Mwp.use_rc |= Mwp.MspRC.ON;
+					if (Mwp.MspRC.ACT in Mwp.use_rc) {
+						Mwp.use_rc |= Mwp.MspRC.GET;
+					}
 					pl.complete.connect(() => {
-							Mwp.use_rc = false;
+							stop_hid();
 						});
-					ok = true;
 				}
 			}
-		} else {
-			ok = true;
 		}
-		MWPLog.message(":HID DBG: pid=%d %s\n", hpid, ok.to_string());
-		return ok;
+		MWPLog.message(":HID DBG: pid=%d %x\n", hpid, Mwp.use_rc);
 	}
 
 	public void init() {
@@ -277,7 +276,7 @@ namespace Msp {
 		Mwp.window.mmode.set_label("");
 		MwpMenu.set_menu_state(Mwp.window, "followme", false);
 		Mwp.window.conbutton.sensitive = true;
-		if(Mwp.use_rc) {
+		if(Mwp.MspRC.ON in Mwp.use_rc) {
 			if(Mwp.conf.show_sticks != 1) {
 				Sticks.done();
 			}
@@ -353,9 +352,9 @@ namespace Msp {
 					if (!forced_mav) {
 						Mwp.serstate = Mwp.SERSTATE.NORMAL;
 						Mwp.msp.use_v2 = false;
-						if(Mwp.conf.msprc_enabled && Mwp.conf.msprc_settings.length > 0) {
-							Mwp.use_rc = start_hid();
-							if (Mwp.use_rc) {
+						if(Misc.is_msprc_enabled()) {
+							start_hid();
+							if ((Mwp.MspRC.ON|Mwp.MspRC.ACT) in Mwp.use_rc) {
 								MWPLog.message("Send HID Info\n");
 								JSMisc.read_hid_async.begin(jbuf, "info\n",  (o, r) => {
 										var sz = JSMisc.read_hid_async.end(r);

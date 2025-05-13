@@ -280,14 +280,35 @@ namespace Mwp {
 		}
 
 		private void init_basics() {
+			use_rc = MspRC.OFF;
 			conf = new MWPSettings();
-			if(conf.msprc_enabled) {
-				MWPLog.message("mwp is HID enabled\n");
-			}
 			if(conf.uilang == "en") {
 				Intl.setlocale(LocaleCategory.NUMERIC, "C");
 			}
 			show_locale();
+			var msprcact = new GLib.SimpleAction.stateful ("usemsprc", null, false);
+			msprcact.change_state.connect((s) => {
+					var b = s.get_boolean();
+					msprcact.set_state (s);
+					if(b) {
+						Mwp.use_rc |= Mwp.MspRC.ACT|Mwp.MspRC.GET;
+					} else {
+						Mwp.use_rc &= ~(Mwp.MspRC.ACT|Mwp.MspRC.GET|Mwp.MspRC.SET);
+					}
+					MWPLog.message(":DBG: msprc action set to %s, use_rc=%x\n", b.to_string(), Mwp.use_rc);
+				});
+			window.add_action(msprcact);
+
+			if(Misc.is_msprc_enabled()) {
+				MWPLog.message("mwp is HID enabled\n");
+				msprcact.set_state (true);
+				Mwp.use_rc |= Mwp.MspRC.ACT;
+			}
+
+			// conf.changed["msprc-enabled"].connect(() => {
+			//		MWPLog.message(":DBG: msprc enabled %s\n", conf.msprc_enabled.to_string());
+			//	});
+
 			TelemTracker.init();
 			Radar.init();
 			devman = new DevManager(conf.bluez_disco);
@@ -910,13 +931,6 @@ namespace Mwp {
 					lsaq.set_state (s);
 				});
 			window.add_action(lsaq);
-
-			var msprcact = new GLib.SimpleAction.stateful ("usemsprc", null, false);
-			msprcact.change_state.connect((s) => {
-					// var b = s.get_boolean();
-					msprcact.set_state (s);
-				});
-			window.add_action(msprcact);
 
 			app.set_accels_for_action ("win.vlegend", { "<primary>v" });
 			app.set_accels_for_action ("win.about", { "<primary>a" });

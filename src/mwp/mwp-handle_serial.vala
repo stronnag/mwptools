@@ -670,21 +670,29 @@ namespace Mwp {
     }
 
 	private bool send_msp_rc() {
-		if(Mwp.use_rc && rctimer.is_active() && rctimer.elapsed() > Mwp.JSTKINTVL) {
-			JSMisc.read_hid_async.begin((uint8[])rcchans, "raw\n",  (o, r) => {
-					var sz = JSMisc.read_hid_async.end(r);
-					if(sz  == JSCHANSIZE && rcchans[0] > 0) {
-						queue_cmd(Msp.Cmds.SET_RAW_RC, (uint8[])rcchans, JSCHANSIZE);
-						run_queue();
-						rctimer.start();
-						Sticks.update(rcchans[0], rcchans[1], rcchans[3], rcchans[2]);
-					} else {
-						rctimer.stop();
-						MWPLog.message("Disabling raw rc\n");
-						Mwp.use_rc = false;
-					}
-				});
-			return true;
+		if(rctimer.is_active() && rctimer.elapsed() > Mwp.JSTKINTVL) {
+			if((Mwp.MspRC.SET in Mwp.use_rc)) {
+				JSMisc.read_hid_async.begin((uint8[])rcchans, "raw\n",  (o, r) => {
+						var sz = JSMisc.read_hid_async.end(r);
+						if(sz  == JSCHANSIZE && rcchans[0] > 0) {
+							queue_cmd(Msp.Cmds.SET_RAW_RC, (uint8[])rcchans, JSCHANSIZE);
+							run_queue();
+							rctimer.start();
+							Sticks.update(rcchans[0], rcchans[1], rcchans[3], rcchans[2]);
+						} else {
+							rctimer.stop();
+							MWPLog.message("Disabling raw rc\n");
+							Mwp.use_rc &= Mwp.MspRC.SET;
+							MwpMenu.set_menu_state(Mwp.window, "usemsprc", false);
+						}
+					});
+				return true;
+			} else if((Mwp.MspRC.GET in Mwp.use_rc)) {
+				queue_cmd(Msp.Cmds.RC, null, 0);
+				run_queue();
+				rctimer.start();
+				return true;
+			}
 		}
 		return false;
 	}

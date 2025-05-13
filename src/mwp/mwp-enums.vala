@@ -71,9 +71,10 @@ namespace Mwp {
 	[Flags]
 	public enum MspRC {
 		OFF=0,
-		ON,
-		GET,
-		SET
+		ON=1,
+		GET=2,
+		SET=4,
+		ACT=80,
 	}
 
 	[Flags]
