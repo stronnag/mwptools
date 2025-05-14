@@ -6,10 +6,16 @@ From 25.05.07, {{ mwp }} supports using a HID (Human Input Device) to provide RC
 
 While mwp provides functionality for doing this, it is not condoned as an acceptable way of controlling a UAS. Using `NSP_SET_RAW_RC` (aka `MSPRC`) over a MSP telemetry link cannot provide the update rate / performance / reliability / safety of a standard RC TX/RX.
 
+### Caveats
+
+* Not supported for MultiWii or "old" INAV (at least prior to 2.0).
+* mwp's HID implementation supports the same number of RC channels as does your flight controller (for `MSP_SET_RAW_RC`).
+* mwp will send the lesser of the number of channels supported by the FC and the number of channels defined in the [RC mapping file](#rc-mapping-file).
+
 ## Prerequisites
 
 * Telemetry radio capable sustaining of at least 12 MSP messages / second.
-* No other device is using `MSP_SET_RAW_RC` (this precludes MLRS).
+* No other device is using `MSP_SET_RAW_RC` (this may preclude mLRS).
 * Either the FC is configured with `USE_MSP_RC_OVERRIDE` and appropriate `msp_override_channels` or the FC is configured for `set receiver_type = MSP`
 * It is recommended that you have a validated failsafe solution.
 
@@ -198,13 +204,15 @@ Application Options:
 
 The `mwp-hid-server` server listens on a defined UDP port (default 31025) for the following commands:
 
-* `raw` : Returns 16 int16 values, little endian, representing 16 RC channels.
+* `raw` : Returns an array of int16 values, little endian, representing RC channel values..
 * `info` : Returns information (free form text) on the connected HID device.
 * `quit` : Terminates the server
-* `text` : Returns a text string of 16 space separated channel values.
-* `set` : sets RC data for the first four channels (a testing aid). Data is provided as a set of space separated values, for example `set 1600 1700 1010 1889`.
+* `text` : Returns a text string of space separated channel values.
+* `set` : sets RC data for the RC channels. Data is provided as a set of space separated values, for example `set 1600 1700 1010 1889`.
 
 `mwp` uses only the `info` and `raw` commands.
+
+The `mwp-hid-server` also accepts commands on STDIN and replies to STDOUT. This is used when spawned by mwp, to mitigate Windows' startup synchronisation issues.
 
 #### `mwp-hid-cli`
 
