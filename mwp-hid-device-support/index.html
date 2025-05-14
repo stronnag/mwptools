@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/mwp_icon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.12">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.2afb09e1.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.342714a4.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -1136,6 +1136,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#caveats" class="md-nav__link">
+    <span class="md-ellipsis">
+      Caveats
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1573,6 +1588,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#caveats" class="md-nav__link">
+    <span class="md-ellipsis">
+      Caveats
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1754,10 +1784,16 @@
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">#</a></h2>
 <p>From 25.05.07, <a href="https://github.com/stronnag/mwptools">mwp</a> supports using a HID (Human Input Device) to provide RC (stick / switch inputs) to the FC.  An example of this might be running mwp on a game console such as SteamDeck and using the SteamDeck HID (sticks, buttons) to provide TX functions.</p>
 <p>While mwp provides functionality for doing this, it is not condoned as an acceptable way of controlling a UAS. Using <code>NSP_SET_RAW_RC</code> (aka <code>MSPRC</code>) over a MSP telemetry link cannot provide the update rate / performance / reliability / safety of a standard RC TX/RX.</p>
+<h3 id="caveats">Caveats<a class="headerlink" href="#caveats" title="Permanent link">#</a></h3>
+<ul>
+<li>Not supported for MultiWii or "old" INAV (at least prior to 2.0).</li>
+<li>mwp's HID implementation supports the same number of RC channels as does your flight controller (for <code>MSP_SET_RAW_RC</code>).</li>
+<li>mwp will send the lesser of the number of channels supported by the FC and the number of channels defined in the <a href="#rc-mapping-file">RC mapping file</a>.</li>
+</ul>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">#</a></h2>
 <ul>
 <li>Telemetry radio capable sustaining of at least 12 MSP messages / second.</li>
-<li>No other device is using <code>MSP_SET_RAW_RC</code> (this precludes MLRS).</li>
+<li>No other device is using <code>MSP_SET_RAW_RC</code> (this may preclude mLRS).</li>
 <li>Either the FC is configured with <code>USE_MSP_RC_OVERRIDE</code> and appropriate <code>msp_override_channels</code> or the FC is configured for <code>set receiver_type = MSP</code></li>
 <li>It is recommended that you have a validated failsafe solution.</li>
 </ul>
@@ -1914,13 +1950,14 @@ Application Options:
 <h4 id="mwp-hid-server-command-language">mwp-hid-server command language<a class="headerlink" href="#mwp-hid-server-command-language" title="Permanent link">#</a></h4>
 <p>The <code>mwp-hid-server</code> server listens on a defined UDP port (default 31025) for the following commands:</p>
 <ul>
-<li><code>raw</code> : Returns 16 int16 values, little endian, representing 16 RC channels.</li>
+<li><code>raw</code> : Returns an array of int16 values, little endian, representing RC channel values..</li>
 <li><code>info</code> : Returns information (free form text) on the connected HID device.</li>
 <li><code>quit</code> : Terminates the server</li>
-<li><code>text</code> : Returns a text string of 16 space separated channel values.</li>
-<li><code>set</code> : sets RC data for the first four channels (a testing aid). Data is provided as a set of space separated values, for example <code>set 1600 1700 1010 1889</code>.</li>
+<li><code>text</code> : Returns a text string of space separated channel values.</li>
+<li><code>set</code> : sets RC data for the RC channels. Data is provided as a set of space separated values, for example <code>set 1600 1700 1010 1889</code>.</li>
 </ul>
 <p><code>mwp</code> uses only the <code>info</code> and <code>raw</code> commands.</p>
+<p>The <code>mwp-hid-server</code> also accepts commands on STDIN and replies to STDOUT. This is used when spawned by mwp, to mitigate Windows' startup synchronisation issues.</p>
 <h4 id="mwp-hid-cli"><code>mwp-hid-cli</code><a class="headerlink" href="#mwp-hid-cli" title="Permanent link">#</a></h4>
 <p><code>mwp-hid-cli</code> is a simple command line tool to investigate the hid server. This allows the user to send the server commands listed above to a running <code>mwp-hid-server</code>.</p>
 <div class="highlight"><pre><span></span><code>$ mwp-hid-cli
@@ -2023,10 +2060,10 @@ OpenTX Radiomaster Boxer Joystick Axes: 8 Buttons: 24
     
     
       
-      <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.c8b220af.min.js"></script>
+      <script src="../assets/javascripts/bundle.13a4f30d.min.js"></script>
       
     
   </body>
