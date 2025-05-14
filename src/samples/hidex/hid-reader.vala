@@ -153,7 +153,7 @@ public class JoyReader {
 				}
 			}
 		} catch (Error e) {
-			print("Err %s\n", e.message);
+			stderr.printf("Err %s\n", e.message);
 			ok = false;
 		}
 		return ok;

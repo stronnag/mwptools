@@ -18,7 +18,7 @@ public class JoyManager : Object {
 		tinit = false;
 		int njoy = SDL.init (SDL.InitFlag.JOYSTICK|SDL.InitFlag.GAMECONTROLLER);
 		if (njoy < 0) {
-			print("Unable to initialize the joystick subsystem.\n");
+			stderr.printf("Unable to initialize the joystick subsystem.\n");
 		}
 		jrdr = new JoyReader(fake);
 		mf = _mf;
@@ -54,9 +54,9 @@ public class JoyManager : Object {
 		if(!tinit) {
 			tinit = true;
 			for(var j = 1; j <= get_channels().length; j++) {
-				print(" Ch%02d", j);
+				stderr.printf(" Ch%02d", j);
 			}
-			print("\n");
+			stderr.printf("\n");
 		}
 	}
 
@@ -82,7 +82,7 @@ public class JoyManager : Object {
 		while (SDL.Event.wait (out event) == 1) {
 			switch(event.type) {
 			case SDL.EventType.QUIT:
-				print("sdl quit\n");
+				stderr.printf("sdl quit\n");
 				ml.quit();
 				return;
 			case SDL.EventType.JOYAXISMOTION:
@@ -104,14 +104,14 @@ public class JoyManager : Object {
 				break;
 			case SDL.EventType.JOYHATMOTION:
 				if (verbose)
-					print("Hat %d value %d.\n", event.jhat.hat, event.jhat.value);
+					stderr.printf("Hat %d value %d.\n", event.jhat.hat, event.jhat.value);
 				break;
 			case SDL.EventType.JOYDEVICEADDED:
 				if (verbose)
-					print("Joystick #%d connected\n", event.jdevice.which);
+					stderr.printf("Joystick #%d connected\n", event.jdevice.which);
 				js = new SDL.Input.Joystick(0);
 				if (verbose) {
-					print("%s\n", get_info());
+					stderr.printf("%s\n", get_info());
 				}
 				jrdr.set_sizes(js.num_axes(), js.num_buttons());
 				jrdr.reader(mf);
@@ -119,16 +119,16 @@ public class JoyManager : Object {
 				Timeout.add(1000, () => {
 						read_all();
 						if(verbose) {
-							print("Deadband: %d\n", jrdr.deadband);
+							stderr.printf("Deadband: %d\n", jrdr.deadband);
 							show_start();
-							print("%s\n", print_channels());
+							stderr.printf("%s\n", print_channels());
 						}
 						return false;
 					});
 				break;
 			case SDL.EventType.JOYDEVICEREMOVED:
 				if(verbose) {
-					print("Joystick %d removed.\n", event.jdevice.which);
+					stderr.printf("Joystick %d removed.\n", event.jdevice.which);
 				}
 				jrdr.reset_all();
 				js = null;
@@ -148,12 +148,12 @@ public class JoyManager : Object {
 				break;
 			default:
 				if (verbose)
-					print("Unhandled %d %x\n", event.type, event.type);
+					stderr.printf("Unhandled %d %x\n", event.type, event.type);
 				break;
 			}
 		}
 		if (verbose)
-			print("sdl done\n");
+			stderr.printf("sdl done\n");
 		ml.quit();
 	}
 
@@ -363,14 +363,14 @@ static int main(string? []args) {
 		if (JoyManager.verbose) {
 			Timeout.add_seconds(10, () => {
 					jm.show_start();
-					print("%s\n", jm.print_channels());
+					stderr.printf("%s\n", jm.print_channels());
 					return true;
 					});
 		}
 		ml.run();
 		SDL.quit();
 	} else {
-		print("no mapping file\n");
+		stderr.printf("no mapping file\n");
 	}
 	return 0;
 }
