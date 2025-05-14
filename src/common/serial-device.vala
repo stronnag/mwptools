@@ -518,15 +518,15 @@ public class MWSerial : Object {
 
 	[Flags]
 	public enum ComMode {
-		TTY,
-		BT,
-		BLE,
-		WEAK,
-		WEAKBLE,
-		UDP,
-		TCP,
-		UDPSERVER,
-		IPCONN
+		TTY,       // 1
+		BT,        // 2
+		BLE,       // 4
+		WEAK,      // 8
+		WEAKBLE,   // 10
+		UDP,       // 20
+		TCP,       // 40
+		UDPSERVER, // 80
+		IPCONN     // 100
 	}
 
 	public enum Mode {
@@ -1284,12 +1284,15 @@ public class MWSerial : Object {
 				if (ComMode.TTY in commode) {
 					MwpSerial.close(fd);
 				} else if (ComMode.TCP in commode) {
-					socket.shutdown(true, true);
+					if(!socket.is_closed()) {
+						socket.shutdown(true, true);
+					}
 				} else if (ComMode.BT in commode && ((commode & ComMode.BLE) == 0)) {
 					Posix.close(fd);
-				}
-				if (ComMode.IPCONN in commode) {
-					socket.close();
+				} else if (ComMode.IPCONN in commode) {
+					if(!socket.is_closed()) {
+						socket.close();
+					}
 				}
 #if LINUX
 				if((commode & ComMode.BLE) == ComMode.BLE) {
@@ -1300,7 +1303,7 @@ public class MWSerial : Object {
 				}
 #endif
 			} catch (Error e) {
-				MWPLog.message("Closedown: %s\r\n", e.message);
+				// MWPLog.message("Closedown: %s (%x)\r\n", e.message, commode);
 			}
 		}
 #if LINUX
@@ -1956,10 +1959,15 @@ public class MWSerial : Object {
 			} else if ((commode & ComMode.BT) == ComMode.BT) {
 				sz = Posix.write(wrfd, buf[:count], count);
 			} else {
-				var iostat = io_chan.write_chars((char[])buf[:count], out ssz);
-				sz = (ssize_t)ssz;
-				if(iostat != IOStatus.NORMAL) {
-					stderr.printf("IOSTAT write fails: %s\n", iostat.to_string());
+				var ioflags = io_chan.get_flags();
+				if (IOFlags.IS_WRITEABLE in ioflags) {
+					var iostat = io_chan.write_chars((char[])buf[:count], out ssz);
+					sz = (ssize_t)ssz;
+					if(iostat != IOStatus.NORMAL) {
+						stderr.printf("IOSTAT write fails: %s\n", iostat.to_string());
+						return -1;
+					}
+				} else {
 					return -1;
 				}
 			}

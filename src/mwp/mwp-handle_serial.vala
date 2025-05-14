@@ -146,7 +146,6 @@ namespace Mwp {
 	const int MSP_WAITMS = 5;
 	const double JSTKINTVL = 0.15;
 	const int JSCHANSIZE = 32;
-	int16 rcchans[16];
 
 	void serial_reset() {
 		vi = {};
@@ -674,8 +673,8 @@ namespace Mwp {
 			if((Mwp.MspRC.SET in Mwp.use_rc)) {
 				JSMisc.read_hid_async.begin((uint8[])rcchans, "raw\n",  (o, r) => {
 						var sz = JSMisc.read_hid_async.end(r);
-						if(sz  == JSCHANSIZE && rcchans[0] > 0) {
-							queue_cmd(Msp.Cmds.SET_RAW_RC, (uint8[])rcchans, JSCHANSIZE);
+						if(sz  >=  nrc_chan*2 && rcchans[0] > 0) {
+							queue_cmd(Msp.Cmds.SET_RAW_RC, (uint8[])rcchans, nrc_chan);
 							run_queue();
 							rctimer.start();
 							Sticks.update(rcchans[0], rcchans[1], rcchans[3], rcchans[2]);
@@ -683,7 +682,8 @@ namespace Mwp {
 							rctimer.stop();
 							MWPLog.message("Disabling raw rc\n");
 							Mwp.use_rc &= Mwp.MspRC.SET;
-							MwpMenu.set_menu_state(Mwp.window, "usemsprc", false);
+							var ac = Mwp.window.lookup_action("usemsprc") as SimpleAction;
+							ac.set_state(new Variant.boolean(false));
 						}
 					});
 				return true;

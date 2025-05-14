@@ -26,4 +26,4 @@ install:  mwp-hid-server mwp-hid-test mwp-hid-cli
 	install -d $(prefix)/bin
 	install -s mwp-hid-server $(prefix)/bin/mwp-hid-server
 	install -s mwp-hid-test $(prefix)/bin/mwp-hid-test
-	install -s mwp-hid-test $(prefix)/bin/mwp-hid-cli
+	install -s mwp-hid-cli $(prefix)/bin/mwp-hid-cli

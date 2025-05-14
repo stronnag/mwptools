@@ -5,12 +5,14 @@ public class JoyReader {
 		bool invert;
 	}
 
+	private const int INAV_CHAN_MAX=34;
+
 	public ChanDef []axes;
 	public ChanDef []buttons;
 	public ChanDef []hats;
 	public ChanDef []balls;
 
-	private uint16 channels[16];
+	private uint16 []channels;
 	private bool fake;
 
 	public int deadband;
@@ -61,6 +63,7 @@ public class JoyReader {
 	}
 
 	public bool reader(string fn) {
+		channels = {};
 		bool ok = false;
 		var rs = """^(\S+)\s+(\d+)\s+=\s+Channel\s+(\d+)\s+(\S?.*)""";
 		try {
@@ -88,7 +91,10 @@ public class JoyReader {
 					if(rx.match(line, 0, out mi)) {
 						nf = uint.parse(mi.fetch(2));
 						nc = int.parse(mi.fetch(3));
-						if(nc > 0 && nc < 17) {
+						if(nc > 0 && nc <= INAV_CHAN_MAX) {
+							if(nc > channels.length) {
+								channels.resize(nc);
+							}
 							var extra = mi.fetch(4);
 							bool invert = false;
 							if(extra != null) {
@@ -145,9 +151,6 @@ public class JoyReader {
 						maxnc = nc;
 					}
 				}
-				for (var j = maxnc; j < 16; j++) {
-					channels[j] = 1500;
-				}
 			}
 		} catch (Error e) {
 			print("Err %s\n", e.message);
@@ -185,10 +188,9 @@ public class JoyReader {
 			if(fake) {
 				channels = {1500, 1500, 1000, 1500,
 					1000, 1001, 1002, 1003,
-					1004, 1005, 1006, 1007,
-					1009, 1010, 1011, 1012};
+					1004, 1005, 1006, 1007};
 			} else {
-				for(var j = 0; j < 16; j++) {
+				for(var j = 0; j < channels.length; j++) {
 					channels[j] = 897;
 				}
 			}

@@ -26,7 +26,8 @@ public class JoyManager : Object {
 
 	public string? get_info() {
 		if(js != null) {
-			var sb = new StringBuilder(js.get_name());
+			var sb = new StringBuilder();
+			sb.append_printf("Channels: %d %s", get_channels().length, js.get_name());
 			var n = js.num_axes();
 			if (n > 0) {
 				sb.append_printf(" Axes: %d", n);
@@ -45,14 +46,14 @@ public class JoyManager : Object {
 			}
 			return sb.str;
 		} else {
-			return "No joystick connected";
+			return "Channels: %d No joystick connected".printf(get_channels().length);
 		}
 	}
 
 	public void show_start() {
 		if(!tinit) {
 			tinit = true;
-			for(var j = 1; j < 17; j++) {
+			for(var j = 1; j <= get_channels().length; j++) {
 				print(" Ch%02d", j);
 			}
 			print("\n");
@@ -179,7 +180,7 @@ public class JoyManager : Object {
 
 	private void set_chans(string cmd) {
 		var parts = cmd.split(" ");
-		if(parts.length > 1 && parts.length < 6) {
+		if(parts.length > 1 && parts.length <= 1+get_channels().length) {
 			for(var k = 1; k < parts.length; k++) {
 				int v = int.parse(parts[k]);
 				if (v > 880 && v < 2100) {

@@ -34,6 +34,8 @@ namespace Mwp {
 	uint8 []boxids;
 	int idcount;
 	bool fwachanged;
+	int16[] rcchans;
+	uint8 jbuf [32];
 
 	[Flags]
 	private enum StartupTasks {
@@ -93,6 +95,12 @@ namespace Mwp {
 		queue_cmd(Msp.Cmds.COMMON_SETTING, msg, k);
 	}
 
+	private void cancel_msprc() {
+		Mwp.use_rc &= (Mwp.MspRC.SET|Mwp.MspRC.GET);
+		var ac = Mwp.window.lookup_action("usemsprc") as SimpleAction;
+		ac.set_state(new Variant.boolean(false));
+	}
+
 	bool handle_msp(MWSerial ser, Msp.Cmds cmd, uint8[] raw, uint len, uint8 xflags, bool errs) {
 		Mwp.window.mmode.label = "MSP";
 		bool handled = true;
@@ -103,8 +111,9 @@ namespace Mwp {
             switch(cmd) {
 			case Msp.Cmds.SET_RAW_RC:
 			case Msp.Cmds.RC:
-				Mwp.use_rc &= (Mwp.MspRC.SET|Mwp.MspRC.GET);
-				MwpMenu.set_menu_state(Mwp.window, "usemsprc", false);
+				cancel_msprc();
+				queue_cmd(msp_get_status,null,0);
+				run_queue();
 				break;
 
 			case Msp.Cmds.INAV_GPS_UBLOX_COMMAND:
@@ -138,8 +147,9 @@ namespace Mwp {
 
 			case Msp.Cmds.API_VERSION:
 			case Msp.Cmds.BOXIDS:
-				Mwp.use_rc &= (Mwp.MspRC.SET|Mwp.MspRC.GET);
-				MwpMenu.set_menu_state(Mwp.window, "usemsprc", false);
+				// This prevents usage on MW and older INAV
+				// Note also MW does not send an ACK for MWP_SET_RAW_RC !!
+				cancel_msprc();
 				queue_cmd(Msp.Cmds.BOXNAMES, null,0);
 				run_queue();
 				break;
@@ -537,8 +547,7 @@ namespace Mwp {
 				if ((raw[3] & 0x10) == 0x10) {
 					navcap = NAVCAPS.WAYPOINTS|NAVCAPS.NAVSTATUS|NAVCAPS.NAVCONFIG;
 					wp_max = 120;
-					Mwp.use_rc &= (Mwp.MspRC.SET|Mwp.MspRC.GET);
-					MwpMenu.set_menu_state(Mwp.window, "usemsprc", false);
+					cancel_msprc();
 				} else {
 					navcap = NAVCAPS.NONE;
 				}
@@ -1405,7 +1414,31 @@ namespace Mwp {
 			break;
 
 		case Msp.Cmds.RC:
-			MWPLog.message(":DBG: MSP_RC size %d\n", len);
+			var nchn = len/2;
+			if (nchn < Mwp.nrc_chan) {
+				Mwp.nrc_chan = (int)nchn;
+			}
+			if(vi.mvers == 241) {
+				Mwp.nrc_chan = 8;
+			}
+			MWPLog.message(":DBG: MSP_RC chans %d, HID chans %d\n", nchn, Mwp.nrc_chan);
+			StringBuilder sb = new StringBuilder("set");
+			for(var j = 0; j < Mwp.nrc_chan; j++) {
+				// AERT => AETR
+				var k = j;
+				if(j == 2) {
+					k = 3;
+				} else if (j == 3) {
+					k = 2;
+				}
+				sb.append_printf(" %d", ((int16[])raw)[k]);
+			}
+			sb.append_c('\n');
+			JSMisc.read_hid_async.begin(jbuf, sb.str,  (o, r) => {
+					JSMisc.read_hid_async.end(r);
+				});
+			MWPLog.message("RC (AETR):%s", sb.str.substring(3));
+			Mwp.rcchans = new int16[Mwp.nrc_chan];
 			Mwp.use_rc |= Mwp.MspRC.SET;
 			break;
 

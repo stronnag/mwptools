@@ -28,7 +28,7 @@ namespace Mwp  {
 #endif
 	uint stag = 0;
 	Timer rctimer;
-	const int CHNSIZE = 32;
+	int nrc_chan = 16;
 	MspRC use_rc;
 
 	public void clear_sidebar(MWSerial s) {
@@ -50,7 +50,6 @@ namespace Mwp  {
 }
 
 namespace Msp {
-	uint8 jbuf[512];
 	int hpid = 0;
 
 	public void stop_hid() {
@@ -355,10 +354,16 @@ namespace Msp {
 						if(Misc.is_msprc_enabled()) {
 							start_hid();
 							if ((Mwp.MspRC.ON|Mwp.MspRC.ACT) in Mwp.use_rc) {
-								MWPLog.message("Send HID Info\n");
+								MWPLog.message("Requesting HID Info\n");
+								var jbuf = new uint8 [1024];
 								JSMisc.read_hid_async.begin(jbuf, "info\n",  (o, r) => {
 										var sz = JSMisc.read_hid_async.end(r);
-										MWPLog.message("Raw RC: %d %s", sz, (string)jbuf[:sz]);
+										string jstr = (string)jbuf[:sz];
+										MWPLog.message("Raw RC: %s", jstr);
+										if(jstr.has_prefix("Channels: ")) {
+											Mwp.nrc_chan = int.parse(jstr.substring(10));
+											MWPLog.message(":DBG: Channels %d\n", Mwp.nrc_chan);
+										}
 										Mwp.rctimer.start();
 										if(Mwp.conf.show_sticks != 1) {
 											Sticks.create_sticks();
