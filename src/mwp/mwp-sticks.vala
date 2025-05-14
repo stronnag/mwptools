@@ -47,6 +47,9 @@ namespace Sticks {
 	}
 
 	public void create_sticks() {
+		if(sb != null && sbb != null) {
+			return;
+		}
 		sbb = new Gtk.Button();
 		sb = new Sticks.StickBox(360,180);
 		var isbb = new Gtk.Image.from_icon_name("view-refresh");

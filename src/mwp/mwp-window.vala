@@ -292,8 +292,14 @@ namespace Mwp {
 					msprcact.set_state (s);
 					if(b) {
 						Mwp.use_rc |= Mwp.MspRC.ACT|Mwp.MspRC.GET;
+						if(msp.available && Mwp.conf.show_sticks != 1) {
+							Sticks.create_sticks();
+						}
 					} else {
 						Mwp.use_rc &= ~(Mwp.MspRC.ACT|Mwp.MspRC.GET|Mwp.MspRC.SET);
+						if(msp.available && Mwp.conf.show_sticks != 1) {
+							Sticks.done();
+						}
 					}
 					MWPLog.message(":DBG: msprc action set to %s, use_rc=%x\n", b.to_string(), Mwp.use_rc);
 				});
