@@ -1182,6 +1182,24 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#the-invert-modifier" class="md-nav__link">
+    <span class="md-ellipsis">
+      The invert modifier
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-latch-modifier" class="md-nav__link">
+    <span class="md-ellipsis">
+      The latch modifier
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#mwp-hid-test-usage" class="md-nav__link">
     <span class="md-ellipsis">
       mwp-hid-test usage
@@ -1255,6 +1273,15 @@
   
     <nav class="md-nav" aria-label="mwp UI">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enable-and-activate" class="md-nav__link">
+    <span class="md-ellipsis">
+      Enable and Activate
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#mwp-settings" class="md-nav__link">
@@ -1634,6 +1661,24 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#the-invert-modifier" class="md-nav__link">
+    <span class="md-ellipsis">
+      The invert modifier
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-latch-modifier" class="md-nav__link">
+    <span class="md-ellipsis">
+      The latch modifier
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#mwp-hid-test-usage" class="md-nav__link">
     <span class="md-ellipsis">
       mwp-hid-test usage
@@ -1707,6 +1752,15 @@
   
     <nav class="md-nav" aria-label="mwp UI">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enable-and-activate" class="md-nav__link">
+    <span class="md-ellipsis">
+      Enable and Activate
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#mwp-settings" class="md-nav__link">
@@ -1857,7 +1911,7 @@ Notes:</p>
 <ul>
 <li>The <code>Axis N</code> or <code>Button M</code> data is that shown by <code>mwp-hid-test</code>. The Channel is the RC channel for that input.</li>
 <li>mwp maps the value from SDL (-32608 to 32607) to RC range 1000-2000. Buttons are mapped from off = 1000 to on = 2000.</li>
-<li>It is possible to set an input as inverted or define a deadband.</li>
+<li>It is possible to set an input as inverted, latched or define a deadband.</li>
 </ul>
 <p>Currently the mapping is fixed; if necessary this could be expanded to allow the user to further define the mapping (change ranges, etc.), if that is found necessary.
 For Game Controllers, it is (probably) possible to provide a SDL Mapping file as a parameter to mwp-hid-test (for example, see https://github.com/mdqinc/SDL_GameControllerDB), that will (possibly) help the SDL library to manage the device.</p>
@@ -1893,6 +1947,21 @@ Button 3 = Channel 16 ; SL (Y)
 # Maybe use for local configurations and triggers
 </code></pre></div>
 <p>Note the use of <code>invert</code>. Mapping file courtesy of GH user @arealmess.</p>
+<h4 id="the-invert-modifier">The <code>invert</code> modifier<a class="headerlink" href="#the-invert-modifier" title="Permanent link">#</a></h4>
+<p>Inverts the input. May be applied to axes and buttons.</p>
+<h4 id="the-latch-modifier">The <code>latch</code> modifier<a class="headerlink" href="#the-latch-modifier" title="Permanent link">#</a></h4>
+<p>Provides a latch function for momentary action buttons.</p>
+<ul>
+<li><code>latch</code> implements the default 2-pole latching switch;</li>
+<li><code>latch=N</code> implements an N-pole latching switch (N = 2 - 6).</li>
+</ul>
+<p>Pressing the latched switch toggles the channel value, so with the mapping line:</p>
+<div class="highlight"><pre><span></span><code>Button 1 = Channel 10 latch=3 ; SF
+</code></pre></div>
+<p>Repeatedly pressing the button would result in channel values of (inital value)<code>1000</code> =&gt; <code>1500</code>, <code>2000</code>, <code>1000</code>, <code>1500</code>, <code>2000</code>, <code>1000</code>, <code>1500</code>, <code>2000</code>. Note that the values wrap rather than go up/down like a mechanical switch.</p>
+<p>Inverted latches are also valid.</p>
+<div class="highlight"><pre><span></span><code>Button 1 = Channel 10 latch=3 invert ; SF
+</code></pre></div>
 <h3 id="mwp-hid-test-usage">mwp-hid-test usage<a class="headerlink" href="#mwp-hid-test-usage" title="Permanent link">#</a></h3>
 <div class="highlight"><pre><span></span><code>$ mwp-hid-test --help
 Usage:
@@ -1978,6 +2047,60 @@ OpenTX Radiomaster Boxer Joystick Axes: 8 Buttons: 24
 <p><img alt="SticksIcon" src="../images/mwp-rc-stick-icon.png" /></p>
 <p>This may be expanded (click on the icon) to show the sticks.</p>
 <p><img alt="stick-open" src="../images/mwp-rc-stick-open.png" /></p>
+<h3 id="enable-and-activate">Enable and Activate<a class="headerlink" href="#enable-and-activate" title="Permanent link">#</a></h3>
+<p>mwp's HID implementation distinguishes between <strong>Enabled</strong> and <strong>Activated</strong> as follows:</p>
+<p><strong>Enabled</strong> : In the MSPRC settings dialog means that the <code>mwp-hid-server</code> will start when an MSP port is started and stop when the MSP port is closed. This is a prerequisite for MSPRC.
+<strong>Activated</strong>: This means that that mwp will use data from the <code>mwp-hid-server</code>  to send <code>MSP_SET_RAW_RC</code> to the FC.</p>
+<p>When MSPRC is <strong>Activated</strong>, then mwp will first interrogate the FC <code>MSP_RC</code> to set the current RC channels. At the moment we do nothing with this data, but it could in future to set the value for <code>latch</code>  buttons.
+After  <code>MSP_RC</code> has been received, mwp will use data from the <code>mwp-hid-server</code>  to send <code>MSP_SET_RAW_RC</code> to the FC.</p>
+<p>The MSPRC function may be <strong>Activated</strong> / <strong>Deactivated</strong> as required while a MSP port is active.</p>
+<p><strong>Activate</strong> is controlled from the <code>File &gt; Edit</code> menu.</p>
+<p><img alt="Screenshot From 2025-05-13 15-21-26" src="https://github.com/user-attachments/assets/be1c71ce-0cb5-4e66-ab3f-7e44dd997ac3" /></p>
+<p>At startup, the <strong>Activate</strong> menu option is set from <strong>Enabled</strong> setting (but can be changed on demand). It is not currently persisted.</p>
+<p>Here's a log fragment showing this:
+(Numbers in brackets) are explained below:</p>
+<div class="highlight"><pre><span></span><code>21:06:11.522260 :HID DBG: pid=255325 53 (1)
+21:06:11.522296 Send HID Info (2)
+...
+21:06:11.550794 Raw RC: 22 No joystick connected (3)
+21:06:11.581800 INAV v8.0.1  SITL (171d00bb) «BENCHYMCTESTY»
+21:06:11.581900 Load FC safehomes
+21:06:11.803174 :DBG: Clear poller state MWP_SERSTATE_NORMAL
+21:06:11.803204 Save home d/l done
+21:06:11.803222 Load FC Geozones
+21:06:11.803630 :DBG: MSP_RC size 68 (4)
+21:06:11.806114 :DBG: Read 4 geozones
+21:06:11.813640 :DBG: Clear poller state MWP_SERSTATE_NORMAL
+21:06:11.813690 Geozones validated
+21:06:11.848278 Sensors: Acc Baro GPS  (00cb)
+21:06:11.848310 INAV v8.0.1  SITL (171d00bb) «BENCHYMCTESTY»
+21:06:11.848355 Poller cycle for  9 items, 81 / 226 bytes (INAV_STATUS,ANALOG2,NAV_STATUS,RAW_GPS,COMP_GPS,GPSSTATISTICS,WP,ATTITUDE,ALTITUDE)
+21:06:11.848391 Start poller
+21:06:11.854382 Request RTC pos: 54.355194 -4.523159 sats 16 hdop 100.0
+21:06:11.855258 RTC local 2025-05-13T21:06:11.855, fc 2025-05-13T21:06:11.000
+21:06:13.386745 Arming flags: Geozone (0060), load 0% MSP_CMDS_INAV_STATUS (5)
+21:06:31.669714 :DBG: msprc action set to false, use_rc=1 (6)
+21:06:32.576143 Arming flags: Geozone,RC Link (40060), load 0% MSP_CMDS_INAV_STATUS (7)
+21:06:53.180132 :DBG: msprc action set to true, use_rc=53 (8)
+21:06:53.185002 :DBG: MSP_RC size 68 (9)
+21:06:54.080304 Arming flags: Geozone (0060), load 0% MSP_CMDS_INAV_STATUS (10);
+...
+21:07:00.456903 Serial closed replay 0 (11)
+21:07:00.457042 48.952s, rx 192615b, tx 84171b, (3935b/s, 1719b/s) to 0 wait 0, avg poll loop 5 ms messages 8609 msg/s 175.9
+</code></pre></div>
+<ol>
+<li>MSPRC setting was enabled, so the <code>mwp-hid-server</code> is started</li>
+<li>mwp  asks the hid for controller info.</li>
+<li><code>Fake</code> was set via <code>MWP_HIDOPT=-f</code>; so no joystick is reported as expected. mwp will schedule <code>MSP_RC</code> to get current channel values.</li>
+<li>The <code>MSP_RC</code> response is reported (not yet acted upon), this schedules <code>MSP_SET_RAW_RC</code>.</li>
+<li>The next polled <code>MSP2_INAV_STATUS</code> reports that the only blocker is "Geozone" (expected for this scenario). In particular "RCLink" is <em>NOT</em> a blocker.</li>
+<li>The user uses <code>File &gt; Edit &gt; Activate MSP RC</code> to <strong>Deactivate</strong> MSPRC.</li>
+<li>The next polled <code>MSP2_INAV_STATUS</code> reports that the blockers are Geozone" and "RCLink", showiing mwp is no longer scheduling <code>MSP_SET_RAW_RC</code>.</li>
+<li>The user uses <code>File &gt; Edit &gt; Activate MSP RC</code> to <strong>Activate</strong> MSPRC again.</li>
+<li>The <code>MSP_RC</code> response is reported (not yet acted upon), this schedules <code>MSP_SET_RAW_RC</code>.</li>
+<li>The next polled <code>MSP2_INAV_STATUS</code> reports that the only blocker is "Geozone" (expected for this scenario). In particular "RCLink" is <em>NOT</em> a blocker.</li>
+<li>The user closed the MSP port, ending the experiment.</li>
+</ol>
 <h3 id="mwp-settings">mwp settings<a class="headerlink" href="#mwp-settings" title="Permanent link">#</a></h3>
 <p>The MSP RC settings are persisted via the following settings:</p>
 <ul>
@@ -1991,6 +2114,7 @@ OpenTX Radiomaster Boxer Joystick Axes: 8 Buttons: 24
 <li>The hard part of this is arbitrating serial usage between the need to maintain INAV's requirement for <code>MSP_SET_RAW_RC</code> (minimum of 5Hz refesh) and mwp's telemetry requirement (minimum say (also) 5 MSP/sec, though it this is not a hard limit, rather a usability desire).</li>
 <li>You may consider using <code>USE_MSP_RC_OVERRIDE</code> / <code>MSP RC Override</code> and a backup TX.</li>
 <li>Note that mwp tries to send <code>MSP_SET_RAW_RC</code> messages every 150 milliseconds (c. 7Hz) by default. This interval is configurable. The default was chosen to minimise the chances of fail-safe while maintaining a decent telemetry rate.</li>
+<li>When the <code>mwp-hid-server</code> is started, mwp gets the current RC values from the FC. If the FC has valid RC data, the <code>mwp-hid-server</code> assumes these values.</li>
 </ul>
 <h3 id="serial-usage-metrics">Serial Usage Metrics<a class="headerlink" href="#serial-usage-metrics" title="Permanent link">#</a></h3>
 <p>mwp can monitor MSP message rates and automatically log the information. If you are testing this <code>MSP_SET_RAW_RC</code> functionality in mwp, consider adding the following to <code>~/.config/mwp/cmdopts</code> / <code>%LOCALAPPDATA%\mwp\cmdopts</code>:</p>
