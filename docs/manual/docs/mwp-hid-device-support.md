@@ -90,7 +90,7 @@ Definition lines are of the form `Axis N = Channel X` or `Button M = Channel Y`.
 
 * The `Axis N` or `Button M` data is that shown by `mwp-hid-test`. The Channel is the RC channel for that input.
 * mwp maps the value from SDL (-32608 to 32607) to RC range 1000-2000. Buttons are mapped from off = 1000 to on = 2000.
-* It is possible to set an input as inverted or define a deadband.
+* It is possible to set an input as inverted, latched or define a deadband.
 
 Currently the mapping is fixed; if necessary this could be expanded to allow the user to further define the mapping (change ranges, etc.), if that is found necessary.
 For Game Controllers, it is (probably) possible to provide a SDL Mapping file as a parameter to mwp-hid-test (for example, see https://github.com/mdqinc/SDL_GameControllerDB), that will (possibly) help the SDL library to manage the device.
@@ -133,6 +133,31 @@ Button 3 = Channel 16 ; SL (Y)
 Note the use of `invert`. Mapping file courtesy of GH user @arealmess.
 
 
+#### The `invert` modifier
+
+Inverts the input. May be applied to axes and buttons.
+
+#### The `latch` modifier
+
+Provides a latch function for momentary action buttons.
+
+* `latch` implements the default 2-pole latching switch;
+* `latch=N` implements an N-pole latching switch (N = 2 - 6).
+
+Pressing the latched switch toggles the channel value, so with the mapping line:
+
+```
+Button 1 = Channel 10 latch=3 ; SF
+```
+
+Repeatedly pressing the button would result in channel values of (inital value)`1000` => `1500`, `2000`, `1000`, `1500`, `2000`, `1000`, `1500`, `2000`. Note that the values wrap rather than go up/down like a mechanical switch.
+
+Inverted latches are also valid.
+
+```
+Button 1 = Channel 10 latch=3 invert ; SF
+```
+
 ### mwp-hid-test usage
 
 ```
@@ -150,7 +175,6 @@ Application Options:
 Note that deadband is applied in terms of the SDL resolution, so 1 microsecond of RC PWM is equivalent to c. 65 SDL units.
 
 ### Mapping file with deadband
-
 
 The mapping file supports deadband and invert, for example:
 
@@ -248,6 +272,71 @@ This may be expanded (click on the icon) to show the sticks.
 
 ![stick-open](images/mwp-rc-stick-open.png)
 
+### Enable and Activate
+
+mwp's HID implementation distinguishes between **Enabled** and **Activated** as follows:
+
+**Enabled** : In the MSPRC settings dialog means that the `mwp-hid-server` will start when an MSP port is started and stop when the MSP port is closed. This is a prerequisite for MSPRC.
+**Activated**: This means that that mwp will use data from the `mwp-hid-server`  to send `MSP_SET_RAW_RC` to the FC.
+
+When MSPRC is **Activated**, then mwp will first interrogate the FC `MSP_RC` to set the current RC channels. At the moment we do nothing with this data, but it could in future to set the value for `latch`  buttons.
+After  `MSP_RC` has been received, mwp will use data from the `mwp-hid-server`  to send `MSP_SET_RAW_RC` to the FC.
+
+The MSPRC function may be **Activated** / **Deactivated** as required while a MSP port is active.
+
+**Activate** is controlled from the `File > Edit` menu.
+
+![Screenshot From 2025-05-13 15-21-26](https://github.com/user-attachments/assets/be1c71ce-0cb5-4e66-ab3f-7e44dd997ac3)
+
+At startup, the **Activate** menu option is set from **Enabled** setting (but can be changed on demand). It is not currently persisted.
+
+Here's a log fragment showing this:
+(Numbers in brackets) are explained below:
+
+```
+21:06:11.522260 :HID DBG: pid=255325 53 (1)
+21:06:11.522296 Send HID Info (2)
+...
+21:06:11.550794 Raw RC: 22 No joystick connected (3)
+21:06:11.581800 INAV v8.0.1  SITL (171d00bb) «BENCHYMCTESTY»
+21:06:11.581900 Load FC safehomes
+21:06:11.803174 :DBG: Clear poller state MWP_SERSTATE_NORMAL
+21:06:11.803204 Save home d/l done
+21:06:11.803222 Load FC Geozones
+21:06:11.803630 :DBG: MSP_RC size 68 (4)
+21:06:11.806114 :DBG: Read 4 geozones
+21:06:11.813640 :DBG: Clear poller state MWP_SERSTATE_NORMAL
+21:06:11.813690 Geozones validated
+21:06:11.848278 Sensors: Acc Baro GPS  (00cb)
+21:06:11.848310 INAV v8.0.1  SITL (171d00bb) «BENCHYMCTESTY»
+21:06:11.848355 Poller cycle for  9 items, 81 / 226 bytes (INAV_STATUS,ANALOG2,NAV_STATUS,RAW_GPS,COMP_GPS,GPSSTATISTICS,WP,ATTITUDE,ALTITUDE)
+21:06:11.848391 Start poller
+21:06:11.854382 Request RTC pos: 54.355194 -4.523159 sats 16 hdop 100.0
+21:06:11.855258 RTC local 2025-05-13T21:06:11.855, fc 2025-05-13T21:06:11.000
+21:06:13.386745 Arming flags: Geozone (0060), load 0% MSP_CMDS_INAV_STATUS (5)
+21:06:31.669714 :DBG: msprc action set to false, use_rc=1 (6)
+21:06:32.576143 Arming flags: Geozone,RC Link (40060), load 0% MSP_CMDS_INAV_STATUS (7)
+21:06:53.180132 :DBG: msprc action set to true, use_rc=53 (8)
+21:06:53.185002 :DBG: MSP_RC size 68 (9)
+21:06:54.080304 Arming flags: Geozone (0060), load 0% MSP_CMDS_INAV_STATUS (10);
+...
+21:07:00.456903 Serial closed replay 0 (11)
+21:07:00.457042 48.952s, rx 192615b, tx 84171b, (3935b/s, 1719b/s) to 0 wait 0, avg poll loop 5 ms messages 8609 msg/s 175.9
+```
+
+1. MSPRC setting was enabled, so the `mwp-hid-server` is started
+2. mwp  asks the hid for controller info.
+3. `Fake` was set via `MWP_HIDOPT=-f`; so no joystick is reported as expected. mwp will schedule `MSP_RC` to get current channel values.
+4. The `MSP_RC` response is reported (not yet acted upon), this schedules `MSP_SET_RAW_RC`.
+5. The next polled `MSP2_INAV_STATUS` reports that the only blocker is "Geozone" (expected for this scenario). In particular "RCLink" is _NOT_ a blocker.
+6. The user uses `File > Edit > Activate MSP RC` to **Deactivate** MSPRC.
+7. The next polled `MSP2_INAV_STATUS` reports that the blockers are Geozone" and "RCLink", showiing mwp is no longer scheduling `MSP_SET_RAW_RC`.
+8. The user uses `File > Edit > Activate MSP RC` to **Activate** MSPRC again.
+9. The `MSP_RC` response is reported (not yet acted upon), this schedules `MSP_SET_RAW_RC`.
+10. The next polled `MSP2_INAV_STATUS` reports that the only blocker is "Geozone" (expected for this scenario). In particular "RCLink" is _NOT_ a blocker.
+11. The user closed the MSP port, ending the experiment.
+
+
 ### mwp settings
 
 The MSP RC settings are persisted via the following settings:
@@ -263,6 +352,7 @@ The  `msprc-cycletime` option defines how often mwp sends `MSP_SET_RAW_RC` messa
 * The hard part of this is arbitrating serial usage between the need to maintain INAV's requirement for `MSP_SET_RAW_RC` (minimum of 5Hz refesh) and mwp's telemetry requirement (minimum say (also) 5 MSP/sec, though it this is not a hard limit, rather a usability desire).
 * You may consider using `USE_MSP_RC_OVERRIDE` / `MSP RC Override` and a backup TX.
 * Note that mwp tries to send `MSP_SET_RAW_RC` messages every 150 milliseconds (c. 7Hz) by default. This interval is configurable. The default was chosen to minimise the chances of fail-safe while maintaining a decent telemetry rate.
+* When the `mwp-hid-server` is started, mwp gets the current RC values from the FC. If the FC has valid RC data, the `mwp-hid-server` assumes these values.
 
 ### Serial Usage Metrics
 
