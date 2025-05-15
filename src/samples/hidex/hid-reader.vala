@@ -141,7 +141,6 @@ public class JoyReader {
 								foreach(var p in parts) {
 									if (p == "invert") {
 										ctype |= ChanType.INVERT;
-										break;
 									}
 									if (p.has_prefix("latch")) {
 										ctype |= ChanType.LATCH;
@@ -151,7 +150,6 @@ public class JoyReader {
 											lmax = uint8.max(lmax,2);
 											lmax = uint8.min(lmax,6);
 										}
-										break;
 									}
 								}
 							}
