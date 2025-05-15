@@ -1422,7 +1422,7 @@ namespace Mwp {
 				Mwp.nrc_chan = 8;
 			}
 			MWPLog.message(":DBG: MSP_RC chans %d, HID chans %d\n", nchn, Mwp.nrc_chan);
-			StringBuilder sb = new StringBuilder("set");
+			StringBuilder sb = new StringBuilder("init");
 			for(var j = 0; j < Mwp.nrc_chan; j++) {
 				// AERT => AETR
 				var k = j;
@@ -1437,7 +1437,7 @@ namespace Mwp {
 			JSMisc.read_hid_async.begin(jbuf, sb.str,  (o, r) => {
 					JSMisc.read_hid_async.end(r);
 				});
-			MWPLog.message("RC (AETR):%s", sb.str.substring(3));
+			MWPLog.message("RC (AETR):%s", sb.str.substring(4));
 			Mwp.rcchans = new int16[Mwp.nrc_chan];
 			Mwp.use_rc |= Mwp.MspRC.SET;
 			break;

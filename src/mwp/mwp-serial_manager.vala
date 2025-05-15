@@ -81,9 +81,6 @@ namespace Msp {
 					ProxyPids.add(hpid);
 					JSMisc.setup(pl);
 					Mwp.use_rc |= Mwp.MspRC.ON;
-					if (Mwp.MspRC.ACT in Mwp.use_rc) {
-						Mwp.use_rc |= Mwp.MspRC.GET;
-					}
 					pl.complete.connect(() => {
 							stop_hid();
 						});
@@ -295,6 +292,36 @@ namespace Msp {
 		}
 	}
 
+	private void request_hid_info() {
+		if ((Mwp.MspRC.ON|Mwp.MspRC.ACT) in Mwp.use_rc) {
+			MWPLog.message("Requesting HID Info\n");
+			var jbuf = new uint8 [1024];
+			JSMisc.read_hid_async.begin(jbuf, "info\n",  (o, r) => {
+					var sz = JSMisc.read_hid_async.end(r);
+					string jstr = (string)jbuf[:sz];
+					MWPLog.message("Raw RC: %s", jstr);
+					if(jstr.has_prefix("Channels: ")) {
+						Mwp.nrc_chan = int.parse(jstr.substring(10));
+						MWPLog.message(":DBG: Channels %d\n", Mwp.nrc_chan);
+					}
+					if(Mwp.nrc_chan == 0) {
+						Timeout.add(1000, () => {
+								request_hid_info();
+								return false;
+							});
+					} else {
+						if (Mwp.MspRC.ACT in Mwp.use_rc) {
+							Mwp.use_rc |= Mwp.MspRC.GET;
+						}
+						Mwp.rctimer.start();
+						if(Mwp.conf.show_sticks != 1) {
+							Sticks.create_sticks();
+						}
+					}
+				});
+		}
+	}
+
 	private void serial_complete_setup(string serdev, bool ostat) {
 		Mwp.window.conbutton.sensitive = true;
 		Mwp.hard_display_reset();
@@ -356,23 +383,7 @@ namespace Msp {
 						Mwp.msp.use_v2 = false;
 						if(Misc.is_msprc_enabled()) {
 							start_hid();
-							if ((Mwp.MspRC.ON|Mwp.MspRC.ACT) in Mwp.use_rc) {
-								MWPLog.message("Requesting HID Info\n");
-								var jbuf = new uint8 [1024];
-								JSMisc.read_hid_async.begin(jbuf, "info\n",  (o, r) => {
-										var sz = JSMisc.read_hid_async.end(r);
-										string jstr = (string)jbuf[:sz];
-										MWPLog.message("Raw RC: %s", jstr);
-										if(jstr.has_prefix("Channels: ")) {
-											Mwp.nrc_chan = int.parse(jstr.substring(10));
-											MWPLog.message(":DBG: Channels %d\n", Mwp.nrc_chan);
-										}
-										Mwp.rctimer.start();
-										if(Mwp.conf.show_sticks != 1) {
-											Sticks.create_sticks();
-										}
-									});
-							}
+							request_hid_info();
 						}
 						Mwp.queue_cmd(Msp.Cmds.IDENT,null,0);
 						Mwp.run_queue();
