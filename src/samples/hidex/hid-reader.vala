@@ -88,13 +88,13 @@ public class JoyReader {
 	public void dump_chandef() {
 		foreach(var a in axes) {
 			if (a.channel != 0) {
-				stdout.printf("Axis: channel %d, ctype %x, lval %u, lmax %u\n",
+				stderr.printf("Axis: channel %d, ctype %x, lval %u, lmax %u\n",
 							  a.channel, a.ctype, a.lval, a.lmax);
 			}
 		}
 		foreach(var b in buttons) {
 			if (b.channel != 0) {
-				stdout.printf("Button: channel %d, ctype %x, lval %u, lmax %u\n",
+				stderr.printf("Button: channel %d, ctype %x, lval %u, lmax %u\n",
 						  b.channel, b.ctype, b.lval, b.lmax);
 			}
 		}

@@ -66,11 +66,14 @@ namespace Msp {
 		if (hpid == 0) {
 			var pl = new ProcessLauncher();
 			var hidopt = Environment.get_variable("MWP_HIDOPT");
-			if(hidopt == null) {
-				hidopt = "";
+			string []argv={};
+			argv += "mwp-hid-server";
+			if (hidopt != null) {
+				argv += hidopt;
 			}
-			var cmd = "mwp-hid-server %s %s".printf(hidopt, Mwp.conf.msprc_settings);
-			var res = pl.run_command(cmd, ProcessLaunch.STDIN|ProcessLaunch.STDOUT);
+			argv += Mwp.conf.msprc_settings;
+
+			var res = pl.run_argv(argv, ProcessLaunch.STDIN|ProcessLaunch.STDOUT);
 			if(res) {
 				hpid = pl.get_pid();
 				if(hpid != 0) {
