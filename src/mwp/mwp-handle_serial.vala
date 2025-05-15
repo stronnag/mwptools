@@ -674,7 +674,7 @@ namespace Mwp {
 				JSMisc.read_hid_async.begin((uint8[])rcchans, "raw\n",  (o, r) => {
 						var sz = JSMisc.read_hid_async.end(r);
 						if(sz  >=  nrc_chan*2 && rcchans[0] > 0) {
-							queue_cmd(Msp.Cmds.SET_RAW_RC, (uint8[])rcchans, nrc_chan);
+							queue_cmd(Msp.Cmds.SET_RAW_RC, (uint8[])rcchans, nrc_chan*2);
 							run_queue();
 							rctimer.start();
 							Sticks.update(rcchans[0], rcchans[1], rcchans[3], rcchans[2]);
