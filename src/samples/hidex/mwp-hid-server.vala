@@ -193,6 +193,18 @@ public class JoyManager : Object {
 		}
 	}
 
+	private void set_init_chans(string cmd) {
+		var parts = cmd.split(" ");
+		if(parts.length > 1 && parts.length <= 1+get_channels().length) {
+			for(var k = 1; k < parts.length; k++) {
+				int v = int.parse(parts[k]);
+				if (v > 880 && v < 2100) {
+					jrdr.init_channel(k, v);
+				}
+			}
+		}
+	}
+
 	public bool setup_ip(uint16 port) {
 		try {
 			SocketFamily[] fam_arry = {SocketFamily.IPV6, SocketFamily.IPV4};
@@ -300,18 +312,18 @@ public class JoyManager : Object {
 									  } else if (cmd == "raw") {
 										  var chans = get_channels();
 										  stdout.write ((uint8[])chans);
-										  stdout.flush();
 									  } else if (cmd == "text") {
 										  var s = print_channels();
 										  print("%s\n", s);
 									  } else if (cmd == "info") {
 										  print("%s\n", get_info());
-									  } else if (cmd.has_prefix("set ")) {
-										  set_chans(cmd);
+									  } else if (cmd.has_prefix("init")) {
+										  set_init_chans(cmd);
 										  print("ok\n");
 									  } else {
 										  print("err\n");
 									  }
+									  stdout.flush();
 									  return true;
 								  } catch (Error e) {
 									  stderr.printf("Reader: %s\n", e.message);

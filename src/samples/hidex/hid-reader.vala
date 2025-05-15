@@ -209,6 +209,37 @@ public class JoyReader {
 		return ok;
 	}
 
+	private uint8 check_range(int val, uint8 lmax, ChanType ct) {
+		if(ChanType.INVERT in ct) {
+			val = 3000 - val;
+		}
+		val -= 1000;
+
+		for(var j = 0; j < lmax; j++) {
+			var ival = 1000*j/lmax;
+			var xval = 1000*(j+1)/lmax;
+			if (val >= ival && val <= xval) {
+				return j;
+			}
+		}
+		if (val < 1000) {
+			return 0;
+		}
+		return lmax-1;
+	}
+
+	public void init_channel(int chn, int val) {
+		for (var j = 0; j < buttons.length; j++) {
+			if (buttons[j].channel == 0)
+				break;
+			if (buttons[j].channel == chn && (ChanType.LATCH in buttons[j].ctype)) {
+				buttons[j].lval = check_range(val, buttons[j].lmax, buttons[j].ctype);
+				break;
+			}
+		}
+		set_channel(chn, val);
+	}
+
 	public void set_channel(int j, int val) {
 		lock(channels) {
 			channels[j-1] = (uint16)val;
