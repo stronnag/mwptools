@@ -85,7 +85,7 @@ public class JoyReader {
 		set_channel(chn, cval);
 	}
 
-	private void dump_chandef() {
+	public void dump_chandef() {
 		foreach(var a in axes) {
 			if (a.channel != 0) {
 				stdout.printf("Axis: channel %d, ctype %x, lval %u, lmax %u\n",
@@ -151,6 +151,9 @@ public class JoyReader {
 											lmax = uint8.min(lmax,6);
 										}
 									}
+									if (p.has_prefix(";")  || p.has_prefix("#")) {
+										break;
+									}
 								}
 							}
 							ChanDef chdef = {nc, 0, ctype, 0, lmax};
@@ -199,7 +202,6 @@ public class JoyReader {
 					}
 				}
 			}
-			dump_chandef();
 		} catch (Error e) {
 			stderr.printf("Err %s\n", e.message);
 			ok = false;

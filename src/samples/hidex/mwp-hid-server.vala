@@ -115,6 +115,9 @@ public class JoyManager : Object {
 				}
 				jrdr.set_sizes(js.num_axes(), js.num_buttons());
 				jrdr.reader(mf);
+				if(verbose) {
+					jrdr.dump_chandef();
+				}
 				read_all();
 				Timeout.add(1000, () => {
 						read_all();
