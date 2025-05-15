@@ -1,8 +1,17 @@
 public class JoyReader {
+
+	[Flags]
+	public enum ChanType {
+		INVERT,
+		LATCH,
+	}
+
 	public struct ChanDef {
 		int channel;
 		int last;
-		bool invert;
+		ChanType ctype;
+		uint8 lval;
+		uint8 lmax;
 	}
 
 	private const int INAV_CHAN_MAX=34;
@@ -45,7 +54,7 @@ public class JoyReader {
 	public void set_axis(int na, int16 val) {
 		var chn = axes[na].channel;
 		int cval = normalise(val);
-		if (axes[na].invert) {
+		if (ChanType.INVERT in axes[na].ctype) {
 			cval = invert(cval);
 		}
 		set_channel(chn, cval);
@@ -54,12 +63,41 @@ public class JoyReader {
 	public void set_button(int na, bool val) {
 		var chn = buttons[na].channel;
 		int cval;
-		if (buttons[na].invert) {
-			cval = (val) ? 1000 : 2000;
+		if(ChanType.LATCH in buttons[na].ctype) {
+			if (!val) {
+				if(get_channel(chn) == 0) {
+					cval = 1000;
+					if (ChanType.INVERT in buttons[na].ctype) {
+						cval = invert(cval);
+					}
+					set_channel(chn, cval);
+				}
+				return;
+			}
+			buttons[na].lval = (buttons[na].lval+1) % buttons[na].lmax;
+			cval = 1000 + 1000*buttons[na].lval/(buttons[na].lmax-1);
 		} else {
 			cval = (val) ? 2000 : 1000;
 		}
+		if (ChanType.INVERT in buttons[na].ctype) {
+			cval = invert(cval);
+		}
 		set_channel(chn, cval);
+	}
+
+	private void dump_chandef() {
+		foreach(var a in axes) {
+			if (a.channel != 0) {
+				stdout.printf("Axis: channel %d, ctype %x, lval %u, lmax %u\n",
+							  a.channel, a.ctype, a.lval, a.lmax);
+			}
+		}
+		foreach(var b in buttons) {
+			if (b.channel != 0) {
+				stdout.printf("Button: channel %d, ctype %x, lval %u, lmax %u\n",
+						  b.channel, b.ctype, b.lval, b.lmax);
+			}
+		}
 	}
 
 	public bool reader(string fn) {
@@ -96,17 +134,28 @@ public class JoyReader {
 								channels.resize(nc);
 							}
 							var extra = mi.fetch(4);
-							bool invert = false;
+							ChanType ctype = 0;
+							uint8 lmax = 2;
 							if(extra != null) {
 								var parts = extra.split(" ");
 								foreach(var p in parts) {
 									if (p == "invert") {
-										invert = true;
+										ctype |= ChanType.INVERT;
+										break;
+									}
+									if (p.has_prefix("latch")) {
+										ctype |= ChanType.LATCH;
+										int neql = p.index_of_char('=');
+										if(neql != -1) {
+											lmax = (uint8)uint.parse(p.substring(neql+1));
+											lmax = uint8.max(lmax,2);
+											lmax = uint8.min(lmax,6);
+										}
 										break;
 									}
 								}
 							}
-							ChanDef chdef = {nc, 0, invert};
+							ChanDef chdef = {nc, 0, ctype, 0, lmax};
 
 							switch(mi.fetch(1)) {
 							case "Axis":
@@ -152,6 +201,7 @@ public class JoyReader {
 					}
 				}
 			}
+			dump_chandef();
 		} catch (Error e) {
 			stderr.printf("Err %s\n", e.message);
 			ok = false;
