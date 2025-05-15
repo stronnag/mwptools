@@ -1434,12 +1434,18 @@ namespace Mwp {
 				sb.append_printf(" %d", ((int16[])raw)[k]);
 			}
 			sb.append_c('\n');
-			JSMisc.read_hid_async.begin(jbuf, sb.str,  (o, r) => {
-					JSMisc.read_hid_async.end(r);
-				});
-			MWPLog.message("RC (AETR):%s", sb.str.substring(4));
-			Mwp.rcchans = new int16[Mwp.nrc_chan];
-			Mwp.use_rc |= Mwp.MspRC.SET;
+			var has_rc = (have_status & ((xarm_flags & ARMFLAGS.ARMING_DISABLED_RC_LINK) == 0));
+			MWPLog.message("RC (AETR) %s:%s", has_rc.to_string(), sb.str.substring(4));
+			if(has_rc) {
+				JSMisc.read_hid_async.begin(jbuf, sb.str,  (o, r) => {
+						JSMisc.read_hid_async.end(r);
+						Mwp.rcchans = new int16[Mwp.nrc_chan];
+						Mwp.use_rc |= Mwp.MspRC.SET;
+					});
+			} else {
+				Mwp.rcchans = new int16[Mwp.nrc_chan];
+				Mwp.use_rc |= Mwp.MspRC.SET;
+			}
 			break;
 
 		default:
@@ -1599,7 +1605,7 @@ namespace Mwp {
                     if(Mwp.window.audio_cb.active == true) {
                         // navstatus.arm_status(arming_msg); // FIXME
 					}
-                    if((arm_flags & ~(ARMFLAGS.ARMED|ARMFLAGS.WAS_EVER_ARMED)) != 0) {
+                    if((arm_flags & ~(ARMFLAGS.ARMED|ARMFLAGS.WAS_EVER_ARMED|ARMFLAGS.SIMULATOR_MODE_HITL|ARMFLAGS.SIMULATOR_MODE_SITL)) != 0) {
 						Mwp.window.arm_warn.visible=true;
                     } else {
                         Mwp.window.arm_warn.visible=false;
