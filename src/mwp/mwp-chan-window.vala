@@ -16,7 +16,6 @@ namespace Chans {
 	public class Window : Gtk.Window {
 		private Gtk.Grid g;
 		public Window(Gtk.Window? pw, int maxchn) {
-			set_bg();
 			var box = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 4);
 			box.margin_top = 8;
 			box.margin_bottom = 8;
@@ -35,14 +34,12 @@ namespace Chans {
 				lbl = new Gtk.Label("----");
 				g.attach(lbl, j, 2);
 			}
-#if !WINDOWS
-			set_decorated(false);
-			var btn = new Gtk.Button.from_icon_name("window-close");
-			g.attach(btn, 15, 0);
-			btn.clicked.connect(() => {
-					close();
-				});
-#endif
+			set_bg(this, "window {background: rgba(0, 0, 0, 0.3); border-radius: 16px 16px;}");
+			set_title("RC Channels");
+			var hb = new Gtk.HeaderBar();
+			set_titlebar(hb);
+			hb.set_decoration_layout("icon:close");
+			set_bg(hb, "headerbar {background: rgba(0, 0, 0, 0.0);}");
 			close_request.connect(() => {
 					cwin = null;
 					return false;
@@ -53,11 +50,10 @@ namespace Chans {
 			}
 		}
 
-		private void set_bg() {
-			string css = "window {background: rgba(0, 0, 0, 0.3); border-radius: 16px 16px;}";
+		private void set_bg(Gtk.Widget w, string css) {
 			var provider = new CssProvider();
 			provider.load_from_data(css.data);
-			var stylec = this.get_style_context();
+			var stylec = w.get_style_context();
 			stylec.add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
 		}
 
@@ -69,29 +65,3 @@ namespace Chans {
         }
     }
 }
-
-#if TEST
-// valac -D TEST  --pkg gtk+-3.0 --pkg cairo  sticks.vala
-namespace Mwp {
-	Gtk.Window? window = null;
-	int nrc_chan = 16;
-}
-
-int main (string[] args) {
-    Gtk.init ();
-	Chans.show_window();
-	Timeout.add(150, () => {
-			int16 chans[16];
-			for(var j = 0; j < 16; j++) {
-				chans[j] = (int16)Random.int_range(1000,2000);
-			}
-			Chans.cwin.update(chans);
-			return true;
-		});
-    var ml = MainContext.@default();
-    while(Gtk.Window.get_toplevels().get_n_items() > 0) {
-        ml.iteration(true);
-    }
-    return 0;
-}
-#endif
