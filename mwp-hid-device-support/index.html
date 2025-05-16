@@ -1275,6 +1275,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#channel-value-display" class="md-nav__link">
+    <span class="md-ellipsis">
+      Channel value display
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#enable-and-activate" class="md-nav__link">
     <span class="md-ellipsis">
       Enable and Activate
@@ -1754,6 +1763,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#channel-value-display" class="md-nav__link">
+    <span class="md-ellipsis">
+      Channel value display
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#enable-and-activate" class="md-nav__link">
     <span class="md-ellipsis">
       Enable and Activate
@@ -2047,6 +2065,15 @@ OpenTX Radiomaster Boxer Joystick Axes: 8 Buttons: 24
 <p><img alt="SticksIcon" src="../images/mwp-rc-stick-icon.png" /></p>
 <p>This may be expanded (click on the icon) to show the sticks.</p>
 <p><img alt="stick-open" src="../images/mwp-rc-stick-open.png" /></p>
+<h3 id="channel-value-display">Channel value display<a class="headerlink" href="#channel-value-display" title="Permanent link">#</a></h3>
+<p>It is possible to have mwp display channel values:</p>
+<p><img alt="show-channels" src="../images/show-channels.png" /></p>
+<p>The user will have to add their own "hot key" / <a href="../mwp-Configuration/#keyboard-accelerators">keyboard accelerator</a> to active the "show-channels" action, for example:</p>
+<div class="highlight"><pre><span></span><code># ~/.config/mwp/accels / %LOCALAPPDATA%\mwp\accels
+# bind &quot;show-channels&quot; to the F2 key
+show-channels F2
+</code></pre></div>
+<p>Then toggling F2 will display / close the channels window.</p>
 <h3 id="enable-and-activate">Enable and Activate<a class="headerlink" href="#enable-and-activate" title="Permanent link">#</a></h3>
 <p>mwp's HID implementation distinguishes between <strong>Enabled</strong> and <strong>Activated</strong> as follows:</p>
 <p><strong>Enabled</strong> : In the MSPRC settings dialog means that the <code>mwp-hid-server</code> will start when an MSP port is started and stop when the MSP port is closed. This is a prerequisite for MSPRC.
