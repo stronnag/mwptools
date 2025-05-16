@@ -859,6 +859,12 @@ namespace Mwp {
 			}
 		}
 
+		private void do_show_channels() {
+			if(nrc_chan > 0 &&  (Mwp.use_rc & (Mwp.MspRC.ACT|Mwp.MspRC.SET)) == (Mwp.MspRC.ACT|Mwp.MspRC.SET)) {
+				Chans.show_window();
+			}
+		}
+
 		private void setup_accels(Adw.Application app) {
 			GLib.ActionEntry[] winacts = {
 				{"quit",  Mwp.window.close},
@@ -923,6 +929,7 @@ namespace Mwp {
 				{"assistnow", do_assist},
 				{"trackdump", do_trackdump},
 				{"msprc", do_msprc},
+				{"show-channels", do_show_channels},
 			};
 
             add_action_entries (winacts, this);

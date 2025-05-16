@@ -206,7 +206,10 @@ win.vlegend <control><shift>v
 
 The first (non-comment) line adds a new accelerator, the second replaces the existing `<control><shift>v` for toggle the ADSB altitude / colour legend.
 
-The list of recognised action names and accelerators (aka shortcuts) may be found in [mwp-window.vala](https://github.com/stronnag/mwptools/blob/5cdfa86c2b2300f971fff52a9ee11c3405540ffd/src/mwp/mwp-window.vala#L803).
+The list of recognised action names and accelerators (aka shortcuts) may be found in [mwp-window.vala](https://github.com/stronnag/mwptools/blob/5cdfa86c2b2300f971fff52a9ee11c3405540ffd/src/mwp/mwp-window.vala#L803) and the [main menu definition](https://github.com/stronnag/mwptools/blob/master/data/mwpmenu.blp).
+
+The accelerator key format is described in the [Gtk Documentation](https://docs.gtk.org/gtk4/func.accelerator_parse.html).
+
 
 ## Panel settings
 

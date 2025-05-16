@@ -279,6 +279,9 @@ namespace Msp {
 			if(Mwp.conf.show_sticks != 1) {
 				Sticks.done();
 			}
+			if(Chans.cwin != null) {
+				Chans.cwin.close();
+			}
 			Msp.stop_hid();
 		}
 	}

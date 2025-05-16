@@ -272,6 +272,22 @@ This may be expanded (click on the icon) to show the sticks.
 
 ![stick-open](images/mwp-rc-stick-open.png)
 
+### Channel value display
+
+It is possible to have mwp display channel values:
+
+![show-channels](images/show-channels.png)
+
+The user will have to add their own "hot key" / [keyboard accelerator](mwp-Configuration.md/#keyboard-accelerators) to active the "show-channels" action, for example:
+
+```
+# ~/.config/mwp/accels / %LOCALAPPDATA%\mwp\accels
+# bind "show-channels" to the F2 key
+show-channels F2
+```
+
+Then toggling F2 will display / close the channels window.
+
 ### Enable and Activate
 
 mwp's HID implementation distinguishes between **Enabled** and **Activated** as follows:

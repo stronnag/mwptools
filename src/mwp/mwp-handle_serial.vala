@@ -678,6 +678,9 @@ namespace Mwp {
 							run_queue();
 							rctimer.start();
 							Sticks.update(rcchans[0], rcchans[1], rcchans[3], rcchans[2]);
+							if (Chans.cwin != null) {
+								Chans.cwin.update(rcchans);
+							}
 						} else {
 							rctimer.stop();
 							MWPLog.message("Disabling raw rc\n");
