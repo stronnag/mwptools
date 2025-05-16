@@ -16,7 +16,6 @@ namespace Chans {
 	public class Window : Gtk.Window {
 		private Gtk.Grid g;
 		public Window(Gtk.Window? pw, int maxchn) {
-			set_decorated(false);
 			set_bg();
 			var box = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 4);
 			box.margin_top = 8;
@@ -36,11 +35,17 @@ namespace Chans {
 				lbl = new Gtk.Label("----");
 				g.attach(lbl, j, 2);
 			}
+#if !WINDOWS
+			set_decorated(false);
 			var btn = new Gtk.Button.from_icon_name("window-close");
 			g.attach(btn, 15, 0);
 			btn.clicked.connect(() => {
 					close();
+				});
+#endif
+			close_request.connect(() => {
 					cwin = null;
+					return false;
 				});
 			set_child(box);
 			if(pw != null) {
