@@ -917,6 +917,7 @@ public class MWSerial : Object {
 			if(!force4) {
 				fams += SocketFamily.IPV6;
 			}
+			fams += SocketFamily.IPV4;
 
 			foreach(var ifam in fams) {
 				try {
@@ -1951,7 +1952,19 @@ public class MWSerial : Object {
 		sz = -1;
 		try {
 			if((commode & ComMode.UDP) != 0) {
-				sz = socket.send_to(sockaddr, buf[:count]);
+#if !WINDOWS
+				sz = socket.send_to(sockaddr, buf);
+#else
+				var locfam = socket.family;
+				var remfam = sockaddr.family;
+				if(locfam != remfam) {
+					var sck = new Socket(remfam, SocketType.DATAGRAM, SocketProtocol.UDP);
+					sz = sck.send_to(sockaddr, buf);
+					sck.close();
+				} else {
+					sz = socket.send_to(sockaddr, buf);
+				}
+#endif
 			} else if ((commode & ComMode.TTY) == ComMode.TTY) {
 #if !WINDOWS
 				sz = MwpSerial.write(wrfd, buf, count);
@@ -1967,7 +1980,7 @@ public class MWSerial : Object {
 					var iostat = io_chan.write_chars((char[])buf[:count], out ssz);
 					sz = (ssize_t)ssz;
 					if(iostat != IOStatus.NORMAL) {
-						stderr.printf("IOSTAT write fails: %s\n", iostat.to_string());
+						MWPLog.message("IOSTAT write fails: %s\n", iostat.to_string());
 						return -1;
 					}
 				} else {
@@ -1975,7 +1988,7 @@ public class MWSerial : Object {
 				}
 			}
 		} catch (Error e) {
-			stderr.printf("Write fails: %s\n", e.message);
+			MWPLog.message("Write fails: %s\n", e.message);
 			sz = -1;
 		}
 		return sz;
