@@ -838,16 +838,20 @@ public class MWSerial : Object {
 										var acond = cond & ~IOCondition.IN;
 										if (acond != 0) {
 											lasterr = MwpSerial.get_error_number();
-											var estr = format_last_err();
 											var cstr = format_condition(cond);
-											MWPLog.message("Serial Condition: %s %s\n", estr, cstr);
+											MWPLog.message("Condition: %s\n", cstr);
 											serial_lost();
 											return false;
 										}
 										try {
 											ssize_t sz = 0;
+											bool isa = false;
 											if(ComMode.UDP in commode) {
+												isa = (sockaddr == null);
 												sz = socket.receive_from(out sockaddr, devbuf);
+												if(debug && isa) {
+													MWPLog.message(":DBG: UDP remote %s\n", sockaddr.to_string());
+												}
 											} else if (ComMode.TTY in commode) {
 												sz = MwpSerial.read(fd, devbuf, MemAlloc.DEV);
 											} else {
@@ -863,16 +867,15 @@ public class MWSerial : Object {
 											if (sz <= 0) {
 												MWPLog.message("Serial read: %d\n", sz);
 												lasterr = MwpSerial.get_error_number();
-												var estr = format_last_err();
 												var cstr = format_condition(cond);
-												MWPLog.message("Serial Read Condition: %s %s\n", estr, cstr);
+												MWPLog.message("Read Condition: %s\n", cstr);
 												serial_lost();
 												return false;
 											}
 											process_input(sz);
 											return true;
 										} catch (Error e) {
-											MWPLog.message(":DBG: IORead %s\n", e.message);
+											MWPLog.message("IORead %s\n", e.message);
 											serial_lost();
 											return false;
 										}
@@ -917,7 +920,7 @@ public class MWSerial : Object {
 
 			foreach(var ifam in fams) {
 				try {
-					var sa = sockaddr= new InetSocketAddress (new InetAddress.any(ifam), (uint16)port);
+					var sa = new InetSocketAddress (new InetAddress.any(ifam), (uint16)port);
 					socket = new Socket (ifam, SocketType.DATAGRAM, SocketProtocol.UDP);
 					if (socket != null) {
 #if WINDOWS

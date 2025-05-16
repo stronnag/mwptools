@@ -497,9 +497,9 @@ namespace Mwp {
 		mleave = 0;
 		if(msp.available) {
 			if(Mwp.conf.no_poller_pause) {
-				MWPLog.message(":DBG: Clear poller state %s\n", serstate.to_string());
+				//MWPLog.message(":DBG: Clear poller state %s\n", serstate.to_string());
 			} else {
-				MWPLog.message(":DBG: Reset Poller %s\n", serstate.to_string());
+				//MWPLog.message(":DBG: Reset Poller %s\n", serstate.to_string());
 				if(starttasks == 0) {
 					if(serstate != SERSTATE.NONE && serstate != SERSTATE.TELEM) {
 						if(nopoll == false) { // FIXNOPOLL
