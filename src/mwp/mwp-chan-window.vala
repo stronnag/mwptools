@@ -34,7 +34,7 @@ namespace Chans {
 				lbl = new Gtk.Label("----");
 				g.attach(lbl, j, 2);
 			}
-			set_bg(this, "window {background: rgba(0, 0, 0, 0.3); border-radius: 16px 16px;}");
+			set_bg(this, "window {background: color-mix(in srgb, @window_bg_color 40%, transparent)  ;  color: @view_fg_color; border-radius: 12px 12px;}");
 			set_title("RC Channels");
 			var hb = new Gtk.HeaderBar();
 			set_titlebar(hb);
