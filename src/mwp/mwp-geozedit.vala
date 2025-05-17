@@ -631,7 +631,7 @@ public class GZEdit : Adw.Window {
 	}
 	*/
 
-	public void on_poly_finish(MWPMarker mk) {
+	public void on_poly_finish(MWPMarker mk, bool t) {
 		var txt = ((Gtk.Label)((MWPLabel)mk).get_child()).label;
 		if (txt != null) {
 			var parts = txt.split("/");
@@ -667,7 +667,7 @@ public class GZEdit : Adw.Window {
 		}
 	}
 
-	public void on_circ_finish(MWPMarker mk) {
+	public void on_circ_finish(MWPMarker mk, bool t) {
 		unowned OverlayItem elm = ovl.get_elements().nth_data(nitem);
 		elm.circ.lat = mk.latitude;
 		int k = Mwp.gzr.find_vertex(nitem, 0);

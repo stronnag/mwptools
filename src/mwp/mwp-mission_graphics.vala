@@ -598,12 +598,24 @@ namespace MsnTools {
 					mk.set_tooltip_markup(set_tip(mk,m,false));
 				});
 
-			mk.drag_begin.connect(() => {
+			mk.drag_begin.connect((t) => {
+					if(t) {
+						Gis.mp_layer.remove_node(mk);
+						var tempmk = new Shumate.Marker();
+						tempmk.set_location (mk.latitude, mk.longitude);
+						Gis.mp_layer.insert_node(tempmk, m.npoints-mk.no);
+					}
 					mk.set_tooltip_markup(set_tip(mk,m,false));
 				});
 
-			mk.drag_end.connect(() => {
+			mk.drag_end.connect((t) => {
 					MissionManager.is_dirty = true;
+					if(t) {
+						Gis.mp_layer.remove_all();
+						Gis.mm_layer.get_markers().@foreach((mm) => {
+								Gis.mp_layer.add_node(mm);
+							});
+					}
 					m.calc_mission_distance();
 					mk.set_tooltip_markup(set_tip(mk,m,true));
 				});

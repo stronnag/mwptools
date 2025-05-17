@@ -32,8 +32,8 @@ public class MWPMarker : Shumate.Marker {
 	public signal void enter(double x, double y);
 	public signal void popup_request(int n, double x, double y);
 	public signal void drag_motion(double lat, double lon);
-	public signal void drag_begin();
-	public signal void drag_end();
+	public signal void drag_begin(bool t);
+	public signal void drag_end(bool t);
 
 	public void set_pixbuf(Gdk.Pixbuf _px) {
 		pix = _px;
@@ -82,16 +82,19 @@ public class MWPMarker : Shumate.Marker {
 		((Gtk.Widget)this).add_controller(gestd);
 		gestd.set_exclusive(true);
 		gestd.drag_begin.connect((x,y) => {
+				var dev = gestd.get_device();
+				bool t = (dev != null && dev.source ==  Gdk.InputSource.TOUCHSCREEN);
 				gestd.set_state(Gtk.EventSequenceState.CLAIMED); // stops drag being propogated
 				Gis.map.viewport.location_to_widget_coords(Gis.map, this.latitude, this.longitude, out _sx, out _sy);
-				drag_begin();
+				drag_begin(t);
 			});
 		gestd.drag_update.connect((x,y) => {
 				var seq = gestd.get_last_updated_sequence();
 				if(gestd.get_sequence_state(seq) == Gtk.EventSequenceState.CLAIMED) {
 					double lat,lon;
 					var dev = gestd.get_device();
-					if(dev != null && dev.source ==  Gdk.InputSource.TOUCHSCREEN) {
+					bool t = (dev != null && dev.source ==  Gdk.InputSource.TOUCHSCREEN);
+					if(t) {
 						var tfactor = MwpScreen.get_scale();
 						x = x / tfactor;
 						y = y / tfactor;
@@ -111,7 +114,9 @@ public class MWPMarker : Shumate.Marker {
 				}
 			});
 		gestd.drag_end.connect((x,y) => {
-				drag_end();
+				var dev = gestd.get_device();
+				bool t = (dev != null && dev.source ==  Gdk.InputSource.TOUCHSCREEN);
+				drag_end(t);
 			});
 		gestd.propagation_phase  = Gtk.PropagationPhase.NONE;
 	}
