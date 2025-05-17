@@ -129,6 +129,8 @@ namespace MsnTools {
 
 	Shumate.PathLayer []jumplist;
 
+	Shumate.Marker tempmk = null;
+
 	public void alt_updates(Mission m, Gtk.Bitset bs, double v, bool as_amsl) {
 		for(var i = 0; i < m.npoints; i++) {
 			if (bs.contains(i)) {
@@ -586,6 +588,10 @@ namespace MsnTools {
 
 			mk.set_tooltip_markup(set_tip(mk, m, true));
 			mk.drag_motion.connect((la, lo) => {
+					if(tempmk != null) {
+						tempmk.latitude = la;
+						tempmk.longitude = lo;
+					}
 					MissionManager.is_dirty = true;
 					var idx = m.get_index(mk.no);
 					if(m.points[idx].action == Msp.Action.LAND) {
@@ -601,7 +607,7 @@ namespace MsnTools {
 			mk.drag_begin.connect((t) => {
 					if(t) {
 						Gis.mp_layer.remove_node(mk);
-						var tempmk = new Shumate.Marker();
+						tempmk = new Shumate.Marker();
 						tempmk.set_location (mk.latitude, mk.longitude);
 						Gis.mp_layer.insert_node(tempmk, m.npoints-mk.no);
 					}
@@ -609,6 +615,7 @@ namespace MsnTools {
 				});
 
 			mk.drag_end.connect((t) => {
+					tempmk = null;
 					MissionManager.is_dirty = true;
 					if(t) {
 						Gis.mp_layer.remove_all();
