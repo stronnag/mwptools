@@ -606,10 +606,19 @@ namespace MsnTools {
 
 			mk.drag_begin.connect((t) => {
 					if(t) {
+						int temppt = 0;
+						var rl = Gis.mm_layer.get_markers();
+						uint len = rl.length ();
+						for( unowned var lp = rl.first(); lp != null; lp = lp.next) {
+							if(((MWPMarker)lp.data).no == mk.no) {
+								temppt = (int)len - rl.position(lp) - 1;
+								break;
+							}
+						}
 						Gis.mp_layer.remove_node(mk);
 						tempmk = new Shumate.Marker();
 						tempmk.set_location (mk.latitude, mk.longitude);
-						Gis.mp_layer.insert_node(tempmk, m.npoints-mk.no);
+						Gis.mp_layer.insert_node(tempmk, temppt);
 					}
 					mk.set_tooltip_markup(set_tip(mk,m,false));
 				});
