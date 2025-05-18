@@ -669,7 +669,8 @@ namespace Mwp {
     }
 
 	private bool send_msp_rc() {
-		if(rctimer.is_active() && rctimer.elapsed() > Mwp.JSTKINTVL) {
+		double et = Mwp.conf.msprc_cycletime/1000.0;
+		if(rctimer.is_active() && rctimer.elapsed() > et) {
 			if((Mwp.MspRC.SET in Mwp.use_rc)) {
 				JSMisc.read_hid_async.begin((uint8[])rcchans, "raw\n",  (o, r) => {
 						var sz = JSMisc.read_hid_async.end(r);
