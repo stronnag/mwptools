@@ -21,7 +21,7 @@ public class JoyReader {
 	public ChanDef []hats;
 	public ChanDef []balls;
 
-	private uint16 []channels;
+	private uint []channels;
 	private bool fake;
 
 	public int deadband;
@@ -241,42 +241,32 @@ public class JoyReader {
 	}
 
 	public void set_channel(int j, int val) {
-		lock(channels) {
-			channels[j-1] = (uint16)val;
-		}
-		unlock(channels);
+		AtomicUint.@set(ref channels[j-1], (int)(uint16)val);
 	}
 
 	public uint16 get_channel(int j) {
 		uint16 val;
-		lock(channels) {
-			val = channels[j-1];
-		}
-		unlock(channels);
+		val = (uint16)AtomicUint.@get(ref channels[j-1]);
 		return val;
 	}
 	public uint16[] get_channels() {
-		uint16 [] chans;
-		lock(channels) {
-			chans = channels;
+		uint16 [] chans = new uint16[channels.length];
+		for(var j = 0; j < channels.length; j++) {
+			chans[j] = get_channel(j+1);
 		}
-		unlock(channels);
 		return chans;
 	}
 
 	public void reset_all() {
-		lock(channels) {
-			if(fake) {
-				channels = {1500, 1500, 1000, 1500,
-					1000, 1001, 1002, 1003,
-					1004, 1005, 1006, 1007};
-			} else {
-				for(var j = 0; j < channels.length; j++) {
-					channels[j] = 897;
-				}
+		if(fake) {
+			channels = {1500, 1500, 1000, 1500,
+						1000, 1001, 1002, 1003,
+						1004, 1005, 1006, 1007};
+		} else {
+			for(var j = 0; j < channels.length; j++) {
+				set_channel(j, 897);
 			}
 		}
-		unlock(channels);
 	}
 
 	public int normalise(int v) {
