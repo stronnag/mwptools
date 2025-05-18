@@ -274,9 +274,11 @@ This may be expanded (click on the icon) to show the sticks.
 
 ### Channel value display
 
-It is possible to have mwp display channel values:
+It is possible to have mwp display channel values (theme sensitive):
 
-![show-channels](images/show-channels.png)
+![show-channels light](images/hid-light.png)
+
+![show-channels dark](images/hid-dark.png)
 
 The user will have to add their own "hot key" / [keyboard accelerator](mwp-Configuration.md/#keyboard-accelerators) to active the "show-channels" action, for example:
 
