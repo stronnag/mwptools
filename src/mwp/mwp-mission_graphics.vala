@@ -516,6 +516,8 @@ namespace MsnTools {
 		for(var i = 0; i < m.npoints; i++) {
 			m.points[i]._mflag = IFlags.NONE;
 		}
+
+		int ii = 0;
 		for(var i = 0; i < m.npoints; i++) {
 			switch(m.points[i].action) {
 			case  Msp.Action.JUMP:
@@ -534,11 +536,11 @@ namespace MsnTools {
 				have_jump = true;
 				break;
 			case Msp.Action.SET_HEAD:
-				m.points[i-1]._mflag |= IFlags.SET_HEAD;
+				m.points[ii]._mflag |= IFlags.SET_HEAD;
 				m.points[i]._mflag = IFlags.SKIP;
 				break;
 			case Msp.Action.RTH:
-				m.points[i-1]._mflag |= IFlags.RTH;
+				m.points[ii]._mflag |= IFlags.RTH;
 				m.points[i]._mflag = IFlags.SKIP;
 				break;
 			default:
@@ -546,6 +548,7 @@ namespace MsnTools {
 					m.points[i]._mflag |= IFlags.FLYBY;
 					have_hp = true;
 				}
+				ii = i;
 				break;
 			}
 		}
