@@ -130,7 +130,7 @@ namespace MsnTools {
 	Shumate.PathLayer []jumplist;
 
 	Shumate.Marker tempmk = null;
-
+	int temppt = 0;
 	public void alt_updates(Mission m, Gtk.Bitset bs, double v, bool as_amsl) {
 		for(var i = 0; i < m.npoints; i++) {
 			if (bs.contains(i)) {
@@ -606,7 +606,7 @@ namespace MsnTools {
 
 			mk.drag_begin.connect((t) => {
 					if(t) {
-						int temppt = 0;
+						temppt = 0;
 						var rl = Gis.mm_layer.get_markers();
 						uint len = rl.length ();
 						for( unowned var lp = rl.first(); lp != null; lp = lp.next) {
@@ -624,13 +624,11 @@ namespace MsnTools {
 				});
 
 			mk.drag_end.connect((t) => {
-					tempmk = null;
 					MissionManager.is_dirty = true;
 					if(t) {
-						Gis.mp_layer.remove_all();
-						Gis.mm_layer.get_markers().@foreach((mm) => {
-								Gis.mp_layer.add_node(mm);
-							});
+						Gis.mp_layer.remove_node(tempmk);
+						Gis.mp_layer.insert_node(mk, temppt);
+						tempmk = null;
 					}
 					m.calc_mission_distance();
 					mk.set_tooltip_markup(set_tip(mk,m,true));
