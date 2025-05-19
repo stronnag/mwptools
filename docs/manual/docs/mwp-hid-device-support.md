@@ -6,6 +6,14 @@ From 25.05.07, {{ mwp }} supports using a HID (Human Input Device) to provide RC
 
 While mwp provides functionality for doing this, it is not condoned as an acceptable way of controlling a UAS. Using `NSP_SET_RAW_RC` (aka `MSPRC`) over a MSP telemetry link cannot provide the update rate / performance / reliability / safety of a standard RC TX/RX.
 
+* Lower control update rate as the RC  messages have to interleaved with other telemetry.
+* Lower control update rate as the stream is half duplex and 90% of the messages require an acknowledgement.
+* Still have to meet INAV's hard real time refresh rate.
+* Inefficient message format (e.g. 16 bits per channel vice 11 bits / channel (cf. sBUS, CRSF)).
+* The dedicated RC TX can perform additional optimisations in terms of data sizes, refresh rate for switch channels etc.
+
+A dedicated RC RX has smaller, efficient messages delivered much more frequently, such that if one is dropped it doesn't really matter. Interleaving `MSP_SET_RAW_RC` within a stream of maybe 9 other telemetry messages means a signification reduction in RC performance. *Caveat Emptor!*
+
 ### Caveats
 
 * Not supported for MultiWii or "old" INAV (at least prior to 2.0).
