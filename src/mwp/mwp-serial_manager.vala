@@ -27,6 +27,8 @@ namespace Mwp  {
     MwpMQTT mqtt;
 #endif
 	uint stag = 0;
+	uint rctag = 0;
+
 	Timer rctimer;
 	int nrc_chan = 16;
 	MspRC use_rc;
@@ -58,6 +60,10 @@ namespace Msp {
 			ProcessLauncher.kill(hpid);
 		}
 		hpid = 0;
+		if (Mwp.rctag > 0) {
+			Source.remove(Mwp.rctag);
+			Mwp.rctag = 0;
+		}
 		Mwp.rctimer.stop();
 		Mwp.use_rc &= ~(Mwp.MspRC.ON|Mwp.MspRC.SET|Mwp.MspRC.GET);
 	}
@@ -97,6 +103,7 @@ namespace Msp {
 		Mwp.lastp.start();
 		Mwp.rctimer = new Timer();
 		Mwp.rctimer.stop();
+		Mwp.rctag = 0;
 		Mwp.msp.is_main = true;
 		Mwp.mq = new Queue<Mwp.MQI?>();
         Mwp.lastmsg = Mwp.MQI(); //{cmd = Msp.Cmds.INVALID};

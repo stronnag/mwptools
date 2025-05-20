@@ -2163,7 +2163,7 @@ public class MWSerial : Object {
 		*ptx++ ='$';
 		*ptx++ ='X';
 		*ptx++ = _writed;
-		*ptx++ = 0; // flags
+		*ptx++ = (cmd == Msp.Cmds.SET_RAW_RC) ? 1 : 0;
 		ptx = SEDE.serialise_u16(ptx, cmd);
 		ptx = SEDE.serialise_u16(ptx, (uint16)len);
 		ck2 = CRC8.dvb_s2(ck2, buf[3]);

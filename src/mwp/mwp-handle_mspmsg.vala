@@ -1439,12 +1439,10 @@ namespace Mwp {
 			if(has_rc) {
 				JSMisc.read_hid_async.begin(jbuf, sb.str,  (o, r) => {
 						JSMisc.read_hid_async.end(r);
-						Mwp.rcchans = new int16[Mwp.nrc_chan];
-						Mwp.use_rc |= Mwp.MspRC.SET;
+						start_raw_rc_timer();
 					});
 			} else {
-				Mwp.rcchans = new int16[Mwp.nrc_chan];
-				Mwp.use_rc |= Mwp.MspRC.SET;
+				start_raw_rc_timer();
 			}
 			break;
 
@@ -1453,6 +1451,32 @@ namespace Mwp {
 			break;
 		}
 		return handled;
+	}
+
+	private void start_raw_rc_timer() {
+		Mwp.use_rc |= Mwp.MspRC.SET;
+		Mwp.rcchans = new int16[Mwp.nrc_chan];
+		run_rc_timer();
+		MWPLog.message("DBG: Would run timer in %u ms\n", conf.msprc_cycletime);
+	}
+
+	private void run_rc_timer() {
+		if(rctag == 0) {
+			rctag = Timeout.add(conf.msprc_cycletime, () => {
+					if((Mwp.MspRC.SET in Mwp.use_rc)) {
+						if((Mwp.MspRC.ACT in Mwp.use_rc)) {
+							rctag = 0;
+							send_msp_rc();
+						}
+					} else {
+						MWPLog.message(":DBG: Stop RAW_RC timer\n");
+						rctag = 0;
+					}
+					return false;
+				});
+		} else {
+			MWPLog.message(":DBG: RCTAG is non-zero\n");
+		}
 	}
 
     private string get_arm_fail(uint32 af, char sep=',') {

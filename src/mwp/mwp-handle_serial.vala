@@ -144,8 +144,6 @@ namespace Mwp {
 	uint lmin = 0;
 
 	const int MSP_WAITMS = 5;
-	const double JSTKINTVL = 0.15;
-	const int JSCHANSIZE = 32;
 
 	void serial_reset() {
 		vi = {};
@@ -642,62 +640,57 @@ namespace Mwp {
 			}
         }
 
+
+
+		double et = Mwp.conf.msprc_cycletime/1000.0;
+		if(rctimer.is_active() && rctimer.elapsed() > et) {
+			if((Mwp.MspRC.SET in Mwp.use_rc)) {
+				msp.send_command(Msp.Cmds.SET_RAW_RC, (uint8[])rcchans, nrc_chan*2);
+				rctimer.start();
+				//MWPLog.message(":DBG: Sent SET_RAW_RC\n");
+			}
+		}
+
+
+		if((Mwp.have_api && Mwp.MspRC.GET in Mwp.use_rc)) {
+			MWPLog.message(":DBG: Sent GET RC\n");
+			Mwp.use_rc &= ~Mwp.MspRC.GET;
+			msp.send_command(Msp.Cmds.RC, null, 0);
+			return;
+		}
+
 		if(serstate == SERSTATE.POLLER) {
-			if(!send_msp_rc()) {
-				if(mleave == 1 && !mq.is_empty()) {
-					mleave = 2;
-					// MWPLog.message(":DBG: 1 Interleaved %s %u => QUE\n", cmd.format(), raw[0]);
-					run_queue();
-				} else if (mleave == 2) {
-					// MWPLog.message(":DBG: 2 Interleaved %s %u => POLL\n", cmd.format(), raw[0]);
-					timed_poll();
-					mleave = 1;
-				} else if(!mq.is_empty()) {
-					run_queue();
-				} else {
-					timed_poll();
-				}
+			if(mleave == 1 && !mq.is_empty()) {
+				mleave = 2;
+				// MWPLog.message(":DBG: 1 Interleaved %s %u => QUE\n", cmd.format(), raw[0]);
+				run_queue();
+			} else if (mleave == 2) {
+				// MWPLog.message(":DBG: 2 Interleaved %s %u => POLL\n", cmd.format(), raw[0]);
+				timed_poll();
+				mleave = 1;
+			} else if(!mq.is_empty()) {
+				run_queue();
+			} else {
+				timed_poll();
 			}
 		} else {
-			if(!send_msp_rc()) {
-				if(!mq.is_empty()) {
-					run_queue();
-				}
+			if(!mq.is_empty()) {
+				run_queue();
 			}
 		}
     }
 
-	private bool send_msp_rc() {
-		double et = Mwp.conf.msprc_cycletime/1000.0;
-		if(rctimer.is_active() && rctimer.elapsed() > et) {
-			if((Mwp.MspRC.SET in Mwp.use_rc)) {
-				JSMisc.read_hid_async.begin((uint8[])rcchans, "raw\n",  (o, r) => {
-						var sz = JSMisc.read_hid_async.end(r);
-						if(sz  >=  nrc_chan*2 && rcchans[0] > 0) {
-							queue_cmd(Msp.Cmds.SET_RAW_RC, (uint8[])rcchans, nrc_chan*2);
-							run_queue();
-							rctimer.start();
-							Sticks.update(rcchans[0], rcchans[1], rcchans[3], rcchans[2]);
-							if (Chans.cwin != null) {
-								Chans.cwin.update(rcchans);
-							}
-						} else {
-							rctimer.stop();
-							MWPLog.message("Disabling raw rc\n");
-							Mwp.use_rc &= Mwp.MspRC.SET;
-							var ac = Mwp.window.lookup_action("usemsprc") as SimpleAction;
-							ac.set_state(new Variant.boolean(false));
-						}
-					});
-				return true;
-			} else if((Mwp.MspRC.GET in Mwp.use_rc)) {
-				queue_cmd(Msp.Cmds.RC, null, 0);
-				run_queue();
-				rctimer.start();
-				return true;
-			}
-		}
-		return false;
+	private void send_msp_rc() {
+		JSMisc.read_hid_async.begin((uint8[])rcchans, "raw\n",  (o, r) => {
+				var sz = JSMisc.read_hid_async.end(r);
+				if(sz  >=  nrc_chan*2 && rcchans[0] > 0) {
+					Sticks.update(rcchans[0], rcchans[1], rcchans[3], rcchans[2]);
+					if (Chans.cwin != null) {
+						Chans.cwin.update(rcchans);
+					}
+					run_rc_timer();
+				}
+			});
 	}
 
 	private void timed_poll() {
