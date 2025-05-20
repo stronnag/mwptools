@@ -72,7 +72,7 @@ namespace Mwp {
 			lastm = nticks;
 			uint8 k = (uint8)(j+Safehome.MAXHOMES);
 			last_safehome = k+1;
-			queue_cmd(Msp.Cmds.FW_APPROACH, &k, 1);
+			queue_cmd(Msp.Cmds.FW_APPROACH, (uint8[])&k, 1);
 		} else {
 			reset_wp_dl();
 			handle_misc_startup();

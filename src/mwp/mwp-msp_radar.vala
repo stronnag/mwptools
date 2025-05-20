@@ -29,7 +29,7 @@ namespace MspRadar {
 		switch(cmd) {
 		case Msp.Cmds.NAME:
 			var node = "MWP Fake Node";
-			s.send_command(cmd, node, node.length, true);
+			s.send_command(cmd, node.data, node.length, true);
 			break;
 		case Msp.Cmds.RAW_GPS:
 			uint8 oraw[18]={0};

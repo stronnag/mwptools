@@ -698,8 +698,8 @@ namespace Mwp {
 		}
 
 		private void restore_mission() {
-			uint8 zb=0;
-			queue_cmd(Msp.Cmds.WP_MISSION_LOAD, &zb, 1);
+			uint8 zb[1]={0};
+			queue_cmd(Msp.Cmds.WP_MISSION_LOAD, zb, 1);
 		}
 
 		private void store_mission() {

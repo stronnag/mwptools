@@ -456,9 +456,7 @@ public class MWSerial : Object {
 	private Msp.Cmds cmd;
 	private int irxbufp;
 	private uint16 rxbuf_alloc;
-	private uint16 txbuf_alloc = 256;
 	private uint8 []rxbuf;
-	private uint8 []txbuf;
 	public bool available {private set; get;}
 	public bool is_main ;
 	public bool force4 = false;
@@ -711,7 +709,6 @@ public class MWSerial : Object {
 	public MWSerial.forwarder() {
 		definit();
 		fwd = true;
-		set_txbuf(MemAlloc.TX);
 		pmask = PMask.AUTO;
 		mavsysid = 'j';
 	}
@@ -721,7 +718,6 @@ public class MWSerial : Object {
 		fwd =  available = false;
 		rxbuf_alloc = MemAlloc.RX;
 		rxbuf = new uint8[rxbuf_alloc];
-		txbuf = new uint8[txbuf_alloc];
 		devbuf = new uint8[MemAlloc.DEV];
 	}
 
@@ -751,15 +747,6 @@ public class MWSerial : Object {
 
 	public int get_fd() {
 		return fd;
-	}
-
-	public void set_txbuf(uint16 sz) {
-		txbuf = new uint8[sz];
-		txbuf_alloc = sz;
-	}
-
-	public uint16 get_txbuf() {
-		return txbuf_alloc;
 	}
 
 	public uint16 get_rxbuf() {
@@ -1362,14 +1349,6 @@ public class MWSerial : Object {
 				rxbuf_alloc += MemAlloc.RX;
 			rxbuf = new uint8[rxbuf_alloc];
 			}
-	}
-
-	private void check_txbuf_size(size_t sz) {
-		if (sz > txbuf_alloc) {
-			while (sz > txbuf_alloc)
-				txbuf_alloc += MemAlloc.TX;
-			txbuf = new uint8[txbuf_alloc];
-		}
 	}
 
 	private bool fr_publish(uint8 []buf) {
@@ -2031,32 +2010,32 @@ public class MWSerial : Object {
 		return sz;
 	}
 
-	public void send_ltm(uint8 cmd, void *data, size_t len) {
+	public void send_ltm(uint8 cmd, uint8[]data, size_t len) {
 		if(available == true && !ro) {
 			if(len != 0 && data != null) {
-				check_txbuf_size(len+4);
-				var nb = generate_ltm(cmd, data, len, ref txbuf);
-				write(txbuf, nb);
+				uint8 []tbuf=new uint8[len+4];
+				var nb = generate_ltm(cmd, data, len, ref tbuf);
+				write(tbuf, nb);
 			}
 		}
 	}
 
-	public void send_mav(uint16 cmd, void *data, size_t len) {
+	public void send_mav(uint16 cmd, uint8[] data, size_t len) {
 		if(available == true && !ro) {
 			size_t nb = 0;
-			check_txbuf_size(len+12);
+			uint8 []tbuf=new uint8[len+12];
 			if(mavvid == 2 || cmd > 256) {
-				nb = generate_mav2(cmd, data, len, mavseqno, mavsysid, ref txbuf);
+				nb = generate_mav2(cmd, data, len, mavseqno, mavsysid, ref tbuf);
 			} else {
-				nb = generate_mav1(cmd, data, len, mavseqno, mavsysid, ref txbuf);
+				nb = generate_mav1(cmd, data, len, mavseqno, mavsysid, ref tbuf);
 			}
-			write(txbuf, nb);
+			write(tbuf, nb);
 			mavseqno++;
 		}
 	}
 
-	public static size_t generate_ltm(uint8 cmd, void *data, size_t len, ref uint8[] _txbuf) {
-		uint8 *ptx = _txbuf;
+	public static size_t generate_ltm(uint8 cmd, uint8 []data, size_t len, ref uint8[] buf) {
+		uint8 *ptx = buf;
 		uint8* pdata = (uint8*)data;
 		uint8 ck = 0;
 		*ptx++ ='$';
@@ -2067,14 +2046,14 @@ public class MWSerial : Object {
 			ck ^= *ptx++;
 		}
 		*ptx++ = ck;
-		return (ptx - (uint8*)_txbuf);
+		return (ptx - (uint8*)buf);
 	}
 
-	public static size_t generate_mav2(uint16 cmd, void *data, size_t len,
+	public static size_t generate_mav2(uint16 cmd, uint8 []data, size_t len,
 									   uint8 _mavseqno, uint8 _mavsysid,
-									   ref uint8[] _txbuf) {
+									   ref uint8[] buf) {
 		uint16 mcrc;
-		uint8* ptx = _txbuf;
+		uint8* ptx = buf;
 		uint8* pdata = data;
 
 		// Mav2 null supression
@@ -2120,14 +2099,14 @@ public class MWSerial : Object {
 		mcrc = MavCRC.crc(mcrc, seed);
 		*ptx++ = (uint8)(mcrc&0xff); // crc
 		*ptx++ = (uint8)(mcrc >> 8); // crc
-		return (ptx - (uint8*)_txbuf);
+		return (ptx - (uint8*)buf);
 	}
 
-	public static size_t generate_mav1(uint16 cmd, void *data, size_t len,
+	public static size_t generate_mav1(uint16 cmd, uint8[]data, size_t len,
 									   uint8 _mavseqno, uint8 _mavsysid,
-									   ref uint8[] _txbuf) {
+									   ref uint8[] buf) {
 		uint16 mcrc;
-		uint8* ptx = _txbuf;
+		uint8* ptx = buf;
 		uint8* pdata = data;
 
 		mcrc = MavCRC.crc(0xffff, (uint8)len);
@@ -2152,12 +2131,12 @@ public class MWSerial : Object {
 		mcrc = MavCRC.crc(mcrc, seed);
 		*ptx++ = (uint8)(mcrc&0xff);
 		*ptx++ = (uint8)(mcrc >> 8);
-		return (ptx - (uint8*)_txbuf);
+		return (ptx - (uint8*)buf);
 	}
 
-	public static size_t generate_v1(uint8 cmd, void *data, size_t len, char _writed, ref uint8[] _txbuf) {
+	public static size_t generate_v1(uint8 cmd, uint8[] data, size_t len, char _writed, ref uint8[] buf) {
 		uint8 ck = 0;
-		uint8* ptx = _txbuf;
+		uint8* ptx = buf;
 		uint8* pdata = data;
 
 		*ptx++ = '$';
@@ -2175,10 +2154,10 @@ public class MWSerial : Object {
 		return len+6;
 	}
 
-	public static size_t generate_v2(uint16 cmd, void *data, size_t len, char _writed, ref uint8[] _txbuf) {
+	public static size_t generate_v2(uint16 cmd, uint8[]data, size_t len, char _writed, ref uint8[] buf) {
 		uint8 ck2=0;
 
-		uint8* ptx = _txbuf;
+		uint8* ptx = buf;
 		uint8* pdata = data;
 
 		*ptx++ ='$';
@@ -2187,11 +2166,11 @@ public class MWSerial : Object {
 		*ptx++ = 0; // flags
 		ptx = SEDE.serialise_u16(ptx, cmd);
 		ptx = SEDE.serialise_u16(ptx, (uint16)len);
-		ck2 = CRC8.dvb_s2(ck2, _txbuf[3]);
-		ck2 = CRC8.dvb_s2(ck2, _txbuf[4]);
-		ck2 = CRC8.dvb_s2(ck2, _txbuf[5]);
-		ck2 = CRC8.dvb_s2(ck2, _txbuf[6]);
-		ck2 = CRC8.dvb_s2(ck2, _txbuf[7]);
+		ck2 = CRC8.dvb_s2(ck2, buf[3]);
+		ck2 = CRC8.dvb_s2(ck2, buf[4]);
+		ck2 = CRC8.dvb_s2(ck2, buf[5]);
+		ck2 = CRC8.dvb_s2(ck2, buf[6]);
+		ck2 = CRC8.dvb_s2(ck2, buf[7]);
 
 		for (var i = 0; i < len; i++) {
 			*ptx = *pdata++;
@@ -2202,18 +2181,19 @@ public class MWSerial : Object {
 		return len+9;
 	}
 
-	public size_t send_command(uint16 cmd, void *data, size_t len, bool sim=false) {
+	public size_t send_command(uint16 cmd, uint8[]? data, size_t len, bool sim=false) {
 		if(available == true && !ro) {
 			char tmp = writedirn;
 			if (sim) // forces SIM mode (inav-radar)
 				tmp = '>';
 			size_t mlen;
+			uint8 []tbuf=new uint8[len+16];
 			if(use_v2 || cmd > 254 || len > 254)
-				mlen = generate_v2(cmd,data,len, tmp, ref txbuf);
+				mlen = generate_v2(cmd,data,len, tmp, ref tbuf);
 			else
-				mlen  = generate_v1((uint8)cmd, data, len, tmp, ref txbuf);
+				mlen  = generate_v1((uint8)cmd, data, len, tmp, ref tbuf);
 
-			return write(txbuf, mlen);
+			return write(tbuf, mlen);
 		} else {
 			return -1;
 		}

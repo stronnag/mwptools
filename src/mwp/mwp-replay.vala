@@ -180,7 +180,7 @@ public class ReplayThread : GLib.Object {
         return (p - &tx[0]);
     }
 
-    private void send_rec(Msp.Cmds cmd, size_t len, void *buf) {
+    private void send_rec(Msp.Cmds cmd, size_t len, uint8 []buf) {
 		size_t nb = 0;
 		uint8[] txbuf = new uint8[len+32];
 		if(cmd < Msp.LTM_BASE) {
@@ -595,7 +595,7 @@ public class ReplayThread : GLib.Object {
                                     m.base_mode =  (uint8)obj.get_int_member("base_mode");
                                     m.system_status =  (uint8)obj.get_int_member("system_status");
                                     m.mavlink_version =  (uint8)obj.get_int_member("mavlink_version");
-                                    send_rec(Msp.Cmds.MAVLINK_MSG_ID_HEARTBEAT, sizeof(Mav.MAVLINK_HEARTBEAT),(uint8*)(&m));
+                                    send_rec(Msp.Cmds.MAVLINK_MSG_ID_HEARTBEAT, sizeof(Mav.MAVLINK_HEARTBEAT),(uint8[])(&m));
                                     break;
                                 case "mavlink_sys_status":
                                     telem = true;
@@ -613,7 +613,7 @@ public class ReplayThread : GLib.Object {
                                     m.errors_count3 =  (uint16)obj.get_int_member("errors_count3");
                                     m.errors_count4 =  (uint16)obj.get_int_member("errors_count4");
                                     m.battery_remaining =  (int8)obj.get_int_member("battery_remaining");
-                                    send_rec(Msp.Cmds.MAVLINK_MSG_ID_SYS_STATUS, sizeof(Mav.MAVLINK_SYS_STATUS),(uint8*)(&m));
+                                    send_rec(Msp.Cmds.MAVLINK_MSG_ID_SYS_STATUS, sizeof(Mav.MAVLINK_SYS_STATUS),(uint8[])(&m));
                                     break;
                                 case "mavlink_gps_raw_int":
                                     telem = true;
@@ -628,7 +628,7 @@ public class ReplayThread : GLib.Object {
                                     m.cog =  (uint16)obj.get_int_member("cog");
                                     m.fix_type =  (uint8)obj.get_int_member("fix_type");
                                     m.satellites_visible =  (uint8)obj.get_int_member("satellites_visible");
-                                    send_rec(Msp.Cmds.MAVLINK_MSG_GPS_RAW_INT, sizeof(Mav.MAVLINK_GPS_RAW_INT), (uint8*)(&m));
+                                    send_rec(Msp.Cmds.MAVLINK_MSG_GPS_RAW_INT, sizeof(Mav.MAVLINK_GPS_RAW_INT), (uint8[])(&m));
                                     break;
                                 case "mavlink_attitude":
                                     telem = true;
@@ -640,7 +640,7 @@ public class ReplayThread : GLib.Object {
                                     m.rollspeed =  (float)obj.get_double_member("rollspeed");
                                     m.pitchspeed =  (float)obj.get_double_member("pitchspeed");
                                     m.yawspeed =  (float)obj.get_double_member("yawspeed");
-                                    send_rec(Msp.Cmds.MAVLINK_MSG_ATTITUDE, sizeof(Mav.MAVLINK_ATTITUDE), (uint8*)(&m));
+                                    send_rec(Msp.Cmds.MAVLINK_MSG_ATTITUDE, sizeof(Mav.MAVLINK_ATTITUDE), (uint8[])(&m));
                                     break;
                                 case "mavlink_rc_channels":
                                     telem = true;
@@ -656,7 +656,7 @@ public class ReplayThread : GLib.Object {
                                     m.chan8_raw =  (uint16)obj.get_int_member("chan8_raw");
                                     m.port =  (uint8)obj.get_int_member("port");
                                     m.rssi =  (uint8)obj.get_int_member("rssi");
-                                    send_rec(Msp.Cmds.MAVLINK_MSG_RC_CHANNELS_RAW, sizeof(Mav.MAVLINK_RC_CHANNELS), (uint8*)(&m));
+                                    send_rec(Msp.Cmds.MAVLINK_MSG_RC_CHANNELS_RAW, sizeof(Mav.MAVLINK_RC_CHANNELS), (uint8[])(&m));
                                     break;
                                 case "mavlink_gps_global_origin":
                                     telem = true;
@@ -664,7 +664,7 @@ public class ReplayThread : GLib.Object {
                                     m.latitude =  (int32)obj.get_int_member("latitude");
                                     m.longitude =  (int32)obj.get_int_member("longitude");
                                     m.altitude =  (int32)obj.get_int_member("altitude");
-                                    send_rec(Msp.Cmds.MAVLINK_MSG_GPS_GLOBAL_ORIGIN, sizeof(Mav.MAVLINK_GPS_GLOBAL_ORIGIN), (uint8*)(&m));
+                                    send_rec(Msp.Cmds.MAVLINK_MSG_GPS_GLOBAL_ORIGIN, sizeof(Mav.MAVLINK_GPS_GLOBAL_ORIGIN), (uint8[])(&m));
                                     break;
                                 case "mavlink_vfr_hud":
                                     telem = true;
@@ -675,7 +675,7 @@ public class ReplayThread : GLib.Object {
                                     m.climb =  (float)obj.get_double_member("climb");
                                     m.heading =  (int16)obj.get_int_member("heading");
                                     m.throttle =  (uint16)obj.get_int_member("throttle");
-                                    send_rec(Msp.Cmds.MAVLINK_MSG_VFR_HUD, sizeof(Mav.MAVLINK_VFR_HUD), (uint8*)(&m));
+                                    send_rec(Msp.Cmds.MAVLINK_MSG_VFR_HUD, sizeof(Mav.MAVLINK_VFR_HUD), (uint8[])(&m));
                                     break;
 							case "text":
 								var id = obj.get_string_member("id");
@@ -730,8 +730,8 @@ public class ReplayThread : GLib.Object {
                 xa.flag = 0;
                 var nb = serialise_status(xa, buf);
 				send_rec(Msp.Cmds.STATUS, (uint)nb, buf);
-                uint8 x=0;
-				send_rec(Msp.Cmds.Tx_FRAME, 1, &x);
+                uint8 x[1]={0};
+				send_rec(Msp.Cmds.Tx_FRAME, 1, x);
                 Thread.usleep(1000*1000);
 				try {
 					socket.close();
@@ -741,6 +741,6 @@ public class ReplayThread : GLib.Object {
         return thr;
     }
     void send_tq_frame(uint16 q) {
-        send_rec(Msp.Cmds.Tq_FRAME, 2, &q);
+        send_rec(Msp.Cmds.Tq_FRAME, 2, (uint8[])&q);
     }
 }
