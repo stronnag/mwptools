@@ -10,7 +10,6 @@ public enum ProcessLaunch {
 
 extern void *create_win_process(char *cmd, int flags, int *ipipe, int *spipe, int *epipe, int32 *pid);
 extern bool waitproc(void *h, int* sts);
-//extern int32 proc_get_pid(void* h);
 extern void proc_kill (int32 pid);
 extern void winsuspend (int32 pid);
 extern void winresume (int32 pid);

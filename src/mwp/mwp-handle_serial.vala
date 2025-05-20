@@ -436,15 +436,14 @@ namespace Mwp {
 			});
 	}
 
-    public void queue_cmd(Msp.Cmds cmd, void* buf, size_t len) {
+    public void queue_cmd(Msp.Cmds cmd, uint8[]? buf, size_t len) {
         if(((debug_flags & DebugFlags.INIT) != DebugFlags.NONE)
            && (serstate == SERSTATE.NORMAL))
             MWPLog.message("Init MSP %s (%u)\n", cmd.to_string(), cmd);
 
         if(replayer == Player.NONE) {
-            uint8 *dt = (buf == null) ? null : Memory.dup2(buf, (size_t)len);
             if(msp.available == true) {
-                var mi = MQI() {cmd = cmd, len = len, data = dt};
+                var mi = MQI() {cmd = cmd, len = len, data = buf};
                 mq.push_tail(mi);
             }
         }

@@ -496,7 +496,7 @@ namespace Mwp {
 							int16 tzoffm = (short)((int64)dt.get_utc_offset()/(1000*1000*60));
 							if(tzoffm != 0) {
 								MWPLog.message("set TZ offset %d\n", tzoffm);
-								queue_cmd(Msp.Cmds.COMMON_SET_TZ, &tzoffm, sizeof(int16));
+								queue_cmd(Msp.Cmds.COMMON_SET_TZ, (uint8[])&tzoffm, sizeof(int16));
 							}  else
 								queue_cmd(Msp.Cmds.BUILD_INFO, null, 0);
 						} else
@@ -1225,9 +1225,9 @@ namespace Mwp {
 						upload_callback(wpmgr.npts);
 
 					if ((wpmgr.wp_flag & WPDL.SAVE_EEPROM) != 0) {
-						uint8 zb=42;
+						uint8 zb[1]={42};
 						wpmgr.wp_flag = (WPDL.GETINFO|WPDL.RESET_POLLER|WPDL.SET_ACTIVE|WPDL.SAVE_ACTIVE);
-						queue_cmd(Msp.Cmds.WP_MISSION_SAVE, &zb, 1);
+						queue_cmd(Msp.Cmds.WP_MISSION_SAVE, zb, 1);
 					} else if ((wpmgr.wp_flag & WPDL.GETINFO) != 0) {
 						MWPLog.message("mission uploaded for %d points\n", wpmgr.npts);
 						wpmgr.wp_flag |= WPDL.SET_ACTIVE|WPDL.RESET_POLLER;
@@ -1269,7 +1269,7 @@ namespace Mwp {
 				handle_misc_startup();
 			} else {
 				id++;
-				queue_cmd(Msp.Cmds.FW_APPROACH,&id,1);
+				queue_cmd(Msp.Cmds.FW_APPROACH,(uint8[])&id,1);
 			}
 			break;
 
@@ -1287,7 +1287,7 @@ namespace Mwp {
 			Safehome.manager.receive_safehome(id, shm);
 			id += 1;
 			if (id < Safehome.MAXHOMES && id < last_safehome) {
-				queue_cmd(Msp.Cmds.SAFEHOME,&id,1);
+				queue_cmd(Msp.Cmds.SAFEHOME,(uint8[])&id,1);
 			} else {
 				if(Rebase.is_valid()) {
 					Safehome.manager.relocate_safehomes();
@@ -1295,7 +1295,7 @@ namespace Mwp {
 				Safehome.manager.set_status(sh_disp);
 				id = 0;
 				last_safehome = Safehome.MAXHOMES;
-				queue_cmd(Msp.Cmds.FW_APPROACH,&id,1);
+				queue_cmd(Msp.Cmds.FW_APPROACH,(uint8[])&id,1);
 			}
 			break;
 
@@ -1769,8 +1769,8 @@ namespace Mwp {
 	}
 
 	private void queue_gzone(int cnt) {
-		uint8 zb=(uint8)cnt;
-		queue_cmd(Msp.Cmds.GEOZONE, &zb, 1);
+		uint8 zb[1]={(uint8)cnt};
+		queue_cmd(Msp.Cmds.GEOZONE, zb, 1);
 	}
 
 	private void queue_gzvertex(int8 nz, int8 nv) {
@@ -1810,11 +1810,11 @@ namespace Mwp {
 
 	public void request_fc_safehomes() {
 		last_safehome = Safehome.MAXHOMES;
-		uint8 shid = 0;
+		uint8 shid[1] = {0};
 
 		MWPLog.message("Load FC safehomes\n");
 		pause_poller(SERSTATE.MISC_BULK);
-		queue_cmd(Msp.Cmds.SAFEHOME,&shid,1);
+		queue_cmd(Msp.Cmds.SAFEHOME, shid,1);
 	}
 
 	public void save_safehomes_fc() {
@@ -1835,9 +1835,9 @@ namespace Mwp {
 				sh_disp = true;
 				starttasks -= StartupTasks.SAFEHOMES;
 				last_safehome = Safehome.MAXHOMES;
-				uint8 shid = 0;
+				uint8 shid[1] = {0};
 				MWPLog.message("Load FC safehomes\n");
-				queue_cmd(Msp.Cmds.SAFEHOME,&shid,1);
+				queue_cmd(Msp.Cmds.SAFEHOME, shid,1);
 				//run_queue();
 			} else if (GEOZONES in starttasks) {
 				starttasks -= StartupTasks.GEOZONES;

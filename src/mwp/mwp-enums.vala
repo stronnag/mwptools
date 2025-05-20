@@ -283,7 +283,7 @@ namespace Mwp {
 	public struct MQI {
         Msp.Cmds cmd;
         size_t len;
-        uint8 *data;
+        uint8 []? data;
     }
 
 	public struct Position {
