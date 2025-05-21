@@ -280,12 +280,6 @@ namespace Mwp {
         uint idx;
     }
 
-	public struct MQI {
-        Msp.Cmds cmd;
-        size_t len;
-        uint8 []? data;
-    }
-
 	public struct Position {
         double lat;
         double lon;

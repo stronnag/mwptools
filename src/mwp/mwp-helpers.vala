@@ -88,9 +88,9 @@ public struct VersInfo {
 
 public struct TelemStats {
     SerialStats s;
-    ulong toc;
-    int tot;
-    ulong avg;
+    uint toc;
+    uint tot;
+    uint avg;
 }
 
 public struct BatteryLevels {

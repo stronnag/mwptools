@@ -26,6 +26,14 @@ public struct SerialStats {
 	ulong  msgs;
 }
 
+namespace Msp {
+	public struct MQI {
+		Msp.Cmds cmd;
+		size_t len;
+		uint8 []? data;
+	}
+}
+
 namespace SportDev {
 	public enum FrID {
 		ALT_ID = 0x0100,

@@ -142,6 +142,7 @@ namespace Mwp {
     bool ltm_force_sats;
     NAVCAPS navcap;
 	uint lmin = 0;
+	uint rccount;
 
 	const int MSP_WAITMS = 5;
 
@@ -255,11 +256,13 @@ namespace Mwp {
 		no_ofix = 0;
 		telstats={};
 		seen_msp = false;
+		rccount = 0;
 	}
 
     private void init_sstats() {
 		anvals = acycle = 0;
         telstats = {};
+		rccount = 0;
     }
 
     private void init_state() {
@@ -441,7 +444,7 @@ namespace Mwp {
 
         if(replayer == Player.NONE) {
             if(msp.available == true) {
-                var mi = MQI() {cmd = cmd, len = len, data = buf};
+                var mi = Msp.MQI() {cmd = cmd, len = len, data = buf};
                 mq.push_tail(mi);
             }
         }
@@ -647,6 +650,7 @@ namespace Mwp {
 			if((Mwp.MspRC.SET in Mwp.use_rc)) {
 				msp.send_command(Msp.Cmds.SET_RAW_RC, (uint8[])rcchans, nrc_chan*2);
 				rctimer.start();
+				rccount++;
 				//MWPLog.message(":DBG: Sent SET_RAW_RC\n");
 			}
 		}
@@ -810,7 +814,7 @@ namespace Mwp {
 
     public void show_serial_stats() {
 		if(msp.available) {
-			telstats.avg = (anvals > 0) ? (ulong)(acycle/anvals) : 0;
+			telstats.avg = (anvals > 0) ? (uint)(acycle/anvals) : 0;
 			var stats = msp.getstats();
 			var et = msp.stimer.elapsed();
 			double mrate = 0.0;
@@ -819,11 +823,20 @@ namespace Mwp {
 				stats.rxrate = stats.rxbytes/et;
 				stats.txrate = stats.txbytes/et;
 			}
-			MWPLog.message("%.3fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %d wait %d, avg poll loop %lu ms messages %d msg/s %.1f\n",
-						   et, stats.rxbytes, stats.txbytes,
-						   stats.rxrate, stats.txrate,
-						   telstats.toc, telstats.tot, telstats.avg ,
-						   stats.msgs, mrate);
+			var sb = new StringBuilder();
+
+			sb.append_printf("%.3fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %u wait %u, avg poll loop %lu ms messages %lu msg/s %.1f",
+							 et, stats.rxbytes, stats.txbytes,
+							 stats.rxrate, stats.txrate,
+							 telstats.toc,
+							 telstats.tot,
+							 telstats.avg ,
+							 stats.msgs, mrate);
+			if(rccount > 0) {
+				sb.append_printf(" rawrc %u", rccount);
+			}
+			sb.append_c('\n');
+			MWPLog.message(sb.str);
 		}
 	}
 }

@@ -18,8 +18,8 @@
  */
 
 namespace Mwp  {
-    Mwp.MQI lastmsg;
-    Queue<Mwp.MQI?> mq;
+    Msp.MQI lastmsg;
+    Queue<Msp.MQI?> mq;
 	MWSerial msp;
 	Forwarder fwddev;
 	bool mqtt_available;
@@ -105,8 +105,8 @@ namespace Msp {
 		Mwp.rctimer.stop();
 		Mwp.rctag = 0;
 		Mwp.msp.is_main = true;
-		Mwp.mq = new Queue<Mwp.MQI?>();
-        Mwp.lastmsg = Mwp.MQI(); //{cmd = Msp.Cmds.INVALID};
+		Mwp.mq = new Queue<Msp.MQI?>();
+        Mwp.lastmsg = Msp.MQI(); //{cmd = Msp.Cmds.INVALID};
 		Mwp.csdq = new Queue<string>();
 		Mwp.fwddev = new Forwarder(Mwp.forward_device);
         Mwp.msp.serial_lost.connect(() => {
