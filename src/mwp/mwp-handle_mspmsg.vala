@@ -1410,8 +1410,8 @@ namespace Mwp {
 			Assist.Window.instance().send_assist();
 			break;
 
-		case Msp.Cmds.SET_RAW_RC:
-			break;
+			//case Msp.Cmds.SET_RAW_RC:
+			//break;
 
 		case Msp.Cmds.RC:
 			var nchn = len/2;
@@ -1421,6 +1421,8 @@ namespace Mwp {
 			if(vi.mvers == 241) {
 				Mwp.nrc_chan = 8;
 			}
+			Mwp.rcchans = new int16[Mwp.nrc_chan];
+
 			MWPLog.message(":DBG: MSP_RC chans %d, HID chans %d\n", nchn, Mwp.nrc_chan);
 			StringBuilder sb = new StringBuilder("init");
 			for(var j = 0; j < Mwp.nrc_chan; j++) {
@@ -1432,6 +1434,7 @@ namespace Mwp {
 					k = 2;
 				}
 				sb.append_printf(" %d", ((int16[])raw)[k]);
+				Mwp.rcchans[j] = ((int16[])raw)[k];
 			}
 			sb.append_c('\n');
 			var has_rc = (have_status & ((xarm_flags & ARMFLAGS.ARMING_DISABLED_RC_LINK) == 0));
@@ -1455,7 +1458,6 @@ namespace Mwp {
 
 	private void start_raw_rc_timer() {
 		Mwp.use_rc |= Mwp.MspRC.SET;
-		Mwp.rcchans = new int16[Mwp.nrc_chan];
 		run_rc_timer();
 		MWPLog.message("DBG: Would run timer in %u ms\n", conf.msprc_cycletime);
 	}

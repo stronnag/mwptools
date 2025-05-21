@@ -304,6 +304,19 @@ namespace Mwp {
 		}
     }
 
+    public void queue_cmd(Msp.Cmds cmd, uint8[]? buf, size_t len) {
+        if(((debug_flags & DebugFlags.INIT) != DebugFlags.NONE)
+           && (serstate == SERSTATE.NORMAL))
+            MWPLog.message("Init MSP %s (%u)\n", cmd.to_string(), cmd);
+
+        if(replayer == Player.NONE) {
+            if(msp.available == true) {
+                var mi = Msp.MQI() {cmd = cmd, len = len, data = buf};
+                mq.push_tail(mi);
+            }
+        }
+    }
+
      void run_queue() {
         if((replayer & (Player.BBOX|Player.OTX|Player.RAW)) != 0) {
             mq.clear();
@@ -436,19 +449,6 @@ namespace Mwp {
 				return Source.CONTINUE;
 			});
 	}
-
-    public void queue_cmd(Msp.Cmds cmd, uint8[]? buf, size_t len) {
-        if(((debug_flags & DebugFlags.INIT) != DebugFlags.NONE)
-           && (serstate == SERSTATE.NORMAL))
-            MWPLog.message("Init MSP %s (%u)\n", cmd.to_string(), cmd);
-
-        if(replayer == Player.NONE) {
-            if(msp.available == true) {
-                var mi = Msp.MQI() {cmd = cmd, len = len, data = buf};
-                mq.push_tail(mi);
-            }
-        }
-    }
 
 	void send_poll() {
         if(serstate == SERSTATE.POLLER && requests.length > tcycle) {
