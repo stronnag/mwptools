@@ -32,6 +32,12 @@ namespace Msp {
 		size_t len;
 		uint8 []? data;
 	}
+
+}
+
+internal struct SQI {
+	size_t len;
+	uint8 []? data;
 }
 
 namespace SportDev {
@@ -514,6 +520,9 @@ public class MWSerial : Object {
 	public DataOutputStream? dos;
 	public Cancellable can;
 #endif
+
+	internal AsyncQueue<SQI?> sq;
+
 	private const int WEAKSIZE = 16;
 
 	public enum MemAlloc {
@@ -712,6 +721,35 @@ public class MWSerial : Object {
 		mavvid = 0;
 		pmask = PMask.AUTO ;
 		stimer = new Timer();
+	}
+
+	private void start_writer_thread() {
+		sq = new AsyncQueue<SQI?>();
+		new Thread<bool>("send-thr", () => {
+				SQI sqi;
+				ssize_t sz = 0;
+				while (true) {
+					sqi = sq.pop();
+					if(sqi.len == 0) {
+						break;
+					}
+					sz =  _write(sqi.data, sqi.len);
+					if(sz < 0) {
+						break;
+					}
+				}
+				MWPLog.message(":SQI: Close writer thread\n");
+				while(sq.try_pop() != null)
+					;
+				sq = null;
+				return true;
+			});
+	}
+
+	public ssize_t write(uint8[]buf, size_t len) {
+		var sqi = SQI(){data = buf, len=len};
+		sq.push(sqi);
+		return (ssize_t)len;
 	}
 
 	public MWSerial.forwarder() {
@@ -1236,6 +1274,9 @@ public class MWSerial : Object {
 				set_noblock(fd);
 			}
 		}
+		if(available) {
+			start_writer_thread();
+		}
 		MwpSerial.flush(fd);
 		clear_counters();
 		return available;
@@ -1248,6 +1289,9 @@ public class MWSerial : Object {
 	}
 
 	public void close() {
+		var sqi = SQI(){data = null, len=0};
+		sq.push_front(sqi);
+
 		if(fwd) {
 			clearup();
 		} else if(available) {
@@ -1999,7 +2043,7 @@ public class MWSerial : Object {
 		return tsz;
 	}
 
-	public ssize_t write(uint8[]buf, size_t count) {
+	public ssize_t _write(uint8[]buf, size_t count) {
 		ssize_t sz = -1;
 		if(available) {
 			if((commode & ComMode.WEAKBLE) == ComMode.WEAKBLE) {
