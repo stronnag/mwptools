@@ -678,7 +678,9 @@ namespace Mwp {
 					if((Mwp.MspRC.SET in Mwp.use_rc)) {
 						msp.send_command(Msp.Cmds.SET_RAW_RC, (uint8[])rcchans, nrc_chan*2);
 						rccount++;
-						MWPLog.message(":DBG: Sent SET_RAW_RC\n");
+						if(Mwp.DebugFlags.MSP in Mwp.debug_flags) {
+							MWPLog.message(":DBG: TIM send: %s\n", Msp.Cmds.SET_RAW_RC.format());
+						}
 					}
 					Sticks.update(rcchans[0], rcchans[1], rcchans[3], rcchans[2]);
 					if (Chans.cwin != null) {
@@ -817,7 +819,7 @@ namespace Mwp {
 			}
 			var sb = new StringBuilder();
 
-			sb.append_printf("%.3fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %u wait %u, avg poll loop %lu ms messages %lu msg/s %.1f",
+			sb.append_printf("%.3f s, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %u wait %u, avg poll loop %lu ms messages %lu msg/s %.1f",
 							 et, stats.rxbytes, stats.txbytes,
 							 stats.rxrate, stats.txrate,
 							 telstats.toc,
