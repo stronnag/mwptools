@@ -643,19 +643,6 @@ namespace Mwp {
 			}
         }
 
-
-
-		double et = Mwp.conf.msprc_cycletime/1000.0;
-		if(rctimer.is_active() && rctimer.elapsed() > et) {
-			if((Mwp.MspRC.SET in Mwp.use_rc)) {
-				msp.send_command(Msp.Cmds.SET_RAW_RC, (uint8[])rcchans, nrc_chan*2);
-				rctimer.start();
-				rccount++;
-				//MWPLog.message(":DBG: Sent SET_RAW_RC\n");
-			}
-		}
-
-
 		if((Mwp.have_api && Mwp.MspRC.GET in Mwp.use_rc)) {
 			MWPLog.message(":DBG: Sent GET RC\n");
 			Mwp.use_rc &= ~Mwp.MspRC.GET;
@@ -688,6 +675,11 @@ namespace Mwp {
 		JSMisc.read_hid_async.begin((uint8[])rcchans, "raw\n",  (o, r) => {
 				var sz = JSMisc.read_hid_async.end(r);
 				if(sz  >=  nrc_chan*2 && rcchans[0] > 0) {
+					if((Mwp.MspRC.SET in Mwp.use_rc)) {
+						msp.send_command(Msp.Cmds.SET_RAW_RC, (uint8[])rcchans, nrc_chan*2);
+						rccount++;
+						MWPLog.message(":DBG: Sent SET_RAW_RC\n");
+					}
 					Sticks.update(rcchans[0], rcchans[1], rcchans[3], rcchans[2]);
 					if (Chans.cwin != null) {
 						Chans.cwin.update(rcchans);
