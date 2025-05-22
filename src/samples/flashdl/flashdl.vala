@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Jonathan Hudson <jh+mwptools@daria.co.uk>
+ * Copyright (C) Jonathan Hudson <jh+mwptools@daria.co.uk>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

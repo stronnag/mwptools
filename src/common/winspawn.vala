@@ -17,7 +17,6 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-
 [Flags]
 public enum ProcessLaunch {
 	NONE = 0,
