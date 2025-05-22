@@ -1422,7 +1422,6 @@ namespace Mwp {
 			}
 			Mwp.rcchans = new int16[Mwp.nrc_chan];
 
-			MWPLog.message(":DBG: MSP_RC chans %d, HID chans %d\n", nchn, Mwp.nrc_chan);
 			StringBuilder sb = new StringBuilder("init");
 			for(var j = 0; j < Mwp.nrc_chan; j++) {
 				// AERT => AETR
@@ -1437,7 +1436,7 @@ namespace Mwp {
 			}
 			sb.append_c('\n');
 			var has_rc = (have_status & ((xarm_flags & ARMFLAGS.ARMING_DISABLED_RC_LINK) == 0));
-			MWPLog.message("RC (AETR) %s:%s", has_rc.to_string(), sb.str.substring(4));
+			MWPLog.message("RC (AETR) %s %d/%d %s", has_rc.to_string(), nchn, Mwp.nrc_chan, sb.str.substring(4));
 			if(has_rc) {
 				JSMisc.read_hid_async.begin(jbuf, sb.str,  (o, r) => {
 						JSMisc.read_hid_async.end(r);
@@ -1458,7 +1457,7 @@ namespace Mwp {
 	private void start_raw_rc_timer() {
 		Mwp.use_rc |= Mwp.MspRC.SET;
 		run_rc_timer();
-		MWPLog.message("DBG: Would run timer in %u ms\n", conf.msprc_cycletime);
+		MWPLog.message("HID cycletime %u ms\n", conf.msprc_cycletime);
 	}
 
 	private void run_rc_timer() {

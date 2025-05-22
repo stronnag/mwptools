@@ -268,7 +268,7 @@ HID support is selectable at run time via mwp's `Edit > MSP RC Setting` menu opt
 
 ![settings](images/mwp-rc-set.png){: width="30%" }
 
-If enabled, `mwp-hid-server` is invoked with the provided mapping file. If you need to pass another option (for example `-f` for testing), this may be done using the environment variable `MWP_HIDOPT`, for example `MWP_HIDOPT="-f"`.
+If enabled, `mwp-hid-server` is invoked with the provided mapping file. If you need to pass another option (for example `-f` for testing), this may be done using the environment variable `MWP_HIDOPT`, for example `MWP_HIDOPT=-f`.
 
 By default (if no mapping file has been previously set), the settings UI looks for the mapping file in the mwp configuration directory (`$XDG_CONFIG_HOME/mwp` i.e. `~/.config/mwp` on POSIX OS). The user may choose any other suitable location.
 

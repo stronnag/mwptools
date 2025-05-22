@@ -1292,9 +1292,10 @@ public class MWSerial : Object {
 	}
 
 	public void close() {
-		var sqi = SQI(){data = null, len=0};
-		sq.push_front(sqi);
-
+		if (sq != null) {
+			var sqi = SQI(){data = null, len=0};
+			sq.push_front(sqi);
+		}
 		if(fwd) {
 			clearup();
 		} else if(available) {

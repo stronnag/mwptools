@@ -644,7 +644,7 @@ namespace Mwp {
         }
 
 		if(((Mwp.have_api || vi.mvers > 238) && Mwp.MspRC.GET in Mwp.use_rc)) {
-			MWPLog.message(":DBG: Sent GET RC\n");
+			MWPLog.message("Requesting MSP_RC\n");
 			Mwp.use_rc &= ~Mwp.MspRC.GET;
 			msp.send_command(Msp.Cmds.RC, null, 0);
 			return;

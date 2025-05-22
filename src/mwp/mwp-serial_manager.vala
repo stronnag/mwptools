@@ -93,7 +93,7 @@ namespace Msp {
 				}
 			}
 		}
-		MWPLog.message(":HID DBG: pid=%d %x\n", hpid, Mwp.use_rc);
+		MWPLog.message("HID process: pid=%d %x (%s)\n", hpid, Mwp.use_rc, Mwp.conf.msprc_full_duplex.to_string());
 	}
 
 	public void init() {
@@ -312,7 +312,6 @@ namespace Msp {
 					MWPLog.message("Raw RC: %s", jstr);
 					if(jstr.has_prefix("Channels: ")) {
 						Mwp.nrc_chan = int.parse(jstr.substring(10));
-						MWPLog.message(":DBG: Channels %d\n", Mwp.nrc_chan);
 					}
 					if(Mwp.nrc_chan == 0) {
 						Timeout.add(1000, () => {
