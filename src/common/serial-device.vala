@@ -35,7 +35,7 @@ namespace Msp {
 
 }
 
-internal struct SQI {
+private struct SQI {
 	size_t len;
 	uint8 []? data;
 }
@@ -521,7 +521,7 @@ public class MWSerial : Object {
 	public Cancellable can;
 #endif
 
-	internal AsyncQueue<SQI?> sq;
+	private AsyncQueue<SQI?> sq;
 
 	private const int WEAKSIZE = 16;
 
