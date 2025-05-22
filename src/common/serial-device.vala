@@ -747,9 +747,12 @@ public class MWSerial : Object {
 	}
 
 	public ssize_t write(uint8[]buf, size_t len) {
-		var sqi = SQI(){data = buf, len=len};
-		sq.push(sqi);
-		return (ssize_t)len;
+		if(sq != null) {
+			var sqi = SQI(){data = buf, len=len};
+			sq.push(sqi);
+			return (ssize_t)len;
+		}
+		return -1;
 	}
 
 	public MWSerial.forwarder() {

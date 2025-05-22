@@ -387,7 +387,7 @@ namespace Mwp {
 									if (lastmsg.cmd == Msp.Cmds.IDENT) {
 										idcount++;
 										if(idcount == Mwp.conf.ident_limit) {
-											Msp.close_serial();
+											msp.close();
 											var wb5 = new Utils.Warning_box("No response received from the FC\nPlesae check connection and protocol\nConsider <tt>--no-poll</tt> if this is intentional\nSee also the <tt>ident-limit</tt> setting");
 											wb5.present();
 											idcount = 0;
@@ -643,7 +643,7 @@ namespace Mwp {
 			}
         }
 
-		if((Mwp.have_api && Mwp.MspRC.GET in Mwp.use_rc)) {
+		if(((Mwp.have_api || vi.mvers > 238) && Mwp.MspRC.GET in Mwp.use_rc)) {
 			MWPLog.message(":DBG: Sent GET RC\n");
 			Mwp.use_rc &= ~Mwp.MspRC.GET;
 			msp.send_command(Msp.Cmds.RC, null, 0);

@@ -12,6 +12,8 @@ namespace Msprc {
 		[GtkChild]
 		internal unowned Gtk.CheckButton enable;
 		[GtkChild]
+		internal unowned Gtk.CheckButton duplex;
+		[GtkChild]
 		internal unowned Gtk.Button apply;
 
 		private string dirname;
@@ -35,6 +37,7 @@ namespace Msprc {
 				log_name.label = filename;
 			}
 			enable.active = Mwp.conf.msprc_enabled;
+			duplex.active = Mwp.conf.msprc_full_duplex;
 
 			apply.clicked.connect(() => {
 					if(Mwp.conf.msprc_settings != settings_name) {
@@ -45,6 +48,10 @@ namespace Msprc {
 					}
 					if(Mwp.conf.msprc_enabled != enable.active) {
 						Mwp.conf.msprc_enabled = enable.active;
+					}
+
+					if(Mwp.conf.msprc_full_duplex != duplex.active) {
+						Mwp.conf.msprc_full_duplex = duplex.active;
 					}
 				});
 

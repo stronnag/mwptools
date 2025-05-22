@@ -369,9 +369,12 @@ The MSP RC settings are persisted via the following settings:
 
 * `msprc-cycletime` (default 150ms)
 * `msprc-enabled` (default false)
+* `msprc-full-duplex` (default false)
 * `msprc-settings` RC mapping file (default not set)
 
 The  `msprc-cycletime` option defines how often mwp sends `MSP_SET_RAW_RC` messages. INAV requires at least 5Hz (200ms) to avoid fail-safe. Time slots used for `MSP_SET_RAW_RC` reduces the time available for MSP telemetry data displayed by mwp, so the user needs to choose a compromise setting that balances RC responsiveness with telemetry data refresh within the constraint of the available bandwidth.
+
+The `msprc-full-duplex` settings defines the use of full duplex transmission for `MSP_SET_RAW_RC` messages. This will better ensure that the cycle-time requirement is met. **If the device does not support full duplex, enabling  `msprc-full-duplex` will result in major telemetry failure.**
 
 ## Miscellaneous notes
 

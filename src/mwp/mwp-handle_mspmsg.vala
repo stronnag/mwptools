@@ -149,7 +149,7 @@ namespace Mwp {
 			case Msp.Cmds.BOXIDS:
 				// This prevents usage on MW and older INAV
 				// Note also MW does not send an ACK for MWP_SET_RAW_RC !!
-				cancel_msprc();
+				//cancel_msprc();
 				queue_cmd(Msp.Cmds.BOXNAMES, null,0);
 				run_queue();
 				break;
@@ -547,7 +547,6 @@ namespace Mwp {
 				if ((raw[3] & 0x10) == 0x10) {
 					navcap = NAVCAPS.WAYPOINTS|NAVCAPS.NAVSTATUS|NAVCAPS.NAVCONFIG;
 					wp_max = 120;
-					cancel_msprc();
 				} else {
 					navcap = NAVCAPS.NONE;
 				}
@@ -1418,7 +1417,7 @@ namespace Mwp {
 			if (nchn < Mwp.nrc_chan) {
 				Mwp.nrc_chan = (int)nchn;
 			}
-			if(vi.mvers == 241) {
+			if(vi.mvers > 238) {
 				Mwp.nrc_chan = 8;
 			}
 			Mwp.rcchans = new int16[Mwp.nrc_chan];

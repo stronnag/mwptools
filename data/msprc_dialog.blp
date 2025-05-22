@@ -60,11 +60,21 @@ template $MsprcWindow:   Adw.Window {
           adjustment: adjustment_cms;
 	  tooltip-text: "MSP_SET_RAW_RC cycle time, min 30ms, max 180ms, default 150ms";
         }
+      }
+      Box {
+	spacing: 4;
+	orientation: horizontal;
 
 	Gtk.CheckButton enable {
 	  hexpand: true;
 	  halign: end;
           label: "Enable";
+	}
+
+	Gtk.CheckButton duplex {
+	  hexpand: true;
+	  halign: end;
+          label: "Full Duplex";
 	}
       }
     };
