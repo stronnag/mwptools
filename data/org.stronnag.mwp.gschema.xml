@@ -699,6 +699,12 @@
      <default>false</default>
    </key>
 
+   <key name="msprc-full-duplex" type="b">
+     <summary>MSP_SET_RAW_RC full duplex transmission</summary>
+     <description>Use full duplex transmission for MSP_SET_RAW_RC messages. This will better ensure that the cycle-time requirement is met. &lt;b&gt;If the device does not support full duplex, enabling this will result in major telemetry failure&lt;/b&gt;.</description>
+     <default>false</default>
+   </key>
+
     <key name="msprc-cycletime" type="u">
      <summary>MSP_SET_RAW_RC cycle time (microseconds)</summary>
      <range min="30" max="180"/>

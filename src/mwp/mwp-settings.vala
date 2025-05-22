@@ -116,6 +116,7 @@ public class MWPSettings : GLib.Object {
 	public string mwxml_version {get; set; default="";}
 
 	public bool msprc_enabled {get; set; default=false;}
+	public bool msprc_full_duplex {get; set; default=false;}
 	public uint msprc_cycletime {get; set; default=150;}
 	public string msprc_settings {get; set; default="";}
 
@@ -243,6 +244,7 @@ public class MWPSettings : GLib.Object {
 		settings.bind("assist-key", this, "assist-key", SettingsBindFlags.DEFAULT);
 		settings.bind("mission-icon-alpha", this, "mission-icon-alpha", SettingsBindFlags.DEFAULT);
 		settings.bind("msprc-enabled", this, "msprc-enabled", SettingsBindFlags.DEFAULT);
+		settings.bind("msprc-full-duplex", this, "msprc-full-duplex", SettingsBindFlags.DEFAULT);
 		settings.bind("msprc-cycletime", this, "msprc-cycletime", SettingsBindFlags.DEFAULT);
 		settings.bind("msprc-settings", this, "msprc-settings", SettingsBindFlags.DEFAULT);
 
