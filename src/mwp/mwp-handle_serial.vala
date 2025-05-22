@@ -650,6 +650,17 @@ namespace Mwp {
 			return;
 		}
 
+		if(!conf.msprc_full_duplex) {
+			double et = Mwp.conf.msprc_cycletime/1000.0;
+			if(rctimer.is_active() && rctimer.elapsed() > et) {
+				if((Mwp.MspRC.SET in Mwp.use_rc)) {
+					msp.send_command(Msp.Cmds.SET_RAW_RC, (uint8[])rcchans, nrc_chan*2);
+					rctimer.start();
+					rccount++;
+				}
+			}
+		}
+
 		if(serstate == SERSTATE.POLLER) {
 			if(mleave == 1 && !mq.is_empty()) {
 				mleave = 2;
@@ -675,7 +686,7 @@ namespace Mwp {
 		JSMisc.read_hid_async.begin((uint8[])rcchans, "raw\n",  (o, r) => {
 				var sz = JSMisc.read_hid_async.end(r);
 				if(sz  >=  nrc_chan*2 && rcchans[0] > 0) {
-					if((Mwp.MspRC.SET in Mwp.use_rc)) {
+					if(conf.msprc_full_duplex && (Mwp.MspRC.SET in Mwp.use_rc)) {
 						msp.send_command(Msp.Cmds.SET_RAW_RC, (uint8[])rcchans, nrc_chan*2);
 						rccount++;
 						if(Mwp.DebugFlags.MSP in Mwp.debug_flags) {

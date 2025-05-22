@@ -306,7 +306,8 @@ namespace Mwp {
 			window.add_action(msprcact);
 
 			if(Misc.is_msprc_enabled()) {
-				MWPLog.message("mwp is HID enabled\n");
+				string dplx = Mwp.conf.msprc_full_duplex ? "full" : "half";
+				MWPLog.message("MSP_SET_RAW_RC / HID enabled, %s duplex\n", dplx);
 				msprcact.set_state (true);
 				Mwp.use_rc |= Mwp.MspRC.ACT;
 			}
