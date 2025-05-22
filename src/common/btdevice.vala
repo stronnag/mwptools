@@ -1,6 +1,8 @@
 /*
  * (some bits) Copyright 2023 Jonathan Hudson
  * Largely based on the Canonical source below
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 /*
