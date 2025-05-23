@@ -91,6 +91,13 @@ public struct TelemStats {
     uint toc;
     uint tot;
     uint avg;
+
+	public void clear() {
+		toc = 0;
+		tot = 0;
+		avg = 0;
+		s.clear();
+	}
 }
 
 public struct BatteryLevels {

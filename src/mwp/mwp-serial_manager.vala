@@ -368,6 +368,8 @@ namespace Msp {
 				}
 
 				MWPLog.message("Connected %s (nopoll %s)\n", serdev, Mwp.nopoll.to_string());
+				Mwp.init_state();
+				Mwp.init_sstats();
 				if(Mwp.nopoll == false) {
 					bool forced_mav = false;
 					if (u.qhash != null) {
@@ -384,9 +386,6 @@ namespace Msp {
 							Mav.send_mav_beacon(Mwp.msp);
 						}
 					}
-					Mwp.init_state();
-					Mwp.init_sstats();
-
 					if (!forced_mav) {
 						Mwp.serstate = Mwp.SERSTATE.NORMAL;
 						Mwp.msp.use_v2 = false;

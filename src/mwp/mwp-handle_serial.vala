@@ -120,7 +120,7 @@ namespace Mwp {
     uint64 fs_mask;
     uint no_ofix;
 
-    TelemStats telstats={};
+    TelemStats telstats;
 
 	bool seen_msp;
 
@@ -256,7 +256,7 @@ namespace Mwp {
 		cr_mask=0;
 		fs_mask=0;
 		no_ofix = 0;
-		telstats={};
+		telstats.clear();
 		seen_msp = false;
 		rccount = 0;
 
@@ -266,8 +266,9 @@ namespace Mwp {
 	}
 
     private void init_sstats() {
-		anvals = acycle = 0;
-        telstats = {};
+		anvals = 0;
+		acycle = 0;
+        telstats.clear();
 		rccount = 0;
     }
 

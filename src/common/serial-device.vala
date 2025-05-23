@@ -23,7 +23,16 @@ public struct SerialStats {
 	ulong txbytes;
 	double rxrate;
 	double txrate;
-	ulong  msgs;
+	uint  msgs;
+
+	public void clear() {
+		elapsed = 0;
+		rxbytes = 0;
+		txbytes = 0;
+		rxrate = 0;
+		txrate = 0;
+		msgs = 0;
+	}
 }
 
 namespace Msp {
