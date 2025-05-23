@@ -21,6 +21,7 @@ From its MultiWii origins mwp has evolved to support navigation capabilities in 
 * [**Monitoring and warning**](mwp-Radar-View.md) of other airspace users (INAV radar, manned aviation ADS-B)
 * [**Flight log replay**](replay-tools.md)  (Blackbox, OTX/ETX logs, BulletGCSS)
 * [**Embedded video**](mwp_video_player.md) (live and replay)
+* [**RC Control**](mwp-hid-device-support.md) Using joystick / game controller.
 * **Support** functions
     * {{ inav }} [Safehome editor](mwp-safehomes-editor.md), [FW Auto-Land plans](mwp-safehomes-editor.md). [INAV8 Geozone editor](mwp-geozones.md).
 	* [Survey / Search Area Planner](mwp-area-planner.md)

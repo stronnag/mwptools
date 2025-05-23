@@ -143,6 +143,8 @@ namespace Mwp {
     NAVCAPS navcap;
 	uint lmin = 0;
 	uint rccount;
+	uint ltoc = 0;
+	uint ltticks = 0;
 
 	const int MSP_WAITMS = 5;
 
@@ -257,6 +259,10 @@ namespace Mwp {
 		telstats={};
 		seen_msp = false;
 		rccount = 0;
+
+		// duplex checking
+		ltoc = 0;
+		ltticks = 0;
 	}
 
     private void init_sstats() {
@@ -368,12 +374,12 @@ namespace Mwp {
 								serstate = SERSTATE.NORMAL;
 								idcount = 0;
 								queue_cmd(Msp.Cmds.IDENT,null,0);
-							if(inhibit_cookie != 0) {
-								MWPLog.message("Not managing screen / power settings\n");
-								MwpIdle.uninhibit(inhibit_cookie);
-								inhibit_cookie = 0;
-							}
-							run_queue();
+								if(inhibit_cookie != 0) {
+									MWPLog.message("Not managing screen / power settings\n");
+									MwpIdle.uninhibit(inhibit_cookie);
+									inhibit_cookie = 0;
+								}
+								run_queue();
 							} else if ((nticks - lastok) > tlimit ) {
 								if (lastmsg.cmd != Msp.Cmds.INVALID) {
 									telstats.toc++;
@@ -395,6 +401,19 @@ namespace Mwp {
 									}
 									lastok = nticks;
 									tcycle = 0;
+									if(nticks - ltticks > SATINTVL) {
+										var dtoc = telstats.toc - ltoc;
+										var drate = dtoc*1000/(nticks - ltticks);
+										if(drate > 5) {
+											if(conf.msprc_enabled && conf.msprc_full_duplex) {
+												conf.msprc_full_duplex = false;
+												MWPLog.message("ALERT: Disabling msprc_full_duplex due to excessive timeouts\n");
+												 Mwp.add_toast_text("Disabling msprc_full_duplex");
+											}
+										}
+										ltticks = nticks;
+										ltoc = telstats.toc;
+									}
 									resend_last();
 								}
 							}
