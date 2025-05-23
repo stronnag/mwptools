@@ -1856,16 +1856,24 @@
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">#</a></h2>
 <p>From 25.05.07, <a href="https://github.com/stronnag/mwptools">mwp</a> supports using a HID (Human Input Device) to provide RC (stick / switch inputs) to the FC.  An example of this might be running mwp on a game console such as SteamDeck and using the SteamDeck HID (sticks, buttons) to provide TX functions.</p>
 <p>While mwp provides functionality for doing this, it is not condoned as an acceptable way of controlling a UAS. Using <code>NSP_SET_RAW_RC</code> (aka <code>MSPRC</code>) over a MSP telemetry link cannot provide the update rate / performance / reliability / safety of a standard RC TX/RX.</p>
+<ul>
+<li>Lower control update rate as the RC  messages have to interleaved with other telemetry.</li>
+<li>Lower control update rate as the stream is half duplex and 90% of the messages require an acknowledgement.</li>
+<li>Still have to meet INAV's hard real time refresh rate.</li>
+<li>Inefficient message format (e.g. 16 bits per channel vice 11 bits / channel (cf. sBUS, CRSF)).</li>
+<li>The dedicated RC TX can perform additional optimisations in terms of data sizes, refresh rate for switch channels etc.</li>
+</ul>
+<p>A dedicated RC RX has smaller, efficient messages delivered much more frequently, such that if one is dropped it doesn't really matter. Interleaving <code>MSP_SET_RAW_RC</code> within a stream of maybe 9 other telemetry messages means a signification reduction in RC performance. <em>Caveat Emptor!</em></p>
 <h3 id="caveats">Caveats<a class="headerlink" href="#caveats" title="Permanent link">#</a></h3>
 <ul>
-<li>Not supported for MultiWii or "old" INAV (at least prior to 2.0).</li>
+<li>Not supported for "old" INAV (at least prior to 2.0).</li>
 <li>mwp's HID implementation supports the same number of RC channels as does your flight controller (for <code>MSP_SET_RAW_RC</code>).</li>
 <li>mwp will send the lesser of the number of channels supported by the FC and the number of channels defined in the <a href="#rc-mapping-file">RC mapping file</a>.</li>
 </ul>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">#</a></h2>
 <ul>
 <li>Telemetry radio capable sustaining of at least 12 MSP messages / second.</li>
-<li>No other device is using <code>MSP_SET_RAW_RC</code> (this may preclude mLRS).</li>
+<li>No other device is using <code>MSP_SET_RAW_RC</code> (this may preclude some mLRS versions / configurations).</li>
 <li>Either the FC is configured with <code>USE_MSP_RC_OVERRIDE</code> and appropriate <code>msp_override_channels</code> or the FC is configured for <code>set receiver_type = MSP</code></li>
 <li>It is recommended that you have a validated failsafe solution.</li>
 </ul>
@@ -1932,7 +1940,7 @@ Notes:</p>
 <li>It is possible to set an input as inverted, latched or define a deadband.</li>
 </ul>
 <p>Currently the mapping is fixed; if necessary this could be expanded to allow the user to further define the mapping (change ranges, etc.), if that is found necessary.
-For Game Controllers, it is (probably) possible to provide a SDL Mapping file as a parameter to mwp-hid-test (for example, see https://github.com/mdqinc/SDL_GameControllerDB), that will (possibly) help the SDL library to manage the device.</p>
+For Game Controllers, it is (probably) possible to provide a SDL Mapping file as a parameter to mwp-hid-test (for example, see <a href="https://github.com/mdqinc/SDL_GameControllerDB">https://github.com/mdqinc/SDL_GameControllerDB</a>), that may possibly) help the SDL library to manage the device.</p>
 <p><div class="highlight"><pre><span></span><code>$ mwp-hid-test gamecontrollerdb.txt
 </code></pre></div>
 An example file for the SteamDeck might look like:</p>
@@ -2011,12 +2019,12 @@ Button 1 = Channel 10 ; SF
 deadband = 200
 </code></pre></div>
 <ul>
-<li><code>deadband</code> is a global option and is specified with the <code>deadband</code> key and a value in the range 1-1024 (SDL resolution).</li>
+<li><code>deadband</code> is a global option and is specified with the <code>deadband</code> key and a value in the range 1-1024 (in SDL resolution, c. 15 PWM us).</li>
 <li><code>invert</code> is a per-channel keyword. Add <code>invert</code> after the channel number and before any trailing comment.</li>
 </ul>
 <p>In the above example, channels 4, 7 and 9 will be inverted.</p>
 <h2 id="mwp-hid-server">mwp-hid-server<a class="headerlink" href="#mwp-hid-server" title="Permanent link">#</a></h2>
-<p>mwp does not communicate directly with the HID device, this is done by an intermediate program, <code>mwp-hid-server</code> using a simple line orientated, text based UDP protocol. Normally, this is transparent to the user, as mwp handles the invocation of and communications with <code>mwp-hid-server</code>.  It is, however, possible to run <code>mwp-hid-server</code> manually to test your rc mapping file. In addition, having a simple, defined protocol allows other mapping implementations (e.g. other than SDL) to be implemented.</p>
+<p>mwp does not communicate directly with the HID device, this is done by an intermediate program, <code>mwp-hid-server</code> using a simple line orientated, text based protocol. Normally, this is transparent to the user, as mwp handles the invocation of and communications with <code>mwp-hid-server</code>.  It is, however, possible to run <code>mwp-hid-server</code> manually to test your RC mapping file. In addition, having a simple, defined protocol allows other mapping implementations (e.g. other than SDL) to be implemented.</p>
 <h4 id="mwp-hid-server-usage">mwp-hid-server usage<a class="headerlink" href="#mwp-hid-server-usage" title="Permanent link">#</a></h4>
 <div class="highlight"><pre><span></span><code>$ mwp-hid-server  --help
 Usage:
@@ -2044,7 +2052,7 @@ Application Options:
 <li><code>set</code> : sets RC data for the RC channels. Data is provided as a set of space separated values, for example <code>set 1600 1700 1010 1889</code>.</li>
 </ul>
 <p><code>mwp</code> uses only the <code>info</code> and <code>raw</code> commands.</p>
-<p>The <code>mwp-hid-server</code> also accepts commands on STDIN and replies to STDOUT. This is used when spawned by mwp, to mitigate Windows' startup synchronisation issues.</p>
+<p>The <code>mwp-hid-server</code> also accepts commands on <code>STDIN</code> and replies to <code>STDOUT</code>. This is used when spawned by mwp, to mitigate some Windows' startup synchronisation issues.</p>
 <h4 id="mwp-hid-cli"><code>mwp-hid-cli</code><a class="headerlink" href="#mwp-hid-cli" title="Permanent link">#</a></h4>
 <p><code>mwp-hid-cli</code> is a simple command line tool to investigate the hid server. This allows the user to send the server commands listed above to a running <code>mwp-hid-server</code>.</p>
 <div class="highlight"><pre><span></span><code>$ mwp-hid-cli
@@ -2059,18 +2067,21 @@ OpenTX Radiomaster Boxer Joystick Axes: 8 Buttons: 24
 <h2 id="mwp-ui">mwp UI<a class="headerlink" href="#mwp-ui" title="Permanent link">#</a></h2>
 <p>HID support is selectable at run time via mwp's <code>Edit &gt; MSP RC Setting</code> menu option. Note, this option is only sensitive when the main serial port is closed, so you cannot change an open MSP session.</p>
 <p><img alt="settings" src="../images/mwp-rc-set.png" width="30%" /></p>
-<p>If enabled, <code>mwp-hid-server</code> is invoked with the provided mapping file. If you need to pass another option (for example <code>-f</code> for testing), this may be done using the environment variable <code>MWP_HIDOPT</code>, for example <code>MWP_HIDOPT="-f"</code>.</p>
-<p>By default (if no mapping file has been previously set), the settings UI looks for the mapping file in the mwp configuration directory (<code>$XDG_CONFIG_HOME/mwp</code> i.e. <code>~/.config/mwp</code> on POSIX OS). The user may choose any other suitable location.</p>
+<p>If enabled, <code>mwp-hid-server</code> is invoked with the provided mapping file. If you need to pass another option to <code>mwp-hid-server</code>  (for example <code>-f</code> for testing), this may be done using the environment variable <code>MWP_HIDOPT</code>, for example <code>MWP_HIDOPT=-f</code>.</p>
+<p>By default (if no mapping file has been previously set), the settings UI looks for the mapping file in the mwp configuration directory (<code>$XDG_CONFIG_HOME/mwp</code> i.e. <code>~/.config/mwp</code> on POSIX OS, <code>%LOCALAPPDATA%\mwp\</code> on Windows). The user may select any other suitable location in the file chooser..</p>
 <p>With mwp's HID / <code>MSP_SET_RAW_RC</code> enabled, when the <strong>main telemetry channel is started</strong>, the "stick display" icon will show in the bottom right of the map:</p>
 <p><img alt="SticksIcon" src="../images/mwp-rc-stick-icon.png" /></p>
 <p>This may be expanded (click on the icon) to show the sticks.</p>
 <p><img alt="stick-open" src="../images/mwp-rc-stick-open.png" /></p>
+<p>This may be iconised again by right click.</p>
 <h3 id="channel-value-display">Channel value display<a class="headerlink" href="#channel-value-display" title="Permanent link">#</a></h3>
 <p>It is possible to have mwp display channel values (theme sensitive):</p>
 <p><img alt="show-channels light" src="../images/hid-light.png" /></p>
+<p>or</p>
 <p><img alt="show-channels dark" src="../images/hid-dark.png" /></p>
 <p>The user will have to add their own "hot key" / <a href="../mwp-Configuration/#keyboard-accelerators">keyboard accelerator</a> to active the "show-channels" action, for example:</p>
-<div class="highlight"><pre><span></span><code># ~/.config/mwp/accels / %LOCALAPPDATA%\mwp\accels
+<div class="highlight"><pre><span></span><code>### ~/.config/mwp/accels / %LOCALAPPDATA%\mwp\accels ###
+
 # bind &quot;show-channels&quot; to the F2 key
 show-channels F2
 </code></pre></div>
@@ -2079,13 +2090,13 @@ show-channels F2
 <p>mwp's HID implementation distinguishes between <strong>Enabled</strong> and <strong>Activated</strong> as follows:</p>
 <p><strong>Enabled</strong> : In the MSPRC settings dialog means that the <code>mwp-hid-server</code> will start when an MSP port is started and stop when the MSP port is closed. This is a prerequisite for MSPRC.
 <strong>Activated</strong>: This means that that mwp will use data from the <code>mwp-hid-server</code>  to send <code>MSP_SET_RAW_RC</code> to the FC.</p>
-<p>When MSPRC is <strong>Activated</strong>, then mwp will first interrogate the FC <code>MSP_RC</code> to set the current RC channels. At the moment we do nothing with this data, but it could in future to set the value for <code>latch</code>  buttons.
+<p>When MSPRC is <strong>Activated</strong>, then mwp will first interrogate the FC <code>MSP_RC</code> to set the current RC channels. This is used to set the value for <code>latch</code>  buttons.
 After  <code>MSP_RC</code> has been received, mwp will use data from the <code>mwp-hid-server</code>  to send <code>MSP_SET_RAW_RC</code> to the FC.</p>
 <p>The MSPRC function may be <strong>Activated</strong> / <strong>Deactivated</strong> as required while a MSP port is active.</p>
 <p><strong>Activate</strong> is controlled from the <code>File &gt; Edit</code> menu.</p>
 <p><img alt="Screenshot From 2025-05-13 15-21-26" src="https://github.com/user-attachments/assets/be1c71ce-0cb5-4e66-ab3f-7e44dd997ac3" /></p>
 <p>At startup, the <strong>Activate</strong> menu option is set from <strong>Enabled</strong> setting (but can be changed on demand). It is not currently persisted.</p>
-<p>Here's a log fragment showing this:
+<p>Here's an older log fragment showing this:
 (Numbers in brackets) are explained below:</p>
 <div class="highlight"><pre><span></span><code>21:06:11.522260 :HID DBG: pid=255325 53 (1)
 21:06:11.522296 Send HID Info (2)
@@ -2129,14 +2140,22 @@ After  <code>MSP_RC</code> has been received, mwp will use data from the <code>m
 <li>The next polled <code>MSP2_INAV_STATUS</code> reports that the only blocker is "Geozone" (expected for this scenario). In particular "RCLink" is <em>NOT</em> a blocker.</li>
 <li>The user closed the MSP port, ending the experiment.</li>
 </ol>
+<p>Some of the text is changed in later versions, but the flow is the same.</p>
 <h3 id="mwp-settings">mwp settings<a class="headerlink" href="#mwp-settings" title="Permanent link">#</a></h3>
 <p>The MSP RC settings are persisted via the following settings:</p>
 <ul>
 <li><code>msprc-cycletime</code> (default 150ms)</li>
 <li><code>msprc-enabled</code> (default false)</li>
+<li><code>msprc-full-duplex</code> (default false)</li>
 <li><code>msprc-settings</code> RC mapping file (default not set)</li>
 </ul>
 <p>The  <code>msprc-cycletime</code> option defines how often mwp sends <code>MSP_SET_RAW_RC</code> messages. INAV requires at least 5Hz (200ms) to avoid fail-safe. Time slots used for <code>MSP_SET_RAW_RC</code> reduces the time available for MSP telemetry data displayed by mwp, so the user needs to choose a compromise setting that balances RC responsiveness with telemetry data refresh within the constraint of the available bandwidth.</p>
+<p>The <code>msprc-full-duplex</code> settings defines the use of full duplex transmission for <code>MSP_SET_RAW_RC</code> messages. This will better ensure that the cycle-time requirement is met, as "no reply" <code>MSP_SET_RAW_RC</code> are sent independently of the normal MSP telemetry poller.</p>
+<div class="admonition warning">
+<p class="admonition-title">Device Dependency</p>
+<p>If the device does not support full duplex, enabling  <code>msprc-full-duplex</code> will result in major telemetry failure.</p>
+</div>
+<p>mwp attempts to detect excessive timeouts due to <code>msprc-full-duplex</code> being set on a half-duplex device, and will disable <code>msprc-full-duplex</code> in such cases.</p>
 <h2 id="miscellaneous-notes">Miscellaneous notes<a class="headerlink" href="#miscellaneous-notes" title="Permanent link">#</a></h2>
 <ul>
 <li>The hard part of this is arbitrating serial usage between the need to maintain INAV's requirement for <code>MSP_SET_RAW_RC</code> (minimum of 5Hz refesh) and mwp's telemetry requirement (minimum say (also) 5 MSP/sec, though it this is not a hard limit, rather a usability desire).</li>
