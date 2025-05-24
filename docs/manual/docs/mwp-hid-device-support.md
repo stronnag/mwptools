@@ -102,7 +102,7 @@ Definition lines are of the form `Axis N = Channel X` or `Button M = Channel Y`.
 
 !!! Note "RC Map"
 
-    The first four channels channel **must** reflect the RC Map defined in the flight controller (or AERT) for Multiwii, as it is not reordered when sent to the FC.
+    The first four channels channel **must** reflect the RC Map defined in the flight controller (or AERT for Multiwii), as it is not reordered when sent to the FC.
 
 For Game Controllers, it is (probably) possible to provide a SDL Mapping file as a parameter to mwp-hid-test (for example, see [https://github.com/mdqinc/SDL_GameControllerDB](https://github.com/mdqinc/SDL_GameControllerDB)), that may possibly) help the SDL library to manage the device.
 
