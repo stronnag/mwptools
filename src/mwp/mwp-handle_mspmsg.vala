@@ -1419,10 +1419,6 @@ namespace Mwp {
 			if (nchn < Mwp.nrc_chan) {
 				Mwp.nrc_chan = (int)nchn;
 			}
-			if(vi.mvers > 238) {
-				Mwp.nrc_chan = 8;
-			}
-
 			Mwp.rcchans = new int16[nrc_max];
 
 			StringBuilder sb = new StringBuilder("init");
