@@ -1939,8 +1939,11 @@ Notes:</p>
 <li>mwp maps the value from SDL (-32608 to 32607) to RC range 1000-2000. Buttons are mapped from off = 1000 to on = 2000.</li>
 <li>It is possible to set an input as inverted, latched or define a deadband.</li>
 </ul>
-<p>Currently the mapping is fixed; if necessary this could be expanded to allow the user to further define the mapping (change ranges, etc.), if that is found necessary.
-For Game Controllers, it is (probably) possible to provide a SDL Mapping file as a parameter to mwp-hid-test (for example, see <a href="https://github.com/mdqinc/SDL_GameControllerDB">https://github.com/mdqinc/SDL_GameControllerDB</a>), that may possibly) help the SDL library to manage the device.</p>
+<div class="admonition note">
+<p class="admonition-title">RC Map</p>
+<p>The first four channels channel <strong>must</strong> reflect the RC Map defined in the flight controller (or AERT for Multiwii), as it is not reordered when sent to the FC.</p>
+</div>
+<p>For Game Controllers, it is (probably) possible to provide a SDL Mapping file as a parameter to mwp-hid-test (for example, see <a href="https://github.com/mdqinc/SDL_GameControllerDB">https://github.com/mdqinc/SDL_GameControllerDB</a>), that may possibly) help the SDL library to manage the device.</p>
 <p><div class="highlight"><pre><span></span><code>$ mwp-hid-test gamecontrollerdb.txt
 </code></pre></div>
 An example file for the SteamDeck might look like:</p>
