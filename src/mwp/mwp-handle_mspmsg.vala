@@ -36,6 +36,7 @@ namespace Mwp {
 	bool fwachanged;
 	int16[] rcchans;
 	uint8 jbuf [32];
+	uint8 rcmap[4] = {0,1,2,3};
 
 	[Flags]
 	private enum StartupTasks {
@@ -114,6 +115,10 @@ namespace Mwp {
 				cancel_msprc();
 				queue_cmd(msp_get_status,null,0);
 				run_queue();
+				break;
+
+			case Msp.Cmds.RX_MAP:
+				msp.send_command(Msp.Cmds.RC, null, 0);
 				break;
 
 			case Msp.Cmds.INAV_GPS_UBLOX_COMMAND:
@@ -1411,6 +1416,12 @@ namespace Mwp {
 
 			//case Msp.Cmds.SET_RAW_RC:
 			//break;
+
+		case Msp.Cmds.RX_MAP:
+			rcmap = raw;
+			MWPLog.message("RX_MAP %u %u %u %u\n", rcmap[0], rcmap[1], rcmap[2], rcmap[3]);
+			msp.send_command(Msp.Cmds.RC, null, 0);
+			break;
 
 		case Msp.Cmds.RC:
 			var nchn = len/2;
