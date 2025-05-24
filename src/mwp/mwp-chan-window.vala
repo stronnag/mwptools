@@ -24,7 +24,7 @@ namespace Chans {
 
 	public void show_window() {
 		if(cwin == null) {
-			cwin = new Chans.Window(Mwp.window, Mwp.nrc_chan);
+			cwin = new Chans.Window(Mwp.window);
 			cwin.present();
 		} else {
 			cwin.close();
@@ -34,7 +34,7 @@ namespace Chans {
 
 	public class Window : Gtk.Window {
 		private Gtk.Grid g;
-		public Window(Gtk.Window? pw, int maxchn) {
+		public Window(Gtk.Window? pw) {
 			var box = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 4);
 			box.margin_top = 8;
 			box.margin_bottom = 8;
@@ -45,11 +45,11 @@ namespace Chans {
 			g.set_column_spacing (2);
 			box.append(g);
 			Gtk.Label lbl;
-			for(var j = 0; j < maxchn; j++) {
+			for(var j = 0; j < Mwp.nrc_chan; j++) {
 				lbl = new Gtk.Label("Ch%02d".printf(j+1));
 				g.attach(lbl, j, 1);
 			}
-			for(var j = 0; j < maxchn; j++) {
+			for(var j = 0; j < Mwp.nrc_chan; j++) {
 				lbl = new Gtk.Label("----");
 				g.attach(lbl, j, 2);
 			}
@@ -77,7 +77,7 @@ namespace Chans {
 		}
 
 		public void update(int16 []chans) {
-			for(var j = 0; j < chans.length; j++) {
+			for(var j = 0; j < Mwp.nrc_chan; j++) {
 				var lbl =  g.get_child_at(j, 2) as Gtk.Label;
 				lbl.label = "%4d".printf(chans[j]);
 			}

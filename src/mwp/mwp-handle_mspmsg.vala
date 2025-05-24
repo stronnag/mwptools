@@ -1414,13 +1414,16 @@ namespace Mwp {
 
 		case Msp.Cmds.RC:
 			var nchn = len/2;
+			var nrc_max = uint.max(nchn, Mwp.nrc_chan);
+
 			if (nchn < Mwp.nrc_chan) {
 				Mwp.nrc_chan = (int)nchn;
 			}
 			if(vi.mvers > 238) {
 				Mwp.nrc_chan = 8;
 			}
-			Mwp.rcchans = new int16[Mwp.nrc_chan];
+
+			Mwp.rcchans = new int16[nrc_max];
 
 			StringBuilder sb = new StringBuilder("init");
 			for(var j = 0; j < Mwp.nrc_chan; j++) {
