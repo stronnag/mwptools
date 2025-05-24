@@ -10,7 +10,7 @@ Otherwise, if you're using a different (not Debian based) distribution, just cur
 
 The **mwptools** suite is built using the [meson](https://mesonbuild.com/SimpleStart.html) and [ninja](https://ninja-build.org/) toolchain. For most users these will be automatically provided by a `build-essentials` type of package.
 
-For Debian and derivatives there is a ["one stop" installation script](#easy-first-time-install-on-debian-and-derivatives), as well as a x86_64 "Release" `.deb` archive.
+For Debian and derivatives there is a ["one stop" installation script](#easy-first-time-install-on-debian-and-derivatives), (based on Debian "Sid", ymmv), as well as a x86_64 "Release" `.deb` archive.
 
 For Fedora, the is a also a documented list of packages.
 
