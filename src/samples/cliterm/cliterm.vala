@@ -82,10 +82,11 @@ class ClITerm : Object {
         msp.cli_event.connect(() => {
 				MWSerial.INAVEvent? m;
 				while((m = msp.msgq.try_pop()) != null) {
-					if(sendpass)
-						ml.quit();
-					else
+					if(sendpass) {
+						shutdown();
+					} else {
 						Posix.write(1, m.raw, m.len);
+					}
 				}
 			});
 
@@ -100,7 +101,7 @@ class ClITerm : Object {
 			});
 
 		msp.serial_lost.connect(() => {
-				ml.quit();
+				shutdown();
 			});
 
 		if(!msp.available && dev != null) {
@@ -217,8 +218,8 @@ class ClITerm : Object {
     public void run() {
 #if UNIX
         Posix.termios newtio = {0};
+        Posix.tcgetattr (0, out oldtio);
         Posix.tcgetattr (0, out newtio);
-        oldtio = newtio;
         Posix.cfmakeraw(ref newtio);
         Posix.tcsetattr(0, Posix.TCSANOW, newtio);
         try {
