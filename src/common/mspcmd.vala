@@ -62,6 +62,7 @@ namespace Msp {
         FC_VERSION=3,
         BOARD_INFO=4,
         BUILD_INFO=5,
+		RX_MAP = 64,
         IDENT=100,
         STATUS=101,
         RAW_IMU=102,

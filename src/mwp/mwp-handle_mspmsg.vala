@@ -36,7 +36,7 @@ namespace Mwp {
 	bool fwachanged;
 	int16[] rcchans;
 	uint8 jbuf [32];
-	uint8 rcmap[4] = {0,1,2,3};
+	uint8 rcmap[4] = {0,1,2,3}; // AERT
 
 	[Flags]
 	private enum StartupTasks {
@@ -1435,18 +1435,24 @@ namespace Mwp {
 			StringBuilder sb = new StringBuilder("init");
 			for(var j = 0; j < Mwp.nrc_chan; j++) {
 				// AERT => AETR
-				var k = j;
-				if(j == 2) {
-					k = 3;
-				} else if (j == 3) {
-					k = 2;
+				int k;
+				if(j < 4) {
+					k = rcmap[j];
+				} else {
+					k = j;
 				}
 				sb.append_printf(" %d", ((int16[])raw)[k]);
 				Mwp.rcchans[j] = ((int16[])raw)[k];
 			}
 			sb.append_c('\n');
+			uint8 cmap[5];
+			cmap[rcmap[0]] = 'A';
+			cmap[rcmap[1]] = 'E';
+			cmap[rcmap[2]] = 'R';
+			cmap[rcmap[3]] = 'T';
+			cmap[4] = 0;
 			var has_rc = (have_status & ((xarm_flags & ARMFLAGS.ARMING_DISABLED_RC_LINK) == 0));
-			MWPLog.message("RC (AETR) %s %d/%d %s", has_rc.to_string(), nchn, Mwp.nrc_chan, sb.str.substring(4));
+			MWPLog.message("RC (%s) %s %d/%d %s", (string)cmap, has_rc.to_string(), nchn, Mwp.nrc_chan, sb.str.substring(4));
 			if(has_rc) {
 				JSMisc.read_hid_async.begin(jbuf, sb.str,  (o, r) => {
 						JSMisc.read_hid_async.end(r);

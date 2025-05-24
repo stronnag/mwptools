@@ -100,7 +100,10 @@ Definition lines are of the form `Axis N = Channel X` or `Button M = Channel Y`.
 * mwp maps the value from SDL (-32608 to 32607) to RC range 1000-2000. Buttons are mapped from off = 1000 to on = 2000.
 * It is possible to set an input as inverted, latched or define a deadband.
 
-Currently the mapping is fixed; if necessary this could be expanded to allow the user to further define the mapping (change ranges, etc.), if that is found necessary.
+!!! Note "RC Map"
+
+    The first four channels channel **must** reflect the RC Map defined in the flight controller (or AERT) for Multiwii, as it is not reordered when sent to the FC.
+
 For Game Controllers, it is (probably) possible to provide a SDL Mapping file as a parameter to mwp-hid-test (for example, see [https://github.com/mdqinc/SDL_GameControllerDB](https://github.com/mdqinc/SDL_GameControllerDB)), that may possibly) help the SDL library to manage the device.
 
 ```
