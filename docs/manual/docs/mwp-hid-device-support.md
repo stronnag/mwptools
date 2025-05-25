@@ -23,7 +23,7 @@ A dedicated RC RX has smaller, efficient messages delivered much more frequently
 ## Prerequisites
 
 * Telemetry radio capable sustaining of at least 12 MSP messages / second.
-* No other device is using `MSP_SET_RAW_RC` (this may preclude some mLRS versions / configurations).
+* mwp uses `MSP_SET_RAW_RC` (this may preclude use of some mLRS configurations).
 * Either the FC is configured with `USE_MSP_RC_OVERRIDE` and appropriate `msp_override_channels` or the FC is configured for `set receiver_type = MSP`
 * It is recommended that you have a validated failsafe solution.
 
@@ -106,7 +106,45 @@ Definition lines are of the form `Axis N = Channel X` or `Button M = Channel Y`.
 
 !!! Note "Sanity Checking"
 
-    Currently, there is NO sanity checking on the mapping file. Until (or even after) sanity checking is implemented, you are advised to validate the file with `mwp-hid-cli` or `mwp-hid-server -v` to verify that all inputs result in the expected channel values.
+    Currently, there is NO sanity checking on the mapping file. Until (or even after) sanity checking is implemented, you are advised to validate the file with `mwp-hid-server --check FILE` to verify that all inputs result in the expected channel values.
+
+For example:
+
+```
+$ cat /tmp/mh2.txt
+# Axis
+# Buttons
+Button 0 = Channel 17 ;
+Button 1 = Channel 18 ;
+```
+results in:
+
+```
+$ mwp-hid-server --check /tmp/mh2.txt
+Button 0: channel 17, ctype 0, lval 0, lmax 2
+Button 1: channel 18, ctype 0, lval 0, lmax 2
+
+Channel 1 undefined
+Channel 2 undefined
+Channel 3 undefined
+Channel 4 undefined
+Channel 5 undefined
+Channel 6 undefined
+Channel 7 undefined
+Channel 8 undefined
+Channel 9 undefined
+Channel 10 undefined
+Channel 11 undefined
+Channel 12 undefined
+Channel 13 undefined
+Channel 14 undefined
+Channel 15 undefined
+Channel 16 undefined
+Channel 17 Button 0
+Channel 18 Button 1
+
+*** Note: Undefined channels ***
+```
 
 For Game Controllers, it is (probably) possible to provide a SDL Mapping file as a parameter to mwp-hid-test (for example, see [https://github.com/mdqinc/SDL_GameControllerDB](https://github.com/mdqinc/SDL_GameControllerDB)), that may possibly) help the SDL library to manage the device.
 
