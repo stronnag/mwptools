@@ -1707,6 +1707,7 @@ namespace Mwp {
                         tcycle = 0;
                         lastm = nticks;
                         serstate = SERSTATE.POLLER;
+						Mwp.lastp.start();
                         Audio.start_audio();
                     }
                 }

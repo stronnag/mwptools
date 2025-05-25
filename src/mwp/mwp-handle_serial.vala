@@ -526,6 +526,7 @@ namespace Mwp {
 							lastok = lastrx = last_gps = nticks;
 							tcycle = 0;
 							serstate = SERSTATE.POLLER;
+							Mwp.lastp.start();
 							msg_poller();
 						}
 					}
@@ -853,11 +854,10 @@ namespace Mwp {
 			}
 			var sb = new StringBuilder();
 
-			sb.append_printf("%.3f s, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %u wait %u, avg poll loop %lu ms messages %lu msg/s %.1f",
+			sb.append_printf("%.3f s, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %u, avg poll loop %lu ms messages %lu msg/s %.1f",
 							 et, stats.rxbytes, stats.txbytes,
 							 stats.rxrate, stats.txrate,
 							 telstats.toc,
-							 telstats.tot,
 							 telstats.avg ,
 							 stats.msgs, mrate);
 			if(rccount > 0) {
