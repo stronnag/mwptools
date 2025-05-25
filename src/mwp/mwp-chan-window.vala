@@ -79,7 +79,11 @@ namespace Chans {
 		public void update(int16 []chans) {
 			for(var j = 0; j < Mwp.nrc_chan; j++) {
 				var lbl =  g.get_child_at(j, 2) as Gtk.Label;
-				lbl.label = "%4d".printf(chans[j]);
+				if(chans[j] == 0) {
+					lbl.label = "----";
+				} else {
+					lbl.label = "%4d".printf(chans[j]);
+				}
 			}
         }
     }

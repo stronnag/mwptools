@@ -118,7 +118,8 @@ namespace Mwp {
 				break;
 
 			case Msp.Cmds.RX_MAP:
-				msp.send_command(Msp.Cmds.RC, null, 0);
+				queue_cmd(Msp.Cmds.RC,null,0);
+				run_queue();
 				break;
 
 			case Msp.Cmds.INAV_GPS_UBLOX_COMMAND:
@@ -688,15 +689,7 @@ namespace Mwp {
 				Logger.fcinfo(MissionManager.last_file, vi, capability, profile, boxnames, vname, devnam, raw[0:len]);
 			}
 			need_mission = false;
-			if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
-				queue_cmd(Msp.Cmds.STATUS,null,0);
-			else {
-				if(inav) {
-					wpmgr.wp_flag = WPDL.GETINFO;
-					queue_cmd(Msp.Cmds.WP_GETINFO, null, 0);
-				}
-				queue_cmd(Msp.Cmds.ACTIVEBOXES,null,0);
-			}
+			queue_cmd(Msp.Cmds.RX_MAP, null,0);
 			break;
 
 		case Msp.Cmds.GPSSTATISTICS:
@@ -1420,7 +1413,7 @@ namespace Mwp {
 		case Msp.Cmds.RX_MAP:
 			rcmap = raw;
 			MWPLog.message("RX_MAP %u %u %u %u\n", rcmap[0], rcmap[1], rcmap[2], rcmap[3]);
-			msp.send_command(Msp.Cmds.RC, null, 0);
+			queue_cmd(Msp.Cmds.RC, null, 0);
 			break;
 
 		case Msp.Cmds.RC:
@@ -1460,6 +1453,15 @@ namespace Mwp {
 					});
 			} else {
 				start_raw_rc_timer();
+			}
+			if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
+				queue_cmd(Msp.Cmds.STATUS,null,0);
+			else {
+				if(inav) {
+					wpmgr.wp_flag = WPDL.GETINFO;
+					queue_cmd(Msp.Cmds.WP_GETINFO, null, 0);
+				}
+				queue_cmd(Msp.Cmds.ACTIVEBOXES,null,0);
 			}
 			break;
 

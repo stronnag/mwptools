@@ -664,13 +664,6 @@ namespace Mwp {
 			}
         }
 
-		if(((Mwp.arm_mask != 0) && Mwp.MspRC.GET in Mwp.use_rc)) {
-			MWPLog.message("Requesting MSP_RC %u\n", vi.mvers);
-			Mwp.use_rc &= ~Mwp.MspRC.GET;
-			msp.send_command(Msp.Cmds.RX_MAP, null, 0);
-			return;
-		}
-
 		if(!conf.msprc_full_duplex) {
 			double et = Mwp.conf.msprc_cycletime/1000.0;
 			if(rctimer.is_active() && rctimer.elapsed() > et) {
@@ -709,7 +702,15 @@ namespace Mwp {
 	private void send_msp_rc() {
 		JSMisc.read_hid_async.begin((uint8[])rcchans, "raw\n",  (o, r) => {
 				var sz = JSMisc.read_hid_async.end(r);
-				if(sz  >=  nrc_chan*2 && rcchans[0] > 0) {
+				if(sz  >=  nrc_chan*2) {
+					/**
+					StringBuilder sb = new StringBuilder(":RAW:");
+					for(int j = 0; j < nrc_chan; j++) {
+						sb.append_printf(" %4d", rcchans[j]);
+					}
+					sb.append_c('\n');
+					MWPLog.message(sb.str);
+					**/
 					if(conf.msprc_full_duplex && (Mwp.MspRC.SET in Mwp.use_rc)) {
 						msp.send_command(Msp.Cmds.SET_RAW_RC, (uint8[])rcchans, nrc_chan*2);
 						rccount++;

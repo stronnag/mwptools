@@ -52,12 +52,12 @@ public class JoyReader {
 	}
 
 	public void set_sizes(int nax, int nbtn, int nba=0, int nhat=0) {
-		if (nax > 0) {
+		//		if (nax > 0) {
 			axes = new ChanDef[nax];
-		}
-		if (nbtn > 0) {
+			//}
+			//if (nbtn > 0) {
 			buttons = new ChanDef[nbtn];
-		}
+			//}
 		if (nba > 0){
 			balls = new ChanDef[nba];
 		}
@@ -105,17 +105,66 @@ public class JoyReader {
 	}
 
 	public void dump_chandef() {
+		int j =0;
 		foreach(var a in axes) {
 			if (a.channel != 0) {
-				stderr.printf("Axis: channel %d, ctype %x, lval %u, lmax %u\n",
-							  a.channel, a.ctype, a.lval, a.lmax);
+				stderr.printf("Axis %d: channel %d, ctype %x, lval %u, lmax %u\n",
+							  j, a.channel, a.ctype, a.lval, a.lmax);
 			}
+			j++;
 		}
+		j = 0;
 		foreach(var b in buttons) {
 			if (b.channel != 0) {
-				stderr.printf("Button: channel %d, ctype %x, lval %u, lmax %u\n",
-						  b.channel, b.ctype, b.lval, b.lmax);
+				stderr.printf("Button %d: channel %d, ctype %x, lval %u, lmax %u\n",
+							  j, b.channel, b.ctype, b.lval, b.lmax);
 			}
+			j++;
+		}
+	}
+
+	public void dump_channels() {
+		string? []? chanset;
+		chanset = new string[channels.length];
+		int j =0;
+		foreach(var a in axes) {
+			if (a.channel != 0) {
+				var s = " Axis %d".printf(j);
+				if (chanset[a.channel-1] == null) {
+					chanset[a.channel-1] = s;
+				} else {
+					chanset[a.channel-1] += s;
+				}
+			}
+			j++;
+		}
+		j = 0;
+		foreach(var b in buttons) {
+			if (b.channel != 0) {
+				var s = " Button %d".printf(j);
+				if (chanset[b.channel-1] == null) {
+					chanset[b.channel-1] = s;
+				} else {
+					chanset[b.channel-1] += s;
+				}
+			}
+			j++;
+		}
+		j = 1;
+		var ndef = false;
+		foreach(var c in chanset) {
+			stderr.printf("Channel %d", j);
+			if(c == null) {
+				stderr.printf(" undefined");
+				ndef = true;
+			} else {
+				stderr.printf(c);
+			}
+			stderr.printf("\n");
+			j++;
+		}
+		if(ndef) {
+			stderr.printf("\n*** Note: Undefined channels ***\n");
 		}
 	}
 

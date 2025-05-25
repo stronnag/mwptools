@@ -22,6 +22,7 @@ static MainLoop ml;
 public class JoyManager : Object {
 	public static bool verbose;
 	public static bool fake;
+	public static bool check;
 	public static int port;
 
 	private IOChannel io_read;
@@ -359,6 +360,7 @@ const OptionEntry[] options = {
 	{"verbose", 'v', 0, OptionArg.NONE, ref JoyManager.verbose, "Verbose mode", null},
 	{"fake", 'f', 0, OptionArg.NONE, ref JoyManager.fake, "Fake values", null},
 	{"port", 'p', 0, OptionArg.INT, ref JoyManager.port, "Udp port", "31025"},
+	{"check", 'c', 0, OptionArg.NONE, ref JoyManager.check, "Check mapping file", "false"},
 	{null}
 };
 
@@ -380,9 +382,18 @@ static int main(string? []args) {
 	}
 
 	if (args.length > 1) {
-		ml = new MainLoop();
+		if(JoyManager.check) {
+			var jrdr = new JoyReader(true);
+			jrdr.set_sizes(8, 24, 0, 0);
+			jrdr.reader(args[1]);
+			jrdr.dump_chandef();
+			stderr.printf("\n");
+			jrdr.dump_channels();
+			return 0;
+		}
 
 		jm = new JoyManager(args[1], JoyManager.fake);
+		ml = new MainLoop();
 
 		new Thread<int> ("jstick", () => {
 				jm.runner();

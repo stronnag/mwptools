@@ -104,6 +104,10 @@ Definition lines are of the form `Axis N = Channel X` or `Button M = Channel Y`.
 
     The first four channels **must** reflect the RC Map as defined in the flight controller (or AERT for Multiwii), as channels are not reordered when sent to the FC.
 
+!!! Note "Sanity Checking"
+
+    Currently, there is NO sanity checking on the mapping file. Until (or even after) sanity checking is implemented, you are advised to validate the file with `mwp-hid-cli` or `mwp-hid-server -v` to verify that all inputs result in the expected channel values.
+
 For Game Controllers, it is (probably) possible to provide a SDL Mapping file as a parameter to mwp-hid-test (for example, see [https://github.com/mdqinc/SDL_GameControllerDB](https://github.com/mdqinc/SDL_GameControllerDB)), that may possibly) help the SDL library to manage the device.
 
 ```
