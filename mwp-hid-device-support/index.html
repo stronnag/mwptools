@@ -1873,7 +1873,7 @@
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">#</a></h2>
 <ul>
 <li>Telemetry radio capable sustaining of at least 12 MSP messages / second.</li>
-<li>No other device is using <code>MSP_SET_RAW_RC</code> (this may preclude some mLRS versions / configurations).</li>
+<li>mwp uses <code>MSP_SET_RAW_RC</code> (this may preclude use of some mLRS configurations).</li>
 <li>Either the FC is configured with <code>USE_MSP_RC_OVERRIDE</code> and appropriate <code>msp_override_channels</code> or the FC is configured for <code>set receiver_type = MSP</code></li>
 <li>It is recommended that you have a validated failsafe solution.</li>
 </ul>
@@ -1941,8 +1941,45 @@ Notes:</p>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">RC Map</p>
-<p>The first four channels channel <strong>must</strong> reflect the RC Map defined in the flight controller (or AERT for Multiwii), as it is not reordered when sent to the FC.</p>
+<p>The first four channels <strong>must</strong> reflect the RC Map as defined in the flight controller (or AERT for Multiwii), as channels are not reordered when sent to the FC.</p>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Sanity Checking</p>
+<p>Currently, there is NO sanity checking on the mapping file. Until (or even after) sanity checking is implemented, you are advised to validate the file with <code>mwp-hid-server --check FILE</code> to verify that all inputs result in the expected channel values.</p>
+</div>
+<p>For example:</p>
+<p><div class="highlight"><pre><span></span><code>$ cat /tmp/mh2.txt
+# Axis
+# Buttons
+Button 0 = Channel 17 ;
+Button 1 = Channel 18 ;
+</code></pre></div>
+results in:</p>
+<div class="highlight"><pre><span></span><code>$ mwp-hid-server --check /tmp/mh2.txt
+Button 0: channel 17, ctype 0, lval 0, lmax 2
+Button 1: channel 18, ctype 0, lval 0, lmax 2
+
+Channel 1 undefined
+Channel 2 undefined
+Channel 3 undefined
+Channel 4 undefined
+Channel 5 undefined
+Channel 6 undefined
+Channel 7 undefined
+Channel 8 undefined
+Channel 9 undefined
+Channel 10 undefined
+Channel 11 undefined
+Channel 12 undefined
+Channel 13 undefined
+Channel 14 undefined
+Channel 15 undefined
+Channel 16 undefined
+Channel 17 Button 0
+Channel 18 Button 1
+
+*** Note: Undefined channels ***
+</code></pre></div>
 <p>For Game Controllers, it is (probably) possible to provide a SDL Mapping file as a parameter to mwp-hid-test (for example, see <a href="https://github.com/mdqinc/SDL_GameControllerDB">https://github.com/mdqinc/SDL_GameControllerDB</a>), that may possibly) help the SDL library to manage the device.</p>
 <p><div class="highlight"><pre><span></span><code>$ mwp-hid-test gamecontrollerdb.txt
 </code></pre></div>
