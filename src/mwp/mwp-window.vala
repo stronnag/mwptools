@@ -291,7 +291,8 @@ namespace Mwp {
 					var b = s.get_boolean();
 					msprcact.set_state (s);
 					if(b) {
-						Mwp.use_rc |= Mwp.MspRC.ACT|Mwp.MspRC.GET;
+						Mwp.use_rc |= Mwp.MspRC.ACT|Mwp.MspRC.GET|Mwp.MspRC.SET;
+						Mwp.start_raw_rc_timer();
 						if(msp.available && Mwp.conf.show_sticks != 1) {
 							Sticks.create_sticks();
 						}

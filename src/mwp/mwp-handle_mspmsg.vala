@@ -1472,7 +1472,7 @@ namespace Mwp {
 		return handled;
 	}
 
-	private void start_raw_rc_timer() {
+	public void start_raw_rc_timer() {
 		Mwp.use_rc |= Mwp.MspRC.SET;
 		run_rc_timer();
 		MWPLog.message("HID cycletime %u ms\n", conf.msprc_cycletime);
