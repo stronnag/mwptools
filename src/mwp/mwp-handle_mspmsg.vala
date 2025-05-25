@@ -1867,7 +1867,7 @@ namespace Mwp {
 	public void handle_misc_startup() {
 		if (armed == 0 || conf.armed_msp_placebo == false) {
 			if (STATUS in starttasks) {
-				MWPLog.message("Inital starttask %x\n", starttasks);
+				MWPLog.message("Initial starttask %x\n", starttasks);
 				starttasks -= StartupTasks.STATUS;
 				queue_cmd(msp_get_status,null,0);
 				//run_queue();

@@ -663,8 +663,8 @@ namespace Mwp {
 			}
         }
 
-		if(((Mwp.have_api || vi.mvers > 238) && Mwp.MspRC.GET in Mwp.use_rc)) {
-			MWPLog.message("Requesting MSP_RC\n");
+		if(((Mwp.arm_mask != 0) && Mwp.MspRC.GET in Mwp.use_rc)) {
+			MWPLog.message("Requesting MSP_RC %u\n", vi.mvers);
 			Mwp.use_rc &= ~Mwp.MspRC.GET;
 			msp.send_command(Msp.Cmds.RX_MAP, null, 0);
 			return;
@@ -675,6 +675,9 @@ namespace Mwp {
 			if(rctimer.is_active() && rctimer.elapsed() > et) {
 				if((Mwp.MspRC.SET in Mwp.use_rc)) {
 					msp.send_command(Msp.Cmds.SET_RAW_RC, (uint8[])rcchans, nrc_chan*2);
+					if(Mwp.DebugFlags.MSP in Mwp.debug_flags) {
+						MWPLog.message(":DBG: TIM half: %s\n", Msp.Cmds.SET_RAW_RC.format());
+					}
 					rctimer.start();
 					rccount++;
 				}
@@ -710,7 +713,7 @@ namespace Mwp {
 						msp.send_command(Msp.Cmds.SET_RAW_RC, (uint8[])rcchans, nrc_chan*2);
 						rccount++;
 						if(Mwp.DebugFlags.MSP in Mwp.debug_flags) {
-							MWPLog.message(":DBG: TIM send: %s\n", Msp.Cmds.SET_RAW_RC.format());
+							MWPLog.message(":DBG: TIM full: %s\n", Msp.Cmds.SET_RAW_RC.format());
 						}
 					}
 					Sticks.update(rcchans[0], rcchans[1], rcchans[3], rcchans[2]);
