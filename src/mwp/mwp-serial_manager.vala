@@ -309,12 +309,15 @@ namespace Msp {
 			JSMisc.read_hid_async.begin(jbuf, "info\n",  (o, r) => {
 					var sz = JSMisc.read_hid_async.end(r);
 					string jstr = (string)jbuf[:sz];
+					if(jstr == null || jstr == "") {
+						jstr = "none\n";
+					}
 					MWPLog.message("Raw RC: %s", jstr);
 					if(jstr.has_prefix("Channels: ")) {
 						Mwp.nrc_chan = int.parse(jstr.substring(10));
 					}
 					if(Mwp.nrc_chan == 0) {
-						Timeout.add(1000, () => {
+						Timeout.add(10000, () => {
 								request_hid_info();
 								return false;
 							});

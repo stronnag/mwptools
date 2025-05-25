@@ -317,7 +317,6 @@ public class JoyManager : Object {
 									  return false;
 								  }
 								  string buf;
-
 								  try {
 									  var iostat = chan.read_line(out buf, null, null);
 									  if(iostat != IOStatus.NORMAL) {
@@ -326,24 +325,27 @@ public class JoyManager : Object {
 									  }
 									  string cmd = buf.strip();
 									  if(cmd == "quit") {
-										  print("ok\n");
+										  var s = "ok\n";
+										  Posix.write(1, s.data, s.length);
 										  SDL.quit();
 										  ml.quit();
 									  } else if (cmd == "raw") {
 										  var chans = get_channels();
-										  stdout.write ((uint8[])chans);
+										  Posix.write(1, chans, 2*chans.length);
 									  } else if (cmd == "text") {
-										  var s = print_channels();
-										  print("%s\n", s);
+										  var s = "%s\n".printf(print_channels());
+										  Posix.write(1, s.data, s.length);
 									  } else if (cmd == "info") {
-										  print("%s\n", get_info());
+										  var s = "%s\n".printf(get_info());
+										  Posix.write(1, s.data, s.length);
 									  } else if (cmd.has_prefix("init")) {
 										  set_init_chans(cmd);
-										  print("ok\n");
+										  var s = "ok\n";
+										  Posix.write(1, s.data, s.length);
 									  } else {
-										  print("err\n");
+										  var s = "err\n";
+										  Posix.write(1, s.data, s.length);
 									  }
-									  stdout.flush();
 									  return true;
 								  } catch (Error e) {
 									  stderr.printf("Reader: %s\n", e.message);
