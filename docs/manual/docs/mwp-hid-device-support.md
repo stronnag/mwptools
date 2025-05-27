@@ -224,6 +224,32 @@ Button 1 = Channel 10 latch=3 invert ; SF
 default = 1505
 ```
 
+Results in (`--check`)
+
+
+Mapping File:
+
+```
+default = 1505
+# Axis
+# Buttons
+Button 4 = Channel 12 ;
+Button 3 = Channel 20 latch ;
+```
+
+Check show:
+```
+Channel 1 undefined (1505)
+Channel 2 undefined (1505)
+...
+Channel 11 undefined (1505)
+Channel 12 Button 4
+Channel 13 undefined (1505)
+...
+Channel 19 undefined (1505)
+Channel 20 Button 3
+```
+
 ### mwp-hid-test usage
 
 ```
@@ -285,6 +311,7 @@ Application Options:
   -v, --verbose        Verbose mode
   -f, --fake           Fake values (for testing without HID hardware)
   -p, --port=31025     Udp port
+  -c, --check=false    Check mapping file
 ```
 
 * `rc-mapping-file` is the simple text file that maps the capabilities of the HID device to RC Channels. This was discussed above.
