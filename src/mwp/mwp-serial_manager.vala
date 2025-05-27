@@ -394,7 +394,10 @@ namespace Msp {
 						Mwp.msp.use_v2 = false;
 						if(Misc.is_msprc_enabled()) {
 							start_hid();
-							request_hid_info();
+							Timeout.add(500, () => {
+									request_hid_info();
+									return false;
+								});
 						}
 						Mwp.queue_cmd(Msp.Cmds.IDENT,null,0);
 						Mwp.run_queue();

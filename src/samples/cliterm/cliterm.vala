@@ -265,7 +265,6 @@ class ClITerm : Object {
 #endif
 	}
 
-
 	private void process_input(uchar c) {
 		uint8 obuf[2];
 		if (msp.available) {

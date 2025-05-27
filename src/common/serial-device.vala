@@ -737,17 +737,31 @@ public class MWSerial : Object {
 		new Thread<bool>("send-thr", () => {
 				SQI sqi;
 				ssize_t sz = 0;
-				while (true) {
+				bool ok = true;
+				while (ok) {
 					sqi = sq.pop();
 					if(sqi.len == 0) {
 						break;
 					}
 					sz =  _write(sqi.data, sqi.len);
-					if(sz < 0) {
-						break;
+#if !WINDOWS
+					while (sz < 0) {
+						if(lasterr == Posix.EAGAIN || lasterr == Posix.EINTR) {
+							Thread.usleep(5);
+							sz =  _write(sqi.data, sqi.len);
+						} else {
+							ok = false;
+							break;
+						}
 					}
+#else
+					if (sz < 0) {
+						ok = false;
+					}
+#endif
 				}
 				MWPLog.message(":SQI: Close writer thread\n");
+				close();
 				while(sq.try_pop() != null)
 					;
 				sq = null;
@@ -2039,6 +2053,9 @@ public class MWSerial : Object {
 			MWPLog.message("Write fails: %s\n", e.message);
 			sz = -1;
 		}
+		if(sz < 0) {
+			lasterr = MwpSerial.get_error_number();
+		}
 		return sz;
 	}
 
@@ -2072,9 +2089,6 @@ public class MWSerial : Object {
 		}
 		if(rawlog) {
 			log_raw('o', buf, (int)count);
-		}
-		if(sz < 0) {
-			close();
 		}
 		return sz;
 	}
