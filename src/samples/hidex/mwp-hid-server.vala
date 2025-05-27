@@ -388,9 +388,8 @@ static int main(string? []args) {
 			var jrdr = new JoyReader(true);
 			jrdr.set_sizes(8, 24, 0, 0);
 			jrdr.reader(args[1]);
-			jrdr.dump_chandef();
 			stderr.printf("\n");
-			jrdr.dump_channels();
+			jrdr.dump_chandef();
 			return 0;
 		}
 

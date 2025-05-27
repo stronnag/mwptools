@@ -121,30 +121,31 @@ results in:
 
 ```
 $ mwp-hid-server --check /tmp/mh2.txt
-Button 0: channel 17, ctype 0, lval 0, lmax 2
-Button 1: channel 18, ctype 0, lval 0, lmax 2
-
-Channel 1 undefined
-Channel 2 undefined
-Channel 3 undefined
-Channel 4 undefined
-Channel 5 undefined
-Channel 6 undefined
-Channel 7 undefined
-Channel 8 undefined
-Channel 9 undefined
-Channel 10 undefined
-Channel 11 undefined
-Channel 12 undefined
-Channel 13 undefined
-Channel 14 undefined
-Channel 15 undefined
-Channel 16 undefined
+Channel 1 undefined (0)
+Channel 2 undefined (0)
+Channel 3 undefined (0)
+Channel 4 undefined (0)
+Channel 5 undefined (0)
+Channel 6 undefined (0)
+Channel 7 undefined (0)
+Channel 8 undefined (0)
+Channel 9 undefined (0)
+Channel 10 undefined (0)
+Channel 11 undefined (0)
+Channel 12 undefined (0)
+Channel 13 undefined (0)
+Channel 14 undefined (0)
+Channel 15 undefined (0)
+Channel 16 undefined (0)
 Channel 17 Button 0
 Channel 18 Button 1
 
 *** Note: Undefined channels ***
+
+Button 0: channel 17, ctype 0, lval 0, lmax 2
+Button 1: channel 18, ctype 0, lval 0, lmax 2
 ```
+he value in parentheses after "undefined" indicates the value that will be sent for undefined channels. In a valid value is needed (for example CRSF/SBUS and MSP Override), see the `default` keyword.
 
 For Game Controllers, it is (probably) possible to provide a SDL Mapping file as a parameter to mwp-hid-test (for example, see [https://github.com/mdqinc/SDL_GameControllerDB](https://github.com/mdqinc/SDL_GameControllerDB)), that may possibly) help the SDL library to manage the device.
 
@@ -185,7 +186,6 @@ Button 3 = Channel 16 ; SL (Y)
 
 Note the use of `invert`. Mapping file courtesy of GH user @arealmess.
 
-
 #### The `invert` modifier
 
 Inverts the input. May be applied to axes and buttons.
@@ -211,6 +211,19 @@ Inverted latches are also valid.
 Button 1 = Channel 10 latch=3 invert ; SF
 ```
 
+#### The `deadband` keyword
+
+`deadband` is a global option and is specified with the `deadband` key and a value in the range 1-1024 (in SDL resolution, c. 15 PWM us).
+
+#### The `default` keyword
+
+`default` is a global option and specifies the value that will be transmitted for undefined channels. The default is 0, which means that INAV/MSP will ignore the channel. For INAV/RX (SBUS, CRSF) a valid value is needed for undefined channels, even with override.
+
+```
+# Use a valid value for undefined channels
+default = 1505
+```
+
 ### mwp-hid-test usage
 
 ```
@@ -227,9 +240,9 @@ Application Options:
 
 Note that deadband is applied in terms of the SDL resolution, so 1 microsecond of RC PWM is equivalent to c. 65 SDL units.
 
-### Mapping file with deadband
+### Mapping file with modifiers
 
-The mapping file supports deadband and invert, for example:
+e.g.  deadband and invert:
 
 ```
 $ less boxer.txt
