@@ -1200,6 +1200,24 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#the-deadband-keyword" class="md-nav__link">
+    <span class="md-ellipsis">
+      The deadband keyword
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-default-keyword" class="md-nav__link">
+    <span class="md-ellipsis">
+      The default keyword
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#mwp-hid-test-usage" class="md-nav__link">
     <span class="md-ellipsis">
       mwp-hid-test usage
@@ -1209,9 +1227,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#mapping-file-with-deadband" class="md-nav__link">
+  <a href="#mapping-file-with-modifiers" class="md-nav__link">
     <span class="md-ellipsis">
-      Mapping file with deadband
+      Mapping file with modifiers
     </span>
   </a>
   
@@ -1337,6 +1355,57 @@
         
       </ul>
     </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#inav-rc-quirks" class="md-nav__link">
+    <span class="md-ellipsis">
+      INAV RC Quirks
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="INAV RC Quirks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#general" class="md-nav__link">
+    <span class="md-ellipsis">
+      General
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inavs-msp-protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      INAV's MSP protocol
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inavs-rx-protocols-sbus-crsf-etc" class="md-nav__link">
+    <span class="md-ellipsis">
+      INAV's RX protocols (SBus, CRSF etc.)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example
+    </span>
+  </a>
   
 </li>
         
@@ -1688,6 +1757,24 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#the-deadband-keyword" class="md-nav__link">
+    <span class="md-ellipsis">
+      The deadband keyword
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-default-keyword" class="md-nav__link">
+    <span class="md-ellipsis">
+      The default keyword
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#mwp-hid-test-usage" class="md-nav__link">
     <span class="md-ellipsis">
       mwp-hid-test usage
@@ -1697,9 +1784,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#mapping-file-with-deadband" class="md-nav__link">
+  <a href="#mapping-file-with-modifiers" class="md-nav__link">
     <span class="md-ellipsis">
-      Mapping file with deadband
+      Mapping file with modifiers
     </span>
   </a>
   
@@ -1833,6 +1920,57 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#inav-rc-quirks" class="md-nav__link">
+    <span class="md-ellipsis">
+      INAV RC Quirks
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="INAV RC Quirks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#general" class="md-nav__link">
+    <span class="md-ellipsis">
+      General
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inavs-msp-protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      INAV's MSP protocol
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inavs-rx-protocols-sbus-crsf-etc" class="md-nav__link">
+    <span class="md-ellipsis">
+      INAV's RX protocols (SBus, CRSF etc.)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1955,31 +2093,32 @@ Button 0 = Channel 17 ;
 Button 1 = Channel 18 ;
 </code></pre></div>
 results in:</p>
-<div class="highlight"><pre><span></span><code>$ mwp-hid-server --check /tmp/mh2.txt
-Button 0: channel 17, ctype 0, lval 0, lmax 2
-Button 1: channel 18, ctype 0, lval 0, lmax 2
-
-Channel 1 undefined
-Channel 2 undefined
-Channel 3 undefined
-Channel 4 undefined
-Channel 5 undefined
-Channel 6 undefined
-Channel 7 undefined
-Channel 8 undefined
-Channel 9 undefined
-Channel 10 undefined
-Channel 11 undefined
-Channel 12 undefined
-Channel 13 undefined
-Channel 14 undefined
-Channel 15 undefined
-Channel 16 undefined
+<p><div class="highlight"><pre><span></span><code>$ mwp-hid-server --check /tmp/mh2.txt
+Channel 1 undefined (0)
+Channel 2 undefined (0)
+Channel 3 undefined (0)
+Channel 4 undefined (0)
+Channel 5 undefined (0)
+Channel 6 undefined (0)
+Channel 7 undefined (0)
+Channel 8 undefined (0)
+Channel 9 undefined (0)
+Channel 10 undefined (0)
+Channel 11 undefined (0)
+Channel 12 undefined (0)
+Channel 13 undefined (0)
+Channel 14 undefined (0)
+Channel 15 undefined (0)
+Channel 16 undefined (0)
 Channel 17 Button 0
 Channel 18 Button 1
 
 *** Note: Undefined channels ***
+
+Button 0: channel 17, ctype 0, lval 0, lmax 2
+Button 1: channel 18, ctype 0, lval 0, lmax 2
 </code></pre></div>
+he value in parentheses after "undefined" indicates the value that will be sent for undefined channels. In a valid value is needed (for example CRSF/SBUS and MSP Override), see the <code>default</code> keyword.</p>
 <p>For Game Controllers, it is (probably) possible to provide a SDL Mapping file as a parameter to mwp-hid-test (for example, see <a href="https://github.com/mdqinc/SDL_GameControllerDB">https://github.com/mdqinc/SDL_GameControllerDB</a>), that may possibly) help the SDL library to manage the device.</p>
 <p><div class="highlight"><pre><span></span><code>$ mwp-hid-test gamecontrollerdb.txt
 </code></pre></div>
@@ -2028,6 +2167,32 @@ Button 3 = Channel 16 ; SL (Y)
 <p>Inverted latches are also valid.</p>
 <div class="highlight"><pre><span></span><code>Button 1 = Channel 10 latch=3 invert ; SF
 </code></pre></div>
+<h4 id="the-deadband-keyword">The <code>deadband</code> keyword<a class="headerlink" href="#the-deadband-keyword" title="Permanent link">#</a></h4>
+<p><code>deadband</code> is a global option and is specified with the <code>deadband</code> key and a value in the range 1-1024 (in SDL resolution, c. 15 PWM us).</p>
+<h4 id="the-default-keyword">The <code>default</code> keyword<a class="headerlink" href="#the-default-keyword" title="Permanent link">#</a></h4>
+<p><code>default</code> is a global option and specifies the value that will be transmitted for undefined channels. The default is 0, which means that INAV/MSP will ignore the channel. For INAV/RX (SBUS, CRSF) a valid value is needed for undefined channels, even with override.</p>
+<div class="highlight"><pre><span></span><code># Use a valid value for undefined channels
+default = 1505
+</code></pre></div>
+<p>Results in (<code>--check</code>)</p>
+<p>Mapping File:</p>
+<div class="highlight"><pre><span></span><code>default = 1505
+# Axis
+# Buttons
+Button 4 = Channel 12 ;
+Button 3 = Channel 20 latch ;
+</code></pre></div>
+<p>Check show:
+<div class="highlight"><pre><span></span><code>Channel 1 undefined (1505)
+Channel 2 undefined (1505)
+...
+Channel 11 undefined (1505)
+Channel 12 Button 4
+Channel 13 undefined (1505)
+...
+Channel 19 undefined (1505)
+Channel 20 Button 3
+</code></pre></div></p>
 <h3 id="mwp-hid-test-usage">mwp-hid-test usage<a class="headerlink" href="#mwp-hid-test-usage" title="Permanent link">#</a></h3>
 <div class="highlight"><pre><span></span><code>$ mwp-hid-test --help
 Usage:
@@ -2040,8 +2205,8 @@ Application Options:
   -d, --deadband     Deadband (in SDL frame of reference)
 </code></pre></div>
 <p>Note that deadband is applied in terms of the SDL resolution, so 1 microsecond of RC PWM is equivalent to c. 65 SDL units.</p>
-<h3 id="mapping-file-with-deadband">Mapping file with deadband<a class="headerlink" href="#mapping-file-with-deadband" title="Permanent link">#</a></h3>
-<p>The mapping file supports deadband and invert, for example:</p>
+<h3 id="mapping-file-with-modifiers">Mapping file with modifiers<a class="headerlink" href="#mapping-file-with-modifiers" title="Permanent link">#</a></h3>
+<p>e.g.  deadband and invert:</p>
 <div class="highlight"><pre><span></span><code>$ less boxer.txt
 # Sticks
 Axis 0 = Channel 1 ; Aileron
@@ -2077,6 +2242,7 @@ Application Options:
   -v, --verbose        Verbose mode
   -f, --fake           Fake values (for testing without HID hardware)
   -p, --port=31025     Udp port
+  -c, --check=false    Check mapping file
 </code></pre></div>
 <ul>
 <li><code>rc-mapping-file</code> is the simple text file that maps the capabilities of the HID device to RC Channels. This was discussed above.</li>
@@ -2219,6 +2385,42 @@ After  <code>MSP_RC</code> has been received, mwp will use data from the <code>m
 <div class="highlight"><pre><span></span><code>11:36:04.735320 2100.442s, rx 659187b, tx 712573b, (314b/s, 339b/s) to 2 wait 0, avg poll loop 88 ms messages 36053 msg/s 17.2
 </code></pre></div>
 <p>This device appears usable.</p>
+<h2 id="inav-rc-quirks">INAV RC Quirks<a class="headerlink" href="#inav-rc-quirks" title="Permanent link">#</a></h2>
+<p>There are a number of implementation details concerning RC channels and INAV, in particular differences between MSP and traditional (SBUS / CRSF) protocols.</p>
+<h3 id="general">General<a class="headerlink" href="#general" title="Permanent link">#</a></h3>
+<ul>
+<li>Prior to INAV 9.0, firmware was not built by default with <code>USE_MSP_RC_OVERRIDE</code> set, so you need MSP override, you may need to build your own firmware.</li>
+<li>Prior to INAV 9.0, you could only override the first 16 channels; INAV 9 will allow overriding 32 channels.</li>
+</ul>
+<h3 id="inavs-msp-protocol">INAV's MSP protocol<a class="headerlink" href="#inavs-msp-protocol" title="Permanent link">#</a></h3>
+<ul>
+<li>Does not need <code>USE_MSP_RC_OVERRIDE</code>, flight mode <code>MSP RC Override</code>  or a run time <code>set msp_override_channels = N</code> CLI setting.</li>
+<li>INAV will ignore (hold) channels with value of 0. With creative use of a mapping file and limit on number of channels sent by mLRS, you can share input between mLRS and mwp. Do not use the <code>efault</code> keyword in your mapping file.</li>
+</ul>
+<h3 id="inavs-rx-protocols-sbus-crsf-etc">INAV's RX protocols (SBus, CRSF etc.)<a class="headerlink" href="#inavs-rx-protocols-sbus-crsf-etc" title="Permanent link">#</a></h3>
+<ul>
+<li>Requires the use of <code>USE_MSP_RC_OVERRIDE</code>, flight mode <code>MSP RC Override</code>  and a run time <code>set msp_override_channels = N</code> CLI setting.</li>
+<li>Override channels sent to the FC must have value PWM values. Channel validity is checked even before the override mask.</li>
+</ul>
+<h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code># With MSP RC,
+# default = 0
+# ... or don&#39;t have a default line
+
+# For &quot;Standard&quot; RC, there must be a valid RC value for all channels
+# default = 1505
+
+# Axis
+# Buttons
+Button 2 = Channel 17 ;
+Button 3 = Channel 18 latch ;
+</code></pre></div>
+<p>For "standard RC" you would need:</p>
+<ul>
+<li>Firmware built with <code>#define USE_MSP_RC_OVERRIDE</code> (the default in INAV 9)</li>
+<li>Flight mode <code>MSP RC Override</code> asserted.</li>
+<li>CLI setting: <code>set msp_override_channels = 196608</code> (requires INAV 9 to override channels &gt; 16).</li>
+</ul>
 
 
 
