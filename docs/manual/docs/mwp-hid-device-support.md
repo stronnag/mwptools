@@ -509,3 +509,45 @@ Telemetry device: Ebyte E220 LoRa, 115200 ground speed, 62500 air speed, USB con
 ```
 
 This device appears usable.
+
+
+## INAV RC Quirks
+
+There are a number of implementation details concerning RC channels and INAV, in particular differences between MSP and traditional (SBUS / CRSF) protocols.
+
+### General
+
+* Prior to INAV 9.0, firmware was not built by default with ` USE_MSP_RC_OVERRIDE` set, so you need MSP override, you may need to build your own firmware.
+* Prior to INAV 9.0, you could only override the first 16 channels; INAV 9 will allow overriding 32 channels.
+
+### INAV's MSP protocol
+
+* Does not need `USE_MSP_RC_OVERRIDE`, flight mode `MSP RC Override`  or a run time `set msp_override_channels = N` CLI setting.
+* INAV will ignore (hold) channels with value of 0. With creative use of a mapping file and limit on number of channels sent by mLRS, you can share input between mLRS and mwp. Do not use the `efault` keyword in your mapping file.
+
+### INAV's RX protocols (SBus, CRSF etc.)
+
+* Requires the use of `USE_MSP_RC_OVERRIDE`, flight mode `MSP RC Override`  and a run time `set msp_override_channels = N` CLI setting.
+* Override channels sent to the FC must have value PWM values. Channel validity is checked even before the override mask.
+
+### Example
+
+```
+# With MSP RC,
+# default = 0
+# ... or don't have a default line
+
+# For "Standard" RC, there must be a valid RC value for all channels
+# default = 1505
+
+# Axis
+# Buttons
+Button 2 = Channel 17 ;
+Button 3 = Channel 18 latch ;
+```
+
+For "standard RC" you would need:
+
+* Firmware built with `#define USE_MSP_RC_OVERRIDE` (the default in INAV 9)
+* Flight mode `MSP RC Override` asserted.
+* CLI setting: `set msp_override_channels = 196608` (requires INAV 9 to override channels > 16).
