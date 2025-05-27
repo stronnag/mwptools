@@ -2239,7 +2239,6 @@ public class MWSerial : Object {
 
 	public static size_t generate_v2(uint16 cmd, uint8[]data, size_t len, char _writed, ref uint8[] buf) {
 		uint8 ck2=0;
-
 		uint8* ptx = buf;
 		uint8* pdata = data;
 

@@ -30,7 +30,7 @@ namespace Mwp  {
 	uint rctag = 0;
 
 	Timer rctimer;
-	int nrc_chan = 16;
+	int nrc_chan = 0;
 	MspRC use_rc;
 
 	public void clear_sidebar(MWSerial s) {
@@ -323,11 +323,18 @@ namespace Msp {
 							});
 					} else {
 						if (Mwp.MspRC.ACT in Mwp.use_rc) {
+							Mwp.rctimer.start();
+							if(Mwp.conf.show_sticks != 1) {
+								Sticks.create_sticks();
+							}
 							Mwp.use_rc |= Mwp.MspRC.GET;
-						}
-						Mwp.rctimer.start();
-						if(Mwp.conf.show_sticks != 1) {
-							Sticks.create_sticks();
+							if(Mwp.rcchans != null) {
+								bool starter = ((Mwp.use_rc &  Mwp.MspRC.SET) == 0);
+								Mwp.use_rc |= Mwp.MspRC.SET;
+								if(starter) {
+									Mwp.start_raw_rc_timer();
+								}
+							}
 						}
 					}
 				});
@@ -394,10 +401,7 @@ namespace Msp {
 						Mwp.msp.use_v2 = false;
 						if(Misc.is_msprc_enabled()) {
 							start_hid();
-							Timeout.add(500, () => {
-									request_hid_info();
-									return false;
-								});
+							request_hid_info();
 						}
 						Mwp.queue_cmd(Msp.Cmds.IDENT,null,0);
 						Mwp.run_queue();

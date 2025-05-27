@@ -44,10 +44,12 @@ public class JoyReader {
 	private bool fake;
 
 	public int deadband;
+	public int defval;
 
 	public JoyReader(bool _fake=false) {
 		fake = _fake;
 		deadband = 0;
+		defval = 0;
 		reset_all();
 	}
 
@@ -123,7 +125,7 @@ public class JoyReader {
 		}
 	}
 
-	public void dump_channels() {
+	public void dump_channels(bool show=true) {
 		string? []? chanset;
 		chanset = new string[channels.length];
 		int j =0;
@@ -153,17 +155,22 @@ public class JoyReader {
 		j = 1;
 		var ndef = false;
 		foreach(var c in chanset) {
-			stderr.printf("Channel %d", j);
+			StringBuilder sb = new StringBuilder();
+			sb.append_printf("Channel %d", j);
 			if(c == null) {
-				stderr.printf(" undefined");
+				sb.append_printf(" undefined (%d)", defval);
 				ndef = true;
+				channels[j-1] = defval;
 			} else {
-				stderr.printf(c);
+				sb.append(c);
 			}
-			stderr.printf("\n");
+			sb.append_c('\n');
+			if (show) {
+				stderr.printf(sb.str);
+			}
 			j++;
 		}
-		if(ndef) {
+		if(ndef && show) {
 			stderr.printf("\n*** Note: Undefined channels ***\n");
 		}
 	}
@@ -257,6 +264,12 @@ public class JoyReader {
 									deadband = dbd;
 								}
 								break;
+							case "default":
+								var dbd = int.parse(parts[1].strip());
+								if(dbd > 980 && dbd < 2100) {
+									defval = dbd;
+								}
+								break;
 							default:
 								break;
 							}
@@ -269,6 +282,7 @@ public class JoyReader {
 						maxnc = nc;
 					}
 				}
+				dump_channels(true);
 			}
 		} catch (Error e) {
 			stderr.printf("Err %s\n", e.message);
