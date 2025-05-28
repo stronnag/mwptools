@@ -718,5 +718,11 @@
       <description>Mapping file defining the mapping between handset input devices to RC channels for MSP_SET_RAW_RC messages</description>
     </key>
 
+    <key name="default-video-uri" type="s">
+      <summary>Default video URI</summary>
+      <default>""</default>
+      <description>Default entry in the video player URI chooser</description>
+    </key>
+
  </schema>
 </schemalist>

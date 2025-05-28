@@ -36,6 +36,7 @@ blpfiles = [
   'mwpsetting.blp',
   'mwpsetedit.blp',
   'msprc_dialog.blp',
+  'mwp-video-source.blp',
 ]
 
 blueprints_ui = []

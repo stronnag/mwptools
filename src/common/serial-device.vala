@@ -928,10 +928,10 @@ public class MWSerial : Object {
 												sz = (ssize_t)ssz;
 											}
 											if (sz <= 0) {
-												MWPLog.message("Serial read: %d\n", sz);
 												lasterr = MwpSerial.get_error_number();
+												MWPLog.message("Serial read: %d\n", sz);
 												var cstr = format_condition(cond);
-												MWPLog.message("Read Condition: %s\n", cstr);
+												MWPLog.message("Tty Read Condition: %s (%d)\n", cstr, lasterr);
 												serial_lost();
 												return false;
 											}

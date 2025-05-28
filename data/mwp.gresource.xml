@@ -36,6 +36,7 @@
     <file preprocess="xml-stripblanks" compressed="true">assistnow.ui</file>
     <file preprocess="xml-stripblanks" compressed="true">radar_devices.ui</file>
     <file preprocess="xml-stripblanks" compressed="true">msprc_dialog.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">mwp-video-source.ui</file>
 
     <file preprocess="xml-stripblanks" compressed="true">pixmaps/wind-arrow.svg</file>
     <file preprocess="xml-stripblanks" compressed="true">pixmaps/question-mark.svg</file>

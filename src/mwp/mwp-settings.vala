@@ -119,6 +119,7 @@ public class MWPSettings : GLib.Object {
 	public bool msprc_full_duplex {get; set; default=false;}
 	public uint msprc_cycletime {get; set; default=150;}
 	public string msprc_settings {get; set; default="";}
+	public string default_video_uri {get; set; default="";}
 
 	construct {
 #if DARWIN
@@ -247,6 +248,7 @@ public class MWPSettings : GLib.Object {
 		settings.bind("msprc-full-duplex", this, "msprc-full-duplex", SettingsBindFlags.DEFAULT);
 		settings.bind("msprc-cycletime", this, "msprc-cycletime", SettingsBindFlags.DEFAULT);
 		settings.bind("msprc-settings", this, "msprc-settings", SettingsBindFlags.DEFAULT);
+		settings.bind("default-video-uri", this, "default-video-uri", SettingsBindFlags.DEFAULT);
 
 		settings.bind("p-width", Mwp.window, "default-width", SettingsBindFlags.DEFAULT);
 		settings.bind("p-height", Mwp.window, "default-height", SettingsBindFlags.DEFAULT);

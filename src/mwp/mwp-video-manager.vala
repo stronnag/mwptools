@@ -17,6 +17,68 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+namespace V4L2 {
+	[GtkTemplate (ui = "/org/stronnag/mwp/mwp-video-source.ui")]
+	public class Window : Adw.Window {
+		[GtkChild]
+		internal unowned Gtk.CheckButton webcam;
+		[GtkChild]
+		internal unowned Gtk.CheckButton urichk;
+		[GtkChild]
+		internal unowned Gtk.Entry uritxt;
+		[GtkChild]
+		internal unowned Gtk.Button apply;
+		[GtkChild]
+		internal unowned Gtk.Box v2;
+		[GtkChild]
+		internal unowned Gtk.Label dummy;
+
+		public signal void response(int id);
+
+		public Window(Gtk.DropDown viddev_c) {
+			transient_for = Mwp.window;
+			urichk.active = true;
+
+			uritxt.text = Mwp.conf.default_video_uri;
+#if WINDOWS
+			webcam.sensitive = false;
+#else
+			if(viddev_c != null) {
+				v2.remove(dummy);
+				v2.prepend(viddev_c);
+				var sl = viddev_c.model as Gtk.StringList;
+				if(sl.n_items == 1) {
+					webcam.sensitive = false;
+				} else {
+					viddev_c.selected = 1;
+				}
+			}
+#endif
+			close_request.connect(()=> {
+					response(-1);
+					return false;
+				});
+
+			apply.clicked.connect(() => {
+					response(0);
+				});
+		}
+
+		public int result(out string uri) {
+			uri=null;
+			if (webcam != null && webcam.active) {
+				return 0;
+			} else {
+				uri = uritxt.text;
+				if (uri.length > 0) {
+					Mwp.conf.default_video_uri = uri;
+				}
+				return 1;
+			}
+		}
+	}
+}
+
 namespace VideoMan {
 	public enum State {
 		PLAYING=1,
@@ -27,7 +89,7 @@ namespace VideoMan {
 	public void load_v4l2_video() {
 		string uri = null;
 		int res = -1;
-		var vid_dialog = new V4L2_dialog(GstDev.viddev_c);
+		var vid_dialog = new V4L2.Window(GstDev.viddev_c);
 		vid_dialog.response.connect((id) => {
 				if(id == 0) {
 					res = vid_dialog.result(out uri);
@@ -59,12 +121,12 @@ namespace VideoMan {
 						}
 						break;
 					}
-				}
-				vid_dialog.close();
-				vid_dialog = null;
-				if (res != -1) {
-					var vp = new VideoPlayer(uri);
-					vp.present();
+					vid_dialog.close();
+					vid_dialog = null;
+					if (res != -1) {
+						var vp = new VideoPlayer(uri);
+						vp.present();
+					}
 				}
 			});
 		vid_dialog.present();
@@ -131,86 +193,5 @@ public class VideoPlayer : Adw.Window {
 
 	public void set_playing(bool p) {
 		mf.set_playing(p);
-	}
-}
-
-public class V4L2_dialog : Adw.Window {
-
-	private Gtk.Entry e;
-	private Gtk.CheckButton rb0;
-	private Gtk.CheckButton rb1;
-
-	public signal void response(int id);
-
-	public V4L2_dialog(Gtk.DropDown viddev_c) {
-		rb0 = null;
-		transient_for = Mwp.window;
-
-		var tbox = new Adw.ToolbarView();
-		var header_bar = new Adw.HeaderBar();
-		tbox.add_top_bar(header_bar);
-
-		var box = new Gtk.Box(Gtk.Orientation.VERTICAL,2);
-		set_icon_name("mwp_icon");
-		title = "Select Video Source";
-		rb0  = new Gtk.CheckButton.with_label ("Webcams");
-		rb1 = new Gtk.CheckButton.with_label ("URI");
-		rb1.active = true;
-		rb0.set_group(rb1);
-#if WINDOWS
-		rb0.sensitive = false;
-		viddev_c.sensitive = false;
-#endif
-		e = new Gtk.Entry();
-		e.placeholder_text = "http://daria.co.uk/stream.mp4";
-		e.input_purpose = Gtk.InputPurpose.URL;
-		var grid = new Gtk.Grid();
-		box.append(grid);
-
-		if(rb0 != null) {
-			grid.attach(rb0, 0, 0);
-		}
-
-		if (viddev_c != null) {
-			grid.attach(viddev_c, 1, 0);
-		}
-		grid.attach(rb1, 0, 1);
-		grid.attach(e, 1, 1);
-
-		var bbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 2);
-
-		var b0 = new Gtk.Button.with_label("Close");
-		var b1 = new Gtk.Button.with_label("OK");
-
-		bbox.append (b0);
-		bbox.append (b1);
-		bbox.hexpand = true;
-		bbox.halign = Gtk.Align.FILL;
-		b0.hexpand = true;
-		b1.hexpand = true;
-
-		b0.clicked.connect(() => {
-				response(-1);
-			});
-		b1.clicked.connect(() => {
-				response(0);
-			});
-
-		grid.vexpand = true;
-
-		tbox.set_content(box);
-		bbox.add_css_class("toolbar");
-		tbox.add_bottom_bar(bbox);
-		set_content(tbox);
-	}
-
-	public int result(out string uri) {
-		uri=null;
-		if (rb0 != null && rb0.active) {
-            return 0;
-        } else {
-            uri = e.text;
-			return 1;
-        }
 	}
 }

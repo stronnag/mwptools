@@ -1,0 +1,62 @@
+using Gtk 4.0;
+using Adw 1;
+
+Adjustment adjustment_cms {
+  upper: 180;
+  lower: 30;
+  step-increment: 1;
+  page-increment: 10;
+}
+
+template $V4L2Window:   Adw.Window {
+  title: "Select Video Source";
+  icon-name: "mwp_icon";
+
+  Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      decoration-layout: "icon:close";
+    }
+
+    content: Box hbox {
+      orientation: horizontal;
+      spacing: 4;
+      Box v1 {
+	orientation: vertical;
+	hexpand: false;
+	Gtk.CheckButton webcam {
+	  hexpand: true;
+          label: "Webcams";
+	}
+	Gtk.CheckButton urichk {
+	  hexpand: true;
+          label: "URI";
+	  group: webcam;
+	}
+      }
+      Box v2 {
+	hexpand: true;
+	orientation: vertical;
+	Label dummy {
+	  label: "";
+	}
+	Entry uritxt {
+          placeholder-text: "http://daria.co.uk/stream.mp4";
+	  input-purpose: url;
+	}
+      }
+    };
+    [bottom]
+    Box {
+      hexpand: true;
+      halign: end;
+      orientation: horizontal;
+      styles [ "toolbar" ]
+
+      Button apply {
+	hexpand: false;
+        label: _("OK");
+      }
+    }
+  }
+}
