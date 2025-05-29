@@ -216,12 +216,14 @@ executable(
   install : true,
 )
 
-executable(
-  'mwp-hid-cli',
-  hidclisrcs,
-  dependencies: hidclideps,
-  install : true,
-)
+if host_machine.system() != 'darwin'
+  executable(
+    'mwp-hid-cli',
+    hidclisrcs,
+    dependencies: hidclideps,
+    install : true,
+  )
+endif
 
 exe=''
 if build_machine.system() == 'windows'
