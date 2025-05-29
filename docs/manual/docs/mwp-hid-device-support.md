@@ -523,12 +523,12 @@ There are a number of implementation details concerning RC channels and INAV, in
 ### INAV's MSP protocol
 
 * Does not need `USE_MSP_RC_OVERRIDE`, flight mode `MSP RC Override`  or a run time `set msp_override_channels = N` CLI setting.
-* INAV will ignore (hold) channels with value of 0. With creative use of a mapping file and limit on number of channels sent by mLRS, you can share input between mLRS and mwp. Do not use the `efault` keyword in your mapping file.
+* INAV will ignore (hold) channels with value of 0. With creative use of a mapping file and limit on number of channels sent by mLRS, you can share input between mLRS and mwp. Do not use the `default` keyword in your mapping file.
 
 ### INAV's RX protocols (SBus, CRSF etc.)
 
 * Requires the use of `USE_MSP_RC_OVERRIDE`, flight mode `MSP RC Override`  and a run time `set msp_override_channels = N` CLI setting.
-* Override channels sent to the FC must have value PWM values. Channel validity is checked even before the override mask.
+* Override channels sent to the FC must have valid PWM values. Channel validity is checked even before the override mask is applied.
 
 ### Example
 
