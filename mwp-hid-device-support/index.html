@@ -2395,12 +2395,12 @@ After  <code>MSP_RC</code> has been received, mwp will use data from the <code>m
 <h3 id="inavs-msp-protocol">INAV's MSP protocol<a class="headerlink" href="#inavs-msp-protocol" title="Permanent link">#</a></h3>
 <ul>
 <li>Does not need <code>USE_MSP_RC_OVERRIDE</code>, flight mode <code>MSP RC Override</code>  or a run time <code>set msp_override_channels = N</code> CLI setting.</li>
-<li>INAV will ignore (hold) channels with value of 0. With creative use of a mapping file and limit on number of channels sent by mLRS, you can share input between mLRS and mwp. Do not use the <code>efault</code> keyword in your mapping file.</li>
+<li>INAV will ignore (hold) channels with value of 0. With creative use of a mapping file and limit on number of channels sent by mLRS, you can share input between mLRS and mwp. Do not use the <code>default</code> keyword in your mapping file.</li>
 </ul>
 <h3 id="inavs-rx-protocols-sbus-crsf-etc">INAV's RX protocols (SBus, CRSF etc.)<a class="headerlink" href="#inavs-rx-protocols-sbus-crsf-etc" title="Permanent link">#</a></h3>
 <ul>
 <li>Requires the use of <code>USE_MSP_RC_OVERRIDE</code>, flight mode <code>MSP RC Override</code>  and a run time <code>set msp_override_channels = N</code> CLI setting.</li>
-<li>Override channels sent to the FC must have value PWM values. Channel validity is checked even before the override mask.</li>
+<li>Override channels sent to the FC must have valid PWM values. Channel validity is checked even before the override mask is applied.</li>
 </ul>
 <h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">#</a></h3>
 <div class="highlight"><pre><span></span><code># With MSP RC,
