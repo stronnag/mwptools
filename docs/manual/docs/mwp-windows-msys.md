@@ -15,9 +15,11 @@ It is necessary to install the [Msys2](https://www.msys2.org/) toolchain.
 
 ### System Build Dependencies
 
-Add `export LC_ALL=C.utf8` to `.profile` so the `blueprint` UI definitions will compile.
-Set your Msys terminal to UTF-8 as well (Options from the title bar icon)
+* Add `export LC_ALL=C.utf8` to `.profile` (`.bash_profile`) so the `blueprint` UI definitions will compile.
+* Set your Msys terminal to UTF-8 as well (Options from the title bar icon)
 ![Screenshot From 2024-12-04 21-13-24](https://github.com/user-attachments/assets/2114bc69-b419-4f1c-8bf1-1873c6241180)
+* It may also be neccesary to set Windows to use UTF-8.
+* Add `export LC_ALL=C.utf8` to `.profile` (`.bash_profile`).
 
 Then install dependencies.
 
@@ -27,7 +29,7 @@ Then install dependencies.
    mingw-w64-ucrt-x86_64-libadwaita mingw-w64-ucrt-x86_64-libsecret mingw-w64-ucrt-x86_64-libsoup3 git \
    mingw-w64-ucrt-x86_64-vala mingw-w64-ucrt-x86_64-meson mingw-w64-ucrt-x86_64-go \
    mingw-w64-ucrt-x86_64-blueprint-compiler mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-gtk4-media-gstreamer mingw-w64-ucrt-x86_64-librsvg \
-   mingw-w64-ucrt-x86_64-sdl2-compat mingw-w64-ucrt-x86_64-readline
+   mingw-w64-ucrt-x86_64-sdl2 mingw-w64-ucrt-x86_64-readline
 ```
 
 Optional, but recommended:

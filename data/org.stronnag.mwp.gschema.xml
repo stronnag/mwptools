@@ -707,7 +707,7 @@
 
     <key name="msprc-cycletime" type="u">
      <summary>MSP_SET_RAW_RC cycle time (microseconds)</summary>
-     <range min="30" max="180"/>
+     <range min="20" max="180"/>
       <default>150</default>
       <description>Cycle time (ms) for MSP_SET_RAW_RC messages (if enabled). INAV requires a minimum of 5Hz refresh (200ms). A lower cycle time will improve RC response but reduce the MSP telemetry refresh rate</description>
    </key>
