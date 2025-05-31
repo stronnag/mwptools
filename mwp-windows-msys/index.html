@@ -1847,16 +1847,20 @@
 <h2 id="building">Building<a class="headerlink" href="#building" title="Permanent link">#</a></h2>
 <p>It is necessary to install the <a href="https://www.msys2.org/">Msys2</a> toolchain.</p>
 <h3 id="system-build-dependencies">System Build Dependencies<a class="headerlink" href="#system-build-dependencies" title="Permanent link">#</a></h3>
-<p>Add <code>export LC_ALL=C.utf8</code> to <code>.profile</code> so the <code>blueprint</code> UI definitions will compile.
-Set your Msys terminal to UTF-8 as well (Options from the title bar icon)
-<img alt="Screenshot From 2024-12-04 21-13-24" src="https://github.com/user-attachments/assets/2114bc69-b419-4f1c-8bf1-1873c6241180" /></p>
+<ul>
+<li>Add <code>export LC_ALL=C.utf8</code> to <code>.profile</code> (<code>.bash_profile</code>) so the <code>blueprint</code> UI definitions will compile.</li>
+<li>Set your Msys terminal to UTF-8 as well (Options from the title bar icon)
+<img alt="Screenshot From 2024-12-04 21-13-24" src="https://github.com/user-attachments/assets/2114bc69-b419-4f1c-8bf1-1873c6241180" /></li>
+<li>It may also be neccesary to set Windows to use UTF-8.</li>
+<li>Add <code>export LC_ALL=C.utf8</code> to <code>.profile</code> (<code>.bash_profile</code>).</li>
+</ul>
 <p>Then install dependencies.</p>
 <div class="highlight"><pre><span></span><code> pacman -S  --needed mingw-w64-ucrt-x86_64-gtk4 mingw-w64-ucrt-x86_64-gstreamer mingw-w64-ucrt-x86_64-cairo \
    mingw-w64-ucrt-x86_64-pango mingw-w64-ucrt-x86_64-mosquitto mingw-w64-ucrt-x86_64-libshumate \
    mingw-w64-ucrt-x86_64-libadwaita mingw-w64-ucrt-x86_64-libsecret mingw-w64-ucrt-x86_64-libsoup3 git \
    mingw-w64-ucrt-x86_64-vala mingw-w64-ucrt-x86_64-meson mingw-w64-ucrt-x86_64-go \
    mingw-w64-ucrt-x86_64-blueprint-compiler mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-gtk4-media-gstreamer mingw-w64-ucrt-x86_64-librsvg \
-   mingw-w64-ucrt-x86_64-sdl2-compat mingw-w64-ucrt-x86_64-readline
+   mingw-w64-ucrt-x86_64-sdl2 mingw-w64-ucrt-x86_64-readline
 </code></pre></div>
 <p>Optional, but recommended:
 <div class="highlight"><pre><span></span><code>pacman -S --needed unzip mingw-w64-ucrt-x86_64-ruby
