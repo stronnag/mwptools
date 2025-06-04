@@ -118,7 +118,7 @@ namespace Mwp {
 				break;
 
 			case Msp.Cmds.RX_MAP:
-				queue_cmd(Msp.Cmds.RC,null,0);
+				rxmap_next();
 				run_queue();
 				break;
 
@@ -1413,7 +1413,7 @@ namespace Mwp {
 		case Msp.Cmds.RX_MAP:
 			rcmap = raw;
 			MWPLog.message("RX_MAP %u %u %u %u\n", rcmap[0], rcmap[1], rcmap[2], rcmap[3]);
-			queue_cmd(Msp.Cmds.RC, null, 0);
+			rxmap_next();
 			break;
 
 		case Msp.Cmds.RC:
@@ -1449,19 +1449,12 @@ namespace Mwp {
 			if(has_rc) {
 				JSMisc.read_hid_async.begin(jbuf, sb.str,  (o, r) => {
 						JSMisc.read_hid_async.end(r);
-						start_raw_rc_timer();
+						rc_on_ready();
+						MWPLog.message(":DBG: Sending RC info, ready to SET\n");
 					});
 			} else {
-				start_raw_rc_timer();
-			}
-			if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
-				queue_cmd(Msp.Cmds.STATUS,null,0);
-			else {
-				if(inav) {
-					wpmgr.wp_flag = WPDL.GETINFO;
-					queue_cmd(Msp.Cmds.WP_GETINFO, null, 0);
-				}
-				queue_cmd(Msp.Cmds.ACTIVEBOXES,null,0);
+				MWPLog.message(":DBG: Have RC info, ready to SET\n");
+				rc_on_ready();
 			}
 			break;
 
@@ -1472,11 +1465,45 @@ namespace Mwp {
 		return handled;
 	}
 
+	private void rc_on_ready() {
+		if (Mwp.MspRC.ACT in Mwp.use_rc) {
+			Mwp.rctimer.start();
+			if(Mwp.conf.show_sticks != 1) {
+				Sticks.create_sticks();
+			}
+			if(Mwp.rcchans != null) {
+				bool starter = ((Mwp.use_rc &  Mwp.MspRC.SET) == 0);
+				Mwp.use_rc |= Mwp.MspRC.SET;
+				if(starter) {
+					Mwp.start_raw_rc_timer();
+				}
+			}
+		}
+	}
+
+	private void rxmap_next() {
+		Mwp.use_rc |= Mwp.MspRC.MAP;
+		if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
+			queue_cmd(Msp.Cmds.STATUS,null,0);
+		else {
+			if(inav) {
+				wpmgr.wp_flag = WPDL.GETINFO;
+				queue_cmd(Msp.Cmds.WP_GETINFO, null, 0);
+				run_queue();
+			}
+			queue_cmd(Msp.Cmds.ACTIVEBOXES,null,0);
+		}
+	}
+
 	public void start_raw_rc_timer() {
 		if (Mwp.nrc_chan > 0) {
 			Mwp.use_rc |= Mwp.MspRC.SET;
 			run_rc_timer();
 			MWPLog.message("HID cycletime %u ms\n", conf.msprc_cycletime);
+			if(Msp.ssocket == null) {
+				MWPLog.message(":SIN: Startiing\n");
+				Msp.start_sin_reader();
+			}
 		}
 	}
 

@@ -241,8 +241,8 @@ namespace TileUtils {
 							file.replace_contents(byt.get_data(), null,
 												  false,
 												  FileCreateFlags.REPLACE_DESTINATION,null);
-						} catch {
-							MWPLog.message("Tile failure status %u\n", msg.status_code);
+						} catch (Error e) {
+							MWPLog.message("Tile %s %s, failure status %u\n", tile_uri, e.message, msg.status_code);
 							stats.dlerr++;
 						}
 						show_stats(stats);

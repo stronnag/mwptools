@@ -53,6 +53,7 @@ namespace Mwp  {
 
 namespace Msp {
 	int hpid = 0;
+	Socket ssocket;
 
 	public void stop_hid() {
 		if (hpid != 0) {
@@ -64,8 +65,14 @@ namespace Msp {
 			Source.remove(Mwp.rctag);
 			Mwp.rctag = 0;
 		}
+		if (ssocket != null) {
+			try {
+				ssocket.close();
+				ssocket = null;
+			} catch {}
+		}
 		Mwp.rctimer.stop();
-		Mwp.use_rc &= ~(Mwp.MspRC.ON|Mwp.MspRC.SET|Mwp.MspRC.GET);
+		Mwp.use_rc &= ~(Mwp.MspRC.ON|Mwp.MspRC.SET|Mwp.MspRC.GET|Mwp.MspRC.MAP);
 	}
 
 	public void start_hid() {
@@ -323,23 +330,84 @@ namespace Msp {
 							});
 					} else {
 						if (Mwp.MspRC.ACT in Mwp.use_rc) {
-							Mwp.rctimer.start();
-							if(Mwp.conf.show_sticks != 1) {
-								Sticks.create_sticks();
-							}
 							Mwp.use_rc |= Mwp.MspRC.GET;
-							if(Mwp.rcchans != null) {
-								bool starter = ((Mwp.use_rc &  Mwp.MspRC.SET) == 0);
-								Mwp.use_rc |= Mwp.MspRC.SET;
-								if(starter) {
-									Mwp.start_raw_rc_timer();
-								}
-							}
 						}
 					}
 				});
 		}
 	}
+
+	private uint16 setup_sin_ip() {
+		try {
+			SocketFamily[] fam_arry = {SocketFamily.IPV6, SocketFamily.IPV4};
+			foreach(var fam in fam_arry) {
+				var sa = new InetSocketAddress (new InetAddress.any(fam), 0);
+				if (sa != null) {
+					ssocket = new Socket (fam, SocketType.DATAGRAM, SocketProtocol.UDP);
+					ssocket.set_blocking(false);
+					ssocket.bind (sa, true);
+					sa = ssocket.get_local_address() as InetSocketAddress;
+					MWPLog.message(":JSIN: IP %s\n", sa.to_string());
+					return sa.get_port();
+				}
+			}
+		} catch (Error e) {
+			MWPLog.message ("JSIN socket: %s\n",e.message);
+		}
+		return 0;
+	}
+
+
+	IOChannel sin_chan;
+
+	private void sin_reader() {
+#if WINDOWS
+		sin_chan = new IOChannel.win32_socket(ssocket.fd);
+#else
+		sin_chan = new IOChannel.unix_new(ssocket.fd);
+#endif
+		try {
+			if(sin_chan.set_encoding(null) != IOStatus.NORMAL)
+				error("Failed to set encoding");
+			sin_chan.set_buffered(false);
+			sin_chan.add_watch(IOCondition.IN|IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL, (chan, cond) => {
+					if ((cond & IOCondition.IN) !=  IOCondition.IN) {
+						return false;
+					}
+					uint16 buf[2];
+					try {
+						var sz = ssocket.receive((uint8[])buf);
+						if (sz > 0) {
+							//MWPLog.message(":DBG: Sin reader: %u %u\n", buf[0], buf[1]);
+							if (buf[0] < Mwp.nrc_chan) {
+								Mwp.rcchans[buf[0]] = (int16)buf[1];
+							}
+						} else {
+							return false;
+						}
+					} catch (Error e) {
+						MWPLog.message("JSin reader: %s\n", e.message);
+						return false;
+					}
+					return true;
+				});
+		} catch (Error e) {
+			MWPLog.message("JSIN IO %s\n", e.message);
+		}
+	}
+
+	public void start_sin_reader() {
+		var iport = setup_sin_ip();
+		uint8 buf[32];
+		var s = "push %u\n".printf(iport);
+		JSMisc.read_hid_async.begin(buf, s, (o,r) => {
+				var sz = JSMisc.read_hid_async.end(r);
+				buf[sz] = 0;
+				MWPLog.message(":JSIN: push: %u %s", iport, (string)buf);
+				sin_reader();
+			});
+	}
+
 
 	private void serial_complete_setup(string serdev, bool ostat) {
 		Mwp.window.conbutton.sensitive = true;

@@ -46,6 +46,8 @@ public class JoyReader {
 	public int deadband;
 	public int defval;
 
+	public signal void update(int i, int v);
+
 	public JoyReader(bool _fake=false) {
 		fake = _fake;
 		deadband = 0;
@@ -323,6 +325,7 @@ public class JoyReader {
 	}
 
 	public void set_channel(int j, int val) {
+		update(j-1, val);
 		AtomicUint.@set(ref channels[j-1], (int)(uint16)val);
 	}
 
@@ -345,7 +348,11 @@ public class JoyReader {
 						1000, 1001, 1002, 1003,
 						1004, 1005, 1006, 1007};
 		} else {
-			for(var j = 0; j < channels.length; j++) {
+			channels[0] = 1500;
+			channels[1] = 1500;
+			channels[2] = 999;
+			channels[3] = 1500;
+			for(var j = 4; j < channels.length; j++) {
 				set_channel(j, 897);
 			}
 		}

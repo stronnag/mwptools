@@ -74,6 +74,7 @@ namespace Mwp {
 		ON=1,
 		GET=2,
 		SET=4,
+		MAP=8,
 		ACT=0x80,
 	}
 

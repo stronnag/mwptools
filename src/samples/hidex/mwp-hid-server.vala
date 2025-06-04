@@ -34,6 +34,9 @@ public class JoyManager : Object {
 	private Socket socket;
 	private SocketAddress remaddr;
 
+	private SList<InetSocketAddress>plist;
+	private Socket psocket;
+
 	public JoyManager(string _mf, bool fake = false) {
 		tinit = false;
 		int njoy = SDL.init (SDL.InitFlag.JOYSTICK|SDL.InitFlag.GAMECONTROLLER);
@@ -42,6 +45,28 @@ public class JoyManager : Object {
 		}
 		jrdr = new JoyReader(fake);
 		mf = _mf;
+
+		jrdr.update.connect((i,v) => {
+				if(plist != null) {
+					uint16 buf[2];
+					buf[0] = (uint16)i;
+					buf[1] = (uint16)v;
+
+					plist.@foreach((a) => {
+							try {
+								var sz = psocket.send_to(a, (uint8[]) buf, null);
+								stderr.printf("P-Sent %jd\n", sz);
+							} catch (Error e) {
+								stderr.printf("P-send: %s\n", e.message);
+								unowned var sl = plist.find_custom(a, (CompareFunc<InetSocketAddress?>)ia_comp);
+								if(sl != null) {
+									plist.remove_link(sl);
+								}
+							}
+						});
+				}
+			});
+
 	}
 
 	public string? get_info() {
@@ -225,6 +250,41 @@ public class JoyManager : Object {
 		}
 	}
 
+	private int ia_comp(InetSocketAddress? a, InetSocketAddress? b) {
+		return GLib.strcmp(a.to_string(), b.to_string());
+	}
+
+	private void setup_pusher(string cmd) {
+		if (psocket == null) {
+			SocketFamily[] fam_arry = {SocketFamily.IPV6, SocketFamily.IPV4};
+			foreach(var fam in fam_arry) {
+				try {
+					psocket = new Socket (fam, SocketType.DATAGRAM, SocketProtocol.UDP);
+				} catch (Error e) {
+					stderr.printf("psocket: %s\n", e.message);
+					return;
+				}
+				break;
+			}
+		}
+		var parts = cmd.split(" ");
+		if(parts.length == 2) {
+			uint16 port = (uint16)uint.parse(parts[1]);
+			var fam = psocket.get_family();
+			var addr = new InetAddress.loopback(fam);
+			var ia = new InetSocketAddress(addr, port);
+			if(plist == null) {
+				plist = new SList<InetSocketAddress>();
+				plist.append(ia);
+			} else {
+				unowned var sl = plist.find_custom(ia, (CompareFunc<InetSocketAddress?>)ia_comp);
+				if(sl == null) {
+					plist.append(ia);
+				}
+			}
+		}
+	}
+
 	public bool setup_ip(uint16 port) {
 		try {
 			SocketFamily[] fam_arry = {SocketFamily.IPV6, SocketFamily.IPV4};
@@ -284,6 +344,9 @@ public class JoyManager : Object {
 									  } else if (cmd.has_prefix("set ")) {
 										  set_chans(cmd);
 										  socket.send_to(remaddr, "ok".data);
+									  } else if (cmd.has_prefix("push ")) {
+										  setup_pusher(cmd);
+										  socket.send_to(remaddr, "ok".data);
 									  } else {
 										  socket.send_to(remaddr, "err".data);
 									  }
@@ -340,6 +403,10 @@ public class JoyManager : Object {
 										  Posix.write(1, s.data, s.length);
 									  } else if (cmd.has_prefix("init")) {
 										  set_init_chans(cmd);
+										  var s = "ok\n";
+										  Posix.write(1, s.data, s.length);
+									  } else if (cmd.has_prefix("push ")) {
+										  setup_pusher(cmd);
 										  var s = "ok\n";
 										  Posix.write(1, s.data, s.length);
 									  } else {

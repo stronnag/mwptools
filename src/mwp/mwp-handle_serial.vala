@@ -678,6 +678,12 @@ namespace Mwp {
 			}
 		}
 
+		if( (Mwp.use_rc & (Mwp.MspRC.GET|Mwp.MspRC.MAP)) == (Mwp.MspRC.GET|Mwp.MspRC.MAP)) {
+			Mwp.use_rc &= ~Mwp.MspRC.GET;
+			msp.send_command(Msp.Cmds.RC, null, 0);
+			MWPLog.message(":DBG: Request Cmds.RC\n");
+		}
+
 		if(serstate == SERSTATE.POLLER) {
 			if(mleave == 1 && !mq.is_empty()) {
 				mleave = 2;
@@ -700,23 +706,18 @@ namespace Mwp {
     }
 
 	private void send_msp_rc() {
-		JSMisc.read_hid_async.begin((uint8[])rcchans, "raw\n",  (o, r) => {
-				var sz = JSMisc.read_hid_async.end(r);
-				if(sz  >=  nrc_chan*2) {
-					if(conf.msprc_full_duplex && (Mwp.MspRC.SET in Mwp.use_rc)) {
-						msp.send_command(Msp.Cmds.SET_RAW_RC, (uint8[])rcchans, nrc_chan*2);
-						rccount++;
-						if(Mwp.DebugFlags.MSP in Mwp.debug_flags) {
-							MWPLog.message(":DBG: TIM full: %s\n", Msp.Cmds.SET_RAW_RC.format());
-						}
-					}
-					Sticks.update(rcchans[0], rcchans[1], rcchans[3], rcchans[2]);
-					if (Chans.cwin != null) {
-						Chans.cwin.update(rcchans);
-					}
-					run_rc_timer();
-				}
-			});
+		if(conf.msprc_full_duplex && (Mwp.MspRC.SET in Mwp.use_rc)) {
+			msp.send_command(Msp.Cmds.SET_RAW_RC, (uint8[])rcchans, nrc_chan*2);
+			rccount++;
+			if(Mwp.DebugFlags.MSP in Mwp.debug_flags) {
+				MWPLog.message(":DBG: TIM full: %s\n", Msp.Cmds.SET_RAW_RC.format());
+			}
+		}
+		Sticks.update(rcchans[0], rcchans[1], rcchans[3], rcchans[2]);
+		if (Chans.cwin != null) {
+			Chans.cwin.update(rcchans);
+		}
+		run_rc_timer();
 	}
 
 	private void timed_poll() {

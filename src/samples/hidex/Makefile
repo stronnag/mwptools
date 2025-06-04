@@ -14,7 +14,7 @@ mwp-hid-test: mwp-hid-test.vala
 	valac -X -O2 -X -s --pkg sdl2  -o $@  $^
 
 mwp-hid-server: mwp-hid-server.vala  hid-reader.vala
-	valac $(WINDOWS) -X -O2 -X -s --pkg sdl2 --pkg gio-2.0  -X -lm -o $@  $^
+	valac $(WINDOWS) -X -O2 -X -s --pkg sdl2 --pkg gio-2.0 --pkg posix  -X -lm -o $@  $^
 
 mwp-hid-cli: mwp-hid-cli.vala
 	valac --pkg readline --pkg gio-2.0 -X -O2 -X -s -X -lreadline -o $@  $^
