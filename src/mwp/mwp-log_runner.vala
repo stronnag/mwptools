@@ -147,7 +147,7 @@ namespace Mwp {
 		string sargs = string.joinv(" ",args);
 
 		if((replayer & Player.BBOX) != 0  && BBL.videofile != null && BBLV.vp == null) {
-			BBLV.vp = new VideoPlayer(BBL.videofile);
+			BBLV.vp = new VideoPlayer();
 			BBLV.vp.play_state.connect((ps) => {
 					if (ps != VideoMan.State.ENDED) {
 						bool vps = (ps == VideoMan.State.PLAYING);
@@ -157,6 +157,7 @@ namespace Mwp {
 					}
 				});
 			BBLV.vp.present();
+			BBLV.vp.add_stream(BBL.videofile);
 		}
 
 		LogPlay.child_pid = 0;

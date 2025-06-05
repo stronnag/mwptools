@@ -124,74 +124,12 @@ namespace VideoMan {
 					vid_dialog.close();
 					vid_dialog = null;
 					if (res != -1) {
-						var vp = new VideoPlayer(uri);
+						var vp = new VideoPlayer();
 						vp.present();
+						vp.add_stream(uri);
 					}
 				}
 			});
 		vid_dialog.present();
-	}
-}
-
-public class VideoPlayer : Adw.Window {
-	private  Gtk.MediaFile mf;
-
-	public signal void play_state(VideoMan.State st);
-
-	public VideoPlayer(string  uri) {
-		var vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
-		title = "mwp Video player";
-		set_icon_name("mwp_icon");
-		transient_for=Mwp.window;
-		default_width = 640;
-		default_height = 480;
-
-		var tbox = new Adw.ToolbarView();
-		var headerBar = new Adw.HeaderBar();
-		tbox.add_top_bar(headerBar);
-
-		File f;
-		if(uri.contains("://")) {
-			f = File.new_for_uri(uri);
-		} else {
-			f = File.new_for_path(uri);
-		}
-		mf = Gtk.MediaFile.for_file(f);
-		var v = new Gtk.Video.for_media_stream(mf);
-		v.vexpand = true;
-		mf.notify["playing"].connect(() => {
-				VideoMan.State st;
-				if (mf.ended) {
-					st = VideoMan.State.ENDED;
-				} else if (mf.playing) {
-					st = VideoMan.State.PLAYING;
-				} else {
-					st = VideoMan.State.PAUSED;
-				}
-				play_state(st);
-			});
-
-		vbox.append(v);
-		tbox.set_content(vbox);
-		set_content(tbox);
-	}
-
-	public void start_at(int64 tstart = 0) {
-		if(tstart < 0) {
-			int msec = (int)(-1*(tstart / 1000000));
-			Timeout.add(msec, () => {
-					mf.play_now();
-					return Source.REMOVE;
-				});
-		} else {
-			mf.play_now();
-			if (tstart > 0) {
-				mf.seek (tstart);
-			}
-		}
-	}
-
-	public void set_playing(bool p) {
-		mf.set_playing(p);
 	}
 }
