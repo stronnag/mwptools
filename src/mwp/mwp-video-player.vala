@@ -13,7 +13,8 @@ public class VideoPlayer : Adw.Window {
 	private bool seeking = false;
 	Gst.State st;
 
-	public signal void play_state(VideoMan.State vst);
+	public signal void video_playing(bool is_playing);
+	public signal void video_closed();
 
 	public VideoPlayer() {
 		string playbinx;
@@ -44,7 +45,7 @@ public class VideoPlayer : Adw.Window {
 		vbox.append(pic);
 		play_button = new Button.from_icon_name ("gtk-media-play");
 		play_button.clicked.connect (on_play);
-		set_size_request(480, 400);
+		pic.set_size_request(640, 480);
 		var bus = playbin.get_bus ();
 		bus.add_watch(Priority.DEFAULT, bus_callback);
 
@@ -62,7 +63,7 @@ public class VideoPlayer : Adw.Window {
 				if (tid > 0)
 					Source.remove(tid);
 				playbin.set_state (Gst.State.NULL);
-				play_state(VideoMan.State.ENDED);
+				video_closed();
 				return false;
 			});
 		set_content(vbox);
@@ -130,6 +131,19 @@ public class VideoPlayer : Adw.Window {
 			if (tstart > 0) {
 				playbin.seek_simple (Gst.Format.TIME, SEEK_FLAGS, tstart);
 			}
+		}
+	}
+
+	public void toggle_stream() {
+		switch (playbin.current_state) {
+		case Gst.State.PLAYING:
+			playbin.set_state (Gst.State.PAUSED);
+			break;
+		case Gst.State.PAUSED:
+			playbin.set_state (Gst.State.PLAYING);
+			break;
+		default:
+			break;
 		}
 	}
 
@@ -219,15 +233,11 @@ public class VideoPlayer : Adw.Window {
 	void on_play() {
 		if (playing ==  false)  {
 			playbin.set_state (Gst.State.PLAYING);
-			play_state(VideoMan.State.PLAYING);
+			video_playing(true);
 		} else {
 			playbin.set_state (Gst.State.PAUSED);
-			play_state(VideoMan.State.PAUSED);
+			video_playing(false);
 		}
-	}
-
-	public void set_playing(bool p) {
-		on_play();
 	}
 
 	public static Gst.ClockTime discover(string fn) {

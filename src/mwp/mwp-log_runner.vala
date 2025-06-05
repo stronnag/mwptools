@@ -45,7 +45,7 @@ namespace Mwp {
         }
 		if(!from_vid) {
 			if(BBLV.vp != null) {
-				BBLV.vp.set_playing(!replay_paused);
+				BBLV.vp.toggle_stream();
 			}
 		}
         if((replayer & (Player.BBOX|Player.OTX|Player.RAW)) != 0 && LogPlay.child_pid != 0) {
@@ -148,16 +148,20 @@ namespace Mwp {
 
 		if((replayer & Player.BBOX) != 0  && BBL.videofile != null && BBLV.vp == null) {
 			BBLV.vp = new VideoPlayer();
-			BBLV.vp.play_state.connect((ps) => {
-					if (ps != VideoMan.State.ENDED) {
-						bool vps = (ps == VideoMan.State.PLAYING);
-						if(vps == replay_paused) {
-							handle_replay_pause(true);
-						}
-					}
-				});
-			BBLV.vp.present();
-			BBLV.vp.add_stream(BBL.videofile);
+			 BBLV.vp.video_closed.connect(() => {
+					 BBLV.vp = null;
+				 });
+
+			 BBLV.vp.video_playing.connect((vstate) => {
+					 if((debug_flags & DebugFlags.VIDEO) == DebugFlags.VIDEO) {
+						 MWPLog.message("VIDEO: BBL is %s, video requests %s\n", (replay_paused) ? "paused" : "playing", (vstate) ? "playing" : "paused");
+					 }
+					 if(vstate == replay_paused) {
+						 handle_replay_pause(true);
+					 }
+				 });
+			 BBLV.vp.present();
+			 BBLV.vp.add_stream(BBL.videofile);
 		}
 
 		LogPlay.child_pid = 0;
