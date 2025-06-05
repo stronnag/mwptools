@@ -54,7 +54,7 @@ sudo apt update && sudo apt full-upgrade && \
     libprotobuf-c-dev \
     libxml2-utils \
     librsvg2-dev \
-    libsdl2-compat-dev libreadline-dev \
+    libsdl2-dev libreadline-dev \
     gnuplot ruby-nokogiri unzip
 
 [ -n "$DEPSONLY" ] && exit
@@ -63,7 +63,7 @@ git clone --depth 1 https://github.com/stronnag/mwptools
 (
   mkdir -p ~/.local/bin
   cd mwptools
-  git checkout mwp4
+  git checkout master
   meson setup _build --buildtype=release --strip --prefix ~/.local
   ninja -C _build install
 )
