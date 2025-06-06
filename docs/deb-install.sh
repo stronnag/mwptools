@@ -46,6 +46,7 @@ sudo apt update && sudo apt full-upgrade && \
     libespeak-dev \
     libgudev-1.0-dev \
     libgstreamer1.0-dev \
+    libgstreamer-plugins-base1.0-dev \
     libncurses5-dev \
     golang-go \
     ruby ruby-json \

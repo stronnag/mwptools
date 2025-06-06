@@ -2,6 +2,7 @@ using Gtk;
 using Gst;
 
 public class VideoPlayer : Adw.Window {
+	private Element videosink;
 	private Element playbin;
 	private Gtk.Button play_button;
 	private Gtk.Scale slider;
@@ -11,58 +12,85 @@ public class VideoPlayer : Adw.Window {
 	private const SeekFlags SEEK_FLAGS=(SeekFlags.FLUSH|SeekFlags.KEY_UNIT);
 	private Gst.ClockTime duration;
 	private bool seeking = false;
-	Gst.State st;
+	private Gst.State st;
+	private Gtk.VolumeButton vb;
+	private Gtk.Label ptim;
+	private Gtk.Label prem;
+
+	private  Gtk.MediaFile mf;
+	private Gtk.Video v;
 
 	public signal void video_playing(bool is_playing);
 	public signal void video_closed();
 
 	public VideoPlayer() {
-		string playbinx;
-		duration =  (int64)0x7ffffffffffffff;
-
+		var headerBar = new Adw.HeaderBar();
 		vbox = new Box (Gtk.Orientation.VERTICAL, 0);
-		if((playbinx = Environment.get_variable("MWP_PLAYBIN")) == null) {
-			playbinx = "playbin";
+		vbox.append(headerBar);
+		if(Environment.get_variable("USE_GTKV") == null) {
+			videosink = ElementFactory.make ("gtk4paintablesink");
 		}
+		transient_for = Mwp.window;
+		if (videosink != null) {
+			string playbinx;
+			duration =  (int64)0x7ffffffffffffff;
 
-		var videosink = ElementFactory.make ("gtk4paintablesink");
-		title = "mwp Video player";
-		set_icon_name("mwp_icon");
-		var header_bar = new Adw.HeaderBar();
-		vbox.append(header_bar);
+			if((playbinx = Environment.get_variable("MWP_PLAYBIN")) == null) {
+				playbinx = "playbin";
+			}
 
-		playbin = ElementFactory.make (playbinx, playbinx);
-		playbin.set_property("video-sink", videosink);
+			title = "mwp Video player";
+			set_icon_name("mwp_icon");
 
-		Gdk.Paintable pt;
-		videosink.get("paintable", out pt);
-		var pic = new Gtk.Picture();
-		if(pt != null) {
-			pic.paintable = pt;
+			playbin = ElementFactory.make (playbinx, playbinx);
+			playbin.set_property("video-sink", videosink);
+
+			Gdk.Paintable pt;
+			videosink.get("paintable", out pt);
+			var pic = new Gtk.Picture();
+			if(pt != null) {
+				pic.paintable = pt;
+			} else {
+				MWPLog.message("ERROR: *** NO PAINTABLE ***\n");
+			}
+			pic.hexpand = true;
+			pic.vexpand = true;
+			vbox.append(pic);
+			play_button = new Button.from_icon_name ("gtk-media-play");
+			play_button.clicked.connect (on_play);
+			pic.set_size_request(640, 480);
+			var bus = playbin.get_bus ();
+			bus.add_watch(Priority.DEFAULT, bus_callback);
+
+			vb = new Gtk.VolumeButton();
+			double vol;
+			playbin.get("volume", out vol);
+			vb.value = vol;
+			vb.value_changed.connect((v) => {
+					playbin.set("volume", v);
+				});
+			//			headerBar.pack_end (vb);
+			//headerBar.pack_start (play_button);
+		} else {
+			title = "mwp (fallback) Video player";
+			set_icon_name("mwp_icon");
+
+			default_width = 640;
+			default_height = 480;
+
+			v = new Gtk.Video();
+			v.vexpand = true;
+			vbox.append(v);
 		}
-		pic.hexpand = true;
-		pic.vexpand = true;
-		vbox.append(pic);
-		play_button = new Button.from_icon_name ("gtk-media-play");
-		play_button.clicked.connect (on_play);
-		pic.set_size_request(640, 480);
-		var bus = playbin.get_bus ();
-		bus.add_watch(Priority.DEFAULT, bus_callback);
-
-		var vb = new Gtk.VolumeButton();
-		double vol;
-		playbin.get("volume", out vol);
-		vb.value = vol;
-		vb.value_changed.connect((v) => {
-				playbin.set("volume", v);
-			});
-		header_bar.pack_end (vb);
-		header_bar.pack_start (play_button);
 
 		close_request.connect (() => {
-				if (tid > 0)
-					Source.remove(tid);
-				playbin.set_state (Gst.State.NULL);
+				if(videosink == null) {
+					mf.playing = false;
+				} else {
+					if (tid > 0)
+						Source.remove(tid);
+					playbin.set_state (Gst.State.NULL);
+				}
 				video_closed();
 				return false;
 			});
@@ -85,30 +113,30 @@ public class VideoPlayer : Adw.Window {
 		slider.hexpand = true;
 
 		var hbox = new Box (Gtk.Orientation.HORIZONTAL, 0);
-		  var rewind = new Button.from_icon_name ("gtk-media-previous");
-		  rewind.clicked.connect(() => {
-				  playbin.get_state (out st, null, CLOCK_TIME_NONE);
-				  seeking = true;
-				  playbin.set_state (Gst.State.PAUSED);
-				  playbin.seek_simple (Gst.Format.TIME, SEEK_FLAGS, (int64)0);
-			  });
-		  var forward = new Button.from_icon_name ("gtk-media-next");
-		  forward.clicked.connect(() => {
-				  seeking = true;
-				  playbin.get_state (out st, null, CLOCK_TIME_NONE);
-				  playbin.set_state (Gst.State.PAUSED);
-				  playbin.seek_simple (Gst.Format.TIME, SEEK_FLAGS, (int64)duration);
-			  });
-		  hbox.append (rewind);
+		  hbox.append(play_button);
+		  if (ptim != null) {
+			  hbox.append(ptim);
+		  }
 		  hbox.append (slider);
-		  hbox.append (forward);
+		  if (prem != null) {
+			  hbox.append(prem);
+		  }
+		  hbox.append(vb);
 		  vbox.append(hbox);
+	}
+
+	private string format_ct(double t, bool neg) {
+		int m = (int)(t/60);
+		int s = (int)((t % 60) + 0.5);
+		return "%s%02d:%02d".printf((neg) ? "-" : "", m, s);
 	}
 
 	public void set_slider_max(Gst.ClockTime max) {
 		if (max > 0) {
 			duration = max;
 			double rt =  max / 1e9;
+			ptim = new Gtk.Label(format_ct(0, false));
+			prem = new Gtk.Label(format_ct(rt, true));
 			add_slider();
 			slider.set_range(0.0, rt);
 		}
@@ -117,79 +145,103 @@ public class VideoPlayer : Adw.Window {
 	public void set_slider_value(double value) {
 		if (slider != null)
 			slider.set_value(value);
+
+		ptim.label = format_ct(value, false);
+		var rt = duration/1e9 - value;
+		prem.label = format_ct(rt, true);
 	}
 
 	public void start_at(int64 tstart = 0) {
-		if(tstart < 0) {
-			int msec = (int)(-1*(tstart / 1000000));
-			Timeout.add(msec, () => {
-					on_play();
-					return Source.REMOVE;
-				});
+		if(videosink == null) {
+			if(tstart < 0) {
+				int msec = (int)(-1*(tstart / 1000000));
+				Timeout.add(msec, () => {
+						mf.play_now();
+						return Source.REMOVE;
+					});
+			} else {
+				mf.play_now();
+				if (tstart > 0) {
+					mf.seek (tstart);
+				}
+			}
 		} else {
-			on_play();
-			if (tstart > 0) {
-				playbin.seek_simple (Gst.Format.TIME, SEEK_FLAGS, tstart);
+			if(tstart < 0) {
+				int msec = (int)(-1*(tstart / 1000000));
+				Timeout.add(msec, () => {
+						on_play();
+						return Source.REMOVE;
+				});
+			} else {
+				on_play();
+				if (tstart > 0) {
+					playbin.seek_simple (Gst.Format.TIME, SEEK_FLAGS, tstart);
+				}
 			}
 		}
 	}
 
 	public void toggle_stream() {
-		switch (playbin.current_state) {
-		case Gst.State.PLAYING:
-			playbin.set_state (Gst.State.PAUSED);
-			break;
-		case Gst.State.PAUSED:
-			playbin.set_state (Gst.State.PLAYING);
-			break;
-		default:
-			break;
+		if(videosink == null) {
+			mf.playing = !mf.playing;
+		} else {
+			switch (playbin.current_state) {
+			case Gst.State.PLAYING:
+				playbin.set_state (Gst.State.PAUSED);
+				break;
+			case Gst.State.PAUSED:
+				playbin.set_state (Gst.State.PLAYING);
+				break;
+			default:
+				break;
+			}
 		}
 	}
 
 	public void add_stream(string fn, bool force=true) {
-		bool start = false;
-		if (force || !fn.has_prefix("file://")) {
-			start = true;
-		}
-
+		var start = (force || !fn.has_prefix("file://"));
 		string vuri;
-
 		if (!fn.contains("""://""")) {
 			try {
 				vuri = Gst.filename_to_uri(fn);
 			} catch (Error e) {
-				print("ERROR FN: %s\n", e.message);
+				MWPLog.message("VURI error: %s\n", e.message);
 				return;
 			}
 		} else {
 			vuri = fn;
 		}
-
-		MWPLog.message("Video %s (%s)\n", vuri, fn);
-
-		Gst.ClockTime rt = Gst.CLOCK_TIME_NONE;
-		rt = VideoPlayer.discover(vuri);
-		if (rt !=  Gst.CLOCK_TIME_NONE) {
-			set_slider_max(rt);
-		}
-		playbin["uri"] = vuri;
-
-		if (start) {
-			on_play();
-		} else {
-			playbin.set_state (Gst.State.PAUSED);
-		}
-
-		tid = Timeout.add(50, () => {
-				Gst.Format fmt = Gst.Format.TIME;
-				int64 current = -1;
-				if (playbin.query_position (fmt, out current)) {
-					double rtm = current/1e9;
-					set_slider_value(rtm);
-				}
-				return true;
+		if(videosink == null) {
+			File f = File.new_for_uri(vuri);
+			mf = Gtk.MediaFile.for_file(f);
+			mf.notify["playing"].connect(() => {
+					video_playing(mf.playing);
 			});
+			v.set_media_stream(mf);
+		} else {
+			playbin["uri"] = vuri;
+			Gst.ClockTime rt = Gst.CLOCK_TIME_NONE;
+			rt = VideoPlayer.discover(vuri);
+			if (rt !=  Gst.CLOCK_TIME_NONE) {
+				set_slider_max(rt);
+			}
+
+			if (start) {
+				on_play();
+			} else {
+				playbin.set_state (Gst.State.PAUSED);
+			}
+
+			tid = Timeout.add(50, () => {
+					Gst.Format fmt = Gst.Format.TIME;
+					int64 current = -1;
+					if (playbin.query_position (fmt, out current)) {
+						double rtm = current/1e9;
+						set_slider_value(rtm);
+					}
+					return true;
+				});
+		}
 	}
 
 	private bool bus_callback (Gst.Bus bus, Gst.Message message) {
@@ -231,12 +283,14 @@ public class VideoPlayer : Adw.Window {
 	}
 
 	void on_play() {
-		if (playing ==  false)  {
-			playbin.set_state (Gst.State.PLAYING);
-			video_playing(true);
-		} else {
-			playbin.set_state (Gst.State.PAUSED);
-			video_playing(false);
+		if(videosink != null) {
+			if (playing ==  false)  {
+				playbin.set_state (Gst.State.PLAYING);
+				video_playing(true);
+			} else {
+				playbin.set_state (Gst.State.PAUSED);
+				video_playing(false);
+			}
 		}
 	}
 
@@ -248,52 +302,10 @@ public class VideoPlayer : Adw.Window {
 			id = di.get_duration ();
 			foreach(var v in di.get_video_streams ()) {
 				if (v is Gst.PbUtils.DiscovererVideoInfo) {
-					print("Vid Size: %u %u\n",  ((Gst.PbUtils.DiscovererVideoInfo)v).get_width(),
-						  ((Gst.PbUtils.DiscovererVideoInfo)v).get_height());
+					// print("Vid Size: %u %u\n",  ((Gst.PbUtils.DiscovererVideoInfo)v).get_width(), ((Gst.PbUtils.DiscovererVideoInfo)v).get_height());
 				}
 			}
 		} catch {}
 		return id;
 	}
 }
-
-#if TEST
-namespace VideoMan {
-        public enum State {
-                PLAYING=1,
-                ENDED=2,
-                PAUSED=3
-        }
-}
-
-namespace MWPLog {
-  public static void message(string format, ...) {
-    var args = va_list();
-        var now = new GLib.DateTime.now_local ();
-        StringBuilder sb = new StringBuilder();
-        sb.append(now.format("%T.%f"));
-		sb.append_c(' ');
-        sb.append_vprintf(format, args);
-		stderr.puts(sb.str);
-  }
-}
-
-public static int main (string[] args) {
-        Gst.init (ref args);
-        Gtk.init ();
-        string? fn = null;
-		if (args.length > 1) {
-			fn = args[1];
-			print("Args %s\n", fn);
-			var sample = new VideoPlayer();
-			sample.present();
-			sample.add_stream(fn);
-			var ml = MainContext.@default();
-			while(Gtk.Window.get_toplevels().get_n_items() > 0) {
-				ml.iteration(true);
-			}
-		}
-		return 0;
-}
-
-#endif

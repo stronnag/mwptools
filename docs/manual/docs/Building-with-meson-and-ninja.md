@@ -32,6 +32,7 @@ For any other distribution / platform / OS, any of the above documents should gi
 * libsecret-1
 * librsvg
 * sdl2
+* gstreamer / gst-plugins-base-libs etc.
 * readline
 
 Numbers is parenthesis indicate a minimum version. Modern OS should be able to satisfy these requirements.
