@@ -5,17 +5,29 @@
 * In ground station mode, in order to repeat the FPV feed to the mwp screen, presumably for the enjoyment of spectators;
 * During Blackbox replay, to show the FPV recorded video during the replay.
 
-!!! note "Video Player Options"
-	mwp's video player has a run time dependency on the `gstgtk4` Gstreamer plugin. This is available only on modern operating systems and it's package name is OS dependent, for example:
+## Video Player Options
 
-	* Arch:  `gst-plugin-gtk4`
-	* Debian (Sid / Trixie): `gstreamer1.0-gtk4`
-	* Freebsd: `gstreamer1-plugins-rust`
-	* Void: `gst-plugins-rs1`
+mwp offers two alternate video player implementations:
 
-	For older operating systems and proprietary operating systems, a less capable, slower generic player using `Gtk.Video` will be used. This has `(fallback)` in the title bar.
+* The default uses the standard GTK4 `Gtk.Video` widget. This is available on all platforms.
+* The "hand-crafted" player from legacy mwp is also available with a run time dependency on the `gstgtk4` Gstreamer plugin. This is available only on modern operating systems and its package name is OS dependent, for example:
 
-	The `gstgtk4` player has better (accelerated) performance and can play more formats such as `rtsp`.
+    * Arch:  `gst-plugin-gtk4`
+    * Debian (Sid / Trixie): `gstreamer1.0-gtk4`
+    * FreeBSD: `gstreamer1-plugins-rust`
+    * Void: `gst-plugins-rs1`
+
+The `gstgtk4` player may have better (accelerated) performance and may play more media formats.
+It is also more tolerant of errors.
+
+In order force use of the `gstgtk4` player it is necessary:
+
+* To use an operating system that supports the GStreamer `gstgtk4`  plugin.
+* Set the environment variable `MWP_USE_GSTGTK4` (to anytihng).
+
+The `gstgtk4` player contains `(gstgtk4)` in the title bar.
+
+Either player can play streaming camera formats such as `rtsp` and `hls` if the appropriate GStreamer plugins are installed.
 
 !!! note "Legacy Images"
     The images this section are from legacy mwp, however the capability is the same.

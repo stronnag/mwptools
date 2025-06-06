@@ -27,7 +27,7 @@ public class VideoPlayer : Adw.Window {
 		var headerBar = new Adw.HeaderBar();
 		vbox = new Box (Gtk.Orientation.VERTICAL, 0);
 		vbox.append(headerBar);
-		if(Environment.get_variable("USE_GTKV") == null) {
+		if(Environment.get_variable("MWP_USE_GSTGTK4") != null) {
 			videosink = ElementFactory.make ("gtk4paintablesink");
 		}
 		transient_for = Mwp.window;
@@ -36,10 +36,10 @@ public class VideoPlayer : Adw.Window {
 			duration =  (int64)0x7ffffffffffffff;
 
 			if((playbinx = Environment.get_variable("MWP_PLAYBIN")) == null) {
-				playbinx = "playbin";
+				playbinx = "playbin3";
 			}
 
-			title = "mwp Video player";
+			title = "mwp Video (gstgtk4) player";
 			set_icon_name("mwp_icon");
 
 			playbin = ElementFactory.make (playbinx, playbinx);
@@ -72,7 +72,7 @@ public class VideoPlayer : Adw.Window {
 			//			headerBar.pack_end (vb);
 			//headerBar.pack_start (play_button);
 		} else {
-			title = "mwp (fallback) Video player";
+			title = "mwp Video player";
 			set_icon_name("mwp_icon");
 
 			default_width = 640;
@@ -207,30 +207,37 @@ public class VideoPlayer : Adw.Window {
 
 	public void add_stream(string fn, bool force=true) {
 		var start = (force || !fn.has_prefix("file://"));
-		string vuri;
-		if (!fn.contains("""://""")) {
-			try {
-				vuri = Gst.filename_to_uri(fn);
-			} catch (Error e) {
-				MWPLog.message("VURI error: %s\n", e.message);
-				return;
-			}
-		} else {
-			vuri = fn;
-		}
 		if(videosink == null) {
-			File f = File.new_for_uri(vuri);
+			File f;
+			if(fn.contains("://")) {
+				f = File.new_for_uri(fn);
+			} else {
+				f = File.new_for_path(fn);
+			}
 			mf = Gtk.MediaFile.for_file(f);
 			mf.notify["playing"].connect(() => {
 					video_playing(mf.playing);
 			});
 			v.set_media_stream(mf);
 		} else {
+			string vuri;
+			if (!fn.contains("""://""")) {
+				try {
+					vuri = Gst.filename_to_uri(fn);
+				} catch (Error e) {
+					MWPLog.message("VURI Error: %s\n", e.message);
+					return;
+				}
+			} else {
+				vuri = fn;
+			}
 			playbin["uri"] = vuri;
 			Gst.ClockTime rt = Gst.CLOCK_TIME_NONE;
 			rt = VideoPlayer.discover(vuri);
 			if (rt !=  Gst.CLOCK_TIME_NONE) {
 				set_slider_max(rt);
+			} else {
+				set_slider_max(0);
 			}
 
 			if (start) {
@@ -245,6 +252,8 @@ public class VideoPlayer : Adw.Window {
 					if (playbin.query_position (fmt, out current)) {
 						double rtm = current/1e9;
 						set_slider_value(rtm);
+					} else {
+						set_slider_value(0);
 					}
 					return true;
 				});
