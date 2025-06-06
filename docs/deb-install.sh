@@ -54,8 +54,12 @@ sudo apt update && sudo apt full-upgrade && \
     libprotobuf-c-dev \
     libxml2-utils \
     librsvg2-dev \
-    libsdl2-dev libreadline-dev \
+    libreadline-dev \
     gnuplot ruby-nokogiri unzip
+  # For Sid/Trixie/Aaarch
+  sudo apt $CONFIRM install libsdl2-compat-dev 
+  # For Bookworm/Ubuntu 24.04+
+  sudo apt $CONFIRM install libsdl2-dev 
 
 [ -n "$DEPSONLY" ] && exit
 
@@ -63,7 +67,8 @@ git clone --depth 1 https://github.com/stronnag/mwptools
 (
   mkdir -p ~/.local/bin
   cd mwptools
-  git checkout master
+  # Change to `git checkout legacy` to install on Debian Bookworm
+  git checkout master 
   meson setup _build --buildtype=release --strip --prefix ~/.local
   ninja -C _build install
 )
