@@ -5,6 +5,18 @@
 * In ground station mode, in order to repeat the FPV feed to the mwp screen, presumably for the enjoyment of spectators;
 * During Blackbox replay, to show the FPV recorded video during the replay.
 
+!!! note "Video Player Options"
+	mwp's video player has a run time dependency on the `gstgtk4` Gstreamer plugin. This is available only on modern operating systems and it's package name is OS dependent, for example:
+
+	* Arch:  `gst-plugin-gtk4`
+	* Debian (Sid / Trixie): `gstreamer1.0-gtk4`
+	* Freebsd: `gstreamer1-plugins-rust`
+	* Void: `gst-plugins-rs1`
+
+	For older operating systems and proprietary operating systems, a less capable, slower generic player using `Gtk.Video` will be used. This has `(fallback)` in the title bar.
+
+	The `gstgtk4` player has better (accelerated) performance and can play more formats such as `rtsp`.
+
 !!! note "Legacy Images"
     The images this section are from legacy mwp, however the capability is the same.
 

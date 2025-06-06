@@ -132,23 +132,30 @@ public class VideoPlayer : Adw.Window {
 	}
 
 	public void set_slider_max(Gst.ClockTime max) {
+		ptim = new Gtk.Label(format_ct(0, false));
 		if (max > 0) {
 			duration = max;
 			double rt =  max / 1e9;
-			ptim = new Gtk.Label(format_ct(0, false));
 			prem = new Gtk.Label(format_ct(rt, true));
 			add_slider();
 			slider.set_range(0.0, rt);
+		} else {
+			add_slider();
+			slider.sensitive = false;
 		}
 	}
 
 	public void set_slider_value(double value) {
-		if (slider != null)
-			slider.set_value(value);
-
+		if (slider != null) {
+			if(prem != null) {
+				slider.set_value(value);
+			}
+		}
 		ptim.label = format_ct(value, false);
-		var rt = duration/1e9 - value;
-		prem.label = format_ct(rt, true);
+		if (prem != null) {
+			var rt = duration/1e9 - value;
+			prem.label = format_ct(rt, true);
+		}
 	}
 
 	public void start_at(int64 tstart = 0) {
