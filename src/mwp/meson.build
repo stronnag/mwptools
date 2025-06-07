@@ -75,7 +75,7 @@ mwpsrcs = files('mwp-about.vala', 'mwp-ah_widget.vala',
                 'mwp-radar-devices-dialog.vala',
                 'mwp-msprcui.vala',
                 'mwp-chan-window.vala',
-                'mwp-video-player.vala',
+                'mwp-video-player.vala', 'mwp-volume-button.vala',
                )
 
 mwpdeps = [deps,

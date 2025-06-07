@@ -6,14 +6,13 @@ public class VideoPlayer : Adw.Window {
 	private Element playbin;
 	private Gtk.Button play_button;
 	private Gtk.Scale slider;
-	private bool playing = false;
 	private uint tid;
 	private Gtk.Box vbox;
 	private const SeekFlags SEEK_FLAGS=(SeekFlags.FLUSH|SeekFlags.KEY_UNIT);
 	private Gst.ClockTime duration;
 	private bool seeking = false;
 	private Gst.State st;
-	private Gtk.VolumeButton vb;
+	private Utils.VolumeButton vb;
 	private Gtk.Label ptim;
 	private Gtk.Label prem;
 
@@ -62,24 +61,19 @@ public class VideoPlayer : Adw.Window {
 			var bus = playbin.get_bus ();
 			bus.add_watch(Priority.DEFAULT, bus_callback);
 
-			vb = new Gtk.VolumeButton();
+			vb = new Utils.VolumeButton();
 			double vol;
 			playbin.get("volume", out vol);
 			vb.value = vol;
 			vb.value_changed.connect((v) => {
 					playbin.set("volume", v);
 				});
-			//			headerBar.pack_end (vb);
-			//headerBar.pack_start (play_button);
 		} else {
 			title = "mwp Video player";
 			set_icon_name("mwp_icon");
-
-			default_width = 640;
-			default_height = 480;
-
 			v = new Gtk.Video();
 			v.vexpand = true;
+			v.set_size_request(640, 480);
 			vbox.append(v);
 		}
 
@@ -269,7 +263,6 @@ public class VideoPlayer : Adw.Window {
 			MWPLog.message("Video error: %s\n", err.message);
 			break;
 		case Gst.MessageType.EOS:
-			playing = false;
 			playbin.set_state (Gst.State.READY);
 			break;
 		case Gst.MessageType.STATE_CHANGED:
@@ -277,12 +270,10 @@ public class VideoPlayer : Adw.Window {
 			Gst.State newstate;
 			Gst.State pending;
 			message.parse_state_changed (out oldstate, out newstate, out pending);
-			if(newstate == Gst.State.PLAYING && !playing) {
+			if(newstate == Gst.State.PLAYING) {
 				play_button.icon_name = "gtk-media-pause";
-				playing = true;
-			} else if(playing) {
+			} else {
 				play_button.icon_name = "gtk-media-play";
-				playing = false;
 			}
 			break;
 
@@ -299,14 +290,12 @@ public class VideoPlayer : Adw.Window {
 	}
 
 	void on_play() {
-		if(videosink != null) {
-			if (playing ==  false)  {
-				playbin.set_state (Gst.State.PLAYING);
-				video_playing(true);
-			} else {
-				playbin.set_state (Gst.State.PAUSED);
-				video_playing(false);
-			}
+		if (playbin.current_state !=  Gst.State.PLAYING)  {
+			playbin.set_state (Gst.State.PLAYING);
+			video_playing(true);
+		} else {
+			playbin.set_state (Gst.State.PAUSED);
+			video_playing(false);
 		}
 	}
 
