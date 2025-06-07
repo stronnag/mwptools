@@ -32,9 +32,8 @@ namespace Utils {
 			sc.hexpand = false;
 			sc.height_request = 100;
 			sc.set_value(value);
-			plus = new Gtk.Button.from_icon_name ("go-up");
-			minus = new Gtk.Button.from_icon_name("go-down");
-
+			plus = new Gtk.Button.from_icon_name ("value-increase");
+			minus = new Gtk.Button.from_icon_name("value-decrease");
 			plus.hexpand = false;
 			plus.vexpand = false;
 			minus.hexpand = false;
