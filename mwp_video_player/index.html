@@ -787,6 +787,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#video-player-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      Video Player Options
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#live-stream-mode-gcs" class="md-nav__link">
     <span class="md-ellipsis">
       Live stream mode (GCS)
@@ -1429,6 +1438,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#video-player-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      Video Player Options
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#live-stream-mode-gcs" class="md-nav__link">
     <span class="md-ellipsis">
       Live stream mode (GCS)
@@ -1480,6 +1498,29 @@
 <li>In ground station mode, in order to repeat the FPV feed to the mwp screen, presumably for the enjoyment of spectators;</li>
 <li>During Blackbox replay, to show the FPV recorded video during the replay.</li>
 </ul>
+<h2 id="video-player-options">Video Player Options<a class="headerlink" href="#video-player-options" title="Permanent link">#</a></h2>
+<p>mwp offers two alternate video player implementations:</p>
+<ul>
+<li>The default uses the standard GTK4 <code>Gtk.Video</code> widget. This is available on all platforms.</li>
+<li>
+<p>The "hand-crafted" player from legacy mwp is also available with a run time dependency on the <code>gstgtk4</code> Gstreamer plugin. This is available only on modern operating systems and its package name is OS dependent, for example:</p>
+<ul>
+<li>Arch:  <code>gst-plugin-gtk4</code></li>
+<li>Debian (Sid / Trixie): <code>gstreamer1.0-gtk4</code></li>
+<li>FreeBSD: <code>gstreamer1-plugins-rust</code></li>
+<li>Void: <code>gst-plugins-rs1</code></li>
+</ul>
+</li>
+</ul>
+<p>The <code>gstgtk4</code> player may have better (accelerated) performance and may play more media formats.
+It is also more tolerant of errors.</p>
+<p>In order force use of the <code>gstgtk4</code> player it is necessary:</p>
+<ul>
+<li>To use an operating system that supports the GStreamer <code>gstgtk4</code>  plugin.</li>
+<li>Set the environment variable <code>MWP_USE_GSTGTK4</code> (to anytihng).</li>
+</ul>
+<p>The <code>gstgtk4</code> player contains <code>(gstgtk4)</code> in the title bar.</p>
+<p>Either player can play streaming camera formats such as <code>rtsp</code> and <code>hls</code> if the appropriate GStreamer plugins are installed.</p>
 <div class="admonition note">
 <p class="admonition-title">Legacy Images</p>
 <p>The images this section are from legacy mwp, however the capability is the same.</p>
@@ -1488,9 +1529,10 @@
 <p>There is now a <strong>Video Stream</strong> option under the view menu.</p>
 <p><img alt="View Menu" src="../images/mwp_vid_menu.png" width="30%" /></p>
 <p>Selecting this option opens the source selection dialogue. Camera devices offering a "video4linux" interface (i.e most webcams) will be auto-detected. There is also the option to enter a URI, which could be a <code>http</code>/<code>https</code>, <code>rtsp</code> or other standard streaming protocol, or even a file.</p>
-<p><img alt="Chooser" src="../images/mwp_vid_device_select.png" width="20%" /></p>
+<p><img alt="Chooser" src="images/recent-video.png" width="20%" /></p>
 <p>The selected source will then play in a separate window. This window will remain above the mwp application and can be resized, minimised and moved.</p>
 <p>In stream mode, there are minimal video controls; a play/pause button and volume control. Note the volume is that of the video, the overall volume is controlled by the system volume control.</p>
+<p>Up to 10 recent URIs are persisted. In order to access this list it is necessary to click the "down arrow head" icon at the end of URI text entry box and then expand the drop-down.</p>
 <h2 id="blackbox-replay-mode-bbl-replay">Blackbox replay mode (BBL replay)<a class="headerlink" href="#blackbox-replay-mode-bbl-replay" title="Permanent link">#</a></h2>
 <p>The Blackbox log replay chooser also offers a video replay option.</p>
 <p><img alt="bblmode" src="../images/mwp_vid_bbl.png" width="75%" /></p>
