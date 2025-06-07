@@ -18,33 +18,41 @@ template $V4L2Window:   Adw.Window {
       decoration-layout: "icon:close";
     }
 
-    content: Box hbox {
-      orientation: horizontal;
-      spacing: 4;
-      Box v1 {
-	orientation: vertical;
-	hexpand: false;
-	Gtk.CheckButton webcam {
-	  hexpand: true;
-          label: "Webcams";
-	}
-	Gtk.CheckButton urichk {
-	  hexpand: true;
-          label: "URI";
-	  group: webcam;
-	}
-      }
-      Box v2 {
+    content: Grid g {
+      hexpand:true;
+      halign: start;
+      column-homogeneous: false;
+
+      Gtk.CheckButton webcam {
 	hexpand: true;
-	orientation: vertical;
-	Label dummy {
-	  label: "";
-	}
-	Entry uritxt {
-          placeholder-text: "http://daria.co.uk/stream.mp4";
-	  input-purpose: url;
+        label: "Webcams";
+	layout {
+          row: 0;
+          column: 0;
 	}
       }
+
+      Gtk.CheckButton urichk {
+	hexpand: true;
+        label: "URI";
+	group: webcam;
+	layout {
+          row: 1;
+          column: 0;
+	}
+      }
+/*
+      Gtk.Entry uritxt {
+        placeholder-text: "http://daria.co.uk/stream.mp4";
+	input-purpose: url;
+	hexpand:true;
+	width-chars: 64;
+	layout {
+          row: 1;
+          column: 1;
+	}
+      }
+      */
     };
     [bottom]
     Box {

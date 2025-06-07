@@ -40,11 +40,13 @@ There is now a **Video Stream** option under the view menu.
 
 Selecting this option opens the source selection dialogue. Camera devices offering a "video4linux" interface (i.e most webcams) will be auto-detected. There is also the option to enter a URI, which could be a `http`/`https`, `rtsp` or other standard streaming protocol, or even a file.
 
-![Chooser](images/mwp_vid_device_select.png){: width="20%" }
+![Chooser](images/recent-video.png){: width="20%" }
 
 The selected source will then play in a separate window. This window will remain above the mwp application and can be resized, minimised and moved.
 
 In stream mode, there are minimal video controls; a play/pause button and volume control. Note the volume is that of the video, the overall volume is controlled by the system volume control.
+
+Up to 10 recent URIs are persisted. In order to access this list it is necessary to click the "down arrow head" icon at the end of URI text entry box and then expand the drop-down.
 
 ## Blackbox replay mode (BBL replay)
 

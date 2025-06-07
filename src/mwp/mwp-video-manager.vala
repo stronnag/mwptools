@@ -25,27 +25,22 @@ namespace V4L2 {
 		[GtkChild]
 		internal unowned Gtk.CheckButton urichk;
 		[GtkChild]
-		internal unowned Gtk.Entry uritxt;
-		[GtkChild]
 		internal unowned Gtk.Button apply;
 		[GtkChild]
-		internal unowned Gtk.Box v2;
-		[GtkChild]
-		internal unowned Gtk.Label dummy;
+		internal unowned Gtk.Grid g;
+
+		private Utils.RecentVideo cbox;
 
 		public signal void response(int id);
 
 		public Window(Gtk.DropDown viddev_c) {
 			transient_for = Mwp.window;
 			urichk.active = true;
-
-			uritxt.text = Mwp.conf.default_video_uri;
 #if WINDOWS
 			webcam.sensitive = false;
 #else
 			if(viddev_c != null) {
-				v2.remove(dummy);
-				v2.prepend(viddev_c);
+				g.attach (viddev_c, 1, 0);
 				var sl = viddev_c.model as Gtk.StringList;
 				if(sl.n_items == 1) {
 					webcam.sensitive = false;
@@ -54,6 +49,13 @@ namespace V4L2 {
 				}
 			}
 #endif
+			cbox = new Utils.RecentVideo();
+			var s = cbox.get_recent_items();
+			if (s.length > 0) {
+				cbox.populate(s);
+			}
+			g.attach(cbox, 1, 1);
+
 			close_request.connect(()=> {
 					response(-1);
 					return false;
@@ -69,10 +71,8 @@ namespace V4L2 {
 			if (webcam != null && webcam.active) {
 				return 0;
 			} else {
-				uri = uritxt.text;
-				if (uri.length > 0) {
-					Mwp.conf.default_video_uri = uri;
-				}
+				uri = cbox.get_text();
+				cbox.update_recent();
 				return 1;
 			}
 		}
