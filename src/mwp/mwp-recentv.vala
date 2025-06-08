@@ -64,10 +64,9 @@ public class RecentVideo : Gtk.Box {
 		return sl;
 	}
 
-
 	private string mkfn() {
 		var uc =  Environment.get_user_config_dir();
-		var cfile = GLib.Path.build_filename(uc,"mwp","recent.txt");
+		var cfile = GLib.Path.build_filename(uc,"mwp","recent-video.txt");
 		return cfile;
 	}
 
@@ -84,6 +83,8 @@ public class RecentVideo : Gtk.Box {
 				}
 				strlist += line;
 			}
+		} else if (Mwp.conf.default_video_uri.length > 0) {
+			strlist += Mwp.conf.default_video_uri;
 		}
 		return strlist;
 	}
@@ -116,6 +117,7 @@ public class RecentVideo : Gtk.Box {
 	}
 
 	public void save_recent() {
+		Mwp.conf.default_video_uri = entry.text;
 		var fs = FileStream.open(mkfn(), "w");
 		if (fs != null) {
 			fs.puts(entry.text);

@@ -46,7 +46,7 @@ The selected source will then play in a separate window. This window will remain
 
 In stream mode, there are minimal video controls; a play/pause button and volume control. Note the volume is that of the video, the overall volume is controlled by the system volume control.
 
-Up to 10 recent URIs are persisted. In order to access this list it is necessary to click the "down arrow head" icon at the end of URI text entry box and then expand the drop-down.
+Up to 10 recent URIs are persisted. In order to access this list it is necessary to click the "expander" icon at the end of URI text entry box. The recent files list is stored in a text file `~/.config/mwp/recent-video.txt`. This file may be maintained with a text editor if required.
 
 ## Blackbox replay mode (BBL replay)
 
