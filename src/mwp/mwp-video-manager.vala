@@ -29,7 +29,7 @@ namespace V4L2 {
 		[GtkChild]
 		internal unowned Gtk.Grid g;
 
-		private Utils.RecentVideo cbox;
+		private RecentVideo cbox;
 
 		public signal void response(int id);
 
@@ -49,10 +49,12 @@ namespace V4L2 {
 				}
 			}
 #endif
-			cbox = new Utils.RecentVideo();
-			var s = cbox.get_recent_items();
-			if (s.length > 0) {
-				cbox.populate(s);
+			cbox = new  RecentVideo(this);
+			cbox.entry.set_width_chars(48);
+
+			var rl = cbox.get_recent_items();
+			if (rl.length > 0) {
+				cbox.populate(rl);
 			}
 			g.attach(cbox, 1, 1);
 
@@ -72,7 +74,7 @@ namespace V4L2 {
 				return 0;
 			} else {
 				uri = cbox.get_text();
-				cbox.update_recent();
+				cbox.save_recent();
 				return 1;
 			}
 		}

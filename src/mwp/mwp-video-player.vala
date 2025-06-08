@@ -212,6 +212,11 @@ public class VideoPlayer : Adw.Window {
 			mf.notify["playing"].connect(() => {
 					video_playing(mf.playing);
 			});
+			mf.notify["error"].connect(() => {
+					if(mf.error != null) {
+						MWPLog.message("GTKVideo: %s\n", mf.error.message);
+					}
+			});
 			v.set_media_stream(mf);
 		} else {
 			string vuri;

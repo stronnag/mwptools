@@ -20,12 +20,16 @@
 public class MwpCombox : Gtk.Frame {
 	public Gtk.Entry entry;
 	private GLib.Menu menu;
+	private string mstr;
 
-	public MwpCombox() {
+	public MwpCombox(string _mstr = "menu.item") {
+		mstr = _mstr;
 		entry = new Gtk.Entry();
 		var button = new Gtk.MenuButton();
 		var box = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 2);
 		menu = new GLib.Menu();
+		print("%s %s\n", GLib.Menu.ATTRIBUTE_ACTION,  GLib.Menu.ATTRIBUTE_TARGET);
+
 		button.menu_model = menu;
 		box.append(entry);
 		box.append(button);
@@ -39,8 +43,10 @@ public class MwpCombox : Gtk.Frame {
 	}
 
 	public void append(string label) {
-		var mi = new GLib.MenuItem(label, null);
-		mi.set_action_and_target("menu.item", "s", label);
+		print("ADD ITEM %s %s\n", mstr,label);
+		var mi = new GLib.MenuItem(label, mstr);
+		Variant v = new Variant.string(label);
+		mi.set_action_and_target_value(mstr, v);
 		menu.append_item(mi);
 		if(menu.get_n_items() == 0) {
 			entry.text = label;
@@ -73,7 +79,7 @@ public class MwpCombox : Gtk.Frame {
 
 	public void prepend(string label) {
 		var mi = new GLib.MenuItem(label, null);
-		mi.set_action_and_target("menu.item", "s", label);
+		mi.set_action_and_target(mstr, "s", label);
 		menu.prepend_item(mi);
 		entry.text = label;
 	}
