@@ -771,7 +771,7 @@ public class MWSerial : Object {
 
 	public ssize_t write(uint8[]buf, size_t len, bool urgent=false) {
 		if(sq != null) {
-			var sqi = SQI(){data = buf, len=len};
+			var sqi = SQI(){data = buf[:len], len=len};
 			if(urgent) {
 				sq.push_front(sqi);
 			} else {
@@ -2271,7 +2271,7 @@ public class MWSerial : Object {
 			size_t mlen;
 			uint8 []tbuf=new uint8[len+16];
 			if(use_v2 || cmd > 254 || len > 254) {
-				mlen = generate_v2(cmd,data,len, tmp, ref tbuf);
+				mlen = generate_v2(cmd, data, len, tmp, ref tbuf);
 			} else {
 				mlen  = generate_v1((uint8)cmd, data, len, tmp, ref tbuf);
 			}

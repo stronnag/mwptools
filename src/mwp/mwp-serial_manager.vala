@@ -466,7 +466,11 @@ namespace Msp {
 					}
 					if (!forced_mav) {
 						Mwp.serstate = Mwp.SERSTATE.NORMAL;
-						Mwp.msp.use_v2 = false;
+						if(Environment.get_variable("MWP_MSPV2") != null) {
+							Mwp.msp.use_v2 = true;
+						} else {
+							Mwp.msp.use_v2 = false;
+						}
 						if(Misc.is_msprc_enabled()) {
 							start_hid();
 							request_hid_info();
