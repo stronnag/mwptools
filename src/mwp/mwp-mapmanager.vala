@@ -322,8 +322,8 @@ namespace Gis {
 			have_ovly = false;
 		}
 		if(Mwp.add_ovly_active) {
-			Gis.map.insert_layer_behind(tlayer, null);
-			Gis.map.insert_layer_behind(nlayer, null);
+			Gis.map.insert_layer_above(tlayer, Gis.base_layer);
+			Gis.map.insert_layer_above(nlayer, Gis.base_layer);
 			have_ovly = true;
 		}
 	}
