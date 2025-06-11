@@ -180,17 +180,17 @@ namespace MapBox {
 }
 
 namespace EsriWorld {
-	MwpMapDesc get_source() {
+	MwpMapDesc get_source(string id, string name, string uri, int mz) {
 		var es = MwpMapDesc();
-		es.id = "esri";
-		es.name= "ESRI Clarity";
+		es.id = id;
+		es.name= name;
 		es.license = "© 2021 Esri, Maxar, Earthstar Geographics, USDA FSA, USGS, Aerogrid, IGN, IGP, and the GIS User Community";
 		es.license_uri = "https://www.esriuk.com/en-gb/content/products?esri-world-imagery-service";
 		es.min_zoom_level = 0;
-		es.max_zoom_level = 18;
+		es.max_zoom_level = mz;
 		es.tile_size = 256;
 		es.projection = Shumate.MapProjection.MERCATOR;
-		es.url_template = "https://clarity.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+		es.url_template = uri;
 		return es;
 	}
 }
@@ -279,7 +279,8 @@ namespace MapManager {
 	public MwpMapDesc[] read_json_sources(string? fn, bool offline=false) {
 		MwpMapDesc[] sources = {};
 
-		sources += 	EsriWorld.get_source();
+		sources += 	EsriWorld.get_source("esri", "ESRI Clarity", "https://clarity.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", 18);
+		sources += EsriWorld.get_source("eworld", "ESRI World Imagery",  "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", 19);
 
 		MWPLog.message("Starting Bing proxy %s\n", (offline) ? "(offline)" : "");
 		uint port = 0;

@@ -2269,7 +2269,7 @@ public class MWSerial : Object {
 			if (sim) // forces SIM mode (inav-radar)
 				tmp = '>';
 			size_t mlen;
-			uint8 []tbuf=new uint8[len+16];
+			uint8 []tbuf =new uint8[len+9];
 			if(use_v2 || cmd > 254 || len > 254) {
 				mlen = generate_v2(cmd, data, len, tmp, ref tbuf);
 			} else {
