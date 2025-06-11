@@ -18,10 +18,9 @@
 
 ## Clients
 
-This has **only** been tested with `mwp`.
+This has **only** been tested with `mwp` and the INAV Configurator.
 
-* mwp 25.06.10 or later is required
-* It is necessary to set the environment variable `MWP_MSPV2` (to anything) in order that mwp does not try to negotiate the MSP version.
+* mwp 25.06.11 or later is required
 
 Example:
 
@@ -30,10 +29,14 @@ Example:
 mspmplex -verbose 1
 
 # first client (on eeyore):
-MWP_MSPV2=1  mwp -d udp://localhost:27072
+mwp -d udp://localhost:27072
 
 # second client (on another machine)
-MWP_MSPV2=1  mwp -d udp://eeyore:27072
+mwp -d udp://eeyore:27072
+
+# on a machine other than "eeyore"
+# Connect to udp://eeyore:27072
+inav-configurator
 ```
 
 ## Usage
@@ -54,7 +57,8 @@ Usage of mspmplex [options] device [:port]
 ## Caveats
 
 * Minimal error checking is implemented.
-* Due to the bizarre way the INAV Configurator implements UDP (binds to the local port), it can only work if `mspmplex` and the INAV Configurator are on different hosts,
+* Any MSPV1 message will get a MSPV2 error response from `mspmplex`; (message is never sent to the FC).
+* Due to the bizarre way the INAV Configurator implements UDP (always *binds* to the local `INADDR_ANY`), it can only work if `mspmplex` and the INAV Configurator are on different hosts,
 
 ## Legal
 

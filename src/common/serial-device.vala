@@ -1584,6 +1584,7 @@ public class MWSerial : Object {
 						} else if(devbuf[nc] == 'T') {
 							state=States.S_T_HEADER2;
 						} else if(devbuf[nc] == 'X') {
+							use_v2 = true;
 							state=States.S_X_HEADER2;
 						} else {
 							error_counter("MSP/Proto");

@@ -68,7 +68,13 @@ func (sc *SChan) msp_parse(inp []byte, nb int) {
 				sc.state = state_X_HEADER2
 				sc.buf[1] = inp[i]
 			} else {
+				if sc.owner != 0xff {
+					if nb > 4 {
+						sc.send_error_packet(inp[4]) // MSPV1 'cmd'
+					}
+				}
 				sc.state = state_INIT
+				break
 			}
 
 		case state_X_HEADER2:
@@ -134,6 +140,31 @@ func (sc *SChan) msp_parse(inp []byte, nb int) {
 			sc.state = state_INIT
 		}
 	}
+}
+
+func (sc *SChan) send_error_packet(cmd uint8) {
+	sc.len = 0
+	sc.count = 9
+	sc.buf[0] = '$'
+	sc.buf[1] = 'X'
+	sc.buf[2] = '!'
+	sc.buf[3] = 0   // flags
+	sc.buf[4] = cmd // cmd
+	sc.buf[5] = 0   // cmd
+	sc.buf[6] = 0   // len
+	sc.buf[7] = 0   // len
+	crc := byte(0)
+	for j := 3; j < 8; j++ {
+		crc = crc8_dvb_s2(crc, sc.buf[j])
+	}
+	sc.buf[8] = crc
+
+	ua := addr_for_id(sc.owner)
+	if verbose > 0 {
+		fmt.Printf("Out: Conn error %d %d\n", sc.count, sc.len)
+	}
+	uaddr, _ := net.ResolveUDPAddr("udp", ua)
+	conn.WriteTo(sc.buf[:sc.count], uaddr)
 }
 
 func (sc *SChan) publish() {
