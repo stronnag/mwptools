@@ -204,26 +204,30 @@ namespace Msp {
 			uint id = this;
 			var sb = new StringBuilder();
 			var a = this.to_string();
-			if(this < Msp.Cmds.MSPV2) {
-				sb.append("MSP");
-			} else if (this < PRIV_TEXT) {
-				sb.append("MSP2");
-			} else if (this < LTM_BASE) {
-				sb.append("Private");
-			} else if (this < MAV_BASE) {
-				n++;
-				id -= LTM_BASE;
-				sb.append("LTM");
-			} else if (this < MAV_TOP) {
-				n += 8;
-				id -= MAV_BASE;
-				sb.append("Navlink");
+			if (a == null || a == "") {
+				sb.append("ERR:Unknown");
 			} else {
-				n = 0;
-				sb.append("Unknown");
+				if(this < Msp.Cmds.MSPV2) {
+					sb.append("MSP");
+				} else if (this < PRIV_TEXT) {
+					sb.append("MSP2");
+				} else if (this < LTM_BASE) {
+					sb.append("Private");
+				} else if (this < MAV_BASE) {
+					n++;
+					id -= LTM_BASE;
+					sb.append("LTM");
+				} else if (this < MAV_TOP) {
+					n += 8;
+					id -= MAV_BASE;
+					sb.append("Navlink");
+				} else {
+					n = 0;
+					sb.append("Unknown");
+				}
+				sb.append(":");
+				sb.append(a[n:]);
 			}
-			sb.append(":");
-			sb.append(a[n:]);
 			sb.append_printf(" 0x%x/%u", id, id);
 			return sb.str;
 		}
