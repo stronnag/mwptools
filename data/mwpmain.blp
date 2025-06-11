@@ -44,6 +44,12 @@ template $MwpWindow: Adw.ApplicationWindow {
           adjustment: adjustment1;
         }
 
+        ToggleButton map_annotations {
+          active: true;
+          icon-name: 'preferences-desktop-locale';
+          tooltip-text: _("Toggle Place and Transport layers");
+        }
+
         Gtk.ToggleButton wpeditbutton {
 	  tooltip-text: _("Enable / diable on-map WP creation");
           Gtk.Box {

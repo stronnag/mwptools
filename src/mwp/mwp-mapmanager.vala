@@ -51,6 +51,11 @@ namespace Gis {
 	Shumate.MarkerLayer rm_layer;
 	Shumate.MarkerLayer mm_layer;
 	Shumate.MarkerLayer hm_layer;
+
+	private Shumate.MapLayer nlayer;
+	private Shumate.MapLayer tlayer;
+	private bool have_ovly;
+
 	private StrIntStore mis;
 	internal Queue<Shumate.MapLayer?> qml;
 	private Gtk.Label warnlab;
@@ -200,6 +205,36 @@ namespace Gis {
 		return sl;
 	}
 
+	private Shumate.MapSource add_roads() {
+        var ms = new Shumate.RasterRenderer.full_from_url(
+            "roads",
+            "Roads",
+			"esri",
+			"https://www.esriuk.com/en-gb/content/products?esri-world-imagery-service",
+			0,
+			19,
+			256,
+			Shumate.MapProjection.MERCATOR,
+			"https://services.arcgisonline.com/arcgis/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}"
+			);
+		return ms;
+	}
+
+	private Shumate.MapSource add_places() {
+        var ms = new Shumate.RasterRenderer.full_from_url(
+            "places",
+            "Places",
+			"esri",
+			"https://www.esriuk.com/en-gb/content/products?esri-world-imagery-service",
+			0,
+			19,
+			256,
+			Shumate.MapProjection.MERCATOR,
+			"https://services.arcgisonline.com/arcgis/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
+			);
+		return ms;
+	}
+
 	public void setup_map_sources(Gtk.DropDown mapdrop) {
 		var mr = setup_registry();
 		mis = new StrIntStore();
@@ -254,6 +289,14 @@ namespace Gis {
 		mapdrop.set_factory(mis.factory);
 		mapdrop.set_selected(ditem);
 
+		var nsource = add_places();
+		var tsource= add_roads();
+
+        nlayer = new Shumate.MapLayer(nsource, Gis.map.viewport);
+        tlayer = new Shumate.MapLayer(tsource, Gis.map.viewport);
+
+		have_ovly = false;
+
 		mapdrop.notify["selected"].connect(() => {
 				var mi = mapdrop.get_selected_item() as StrIntItem;
 				var msl =  mr.get_item(mi.id) as Shumate.MapSource;
@@ -266,9 +309,23 @@ namespace Gis {
 					Gis.simple.license.append_map_source(msl);
 					Gis.map.set_map_source (msl);
 					Mwp.set_zoom_range((double)Gis.map.viewport.min_zoom_level,(double)Gis.map.viewport.max_zoom_level);
+					check_annotations();
 					cleanup_qml();
 				}
 			});
+	}
+
+	public void check_annotations() {
+		if (have_ovly) {
+			Gis.map.remove_layer(tlayer);
+			Gis.map.remove_layer(nlayer);
+			have_ovly = false;
+		}
+		if(Mwp.add_ovly_active) {
+			Gis.map.insert_layer_behind(tlayer, null);
+			Gis.map.insert_layer_behind(nlayer, null);
+			have_ovly = true;
+		}
 	}
 
 	private void cleanup_qml() {

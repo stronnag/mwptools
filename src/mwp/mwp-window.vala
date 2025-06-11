@@ -43,6 +43,8 @@ namespace Mwp {
 	private GZEdit gzedit;
 	private bool cleaned;
 
+	public bool add_ovly_active;
+
 	public void cleanup() {
 		if (!cleaned) {
 			cleaned =true;
@@ -126,6 +128,8 @@ namespace Mwp {
 		internal unowned Gtk.Button arm_warn;
 		[GtkChild]
 		internal unowned Gtk.ToggleButton show_sidebar_button;
+		[GtkChild]
+		internal unowned Gtk.ToggleButton map_annotations;
 
 		private StrIntStore pis;
 		private Mwp.GotoDialog posdialog;
@@ -218,6 +222,11 @@ namespace Mwp {
 #endif
 			setup_accels(app);
 			setup_misc_controls();
+			map_annotations.active = false;
+			map_annotations.toggled.connect(() => {
+					add_ovly_active = map_annotations.active;
+					Gis.check_annotations();
+			});
 
 			close_check = CloseCheck.NONE;
 			close_request.connect(() => {
