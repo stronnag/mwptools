@@ -54,7 +54,10 @@ namespace Gis {
 
 	private Shumate.MapLayer nlayer;
 	private Shumate.MapLayer tlayer;
+	private Shumate.MapSource nsource;
+	private Shumate.MapSource tsource;
 	private bool have_ovly;
+	private bool have_elic;
 
 	private StrIntStore mis;
 	internal Queue<Shumate.MapLayer?> qml;
@@ -209,7 +212,7 @@ namespace Gis {
         var ms = new Shumate.RasterRenderer.full_from_url(
             "roads",
             "Roads",
-			"esri",
+			"© 2021 Esri, Maxar, Earthstar Geographics, USDA FSA, USGS, Aerogrid, IGN, IGP, and the GIS User Community",
 			"https://www.esriuk.com/en-gb/content/products?esri-world-imagery-service",
 			0,
 			19,
@@ -289,8 +292,8 @@ namespace Gis {
 		mapdrop.set_factory(mis.factory);
 		mapdrop.set_selected(ditem);
 
-		var nsource = add_places();
-		var tsource= add_roads();
+		nsource = add_places();
+		tsource= add_roads();
 
         nlayer = new Shumate.MapLayer(nsource, Gis.map.viewport);
         tlayer = new Shumate.MapLayer(tsource, Gis.map.viewport);
@@ -319,11 +322,18 @@ namespace Gis {
 		if (have_ovly) {
 			Gis.map.remove_layer(tlayer);
 			Gis.map.remove_layer(nlayer);
+			if (have_elic) {
+				Gis.simple.license.remove_map_source(tsource);
+			}
 			have_ovly = false;
 		}
 		if(Mwp.add_ovly_active) {
 			Gis.map.insert_layer_above(tlayer, Gis.base_layer);
 			Gis.map.insert_layer_above(nlayer, Gis.base_layer);
+			if(Gis.map.viewport.reference_map_source.license != tsource.license) {
+				Gis.simple.license.append_map_source(tsource);
+				have_elic = true;
+			}
 			have_ovly = true;
 		}
 	}
