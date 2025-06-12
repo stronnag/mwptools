@@ -91,11 +91,18 @@ The following tables summarise the available menu options. Where usage is not ob
 
 ## Map and Mission Settings (2)
 
-A number of different map provides are available. {{ mwp }} offers the mapping library (`libshumate`) defaults, MapBox, Bing Map, and [user defined options](mwp-Configuration.md/#additional-map-sources-sourcesjson), for example [anonymous maps](Black-Ops.md).
+A number of different map provides are available. {{ mwp }} offers the mapping library (`libshumate`) defaults, MapBox, Esri Clarity / Esri World Imagery (deprecated Bing Map), and [user defined options](mwp-Configuration.md/#additional-map-sources-sourcesjson), for example [anonymous maps](Black-Ops.md).
 
-Note that Bing Maps is deprecated by Microsoft, and MapBox will only be offered if the user has supplied a MapBox API key.
+Note that Bing Maps is deprecated by Microsoft, and MapBox will only be offered if the user has supplied a MapBox API key. The Bing option will be removed some time after the service is ended (though cached data may still work).
 
 The zoom level may be selected from the control here, or by zooming the map with the mouse wheel.
+
+The user may add a "Gazetteer" layer (Places and Transportation) overlay to any other map product, by toggling the "Gazetteer" button:
+
+![off](images/gazetteer-off.png)
+
+![on](images/gazetteer-on.png)
+
 
 The **+Add WPs** (Edit WPs)  button enables mission edit mode (click on the map to create a WP, drag to move, right mouse button for properties). Graphical WP editing may be augmented by the table orientated [mission table view](mission-editor.md), which allows additional control (altitude, speed, special functions, for example [fly-by-home](Fly-By-Home-waypoints-(inav-4-new-feature).md) waypoints).
 

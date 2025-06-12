@@ -195,6 +195,7 @@ namespace EsriWorld {
 	}
 }
 
+#if USE_BING
 namespace BingMap {
 	public string get_buri(int i) {
 		//"https://t.ssl.ak.tiles.virtualearth.net/tiles/a{q}.jpeg?g=14826&n=z&prx=1";
@@ -220,6 +221,7 @@ namespace BingMap {
 		return ms;
 	}
 }
+#endif
 
 namespace ProxyPids {
 	private int [] pids;
@@ -279,9 +281,10 @@ namespace MapManager {
 	public MwpMapDesc[] read_json_sources(string? fn, bool offline=false) {
 		MwpMapDesc[] sources = {};
 
-		sources += 	EsriWorld.get_source("esri", "ESRI Clarity", "https://clarity.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", 18);
-		sources += EsriWorld.get_source("eworld", "ESRI World Imagery",  "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", 19);
+		sources += 	EsriWorld.get_source("esri", "Esri Clarity", "https://clarity.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", 18);
+		sources += EsriWorld.get_source("eworld", "Esri World Imagery",  "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", 19);
 
+#if USE_BING
 		MWPLog.message("Starting Bing proxy %s\n", (offline) ? "(offline)" : "");
 		uint port = 0;
 		for(var ij = 0; ij < 2; ij++)  {
@@ -289,8 +292,6 @@ namespace MapManager {
 			sp = new SoupProxy(offline);
 			try {
 				sp.listen_local(31897+ij, 0);
-				//var u  = sp.get_uris();
-				//port = u.nth_data(0).get_port ();
 				port = 31897+ij;
 			} catch (Error e) {
 				MWPLog.message(":DBG: Proxy: %s\n", e.message);
@@ -304,7 +305,7 @@ namespace MapManager {
 				sp.set_uri(BingMap.get_buri(ij));
 			}
 		}
-
+#endif
 		var have_mb = false;
 
 		if(fn != null) {
@@ -408,7 +409,4 @@ namespace MapManager {
         }
         return iport;
     }
-	public void setBingState(bool offline) {
-		sp.offline = offline;
-	}
 }

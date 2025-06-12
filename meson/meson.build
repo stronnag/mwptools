@@ -7,6 +7,8 @@ mwpv_args = []
 
 deps += dependency('glib-2.0')
 
+dopts += '--define=USE_BING'
+
 if host_machine.system() == 'linux'
   dopts += '--define=LINUX'
   deps += dependency('gudev-1.0')
