@@ -28,7 +28,7 @@ namespace About {
 		var avers = "%s \"%s\"".printf(MwpVers.get_id(), CODE_NAME);
 		var about = new Adw.AboutDialog () {
 				application_name = "mwp",
-					application_icon = "mwp_icon-symbolic",
+					application_icon = "mwp_icon",
 					developer_name = "Jonathan Hudson",
 					version = avers,
 					developers = developers,
