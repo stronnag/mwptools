@@ -25,7 +25,7 @@ apt $CONFIRM install \
     meson \
     ninja-build \
     libbluetooth-dev \
-    libespeak-dev \
+    libespeak-ng-libespeak-dev
     libgudev-1.0-dev \
     libgstreamer1.0-dev \
     libgstreamer-plugins-base1.0-dev \
@@ -33,9 +33,12 @@ apt $CONFIRM install \
     libxml2-utils \
     desktop-file-utils \
     librsvg2-dev \
-    libsdl2-compat-dev libreadline-dev
+    libreadline-dev
 
-# vanity, prettier terminal progress bars (fcset, flashdl)
+# Version specific ....
+apt $CONFIRM install libsdl2-compat-dev || apt $CONFIRM install libsdl2-dev
+
+    # vanity, prettier terminal progress bars (fcset, flashdl)
 apt $CONFIRM install libncurses5-dev
 
 # To build go based components, golang
@@ -71,7 +74,7 @@ apt $CONFIRM install ruby ruby-json
 # apt $CONFIRM install libmosquitto-dev
 
 ## For plot-elevation.rb
-apt $CONFIRM install gnuplot ruby-nokogiri
+apt $CONFIRM install gnuplot
 
 ## To use KMZ as an overlay format, you need 'unzip
 #apt $CONFIRM install unzip
