@@ -2075,7 +2075,9 @@ MWP_BLACK_TILE=/home/jrh/.config/mwp/mars.png
 <li>Maps for Free Relief</li>
 <li>Bing Maps (no API key required, for as long as the service remains available).</li>
 <li>MapBox (requires API key)</li>
-<li>ESRI Clarity</li>
+<li>Esri Clarity</li>
+<li>Esri World Imagery</li>
+<li>Esri Places and Transportation layers as an optional overlay.</li>
 </ul>
 <h3 id="mapbox-api-key-management">Mapbox API Key management<a class="headerlink" href="#mapbox-api-key-management" title="Permanent link">#</a></h3>
 <p>In preparation for the announced removal of the Bing Maps service, <code>mwp</code> adds a <code>MapBox</code> entry where the user has acquired a <a href="https://mapbox.com/">Mapbox API key</a>.</p>
@@ -2143,6 +2145,7 @@ Password: *************************************************
  ]
 }
 </code></pre>
+<p>In this example, <code>https://map-proxy/....</code> refers to a local <code>mapproxy</code> server configured in accordance with <a href="https://gist.github.com/stronnag/74d94f9784d647b74f71e8e32ec6be54">this guide</a>. Note that in this instance <code>mapproxy</code> is used as a means to share the data across a LAN (and with INAV Configurator). As the first three sources are TMS, they could be consumed directly by mwp.</p>
 <p>See also <a href="../Black-Ops/#custom-tile">anonymous maps</a> to customise the "black tile". The <code>spawn</code> stanza uses a proxy for non-TMS formats (see <code>mwptools/src/qproxy</code> for some examples).</p>
 <h2 id="mwpcss"><code>mwp.css</code><a class="headerlink" href="#mwpcss" title="Permanent link">#</a></h2>
 <p><code>mwp.css</code> contains alternate CSS themeing for the application. An example file is provided as <code>&lt;PREFIX&gt;/share/mwp/mwp.css</code> which can be copied into <code>~/.config/mwp/</code> if modifications are required (i.e. override the <code>Monospace</code> font, especially on Windows where it's too large and ugly (in the developer's opinion)).</p>

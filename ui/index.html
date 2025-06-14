@@ -1950,8 +1950,9 @@
 </tbody>
 </table>
 <h2 id="map-and-mission-settings-2">Map and Mission Settings (2)<a class="headerlink" href="#map-and-mission-settings-2" title="Permanent link">#</a></h2>
-<p>A number of different map provides are available. <a href="https://github.com/stronnag/mwptools">mwp</a> offers the mapping library (<code>libshumate</code>) defaults, MapBox, Esri Clarity / Esri World Imagery (deprecated Bing Map), and <a href="../mwp-Configuration/#additional-map-sources-sourcesjson">user defined options</a>, for example <a href="../Black-Ops/">anonymous maps</a>.</p>
-<p>Note that Bing Maps is deprecated by Microsoft, and MapBox will only be offered if the user has supplied a MapBox API key. The Bing option will be removed some time after the service is ended (though cached data may still work).</p>
+<p>A number of different map products are available. <a href="https://github.com/stronnag/mwptools">mwp</a> offers the mapping library (<code>libshumate</code>) defaults, MapBox, Esri Clarity, Esri World Imagery. (deprecated Bing Map), and <a href="../mwp-Configuration/#additional-map-sources-sourcesjson">user defined options</a>, for example <a href="../Black-Ops/">anonymous maps</a>.</p>
+<p>These map products have different maximum zoom levels, (typically between 18-20), and in at least one case, are not globally consistent (Esi World Imagery has imagery tiles at zoom 19 in populated areas but returns a "no data" tile at zoom 19 in less populated areas). mwp cannot 'fix' this.</p>
+<p>Note that Bing Maps is deprecated by Microsoft, and MapBox will only be offered if the user has supplied a MapBox API key. The Bing option will be removed some time after the service is ended (though cached data should still work).</p>
 <p>The zoom level may be selected from the control here, or by zooming the map with the mouse wheel.</p>
 <p>The user may add a "Gazetteer" layer (Places and Transportation) overlay to any other map product, by toggling the "Gazetteer" button:</p>
 <p><img alt="off" src="../images/gazetteer-off.png" /></p>

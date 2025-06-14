@@ -1928,9 +1928,10 @@
 </tbody>
 </table>
 <h2 id="map-sources">Map Sources<a class="headerlink" href="#map-sources" title="Permanent link">#</a></h2>
-<p>In preparation for the announced removal of the Bing Maps service, <code>mwp</code> adds two new imagery sources:</p>
+<p>In preparation for the announced removal of the Bing Maps service, <code>mwp</code> adds new imagery sources:</p>
 <ul>
-<li><strong>ESRI Clarity</strong> : No registration required, some minor data quality affects.</li>
+<li><strong>Esri Clarity</strong> : No registration required, some minor data quality affects.</li>
+<li><strong>Esri World Imagery</strong> : No registration required, some minor data quality affects.</li>
 <li><strong>MapBox</strong> : Requires registration, the user acquiring a <a href="https://mapbox.com/">Mapbox API key</a>. This key may be either stored in the Desktop keyring (managed by <code>libsecret</code>) or as a plain text string in the <code>gsettings</code> database.</li>
 </ul>
 <h3 id="keyring">Keyring<a class="headerlink" href="#keyring" title="Permanent link">#</a></h3>
@@ -1945,7 +1946,7 @@ Password: *************************************************
 </code></pre></div></p>
 <p>Note that sadly <code>libshumate</code> creates a cache directory name from which the MapBox access token may be recovered, so there is little security / privacy gain by using the secret key-ring, alas. See <a href="https://gitlab.gnome.org/GNOME/libshumate/-/issues/84">Gitlab issue</a>.</p>
 <h3 id="bing-services">Bing Services<a class="headerlink" href="#bing-services" title="Permanent link">#</a></h3>
-<p>While it lasts, the Bing services (no registration required) provide:</p>
+<p>While it lasts, the Bing services (no registration / key required) provide:</p>
 <ul>
 <li>Bing Aerial : Imagery with no annotations</li>
 <li>Bing Hybrid : Imagery with road / place annotations</li>
