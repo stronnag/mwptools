@@ -44,9 +44,12 @@ template $MwpWindow: Adw.ApplicationWindow {
           adjustment: adjustment1;
         }
 
-        ToggleButton map_annotations {
+	// "preferences-desktop-locale"
+        // "user-bookmarks"
+        // "bookmark-new"
+	ToggleButton map_annotations {
           active: true;
-          icon-name: 'preferences-desktop-locale';
+          icon-name: 'user-bookmarks';
           tooltip-text: _("Toggle Place and Transport layers");
         }
 
