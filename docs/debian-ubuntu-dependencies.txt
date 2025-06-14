@@ -25,7 +25,7 @@ apt $CONFIRM install \
     meson \
     ninja-build \
     libbluetooth-dev \
-    libespeak-ng-libespeak-dev
+    libespeak-ng-libespeak-dev \
     libgudev-1.0-dev \
     libgstreamer1.0-dev \
     libgstreamer-plugins-base1.0-dev \

@@ -43,7 +43,7 @@ sudo apt update && sudo apt full-upgrade && \
     meson \
     ninja-build \
     libbluetooth-dev \
-    libespeak-dev \
+    libespeak-ng-libespeak-dev \
     libgudev-1.0-dev \
     libgstreamer1.0-dev \
     libgstreamer-plugins-base1.0-dev \
@@ -55,8 +55,10 @@ sudo apt update && sudo apt full-upgrade && \
     libprotobuf-c-dev \
     libxml2-utils \
     librsvg2-dev \
-    libsdl2-compat-dev libreadline-dev \
+    libreadline-dev \
     gnuplot ruby-nokogiri unzip
+
+sudo apt $CONFIRM install libsdl2-compat-dev || sudo apt $CONFIRM install libsdl2-dev
 
 [ -n "$DEPSONLY" ] && exit
 
@@ -64,7 +66,6 @@ git clone --depth 1 https://github.com/stronnag/mwptools
 (
   mkdir -p ~/.local/bin
   cd mwptools
-  git checkout mwp4
   meson setup _build --buildtype=release --strip --prefix ~/.local
   ninja -C _build install
 )
