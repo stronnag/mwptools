@@ -98,3 +98,5 @@ if bcd.found()
   endif
   install_data(['mwp-completion.sh'], rename: ['mwp'], install_dir: bcd_dir )
 endif
+
+install_data(['pixmaps/mwp_icon.svg', 'pixmaps/mwp_icon-symbolic.svg'] , install_dir: get_option('datadir') / 'icons/hicolor/scalable/apps')

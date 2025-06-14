@@ -84,5 +84,3 @@ if dynalib
 else
   mwpvlib = static_library('mwpvlib', kwargs: libargs)
 endif
-
-install_data('mwp_icon.svg', install_dir: get_option('datadir') / 'icons/hicolor/scalable/apps')
