@@ -90,7 +90,9 @@ The environment is set before any GTK / UI calls are made.
 * Maps for Free Relief
 * Bing Maps (no API key required, for as long as the service remains available).
 * MapBox (requires API key)
-* ESRI Clarity
+* Esri Clarity
+* Esri World Imagery
+* Esri Places and Transportation layers as an optional overlay.
 
 ### Mapbox API Key management
 
@@ -171,6 +173,9 @@ Here is an example `mwptools/src/samples/sources.json`.
       }
      ]
     }
+
+
+In this example, `https://map-proxy/....` refers to a local `mapproxy` server configured in accordance with [this guide](https://gist.github.com/stronnag/74d94f9784d647b74f71e8e32ec6be54). Note that in this instance `mapproxy` is used as a means to share the data across a LAN (and with INAV Configurator). As the first three sources are TMS, they could be consumed directly by mwp.
 
 See also [anonymous maps](Black-Ops.md#custom-tile) to customise the "black tile". The `spawn` stanza uses a proxy for non-TMS formats (see `mwptools/src/qproxy` for some examples).
 

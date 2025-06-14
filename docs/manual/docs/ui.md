@@ -91,9 +91,11 @@ The following tables summarise the available menu options. Where usage is not ob
 
 ## Map and Mission Settings (2)
 
-A number of different map provides are available. {{ mwp }} offers the mapping library (`libshumate`) defaults, MapBox, Esri Clarity / Esri World Imagery (deprecated Bing Map), and [user defined options](mwp-Configuration.md/#additional-map-sources-sourcesjson), for example [anonymous maps](Black-Ops.md).
+A number of different map products are available. {{ mwp }} offers the mapping library (`libshumate`) defaults, MapBox, Esri Clarity, Esri World Imagery. (deprecated Bing Map), and [user defined options](mwp-Configuration.md/#additional-map-sources-sourcesjson), for example [anonymous maps](Black-Ops.md).
 
-Note that Bing Maps is deprecated by Microsoft, and MapBox will only be offered if the user has supplied a MapBox API key. The Bing option will be removed some time after the service is ended (though cached data may still work).
+These map products have different maximum zoom levels, (typically between 18-20), and in at least one case, are not globally consistent (Esi World Imagery has imagery tiles at zoom 19 in populated areas but returns a "no data" tile at zoom 19 in less populated areas). mwp cannot 'fix' this.
+
+Note that Bing Maps is deprecated by Microsoft, and MapBox will only be offered if the user has supplied a MapBox API key. The Bing option will be removed some time after the service is ended (though cached data should still work).
 
 The zoom level may be selected from the control here, or by zooming the map with the mouse wheel.
 
