@@ -49,7 +49,7 @@ public class MwpNotify : GLib.Object {
     public void send_notification(string summary,  string text) {
         try {
             if (is_valid)
-                dtnotify.Notify ("mwp",0,"mwp_icon", summary, text, null, _ht, 5000);
+                dtnotify.Notify ("mwp",0,"mwp_icon-symbolic", summary, text, null, _ht, 5000);
         } catch {
             is_valid = false;
         }

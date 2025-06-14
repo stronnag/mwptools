@@ -39,7 +39,6 @@ public class VideoPlayer : Adw.Window {
 			}
 
 			title = "mwp Video (gstgtk4) player";
-			set_icon_name("mwp_icon");
 
 			playbin = ElementFactory.make (playbinx, playbinx);
 			playbin.set_property("video-sink", videosink);
