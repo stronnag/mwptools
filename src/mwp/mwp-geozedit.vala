@@ -160,11 +160,11 @@ public class GZEdit : Adw.Window {
 			});
 
 		buttons = {
-			new Gtk.Button.from_icon_name ("list-add"),
-			new Gtk.Button.from_icon_name ("go-previous"),
-			new Gtk.Button.from_icon_name ("go-next"),
-			new Gtk.Button.from_icon_name ("list-remove"),
-			new Gtk.Button.from_icon_name ("view-refresh"),
+			new Gtk.Button.from_icon_name ("list-add-symbolic"),
+			new Gtk.Button.from_icon_name ("go-previous-symbolic"),
+			new Gtk.Button.from_icon_name ("go-next-symbolic"),
+			new Gtk.Button.from_icon_name ("list-remove-symbolic"),
+			new Gtk.Button.from_icon_name ("view-refresh-symbolic"),
 		};
 
 		newlab = new Gtk.Label(null);
@@ -697,7 +697,7 @@ public class GZEdit : Adw.Window {
 			Gdk.Rectangle rect = { (int)x, (int)y, 1, 1};
 			if(n == -1) {
 				pop.set_autohide(false);
-				var button = new Gtk.Button.from_icon_name("window-close");
+				var button = new Gtk.Button.from_icon_name("window-close-symbolic");
 				button.halign = Gtk.Align.END;
 				box.append(button);
 				button.clicked.connect(() => {

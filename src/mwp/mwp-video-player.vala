@@ -55,7 +55,7 @@ public class VideoPlayer : Adw.Window {
 			pic.hexpand = true;
 			pic.vexpand = true;
 			vbox.append(pic);
-			play_button = new Button.from_icon_name ("media-playback-start");
+			play_button = new Button.from_icon_name ("media-playback-start-symbolic");
 			play_button.clicked.connect (on_play);
 			pic.set_size_request(640, 480);
 			var bus = playbin.get_bus ();
@@ -276,9 +276,9 @@ public class VideoPlayer : Adw.Window {
 			Gst.State pending;
 			message.parse_state_changed (out oldstate, out newstate, out pending);
 			if(newstate == Gst.State.PLAYING) {
-				play_button.icon_name = "media-playback-pause";
+				play_button.icon_name = "media-playback-pause-symbolic";
 			} else {
-				play_button.icon_name = "media-playback-start";
+				play_button.icon_name = "media-playback-start-symbolic";
 			}
 			break;
 

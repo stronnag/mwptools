@@ -466,7 +466,7 @@ namespace TelemTracker {
 		public SecDevDialog() {
 			transient_for = Mwp.window;
 			this.title = "Telemetry Tracker";
-			var radd = new Gtk.Button.from_icon_name("list-add");
+			var radd = new Gtk.Button.from_icon_name("list-add-symbolic");
 			radd.clicked.connect(() => {
 					var sd = new SecDev();
 					var w = new  SecItemWindow(sd);
@@ -485,7 +485,7 @@ namespace TelemTracker {
 						});
 					w.present();
 				});
-			var rdel = new Gtk.Button.from_icon_name("list-remove");
+			var rdel = new Gtk.Button.from_icon_name("list-remove-symbolic");
 			rdel.clicked.connect(() => {
 					var np = lsel.get_n_items();
 					var bs = lsel.get_selection_in_range (0, np);
@@ -630,7 +630,7 @@ namespace TelemTracker {
 
 			f4.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
-					var btn = new Gtk.Button.from_icon_name("document-edit");
+					var btn = new Gtk.Button.from_icon_name("document-edit-symbolic");
 					btn.valign = Gtk.Align.START;
 					btn.vexpand = false;
 					list_item.set_child(btn);

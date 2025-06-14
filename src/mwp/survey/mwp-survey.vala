@@ -42,7 +42,7 @@ internal class AsPop : Object {
     box.append(plab);
     if(n == -1) {
       pop.set_autohide(false);
-      button = new Gtk.Button.from_icon_name("window-close");
+      button = new Gtk.Button.from_icon_name("window-close-symbolic");
       button.halign = Gtk.Align.END;
       box.append(button);
     } else {

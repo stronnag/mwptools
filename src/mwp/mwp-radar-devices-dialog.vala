@@ -145,7 +145,7 @@ namespace Radar {
 
 				f2.setup.connect((f,o) => {
 						Gtk.ListItem list_item = (Gtk.ListItem)o;
-						var btn = new Gtk.Button.from_icon_name("edit-delete");
+						var btn = new Gtk.Button.from_icon_name("edit-delete-symbolic");
 						list_item.set_child(btn);
 						btn.clicked.connect(() => {
 								var rd = list_item.get_item() as RadarDev;

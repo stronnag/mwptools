@@ -260,7 +260,7 @@ class PlaceEdit : Adw.Window {
 		cv.append_column(cx);
 		fx.setup.connect((f,o) => {
 				Gtk.ListItem list_item = (Gtk.ListItem)o;
-				var btn = new Gtk.Button.from_icon_name("document-edit");
+				var btn = new Gtk.Button.from_icon_name("document-edit-symbolic");
 				btn.sensitive = true;
 				list_item.set_child(btn);
 				btn.clicked.connect(() => {
@@ -289,7 +289,7 @@ class PlaceEdit : Adw.Window {
 		scrolled.propagate_natural_height = true;
 		scrolled.propagate_natural_width = true;
         buttons = {
-            new Gtk.Button.from_icon_name ("list-add"),
+            new Gtk.Button.from_icon_name ("list-add-symbolic"),
             new Gtk.Button.with_label ("OK"),
         };
         Gtk.Box bbox = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 5);

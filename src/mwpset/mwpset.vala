@@ -248,7 +248,7 @@ namespace Mwpset {
 		public void add_row(int i) {
 			var lb = new Gtk.ListBoxRow();
 			var box = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 2);
-			var btn = new Gtk.Button.from_icon_name("document-edit");
+			var btn = new Gtk.Button.from_icon_name("document-edit-symbolic");
 			var sname = new Gtk.Label(x.keys.data[i].name);
 			string rs = XReader.format_variant(x.keys.data[i]);
 

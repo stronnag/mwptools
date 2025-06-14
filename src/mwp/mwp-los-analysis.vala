@@ -289,8 +289,8 @@ public class LOSSlider : Adw.Window {
 		mentry.value = _margin;
 
 		var sbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL,1);
-		sbutton = new  Gtk.Button.from_icon_name("media-skip-backward");
-		ebutton = new  Gtk.Button.from_icon_name("media-skip-forward");
+		sbutton = new  Gtk.Button.from_icon_name("media-skip-backward-symbolic");
+		ebutton = new  Gtk.Button.from_icon_name("media-skip-forward-symbolic");
 		sbutton.clicked.connect(() => {
 				slider.set_value(0);
 			});

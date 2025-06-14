@@ -103,7 +103,7 @@ public class SafeHomeMarkers : GLib.Object {
 					box.append(plab);
 					if(n == -1) {
 						pop.set_autohide(false);
-						var button = new Gtk.Button.from_icon_name("window-close");
+						var button = new Gtk.Button.from_icon_name("window-close-symbolic");
 						button.halign = Gtk.Align.END;
 						box.append(button);
 						button.clicked.connect(() => {
@@ -604,7 +604,7 @@ public class  SafeHomeDialog : Adw.Window {
 		cv.append_column(cx);
 		fx.setup.connect((f,o) => {
 				Gtk.ListItem list_item = (Gtk.ListItem)o;
-				var btn = new Gtk.Button.from_icon_name("document-edit");
+				var btn = new Gtk.Button.from_icon_name("document-edit-symbolic");
 				btn.sensitive = true;
 				list_item.set_child(btn);
 				btn.clicked.connect(() => {

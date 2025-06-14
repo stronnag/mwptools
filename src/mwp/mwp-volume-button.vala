@@ -16,7 +16,7 @@ namespace Utils {
 
 		public VolumeButton() {
 			sc = new Gtk.Scale.with_range (Gtk.Orientation.VERTICAL, 0.0, 1.0, 0.1);
-			this.icon_name = "multimedia-volume-control";
+			this.icon_name = "multimedia-volume-control-symbolic";
 			this.notify["value"].connect((s,p) => {
 					sc.set_value(value);
 				});
@@ -32,8 +32,8 @@ namespace Utils {
 			sc.hexpand = false;
 			sc.height_request = 100;
 			sc.set_value(value);
-			plus = new Gtk.Button.from_icon_name ("value-increase");
-			minus = new Gtk.Button.from_icon_name("value-decrease");
+			plus = new Gtk.Button.from_icon_name ("value-increase-symbolic");
+			minus = new Gtk.Button.from_icon_name("value-decrease-symbolic");
 			plus.hexpand = false;
 			plus.vexpand = false;
 			minus.hexpand = false;

@@ -648,7 +648,7 @@ namespace MsnTools {
 					box.append(plab);
 					if(n == -1) {
 						pop.set_autohide(false);
-						var button = new Gtk.Button.from_icon_name("window-close");
+						var button = new Gtk.Button.from_icon_name("window-close-symbolic");
 						button.halign = Gtk.Align.END;
 						box.append(button);
 						button.clicked.connect(() => {

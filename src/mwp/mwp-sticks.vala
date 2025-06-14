@@ -52,7 +52,7 @@ namespace Sticks {
 		}
 		sbb = new Gtk.Button();
 		sb = new Sticks.StickBox(360,180);
-		var isbb = new Gtk.Image.from_icon_name("view-refresh");
+		var isbb = new Gtk.Image.from_icon_name("view-refresh-symbolic");
 		isbb.set_pixel_size(24);
 		sbb.has_frame=true;
 		sbb.set_child(isbb);
