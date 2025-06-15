@@ -108,8 +108,6 @@ namespace TileUtils {
 		public TileStats build_table() {
 			var inc = 0;
 			stats.nt = 0;
-			stats.dlok = 0;
-			stats.dlerr = 0;
 			tl={};
 
 			for(var z = maxzoom; z >= minzoom; z--) {
@@ -218,13 +216,23 @@ namespace TileUtils {
 			return s;
 		}
 
+		private void update_stats() {
+			Idle.add(() => {
+					show_stats(stats);
+					return false;
+				});
+		}
+
 		public void start_seeding() {
 			tset = 0;
 			in = 0;
 			session = new Soup.Session();
 			session.user_agent = Utils.random_ua();
 			done = false;
-			show_stats(stats);
+			stats.dlok = 0;
+			stats.dlerr = 0;
+			stats.skip = 0;
+			update_stats();
 			fetch_tile();
 		}
 
@@ -234,7 +242,7 @@ namespace TileUtils {
 
 			do {
 				r = get_next_tile(out tile_uri);
-				show_stats(stats);
+				update_stats();
 			} while (r == TILE_ITER_RES.SKIP);
 
 			if(r == TILE_ITER_RES.FETCH) {
@@ -251,12 +259,12 @@ namespace TileUtils {
 							MWPLog.message("Tile %s %s, failure status %u\n", tile_uri, e.message, msg.status_code);
 							stats.dlerr++;
 						}
-						show_stats(stats);
+						update_stats();
 						fetch_tile();
 					});
 			}
 			if(r == TILE_ITER_RES.DONE) {
-				show_stats(stats);
+				update_stats();
 				switch (tset) {
 				case 0:
 					if (!use_gazetteer) {
@@ -291,7 +299,7 @@ namespace TileUtils {
 
 		public void stop() {
 			done = true;
-			show_stats(stats);
+			update_stats();
 		}
 	}
 }

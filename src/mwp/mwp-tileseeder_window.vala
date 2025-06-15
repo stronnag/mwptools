@@ -31,8 +31,6 @@ namespace TileUtils {
 		[GtkChild]
 		private unowned Gtk.Button tile_start;
 		[GtkChild]
-		private unowned Gtk.Button tile_stop;
-		[GtkChild]
 		private unowned Gtk.CheckButton streetview;
 
 		private int age  {get; set; default = 365;}
@@ -78,17 +76,19 @@ namespace TileUtils {
 				});
 
 			tile_start.clicked.connect(() => {
-					tile_start.sensitive = false;
-					int days = (int)tile_age.value;
-					ts.set_delta(days);
-					tile_stop.set_label("Stop");
-					ts.use_gazetteer = streetview.active;
-					ts.start_seeding();
-				});
-
-			tile_stop.clicked.connect(() => {
-					reset();
-					close();
+					if(tile_start.label == "Start") {
+						tile_start.label = "Stop";
+						int days = (int)tile_age.value;
+						ts.set_delta(days);
+						ts.use_gazetteer = streetview.active;
+						Idle.add(() => {
+								ts.start_seeding();
+								return false;
+							});
+					} else {
+						tile_start.label = "Start";
+						ts.stop();
+					}
 				});
 		}
 
@@ -115,7 +115,6 @@ namespace TileUtils {
 			var b = MapUtils.get_bounding_box();
 
 			var zval = (int)Gis.map.viewport.zoom_level;
-			tile_stop.set_label("Close");
 			tile_start.sensitive = true;
 			tile_maxzoom.adjustment.lower = minz;
 			tile_maxzoom.adjustment.upper = maxz;
@@ -129,8 +128,7 @@ namespace TileUtils {
 					set_label(stats);
 				});
 			ts.tile_done.connect(() => {
-					tile_start.sensitive = true;
-					tile_stop.set_label("Close");
+					tile_start.set_label("Start");
 					get_dem_list(b);
 				});
 			// MWPLog.message(":DBG: BBOX %f %f %f %f\n",b.minlat, b.minlon, b.maxlat,b.maxlon);
