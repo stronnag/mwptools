@@ -31,15 +31,9 @@ public struct  MwpMapDesc {
 	 public string url_template;
 }
 
-public class SoupProxy : Soup.Server {
-    public bool offline = false;
-    private Soup.Session session;
-    private string? basename = null;
-    private string? extname = null;
-    private const string UASTR = "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:%d1.0) Gecko/%d%d%d Firefox/%d.0.%d";
-	private string cdir;
-
-    private string make_ua() {
+namespace Utils {
+    const string UASTR = "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:%d1.0) Gecko/%d%d%d Firefox/%d.0.%d";
+    string random_ua() {
         int yr = new DateTime.now_local ().get_year();
         var r = new Rand();
         string ua = UASTR.printf(
@@ -51,6 +45,14 @@ public class SoupProxy : Soup.Server {
             r.int_range(1,10));
         return ua;
     }
+}
+
+public class SoupProxy : Soup.Server {
+    public bool offline = false;
+    private Soup.Session session;
+    private string? basename = null;
+    private string? extname = null;
+	private string cdir;
 
 	public void set_cdir(string c) {
 		cdir = c;
@@ -147,7 +149,7 @@ public class SoupProxy : Soup.Server {
 			}
 
 			var message = new Soup.Message ("GET", xpath);
-			message.get_request_headers().append("User-Agent",make_ua());
+			message.get_request_headers().append("User-Agent", Utils.random_ua());
 			try {
 				var b = session.send_and_read (message);
 				msg.set_response ("image/jpeg", Soup.MemoryUse.COPY, b.get_data());

@@ -77,10 +77,14 @@ namespace TileUtils {
 		private Soup.Session session;
 		private TileStats stats;
 
+		public bool use_gazetteer;
 		public signal void show_stats (TileStats ts);
 		public signal void tile_done ();
+		private int tset;
 
-		public Seeder() {		}
+
+		public Seeder() {
+		}
 
 		public void set_range(double _minlat, double _minlon, double _maxlat, double _maxlon) {
 			minlat = _minlat;
@@ -158,7 +162,6 @@ namespace TileUtils {
 				var fn = Path.build_filename(cachedir,
 											 tl[in].z.to_string(),ix.to_string(),
 											 "%d.png".printf(iy));
-
 				file = File.new_for_path(fn);
 
 				if(iy == tl[in].sy) {
@@ -216,8 +219,10 @@ namespace TileUtils {
 		}
 
 		public void start_seeding() {
+			tset = 0;
+			in = 0;
 			session = new Soup.Session();
-			session.user_agent = "Mission-Planner/1.0";
+			session.user_agent = Utils.random_ua();
 			done = false;
 			show_stats(stats);
 			fetch_tile();
@@ -229,6 +234,7 @@ namespace TileUtils {
 
 			do {
 				r = get_next_tile(out tile_uri);
+				show_stats(stats);
 			} while (r == TILE_ITER_RES.SKIP);
 
 			if(r == TILE_ITER_RES.FETCH) {
@@ -250,9 +256,34 @@ namespace TileUtils {
 					});
 			}
 			if(r == TILE_ITER_RES.DONE) {
-				tile_done();
+				show_stats(stats);
+				switch (tset) {
+				case 0:
+					if (!use_gazetteer) {
+						tile_done();
+					} else {
+						tset++;
+						in = 0;
+						done = false;
+						set_misc(Gis.EPLACESID);
+						fetch_tile();
+					}
+					break;
+				case 1:
+					tset++;
+					in = 0;
+					done = false;
+					set_misc(Gis.EROADSID);
+					fetch_tile();
+					break;
+
+				default:
+					tile_done();
+					break;
+				}
 			}
 		}
+
 		public void set_delta(uint days) {
 			var t =  new  DateTime.now_local ();
 			dtime = t.add_days(-(int)days);

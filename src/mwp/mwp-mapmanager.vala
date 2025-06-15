@@ -41,6 +41,9 @@ namespace Img {
 }
 
 namespace Gis {
+	public const string EROADSID = "roads";
+	public const string EPLACESID = "places";
+
 	Shumate.SimpleMap simple;
 	Shumate.Map map;
 	Gtk.Overlay overlay;
@@ -208,9 +211,14 @@ namespace Gis {
 		return sl;
 	}
 
+	private const string EROADSURI = "https://services.arcgisonline.com/arcgis/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}";
+
+
+	private const string EPLACESURI = "https://services.arcgisonline.com/arcgis/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}";
+
 	private Shumate.MapSource add_roads() {
         var ms = new Shumate.RasterRenderer.full_from_url(
-            "roads",
+			EROADSID,
             "Roads",
 			"© 2021 Esri, Maxar, Earthstar Geographics, USDA FSA, USGS, Aerogrid, IGN, IGP, and the GIS User Community",
 			"https://www.esriuk.com/en-gb/content/products?esri-world-imagery-service",
@@ -218,14 +226,17 @@ namespace Gis {
 			19,
 			256,
 			Shumate.MapProjection.MERCATOR,
-			"https://services.arcgisonline.com/arcgis/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}"
+			EROADSURI
 			);
+
+		var cname = MapIdCache.normalise(EROADSURI);
+		MapIdCache.cache.insert(EROADSID, {cname, EROADSURI});
 		return ms;
 	}
 
 	private Shumate.MapSource add_places() {
         var ms = new Shumate.RasterRenderer.full_from_url(
-            "places",
+            EPLACESID,
             "Places",
 			"esri",
 			"https://www.esriuk.com/en-gb/content/products?esri-world-imagery-service",
@@ -233,8 +244,10 @@ namespace Gis {
 			19,
 			256,
 			Shumate.MapProjection.MERCATOR,
-			"https://services.arcgisonline.com/arcgis/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
+			EPLACESURI
 			);
+		var cname = MapIdCache.normalise(EPLACESURI);
+		MapIdCache.cache.insert(EPLACESID, {cname, EPLACESURI});
 		return ms;
 	}
 

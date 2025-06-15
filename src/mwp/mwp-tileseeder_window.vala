@@ -32,13 +32,17 @@ namespace TileUtils {
 		private unowned Gtk.Button tile_start;
 		[GtkChild]
 		private unowned Gtk.Button tile_stop;
+		[GtkChild]
+		private unowned Gtk.CheckButton streetview;
 
-		private int age  {get; set; default = 30;}
+		private int age  {get; set; default = 365;}
 		private TileUtils.Seeder ts;
 
 		public Dialog() {
 			set_transient_for(Mwp.window);
 			ts = new TileUtils.Seeder();
+
+			streetview.active = Mwp.add_ovly_active;
 
 			close_request.connect(() => {
 					reset();
@@ -68,11 +72,17 @@ namespace TileUtils {
 					}
             });
 
+			streetview.toggled.connect(() => {
+					var nt = ts.build_table( );
+					set_label(nt);
+				});
+
 			tile_start.clicked.connect(() => {
 					tile_start.sensitive = false;
 					int days = (int)tile_age.value;
 					ts.set_delta(days);
 					tile_stop.set_label("Stop");
+					ts.use_gazetteer = streetview.active;
 					ts.start_seeding();
 				});
 
@@ -90,7 +100,10 @@ namespace TileUtils {
 		}
 
 		private void set_label(TileUtils.TileStats s) {
-			var lbl = "Tiles: %u / Skip: %u / DL: %u / Err: %u".printf(s.nt, s.skip, s.dlok, s.dlerr);
+			if(streetview.active) {
+				s.nt *= 3;
+			}
+			var lbl = "Tiles: <span font=\"monospace\">%5u</span> / Skip: <span font=\"monospace\">%5u</span> / DL: <span font=\"monospace\">%5u</span> / Err: <span font=\"monospace\">%5u</span>".printf(s.nt, s.skip, s.dlok, s.dlerr);
 			tile_stats.label = lbl;
 		}
 

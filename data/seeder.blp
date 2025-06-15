@@ -2,7 +2,7 @@ using Gtk 4.0;
 using Adw 1;
 
 Adjustment adjustment3 {
-  upper: 365;
+  upper: 3650;
   step-increment: 1;
   page-increment: 10;
 }
@@ -78,7 +78,7 @@ template $TileUtilsDialog: Adw.Window {
         }
 
         Box {
-          halign: end;
+          halign: center;
 
           Label label8 {
             label: _("Stale Days");
@@ -88,12 +88,21 @@ template $TileUtilsDialog: Adw.Window {
             adjustment: adjustment3;
           }
         }
+
+        Box {
+          halign: end;
+	  Gtk.CheckButton streetview {
+	    label: _("Places & Transport layer");
+          }
+	}
       }
 
       Label tile_stats {
         margin-top: 2;
         margin-bottom: 2;
         label: _("0/0/0");
+	max-width-chars: 80;
+	use-markup: true;
       }
     };
 
