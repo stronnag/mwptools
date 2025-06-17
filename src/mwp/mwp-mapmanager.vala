@@ -308,8 +308,8 @@ namespace Gis {
 		nsource = add_places();
 		tsource= add_roads();
 
-        nlayer = new Shumate.MapLayer(nsource, Gis.map.viewport);
         tlayer = new Shumate.MapLayer(tsource, Gis.map.viewport);
+        nlayer = new Shumate.MapLayer(nsource, Gis.map.viewport);
 
 		have_ovly = false;
 
@@ -342,7 +342,7 @@ namespace Gis {
 		}
 		if(Mwp.add_ovly_active) {
 			Gis.map.insert_layer_above(tlayer, Gis.base_layer);
-			Gis.map.insert_layer_above(nlayer, Gis.base_layer);
+			Gis.map.insert_layer_above(nlayer, tlayer);
 			if(Gis.map.viewport.reference_map_source.license != tsource.license) {
 				Gis.simple.license.append_map_source(tsource);
 				have_elic = true;
