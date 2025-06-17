@@ -253,7 +253,7 @@ The following settings are "capability" based and may involve translation of a f
 * Status
 * Origin
 
-When a telemetry message via MSP, LTM or MAVlink is received that matches one of these categorisations, it is forwarded as best reprenting that capability is the consumer's message protocol:
+When a telemetry message via MSP, LTM or MAVlink is received that matches one of these categorisations, it is forwarded as best representing that capability in the consumer's message protocol:
 
 * `LTM` : Data is transposed to one or more LTM messages
 * `MSP1` : Data is transposed to one or more MSPv1 messages
