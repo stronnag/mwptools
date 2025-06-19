@@ -21,6 +21,16 @@ def get_vas(gspd, gcse, wspd, wdirn)
 end
 
 
+def calc_wind(w_x, w_y)
+  angle = atan2(w_y, w_x) / RAD
+  angle += 360 if angle < 0
+  angle = angle.to_i
+  w_cms = sqrt(w_x*w_x + w_y*w_y)
+  w_ms = w_cms / 100
+  w_kts = (w_ms*3600/1852).round
+  return [angle, w_ms, w_kts]
+end
+
 idx = 1
 
 ARGV.options do |opt|
@@ -52,6 +62,10 @@ IO.popen(cmd,'r') do |p|
   last_a = -1
   last_s = 9999
 
+  ni = 0
+  ax = 0
+  ay = 0
+
   puts %w/Time Dirn ws(m\/s) GSpd GCse Vas Wdiff ws(kts) alt(m)/.join("\t")
   csv.each do |c|
     if hdrs
@@ -60,13 +74,13 @@ IO.popen(cmd,'r') do |p|
       alt = (c[:navpos2].to_f / 100).round
       gspd = c[:gps_speed_ms].to_f
       gcse = c[:gps_ground_course].to_i
-      angle = atan2(w_y, w_x) / RAD
-      angle += 360 if angle < 0
-      angle = angle.to_i
-      w_cms = sqrt(w_x*w_x + w_y*w_y)
-      w_ms = w_cms / 100
-      w_kts = (w_ms*3600/1852).round
+      angle, w_ms, w_kts = calc_wind(w_x, w_y)
       vas,wdiff = get_vas(gspd, gcse, w_ms, angle)
+      if w_ms > 0.9
+        ax += w_x
+        ay += w_y
+        ni += 1
+      end
       if angle != last_a or w_kts != last_s
 	ts = c[:time_s].to_f
 	puts "%.3f\t%.0f\t%.1f\t%.1f\t%.0f\t%.1f\t%.0f\t%.1f\t%.0f\n" %
@@ -78,4 +92,8 @@ IO.popen(cmd,'r') do |p|
       hdrs = c
     end
   end
+  ax = ax / ni
+  ay = ay / ni
+  angle, w_ms, w_kts = calc_wind(ax, ay)
+  STDERR.puts "** Average spd %.1f m/s, %.1f kts dirn %.1f\n" % [w_ms, w_kts, angle]
 end
