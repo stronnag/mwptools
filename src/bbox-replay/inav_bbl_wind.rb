@@ -59,12 +59,15 @@ IO.popen(cmd,'r') do |p|
 		->(f) {f.strip.downcase.gsub(' ','_').gsub(/\W+/,'').to_sym},
 		:return_headers => true)
   hdrs = nil
-  last_a = -1
-  last_s = 9999
+  last_x = 0
+  last_y = 0
 
   ni = 0
   ax = 0
   ay = 0
+  w_ms = nil
+  w_kts = nil
+  angle = nil
 
   puts %w/Time Dirn ws(m\/s) GSpd GCse Vas Wdiff ws(kts) alt(m)/.join("\t")
   csv.each do |c|
@@ -74,19 +77,17 @@ IO.popen(cmd,'r') do |p|
       alt = (c[:navpos2].to_f / 100).round
       gspd = c[:gps_speed_ms].to_f
       gcse = c[:gps_ground_course].to_i
-      angle, w_ms, w_kts = calc_wind(w_x, w_y)
-      vas,wdiff = get_vas(gspd, gcse, w_ms, angle)
-      if w_ms > 0.9
+      if  !(w_x == last_x && w_y == last_y)
+        angle, w_ms, w_kts = calc_wind(w_x, w_y)
         ax += w_x
         ay += w_y
         ni += 1
-      end
-      if angle != last_a or w_kts != last_s
-	ts = c[:time_s].to_f
+        last_x = w_x
+        last_y = w_y
+        vas,wdiff = get_vas(gspd, gcse, w_ms, angle)
+        ts = c[:time_s].to_f
 	puts "%.3f\t%.0f\t%.1f\t%.1f\t%.0f\t%.1f\t%.0f\t%.1f\t%.0f\n" %
              [ts,angle,w_ms, gspd,gcse,vas, wdiff, w_kts,alt]
-	last_a = angle
-	last_s = w_kts
       end
     else
       hdrs = c
