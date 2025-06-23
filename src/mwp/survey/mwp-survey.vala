@@ -184,7 +184,10 @@ namespace Survey {
 						pgrid.visible = false;
 						sgrid.visible = true;
 					}
-					ss_angle.sensitive =  (as_type.selected != 2);
+					ss_angle.sensitive = (as_type.selected != 2);
+					MwpMenu.set_menu_state(dg1, "asload", (as_type.selected == 0));
+					MwpMenu.set_menu_state(dg1, "assave", (as_type.selected == 0));
+					MwpMenu.set_menu_state(dg1, "askml", (as_type.selected == 0));
 					reset_view();
 				});
 
@@ -503,7 +506,7 @@ namespace Survey {
 							MapUtils.centre_on(clat, clon, z);
 						}
 					} catch (Error e) {
-						MWPLog.message("Failed to open mission file: %s\n", e.message);
+						MWPLog.message("Failed to open survey file: %s\n", e.message);
 					}
 				});
 		}
@@ -522,10 +525,30 @@ namespace Survey {
 						var pts = get_points();
 						Survey.write_file(fn, pts);
 					} catch (Error e) {
-						MWPLog.message("Failed to save mission file: %s\n", e.message);
+						MWPLog.message("Failed to save survey file: %s\n", e.message);
 					}
 				});
 		}
+
+		public void save_kml() {
+			IChooser.Filter []ifm = {
+				{"KML file", {"kml"}},
+			};
+			var fc = IChooser.chooser(Mwp.conf.missionpath, ifm);
+			fc.title = "Save Area Outline";
+			fc.modal = true;
+			fc.save.begin (Mwp.window, null, (o,r) => {
+					try {
+						var fh = fc.save.end(r);
+						var fn = fh.get_path ();
+						var pts = get_points();
+						Survey.write_kml(fn, 0, pts);
+					}  catch (Error e) {
+						MWPLog.message("Failed to save survey KML %s\n", e.message);
+					}
+				});
+		}
+
 
 		private AreaCalc.Vec[] get_points() {
 			var pts = Gis.svy_path.get_nodes();
@@ -596,6 +619,12 @@ namespace Survey {
 			aq = new GLib.SimpleAction("assave",null);
 			aq.activate.connect(() => {
 					save_file();
+				});
+			dg1.add_action(aq);
+
+			aq = new GLib.SimpleAction("askml",null);
+			aq.activate.connect(() => {
+					save_kml();
 				});
 			dg1.add_action(aq);
 

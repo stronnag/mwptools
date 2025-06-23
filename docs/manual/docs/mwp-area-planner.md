@@ -99,11 +99,11 @@ And a generated mission from these settings looks might look like:
 
 ### File Menu
 
-The area planner dialog has a drop down menu to load and save area definitions to / from the file system. The files are the same format as for the legacy `mwp-area-planner`.
+The area planner dialog has a drop down menu to load and save **Parallel** area definitions to / from the file system. The files are the same format as for the legacy `mwp-area-planner`.
 
 ![area planner](images/area-plan-menu.png)
 
-In addition (not shown), it is also possible to save the survey outline as a KML file for future display / analysis.
+In addition (not shown), it is also possible to save the **Parallel** survey outline as a KML file for future display / analysis.
 
 ## Obsolete video
 
