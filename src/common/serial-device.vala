@@ -750,6 +750,7 @@ public class MWSerial : Object {
 							Thread.usleep(5);
 							sz =  _write(sqi.data, sqi.len);
 						} else {
+							MWPLog.message(":SQI: **BUG** Writer %d %d\n", lasterr, sz);
 							ok = false;
 							break;
 						}
@@ -760,11 +761,10 @@ public class MWSerial : Object {
 					}
 #endif
 				}
-				MWPLog.message(":SQI: Close writer thread\n");
-				close();
 				while(sq.try_pop() != null)
 					;
 				sq = null;
+				close();
 				return true;
 			});
 	}
@@ -890,6 +890,7 @@ public class MWSerial : Object {
 #else
 		io_chan = new IOChannel.unix_new(fd);
 #endif
+		io_chan.set_close_on_unref(false);
 		try {
 			if(io_chan.set_encoding(null) != IOStatus.NORMAL)
 				error("Failed to set encoding");
@@ -1335,8 +1336,15 @@ public class MWSerial : Object {
 #endif
 			if (io_chan != null) {
 				try {
+#if !WINDOWS
+					Posix.Stat st;
+					if(Posix.fstat(io_chan. unix_get_fd (), out st) == 0) {
+						io_chan.shutdown(false);
+						MWPLog.message("Close IO channel %p\n", io_chan);
+					}
+#else
 					io_chan.shutdown(false);
-#if WINDOWS
+					MWPLog.message("Close IO channel %p\n", io_chan);
 					// Fuck you windows, rudely ,gratuitouly incompatible, fuck you
 					serial_lost();
 #endif
@@ -1399,7 +1407,8 @@ public class MWSerial : Object {
 		td.r = null;
 		td = {};
 		available = false;
-		io_chan = null;
+		if (io_chan != null)
+			io_chan = null;
 #if WINDOWS
 		dis = null;
 		dos = null;
