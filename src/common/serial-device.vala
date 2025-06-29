@@ -890,7 +890,7 @@ public class MWSerial : Object {
 #else
 		io_chan = new IOChannel.unix_new(fd);
 #endif
-		io_chan.set_close_on_unref(false);
+		//io_chan.set_close_on_unref(false);
 		try {
 			if(io_chan.set_encoding(null) != IOStatus.NORMAL)
 				error("Failed to set encoding");
@@ -1338,15 +1338,19 @@ public class MWSerial : Object {
 				try {
 #if !WINDOWS
 					Posix.Stat st;
-					if(Posix.fstat(io_chan. unix_get_fd (), out st) == 0) {
+					int chn = io_chan.unix_get_fd ();
+					if(Posix.fstat(chn, out st) == 0) {
 						io_chan.shutdown(false);
-						MWPLog.message("Close IO channel %p\n", io_chan);
+						MWPLog.message("Close IO channel %p %d\n", io_chan, chn);
 					}
 #else
-					io_chan.shutdown(false);
-					MWPLog.message("Close IO channel %p\n", io_chan);
-					// Fuck you windows, rudely ,gratuitouly incompatible, fuck you
-					serial_lost();
+					int chn = io_chan.unix_get_fd ();
+					if (chn != -1) {
+						io_chan.shutdown(false);
+						MWPLog.message("Close IO channel %p %d\n", io_chan, chn);
+						// Fuck you windows, rudely ,gratuitouly incompatible, fuck you
+						serial_lost();
+					}
 #endif
 				} catch (Error e) {
 					MWPLog.message(":DBG: iochan shutdown %s\n", e.message);
