@@ -918,6 +918,7 @@ public class MWSerial : Object {
 												}
 											} else if (ComMode.TTY in commode) {
 												sz = MwpSerial.read(fd, devbuf, MemAlloc.DEV);
+#if !WINDOWS
 											} else if (ComMode.BT in commode) {
 												int nb = MemAlloc.DEV;
 												if(MwpSerial.fionread(fd, &nb) == 0) {
@@ -926,6 +927,7 @@ public class MWSerial : Object {
 													}
 												}
 												sz = Posix.recv(fd, devbuf, nb, 0);
+#endif
 											} else {
 												size_t ssz;
 												var iostat = io_chan.read_chars((char[])devbuf, out ssz);
