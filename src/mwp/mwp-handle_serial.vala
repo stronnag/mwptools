@@ -17,6 +17,12 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+namespace PDebug {
+	Msp.Cmds lastpoll;
+	Msp.Cmds currx;
+	bool last0wp;
+}
+
 namespace Mwp {
 	bool telem;
 	bool seenMSP;
@@ -149,6 +155,10 @@ namespace Mwp {
 	const int MSP_WAITMS = 5;
 
 	void serial_reset() {
+		PDebug.lastpoll = 0;
+		PDebug.currx = 0;
+		PDebug.last0wp = false;
+
 		vi = {};
 		navcap = 0;
 		sflags = 0;
@@ -387,7 +397,7 @@ namespace Mwp {
 									string res;
 									res = lastmsg.cmd.format();
 									if(nopoll == false)
-										MWPLog.message("MSP Timeout %.3f (%s %s)\n", (nticks - lastok)/100.0, res, serstate.to_string());
+										MWPLog.message("MSP Timeout %.3f (%s %s) [%s]\n", (nticks - lastok)/100.0, res, serstate.to_string(), msp.state.to_string());
 									if (lastmsg.cmd == Msp.Cmds.ADSB_VEHICLE_LIST) {
 										clear_poller_item(Msp.Cmds.ADSB_VEHICLE_LIST);
 									}
@@ -470,8 +480,27 @@ namespace Mwp {
 			});
 	}
 
+	private bool lost_poll(Msp.Cmds xcmd) {
+		bool found = false;
+		foreach (var x in requests) {
+			if(x == xcmd) {
+				found = true;
+				break;
+			}
+		}
+		return found;
+	}
+
 	void send_poll() {
-        if(serstate == SERSTATE.POLLER && requests.length > tcycle) {
+		if(serstate == SERSTATE.POLLER && requests.length > tcycle) {
+			if(PDebug.lastpoll != Msp.Cmds.NOOP && PDebug.lastpoll != PDebug.currx) {
+				if((PDebug.currx == Msp.Cmds.WP && PDebug.last0wp) || lost_poll(PDebug.currx)) {
+					MWPLog.message("POLLER messages OOO cur=%s lp=%s\n",
+								   PDebug.currx.format(),
+								   PDebug.lastpoll.format());
+					return;
+				}
+			}
 			Msp.Cmds req = Msp.Cmds.NOOP;
 			bool skip = false;
 			do {
@@ -504,6 +533,7 @@ namespace Mwp {
 				}
 			} while (skip);
 
+			PDebug.lastpoll = req;
 			if(req == Msp.Cmds.WP) {
 				uint8 buf[1] = {0};
 				queue_cmd(req, buf, 1);
@@ -608,6 +638,7 @@ namespace Mwp {
 			seenMSP = true;
 			telem = false;
 			last_tm = 0;
+			PDebug.currx = cmd;
 			handled = Mwp.handle_msp(ser, cmd, raw, len, xflags, errs);
 		}
 		if(telem) {
@@ -848,17 +879,19 @@ namespace Mwp {
 			}
 			var sb = new StringBuilder();
 
-			sb.append_printf("%.3f s, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %u, avg poll loop %lu ms messages %lu msg/s %.1f",
+			var delta = stats.msgs - telstats.prev;
+			sb.append_printf("%.3f s, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %u, avg poll loop %lu ms messages %lu (%lu) msg/s %.1f",
 							 et, stats.rxbytes, stats.txbytes,
 							 stats.rxrate, stats.txrate,
 							 telstats.toc,
 							 telstats.avg ,
-							 stats.msgs, mrate);
+							 stats.msgs, delta, mrate);
 			if(rccount > 0) {
 				sb.append_printf(" rawrc %u", rccount);
 			}
 			sb.append_c('\n');
 			MWPLog.message(sb.str);
+			telstats.prev = stats.msgs;
 		}
 	}
 }

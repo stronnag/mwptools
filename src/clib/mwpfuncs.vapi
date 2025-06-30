@@ -115,6 +115,8 @@ namespace MwpSerial {
     unowned string error_text(int err, char *buf, size_t len);
 	[CCode (cname="get_error_number")]
 	int get_error_number();
+    [CCode (cname = "fionread")]
+    int fionread(int fd, int *nb);
 }
 
 [CCode (cheader_filename = "winidle.h")]

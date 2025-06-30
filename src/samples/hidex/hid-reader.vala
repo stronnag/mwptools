@@ -178,7 +178,7 @@ public class JoyReader {
 	}
 
 	public bool reader(string fn) {
-		channels = {};
+		channels.resize(0);
 		bool ok = false;
 		var rs = """^(\S+)\s+(\d+)\s+=\s+Channel\s+(\d+)\s+(\S?.*)""";
 		try {
@@ -343,6 +343,9 @@ public class JoyReader {
 	}
 
 	public void reset_all() {
+		if (channels == null || channels.length == 0) {
+			channels.resize(16);
+		}
 		if(fake) {
 			channels = {1500, 1500, 1000, 1500,
 						1000, 1001, 1002, 1003,
@@ -353,7 +356,7 @@ public class JoyReader {
 			channels[2] = 999;
 			channels[3] = 1500;
 			for(var j = 4; j < channels.length; j++) {
-				set_channel(j, 897);
+				set_channel(j+1, 897);
 			}
 		}
 	}

@@ -153,9 +153,6 @@ namespace Mwp {
 
 			case Msp.Cmds.API_VERSION:
 			case Msp.Cmds.BOXIDS:
-				// This prevents usage on MW and older INAV
-				// Note also MW does not send an ACK for MWP_SET_RAW_RC !!
-				//cancel_msprc();
 				queue_cmd(Msp.Cmds.BOXNAMES, null,0);
 				run_queue();
 				break;
@@ -1250,6 +1247,7 @@ namespace Mwp {
 
 		case Msp.Cmds.WP:
 			handle_mm_download(raw, len);
+			PDebug.last0wp = (raw[0] == 0);
 			break;
 
 		case Msp.Cmds.FW_APPROACH:

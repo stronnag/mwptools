@@ -90,10 +90,12 @@ public struct TelemStats {
     SerialStats s;
     uint toc;
     uint avg;
+	uint prev;
 
 	public void clear() {
 		toc = 0;
 		avg = 0;
+		prev = 0;
 		s.clear();
 	}
 }

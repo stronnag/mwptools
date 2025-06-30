@@ -168,7 +168,7 @@ int open_serial(const char *device, int baudrate) {
     tio.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
     tio.c_cflag &= ~(CSIZE | PARENB);
     tio.c_cflag |= CS8;
-    tio.c_cc[VTIME] = 0;
+    tio.c_cc[VTIME] = 1;
     tio.c_cc[VMIN] = 1;
 #ifdef __linux__
     ioctl(fd, TCSETS, &tio);
@@ -232,8 +232,18 @@ void close_serial(int fd) {
   close(fd);
 }
 
+int fionread(int fd, int *nb) {
+  return ioctl(fd, FIONREAD, nb);
+}
+
 ssize_t read_serial(int fd, uint8_t*buffer, size_t buflen) {
-  return read(fd, buffer, buflen);
+  int nb = buflen;
+  if(fionread(fd, &nb) == 0) {
+    if (nb > buflen) {
+      nb = buflen;
+    }
+  }
+  return read(fd, buffer, nb);
 }
 
 ssize_t write_serial(int fd, uint8_t*buffer, size_t buflen) {
@@ -426,6 +436,10 @@ ssize_t write_serial(int hfd, uint8_t*buffer, size_t buflen) {
 
 int set_bin_mode(int m) {
   return m|_O_BINARY;
+}
+
+int fionread(int fd, int *nb) {
+  return -1;
 }
 
 int cf_pipe(int *fds) { _pipe(fds, 1024, _O_BINARY); return 0; }
