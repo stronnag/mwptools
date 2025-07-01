@@ -494,11 +494,13 @@ namespace Mwp {
 	void send_poll() {
 		if(serstate == SERSTATE.POLLER && requests.length > tcycle) {
 			if(PDebug.lastpoll != Msp.Cmds.NOOP && PDebug.lastpoll != PDebug.currx) {
-				if((PDebug.currx == Msp.Cmds.WP && PDebug.last0wp) || lost_poll(PDebug.currx)) {
-					MWPLog.message("POLLER messages OOO cur=%s lp=%s\n",
-								   PDebug.currx.format(),
-								   PDebug.lastpoll.format());
-					return;
+				if(lost_poll(PDebug.currx)) {
+					if (PDebug.currx != Msp.Cmds.WP || PDebug.last0wp) {
+						MWPLog.message("POLLER messages OOO cur=%s lp=%s\n",
+									   PDebug.currx.format(),
+									   PDebug.lastpoll.format());
+						return;
+					}
 				}
 			}
 			Msp.Cmds req = Msp.Cmds.NOOP;

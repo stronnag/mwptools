@@ -1246,8 +1246,8 @@ namespace Mwp {
 			break;
 
 		case Msp.Cmds.WP:
-			handle_mm_download(raw, len);
 			PDebug.last0wp = (raw[0] == 0);
+			handle_mm_download(raw, len);
 			break;
 
 		case Msp.Cmds.FW_APPROACH:
