@@ -44,7 +44,16 @@ namespace GCS {
                 float xalign = 0;
                 float yalign = 0;
                 var aflags = SVGReader.get_mwp_alignment(doc, out xalign, out yalign);
-                if((SVGReader.MwpAlign.X in aflags) ||
+
+#if SHUMATE_USE_ALIGN_160
+				if (SVGReader.MwpAlign.X in aflags) {
+					icon.xalign = xalign;
+				}
+				if (SVGReader.MwpAlign.Y in aflags) {
+					icon.yalign = yalign;
+				}
+#else
+				if((SVGReader.MwpAlign.X in aflags) ||
                    (SVGReader.MwpAlign.Y in aflags)) {
                     int iw,ih;
                     SVGReader.get_size(doc, out iw, out ih);
@@ -56,6 +65,7 @@ namespace GCS {
                             icon.disconnect (active_id);
                         });
                 }
+#endif
                 delete doc;
                 Xml.Parser.cleanup();
             } catch {}
