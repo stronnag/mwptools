@@ -159,8 +159,8 @@ public class MWPLabel : MWPMarker {
 		var img = new Gtk.Image.from_paintable(tex);
 		img.set_pixel_size(sz);
 		set_child(img);
-		xalign=1;
-		yalign=1;
+		halign=Gtk.Align.END;
+                valign=Gtk.Align.END;
 	}
 }
 #else

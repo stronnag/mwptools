@@ -18,79 +18,85 @@
  */
 
 namespace GCS {
-	bool debug;
-	MWPMarker icon=null;
+    bool debug;
+    MWPMarker icon=null;
 
-	public void init() {
-		if(Gpsd.reader == null) {
-			Gpsd.init();
-		}
-		if(icon == null) {
-			GCS.create_icon();
-		}
-	}
+    public void init() {
+        if(Gpsd.reader == null) {
+            Gpsd.init();
+        }
+        if(icon == null) {
+            GCS.create_icon();
+        }
+    }
 
-	public MWPMarker? create_icon () {
-		try {
-			var img = Img.load_image_from_file("gcs.svg", true);
-			icon = new MWPMarker.from_image(img);
+    public MWPMarker? create_icon () {
+        try {
+            var img = Img.load_image_from_file("gcs.svg", true);
+            icon = new MWPMarker.from_image(img);
+            Gis.info_layer.add_marker (icon);
 #if SHUMATE_USE_ALIGN
-			try {
-				var fn = MWPUtils.find_conf_file("gcs.svg", "pixmaps");
-				string xml;
-				FileUtils.get_contents(fn, out xml);
-				var doc = SVGReader.parse_svg(xml);
-				float xalign;
-				float yalign;
-				var aflags = SVGReader.get_mwp_alignment(doc, out xalign, out yalign);
-				if (SVGReader.MwpAlign.X in aflags) {
-					icon.xalign = xalign;
-				}
-				if (SVGReader.MwpAlign.Y in aflags) {
-					icon.yalign = yalign;
-				}
-				delete doc;
-				Xml.Parser.cleanup();
-			} catch {}
+            try {
+                var fn = MWPUtils.find_conf_file("gcs.svg", "pixmaps");
+                string xml;
+                FileUtils.get_contents(fn, out xml);
+                var doc = SVGReader.parse_svg(xml);
+                float xalign = 0;
+                float yalign = 0;
+                var aflags = SVGReader.get_mwp_alignment(doc, out xalign, out yalign);
+                if((SVGReader.MwpAlign.X in aflags) ||
+                   (SVGReader.MwpAlign.Y in aflags)) {
+                    int iw,ih;
+                    SVGReader.get_size(doc, out iw, out ih);
+                    double xp = iw/2 + iw*xalign/2;
+                    double yp = ih/2 + iw*yalign/2;
+					ulong active_id = 0;
+                    active_id = icon.map.connect(() => {
+                            icon.set_hotspot(xp, yp);
+                            icon.disconnect (active_id);
+                        });
+                }
+                delete doc;
+                Xml.Parser.cleanup();
+            } catch {}
 #endif
-			Gis.info_layer.add_marker (icon);
-			icon.visible = false;
-			icon.set_draggable(true);
-			if(Gpsd.reader != null) {
-				Gpsd.reader.gpsd_result.connect((s) => {
-						if(s != null && s.contains("TPV")) {
-							var d = Gpsd.parse(s);
-							if ((d.mask & (Gpsd.Mask.TIME|Gpsd.Mask.LAT|Gpsd.Mask.LON)) != 0 && d.fix == 3) {
-								icon.set_location(d.lat, d.lon);
-							}
-						}
-					});
+            icon.visible = false;
+            icon.set_draggable(true);
+            if(Gpsd.reader != null) {
+                Gpsd.reader.gpsd_result.connect((s) => {
+                        if(s != null && s.contains("TPV")) {
+                            var d = Gpsd.parse(s);
+                            if ((d.mask & (Gpsd.Mask.TIME|Gpsd.Mask.LAT|Gpsd.Mask.LON)) != 0 && d.fix == 3) {
+                                icon.set_location(d.lat, d.lon);
+                            }
+                        }
+                    });
 			}
-			MWPLog.message("Generated GCS icon\n");
-			return icon;
-		} catch (Error e) {
-			MWPLog.message("Failed to generate GCS icon: %s\n", e.message);
-			return null;
-		}
-	}
+            MWPLog.message("Generated GCS icon\n");
+            return icon;
+        } catch (Error e) {
+            MWPLog.message("Failed to generate GCS icon: %s\n", e.message);
+            return null;
+        }
+    }
 
 	public void set_location(double lat, double lon) {
-		icon.set_location(lat, lon);
+            icon.set_location(lat, lon);
 	}
 
 	public void default_location(double lat, double lon) {
-		if(icon.latitude == 0 && icon.longitude == 0) {
-			icon.set_location(lat, lon);
-		}
+            if(icon.latitude == 0 && icon.longitude == 0) {
+                icon.set_location(lat, lon);
+            }
 	}
 
 	public void set_visible(bool state) {
-		icon.visible = state;
+            icon.visible = state;
 	}
 
 	public void show() {
 		icon.visible = true;
-	}
+        }
 
 	public void hide() {
 		icon.visible = false;

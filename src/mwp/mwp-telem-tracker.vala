@@ -543,7 +543,7 @@ namespace TelemTracker {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
 					var label=new Gtk.Label("");
 					label.valign = Gtk.Align.START;
-					label.xalign = 0;
+                                        label.xalign = 0;
 					list_item.set_child(label);
 				});
 			f0.bind.connect((f,o) => {
