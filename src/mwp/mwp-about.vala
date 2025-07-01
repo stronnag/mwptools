@@ -18,7 +18,7 @@
  */
 
 namespace About {
-	const string CODE_NAME="Bluebell Wood";
+	const string CODE_NAME="Too damn hot";
 	public void show_about () {
 		string[] developers = { "Jonathan Hudson" };
 		string release_notes = "<p>This release adds the following features:</p>\n<ul><li>GTK4 UI</li>\n  <li>Shumate Map layer.</li>\n  <li>Bug fixes and performance improvements.</li>\n</ul>\n\n";

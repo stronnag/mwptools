@@ -1351,13 +1351,11 @@ public class MWSerial : Object {
 					int chn = io_chan.unix_get_fd ();
 					if(Posix.fstat(chn, out st) == 0) {
 						io_chan.shutdown(false);
-						MWPLog.message("Close IO channel %p %d\n", io_chan, chn);
 					}
 #else
-					int chn = io_chan.unix_get_fd ();
+					int chn = io_chan.win32_get_fd ();
 					if (chn != -1) {
 						io_chan.shutdown(false);
-						MWPLog.message("Close IO channel %p %d\n", io_chan, chn);
 						// Fuck you windows, rudely ,gratuitouly incompatible, fuck you
 						serial_lost();
 					}
