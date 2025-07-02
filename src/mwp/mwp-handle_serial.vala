@@ -392,8 +392,8 @@ namespace Mwp {
 								}
 								run_queue();
 							} else if ((nticks - lastok) > tlimit ) {
+								telstats.toc++;
 								if (lastmsg.cmd != Msp.Cmds.INVALID) {
-									telstats.toc++;
 									string res;
 									res = lastmsg.cmd.format();
 									if(nopoll == false)
@@ -426,6 +426,9 @@ namespace Mwp {
 										ltoc = telstats.toc;
 									}
 									resend_last();
+								} else if (serstate == SERSTATE.POLLER) {
+									MWPLog.message("Advance poller on INVALID t/o\n");
+									next_poll();
 								}
 							}
 						} else { // TELEM

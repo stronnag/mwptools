@@ -343,20 +343,23 @@ public class JoyReader {
 	}
 
 	public void reset_all() {
-		if (channels == null || channels.length == 0) {
-			channels.resize(16);
-		}
 		if(fake) {
 			channels = {1500, 1500, 1000, 1500,
 						1000, 1001, 1002, 1003,
 						1004, 1005, 1006, 1007};
 		} else {
-			channels[0] = 1500;
-			channels[1] = 1500;
-			channels[2] = 999;
-			channels[3] = 1500;
-			for(var j = 4; j < channels.length; j++) {
-				set_channel(j+1, 897);
+			for(var j = 0; j < channels.length; j++) {
+				switch(j) {
+				case 0,1,3:
+					channels[j] = 1500;
+					break;
+				case 2:
+					channels[2] = 999;
+					break;
+				default:
+					set_channel(j+1, 897);
+					break;
+				}
 			}
 		}
 	}
