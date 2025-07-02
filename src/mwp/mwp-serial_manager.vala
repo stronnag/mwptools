@@ -113,7 +113,7 @@ namespace Msp {
 		Mwp.rctag = 0;
 		Mwp.msp.is_main = true;
 		Mwp.mq = new Queue<Msp.MQI?>();
-        Mwp.lastmsg = Msp.MQI(); //{cmd = Msp.Cmds.INVALID};
+        Mwp.lastmsg = Msp.MQI(){cmd = Msp.Cmds.INVALID};
 		Mwp.csdq = new Queue<string>();
 		Mwp.fwddev = new Forwarder(Mwp.forward_device);
         Mwp.msp.serial_lost.connect(() => {

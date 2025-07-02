@@ -427,7 +427,8 @@ namespace Mwp {
 									}
 									resend_last();
 								} else if (serstate == SERSTATE.POLLER) {
-									MWPLog.message("Advance poller on INVALID t/o\n");
+									PDebug.lastpoll = Msp.Cmds.NOOP;
+									MWPLog.message("Try to kick poller on INVALID t/o\n");
 									next_poll();
 								}
 							}
@@ -538,13 +539,13 @@ namespace Mwp {
 				}
 			} while (skip);
 
-			PDebug.lastpoll = req;
 			if(req == Msp.Cmds.WP) {
 				uint8 buf[1] = {0};
 				queue_cmd(req, buf, 1);
 			} else if (req != Msp.Cmds.NOOP) {
 				queue_cmd(req, null, 0);
 			}
+			PDebug.lastpoll = req;
         }
     }
 
@@ -561,6 +562,7 @@ namespace Mwp {
 							lastok = lastrx = last_gps = nticks;
 							tcycle = 0;
 							serstate = SERSTATE.POLLER;
+							PDebug.lastpoll = Msp.Cmds.NOOP;
 							Mwp.lastp.start();
 							msg_poller();
 						}
