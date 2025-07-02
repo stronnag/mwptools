@@ -311,7 +311,7 @@ namespace Msp {
 
 	private void request_hid_info() {
 		if ((Mwp.MspRC.ON|Mwp.MspRC.ACT) in Mwp.use_rc) {
-			MWPLog.message("Requesting HID Info\n");
+			//MWPLog.message("Requesting HID Info\n");
 			var jbuf = new uint8 [1024];
 			JSMisc.read_hid_async.begin(jbuf, "info\n",  (o, r) => {
 					var sz = JSMisc.read_hid_async.end(r);
@@ -319,7 +319,6 @@ namespace Msp {
 					if(jstr == null || jstr == "") {
 						jstr = "none\n";
 					}
-					MWPLog.message("Raw RC: %s", jstr);
 					if(jstr.has_prefix("Channels: ")) {
 						Mwp.nrc_chan = int.parse(jstr.substring(10));
 					}
@@ -329,6 +328,7 @@ namespace Msp {
 								return false;
 							});
 					} else {
+						MWPLog.message("Raw RC: %s", jstr);
 						if (Mwp.MspRC.ACT in Mwp.use_rc) {
 							Mwp.use_rc |= Mwp.MspRC.GET;
 						}
