@@ -492,8 +492,8 @@ namespace Msp {
 #else
 			sb.append("* Please verify you have access rights to the device\n");
 #endif
-			var wb0 = new Utils.Warning_box(sb.str, 0);
-			wb0.present();
+			var wb = new Utils.Warning_box(sb.str, 0);
+			wb.present();
 		}
 		Mwp.reboot_status();
 	}
@@ -504,8 +504,8 @@ namespace Msp {
 		Mwp.serstate = Mwp.SERSTATE.NONE;
 		Mwp.clear_sidebar(Mwp.msp);
 		if(Radar.lookup_radar(serdev) || serdev == Mwp.forward_device) {
-			var wb1 = new Utils.Warning_box("The selected device is assigned to a special function (radar / forwarding).\nPlease choose another device", 60);
-			wb1.present();
+			var wb = new Utils.Warning_box("The selected device is assigned to a special function (radar / forwarding).\nPlease choose another device", 60);
+			wb.present();
 			return;
 		} else if (serdev.has_prefix("mqtt://") ||
 				   serdev.has_prefix("ssl://") ||
@@ -524,7 +524,8 @@ namespace Msp {
 #endif
 		} else {
 			if (TelemTracker.ttrk.is_used(serdev)) {
-				new Utils.Warning_box("The selected device is use for Telemetry Tracking\n", 60);
+				var wb = new Utils.Warning_box("The selected device is use for Telemetry Tracking\n", 60);
+				wb.present();
 				return;
 			}
 			TelemTracker.ttrk.disable(serdev);

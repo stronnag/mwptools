@@ -752,8 +752,8 @@ namespace Mwp {
 
 		private void do_gz_check() {
 			var s = gzr.validate_shapes("Zones fail validation", "Zones validate");
-			var wb6 = new Utils.Warning_box(s);
-			wb6.present();
+			var wb = new Utils.Warning_box(s);
+			wb.present();
 		}
 
 		private void gz_upload_dialog() {
@@ -780,8 +780,8 @@ namespace Mwp {
 			if (s.length == 0) {
 				gz_upload_dialog();
 			} else {
-				var wb7 = new Utils.Warning_box(s);
-				wb7.present();
+				var wb = new Utils.Warning_box(s);
+				wb.present();
 			}
 		}
 

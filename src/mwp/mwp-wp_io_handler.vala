@@ -153,8 +153,8 @@ namespace Mwp {
 			remove_tid(ref upltid);
 			wp_reset_poller();
 			Mwp.window.validatelab.set_text("⚠"); // u+26a0
-			var wb8 = new Utils.Warning_box("Download cancelled", 10);
-			wb8.present();
+			var wb = new Utils.Warning_box("Download cancelled", 10);
+			wb.present();
             return;
 		}
         w.wp_no = *rp++;
@@ -199,8 +199,8 @@ namespace Mwp {
 				Mwp.window.validatelab.set_text("✔"); // u+2714
 				wp_get_approaches(0);
 			} else {
-				var wb9 = new Utils.Warning_box("Fallback safe mission, 0 points", 10);
-				wb9.present();
+				var wb = new Utils.Warning_box("Fallback safe mission, 0 points", 10);
+				wb.present();
 				MWPLog.message("Fallback safe mission\n");
 			}
 		} else {
@@ -245,16 +245,16 @@ namespace Mwp {
 				start_download();
 			}
 		} else {
-			var wba = new Utils.Warning_box("No WPs in FC to download\nMaybe 'Restore' is needed?", 10);
-			wba.present();
+			var wb = new Utils.Warning_box("No WPs in FC to download\nMaybe 'Restore' is needed?", 10);
+			wb.present();
 		}
     }
     public void start_wp_timer(uint timeo, string reason="WP") {
         upltid = Timeout.add(timeo, () => {
                 MWPLog.message("%s operation probably failed\n", reason);
                 string wmsg = "%s operation timeout.\nThe transfer has probably failed".printf(reason);
-                var wbb = new Utils.Warning_box(wmsg);
-				wbb.present();
+                var wb = new Utils.Warning_box(wmsg);
+				wb.present();
                 if((wpmgr.wp_flag & WPDL.CALLBACK) != 0) {
                     upload_callback(-2);
 				}
@@ -267,9 +267,9 @@ namespace Mwp {
 		var wps = MultiM.missonx_to_wps(MissionManager.msx, id);
 		var  mlim = (id == -1) ? MissionManager.msx.length : 1;
 		if(wps.length > wp_max || mlim > MAXMULTI) {
-			var wbc = new Utils.Warning_box(
+			var wb = new Utils.Warning_box(
 				"Mission set exceeds FC limits:\nWP: %d/%d\nSegments: %d/%u".printf(wps.length, wp_max, mlim, MAXMULTI));
-			wbc.present();
+			wb.present();
 			return;
 		}
 

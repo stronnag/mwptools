@@ -405,8 +405,8 @@ namespace Mwp {
 										idcount++;
 										if(idcount == Mwp.conf.ident_limit) {
 											msp.close();
-											var wb5 = new Utils.Warning_box("No response received from the FC\nPlesae check connection and protocol\nConsider <tt>--no-poll</tt> if this is intentional\nSee also the <tt>ident-limit</tt> setting");
-											wb5.present();
+											var wb = new Utils.Warning_box("No response received from the FC\nPlesae check connection and protocol\nConsider <tt>--no-poll</tt> if this is intentional\nSee also the <tt>ident-limit</tt> setting");
+											wb.present();
 											idcount = 0;
 										}
 									}
