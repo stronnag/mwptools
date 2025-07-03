@@ -17,7 +17,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-namespace PDebug {
+namespace OOOMgr {
 	Msp.Cmds lastpoll;
 	Msp.Cmds currx;
 	bool last0wp;
@@ -155,9 +155,9 @@ namespace Mwp {
 	const int MSP_WAITMS = 5;
 
 	void serial_reset() {
-		PDebug.lastpoll = 0;
-		PDebug.currx = 0;
-		PDebug.last0wp = false;
+		OOOMgr.lastpoll = 0;
+		OOOMgr.currx = 0;
+		OOOMgr.last0wp = false;
 
 		vi = {};
 		navcap = 0;
@@ -427,7 +427,7 @@ namespace Mwp {
 									}
 									resend_last();
 								} else if (serstate == SERSTATE.POLLER) {
-									PDebug.lastpoll = Msp.Cmds.NOOP;
+									OOOMgr.lastpoll = Msp.Cmds.NOOP;
 									MWPLog.message("Try to kick poller on INVALID t/o\n");
 									next_poll();
 								}
@@ -497,12 +497,12 @@ namespace Mwp {
 
 	void send_poll() {
 		if(serstate == SERSTATE.POLLER && requests.length > tcycle) {
-			if(PDebug.lastpoll != Msp.Cmds.NOOP && PDebug.lastpoll != PDebug.currx) {
-				if(lost_poll(PDebug.currx)) {
-					if (PDebug.currx != Msp.Cmds.WP || PDebug.last0wp) {
+			if(OOOMgr.lastpoll != Msp.Cmds.NOOP && OOOMgr.lastpoll != OOOMgr.currx) {
+				if(lost_poll(OOOMgr.currx)) {
+					if (OOOMgr.currx != Msp.Cmds.WP || OOOMgr.last0wp) {
 						MWPLog.message("POLLER messages OOO cur=%s lp=%s\n",
-									   PDebug.currx.format(),
-									   PDebug.lastpoll.format());
+									   OOOMgr.currx.format(),
+									   OOOMgr.lastpoll.format());
 						return;
 					}
 				}
@@ -545,7 +545,7 @@ namespace Mwp {
 			} else if (req != Msp.Cmds.NOOP) {
 				queue_cmd(req, null, 0);
 			}
-			PDebug.lastpoll = req;
+			OOOMgr.lastpoll = req;
         }
     }
 
@@ -562,7 +562,7 @@ namespace Mwp {
 							lastok = lastrx = last_gps = nticks;
 							tcycle = 0;
 							serstate = SERSTATE.POLLER;
-							PDebug.lastpoll = Msp.Cmds.NOOP;
+							OOOMgr.lastpoll = Msp.Cmds.NOOP;
 							Mwp.lastp.start();
 							msg_poller();
 						}
@@ -645,7 +645,7 @@ namespace Mwp {
 			seenMSP = true;
 			telem = false;
 			last_tm = 0;
-			PDebug.currx = cmd;
+			OOOMgr.currx = cmd;
 			handled = Mwp.handle_msp(ser, cmd, raw, len, xflags, errs);
 		}
 		if(telem) {

@@ -28,7 +28,7 @@ namespace Audio {
 					m.notify["ended"].connect(() => {
 							var es = m.ended;
 							es = !es;
-						}); // keep in scope ...
+						}); // keep in scope ... supress warnings
 					m.play();
 				}
 			}
