@@ -750,7 +750,7 @@ public class MWSerial : Object {
 							Thread.usleep(5);
 							sz =  _write(sqi.data, sqi.len);
 						} else {
-							MWPLog.message(":SQI: **BUG** Writer %d %d\n", lasterr, sz);
+							MWPLog.message(":Serial writer:  %s\n", format_last_err());
 							ok = false;
 							break;
 						}
