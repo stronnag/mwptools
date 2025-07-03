@@ -485,12 +485,14 @@ namespace Msp {
 		} else {
 			string estr = null;
 			Mwp.msp.get_error_message(out estr);
-			var wb0 = new Utils.Warning_box("""Unable to open serial device:
-Error: <i>%s</i>
-
-* Check that <u>%s</u> is available / connected.
-* Please verify you are a member of the owning group, typically 'dialout' or 'uucp'""".printf(estr, serdev), 0);
-
+			StringBuilder sb = new StringBuilder("Unable to open serial device:");
+			sb.append_printf(" <i>%s</i>\n* Check that <u>%s</u> is available / connected.\n", estr, serdev);
+#if LINUX
+			sb.append("* Please verify you are a member of the owning group, typically 'dialout' or 'uucp'\n");
+#else
+			sb.append("* Please verify you have access rights to the device\n");
+#endif
+			var wb0 = new Utils.Warning_box(sb.str, 0);
 			wb0.present();
 		}
 		Mwp.reboot_status();

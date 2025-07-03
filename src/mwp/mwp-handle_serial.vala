@@ -367,7 +367,7 @@ namespace Mwp {
 							ndata = tlimit + 1;
 						}
 
-						if(((serstate == SERSTATE.POLLER || serstate == SERSTATE.TELEM)) && mintvl > ndata) {
+						if(((serstate == SERSTATE.POLLER || serstate == SERSTATE.TELEM)) && mintvl >= ndata) {
 							if(rxerr == false) {
 								Mwp.add_toast_text("No data for 5s");
 								MWPLog.message("No data for 5s\n");
@@ -377,7 +377,7 @@ namespace Mwp {
 
 						if(serstate != SERSTATE.TELEM) {
 							// Long timeout
-							if(serstate == SERSTATE.POLLER && mintvl > RESTARTINTVL) {
+							if(serstate == SERSTATE.POLLER && mintvl >= RESTARTINTVL) {
 								serstate = SERSTATE.NONE;
 								MWPLog.message("Restart poll loop last = %s\n", lastmsg.cmd.format());
 								init_state();
@@ -391,7 +391,7 @@ namespace Mwp {
 									inhibit_cookie = 0;
 								}
 								run_queue();
-							} else if ((nticks - lastok) > tlimit ) {
+							} else if ((nticks - lastok) >= tlimit ) {
 								telstats.toc++;
 								if (lastmsg.cmd != Msp.Cmds.INVALID) {
 									string res;
