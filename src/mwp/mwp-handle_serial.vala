@@ -454,6 +454,7 @@ namespace Mwp {
 								init_sstats();
 								last_tm = 0;
 								serstate = SERSTATE.NORMAL;
+								OOOMgr.lastpoll = Msp.Cmds.NOOP;
 								queue_cmd(msp_get_status,null,0);
 								run_queue();
 							}

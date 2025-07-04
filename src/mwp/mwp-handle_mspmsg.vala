@@ -1257,7 +1257,7 @@ namespace Mwp {
 					Safehome.manager.reset_fwa();
 					Safehome.manager.set_status(sh_disp);
 					reset_poller();
-					MWPLog.message("Save home d/l done\n");
+					MWPLog.message("Safe home d/l done\n");
 				} else {
 					wp_get_approaches(id+1-Safehome.MAXHOMES);
 				}
