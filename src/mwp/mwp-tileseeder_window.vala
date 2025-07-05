@@ -75,8 +75,11 @@ namespace TileUtils {
 					set_label(nt);
 				});
 
+
 			tile_start.clicked.connect(() => {
-					if(tile_start.label == "Start") {
+					bool doseed = (tile_start.label == "Start");
+					reset_widgets(!doseed);
+					if(doseed) {
 						tile_start.label = "Stop";
 						int days = (int)tile_age.value;
 						ts.set_delta(days);
@@ -92,11 +95,19 @@ namespace TileUtils {
 				});
 		}
 
+		private void reset_widgets(bool act) {
+			tile_minzoom.sensitive = act;
+			tile_maxzoom.sensitive = act;
+			tile_age.sensitive = act;
+			streetview.sensitive = act;
+		}
+
 		private void reset() {
 			if (ts != null) {
 				ts.stop();
 				ts = null;
 			}
+			reset_widgets(true);
 		}
 
 		private void set_label(TileUtils.TileStats s) {
@@ -129,6 +140,7 @@ namespace TileUtils {
 				});
 			ts.tile_done.connect(() => {
 					tile_start.set_label("Start");
+					reset_widgets(true);
 					get_dem_list(b);
 				});
 			// MWPLog.message(":DBG: BBOX %f %f %f %f\n",b.minlat, b.minlon, b.maxlat,b.maxlon);

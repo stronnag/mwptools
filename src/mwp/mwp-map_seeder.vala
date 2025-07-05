@@ -70,6 +70,7 @@ namespace TileUtils {
 		private int iy;
 		private DateTime dtime;
 		private bool done;
+		private bool eof;
 		private File file;
 		private TileList[] tl;
 		private string cachedir;
@@ -84,6 +85,8 @@ namespace TileUtils {
 
 
 		public Seeder() {
+			done = false;
+			eof = false;
 		}
 
 		public void set_range(double _minlat, double _minlon, double _maxlat, double _maxlon) {
@@ -128,7 +131,6 @@ namespace TileUtils {
 			in = 0;
 			ix = tl[0].sx;
 			iy = tl[0].sy;
-			done = false;
 			return stats;
 		}
 
@@ -154,7 +156,7 @@ namespace TileUtils {
 		private TILE_ITER_RES get_next_tile(out string? s) {
 			TILE_ITER_RES r = TILE_ITER_RES.FETCH;
 			s = null;
-			if(done)
+			if(done || eof)
 				r = TILE_ITER_RES.DONE;
 			else {
 				var fn = Path.build_filename(cachedir,
@@ -192,7 +194,7 @@ namespace TileUtils {
 							in = 0;
 							ix = tl[0].sx;
 							iy = tl[0].sy;
-							done=true;
+							eof = true;
 						} else {
 							ix = tl[in].sx;
 							iy = tl[in].sy;
@@ -229,6 +231,7 @@ namespace TileUtils {
 			session = new Soup.Session();
 			session.user_agent = Utils.random_ua();
 			done = false;
+			eof = false;
 			stats.dlok = 0;
 			stats.dlerr = 0;
 			stats.skip = 0;
@@ -270,17 +273,17 @@ namespace TileUtils {
 					if (!use_gazetteer) {
 						tile_done();
 					} else {
+						eof = false;
 						tset++;
 						in = 0;
-						done = false;
 						set_misc(Gis.EPLACESID);
 						fetch_tile();
 					}
 					break;
 				case 1:
+					eof = false;
 					tset++;
 					in = 0;
-					done = false;
 					set_misc(Gis.EROADSID);
 					fetch_tile();
 					break;
