@@ -53,16 +53,20 @@ namespace GCS {
 					icon.yalign = yalign;
 				}
 #else
-				if((SVGReader.MwpAlign.X in aflags) ||
-                   (SVGReader.MwpAlign.Y in aflags)) {
-                    int iw,ih;
-                    SVGReader.get_size(doc, out iw, out ih);
-                    double xp = iw/2 + iw*xalign/2;
-                    double yp = ih/2 + iw*yalign/2;
-					ulong active_id = 0;
-                    active_id = icon.map.connect(() => {
-                            icon.set_hotspot(xp, yp);
-                            icon.disconnect (active_id);
+				ulong active_id = 0;
+				if((SVGReader.MwpAlign.X in aflags) || (SVGReader.MwpAlign.Y in aflags)) {
+					active_id = icon.map.connect(() => {
+							if(SVGReader.MwpAlign.X in aflags) {
+								int iw;
+								icon.measure(Gtk.Orientation.HORIZONTAL, -1, null, out iw, null, null);
+								icon.x_hotspot = (double)iw*(1.0+xalign)*0.5;
+							}
+							if(SVGReader.MwpAlign.Y in aflags) {
+								int ih;
+								icon.measure(Gtk.Orientation.VERTICAL, -1, null, out ih, null, null);
+								icon.y_hotspot = (double)ih*(1.0+yalign)*0.5;
+							}
+							icon.disconnect (active_id);
                         });
                 }
 #endif
