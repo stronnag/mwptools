@@ -35,45 +35,46 @@ namespace GCS {
             var img = Img.load_image_from_file("gcs.svg", true);
             icon = new MWPMarker.from_image(img);
             Gis.info_layer.add_marker (icon);
-#if SHUMATE_USE_ALIGN
-            try {
-                var fn = MWPUtils.find_conf_file("gcs.svg", "pixmaps");
-                string xml;
-                FileUtils.get_contents(fn, out xml);
-                var doc = SVGReader.parse_svg(xml);
-                float xalign = 0;
-                float yalign = 0;
-                var aflags = SVGReader.get_mwp_alignment(doc, out xalign, out yalign);
-
-#if SHUMATE_USE_ALIGN_160
-				if (SVGReader.MwpAlign.X in aflags) {
-					icon.xalign = xalign;
-				}
-				if (SVGReader.MwpAlign.Y in aflags) {
-					icon.yalign = yalign;
-				}
-#else
-				if((SVGReader.MwpAlign.X in aflags) || (SVGReader.MwpAlign.Y in aflags)) {
-					ulong active_id = 0;
-					active_id = icon.map.connect(() => {
-							if(SVGReader.MwpAlign.X in aflags) {
-								int iw;
-								icon.measure(Gtk.Orientation.HORIZONTAL, -1, null, out iw, null, null);
-								icon.x_hotspot = (double)iw*(1.0+xalign)*0.5;
-							}
-							if(SVGReader.MwpAlign.Y in aflags) {
-								int ih;
-								icon.measure(Gtk.Orientation.VERTICAL, -1, null, out ih, null, null);
-								icon.y_hotspot = (double)ih*(1.0+yalign)*0.5;
-							}
-							icon.disconnect (active_id);
+			if(Mwp.shumate_cap > 0) {
+				try {
+					var fn = MWPUtils.find_conf_file("gcs.svg", "pixmaps");
+					string xml;
+					FileUtils.get_contents(fn, out xml);
+					var doc = SVGReader.parse_svg(xml);
+					float xalign = 0;
+					float yalign = 0;
+					var aflags = SVGReader.get_mwp_alignment(doc, out xalign, out yalign);
+					if (Mwp.shumate_cap == 1) {
+						if (SVGReader.MwpAlign.X in aflags) {
+							icon.set_property("xalign", xalign);
+						}
+						if (SVGReader.MwpAlign.Y in aflags) {
+							icon.set_property("yalign", yalign);
+						}
+					} else {
+						if((SVGReader.MwpAlign.X in aflags) || (SVGReader.MwpAlign.Y in aflags)) {
+							ulong active_id = 0;
+							active_id = icon.map.connect(() => {
+									if(SVGReader.MwpAlign.X in aflags) {
+										int iw;
+										icon.measure(Gtk.Orientation.HORIZONTAL, -1, null, out iw, null, null);
+										double d = (double)iw*(1.0+xalign)*0.5;
+										icon.set_property("x-hotspot", d);
+									}
+									if(SVGReader.MwpAlign.Y in aflags) {
+										int ih;
+										icon.measure(Gtk.Orientation.VERTICAL, -1, null, out ih, null, null);
+										double d = (double)ih*(1.0+yalign)*0.5;
+										icon.set_property("y_hotspot", d);
+									}
+									icon.disconnect (active_id);
                         });
-                }
-#endif
-                delete doc;
-                Xml.Parser.cleanup();
-            } catch {}
-#endif
+						}
+					}
+					delete doc;
+					Xml.Parser.cleanup();
+				} catch {}
+			}
             icon.visible = false;
             icon.set_draggable(true);
             if(Gpsd.reader != null) {

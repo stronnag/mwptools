@@ -25,7 +25,10 @@ internal const string GSK_NOTICE="""Setting "GSK_RENDERER=cairo" for maximum GPU
 """;
 
 namespace Mwp {
+	uint8 shumate_cap;
+
 	public void show_misc_info () {
+		shumate_cap = 0;
 		MWPLog.message("%s\n", Mwp.user_args);
 		Mwp.user_args = null;
 		var sb = new StringBuilder("mwp ");
@@ -62,7 +65,19 @@ namespace Mwp {
 		MWPLog.message("Gtk: %d.%d.%d (build) / %u.%u.%u (runtime)\n", Gtk.MAJOR_VERSION, Gtk.MINOR_VERSION,Gtk.MICRO_VERSION, Gtk.get_major_version(), Gtk.get_minor_version(), Gtk.get_micro_version());
 		MWPLog.message("Adw: %d.%d.%d (build) / %u.%u.%u (runtime)\n", Adw.MAJOR_VERSION, Adw.MINOR_VERSION,Adw.MICRO_VERSION, Adw.get_major_version(), Adw.get_minor_version(), Adw.get_micro_version());
 		MWPLog.message("GLib: %d.%d.%d (build) / %u.%u.%u (runtime)\n", GLib.Version.MAJOR, GLib.Version.MINOR,GLib.Version.MICRO, GLib.Version.major, GLib.Version.minor, GLib.Version.micro);
-		MWPLog.message("Shumate: %d.%d\n", Shumate.MAJOR_VERSION, Shumate.MINOR_VERSION);
+
+		Type type = typeof(Shumate.Marker);
+		ObjectClass ocl = (ObjectClass)type.class_ref();
+		unowned ParamSpec? spec = ocl.find_property ("x-hotspot");
+		if(spec == null) {
+			spec = ocl.find_property ("xalign");
+			if(spec != null) {
+				shumate_cap = 1;
+			}
+		} else {
+			shumate_cap = 2;
+		}
+		MWPLog.message("Shumate: %d.%d (hcap=%d)\n", Shumate.MAJOR_VERSION, Shumate.MINOR_VERSION, shumate_cap);
 		sb.erase();
 		sb.append("WM: ");
 		sb.append(dmstr);
