@@ -17,88 +17,16 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-public class MWPLabel : MWPMarker {
-	const int RADIUS = 10;
-	const int PADDING = RADIUS/2;
-	const double FONTSIZE = 10.0;
+public interface MWPLabel : MWPMarker {
+	public abstract string bcol{get;set;}
+	public abstract string fcol{get;set;}
+	public abstract void set_text(string txt);
+	public abstract string get_text();
+	public abstract void set_font_scale(double ps);
+	public abstract void set_text_colour(Value v);
+	public abstract void set_colour(Value v);
 
-	private string bcol;
-	private string fcol;
-	private string label;
-	private Gtk.Label glabel;
-	private double fontsize;
-	private string wpstyle;
-	private Gtk.CssProvider provider;
-
-	public MWPLabel(string txt="")  {
-#if WINDOWS
-		wpstyle = "Segoe UI";
-#else
-		wpstyle = "Sans";
-#endif
-		if(Mwp.shumate_cap == 0) {
-			generate_text(txt);
-		} else {
-			bcol = "white";
-			fcol = "#000000ff";
-			label = txt;
-			generate_label();
-		}
-    }
-
-	private void generate_text(string txt) {
-		provider = new Gtk.CssProvider ();
-		glabel = new Gtk.Label(txt);
-		glabel.use_markup = true;
-        glabel.get_style_context().add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
-		var fs = Mwp.conf.symbol_scale;
-		if(MwpScreen.has_touch_screen()) {
-			fs *= Mwp.conf.touch_scale;
-		}
-		set_font_scale(fs);
-		glabel.add_css_class("mycol");
-		glabel.vexpand = false;
-		glabel.hexpand = false;
-		glabel.halign = Gtk.Align.START;
-		glabel.margin_top = 2;
-		glabel.margin_bottom = 2;
-		glabel.margin_start = 2;
-		glabel.margin_end = 2;
-		set_child(glabel);
-		bcol = "white";
-		fcol = "black";
-		set_css();
-	}
-
-	public string get_text() {
-		if(Mwp.shumate_cap == 0) {
-			return glabel.label;
-		} else {
-			return label;
-		}
-	}
-
-	public void set_text(string txt) {
-		if(Mwp.shumate_cap == 0) {
-			glabel.label = txt;
-		} else {
-			label = txt;
-			generate_label();
-		}
-	}
-
-	public void set_font_scale(double ps = Pango.Scale.MEDIUM) {
-		if(Mwp.shumate_cap == 0) {
-			Pango.AttrList attrs = new Pango.AttrList ();
-			attrs.insert (Pango.attr_scale_new (ps));
-			glabel.attributes = attrs;
-		} else {
-			fontsize = FONTSIZE*ps;
-			generate_label();
-		}
-	}
-
-	private string val_to_colour(Value v) {
+	public virtual string val_to_colour(Value v) {
 		var vt = v.type();
 		if(vt == typeof(string)) {
 			return (v as string);
@@ -107,23 +35,56 @@ public class MWPLabel : MWPMarker {
 		}
 		return "rgb(0,0,0)";
 	}
+}
+
+public class MWPPointyLabel : MWPMarker, MWPLabel {
+	const int RADIUS = 10;
+	const int PADDING = RADIUS/2;
+	const double FONTSIZE = 10.0;
+
+	public string bcol{get;set;}
+	public string fcol{get;set;}
+
+	private string label;
+	private double fontsize;
+	private string wpstyle;
+
+	public MWPPointyLabel(string txt="")  {
+#if WINDOWS
+		wpstyle = "Segoe UI";
+#else
+		wpstyle = "Sans";
+#endif
+		var fs = MwpScreen.rescale(1);
+		bcol = "white";
+		fcol = "#000000ff";
+		fontsize = FONTSIZE*fs;
+		label = txt;
+		generate_label();
+    }
+
+	public void set_text(string txt) {
+		label = txt;
+		generate_label();
+	}
+
+	public string get_text() {
+		return label;
+	}
+
+	public void set_font_scale(double ps = Pango.Scale.MEDIUM) {
+		fontsize = FONTSIZE*ps;
+		generate_label();
+	}
 
 	public void set_text_colour(Value v) {
 		fcol = val_to_colour(v);
-		if(Mwp.shumate_cap == 0) {
-			set_css();
-		} else {
-			generate_label();
-		}
+		generate_label();
 	}
 
 	public void set_colour(Value v) {
 		bcol = val_to_colour(v);
-		if(Mwp.shumate_cap == 0) {
-			set_css();
-		} else {
-			generate_label();
-		}
+		generate_label();
 	}
 
 	// should use Gtk.get_locale_direction()  for reverse (Gtk.TextDirection.RTL)
@@ -170,9 +131,6 @@ public class MWPLabel : MWPMarker {
 	}
 
 	private void generate_label() {
-		var fs = MwpScreen.rescale(1);
-		fontsize = FONTSIZE*fs;
-
 		var cst = new Cairo.ImageSurface (Cairo.Format.ARGB32, 256, 256);
 		var cr = new Cairo.Context (cst);
 
@@ -215,7 +173,7 @@ public class MWPLabel : MWPMarker {
 		var img = new Gtk.Image.from_paintable(tex);
 		img.set_pixel_size(sz);
 		set_child(img);
-		if (Mwp.shumate_cap == 1) {
+		if(Mwp.shumate_cap == 1) {
 			set_property("xalign", 1.0f);
 			set_property("yalign", 1.0f);
 		} else {
@@ -223,9 +181,75 @@ public class MWPLabel : MWPMarker {
 			valign=Gtk.Align.END;
 		}
 	}
+}
+
+public class MWPTextyLabel : MWPMarker, MWPLabel {
+	public string bcol{get;set;}
+	public string fcol{get;set;}
+
+	private Gtk.CssProvider provider;
+	private Gtk.Label label;
+
+	public MWPTextyLabel(string txt="")  {
+		provider = new Gtk.CssProvider ();
+		label = new Gtk.Label(txt);
+		label.use_markup = true;
+        label.get_style_context().add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
+		var fs = Mwp.conf.symbol_scale;
+		if(MwpScreen.has_touch_screen()) {
+			fs *= Mwp.conf.touch_scale;
+		}
+		set_font_scale(fs);
+		label.add_css_class("mycol");
+		label.vexpand = false;
+		label.hexpand = false;
+		label.halign = Gtk.Align.START;
+		label.margin_top = 2;
+		label.margin_bottom = 2;
+		label.margin_start = 2;
+		label.margin_end = 2;
+		set_child(label);
+		bcol = "white";
+		fcol = "black";
+		set_css();
+    }
+
+	public void set_text(string txt) {
+		label.label = txt;
+	}
+
+	public string get_text() {
+		return label.label;
+	}
+
+	public void set_font_scale(double ps = Pango.Scale.MEDIUM) {
+		Pango.AttrList attrs = new Pango.AttrList ();
+		attrs.insert (Pango.attr_scale_new (ps));
+		label.attributes = attrs;
+	}
 
 	private void set_css() {
 		string cssstr=".mycol {  padding: 0 0.6rem 0 0.6rem; background-color: %s; color: %s; border-radius: 5px;}".printf(bcol, fcol);
 		provider.load_from_string(cssstr);
+	}
+
+	public void set_text_colour(Value v) {
+		fcol = val_to_colour(v);
+		set_css();
+	}
+
+	public void set_colour(Value v) {
+		bcol = val_to_colour(v);
+		set_css();
+	}
+}
+
+namespace MWPLabelFactory {
+	public MWPLabel make_label(string txt = "")	{
+		if(Mwp.shumate_cap == 0) {
+			return new MWPTextyLabel(txt);
+		} else {
+			return new MWPPointyLabel(txt);
+		}
 	}
 }

@@ -77,14 +77,14 @@ public class OverlayItem : Object {
 	}
 
 	public void add_point(double lat, double lon) {
-		var mk = new MWPLabel();
+		var mk = MWPLabelFactory.make_label();
 		mk.latitude = lat;
 		mk.longitude = lon;
 		mks.append(mk);
 	}
 
 	public MWPLabel add_line_point(double lat, double lon, string label) {
-		var mk = new MWPLabel();
+		var mk = MWPLabelFactory.make_label();
 		mk.latitude = lat;
 		mk.longitude = lon;
 		mk.set_text(label);
@@ -94,7 +94,7 @@ public class OverlayItem : Object {
 	}
 
 	public MWPLabel insert_line_position(double lat, double lon, int ipos) {
-		var mk = new MWPLabel("?");
+		var mk = MWPLabelFactory.make_label("?");
 		mk.latitude = lat;
 		mk.longitude = lon;
 		mk.set_draggable(true);

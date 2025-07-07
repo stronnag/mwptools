@@ -75,7 +75,7 @@ namespace HomePoint {
 		if (hp == null) {
 			var symb = "⏏"; // \u23cf
 			string hcol = "#8c4343%02x".printf(Mwp.conf.mission_icon_alpha);
-			hp = new MWPLabel(symb);
+			hp = MWPLabelFactory.make_label(symb);
  			hp.set_colour(hcol);
 			hp.set_text_colour("white");
 			hp.no = 256;

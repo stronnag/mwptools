@@ -288,14 +288,14 @@ namespace Survey {
 			int n = 0;
 			foreach (var r in rows){
 				n++;
-				mk = new MWPLabel("%3d".printf(n));
+				mk = MWPLabelFactory.make_label("%3d".printf(n));
 				mk.latitude = r.start.y;
 				mk.longitude = r.start.x;
 				mk.set_colour(col);
 				Gis.svy_mpath.add_node(mk);
 				Gis.svy_mpoints.add_marker(mk);
 				n++;
-				mk = new MWPLabel("%3d".printf(n));
+				mk = MWPLabelFactory.make_label("%3d".printf(n));
 				mk.latitude = r.end.y;
 				mk.longitude = r.end.x;
 				mk.set_colour(col);

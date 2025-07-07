@@ -442,7 +442,7 @@ public class GZEdit : Adw.Window {
 					nz++;
 				});
 		} else {  // circle
-			var mk = new MWPLabel();
+			var mk = MWPLabelFactory.make_label();
 			var c = el.styleinfo.line_colour;
 			mk.set_colour(c);
 			mk.set_text("%d/0".printf(el.idx));

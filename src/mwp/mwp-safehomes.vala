@@ -46,7 +46,7 @@ public class SafeHomeMarkers : GLib.Object {
 		scolour.parse("rgba(0xfb, 0xea, 0x04, 0.4)");
 		white.parse("white");
 		onscreen = new bool[Safehome.MAXHOMES];
-		safept = new  MWPLabel[Safehome.MAXHOMES];
+		safept = new MWPLabel[Safehome.MAXHOMES];
 		safed = {};
 		safel = {};
 		safelayer = new Shumate.MarkerLayer(Gis.map.viewport);
@@ -58,7 +58,7 @@ public class SafeHomeMarkers : GLib.Object {
 		llist.append(5);
 
 		for(var idx = 0; idx < Safehome.MAXHOMES; idx++) {
-			safept[idx] = new MWPLabel("⏏#%d".printf(idx));
+			safept[idx] = MWPLabelFactory.make_label("⏏#%d".printf(idx));
 			safept[idx].set_colour (scolour.to_string());
 			safept[idx].set_text_colour("black");
 			safept[idx].set_draggable(true);

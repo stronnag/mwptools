@@ -28,7 +28,7 @@ public class LOSPoint : Object {
 
 	public static void init() {
         fmlayer = new Shumate.MarkerLayer(Gis.map.viewport);
-        fmpt = new MWPLabel("⨁");
+        fmpt = MWPLabelFactory.make_label("⨁");
         fmpt.set_colour ("red");
         fmpt.set_text_colour("white");
 		Gis.map.insert_layer_above (fmlayer, Gis.hm_layer); // above home layer

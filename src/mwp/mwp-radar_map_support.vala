@@ -100,7 +100,7 @@ namespace Radar {
 				}
 			}
 			if(use_labels) {
-				rp = new MWPLabel(r.name);
+				rp = MWPLabelFactory.make_label(r.name);
 			} else {
 				rp  = new MWPMarker.from_image(img);
 			}

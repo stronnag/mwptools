@@ -564,7 +564,7 @@ namespace MsnTools {
 
 			var mcol = IconTools.get_text_for(out label, m.points[i].no, m.points[i].action,
 											  m.points[i]._mflag);
-			var mk = new MWPLabel(label);
+			var mk = MWPLabelFactory.make_label(label);
 			mk.set_colour(mcol.to_string());
 			mk.set_text_colour("black");
 			mk.no = m.points[i].no;

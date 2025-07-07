@@ -210,7 +210,7 @@ public class Craft : Object {
                 break;
             case Special.PH:
                 if(posp == null) {
-                    posp = new MWPLabel("∞");
+                    posp = MWPLabelFactory.make_label("∞");
 					posp.set_colour("#4cfe00c8");
 					posp.set_text_colour("black");
                     pmlayer.add_marker(posp);
@@ -221,7 +221,7 @@ public class Craft : Object {
                 break;
             case Special.RTH:
                 if(rthp == null) {
-					rthp = new MWPLabel("⚑");
+					rthp = MWPLabelFactory.make_label("⚑");
 					rthp.set_colour ("#fafa00c8");
                     rthp.set_text_colour("black");
                     pmlayer.add_marker(rthp);
@@ -232,7 +232,7 @@ public class Craft : Object {
                 break;
             case Special.WP:
                 if(wpp == null) {
-                    wpp = new MWPLabel("☛");
+                    wpp = MWPLabelFactory.make_label("☛");
                     wpp.set_colour ("white");
                     wpp.set_text_colour("black");
                     pmlayer.add_marker(wpp);

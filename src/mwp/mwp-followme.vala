@@ -172,7 +172,7 @@ namespace Follow {
 
 		public FPoint() {
 			fmlayer = new Shumate.MarkerLayer(Gis.map.viewport);
-			fmpoint = new MWPLabel("⨁");
+			fmpoint = MWPLabelFactory.make_label("⨁");
 			var fs = MwpScreen.rescale(1.25);
 			fmpoint.set_font_scale(fs);
 			fmpoint.set_colour (GREEN);
