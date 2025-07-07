@@ -3,11 +3,8 @@ subdir('survey')
 
 getinfo = files('getinfo.sh')
 mwp_v_args = []
-if pointy_labels
-  if extra_vapi != ''
-    mwp_v_args += ['--vapidir' , extra_vapi]
-  endif
-  mwp_v_args += '--define=SHUMATE_USE_ALIGN'
+if extra_vapi != ''
+  mwp_v_args += ['--vapidir' , extra_vapi]
 endif
 
 mwpvers_h = custom_target(
