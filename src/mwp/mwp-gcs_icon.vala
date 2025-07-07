@@ -53,8 +53,8 @@ namespace GCS {
 					icon.yalign = yalign;
 				}
 #else
-				ulong active_id = 0;
 				if((SVGReader.MwpAlign.X in aflags) || (SVGReader.MwpAlign.Y in aflags)) {
+					ulong active_id = 0;
 					active_id = icon.map.connect(() => {
 							if(SVGReader.MwpAlign.X in aflags) {
 								int iw;

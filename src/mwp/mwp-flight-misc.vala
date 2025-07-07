@@ -402,14 +402,17 @@ namespace Mwp {
         return d;
     }
 
-	private void set_td_origin(double lat, double lon) {
+	private void set_td_origin(double lat, double lon, double alt) {
 		Mwp.msp.td.origin.lat = lat;
 		Mwp.msp.td.origin.lon = lon;
-		var elev = DemManager.lookup(lat, lon);
-		if (elev != Hgt.NODATA) {
-			Mwp.msp.td.origin.alt = elev;
-		} else {
-			Mwp.msp.td.origin.alt = 0;
+		if (alt != -99999) {
+			Mwp.msp.td.origin.alt = alt;
+		}
+		if (alt == 0.0) {
+			var elev = DemManager.lookup(lat, lon);
+			if (elev != Hgt.NODATA) {
+				Mwp.msp.td.origin.alt = elev;
+			}
 		}
 		/*
 		MWPLog.message(":DBG: Set td alt %f %f %.0f\n",
@@ -438,8 +441,7 @@ namespace Mwp {
                 }
             }
 			HomePoint.set_home(lat, lon);
-            have_home = true;
-			set_td_origin(lat, lon);
+			set_td_origin(lat, lon, -99999);
 			ret = true;
         }
         return ret;

@@ -22,8 +22,6 @@ namespace SVGReader {
 	public enum MwpAlign {
 		X,
 		Y,
-		AX,
-		AY
 	}
 
 	const string MWP_NSHREF="http://www.daria.co.uk/namepaces/mwp";
@@ -69,16 +67,6 @@ namespace SVGReader {
 				if(px != null) {
 					yalign = float.parse(px);
 					found += MwpAlign.Y;
-				}
-				px = root->get_ns_prop("xoffset", MWP_NSHREF);
-				if(px != null) {
-					xalign = float.parse(px);
-					found += MwpAlign.AX;
-				}
-				px = root->get_ns_prop("yoffset", MWP_NSHREF);
-				if(px != null) {
-					yalign = float.parse(px);
-					found += MwpAlign.AY;
 				}
 			}
 		}

@@ -133,15 +133,21 @@ namespace Mwp {
     }
 
     private void report_special_wp(MSP_WP w) {
-        double lat, lon;
+        double lat, lon,alt;
         lat = w.lat/1e7;
         lon = w.lon/1e7;
+		alt = w.altitude/1e2;
         if (w.wp_no == 0) {
 			if (w.lat != 0  && w.lon != 0 && w.altitude != 0) {
-				set_td_origin(lat, lon);
+				//				MWPLog.message("ORIG %f %f %f %d %s\n", lat, lon, alt, armed, have_home.to_string());
+				set_td_origin(lat, lon, alt);
+				if(armed != 0 && have_home == false) {
+					want_special |= POSMODE.HOME;
+					process_pos_states(lat, lon, alt, "WP#0");
+				}
 			}
 		} else {
-            MWPLog.message("Special WP#%d (%d) %.6f %.6f %dm %d°\n", w.wp_no, w.action, lat, lon, w.altitude/100, w.p1);
+            MWPLog.message("Special WP#%d (%d) %.6f %.6f %fm %d°\n", w.wp_no, w.action, lat, lon, alt, w.p1);
         }
     }
 
@@ -158,16 +164,16 @@ namespace Mwp {
             return;
 		}
         w.wp_no = *rp++;
+		w.action = *rp++;
+		rp = SEDE.deserialise_i32(rp, out w.lat);
+		rp = SEDE.deserialise_i32(rp, out w.lon);
+		rp = SEDE.deserialise_i32(rp, out w.altitude);
 
 		bool done = false;
 		if(w.wp_no == 0 || w.wp_no > 253) {
             report_special_wp(w);
 			return;
 		} else {
-			w.action = *rp++;
-			rp = SEDE.deserialise_i32(rp, out w.lat);
-			rp = SEDE.deserialise_i32(rp, out w.lon);
-			rp = SEDE.deserialise_i32(rp, out w.altitude);
 			rp = SEDE.deserialise_i16(rp, out w.p1);
 			rp = SEDE.deserialise_i16(rp, out w.p2);
 			rp = SEDE.deserialise_i16(rp, out w.p3);
