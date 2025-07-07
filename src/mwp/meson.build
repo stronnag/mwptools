@@ -3,9 +3,6 @@ subdir('survey')
 
 getinfo = files('getinfo.sh')
 mwp_v_args = []
-if extra_vapi != ''
-  mwp_v_args += ['--vapidir' , extra_vapi]
-endif
 
 mwpvers_h = custom_target(
     '_mwpvers.h',

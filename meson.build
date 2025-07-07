@@ -18,8 +18,6 @@ if show_deprecated  == false
   add_project_arguments('--enable-deprecated', language : 'vala')
 endif
 
-extra_vapi = get_option('extra-vapi-path')
-
 with_gatt = true
 if build_machine.system() != 'linux'
   with_gatt = false
