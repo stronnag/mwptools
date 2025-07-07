@@ -58,13 +58,13 @@ namespace GCS {
 									if(SVGReader.MwpAlign.X in aflags) {
 										int iw;
 										icon.measure(Gtk.Orientation.HORIZONTAL, -1, null, out iw, null, null);
-										double d = (double)iw*(1.0+xalign)*0.5;
+										double d = (double)iw*xalign;
 										icon.set_property("x-hotspot", d);
 									}
 									if(SVGReader.MwpAlign.Y in aflags) {
 										int ih;
 										icon.measure(Gtk.Orientation.VERTICAL, -1, null, out ih, null, null);
-										double d = (double)ih*(1.0+yalign)*0.5;
+										double d = (double)ih*yalign;
 										icon.set_property("y_hotspot", d);
 									}
 									icon.disconnect (active_id);
