@@ -70,6 +70,14 @@ public class MWPLabel : MWPMarker {
 		set_css();
 	}
 
+	public string get_text() {
+		if(Mwp.shumate_cap == 0) {
+			return glabel.label;
+		} else {
+			return label;
+		}
+	}
+
 	public void set_text(string txt) {
 		if(Mwp.shumate_cap == 0) {
 			glabel.label = txt;

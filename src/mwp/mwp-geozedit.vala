@@ -494,7 +494,7 @@ public class GZEdit : Adw.Window {
 			var lon = Mwp.gzr.get_longitude(k)/1e7;
 			sb.append_printf("BUG: V: %f %f ", lat, lon);
 			var mk = (MWPLabel)el.pl.get_nodes().nth_data(j);
-			var lname = ((Gtk.Label)mk.get_child()).label;
+			string lname = mk.get_text();
 			var parts=lname.split("/");
 			var _nitem = int.parse(parts[0]);
 			var _j = int.parse(parts[1]);
@@ -632,7 +632,7 @@ public class GZEdit : Adw.Window {
 	*/
 
 	public void on_poly_finish(MWPMarker mk, bool t) {
-		var txt = ((Gtk.Label)((MWPLabel)mk).get_child()).label;
+		var txt = ((MWPLabel)mk).get_text();
 		if (txt != null) {
 			var parts = txt.split("/");
 			if (parts.length == 2) {
@@ -681,11 +681,11 @@ public class GZEdit : Adw.Window {
 	}
 
 	public void on_poly_capture(MWPMarker mk, int n, double x, double y) {
-		var lab = (Gtk.Label)((MWPMarker)mk).get_child();
-		var parts = lab.label.split("/");
+		var lab = ((MWPLabel)mk).get_text();
+		var parts = lab.split("/");
 		if (parts.length == 2) {
 			var box = new Gtk.Box(Gtk.Orientation.HORIZONTAL,1);
-			var plab = new Gtk.Label("# %s".printf(lab.label));
+			var plab = new Gtk.Label("# %s".printf(lab));
 			plab.hexpand = true;
 			box.append(plab);
 			popno = int.parse(parts[1]);
@@ -707,7 +707,7 @@ public class GZEdit : Adw.Window {
 				pop.set_autohide(true);
 			}
 			pop.add_child(box, "label");
-			pop.set_parent(lab);
+			pop.set_parent(mk);
 			pop.set_pointing_to(rect);
 			pop.popup();
 		}
