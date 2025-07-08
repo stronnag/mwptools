@@ -35,8 +35,8 @@ namespace GCS {
             var img = Img.load_image_from_file("gcs.svg", true);
             icon = new MWPMarker.from_image(img);
             Gis.info_layer.add_marker (icon);
-			if(Mwp.shumate_cap > 0) {
-				try {
+			if(Mwp.shumate_hspot != Mwp.ShumateHotspot.NONE) {
+			try {
 					var fn = MWPUtils.find_conf_file("gcs.svg", "pixmaps");
 					string xml;
 					FileUtils.get_contents(fn, out xml);
@@ -44,7 +44,7 @@ namespace GCS {
 					float xalign = 0;
 					float yalign = 0;
 					var aflags = SVGReader.get_mwp_alignment(doc, out xalign, out yalign);
-					if (Mwp.shumate_cap == 1) {
+					if (Mwp.shumate_hspot == Mwp.ShumateHotspot.XYALIGN) {
 						if (SVGReader.MwpAlign.X in aflags) {
 							icon.set_property("xalign", xalign);
 						}

@@ -78,6 +78,12 @@ namespace Mwp {
 		ACT=0x80,
 	}
 
+	public enum ShumateHotspot {
+		NONE=0,
+		XYALIGN=1,
+		HOTSPOT=2
+	}
+
 	[Flags]
 	public enum CloseCheck {
 		NONE=0,

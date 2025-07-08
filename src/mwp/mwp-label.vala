@@ -173,7 +173,7 @@ public class MWPPointyLabel : MWPMarker, MWPLabel {
 		var img = new Gtk.Image.from_paintable(tex);
 		img.set_pixel_size(sz);
 		set_child(img);
-		if(Mwp.shumate_cap == 1) {
+		if(Mwp.shumate_hspot == Mwp.ShumateHotspot.XYALIGN) {
 			set_property("xalign", 1.0f);
 			set_property("yalign", 1.0f);
 		} else {
@@ -246,7 +246,7 @@ public class MWPTextyLabel : MWPMarker, MWPLabel {
 
 namespace MWPLabelFactory {
 	public MWPLabel make_label(string txt = "")	{
-		if(Mwp.shumate_cap == 0) {
+		if(Mwp.shumate_hspot == Mwp.ShumateHotspot.NONE) {
 			return new MWPTextyLabel(txt);
 		} else {
 			return new MWPPointyLabel(txt);

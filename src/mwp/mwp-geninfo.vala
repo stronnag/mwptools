@@ -25,10 +25,10 @@ internal const string GSK_NOTICE="""Setting "GSK_RENDERER=cairo" for maximum GPU
 """;
 
 namespace Mwp {
-	uint8 shumate_cap;
+	ShumateHotspot shumate_hspot;
 
 	public void show_misc_info () {
-		shumate_cap = 0;
+		shumate_hspot = ShumateHotspot.NONE;;
 		MWPLog.message("%s\n", Mwp.user_args);
 		Mwp.user_args = null;
 		var sb = new StringBuilder("mwp ");
@@ -72,12 +72,12 @@ namespace Mwp {
 		if(spec == null) {
 			spec = ocl.find_property ("xalign");
 			if(spec != null) {
-				shumate_cap = 1;
+				shumate_hspot = ShumateHotspot.XYALIGN;
 			}
 		} else {
-			shumate_cap = 2;
+			shumate_hspot = ShumateHotspot.HOTSPOT;
 		}
-		MWPLog.message("Shumate: %d.%d (hcap=%d)\n", Shumate.MAJOR_VERSION, Shumate.MINOR_VERSION, shumate_cap);
+		MWPLog.message("Shumate: %d.%d (hotspot=%d)\n", Shumate.MAJOR_VERSION, Shumate.MINOR_VERSION, shumate_hspot);
 		sb.erase();
 		sb.append("WM: ");
 		sb.append(dmstr);
