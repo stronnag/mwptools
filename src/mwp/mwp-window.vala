@@ -641,6 +641,10 @@ namespace Mwp {
 			BBL.replay_bbl(null);
 		}
 
+		private void launch_slg() {
+			SLG.replay_bbl(null);
+		}
+
 		private void launch_etx() {
 			ETX.replay_etx(null);
 		}
@@ -901,6 +905,7 @@ namespace Mwp {
 				{"seed-map", mapseed},
 				{"dmeasure", start_measurer},
 				{"replay-bb-log", launch_bbl},
+				{"replay-sql-log", launch_slg},
 				{"replay-etx-log", launch_etx},
 				{"replay-raw-log", launch_raw},
 				{"replay-mwp-log", launch_json},
