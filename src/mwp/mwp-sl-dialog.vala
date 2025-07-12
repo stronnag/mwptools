@@ -125,6 +125,9 @@ namespace SLG {
 		public signal void complete();
 
 		string []orig_times;
+		double clat;
+		double clon;
+		int zoom;
 
 		private void setup_factories() {
 			lstore = new GLib.ListStore(typeof(SLGEntry));
@@ -257,6 +260,9 @@ namespace SLG {
 			SLG.vactive = false;
 			SLG.skiptime = 0;
 
+			MapUtils.get_centre_location(out clat, out clon);
+			zoom = (int)Gis.map.viewport.zoom_level;
+
 			orig_times = {};
 
 			setup_factories();
@@ -286,7 +292,9 @@ namespace SLG {
 					complete();
 					close();
 				});
+
 			cancel.clicked.connect(() => {
+					MapUtils.centre_on(clat, clon, zoom);
 					close();
 				});
 
@@ -302,10 +310,10 @@ namespace SLG {
 
 			log_btn.clicked.connect(() => {
 					IChooser.Filter []ifm = {
-						{"BBL", {"TXT", "bbl"}},
+						{"Flightlog", {"TXT", "bbl", "csv" }},
 					};
 					var fc = IChooser.chooser(Mwp.conf.logpath, ifm);
-					fc.title = "Open BBL File";
+					fc.title = "Open Flightlog File";
 					fc.modal = true;
 					fc.open.begin (Mwp.window, null, (o,r) => {
 							try {
@@ -507,101 +515,6 @@ namespace SLG {
 			}
 		}
 
-		/**
-		private void spawn_decoder(int j, int tsslen) {
-			for(;j < maxidx && valid[j] == 0; j++)
-				;
-			if(j == maxidx) {
-				set_normal("File contains %d %s".printf(maxidx, (maxidx == 1) ? "entry" : "entries"));
-				if (BBLError.warn) {
-					string title = "<b>Damaged Log</b>";
-					StringBuilder sb = new StringBuilder();
-					foreach(var l in BBLError.lines) {
-						sb.append(l.chug());
-					}
-					sb.append("\nThe log may not replay correctly, if at all");
-					var sw = new Gtk.ScrolledWindow();
-					var l = new Gtk.TextView();
-					l.create_buffer();
-					l.buffer.set_text(sb.str);
-					l.editable = false;
-					int fw,fh;
-					Utils.check_pango_size(l, "Sans", sb.str, out fw, out fh);
-					fw += 4;
-					fh += 4;
-					if(fw > 600)
-						fw = 600;
-					if(fh > 480)
-						fh = 480;
-					l.width_request = fw;
-					l.height_request = fh;
-					sw.set_child(l);
-					sw.propagate_natural_height = true;
-					sw.propagate_natural_width = true;
-					var wb = new Utils.Warning_box(title, 0, this, sw);
-					wb.present();
-				}
-				return;
-			}
-			nidx = j+1;
-			var subp = new ProcessLauncher();
-			var res = subp.run_argv({Mwp.conf.blackbox_decode, "--stdout", "--index", nidx.to_string(), bblname.get_path()}, ProcessLaunch.STDERR);
-			if (res) {
-				var errc = subp.get_stderr_iochan();
-				errc.add_watch (IOCondition.IN|IOCondition.HUP, (src, cond) => {
-						if (cond == IOCondition.HUP)
-							return false;
-						try {
-							string line;
-							size_t len = 0;
-							IOStatus eos = src.read_line (out line, out len, null);
-							if(eos == IOStatus.EOF)
-								return false;
-							if (line  == null || len == 0)
-								return false;
-							int n;
-							n = line.index_of("Log ");
-							if(n == 0) {
-								n = line.index_of(" duration ");
-								if(n > 16) {
-									n += 10;
-									string dura = line.substring(n, (long)len - n -1);
-									string tsval;
-									if(tsslen > 0 && maxidx == tsslen)
-										tsval = get_formatted_time_stamp(j);
-									else
-										tsval = "Unknown";
-
-									var b = new BBLEntry(nidx, dura, tsval);
-									lstore.append(b);
-								}
-							} else if(line.has_prefix("WARNING:")) {
-								if (BBLError.warn) {
-									BBLError.lines += "\u200b\n"; //zero-width space to force NL
-								}
-								BBLError.lines += "NOTICE: Log segment #%d is damaged or ancient\n".printf(nidx);
-								BBLError.warn = true;
-							} else if (line.contains("Warning:") || line.contains("Error:")) {
-								BBLError.lines += line;
-								BBLError.warn = true;
-							}
-							return true;
-						} catch (Error e) {
-							MWPLog.message ("BBL reader: %s\n", e.message);
-							return false;
-						}
-					});
-				subp.complete.connect(() => {
-						try { errc.shutdown(false); } catch {}
-						ProcessLauncher.kill(subp.get_pid());
-						spawn_decoder(j+1, tsslen);
-					});
-			} else {
-				MWPLog.message("BBL failed to spawn\n");
-			}
-		}
-
-		*/
 		private void set_normal(string label) {
 			bb_items.label = label;
 		}
