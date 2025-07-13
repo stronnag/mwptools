@@ -1,5 +1,13 @@
 namespace SQL {
 
+	public struct Meta {
+		int id;
+		string dtg;
+		int duration;
+		string name;
+		string firmware;
+	}
+
 	public struct TrackEntry {
 		public int id;
 		public int idx;
@@ -35,8 +43,8 @@ namespace SQL {
 		int windx;
 		int windy;
 		int windz;
+		int energy;
 	}
-
 
 	public class Db {
 		Sqlite.Database db;
@@ -46,6 +54,26 @@ namespace SQL {
 			if(rc != Sqlite.OK) {
 				MWPLog.message ("Failed to open %s\n", fn);
 			}
+		}
+
+		public bool get_meta(int idx, out Meta m) {
+			bool ok=false;
+			m = {};
+			Sqlite.Statement stmt;
+			const string prepared_query_str = "SELECT dtg,duration,mname,firmware from meta WHERE id = $1;";
+			var rc = db.prepare_v2 (prepared_query_str, prepared_query_str.length, out stmt);
+			if (rc == Sqlite.OK) {
+				stmt.bind_int (1, idx);
+				while (stmt.step () == Sqlite.ROW) {
+					m.id = idx;
+					m.dtg = stmt.column_text(0);
+					m.duration = stmt.column_int(1);
+					m.name = stmt.column_text(2);
+					m.firmware = stmt.column_text(3);
+				}
+				ok = true;
+			}
+			return ok;
 		}
 
 		public string? get_errors(int idx) {
@@ -99,7 +127,7 @@ namespace SQL {
 			bool ok=false;
 			t = {};
 			Sqlite.Statement stmt;
-			const string prepared_query_str = "SELECT id,idx,stamp,lat,lon,alt,galt,spd,amps,volts,hlat,hlon,vrange,cse,cog,bearing,roll,pitch,hdop,ail,ele,rud,thr,fix,numsat,fmode,rssi,status,activewp,navmode,hwfail,windx,windy,windz from logs WHERE id = $1 and idx=$2;";
+			const string prepared_query_str = "SELECT id,idx,stamp,lat,lon,alt,galt,spd,amps,volts,hlat,hlon,vrange,cse,cog,bearing,roll,pitch,hdop,ail,ele,rud,thr,fix,numsat,fmode,rssi,status,activewp,navmode,hwfail,windx,windy,windz,energy from logs WHERE id = $1 and idx=$2;";
 			var rc = db.prepare_v2 (prepared_query_str, prepared_query_str.length, out stmt);
 			if (rc == Sqlite.OK) {
 				stmt.bind_int (1, idx);
@@ -139,6 +167,7 @@ namespace SQL {
 					t.windx = stmt.column_int(31);
 					t.windy = stmt.column_int(32);
 					t.windz = stmt.column_int(33);
+					t.energy = stmt.column_int(34);
 				}
 				ok = true;
 			}
@@ -168,6 +197,14 @@ static int main(string?[]args) {
 				var et = t.stamp - last;
 				print("%4d %8d %f %f %d\n", t.idx, t.stamp, t.lat, t.lon, et);
 				last = t.stamp;
+			}
+		}
+
+		for(var j = 1; j < 10; j++) {
+			SQL.Meta m;
+			var res = d.get_meta(j, out m);
+			if (res && m.id > 0) {
+				print("%d %d %s %s %s\n", m.id, m.duration, m.dtg, m.name, m.firmware);
 			}
 		}
 	}

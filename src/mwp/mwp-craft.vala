@@ -147,7 +147,7 @@ public class Craft : Object {
         lon = cricon.get_longitude();
     }
 
-    public void set_lat_lon (double lat, double lon, double cse, int no=0) {
+    public void set_lat_lon (double lat, double lon, double cse, int no=-1) {
 		if (!cricon.visible)
 			cricon.visible = true;
 
@@ -181,7 +181,29 @@ public class Craft : Object {
 		}
     }
 
-    public void set_normal() {
+	/*
+	public void info() {
+		var nds = pmlayer.get_markers();
+		var mk = nds.first().data as MWPMarker;
+		var mkx = nds.last().data as MWPMarker;
+		MWPLog.message("Craft.info %u %d %d\n", nds.length(), mk.no, mkx.no);
+	}
+	*/
+
+	public void remove_at(int n) {
+		var nds = pmlayer.get_markers();
+		var k = nds.length()-1;
+		for(var j = k; j != 0 ; j--) {
+			var mkx = nds.nth_data(j) as MWPMarker;
+			if (mkx != null && mkx.no >= n) {
+				pmlayer.remove_marker(mkx);
+			} else {
+				break;
+			}
+		}
+	}
+
+	public void set_normal() {
         remove_special(RMIcon.ALL);
     }
 
@@ -202,7 +224,7 @@ public class Craft : Object {
             path_colour = trk_cyan;
     }
 
-    public void special_wp(Special wpno, double lat, double lon) {
+    public void special_wp(Special wpno, double lat, double lon, int id=-1) {
         MWPLabel? m = null;
         RMIcon rmflags = 0;
         switch(wpno) {
@@ -265,7 +287,9 @@ public class Craft : Object {
         }
 		if(rmflags != 0)
             remove_special(rmflags);
-        if(m != null)
+        if(m != null) {
             m.set_location (lat, lon);
+			m.no = id;
+		}
     }
 }

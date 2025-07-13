@@ -1111,7 +1111,8 @@ namespace Mwp {
 			"replay-mwp-log",
 			"replay-bb-log",
 			"replay-etx-log",
-			"replay-raw-log"
+			"replay-raw-log",
+			"replay-sql-log"
 		};
         var n = 0;
         foreach(var s in ms) {
