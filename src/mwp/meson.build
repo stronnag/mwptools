@@ -73,6 +73,7 @@ mwpsrcs = files('mwp-about.vala', 'mwp-ah_widget.vala',
                 'mwp-recentv.vala',
                 'mwp-sl-dialog.vala',
                 'mwp-log-sql.vala',
+                'mwp-sql-player.vala',
                )
 
 mwpdeps = [deps,

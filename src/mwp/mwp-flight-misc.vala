@@ -377,7 +377,7 @@ namespace Mwp {
         return vpos;
     }
 
-    private bool update_pos_info() {
+    private bool update_pos_info(int id=0) {
         bool pv;
         pv = pos_valid(msp.td.gps.lat, msp.td.gps.lon);
 		if(pv) {
@@ -388,7 +388,7 @@ namespace Mwp {
 					MapUtils.try_centre_on(msp.td.gps.lat, msp.td.gps.lon);
 				}
 				double cse = (usemag || ((replayer & Player.MWP) == Player.MWP)) ? mhead : msp.td.gps.cog;
-                craft.set_lat_lon(msp.td.gps.lat, msp.td.gps.lon,cse);
+                craft.set_lat_lon(msp.td.gps.lat, msp.td.gps.lon,cse, id);
             }
 			MBus.update_location();
 		}

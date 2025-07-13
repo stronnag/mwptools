@@ -23,24 +23,6 @@ namespace SLG {
 
 	public void replay_bbl(string? s) {
 		bbl = new SLG.Window();
-		bbl.complete.connect(() => {
-				MWPLog.message("BBL Complete\n");
-				var z= MapUtils.evince_zoom(bbox);
-				MapUtils.centre_on(bbox.get_centre_latitude(), bbox.get_centre_longitude(), z);
-				if(videofile != null && videofile != "") {
-					MWPLog.message("BBL videofile %s offset=%d\n", videofile, nsecs);
-				}
-				if(speedup) {
-					videofile = null;
-					vactive = false;
-				}
-			});
-		/*
-		bbl.rescale.connect((b) => {
-				//p.run_replay(bblname.get_path(), !speedup, Mwp.Player.BBOX, (int)selidx+1, 0, 0, duras);
-				MWPLog.message("BBL Rescale\n");
-			});
-		*/
 		bbl.run(s);
 	}
 
@@ -267,8 +249,7 @@ namespace SLG {
 
 			setup_factories();
 
-			apply.clicked.connect( (id) => {
-					Mwp.add_toast_text("Preparing log for replay ... ");
+			apply.clicked.connect((id) => {
 					SLG.speedup = this.speedup.active;
 					SLG.vactive = vidbutton.active;
 					SLG.skiptime = int.parse(skip_entry.text);
@@ -289,7 +270,20 @@ namespace SLG {
 					if (o != null) {
 						SLG.duras = uint.parse(o.duration);
 					}
-					complete();
+					MWPLog.message("BBL Complete\n");
+					var z= MapUtils.evince_zoom(bbox);
+					MapUtils.centre_on(bbox.get_centre_latitude(), bbox.get_centre_longitude(), z);
+					if(videofile != null && videofile != "") {
+						MWPLog.message("BBL videofile %s offset=%d\n", videofile, nsecs);
+					}
+					if(SLG.speedup) {
+						videofile = null;
+						vactive = false;
+					}
+
+					SLGEntry e = lstore.get_item(selidx) as SLGEntry;
+					var sp = new SQLPlayer();
+					sp.init(db, e.idx);
 					close();
 				});
 

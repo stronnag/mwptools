@@ -147,7 +147,7 @@ public class Craft : Object {
         lon = cricon.get_longitude();
     }
 
-    public void set_lat_lon (double lat, double lon, double cse) {
+    public void set_lat_lon (double lat, double lon, double cse, int no=0) {
 		if (!cricon.visible)
 			cricon.visible = true;
 
@@ -155,6 +155,7 @@ public class Craft : Object {
 			var marker = new MWPPoint.with_colour(path_colour, 0);
 			marker.set_size_request(8,8);
             marker.set_location (lat,lon);
+			marker.no = no;
 
 			if(mod_points == 0 || (npath % mod_points) == 0) {
                 pmlayer.add_marker(marker);
