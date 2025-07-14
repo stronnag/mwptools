@@ -226,8 +226,8 @@ namespace SLG {
 			transient_for = Mwp.window;
 			apply.sensitive = false;
 			SLG.videofile=null;
-			SLG.speedup = false;
-
+			SLG.speedup = true;
+			this.speedup.active = true;
 			SLG.is_valid = false;
 			SLG.is_broken = false;
 			SLG.maxidx = SLG.nidx = -1;

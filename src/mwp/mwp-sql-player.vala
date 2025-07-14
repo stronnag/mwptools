@@ -4,13 +4,10 @@ public class SQLSlider : Gtk.Window {
 	private Gtk.Box vbox;
 	private bool pstate;
 	private SQLPlayer sp;
-	public signal void on_play(bool s);
-	public signal void moved_slider(int n);
 
 	public SQLSlider(string fn, int idx) {
 		sp = new SQLPlayer();
 		double smax = sp.init(fn, idx);
-
 		vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
 		var box = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);
 		box.margin_top = 2;
@@ -37,6 +34,10 @@ public class SQLSlider : Gtk.Window {
 		set_bg(hb, "headerbar {background: rgba(0, 0, 0, 0.0);}");
 		play_button.clicked.connect (() => {
 				toggle_pstate();
+			});
+
+		sp.newpos.connect((v) => {
+				slider.set_value(v);
 			});
 
 		close_request.connect (() => {
@@ -78,10 +79,6 @@ public class SQLSlider : Gtk.Window {
 		vbox.append(hbox);
 	}
 
-	public void set_value(double v) {
-		slider.set_value(v);
-	}
-
 	private void set_bg(Gtk.Widget w, string css) {
 		var provider = new Gtk.CssProvider();
 		provider.load_from_data(css.data);
@@ -105,6 +102,8 @@ public class SQLPlayer : Object {
 
 	~SQLPlayer() {
 		MWPLog.message("~SQLPlayer ... \n");
+		Mwp.serstate = Mwp.SERSTATE.NONE;
+		Mwp.replayer = Mwp.Player.NONE;
 	}
 
 	public void stop() {
@@ -136,7 +135,7 @@ public class SQLPlayer : Object {
 			nentry = d.get_log_count(idx);
 			startat = 0;
 			d.get_log_entry(idx, startat, out t);
-			display(t, null);
+			display(t);
 			Mwp.armed = 0;
 			Mwp.larmed = 0;
 			Mwp.craft.new_craft (true);
@@ -145,6 +144,8 @@ public class SQLPlayer : Object {
             Mwp.init_state();
 			Mwp.set_replay_menus(false);
 			Mwp.hard_display_reset();
+			Mwp.serstate = Mwp.SERSTATE.TELEM;
+			Mwp.replayer = Mwp.Player.SQL;
 			SQL.Meta m;
 			var res = d.get_meta(idx, out m);
 			if(res) {
@@ -170,7 +171,7 @@ public class SQLPlayer : Object {
 							SQL.TrackEntry tx = {};
 							d.get_log_entry(t.id, n, out tx);
 							Idle.add(() => {
-									display(tx, t);
+									display(tx);
 									startat = tx.idx;
 									return false;
 								});
@@ -180,7 +181,7 @@ public class SQLPlayer : Object {
 								d.get_log_entry(t.id, j, out tx);
 								startat = tx.idx;
 								Idle.add(() => {
-										display(tx, t);
+										display(tx);
 										return false;
 									});
 								Thread.usleep(5);
@@ -189,7 +190,6 @@ public class SQLPlayer : Object {
 					}
 					return true;
 				});
-			Mwp.init_have_home();
 		}
 		return (double)nentry;
 	}
@@ -200,7 +200,7 @@ public class SQLPlayer : Object {
 		if(s) {
 			SQL.TrackEntry t = {};
 			d.get_log_entry(idx, startat, out t);
-			display(t, null);
+			display(t);
 			get_next_entry(t);
 		} else {
 			if(tid != 0) {
@@ -220,7 +220,7 @@ public class SQLPlayer : Object {
 				if(et > 0) {
 					tid = Timeout.add(et, () => {
 							tid = 0;
-							display(t, t0);
+							display(t);
 							startat = t.idx;
 							newpos(t.idx);
 							get_next_entry(t);
@@ -233,107 +233,115 @@ public class SQLPlayer : Object {
 		}
 	}
 
-	private void display(SQL.TrackEntry t, SQL.TrackEntry? t0) {
-		if(t0 == null) {
-			Mwp.home_changed(t.hlat, t.hlon);
+	private void display(SQL.TrackEntry t) {
+		if (Rebase.has_reloc()) {
+			if (!Rebase.has_origin()) {
+				Rebase.set_origin(t.hlat, t.hlon);
+			}
+			Rebase.relocate(ref t.hlat, ref t.hlon);
+		}
+
+		if(Mwp.home_changed(t.hlat, t.hlon)) {
 			Mwp.sflags |= Mwp.SPK.GPS;
 			Mwp.want_special |= Mwp.POSMODE.HOME;
-			MBus.update_home();
 			Mwp.process_pos_states(t.hlat, t.hlon, 0, "SQL Origin"); // FIXME ALT
-		} else {
-			int fvup = 0;
-			var pdiff = Mwp.pos_diff(t.lat, t.lon, Mwp.msp.td.gps.lat, Mwp.msp.td.gps.lon);
-			if (Mwp.PosDiff.LAT in pdiff) {
-				Mwp.msp.td.gps.lat = t.lat;
-				fvup |= FlightBox.Update.LAT;
-			}
-			if (Mwp.PosDiff.LON in pdiff) {
-				Mwp.msp.td.gps.lon = t.lon;
-				fvup |= FlightBox.Update.LON;
-			}
+		}
 
-			if(Math.fabs(Mwp.msp.td.alt.alt - t.alt) > 1.0) {
-				Mwp.msp.td.alt.alt = t.alt;
-				fvup |= FlightBox.Update.ALT;
+		if (Rebase.has_reloc()) {
+			if (Rebase.has_origin()) {
+				Rebase.relocate(ref t.lat,ref t.lon);
 			}
+		}
 
-			if(Math.fabs(Mwp.msp.td.gps.gspeed - t.spd) > 0.1) {
-				Mwp.msp.td.gps.gspeed = t.spd;
-				fvup |= FlightBox.Update.SPEED;
-			}
+		int fvup = 0;
+		var pdiff = Mwp.pos_diff(t.lat, t.lon, Mwp.msp.td.gps.lat, Mwp.msp.td.gps.lon);
+		if (Mwp.PosDiff.LAT in pdiff) {
+			Mwp.msp.td.gps.lat = t.lat;
+			fvup |= FlightBox.Update.LAT;
+		}
+		if (Mwp.PosDiff.LON in pdiff) {
+			Mwp.msp.td.gps.lon = t.lon;
+			fvup |= FlightBox.Update.LON;
+		}
+		if(Math.fabs(Mwp.msp.td.alt.alt - t.alt) > 1.0) {
+			Mwp.msp.td.alt.alt = t.alt;
+			fvup |= FlightBox.Update.ALT;
+		}
+		if(Math.fabs(Mwp.msp.td.gps.gspeed - t.spd) > 0.1) {
+			Mwp.msp.td.gps.gspeed = t.spd;
+			fvup |= FlightBox.Update.SPEED;
+		}
+		if(Mwp.msp.td.gps.nsats != t.numsat) {
+			Mwp.msp.td.gps.fix = (uint8)t.fix;
+			Mwp.msp.td.gps.nsats = (uint8)t.numsat;
+			Mwp.msp.td.gps.hdop = t.hdop/100.0;
+			fvup |= FlightBox.Update.GPS;
+		}
 
-			if(Mwp.msp.td.gps.nsats != t.numsat) {
-				Mwp.msp.td.gps.fix = (uint8)t.fix;
-				Mwp.msp.td.gps.nsats = (uint8)t.numsat;
-				Mwp.msp.td.gps.hdop = t.hdop/100.0;
-				fvup |= FlightBox.Update.GPS;
-			}
+		bool fvg = false;
+		if(Mwp.msp.td.gps.cog != t.cog) {
+			Mwp.msp.td.gps.cog = t.cog;
+			Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.COG);
+			fvg = true;
+		}
+		if(Math.fabs(Mwp.msp.td.comp.range -  t.vrange) > 1.0) {
+			Mwp.msp.td.comp.range =  (int)t.vrange;
+			fvup |= FlightBox.Update.RANGE;
+		}
+		if(Math.fabs(Mwp.msp.td.comp.bearing - t.bearing) > 1.0) {
+			Mwp.msp.td.comp.bearing =  t.bearing;
+			fvup |= FlightBox.Update.BEARING;
+		}
 
-			bool fvg = false;
-			if(Mwp.msp.td.gps.cog != t.cog) {
-				Mwp.msp.td.gps.cog = t.cog;
-				Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.COG);
-				fvg = true;
-			}
+		bool fvh = (Math.fabs(Mwp.msp.td.atti.yaw - t.cse) > 1.0);
 
-			if(Math.fabs(Mwp.msp.td.comp.range -  t.vrange) > 1.0) {
-				Mwp.msp.td.comp.range =  (int)t.vrange;
-				fvup |= FlightBox.Update.RANGE;
+		if (fvh) {
+			Mwp.msp.td.atti.yaw = t.cse;
+		}
+		Mwp.mhead = (int16)t.cse;
+		var vdiff = (t.roll != Atti._sx) || (t.pitch != Atti._sy);
+		if(vdiff) {
+			Atti._sx = t.roll;
+			Atti._sy = t.pitch;
+			Mwp.msp.td.atti.angx = -t.roll;
+			Mwp.msp.td.atti.angy = -t.pitch;
+			Mwp.panelbox.update(Panel.View.AHI, AHI.Update.AHI);
+		}
+		if(fvh) {
+			Mwp.panelbox.update(Panel.View.FVIEW, FlightBox.Update.YAW);
+			Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.YAW);
+		}
+		if(fvh || fvg) {
+			if ((int16)t.windx != Mwp.msp.td.wind.w_x || (int16)t.windy != Mwp.msp.td.wind.w_y) {
+				Mwp.msp.td.wind.has_wind = true;
+				Mwp.msp.td.wind.w_x = (int16)t.windx;
+				Mwp.msp.td.wind.w_y = (int16)t.windy;
+				Mwp.panelbox.update(Panel.View.WIND, WindEstimate.Update.ANY);
 			}
-			if(Math.fabs(Mwp.msp.td.comp.bearing - t.bearing) > 1.0) {
-				Mwp.msp.td.comp.bearing =  t.bearing;
-				fvup |= FlightBox.Update.BEARING;
-			}
+		}
 
-			bool fvh = (Math.fabs(Mwp.msp.td.atti.yaw - t.cse) > 1.0);
+		int xrssi = t.rssi * 1023/100;
+		if (xrssi != Mwp.msp.td.rssi.rssi) {
+			Mwp.msp.td.rssi.rssi = xrssi;
+			Mwp.panelbox.update(Panel.View.RSSI, RSSI.Update.RSSI);
+		}
 
-			if (fvh) {
-				Mwp.msp.td.atti.yaw = t.cse;
-			}
-			Mwp.mhead = (int16)t.cse;
-			var vdiff = (t.roll != Atti._sx) || (t.pitch != Atti._sy);
-			if(vdiff) {
-				Atti._sx = t.roll;
-				Atti._sy = t.pitch;
-				Mwp.msp.td.atti.angx = -t.roll;
-				Mwp.msp.td.atti.angy = -t.pitch;
-				Mwp.panelbox.update(Panel.View.AHI, AHI.Update.AHI);
-			}
-			if(fvh) {
-				Mwp.panelbox.update(Panel.View.FVIEW, FlightBox.Update.YAW);
-				Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.YAW);
-			}
-			if(fvh || fvg) {
-				if (t.windx != t0.windx || t.windy != t0.windy || t.windz != t0.windz) {
-					Mwp.msp.td.wind.has_wind = true;
-					Mwp.msp.td.wind.w_x = (int16)t.windx;
-					Mwp.msp.td.wind.w_y = (int16)t.windy;
-					Mwp.panelbox.update(Panel.View.WIND, WindEstimate.Update.ANY);
-				}
-			}
-
-			int xrssi = t.rssi * 1023/100;
-			if (xrssi != Mwp.msp.td.rssi.rssi) {
-				Mwp.msp.td.rssi.rssi = xrssi;
-				Mwp.panelbox.update(Panel.View.RSSI, RSSI.Update.RSSI);
-			}
-
-			double dv;
-			if(Mwp.calc_vario(t.alt, out dv)) {
-				Mwp.msp.td.alt.vario = dv;
-				Mwp.panelbox.update(Panel.View.VARIO, Vario.Update.VARIO);
-			}
+		double dv;
+		if(Mwp.calc_vario(t.alt, out dv)) {
+			Mwp.msp.td.alt.vario = dv;
+			Mwp.panelbox.update(Panel.View.VARIO, Vario.Update.VARIO);
+		}
 
 			/* hwfail / direction sanity / WP status */
 
-			process_status(t);
-			process_energy(t);
+		process_status(t);
+		process_energy(t);
+		Mwp.alert_broken_sensors((uint8)t.hwfail);
 
-			if(fvup != 0) {
-				Mwp.panelbox.update(Panel.View.FVIEW, fvup);
-			}
-			Mwp.update_pos_info(t.idx);
+		if(fvup != 0) {
+			Mwp.panelbox.update(Panel.View.FVIEW, fvup);
 		}
+		Mwp.update_pos_info(t.idx);
 	}
 
 	private void process_energy(SQL.TrackEntry t) {

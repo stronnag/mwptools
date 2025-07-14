@@ -150,6 +150,7 @@ namespace Mwp {
         OTX = 4,
         FL2LTM = 8,
         RAW = 0x10,
+		SQL = 0x20,
         FAST_MASK = 0x80,
         MWP_FAST = MWP |FAST_MASK,
         BBOX_FAST = BBOX|FAST_MASK,
