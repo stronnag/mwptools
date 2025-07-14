@@ -170,68 +170,70 @@ namespace Cli {
 			} else {
 				var iv = int.parse(text);
 				if (iv < 5) {
-					MWPLog.message("\"%s\" too old, replay disabled\n", Mwp.conf.blackbox_decode);
 					res = false;
 				}
 			}
 			appsts[0] = res;
 		}
+		if(appsts[0] == false) {
+			MWPLog.message("\"%s\" too old or missing, replay disabled\n", Mwp.conf.blackbox_decode);
+		}
 
 		if(appsts[6]) {
 			string text;
+			uint vsum = 0;
 			var ok  = get_app_status("fl2ltm", out text);
-			if(ok == false || text == null) {
-				MWPLog.message("fl2ltm %s\n", text);
+			text = text.chomp();
+			if(ok == false || text == null || text.length == 0) {
+				ok = false;
 			} else {
-				text = text.chomp();
-				uint vsum = extract_version(text);
+				vsum = extract_version(text);
 				if (vsum > 0x10000) {
 					Mwp.sticks_ok = true;
 					if (vsum >= FL2LTMVERS) {
 						Mwp.bblosd_ok = true;
+						MWPLog.message("Using %s (%x)\n", text, vsum);
 						ok = true;
 					}
 				}
-				if (!ok) {
-					var oldmsg = "\"%s\" (%x) may be too old, upgrade recommended".printf(text, vsum);
-					MWPLog.message(oldmsg+"\n");
-					Mwp.add_toast_text(oldmsg);
-				} else {
-					MWPLog.message("Using %s (%x)\n", text, vsum);
-				}
 			}
 			appsts[6] = ok;
+		}
+		if (appsts[6] == false) {
+			var oldmsg = "fl2ltm too old or missing, upgrade recommended";
+			MWPLog.message("%s\n", oldmsg);
+			Mwp.add_toast_text(oldmsg);
 		}
 
 		if(appsts[1]) {
 			string text;
 			var ok = get_app_status("flightlog2kml", out text);
-			if(ok == false || text == null) {
-				MWPLog.message("flightlog2kml %s\n", text);
+			text = text.chomp();
+			if(ok == false || text == null || text.length == 0) {
+				ok = false;
 			} else {
-				text = text.chomp();
 				uint vsum = extract_version(text);
 				if (vsum >= FL2KMLVERS) {
 					ok = true;
-				}
-				if (!ok) {
-					var oldmsg = "\"%s\" (%x) may be too old, upgrade recommended".printf(text, vsum);
-					MWPLog.message(oldmsg+"\n");
-					Mwp.add_toast_text(oldmsg);
-				} else {
 					MWPLog.message("Using %s (%x)\n", text, vsum);
 				}
 			}
 			appsts[1] = ok;
 		}
 
+		if (appsts[1] == false) {
+			var oldmsg = "flightlog2kml may be too old, upgrade recommended";
+			MWPLog.message("%s\n", oldmsg);
+			Mwp.add_toast_text(oldmsg);
+		}
+
 		if (Mwp.conf.show_sticks == 1)
 			Mwp.sticks_ok = false;
 
-		Mwp.x_fl2kml = appsts[1];
+		Mwp.x_fl2kml = (appsts[0]&&appsts[1]);
 		Mwp.x_plot_elevations_rb = (appsts[2]&&appsts[3]);
         Mwp.x_kmz = appsts[4];
-		Mwp.x_fl2ltm = Mwp.x_otxlog = appsts[6];
+		Mwp.x_fl2ltm = Mwp.x_otxlog = (appsts[0]&&appsts[6]);
 		Mwp.x_aplog = appsts[7];
         Mwp.x_rawreplay = appsts[8];
 		Mwp.x_mwpset = appsts[9];
