@@ -642,7 +642,12 @@ namespace Mwp {
 		}
 
 		private void launch_slg() {
-			SLG.replay_bbl(null);
+			var bbl = new SLG.Window();
+			bbl.complete.connect((fn,idx) => {
+					var sls = new SQLSlider(fn, idx);
+					sls.present();
+				});
+			bbl.run(null);
 		}
 
 		private void launch_etx() {
@@ -1108,18 +1113,19 @@ namespace Mwp {
 
     private void set_replay_menus(bool state) {
 		const string [] ms = {
-			"replay-mwp-log",
-			"replay-bb-log",
-			"replay-etx-log",
-			"replay-raw-log",
-			"replay-sql-log"
+			"replay-mwp-log", // 0
+			"replay-bb-log",  // 1
+			"replay-etx-log", // 2
+			"replay-raw-log", // 3
+			"replay-sql-log" // 4
 		};
         var n = 0;
         foreach(var s in ms) {
             var istate = state;
 			if( ((n == 1) && (x_fl2ltm == false))  ||
                 ((n == 2) && (x_otxlog == false)) ||
-                ((n == 3) && x_rawreplay == false)) {
+                ((n == 3) && (x_rawreplay == false)) ||
+                ((n == 4) && (x_fl2kml == false))) {
                 istate = false;
 			}
             MwpMenu.set_menu_state(Mwp.window, s, istate);

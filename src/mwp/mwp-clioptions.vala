@@ -31,6 +31,7 @@ namespace Mwp {
     bool x_otxlog;
     bool x_aplog;
     bool x_fl2ltm;
+    bool x_fl2kml;
     bool x_rawreplay;
     bool x_mwpset;
     bool x_plot_elevations_rb;
@@ -94,11 +95,27 @@ namespace Cli {
 		return res;
 	}
 
+	private uint extract_version(string text) {
+		uint vsum = 0;
+		var parts = text.split("\n");
+		var ptext = parts[parts.length-1];
+		var lparts = ptext.split(" ");
+		if (lparts.length == 3) {
+			var vparts = lparts[1].split(".");
+			for(var i = 0; i < 3 && i < vparts.length; i++) {
+				var v = uint.parse(vparts[i],16);
+				vsum  = (vsum << 8) | v;
+			}
+		}
+		return vsum;
+	}
+
 #if UNIX
-	const int FL2LTMVERS = 10024;
+	const int FL2LTMVERS = 0x10024;
 #else
-	const int FL2LTMVERS = 10026;
+	const int FL2LTMVERS = 0x10026;
 #endif
+	const int FL2KMLVERS = 0x10030;
 
 	private void parse_options() {
 		Mwp.gpsstats = {0, 0, 0, 0, 9999, 9999, 9999};
@@ -107,18 +124,18 @@ namespace Cli {
         MWPLog.message("MQTT enabled via the \"%s\" library\n", MwpMQTT.provider());
 #endif
         string []  ext_apps = {
-            Mwp.conf.blackbox_decode,
-			null,
-			"gnuplot",
-			"mwp-plot-elevations",
-			"unzip",
-			null,
-			"fl2ltm",
-			"mavlogdump.py",
-            "mwp-log-replay",
-			"mwpset"
+            Mwp.conf.blackbox_decode, // 0
+			"flightlog2kml",  // 1
+			"gnuplot",  // 2
+			"mwp-plot-elevations", // 3
+			"unzip", // 4
+			null, // 5
+			"fl2ltm", // 6
+			"mavlogdump.py",  // 7
+            "mwp-log-replay", // 8
+			"mwpset" //9
 		};
-        bool appsts[10];
+        bool [] appsts = new bool[ext_apps.length];
         var si = 0;
 		var pnf = 0;
         foreach (var s in ext_apps) {
@@ -162,56 +179,63 @@ namespace Cli {
 
 		if(appsts[6]) {
 			string text;
-
-			var res = get_app_status("fl2ltm", out text);
-			if(res == false || text == null) {
+			var ok  = get_app_status("fl2ltm", out text);
+			if(ok == false || text == null) {
 				MWPLog.message("fl2ltm %s\n", text);
 			} else {
-				int vsum = 0;
-				var parts = text.split("\n");
-				bool ok = false;
-				text = "fl2ltm";
-				foreach (var p in parts) {
-					if (p.has_prefix("fl2ltm")) {
-						var lparts = p.split(" ");
-						if (lparts.length == 3) {
-							var vparts = lparts[1].split(".");
-							for(var i = 0; i < 3 && i < vparts.length; i++) {
-								vsum = int.parse(vparts[i]) + 100 * vsum;
-							}
-						}
-						if (vsum > 10000) {
-							Mwp.sticks_ok = true;
-							if (vsum >= FL2LTMVERS) {
-								Mwp.bblosd_ok = true;
-								ok = true;
-							}
-						}
-						text = p;
-						break;
+				text = text.chomp();
+				uint vsum = extract_version(text);
+				if (vsum > 0x10000) {
+					Mwp.sticks_ok = true;
+					if (vsum >= FL2LTMVERS) {
+						Mwp.bblosd_ok = true;
+						ok = true;
 					}
 				}
 				if (!ok) {
-					var oldmsg = "\"%s\" (%d) may be too old, upgrade recommended".printf(text, vsum);
+					var oldmsg = "\"%s\" (%x) may be too old, upgrade recommended".printf(text, vsum);
 					MWPLog.message(oldmsg+"\n");
 					Mwp.add_toast_text(oldmsg);
-					res = false;
 				} else {
-					MWPLog.message("Using %s (%d)\n", text, vsum);
+					MWPLog.message("Using %s (%x)\n", text, vsum);
 				}
 			}
-			appsts[6] = res;
-			appsts[6] = true;
+			appsts[6] = ok;
 		}
+
+		if(appsts[1]) {
+			string text;
+			var ok = get_app_status("flightlog2kml", out text);
+			if(ok == false || text == null) {
+				MWPLog.message("flightlog2kml %s\n", text);
+			} else {
+				text = text.chomp();
+				uint vsum = extract_version(text);
+				if (vsum >= FL2KMLVERS) {
+					ok = true;
+				}
+				if (!ok) {
+					var oldmsg = "\"%s\" (%x) may be too old, upgrade recommended".printf(text, vsum);
+					MWPLog.message(oldmsg+"\n");
+					Mwp.add_toast_text(oldmsg);
+				} else {
+					MWPLog.message("Using %s (%x)\n", text, vsum);
+				}
+			}
+			appsts[1] = ok;
+		}
+
 		if (Mwp.conf.show_sticks == 1)
 			Mwp.sticks_ok = false;
 
+		Mwp.x_fl2kml = appsts[1];
 		Mwp.x_plot_elevations_rb = (appsts[2]&&appsts[3]);
         Mwp.x_kmz = appsts[4];
 		Mwp.x_fl2ltm = Mwp.x_otxlog = appsts[6];
 		Mwp.x_aplog = appsts[7];
         Mwp.x_rawreplay = appsts[8];
 		Mwp.x_mwpset = appsts[9];
+
 		MwpMenu.set_menu_state(Mwp.window, "mwpset", Mwp.x_mwpset);
 
 		if(Mwp.x_plot_elevations_rb == false) {

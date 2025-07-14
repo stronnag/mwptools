@@ -388,7 +388,7 @@ namespace Mwp {
 					MapUtils.try_centre_on(msp.td.gps.lat, msp.td.gps.lon);
 				}
 				double cse = (usemag || ((replayer & Player.MWP) == Player.MWP)) ? mhead : msp.td.gps.cog;
-                craft.set_lat_lon(msp.td.gps.lat, msp.td.gps.lon,cse, id);
+                craft.set_lat_lon(msp.td.gps.lat, msp.td.gps.lon, cse, id);
             }
 			MBus.update_location();
 		}

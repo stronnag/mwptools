@@ -1,37 +1,52 @@
-public class SQLSlider : Adw.Window {
+public class SQLSlider : Gtk.Window {
 	private Gtk.Button play_button;
 	private Gtk.Scale slider;
 	private Gtk.Box vbox;
 	private bool pstate;
-
+	private SQLPlayer sp;
 	public signal void on_play(bool s);
 	public signal void moved_slider(int n);
 
-	public SQLSlider(double smax) {
+	public SQLSlider(string fn, int idx) {
+		sp = new SQLPlayer();
+		double smax = sp.init(fn, idx);
+
 		vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
+		var box = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);
+		box.margin_top = 2;
+		box.margin_bottom = 2;
+		box.margin_start = 2;
+		box.margin_end = 2;
+
 		title = "mwp Flightlog player";
 		set_icon_name("mwp_icon");
 		transient_for=Mwp.window;
 		default_width = 640;
-		var tbox = new Adw.ToolbarView();
-		var headerBar = new Adw.HeaderBar();
-		tbox.add_top_bar(headerBar);
+		var hb  = new Gtk.HeaderBar();
+		set_titlebar(hb);
 		play_button = new Gtk.Button.from_icon_name ("media-playback-start");
 		add_slider(smax);
 		pstate = false;
-		tbox.set_content(vbox);
-		set_content(tbox);
-		tbox.vexpand=false;
+		box.append(vbox);
+		set_child(box);
+		box.vexpand=false;
 		vbox.vexpand=false;
 		this.vexpand = false;
 
 		set_bg(this, "window {background: color-mix(in srgb, @window_bg_color 40%, transparent)  ;  color: @view_fg_color; border-radius: 12px 12px;}");
-
-		set_bg(headerBar, "headerbar {background: rgba(0, 0, 0, 0.0);}");
-		set_transient_for(Mwp.window);
+		set_bg(hb, "headerbar {background: rgba(0, 0, 0, 0.0);}");
 		play_button.clicked.connect (() => {
 				toggle_pstate();
 			});
+
+		close_request.connect (() => {
+				sp.stop();
+				return false;
+			});
+
+		if(SLG.speedup) {
+			toggle_pstate();
+		}
 	}
 
 	private void toggle_pstate() {
@@ -41,7 +56,7 @@ public class SQLSlider : Adw.Window {
 		} else {
 			play_button.icon_name = "media-playback-start";
 		}
-		on_play(pstate);
+		sp.on_play(pstate);
 	}
 
 	private void add_slider(double smax) {
@@ -52,7 +67,7 @@ public class SQLSlider : Adw.Window {
 				if(pstate) {
 					toggle_pstate();
 				}
-				moved_slider((int)(d+0.5));
+				sp.add_queue((int)(d+0.5));
 				return true;
 			});
 		slider.hexpand = true;
@@ -82,30 +97,49 @@ public class SQLPlayer : Object {
 	private int nentry;
 	private uint tid;
 	private int startat;
-	private AsyncQueue<int> dragq;
-	private SQLSlider slider;
+	private SQL.Db d;
+	private int idx;
+
+	public AsyncQueue<int?> dragq;
+	public signal void newpos(int n);
 
 	~SQLPlayer() {
-		MWPLog.message("SQLPLAYER DESTROYED\n");
+		MWPLog.message("~SQLPlayer ... \n");
 	}
 
-	public void init(SQL.Db? d, int idx) {
+	public void stop() {
+		if(tid != 0) {
+			Source.remove(tid);
+			tid = 0;
+		}
+		dragq.push(-1);
+		d = null;
+		Mwp.set_replay_menus(true);
+	}
+
+	public void add_queue(int n) {
+		var k = n;
+		dragq.push(k);
+	}
+
+	public double init(string fn, int _idx) {
+		idx = _idx;
+		nentry = 0;
+		d = new SQL.Db(fn);
 		if (d != null) {
+			dragq = new  AsyncQueue<int?>();
 			xstack = Mwp.stack_size;
 			lstamp = 0;
 			tid = 0;
 			Mwp.stack_size = 0;
 			SQL.TrackEntry t = {};
 			nentry = d.get_log_count(idx);
-			slider = new SQLSlider(nentry);
 			startat = 0;
 			d.get_log_entry(idx, startat, out t);
 			display(t, null);
 			Mwp.armed = 0;
 			Mwp.larmed = 0;
 			Mwp.craft.new_craft (true);
-			dragq = new  AsyncQueue<int>();
-
 			Mwp.clear_sidebar(Mwp.msp);
 			Mwp.init_have_home();
             Mwp.init_state();
@@ -118,35 +152,6 @@ public class SQLPlayer : Object {
 				Mwp.set_typlab();
 				Mwp.window.verlab.label = m.firmware;
 			}
-
-			slider.on_play.connect((s) => {
-					Mwp.armed = 1;
-					if(s) {
-						d.get_log_entry(idx, startat, out t);
-						display(t, null);
-						get_next_entry(d,t);
-					} else {
-						if(tid != 0) {
-							Source.remove(tid);
-						}
-					}
-				});
-
-			slider.moved_slider.connect((n) => {
-					dragq.push(n);
-				});
-
-			slider.close_request.connect (() => {
-					if(tid != 0) {
-						Source.remove(tid);
-						tid = 0;
-					}
-					dragq.push(-1);
-					d = null;
-					Mwp.set_replay_menus(true);
-
-					return false;
-			});
 
 			new Thread<bool>("loader", () => {
 					while(true) {
@@ -184,13 +189,28 @@ public class SQLPlayer : Object {
 					}
 					return true;
 				});
-
-			slider.present();
 			Mwp.init_have_home();
+		}
+		return (double)nentry;
+	}
+
+	public void on_play(bool s) {
+		Mwp.usemag = true;
+		Mwp.armed = 1;
+		if(s) {
+			SQL.TrackEntry t = {};
+			d.get_log_entry(idx, startat, out t);
+			display(t, null);
+			get_next_entry(t);
+		} else {
+			if(tid != 0) {
+				Source.remove(tid);
+				tid = 0;
+			}
 		}
 	}
 
-	public void get_next_entry(SQL.Db d, SQL.TrackEntry t0) {
+	public void get_next_entry(SQL.TrackEntry t0) {
 		SQL.TrackEntry t;
 		var nidx = t0.idx+1;
 		if (nidx < nentry) {
@@ -202,13 +222,13 @@ public class SQLPlayer : Object {
 							tid = 0;
 							display(t, t0);
 							startat = t.idx;
-							slider.set_value(t.idx);
-							get_next_entry(d, t);
+							newpos(t.idx);
+							get_next_entry(t);
 							return false;
 						});
 				}
 			} else {
-				//d.Close();
+				d = null;
 			}
 		}
 	}
@@ -249,9 +269,11 @@ public class SQLPlayer : Object {
 				fvup |= FlightBox.Update.GPS;
 			}
 
+			bool fvg = false;
 			if(Mwp.msp.td.gps.cog != t.cog) {
 				Mwp.msp.td.gps.cog = t.cog;
 				Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.COG);
+				fvg = true;
 			}
 
 			if(Math.fabs(Mwp.msp.td.comp.range -  t.vrange) > 1.0) {
@@ -280,6 +302,14 @@ public class SQLPlayer : Object {
 			if(fvh) {
 				Mwp.panelbox.update(Panel.View.FVIEW, FlightBox.Update.YAW);
 				Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.YAW);
+			}
+			if(fvh || fvg) {
+				if (t.windx != t0.windx || t.windy != t0.windy || t.windz != t0.windz) {
+					Mwp.msp.td.wind.has_wind = true;
+					Mwp.msp.td.wind.w_x = (int16)t.windx;
+					Mwp.msp.td.wind.w_y = (int16)t.windy;
+					Mwp.panelbox.update(Panel.View.WIND, WindEstimate.Update.ANY);
+				}
 			}
 
 			int xrssi = t.rssi * 1023/100;
@@ -324,11 +354,13 @@ public class SQLPlayer : Object {
 		ltmflags = (uint8)t.fmode;
 		Mwp.msp.td.state.state = (uint8)t.status;
 		Mwp.msp.td.state.ltmstate = ltmflags;
+		string ls_state = "";
 
 		if(Mwp.xfailsafe != failsafe) {
 			if(failsafe) {
 				MWPLog.message("Failsafe asserted %ds\n", Mwp.duration);
 				Mwp.add_toast_text("FAILSAFE");
+				TTS.say(TTS.Vox.FAILSAFE, true);
 			} else {
 				MWPLog.message("Failsafe cleared %ds\n", Mwp.duration);
 			}
@@ -350,34 +382,50 @@ public class SQLPlayer : Object {
 		else
 			mwflags = Mwp.xbits; // don't know better
 
-		Mwp.armed_processing(mwflags,"SQLLOG");
+		Mwp.armed_processing(mwflags,"Sql");
 		Mwp.duration = t.stamp / (1000*1000);
 		var xws = Mwp.want_special;
 		var mchg = (ltmflags != Mwp.last_ltmf);
 		if (mchg) {
-			Mwp.last_ltmf = ltmflags;
-			if(ltmflags == Msp.Ltm.POSHOLD)
-				Mwp.want_special |= Mwp.POSMODE.PH;
-			else if(ltmflags == Msp.Ltm.WAYPOINTS) {
-				Mwp.want_special |= Mwp.POSMODE.WP;
-			} else if(ltmflags == Msp.Ltm.RTH)
-				Mwp.want_special |= Mwp.POSMODE.RTH;
-			else if(ltmflags == Msp.Ltm.ALTHOLD)
-				Mwp.want_special |= Mwp.POSMODE.ALTH;
-			else if(ltmflags == Msp.Ltm.CRUISE)
-				Mwp.want_special |= Mwp.POSMODE.CRUISE;
-			else if(ltmflags != Msp.Ltm.LAND) {
-				Mwp.craft.set_normal();
+			Mwp.window.update_state();
+			if (ltmflags !=  Msp.Ltm.POSHOLD &&
+				ltmflags !=  Msp.Ltm.WAYPOINTS &&
+				ltmflags !=  Msp.Ltm.RTH &&
+				ltmflags !=  Msp.Ltm.LAND) { // handled by NAV_STATUS
+				TTS.say(TTS.Vox.LTM_MODE);
 			}
-			var lmstr = Msp.ltm_mode(ltmflags);
-			Mwp.window.fmode.set_label(lmstr);
-			MWPLog.message("New SQLLOG Mode %s (%d) %d %ds %f %f %x %x\n",
-						   lmstr, ltmflags, Mwp.armed, Mwp.duration, t.lat, t.lon,
-						   xws, Mwp.want_special);
+			if(ltmflags == Msp.Ltm.POSHOLD) {
+				Mwp.want_special |= Mwp.POSMODE.PH;
+			} else if(ltmflags == Msp.Ltm.WAYPOINTS) {
+				Mwp.want_special |= Mwp.POSMODE.WP;
+				//if (NavStatus.nm_pts == 0 || NavStatus.nm_pts == 255)
+				//	NavStatus.nm_pts = last_wp_pts; // FIXME
+			} else if(ltmflags == Msp.Ltm.RTH) {
+				Mwp.want_special |= Mwp.POSMODE.RTH;
+			} else if(ltmflags == Msp.Ltm.ALTHOLD) {
+				Mwp.want_special |= Mwp.POSMODE.ALTH;
+			} else if(ltmflags == Msp.Ltm.CRUISE) {
+				Mwp.want_special |= Mwp.POSMODE.CRUISE;
+			} else if(ltmflags == Msp.Ltm.LAND) {
+				Mwp.want_special |= Mwp.POSMODE.LAND;
+			} else if (ltmflags == Msp.Ltm.UNDEFINED) {
+				Mwp.want_special |= Mwp.POSMODE.UNDEF;
+			} else if(ltmflags != Msp.Ltm.LAND) {
+				if(Mwp.craft != null) {
+					Mwp.craft.set_normal();
+				}
+			} else {
+				MWPLog.message("::DBG:: Unknown LTM %d\n", ltmflags);
+			}
+			ls_state = Msp.ltm_mode(ltmflags);
+			MWPLog.message("New LTM Mode %s (%d %d) %d %ds %f %f %x %x\n",
+						   ls_state, ltmflags, Mwp.last_ltmf, Mwp.armed, Mwp.duration,
+						   t.lat, t.lon, xws, Mwp.want_special);
+			Mwp.window.fmode.set_label(ls_state);
+			Mwp.last_ltmf = ltmflags;
 		}
-
 		if(Mwp.want_special != 0 /* && have_home*/) {
-			Mwp.process_pos_states(t.lat, t.lon, 0, "SQLLOG status", t.idx);
+			Mwp.process_pos_states(t.lat, t.lon, 0, "Sql status", t.idx);
 		}
 	}
 }

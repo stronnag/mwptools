@@ -18,16 +18,9 @@
  */
 
 namespace SLG {
-	SLG.Window bbl;
-	MapUtils.BoundingBox bbox;
-
-	public void replay_bbl(string? s) {
-		bbl = new SLG.Window();
-		bbl.run(s);
-	}
-
 	public const int BB_MINENTRY= 64;
 
+	MapUtils.BoundingBox bbox;
 	private File? bblname;
 
 	bool is_valid ;
@@ -41,8 +34,6 @@ namespace SLG {
 	bool vactive;
 	int skiptime;
 	int64 nsecs;
-
-	SQL.Db db;
 
 	public class SLGEntry : Object {
 		public int idx  {get; construct set;}
@@ -85,6 +76,7 @@ namespace SLG {
 		private unowned Gtk.ColumnViewColumn isok;
 		[GtkChild]
 		private unowned Gtk.ColumnViewColumn cb;
+		/**
 		[GtkChild]
 		private unowned Gtk.Button video_btn;
 		[GtkChild]
@@ -97,6 +89,7 @@ namespace SLG {
 		internal unowned Gtk.Entry sec_entry;
 		[GtkChild]
 		internal unowned Gtk.Entry skip_entry;
+		**/
 		[GtkChild]
 		private unowned Gtk.Button cancel;
 		[GtkChild]
@@ -104,12 +97,14 @@ namespace SLG {
 
 		private GLib.ListStore lstore;
 
-		public signal void complete();
+		public signal void complete(string fn, int idx);
 
 		string []orig_times;
 		double clat;
 		double clon;
 		int zoom;
+		SQL.Db db;
+		string dbname;
 
 		private void setup_factories() {
 			lstore = new GLib.ListStore(typeof(SLGEntry));
@@ -251,6 +246,7 @@ namespace SLG {
 
 			apply.clicked.connect((id) => {
 					SLG.speedup = this.speedup.active;
+					/**
 					SLG.vactive = vidbutton.active;
 					SLG.skiptime = int.parse(skip_entry.text);
 					if(SLG.vactive) {
@@ -266,13 +262,6 @@ namespace SLG {
 							SLG.nsecs *= -1;
 						}
 					}
-					var o = lstore.get_item(selidx) as SLGEntry;
-					if (o != null) {
-						SLG.duras = uint.parse(o.duration);
-					}
-					MWPLog.message("BBL Complete\n");
-					var z= MapUtils.evince_zoom(bbox);
-					MapUtils.centre_on(bbox.get_centre_latitude(), bbox.get_centre_longitude(), z);
 					if(videofile != null && videofile != "") {
 						MWPLog.message("BBL videofile %s offset=%d\n", videofile, nsecs);
 					}
@@ -280,10 +269,19 @@ namespace SLG {
 						videofile = null;
 						vactive = false;
 					}
+					**/
+					var o = lstore.get_item(selidx) as SLGEntry;
+					if (o != null) {
+						SLG.duras = uint.parse(o.duration);
+					}
+
+					var z= MapUtils.evince_zoom(bbox);
+					MapUtils.centre_on(bbox.get_centre_latitude(), bbox.get_centre_longitude(), z);
 
 					SLGEntry e = lstore.get_item(selidx) as SLGEntry;
-					var sp = new SQLPlayer();
-					sp.init(db, e.idx);
+					db = null;
+					MWPLog.message("SQLLOG player %s %s\n", bblname.get_path(), dbname);
+					complete(dbname, e.idx);
 					close();
 				});
 
@@ -313,14 +311,25 @@ namespace SLG {
 							try {
 								var file = fc.open.end(r);
 								bblname = file;
-								log_name.label = file.get_basename();
+								var fn = file.get_basename();
+								log_name.label = fn;
+								string df = fn;
+								var n = fn.last_index_of(".");
+								if (n != -1) {
+									df = fn[:n];
+								}
+								var pb = new PathBuf();
+								pb.push(Environment.get_tmp_dir());
+								pb.push(df);
+								pb.set_extension("db");
+								dbname = pb.to_path();
 								get_bbox_file_status();
 							} catch (Error e) {
 								MWPLog.message("Failed to open BBL file: %s\n", e.message);
 							}
 						});
 				});
-
+			/*
 			video_btn.clicked.connect(() => {
 					IChooser.Filter []ifm = {
 						{"Video", {"mp4", "webm","mkv"}},
@@ -340,6 +349,7 @@ namespace SLG {
 							}
 						});
 				});
+			*/
 		}
 
 		public void run(string? s=null) {
@@ -404,9 +414,8 @@ namespace SLG {
 
 		private void find_valid() {
 			var subp = new ProcessLauncher();
-			string sqlfile = "/tmp/mwp-flightlog.db";
 			bool is_valid = false;
-			var res = subp.run_argv({"flightlog2kml", "-interval", "100", "-sql", sqlfile, bblname.get_path()}, ProcessLaunch.STDOUT);
+			var res = subp.run_argv({"flightlog2kml", "-interval", "100", "-sql", dbname, bblname.get_path()}, ProcessLaunch.STDOUT);
             size_t len = 0;
 			string? line = null;
 			if(res) {
@@ -451,7 +460,7 @@ namespace SLG {
 						if(!is_valid) {
 							set_normal("No valid log detected.\n");
 						} else {
-							db = new SQL.Db("/tmp/mwp-flightlog.db");
+							db = new SQL.Db(dbname);
 							process_tz_record();
 						}
 					});
