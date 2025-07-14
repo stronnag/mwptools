@@ -415,7 +415,7 @@ namespace SLG {
 		private void find_valid() {
 			var subp = new ProcessLauncher();
 			bool is_valid = false;
-			var res = subp.run_argv({"flightlog2kml", "-interval", "100", "-sql", dbname, bblname.get_path()}, ProcessLaunch.STDOUT);
+			var res = subp.run_argv({"flightlog2kml", "-interval", "100", "-sql", dbname, bblname.get_path()}, ProcessLaunch.STDOUT|ProcessLaunch.STDERR);
             size_t len = 0;
 			string? line = null;
 			if(res) {
