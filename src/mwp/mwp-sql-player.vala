@@ -118,7 +118,9 @@ public class SQLPlayer : Object {
 
 	public void add_queue(int n) {
 		var k = n;
-		dragq.push(k);
+		if(k >= 0 && k < nentry) {
+			dragq.push(k);
+		}
 	}
 
 	public double init(string fn, int _idx) {
@@ -134,8 +136,9 @@ public class SQLPlayer : Object {
 			SQL.TrackEntry t = {};
 			nentry = d.get_log_count(idx);
 			startat = 0;
-			d.get_log_entry(idx, startat, out t);
-			display(t);
+			if(d.get_log_entry(idx, startat, out t)) {
+				display(t);
+			}
 			Mwp.armed = 0;
 			Mwp.larmed = 0;
 			Mwp.craft.new_craft (true);
@@ -169,22 +172,28 @@ public class SQLPlayer : Object {
 									});
 							}
 							SQL.TrackEntry tx = {};
-							d.get_log_entry(t.id, n, out tx);
-							Idle.add(() => {
-									display(tx);
-									startat = tx.idx;
-									return false;
-								});
-						} else {
-							for(var j = startat+1; j <= n; j++) {
-								SQL.TrackEntry tx = {};
-								d.get_log_entry(t.id, j, out tx);
-								startat = tx.idx;
+							if (d.get_log_entry(t.id, n, out tx)) {
 								Idle.add(() => {
 										display(tx);
+										startat = tx.idx;
 										return false;
 									});
-								Thread.usleep(5);
+							}
+						} else {
+							if(n >= nentry) {
+								MWPLog.message("SQLLOG WARN Max N %d (%d)\n", n, nentry);
+								n = nentry-1;
+							}
+							for(var j = startat+1; j <= n; j++) {
+								SQL.TrackEntry tx = {};
+								if (d.get_log_entry(t.id, j, out tx)) {
+									startat = tx.idx;
+									Idle.add(() => {
+											display(tx);
+											return false;
+										});
+									Thread.usleep(5);
+								}
 							}
 						}
 					}
@@ -199,8 +208,9 @@ public class SQLPlayer : Object {
 		Mwp.armed = 1;
 		if(s) {
 			SQL.TrackEntry t = {};
-			d.get_log_entry(idx, startat, out t);
-			display(t);
+			if(d.get_log_entry(idx, startat, out t)) {
+				display(t);
+			}
 			get_next_entry(t);
 		} else {
 			if(tid != 0) {
@@ -244,7 +254,7 @@ public class SQLPlayer : Object {
 		if(Mwp.home_changed(t.hlat, t.hlon)) {
 			Mwp.sflags |= Mwp.SPK.GPS;
 			Mwp.want_special |= Mwp.POSMODE.HOME;
-			Mwp.process_pos_states(t.hlat, t.hlon, 0, "SQL Origin"); // FIXME ALT
+			Mwp.process_pos_states(t.hlat, t.hlon, 0, "SQL Origin", -2); // FIXME ALT
 		}
 
 		if (Rebase.has_reloc()) {
