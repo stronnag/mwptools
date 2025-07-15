@@ -48,32 +48,47 @@ namespace SQL {
 
 	public class Db {
 		Sqlite.Database db;
+		Sqlite.Statement bbstmt;
+		Sqlite.Statement mtstmt;
+		Sqlite.Statement flstmt;
+
+		const string bbquery = "SELECT min(lat),min(lon),max(lat),max(lon) FROM logs WHERE id = $1;";
+		const string mtquery = "SELECT dtg,duration,mname,firmware from meta WHERE id = $1;";
+		const string flquery = "SELECT id,idx,stamp,lat,lon,alt,galt,spd,amps,volts,hlat,hlon,vrange,cse,cog,bearing,roll,pitch,hdop,ail,ele,rud,thr,fix,numsat,fmode,rssi,status,activewp,navmode,hwfail,windx,windy,windz,energy from logs WHERE id = $1 and idx=$2;";
 
 		public Db(string fn) {
 			var rc = Sqlite.Database.open_v2 (fn, out db, Sqlite.OPEN_READONLY);
 			if(rc != Sqlite.OK) {
 				MWPLog.message ("Failed to open %s\n", fn);
 			}
+			rc = db.prepare_v2 (bbquery, bbquery.length, out bbstmt);
+			if (rc != Sqlite.OK) {
+				MWPLog.message ("Failed to prepare bbstmt %s\n", fn);
+			}
+			rc = db.prepare_v2 (mtquery, mtquery.length, out mtstmt);
+			if (rc != Sqlite.OK) {
+				MWPLog.message ("Failed to prepare mtstmt %s\n", fn);
+			}
+			rc = db.prepare_v2 (flquery, flquery.length, out flstmt);
+			if (rc != Sqlite.OK) {
+				MWPLog.message ("Failed to prepare flstmt %s\n", fn);
+			}
 		}
 
 		public bool get_meta(int idx, out Meta m) {
-			bool ok=false;
+			int n = 0;
 			m = {};
-			Sqlite.Statement stmt;
-			const string prepared_query_str = "SELECT dtg,duration,mname,firmware from meta WHERE id = $1;";
-			var rc = db.prepare_v2 (prepared_query_str, prepared_query_str.length, out stmt);
-			if (rc == Sqlite.OK) {
-				stmt.bind_int (1, idx);
-				while (stmt.step () == Sqlite.ROW) {
-					m.id = idx;
-					m.dtg = stmt.column_text(0);
-					m.duration = stmt.column_int(1);
-					m.name = stmt.column_text(2);
-					m.firmware = stmt.column_text(3);
-				}
-				ok = true;
+			mtstmt.reset();
+			mtstmt.bind_int (1, idx);
+			while (mtstmt.step () == Sqlite.ROW) {
+				m.id = idx;
+				m.dtg = mtstmt.column_text(0);
+				m.duration = mtstmt.column_int(1);
+				m.name = mtstmt.column_text(2);
+				m.firmware = mtstmt.column_text(3);
+				n++;
 			}
-			return ok;
+			return (n==1);
 		}
 
 		public string? get_errors(int idx) {
@@ -91,22 +106,18 @@ namespace SQL {
 		}
 
 		public bool get_bounding_box(int idx, out MapUtils.BoundingBox bbox) {
-			bool ok=false;
+			int n = 0;
 			bbox = {999.0, 999.0, -999.0, -999.0};
-			Sqlite.Statement stmt;
-			const string prepared_query_str = "SELECT min(lat),min(lon),max(lat),max(lon) FROM logs WHERE id = $1;";
-			var rc = db.prepare_v2 (prepared_query_str, prepared_query_str.length, out stmt);
-			if (rc == Sqlite.OK) {
-				stmt.bind_int (1, idx);
-				while (stmt.step () == Sqlite.ROW) {
-					bbox.minlat = stmt.column_double(0);
-					bbox.minlon = stmt.column_double(1);
-					bbox.maxlat = stmt.column_double(2);
-					bbox.maxlon = stmt.column_double(3);
-				}
-				ok = true;
+			bbstmt.reset();
+			bbstmt.bind_int (1, idx);
+			while (bbstmt.step () == Sqlite.ROW) {
+				bbox.minlat = bbstmt.column_double(0);
+				bbox.minlon = bbstmt.column_double(1);
+				bbox.maxlat = bbstmt.column_double(2);
+				bbox.maxlon = bbstmt.column_double(3);
+				n++;
 			}
-			return ok;
+			return (n==1);
 		}
 
 		public int get_log_count(int idx) {
@@ -124,54 +135,50 @@ namespace SQL {
 		}
 
 		public bool get_log_entry(int idx, int nidx, out TrackEntry t) {
-			bool ok=false;
 			t = {};
-			Sqlite.Statement stmt;
-			const string prepared_query_str = "SELECT id,idx,stamp,lat,lon,alt,galt,spd,amps,volts,hlat,hlon,vrange,cse,cog,bearing,roll,pitch,hdop,ail,ele,rud,thr,fix,numsat,fmode,rssi,status,activewp,navmode,hwfail,windx,windy,windz,energy from logs WHERE id = $1 and idx=$2;";
-			var rc = db.prepare_v2 (prepared_query_str, prepared_query_str.length, out stmt);
-			if (rc == Sqlite.OK) {
-				stmt.bind_int (1, idx);
-				stmt.bind_int (2, nidx);
-				while (stmt.step () == Sqlite.ROW) {
-					t.id = stmt.column_int(0);
-					t.idx = stmt.column_int(1);
-					t.stamp = stmt.column_int(2);
-					t.lat = stmt.column_double(3);
-					t.lon = stmt.column_double(4);
-					t.alt = stmt.column_int(5);
-					t.galt = stmt.column_int(6);
-					t.spd =  stmt.column_double(7);
-					t.amps = stmt.column_double(8);
-					t.volts = stmt.column_double(9);
-					t.hlat = stmt.column_double(10);
-					t.hlon = stmt.column_double(11);
-					t.vrange =  stmt.column_double(12);
-					t.cse = stmt.column_int(13);
-					t.cog = stmt.column_int(14);
-					t.bearing = stmt.column_int(15);
-					t.roll = stmt.column_int(16);
-					t.pitch = stmt.column_int(17);
-					t.hdop = stmt.column_int(18);
-					t.ail = stmt.column_int(19);
-					t.ele = stmt.column_int(20);
-					t.rud = stmt.column_int(21);
-					t.thr = stmt.column_int(22);
-					t.fix = stmt.column_int(23);
-					t.numsat = stmt.column_int(24);
-					t.fmode = stmt.column_int(25);
-					t.rssi  = stmt.column_int(26);
-					t.status = stmt.column_int(27);
-					t.activewp = stmt.column_int(28);
-					t.navmode = stmt.column_int(29);
-					t.hwfail = stmt.column_int(30);
-					t.windx = stmt.column_int(31);
-					t.windy = stmt.column_int(32);
-					t.windz = stmt.column_int(33);
-					t.energy = stmt.column_int(34);
-				}
-				ok = true;
+			int n = 0;
+			flstmt.reset();
+			flstmt.bind_int (1, idx);
+			flstmt.bind_int (2, nidx);
+			while (flstmt.step () == Sqlite.ROW) {
+				n++;
+				t.id = flstmt.column_int(0);
+				t.idx = flstmt.column_int(1);
+				t.stamp = flstmt.column_int(2);
+				t.lat = flstmt.column_double(3);
+				t.lon = flstmt.column_double(4);
+				t.alt = flstmt.column_int(5);
+				t.galt = flstmt.column_int(6);
+				t.spd =  flstmt.column_double(7);
+				t.amps = flstmt.column_double(8);
+				t.volts = flstmt.column_double(9);
+				t.hlat = flstmt.column_double(10);
+				t.hlon = flstmt.column_double(11);
+				t.vrange =  flstmt.column_double(12);
+				t.cse = flstmt.column_int(13);
+				t.cog = flstmt.column_int(14);
+				t.bearing = flstmt.column_int(15);
+				t.roll = flstmt.column_int(16);
+				t.pitch = flstmt.column_int(17);
+				t.hdop = flstmt.column_int(18);
+				t.ail = flstmt.column_int(19);
+				t.ele = flstmt.column_int(20);
+				t.rud = flstmt.column_int(21);
+				t.thr = flstmt.column_int(22);
+				t.fix = flstmt.column_int(23);
+				t.numsat = flstmt.column_int(24);
+				t.fmode = flstmt.column_int(25);
+				t.rssi  = flstmt.column_int(26);
+				t.status = flstmt.column_int(27);
+				t.activewp = flstmt.column_int(28);
+				t.navmode = flstmt.column_int(29);
+				t.hwfail = flstmt.column_int(30);
+				t.windx = flstmt.column_int(31);
+				t.windy = flstmt.column_int(32);
+				t.windz = flstmt.column_int(33);
+				t.energy = flstmt.column_int(34);
 			}
-			return ok;
+			return (n==1);
 		}
 	}
 }

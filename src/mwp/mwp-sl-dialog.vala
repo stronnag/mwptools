@@ -35,6 +35,15 @@ namespace SLG {
 	int skiptime;
 	int64 nsecs;
 
+	public void replay_bbl(string? fn) {
+		var bbl = new SLG.Window();
+		bbl.complete.connect((fn,idx) => {
+				var sls = new SQLSlider(fn, idx);
+				sls.present();
+			});
+		bbl.run(fn);
+	}
+
 	public class SLGEntry : Object {
 		public int idx  {get; construct set;}
 		public string duration  {get; construct set;}
@@ -277,10 +286,9 @@ namespace SLG {
 
 					var z= MapUtils.evince_zoom(bbox);
 					MapUtils.centre_on(bbox.get_centre_latitude(), bbox.get_centre_longitude(), z);
-
 					SLGEntry e = lstore.get_item(selidx) as SLGEntry;
 					db = null;
-					MWPLog.message("SQLLOG player %s %s\n", bblname.get_path(), dbname);
+					MWPLog.message("Sql log player %s %s\n", bblname.get_path(), dbname);
 					complete(dbname, e.idx);
 					close();
 				});
@@ -310,20 +318,7 @@ namespace SLG {
 					fc.open.begin (Mwp.window, null, (o,r) => {
 							try {
 								var file = fc.open.end(r);
-								bblname = file;
-								var fn = file.get_basename();
-								log_name.label = fn;
-								string df = fn;
-								var n = fn.last_index_of(".");
-								if (n != -1) {
-									df = fn[:n];
-								}
-								var pb = new PathBuf();
-								pb.push(Environment.get_tmp_dir());
-								pb.push(df);
-								pb.set_extension("db");
-								dbname = pb.to_path();
-								get_bbox_file_status();
+								run(file.get_path());
 							} catch (Error e) {
 								MWPLog.message("Failed to open BBL file: %s\n", e.message);
 							}
@@ -355,7 +350,18 @@ namespace SLG {
 		public void run(string? s=null) {
 			if(s != null) {
 				bblname = File.new_for_path(s);
-				log_name.label = bblname.get_basename();
+				var fn = bblname.get_basename();
+				log_name.label = fn;
+				string df = fn;
+				var n = fn.last_index_of(".");
+				if (n != -1) {
+					df = fn[:n];
+				}
+				var pb = new PathBuf();
+				pb.push(Environment.get_tmp_dir());
+				pb.push(df);
+				pb.set_extension("db");
+				dbname = pb.to_path();
 				get_bbox_file_status();
 			}
 			present();

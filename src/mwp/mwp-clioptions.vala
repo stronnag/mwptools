@@ -393,7 +393,11 @@ namespace Cli {
 			var vfn = MWPFileType.validate_cli_file(Mwp.bfile);
 			Mwp.bfile = null;
 			if(vfn != null) {
-				BBL.replay_bbl(vfn);
+				if(Environment.get_variable("MWP_PREFER_XLOG") != null) {
+					SLG.replay_bbl(vfn);
+				} else {
+					BBL.replay_bbl(vfn);
+				}
 			}
 		} else if(Mwp.otxfile != null) {
 			var vfn = MWPFileType.validate_cli_file(Mwp.otxfile);

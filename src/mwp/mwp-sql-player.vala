@@ -1,13 +1,18 @@
 public class SQLSlider : Gtk.Window {
 	private Gtk.Button play_button;
+	private Gtk.Button end_button;
+	private Gtk.Button start_button;
 	private Gtk.Scale slider;
 	private Gtk.Box vbox;
 	private bool pstate;
 	private SQLPlayer sp;
+	public AsyncQueue<double?> dragq;
 
 	public SQLSlider(string fn, int idx) {
-		sp = new SQLPlayer();
+		dragq = new  AsyncQueue<double?>();
+		sp = new SQLPlayer(dragq);
 		double smax = sp.init(fn, idx);
+		smax--;
 		vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
 		var box = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);
 		box.margin_top = 2;
@@ -21,7 +26,9 @@ public class SQLSlider : Gtk.Window {
 		default_width = 640;
 		var hb  = new Gtk.HeaderBar();
 		set_titlebar(hb);
-		play_button = new Gtk.Button.from_icon_name ("media-playback-start");
+		play_button = new Gtk.Button.from_icon_name("media-playback-start");
+		end_button = new Gtk.Button.from_icon_name("media-skip-forward");
+		start_button = new Gtk.Button.from_icon_name("media-skip-backward");
 		add_slider(smax);
 		pstate = false;
 		box.append(vbox);
@@ -36,11 +43,26 @@ public class SQLSlider : Gtk.Window {
 				toggle_pstate();
 			});
 
+		start_button.clicked.connect (() => {
+				pstate = true;
+				toggle_pstate();
+				dragq.push(0.0);
+				slider.set_value(0.0);
+			});
+
+		end_button.clicked.connect (() => {
+				pstate = true;
+				toggle_pstate();
+				dragq.push(smax);
+				slider.set_value(smax);
+			});
+
 		sp.newpos.connect((v) => {
 				slider.set_value(v);
 			});
 
 		close_request.connect (() => {
+				dragq.push(-1);
 				sp.stop();
 				return false;
 			});
@@ -62,13 +84,16 @@ public class SQLSlider : Gtk.Window {
 
 	private void add_slider(double smax) {
 		slider = new Gtk.Scale.with_range(Gtk.Orientation.HORIZONTAL, 0, smax, 1);
-		slider.set_draw_value(false);
+		slider.set_draw_value(true);
 		slider.change_value.connect((stype, d) => {
+				if(d < 0 || d > smax) {
+					MWPLog.message("SLIDER %f\n", d);
+				}
 				slider.set_value(d);
 				if(pstate) {
 					toggle_pstate();
 				}
-				sp.add_queue((int)(d+0.5));
+				dragq.push(d);
 				return true;
 			});
 		slider.hexpand = true;
@@ -76,6 +101,8 @@ public class SQLSlider : Gtk.Window {
 		var hbox = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 0);
 		hbox.append(play_button);
 		hbox.append (slider);
+		hbox.append(start_button);
+		hbox.append(end_button);
 		vbox.append(hbox);
 	}
 
@@ -87,7 +114,6 @@ public class SQLSlider : Gtk.Window {
 	}
 }
 
-
 public class SQLPlayer : Object {
 	private int xstack;
 	private int lstamp;
@@ -96,9 +122,8 @@ public class SQLPlayer : Object {
 	private int startat;
 	private SQL.Db d;
 	private int idx;
-
-	public AsyncQueue<int?> dragq;
 	public signal void newpos(int n);
+	private AsyncQueue<double?> dragq;
 
 	~SQLPlayer() {
 		MWPLog.message("~SQLPlayer ... \n");
@@ -106,21 +131,17 @@ public class SQLPlayer : Object {
 		Mwp.replayer = Mwp.Player.NONE;
 	}
 
+	public SQLPlayer(AsyncQueue<double?> _dragq) {
+		dragq = _dragq;
+	}
+
 	public void stop() {
 		if(tid != 0) {
 			Source.remove(tid);
 			tid = 0;
 		}
-		dragq.push(-1);
 		d = null;
 		Mwp.set_replay_menus(true);
-	}
-
-	public void add_queue(int n) {
-		var k = n;
-		if(k >= 0 && k < nentry) {
-			dragq.push(k);
-		}
 	}
 
 	public double init(string fn, int _idx) {
@@ -128,7 +149,6 @@ public class SQLPlayer : Object {
 		nentry = 0;
 		d = new SQL.Db(fn);
 		if (d != null) {
-			dragq = new  AsyncQueue<int?>();
 			xstack = Mwp.stack_size;
 			lstamp = 0;
 			tid = 0;
@@ -159,28 +179,23 @@ public class SQLPlayer : Object {
 
 			new Thread<bool>("loader", () => {
 					while(true) {
-						var n = dragq.pop();
+						var dd = dragq.pop();
+						int n = (int)dd;
 						if (n < 0) {
 							break;
 						}
 						if (n < startat) {
-							for(var j = startat; j >= n; j--) {
-								Idle.add(() => {
-										Mwp.craft.remove_at(j);
-										startat--;
-										return false;
-									});
-							}
 							SQL.TrackEntry tx = {};
 							if (d.get_log_entry(t.id, n, out tx)) {
 								Idle.add(() => {
+										Mwp.craft.remove_back(startat, n);
 										display(tx);
 										startat = tx.idx;
 										return false;
 									});
 							}
 						} else {
-							if(n >= nentry) {
+							if(n > nentry) {
 								MWPLog.message("SQLLOG WARN Max N %d (%d)\n", n, nentry);
 								n = nentry-1;
 							}

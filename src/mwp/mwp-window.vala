@@ -642,12 +642,7 @@ namespace Mwp {
 		}
 
 		private void launch_slg() {
-			var bbl = new SLG.Window();
-			bbl.complete.connect((fn,idx) => {
-					var sls = new SQLSlider(fn, idx);
-					sls.present();
-				});
-			bbl.run(null);
+			SLG.replay_bbl(null);
 		}
 
 		private void launch_etx() {

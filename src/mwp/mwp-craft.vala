@@ -189,7 +189,7 @@ public class Craft : Object {
 		MWPLog.message("Craft.info %u %d %d\n", nds.length(), mk.no, mkx.no);
 	}
 	*/
-
+	/*
 	public void remove_at(int n) {
 		var nds = pmlayer.get_markers();
 		var k = nds.length()-1;
@@ -201,6 +201,28 @@ public class Craft : Object {
 				break;
 			}
 		}
+	}
+	*/
+	public void remove_back(int startat, int n) {
+		for(var j = startat; j >= n; j--) {
+			var nds = pmlayer.get_markers();
+			var k = nds.length()-1;
+			//var mkz = nds.nth_data(k) as MWPMarker;
+			//var ln = mkz.no;
+			//print("Starting at %u (%u) for %d with no=%d\n", nds.length(), k, j, ln);
+			for(int jj = (int)k; jj >= 0 ; jj--) {
+				//print(" get element  %u from %u\n",  jj, k);
+				var mkx = nds.nth_data(jj) as MWPMarker;
+				if (mkx != null && mkx.no >= j) {
+					//print("  remove no=%d at %u\n", j, jj);
+					pmlayer.remove_marker(mkx);
+					//print("  removed %d\n", j);
+				} else {
+					break;
+				}
+			}
+		}
+		//print("Was removing %d - %d\n", startat, n);
 	}
 
 	public void set_normal() {
