@@ -466,6 +466,7 @@ namespace SLG {
 						if(!is_valid) {
 							set_normal("No valid log detected.\n");
 						} else {
+							set_normal("Log successfully parsed.\n");
 							db = new SQL.Db(dbname);
 							process_tz_record();
 						}
