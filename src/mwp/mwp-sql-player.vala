@@ -39,6 +39,7 @@ public class SQLSlider : Gtk.Window {
 
 		set_bg(this, "window {background: color-mix(in srgb, @window_bg_color 40%, transparent)  ;  color: @view_fg_color; border-radius: 12px 12px;}");
 		set_bg(hb, "headerbar {background: rgba(0, 0, 0, 0.0);}");
+
 		play_button.clicked.connect (() => {
 				toggle_pstate();
 			});
@@ -84,11 +85,8 @@ public class SQLSlider : Gtk.Window {
 
 	private void add_slider(double smax) {
 		slider = new Gtk.Scale.with_range(Gtk.Orientation.HORIZONTAL, 0, smax, 1);
-		slider.set_draw_value(true);
+		slider.set_draw_value(Environment.get_variable("MWP_PREFER_XLOG=1") != null);
 		slider.change_value.connect((stype, d) => {
-				if(d < 0 || d > smax) {
-					MWPLog.message("SLIDER %f\n", d);
-				}
 				slider.set_value(d);
 				if(pstate) {
 					toggle_pstate();
@@ -96,6 +94,15 @@ public class SQLSlider : Gtk.Window {
 				dragq.push(d);
 				return true;
 			});
+
+		slider.value_changed.connect(() => {
+				if(slider.get_value() == smax) {
+					if(pstate) {
+						toggle_pstate();
+					}
+				}
+			});
+
 		slider.hexpand = true;
 
 		var hbox = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 0);
@@ -129,6 +136,7 @@ public class SQLPlayer : Object {
 		MWPLog.message("~SQLPlayer ... \n");
 		Mwp.serstate = Mwp.SERSTATE.NONE;
 		Mwp.replayer = Mwp.Player.NONE;
+		Mwp.stack_size = xstack;
 	}
 
 	public SQLPlayer(AsyncQueue<double?> _dragq) {
@@ -140,6 +148,8 @@ public class SQLPlayer : Object {
 			Source.remove(tid);
 			tid = 0;
 		}
+		d.populate_odo(idx);
+		Odo.view.populate(Odo.stats);
 		d = null;
 		Mwp.set_replay_menus(true);
 	}
@@ -169,6 +179,8 @@ public class SQLPlayer : Object {
 			Mwp.hard_display_reset();
 			Mwp.serstate = Mwp.SERSTATE.TELEM;
 			Mwp.replayer = Mwp.Player.SQL;
+			Mwp.usemag = true;
+			Odo.stats = {};
 			SQL.Meta m;
 			var res = d.get_meta(idx, out m);
 			if(res) {
@@ -219,8 +231,6 @@ public class SQLPlayer : Object {
 	}
 
 	public void on_play(bool s) {
-		Mwp.usemag = true;
-		Mwp.armed = 1;
 		if(s) {
 			SQL.TrackEntry t = {};
 			if(d.get_log_entry(idx, startat, out t)) {
@@ -232,6 +242,8 @@ public class SQLPlayer : Object {
 				Source.remove(tid);
 				tid = 0;
 			}
+			d.populate_odo(idx);
+			Odo.view.populate(Odo.stats);
 		}
 	}
 

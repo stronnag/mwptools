@@ -180,6 +180,50 @@ namespace SQL {
 			}
 			return (n==1);
 		}
+
+		private string get_max_with_time(string v, int i) {
+			// can you say "SQL Injection"
+			return "select %s, stamp from logs where (id=%d and %s = (select max(%s) from logs where id=%d)) limit 1;".printf(v,i,v,v,i);
+		}
+
+		public void populate_odo(int idx) {
+			string cmd;
+			cmd = get_max_with_time("vrange", idx);
+			db.exec(cmd, (nc, values, cn) => {
+					Odo.stats.range = double.parse(values[0]);
+					Odo.stats.rng_secs = uint.parse(values[1])/(1000*1000);
+					return 0;
+				}, null);
+			cmd = get_max_with_time("alt", idx);
+			db.exec(cmd, (nc, values, cn) => {
+					Odo.stats.alt = double.parse(values[0]);
+					Odo.stats.alt_secs = int.parse(values[1])/(1000*1000);
+					return 0;
+				}, null);
+			cmd = get_max_with_time("spd", idx);
+			db.exec(cmd, (nc, values, cn) => {
+					Odo.stats.speed = double.parse(values[0]);
+					Odo.stats.spd_secs = int.parse(values[1])/(1000*1000);
+					return 0;
+				}, null);
+			cmd = "select max(tdist) from logs where id=%d;".printf(idx);
+			db.exec(cmd, (nc, values, cn) => {
+					Odo.stats.distance = double.parse(values[0]);
+					return 0;
+				}, null);
+
+			cmd = "select max(stamp) from logs where id=%d;".printf(idx);
+			db.exec(cmd, (nc, values, cn) => {
+					Odo.stats.time = uint.parse(values[0])/(1000*1000);
+					return 0;
+				}, null);
+
+			cmd = "select max(amps) from logs where id=%d;".printf(idx);
+			db.exec(cmd, (nc, values, cn) => {
+					Odo.stats.amps = (uint16)(double.parse(values[0])*100);
+					return 0;
+				}, null);
+		}
 	}
 }
 
@@ -214,6 +258,13 @@ static int main(string?[]args) {
 				print("%d %d %s %s %s\n", m.id, m.duration, m.dtg, m.name, m.firmware);
 			}
 		}
+
+		Odo.stats={};
+		d.populate_odo(idx);
+		print("Odo rng %f %u\n", Odo.stats.range, Odo.stats.rng_secs);
+		print("Odo alt %f %u\n", Odo.stats.alt, Odo.stats.alt_secs);
+		print("Odo spd %f %u\n", Odo.stats.speed, Odo.stats.spd_secs);
+		print("Odo time %u, tdist %.1f, centiamps %u\n", Odo.stats.time, Odo.stats.distance, Odo.stats.amps);
 	}
 	return 0;
 }

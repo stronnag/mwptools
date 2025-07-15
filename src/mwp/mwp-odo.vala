@@ -19,7 +19,7 @@
 
 namespace Odo {
 	Window view;
-    Odostats stats;
+    public Odostats stats;
 
 	public void init (uint tm=30) {
 		view = new Window(tm);
@@ -111,7 +111,7 @@ namespace Odo {
 			return lbl;
 		}
 
-		public void display_ui (Odostats o, bool autohide=false) {
+		public void populate(Odostats o) {
 			odotime.label = " %u:%02u ".printf(o.time / 60, o.time % 60);
 			odospeed.label = "  %.1f ".printf(Units.speed(o.speed));
 			odospeed_u.label = Units.speed_units();
@@ -136,8 +136,11 @@ namespace Odo {
 				odoamps.label = "N/A";
 				odosens(false);
 			}
+		}
 
-			unhide();
+
+		public void display_ui (Odostats o, bool autohide=false) {
+			unhide(o);
 			if(autohide) {
 				if(to > 0) {
 					tid = Timeout.add_seconds(to, () => {
@@ -149,7 +152,8 @@ namespace Odo {
 			}
 		}
 
-		public void unhide() {
+		public void unhide(Odostats o = Odo.stats) {
+			populate(o);
 			odo_visible = true;
 			present();
 		}
