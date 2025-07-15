@@ -62,10 +62,17 @@ template $SLGWindow: Adw.Window {
 	}
       }
       Box {
+	hexpand: true;
 	Label bb_items {
 	  halign: start;
 	  use-markup: true;
 	  wrap: true;
+	}
+	Spinner bb_spinner {
+	  margin-start: 16;
+	  //hexpand: true;
+	  //halign: end;
+
 	}
       }
       // Row 3

@@ -85,7 +85,7 @@ public class SQLSlider : Gtk.Window {
 
 	private void add_slider(double smax) {
 		slider = new Gtk.Scale.with_range(Gtk.Orientation.HORIZONTAL, 0, smax, 1);
-		slider.set_draw_value(Environment.get_variable("MWP_PREFER_XLOG=1") != null);
+		slider.set_draw_value(Environment.get_variable("MWP_PREFER_XLOG") != null);
 		slider.change_value.connect((stype, d) => {
 				slider.set_value(d);
 				if(pstate) {

@@ -70,6 +70,8 @@ namespace SLG {
 		[GtkChild]
 		private unowned Gtk.Label bb_items;
 		[GtkChild]
+		private unowned Gtk.Spinner bb_spinner;
+		[GtkChild]
 		private unowned Gtk.DropDown tzoption;
 		[GtkChild]
 		private unowned Gtk.CheckButton speedup;
@@ -377,10 +379,20 @@ namespace SLG {
 			}
 		}
 
+		private void reset_tzoptions() {
+			var ni = ((Gtk.StringList)tzoption.model).n_items;
+			if(ni > 0) {
+				((Gtk.StringList)tzoption.model).splice(0, ni, {"Log", "Local"});
+			}
+			tzoption.selected = 0;
+		}
+
+
 		private void get_bbox_file_status() {
 			lstore.remove_all();
-			tzoption.selected = 0;
+			reset_tzoptions();
 			bb_items.label = "Analysing log ...";
+			bb_spinner.start();
 			find_valid();
 			apply.sensitive = false;
 		}
@@ -527,6 +539,7 @@ namespace SLG {
 
 		private void set_normal(string label) {
 			bb_items.label = label;
+			bb_spinner.stop();
 		}
 
 		private string get_formatted_time_stamp(int j) {
