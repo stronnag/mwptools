@@ -6,12 +6,19 @@ public class SQLSlider : Gtk.Window {
 	private Gtk.Box vbox;
 	private bool pstate;
 	private SQLPlayer sp;
+	private SQL.Meta []metas;
+	private GLib.Menu menu;
+	private GLib.SimpleActionGroup dg;
+
 	public AsyncQueue<double?> dragq;
 
 	public SQLSlider(string fn, int idx) {
 		dragq = new  AsyncQueue<double?>();
 		sp = new SQLPlayer(dragq);
-		double smax = sp.init(fn, idx);
+		sp.opendb(fn);
+		metas = sp.get_metas();
+
+		double smax = sp.init(idx);
 		smax--;
 		vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
 		var box = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);
@@ -68,10 +75,70 @@ public class SQLSlider : Gtk.Window {
 				return false;
 			});
 
+		if(metas.length > 1) {
+			var  mb = new Gtk.MenuButton();
+			mb.icon_name = "open-menu-symbolic";
+			hb.pack_start(mb);
+			menu = new GLib.Menu();
+			mb.menu_model = menu;
+			dg = new GLib.SimpleActionGroup();
+			foreach (var m in metas) {
+				menu_append(m, idx);
+			}
+			insert_action_group("meta", dg);
+		}
+
 		if(SLG.speedup) {
 			toggle_pstate();
 		}
 	}
+
+	private void disable_item(int k) {
+		var nm = menu.get_n_items();
+		for(int j = 0; j < nm; j++) {
+			var alabel = "item_%02d".printf(j);
+			bool state = (j != k);
+			var ac = dg.lookup_action(alabel) as SimpleAction;
+			if (ac != null) {
+				ac.set_enabled(state);
+			}
+		}
+	}
+
+	 private string format_duration(int d) {
+		 var h = (d / 3600);
+		 var m = (d - (h * 3600)) / 60;
+		 var s = d - (h * 3600) - (m * 60);
+		 return "%02d:%02d:%02d".printf(h,m,s);
+	 }
+
+	 private void menu_append(SQL.Meta m, int id) {
+		 var jn = menu.get_n_items();
+		 var oid = m.id;
+		 var alabel = "item_%02d".printf(jn);
+		 var aq = new GLib.SimpleAction(alabel, null);
+
+		 var ds = m.dtg;
+		 var dp = ds.split(" ");
+		 var dstr = "%s %s%s".printf(dp[0], dp[1], dp[2]);
+
+		 var label = "%3d: %s %s".printf(m.id, dstr, format_duration(m.duration));
+		 aq.activate.connect(() => {
+				 disable_item(jn);
+				 pstate = true;
+				 toggle_pstate();
+				 sp.init(oid);
+				 slider.set_value(0.0);
+				 if(SLG.speedup) {
+					 toggle_pstate();
+				 }
+			 });
+		 if(m.id == id) {
+			 aq.set_enabled(false);
+		 }
+		 dg.add_action(aq);
+		 menu.append(label, "meta.%s".printf(alabel));
+	 }
 
 	private void toggle_pstate() {
 		pstate = !pstate;
@@ -154,78 +221,88 @@ public class SQLPlayer : Object {
 		Mwp.set_replay_menus(true);
 	}
 
-	public double init(string fn, int _idx) {
-		idx = _idx;
+	public void opendb(string fn) {
 		nentry = 0;
+		xstack = Mwp.stack_size;
+		Mwp.stack_size = 0;
+		Mwp.set_replay_menus(false);
+		Mwp.serstate = Mwp.SERSTATE.TELEM;
+		Mwp.replayer = Mwp.Player.SQL;
+		Mwp.usemag = true;
 		d = new SQL.Db(fn);
-		if (d != null) {
-			xstack = Mwp.stack_size;
-			lstamp = 0;
-			tid = 0;
-			Mwp.stack_size = 0;
-			SQL.TrackEntry t = {};
-			nentry = d.get_log_count(idx);
-			startat = 0;
-			if(d.get_log_entry(idx, startat, out t)) {
-				display(t);
-			}
-			Mwp.armed = 0;
-			Mwp.larmed = 0;
-			Mwp.craft.new_craft (true);
-			Mwp.clear_sidebar(Mwp.msp);
-			Mwp.init_have_home();
-            Mwp.init_state();
-			Mwp.set_replay_menus(false);
-			Mwp.hard_display_reset();
-			Mwp.serstate = Mwp.SERSTATE.TELEM;
-			Mwp.replayer = Mwp.Player.SQL;
-			Mwp.usemag = true;
-			Odo.stats = {};
-			SQL.Meta m;
-			var res = d.get_meta(idx, out m);
-			if(res) {
-				Mwp.vname = m.name;
-				Mwp.set_typlab();
-				Mwp.window.verlab.label = m.firmware;
-			}
 
-			new Thread<bool>("loader", () => {
-					while(true) {
-						var dd = dragq.pop();
-						int n = (int)dd;
-						if (n < 0) {
-							break;
+		new Thread<bool>("loader", () => {
+				while(true) {
+					var dd = dragq.pop();
+					int n = (int)dd;
+					if (n < 0) {
+						break;
+					}
+					if (n < startat) {
+						SQL.TrackEntry tx = {};
+						if (d.get_log_entry(idx, n, out tx)) {
+							Idle.add(() => {
+									Mwp.craft.remove_back(startat, n);
+									display(tx);
+									startat = tx.idx;
+									return false;
+								});
 						}
-						if (n < startat) {
+					} else {
+						if(n > nentry) {
+							MWPLog.message("SQLLOG WARN Max N %d (%d)\n", n, nentry);
+							n = nentry-1;
+						}
+						for(var j = startat+1; j <= n; j++) {
 							SQL.TrackEntry tx = {};
-							if (d.get_log_entry(t.id, n, out tx)) {
+							if (d.get_log_entry(idx, j, out tx)) {
+								startat = tx.idx;
 								Idle.add(() => {
-										Mwp.craft.remove_back(startat, n);
 										display(tx);
-										startat = tx.idx;
 										return false;
 									});
-							}
-						} else {
-							if(n > nentry) {
-								MWPLog.message("SQLLOG WARN Max N %d (%d)\n", n, nentry);
-								n = nentry-1;
-							}
-							for(var j = startat+1; j <= n; j++) {
-								SQL.TrackEntry tx = {};
-								if (d.get_log_entry(t.id, j, out tx)) {
-									startat = tx.idx;
-									Idle.add(() => {
-											display(tx);
-											return false;
-										});
-									Thread.usleep(5);
-								}
+								Thread.usleep(5);
 							}
 						}
 					}
-					return true;
-				});
+				}
+				return true;
+			});
+	}
+
+	public SQL.Meta [] get_metas() {
+		SQL.Meta []ms;
+		d.get_metas(out ms);
+		return ms;
+	}
+
+	public double init(int _idx) {
+		idx = _idx;
+
+		SQL.Meta m;
+		var res = d.get_meta(idx, out m);
+		if(res) {
+			Mwp.vname = m.name;
+			Mwp.set_typlab();
+			Mwp.window.verlab.label = m.firmware;
+		}
+
+		lstamp = 0;
+		tid = 0;
+		SQL.TrackEntry t = {};
+		nentry = d.get_log_count(idx);
+		startat = 0;
+		Mwp.armed = 0;
+		Mwp.larmed = 0;
+		Mwp.craft.new_craft (true);
+		Mwp.clear_sidebar(Mwp.msp);
+		Mwp.init_have_home();
+		Mwp.init_state();
+		Mwp.hard_display_reset();
+
+		Odo.stats = {};
+		if(d.get_log_entry(idx, startat, out t)) {
+			display(t);
 		}
 		return (double)nentry;
 	}
