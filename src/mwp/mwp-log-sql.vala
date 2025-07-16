@@ -91,6 +91,26 @@ namespace SQL {
 			return (n==1);
 		}
 
+		public bool get_metas(out Meta[] ms) {
+			int n = 0;
+			ms = {};
+			Sqlite.Statement stmt;
+			const string query = "SELECT * FROM meta;";
+			db.prepare_v2 (query, query.length, out stmt);
+			while (stmt.step () == Sqlite.ROW) {
+                var m = Meta();
+				m.id = stmt.column_int(0);
+				m.dtg = stmt.column_text(1);
+				m.duration = stmt.column_int(2);
+				m.name = stmt.column_text(3);
+				m.firmware = stmt.column_text(4);
+				n++;
+				ms.resize(n);
+				ms[n-1] = m;
+			}
+			return (n>0);
+		}
+
 		public string? get_errors(int idx) {
 			Sqlite.Statement stmt;
 			string? val = null;
@@ -186,43 +206,51 @@ namespace SQL {
 			return "select %s, stamp from logs where (id=%d and %s = (select max(%s) from logs where id=%d)) limit 1;".printf(v,i,v,v,i);
 		}
 
-		public void populate_odo(int idx) {
+		public bool populate_odo(int idx) {
 			string cmd;
-			cmd = get_max_with_time("vrange", idx);
-			db.exec(cmd, (nc, values, cn) => {
-					Odo.stats.range = double.parse(values[0]);
-					Odo.stats.rng_secs = uint.parse(values[1])/(1000*1000);
-					return 0;
-				}, null);
-			cmd = get_max_with_time("alt", idx);
-			db.exec(cmd, (nc, values, cn) => {
-					Odo.stats.alt = double.parse(values[0]);
-					Odo.stats.alt_secs = int.parse(values[1])/(1000*1000);
-					return 0;
-				}, null);
-			cmd = get_max_with_time("spd", idx);
-			db.exec(cmd, (nc, values, cn) => {
-					Odo.stats.speed = double.parse(values[0]);
-					Odo.stats.spd_secs = int.parse(values[1])/(1000*1000);
-					return 0;
-				}, null);
-			cmd = "select max(tdist) from logs where id=%d;".printf(idx);
-			db.exec(cmd, (nc, values, cn) => {
-					Odo.stats.distance = double.parse(values[0]);
-					return 0;
-				}, null);
-
 			cmd = "select max(stamp) from logs where id=%d;".printf(idx);
-			db.exec(cmd, (nc, values, cn) => {
-					Odo.stats.time = uint.parse(values[0])/(1000*1000);
-					return 0;
+			var rc = db.exec(cmd, (nc, values, cn) => {
+					if (values[0] != null) {
+						Odo.stats.time = uint.parse(values[0])/(1000*1000);
+						return 0;
+					}
+					return -1;
 				}, null);
 
-			cmd = "select max(amps) from logs where id=%d;".printf(idx);
-			db.exec(cmd, (nc, values, cn) => {
-					Odo.stats.amps = (uint16)(double.parse(values[0])*100);
-					return 0;
-				}, null);
+			if (rc == Sqlite.OK) {
+				cmd = get_max_with_time("vrange", idx);
+				db.exec(cmd, (nc, values, cn) => {
+						Odo.stats.range = double.parse(values[0]);
+						Odo.stats.rng_secs = uint.parse(values[1])/(1000*1000);
+						return 0;
+					}, null);
+				cmd = get_max_with_time("alt", idx);
+				db.exec(cmd, (nc, values, cn) => {
+						Odo.stats.alt = double.parse(values[0]);
+						Odo.stats.alt_secs = int.parse(values[1])/(1000*1000);
+						return 0;
+					}, null);
+				cmd = get_max_with_time("spd", idx);
+				db.exec(cmd, (nc, values, cn) => {
+						Odo.stats.speed = double.parse(values[0]);
+						Odo.stats.spd_secs = int.parse(values[1])/(1000*1000);
+						return 0;
+					}, null);
+				cmd = "select max(tdist) from logs where id=%d;".printf(idx);
+				db.exec(cmd, (nc, values, cn) => {
+						Odo.stats.distance = double.parse(values[0]);
+						return 0;
+					}, null);
+
+				cmd = "select max(amps) from logs where id=%d;".printf(idx);
+				db.exec(cmd, (nc, values, cn) => {
+						Odo.stats.amps = (uint16)(double.parse(values[0])*100);
+						return 0;
+					}, null);
+				return true;
+			} else {
+				return false;
+			}
 		}
 	}
 }
@@ -236,8 +264,9 @@ static int main(string?[]args) {
 		print("Idx %d, errs %s\n", idx, s);
 
 		MapUtils.BoundingBox b;
-		d.get_bounding_box(idx, out b);
-		print("%f %f %f %f\n", 	b.minlat, b.minlon, b.maxlat, b.maxlon);
+		if (d.get_bounding_box(idx, out b)) {
+			print("%f %f %f %f\n", 	b.minlat, b.minlon, b.maxlat, b.maxlon);
+		}
 		var nr = d.get_log_count(idx);
 		print("No log %d\n", nr);
 		SQL.TrackEntry t;
@@ -251,20 +280,22 @@ static int main(string?[]args) {
 			}
 		}
 
-		for(var j = 1; j < 10; j++) {
-			SQL.Meta m;
-			var res = d.get_meta(j, out m);
-			if (res && m.id > 0) {
+		SQL.Meta []ms;
+		var res = d.get_metas(out ms);
+		if(res) {
+			foreach (var m in ms) {
 				print("%d %d %s %s %s\n", m.id, m.duration, m.dtg, m.name, m.firmware);
 			}
 		}
 
 		Odo.stats={};
 		d.populate_odo(idx);
-		print("Odo rng %f %u\n", Odo.stats.range, Odo.stats.rng_secs);
-		print("Odo alt %f %u\n", Odo.stats.alt, Odo.stats.alt_secs);
-		print("Odo spd %f %u\n", Odo.stats.speed, Odo.stats.spd_secs);
-		print("Odo time %u, tdist %.1f, centiamps %u\n", Odo.stats.time, Odo.stats.distance, Odo.stats.amps);
+		if (Odo.stats.range > 0) {
+			print("Odo rng %f %u\n", Odo.stats.range, Odo.stats.rng_secs);
+			print("Odo alt %f %u\n", Odo.stats.alt, Odo.stats.alt_secs);
+			print("Odo spd %f %u\n", Odo.stats.speed, Odo.stats.spd_secs);
+			print("Odo time %u, tdist %.1f, centiamps %u\n", Odo.stats.time, Odo.stats.distance, Odo.stats.amps);
+		}
 	}
 	return 0;
 }

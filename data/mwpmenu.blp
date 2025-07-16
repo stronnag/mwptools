@@ -73,30 +73,32 @@ menu menubar {
 
     section {
       item {
+        label: 'Interactive Flightlog player';
+        action: 'win.replay-sql-log';
+      }
+      submenu {
+        label: 'Legacy replayers';
+        section {
+	  item {
+	    label: 'Replay blackbox log';
+	    action: 'win.replay-bb-log';
+      	  }
+
+      	  item {
+	    label: 'Replay OTX et al';
+	    action: 'win.replay-etx-log';
+      	  }
+	}
+      }
+
+      item {
         label: 'Replay mwp (JSON) log';
         action: 'win.replay-mwp-log';
       }
-
-      item {
-        label: 'Replay blackbox log';
-        action: 'win.replay-bb-log';
-      }
-
-      item {
-        label: 'Replay OTX etc. log';
-        action: 'win.replay-etx-log';
-      }
-
       item {
         label: 'Replay mwp RAW log';
         action: 'win.replay-raw-log';
       }
-
-      item {
-        label: 'Experimemtal log player';
-        action: 'win.replay-sql-log';
-      }
-
 
       item {
         label: 'Stop Replay';
