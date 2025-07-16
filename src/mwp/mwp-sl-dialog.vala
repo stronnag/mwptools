@@ -25,8 +25,6 @@ namespace SLG {
 
 	bool is_valid ;
 	bool is_broken;
-	int maxidx;
-	int nidx;
 	uint selidx;
 	bool speedup;
 	uint duras;
@@ -241,7 +239,6 @@ namespace SLG {
 			this.speedup.active = true;
 			SLG.is_valid = false;
 			SLG.is_broken = false;
-			SLG.maxidx = SLG.nidx = -1;
 			SLG.selidx = 0;
 
 			SLG.nsecs = 0;
@@ -465,7 +462,6 @@ namespace SLG {
 									var b = new SLGEntry(nidx, dstr, parts[2], has_err);
 									lstore.append(b);
 								}
-								MWPLog.message("Read log %d %d %s\n", nidx, nitems, has_err.to_string() );
 							}
 							return true;
 						} catch (Error e) {
@@ -490,12 +486,17 @@ namespace SLG {
 
 		private void process_tz_record() {
 			double xlat,xlon;
-			db.get_bounding_box(1, out bbox);
-			validate_bbox(ref bbox);
-			xlat = bbox.get_centre_latitude();
-			xlon = bbox.get_centre_longitude();
-			MapUtils.centre_on(xlat, xlon);
-			get_tz(xlat, xlon);
+			for(var j = 0; j < lstore.n_items; j++) {
+				SLGEntry e = lstore.get_item(j) as SLGEntry;
+				if(db.get_bounding_box(e.idx, out bbox)) {
+					validate_bbox(ref bbox);
+					xlat = bbox.get_centre_latitude();
+					xlon = bbox.get_centre_longitude();
+					MapUtils.centre_on(xlat, xlon);
+					get_tz(xlat, xlon);
+					break;
+				}
+			}
 		}
 
 		private void validate_bbox(ref MapUtils.BoundingBox bbox) {
