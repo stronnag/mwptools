@@ -6,7 +6,6 @@ public class SQLSlider : Gtk.Window {
 	private Gtk.Box vbox;
 	private bool pstate;
 	private SQLPlayer sp;
-	private SQL.Meta []metas;
 	private GLib.Menu menu;
 	private GLib.SimpleActionGroup dg;
 
@@ -16,7 +15,6 @@ public class SQLSlider : Gtk.Window {
 		dragq = new  AsyncQueue<double?>();
 		sp = new SQLPlayer(dragq);
 		sp.opendb(fn);
-		metas = sp.get_metas();
 
 		double smax = sp.init(idx);
 		smax--;
@@ -75,14 +73,14 @@ public class SQLSlider : Gtk.Window {
 				return false;
 			});
 
-		if(metas.length > 1) {
+		if(SLG.mlist.length > 1) {
 			var  mb = new Gtk.MenuButton();
 			mb.icon_name = "open-menu-symbolic";
 			hb.pack_start(mb);
 			menu = new GLib.Menu();
 			mb.menu_model = menu;
 			dg = new GLib.SimpleActionGroup();
-			foreach (var m in metas) {
+			foreach (var m in SLG.mlist) {
 				menu_append(m, idx);
 			}
 			insert_action_group("meta", dg);
@@ -105,24 +103,13 @@ public class SQLSlider : Gtk.Window {
 		}
 	}
 
-	 private string format_duration(int d) {
-		 var h = (d / 3600);
-		 var m = (d - (h * 3600)) / 60;
-		 var s = d - (h * 3600) - (m * 60);
-		 return "%02d:%02d:%02d".printf(h,m,s);
-	 }
-
-	 private void menu_append(SQL.Meta m, int id) {
+	 private void menu_append(string s, int id) {
 		 var jn = menu.get_n_items();
-		 var oid = m.id;
 		 var alabel = "item_%02d".printf(jn);
 		 var aq = new GLib.SimpleAction(alabel, null);
 
-		 var ds = m.dtg;
-		 var dp = ds.split(" ");
-		 var dstr = "%s %s%s".printf(dp[0], dp[1], dp[2]);
+		 int oid = int.parse(s);
 
-		 var label = "%3d: %s %s".printf(m.id, dstr, format_duration(m.duration));
 		 aq.activate.connect(() => {
 				 disable_item(jn);
 				 pstate = true;
@@ -133,11 +120,11 @@ public class SQLSlider : Gtk.Window {
 					 toggle_pstate();
 				 }
 			 });
-		 if(m.id == id) {
+		 if(oid == id) {
 			 aq.set_enabled(false);
 		 }
 		 dg.add_action(aq);
-		 menu.append(label, "meta.%s".printf(alabel));
+		 menu.append(s, "meta.%s".printf(alabel));
 	 }
 
 	private void toggle_pstate() {

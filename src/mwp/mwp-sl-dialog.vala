@@ -33,6 +33,10 @@ namespace SLG {
 	int skiptime;
 	int64 nsecs;
 
+	string []mlist;
+
+
+
 	public void replay_bbl(string? fn) {
 		var bbl = new SLG.Window();
 		bbl.complete.connect((fn,idx) => {
@@ -228,7 +232,7 @@ namespace SLG {
 			var h = Math.floor(d / 3600);
 			var m = Math.floor((d - (h * 3600)) / 60);
 			var s = d - (h * 3600) - (m * 60);
-			return "%02d:%02d:%4.1f".printf((int)h,(int)m,s);
+			return "%02d:%02d:%04.1f".printf((int)h,(int)m,s);
 		}
 
 		public Window() {
@@ -244,6 +248,7 @@ namespace SLG {
 			SLG.nsecs = 0;
 			SLG.vactive = false;
 			SLG.skiptime = 0;
+			SLG.mlist={};
 
 			MapUtils.get_centre_location(out clat, out clon);
 			zoom = (int)Gis.map.viewport.zoom_level;
@@ -285,10 +290,16 @@ namespace SLG {
 
 					var z= MapUtils.evince_zoom(bbox);
 					MapUtils.centre_on(bbox.get_centre_latitude(), bbox.get_centre_longitude(), z);
-					SLGEntry e = lstore.get_item(selidx) as SLGEntry;
+					for(var j = 0; j < lstore.n_items; j++) {
+						SLGEntry e = lstore.get_item(j) as SLGEntry;
+						string ms = "%3d: %s %s".printf(e.idx, e.timestamp, format_duration(e.duration));
+						SLG.mlist += ms;
+					}
+
+
 					db = null;
 					MWPLog.message("Sql log player %s %s\n", bblname.get_path(), dbname);
-					complete(dbname, e.idx);
+					complete(dbname, o.idx);
 					close();
 				});
 
