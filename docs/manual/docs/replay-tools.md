@@ -1,6 +1,6 @@
 # Replay Tools
 
-In order to replay log files, {{ mwp }} has a number of external dependencies, in particular the **flightlog2x** `fl2ltm` tool provided by the [bbl2kml](https://github.com/stronnag/bbl2kml) repository. As well as providing replay tools for {{ mwp }}, the  [bbl2kml](https://github.com/stronnag/bbl2kml) tools offer the facility to generate  attractive animated KML / KMZ files for visualisation in **google-earth**.
+In order to replay log files, {{ mwp }} has a number of external dependencies, in particular the **flightlog2x** `flightlog2kml` and `fl2ltm` tool provided by the [bbl2kml](https://github.com/stronnag/bbl2kml) repository. As well as providing replay tools for {{ mwp }}, the  [bbl2kml](https://github.com/stronnag/bbl2kml) tools offer the facility to generate  attractive animated KML / KMZ files for visualisation in **google-earth**.
 
 <figure markdown>
 ![mode view](images/bbl2kml/v1.jpeg){: width="80%" }
@@ -52,8 +52,6 @@ No addition software requirements.
 
 ## BulletGCSS Logs
 
-Requires that {{ mwp }} is built with [MQTT support](mqtt---bulletgcss-telemetry.md).
-
 No addition software requirements.
 
 ## Ardupilot logs
@@ -96,3 +94,24 @@ Where such data is available (Blackbox, OTX/ETX logs), {{ mwp }} can display the
 * Initially, a "refresh" icon is shown
 * Clicking this icon will show the sticks display
 * A right mouse click on the sticks display reveals a "Hide" option. Clicking this reverts to the icon.
+
+## Interactive player
+
+The (new, July 2025) "interactive" player loads a somewhat familiar chooser for Blackbox and OTX/ETX logs.
+
+* Selecting a log entry and clicking "OK" will present the player; if the (default) "Autostart" chooser option was enabled, then replay starts immediately, otherwise the replay can be manually started.
+* The replay may be paused / advanced / retarded / restarted using the play button / slider / goto start / goto end buttons.
+* Closing the slider window terminates the replay.
+* If the log file contains multiple logs,  there will be a player menu so one can switch logs without having to re-parse the whole file.
+
+<img width="490" height="269" alt="image" src="https://github.com/user-attachments/assets/f30d9c45-4730-4e65-b6f0-7924bc1e3b98" />
+
+### Other notes
+
+* Some feature of the extant replay will not be implemented at first (video linking, mission "OSD", sticks (maybe)).
+* The "Flight Statistics" dialog is updated whenever the replay is paused (or closed). It always details for  the whole flight rather than incremental  values.
+* Direction (GGS v. mag) analysis is not yet implemented.
+* The new chooser / player will be used for command line` -b, --replay-bbox` and drag / drop files on to the mwp window if the environment variable `MWP_PREFER_XLOG` is set (to anything), e.g:
+```
+  $ MWP_PREFER_XLOG=1 mwp -b /t/inav-contrib/LOG00006.TXT
+```
