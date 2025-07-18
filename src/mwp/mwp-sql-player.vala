@@ -198,6 +198,7 @@ public class SQLPlayer : Object {
 	}
 
 	public void stop() {
+		Sticks.done();
 		if(tid != 0) {
 			Source.remove(tid);
 			tid = 0;
@@ -290,6 +291,11 @@ public class SQLPlayer : Object {
 		Odo.stats = {};
 		if(d.get_log_entry(idx, startat, out t)) {
 			display(t);
+			if(t.thr > 0) {
+				if(Mwp.conf.show_sticks != 1) {
+					Sticks.create_sticks();
+				}
+			}
 		}
 		return (double)nentry;
 	}
@@ -443,6 +449,8 @@ public class SQLPlayer : Object {
 			Mwp.panelbox.update(Panel.View.FVIEW, fvup);
 		}
 		Mwp.update_pos_info(t.idx);
+		Sticks.update(t.ail, t.ele, t.rud, t.thr);
+
 	}
 
 	private void process_energy(SQL.TrackEntry t) {

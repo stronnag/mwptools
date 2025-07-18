@@ -104,11 +104,11 @@ The (new, July 2025) "interactive" player loads a somewhat familiar chooser for 
 * Closing the slider window terminates the replay.
 * If the log file contains multiple logs,  there will be a player menu so one can switch logs without having to re-parse the whole file.
 
-<img width="490" height="269" alt="image" src="https://github.com/user-attachments/assets/f30d9c45-4730-4e65-b6f0-7924bc1e3b98" />
+![multilogs](https://github.com/user-attachments/assets/f30d9c45-4730-4e65-b6f0-7924bc1e3b98)
 
 ### Other notes
 
-* Some feature of the extant replay will not be implemented at first (video linking, mission "OSD", sticks (maybe)).
+* Some feature of the extant replay will not be implemented at first (video linking, mission "OSD" (if at all)).
 * The "Flight Statistics" dialog is updated whenever the replay is paused (or closed). It always details for  the whole flight rather than incremental  values.
 * Direction (GGS v. mag) analysis is not yet implemented.
 * The new chooser / player will be used for command line` -b, --replay-bbox` and drag / drop files on to the mwp window if the environment variable `MWP_PREFER_XLOG` is set (to anything), e.g:
