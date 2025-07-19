@@ -69,12 +69,7 @@ namespace Mwp {
 		Type type = typeof(Shumate.Marker);
 		ObjectClass ocl = (ObjectClass)type.class_ref();
 		unowned ParamSpec? spec = ocl.find_property ("x-hotspot");
-		if(spec == null) {
-			spec = ocl.find_property ("xalign");
-			if(spec != null) {
-				shumate_hspot = ShumateHotspot.XYALIGN;
-			}
-		} else {
+		if(spec != null) {
 			shumate_hspot = ShumateHotspot.HOTSPOT;
 		}
 		MWPLog.message("Shumate: %d.%d (hotspot=%d)\n", Shumate.MAJOR_VERSION, Shumate.MINOR_VERSION, shumate_hspot);

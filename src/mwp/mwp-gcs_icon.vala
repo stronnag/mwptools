@@ -35,7 +35,7 @@ namespace GCS {
             var img = Img.load_image_from_file("gcs.svg", true);
             icon = new MWPMarker.from_image(img);
             Gis.info_layer.add_marker (icon);
-			if(Mwp.shumate_hspot != Mwp.ShumateHotspot.NONE) {
+			if(Mwp.shumate_hspot == Mwp.ShumateHotspot.HOTSPOT) {
 			try {
 					var fn = MWPUtils.find_conf_file("gcs.svg", "pixmaps");
 					string xml;
@@ -44,32 +44,23 @@ namespace GCS {
 					float xalign = 0;
 					float yalign = 0;
 					var aflags = SVGReader.get_mwp_alignment(doc, out xalign, out yalign);
-					if (Mwp.shumate_hspot == Mwp.ShumateHotspot.XYALIGN) {
-						if (SVGReader.MwpAlign.X in aflags) {
-							icon.set_property("xalign", xalign);
-						}
-						if (SVGReader.MwpAlign.Y in aflags) {
-							icon.set_property("yalign", yalign);
-						}
-					} else {
-						if((SVGReader.MwpAlign.X in aflags) || (SVGReader.MwpAlign.Y in aflags)) {
-							ulong active_id = 0;
-							active_id = icon.map.connect(() => {
-									if(SVGReader.MwpAlign.X in aflags) {
-										int iw;
-										icon.measure(Gtk.Orientation.HORIZONTAL, -1, null, out iw, null, null);
-										double d = (double)iw*xalign;
-										icon.set_property("x-hotspot", d);
-									}
-									if(SVGReader.MwpAlign.Y in aflags) {
-										int ih;
-										icon.measure(Gtk.Orientation.VERTICAL, -1, null, out ih, null, null);
-										double d = (double)ih*yalign;
-										icon.set_property("y_hotspot", d);
-									}
-									icon.disconnect (active_id);
-                        });
-						}
+					if((SVGReader.MwpAlign.X in aflags) || (SVGReader.MwpAlign.Y in aflags)) {
+						ulong active_id = 0;
+						active_id = icon.map.connect(() => {
+								if(SVGReader.MwpAlign.X in aflags) {
+									int iw;
+									icon.measure(Gtk.Orientation.HORIZONTAL, -1, null, out iw, null, null);
+									double d = (double)iw*xalign;
+									icon.set_property("x-hotspot", d);
+								}
+								if(SVGReader.MwpAlign.Y in aflags) {
+									int ih;
+									icon.measure(Gtk.Orientation.VERTICAL, -1, null, out ih, null, null);
+									double d = (double)ih*yalign;
+									icon.set_property("y_hotspot", d);
+								}
+								icon.disconnect (active_id);
+							});
 					}
 					delete doc;
 					Xml.Parser.cleanup();
