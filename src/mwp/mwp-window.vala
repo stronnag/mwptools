@@ -641,6 +641,10 @@ namespace Mwp {
 			BBL.replay_bbl(null);
 		}
 
+		private void launch_slg() {
+			SLG.replay_bbl(null);
+		}
+
 		private void launch_etx() {
 			ETX.replay_etx(null);
 		}
@@ -901,6 +905,7 @@ namespace Mwp {
 				{"seed-map", mapseed},
 				{"dmeasure", start_measurer},
 				{"replay-bb-log", launch_bbl},
+				{"replay-sql-log", launch_slg},
 				{"replay-etx-log", launch_etx},
 				{"replay-raw-log", launch_raw},
 				{"replay-mwp-log", launch_json},
@@ -1103,17 +1108,19 @@ namespace Mwp {
 
     private void set_replay_menus(bool state) {
 		const string [] ms = {
-			"replay-mwp-log",
-			"replay-bb-log",
-			"replay-etx-log",
-			"replay-raw-log"
+			"replay-mwp-log", // 0
+			"replay-bb-log",  // 1
+			"replay-etx-log", // 2
+			"replay-raw-log", // 3
+			"replay-sql-log" // 4
 		};
         var n = 0;
         foreach(var s in ms) {
             var istate = state;
 			if( ((n == 1) && (x_fl2ltm == false))  ||
                 ((n == 2) && (x_otxlog == false)) ||
-                ((n == 3) && x_rawreplay == false)) {
+                ((n == 3) && (x_rawreplay == false)) ||
+                ((n == 4) && (x_fl2kml == false))) {
                 istate = false;
 			}
             MwpMenu.set_menu_state(Mwp.window, s, istate);

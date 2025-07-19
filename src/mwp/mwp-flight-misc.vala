@@ -377,7 +377,7 @@ namespace Mwp {
         return vpos;
     }
 
-    private bool update_pos_info() {
+    private bool update_pos_info(int id=0) {
         bool pv;
         pv = pos_valid(msp.td.gps.lat, msp.td.gps.lon);
 		if(pv) {
@@ -388,7 +388,7 @@ namespace Mwp {
 					MapUtils.try_centre_on(msp.td.gps.lat, msp.td.gps.lon);
 				}
 				double cse = (usemag || ((replayer & Player.MWP) == Player.MWP)) ? mhead : msp.td.gps.cog;
-                craft.set_lat_lon(msp.td.gps.lat, msp.td.gps.lon,cse);
+                craft.set_lat_lon(msp.td.gps.lat, msp.td.gps.lon, cse, id);
             }
 			MBus.update_location();
 		}
@@ -447,7 +447,7 @@ namespace Mwp {
         return ret;
     }
 
-    private void process_pos_states(double lat, double lon, double alt, string? reason=null) {
+    private void process_pos_states(double lat, double lon, double alt, string? reason=null, int id=-1) {
         if (lat == 0.0 && lon == 0.0) {
             want_special = 0;
             return;
@@ -508,30 +508,27 @@ namespace Mwp {
             rth_pos.lat = lat;
             rth_pos.lon = lon;
             rth_pos.alt = alt;
-			craft.special_wp(Craft.Special.RTH, lat, lon);
+			craft.special_wp(Craft.Special.RTH, lat, lon, id);
         }
         if((want_special & POSMODE.ALTH) != 0) {
             want_special &= ~POSMODE.ALTH;
-			craft.special_wp(Craft.Special.ALTH, lat, lon);
+			craft.special_wp(Craft.Special.ALTH, lat, lon, id);
         }
         if((want_special & POSMODE.CRUISE) != 0) {
             want_special &= ~POSMODE.CRUISE;
-			craft.special_wp(Craft.Special.CRUISE, lat, lon);
+			craft.special_wp(Craft.Special.CRUISE, lat, lon, id);
         }
         if((want_special & POSMODE.WP) != 0) {
             want_special &= ~POSMODE.WP;
-			craft.special_wp(Craft.Special.WP, lat, lon);
-            //markers.update_ipos(ls, lat, lon); // FIXME
+			craft.special_wp(Craft.Special.WP, lat, lon, id);
         }
         if((want_special & POSMODE.LAND) != 0) {
             want_special &= ~POSMODE.LAND;
-			craft.special_wp(Craft.Special.LAND, lat, lon);
-            // markers.update_ipos(ls, lat, lon); // FIXME
+			craft.special_wp(Craft.Special.LAND, lat, lon, id);
         }
         if((want_special & POSMODE.UNDEF) != 0) {
             want_special &= ~POSMODE.UNDEF;
-			craft.special_wp(Craft.Special.UNDEF, lat, lon);
-            // markers.update_ipos(ls, lat, lon); // FIXME
+			craft.special_wp(Craft.Special.UNDEF, lat, lon, id);
         }
     }
 

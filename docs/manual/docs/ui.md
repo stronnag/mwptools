@@ -25,29 +25,30 @@ The following tables summarise the available menu options. Where usage is not ob
 
 ### File Menu
 
-| Item                                         | Usage                                                                                                                                                         |
-| ----                                         | -----                                                                                                                                                         |
-| Open Mission                                 | Offers a dialog to [open a mission file](inav-4.0-multi-missions.md#open-mission-file)                                                                           |
-| Append Mission file                          | [Appends a mission](inav-4.0-multi-missions.md#append-mission-file) to the current mission set (creates a multi-mission element)                                                                                    |
-| Save Mission                                 | Saves the mission to the current mission file, overwriting any extant content                                                                                 |
-| Save Mission As                              | Saves the mission to a user selected file. For a [multi-mission](inav-4.0-multi-missions.md#save-as-mission-file) the user can choose not to save specified mission segments.                                                                                                                     |
-| CLI File | Loads [CLI artefacts](running.md#cli-files) from a CLI File |
-| Download Mission from FC                     | [Downs a (multi-) mission](inav-4.0-multi-missions.md#upload-download-menu-options) from the flight controller                                                                                                           |
-| Upload Mission to FC > Upload Active Mission | [Uploads the current mission segment](inav-4.0-multi-missions.md#upload-download-menu-options) to the flight controller                                                                                                  |
-| Upload Mission to FC > Upload All Missions   | [Uploads all mission segments](inav-4.0-multi-missions.md#upload-download-menu-options) to the flight controller                                                                                                         |
-| Restore Mission from EEPROM                  | Restores the EEPROM stored mission from the flight controller                                                                                                 |
-| Save Mission to EEPROM                       | Saves the current mission segment(s) to the flight controller. The current active mission segment (in a multi-mission) is set as the active mission in the FC |
-| Replay mwp log                               | Replay a mwp (JSON) log file                                                                                                                                  |
-| Replay blackbox log                          | Replays a Blackbox log file                                                                                                                                   |
-| Replay OTX log                               | Replays an OpenTX / EdgeTX CSV log file. (Also BulletGCSS and Ardupilot logs where available)                                                                                                                       |
-| Replay mwp RAW log                           | Replay a mwp raw (binary) log file
-| Stop Replay                                  | Stops a running replay                                                                                                                                        |
-| Static Overlay > Load                        | Loads a static KML format overlay file                                                                                                                        |
-| Static Overlay > Remove                      | Removes a loaded KML file from the display                                                                                                                    |
-| Geozones                                   | Invokes the {{inav }} [Geozones editor](mwp-geozones.md)                                                                                                |
-| Safe Homes                                   | Invokes the {{inav }} [safe-home editor](mwp-safehomes-editor.md)                                                                                                |
-| UBlox Assist Now | Invokes the Assist Now dialog (download / store / restore / upload GPS data |
-| Quit                                         | Cleanly quits the application, saving the display layout                                                                                                      |
+| Item                                         | Usage                                                                                                                                                                         |
+|----------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Open Mission                                 | Offers a dialog to [open a mission file](inav-4.0-multi-missions.md#open-mission-file)                                                                                        |
+| Append Mission file                          | [Appends a mission](inav-4.0-multi-missions.md#append-mission-file) to the current mission set (creates a multi-mission element)                                              |
+| Save Mission                                 | Saves the mission to the current mission file, overwriting any extant content                                                                                                 |
+| Save Mission As                              | Saves the mission to a user selected file. For a [multi-mission](inav-4.0-multi-missions.md#save-as-mission-file) the user can choose not to save specified mission segments. |
+| CLI File                                     | Loads [CLI artefacts](running.md#cli-files) from a CLI File                                                                                                                   |
+| Download Mission from FC                     | [Downs a (multi-) mission](inav-4.0-multi-missions.md#upload-download-menu-options) from the flight controller                                                                |
+| Upload Mission to FC > Upload Active Mission | [Uploads the current mission segment](inav-4.0-multi-missions.md#upload-download-menu-options) to the flight controller                                                       |
+| Upload Mission to FC > Upload All Missions   | [Uploads all mission segments](inav-4.0-multi-missions.md#upload-download-menu-options) to the flight controller                                                              |
+| Restore Mission from EEPROM                  | Restores the EEPROM stored mission from the flight controller                                                                                                                 |
+| Save Mission to EEPROM                       | Saves the current mission segment(s) to the flight controller. The current active mission segment (in a multi-mission) is set as the active mission in the FC                 |
+| Interactive Flightlog player                 | Replays a [flightlog2kml](https://github.com/stronnag/bbl2kml) supported log format in an interactive player                                                                  |
+| Legacy replayers > Replay blackbox log       | Replays a Blackbox log file                                                                                                                                                   |
+| Legacy replayers > Replay OTX et al          | Replays an OpenTX / EdgeTX CSV log file. (Also BulletGCSS and Ardupilot logs where available)                                                                                 |
+| Replay mwp log                               | Replay a mwp (JSON) log file                                                                                                                                                  |
+| Replay mwp RAW log                           | Replay a mwp raw (binary) log file                                                                                                                                            |
+| Stop Replay                                  | Stops a running replay                                                                                                                                                        |
+| Static Overlay > Load                        | Loads a static KML format overlay file                                                                                                                                        |
+| Static Overlay > Remove                      | Removes a loaded KML file from the display                                                                                                                                    |
+| Geozones                                     | Invokes the {{inav }} [Geozones editor](mwp-geozones.md)                                                                                                                      |
+| Safe Homes                                   | Invokes the {{inav }} [safe-home editor](mwp-safehomes-editor.md)                                                                                                             |
+| UBlox Assist Now                             | Invokes the Assist Now dialog (download / store / restore / upload GPS data                                                                                                   |
+| Quit                                         | Cleanly quits the application, saving the display layout                                                                                                                      |
 
 ### Edit Menu
 

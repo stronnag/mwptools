@@ -31,6 +31,7 @@ namespace Mwp {
     bool x_otxlog;
     bool x_aplog;
     bool x_fl2ltm;
+    bool x_fl2kml;
     bool x_rawreplay;
     bool x_mwpset;
     bool x_plot_elevations_rb;
@@ -79,7 +80,7 @@ namespace Cli {
 
 	private bool get_app_status(string app, out string bblhelp) {
 		var p = new ProcessLauncher();
-		var res = p.run_argv({app, "--version"}, ProcessLaunch.STDOUT);
+		var res = p.run_argv({app, "--version"}, ProcessLaunch.STDOUT|ProcessLaunch.STDERR);
 		bblhelp="";
 		if(res) {
 			var sout = p.get_stdout_iochan();
@@ -94,11 +95,27 @@ namespace Cli {
 		return res;
 	}
 
+	private uint extract_version(string text) {
+		uint vsum = 0;
+		var parts = text.split("\n");
+		var ptext = parts[parts.length-1];
+		var lparts = ptext.split(" ");
+		if (lparts.length == 3) {
+			var vparts = lparts[1].split(".");
+			for(var i = 0; i < 3 && i < vparts.length; i++) {
+				var v = uint.parse(vparts[i],16);
+				vsum  = (vsum << 8) | v;
+			}
+		}
+		return vsum;
+	}
+
 #if UNIX
-	const int FL2LTMVERS = 10024;
+	const int FL2LTMVERS = 0x10024;
 #else
-	const int FL2LTMVERS = 10026;
+	const int FL2LTMVERS = 0x10026;
 #endif
+	const int FL2KMLVERS = 0x10030;
 
 	private void parse_options() {
 		Mwp.gpsstats = {0, 0, 0, 0, 9999, 9999, 9999};
@@ -107,18 +124,18 @@ namespace Cli {
         MWPLog.message("MQTT enabled via the \"%s\" library\n", MwpMQTT.provider());
 #endif
         string []  ext_apps = {
-            Mwp.conf.blackbox_decode,
-			null,
-			"gnuplot",
-			"mwp-plot-elevations",
-			"unzip",
-			null,
-			"fl2ltm",
-			"mavlogdump.py",
-            "mwp-log-replay",
-			"mwpset"
+            Mwp.conf.blackbox_decode, // 0
+			"flightlog2kml",  // 1
+			"gnuplot",  // 2
+			"mwp-plot-elevations", // 3
+			"unzip", // 4
+			null, // 5
+			"fl2ltm", // 6
+			"mavlogdump.py",  // 7
+            "mwp-log-replay", // 8
+			"mwpset" //9
 		};
-        bool appsts[10];
+        bool [] appsts = new bool[ext_apps.length];
         var si = 0;
 		var pnf = 0;
         foreach (var s in ext_apps) {
@@ -153,65 +170,74 @@ namespace Cli {
 			} else {
 				var iv = int.parse(text);
 				if (iv < 5) {
-					MWPLog.message("\"%s\" too old, replay disabled\n", Mwp.conf.blackbox_decode);
 					res = false;
 				}
 			}
 			appsts[0] = res;
 		}
+		if(appsts[0] == false) {
+			MWPLog.message("\"%s\" too old or missing, replay disabled\n", Mwp.conf.blackbox_decode);
+		}
 
 		if(appsts[6]) {
 			string text;
-
-			var res = get_app_status("fl2ltm", out text);
-			if(res == false || text == null) {
-				MWPLog.message("fl2ltm %s\n", text);
+			uint vsum = 0;
+			var ok  = get_app_status("fl2ltm", out text);
+			text = text.chomp();
+			if(ok == false || text == null || text.length == 0) {
+				ok = false;
 			} else {
-				int vsum = 0;
-				var parts = text.split("\n");
-				bool ok = false;
-				text = "fl2ltm";
-				foreach (var p in parts) {
-					if (p.has_prefix("fl2ltm")) {
-						var lparts = p.split(" ");
-						if (lparts.length == 3) {
-							var vparts = lparts[1].split(".");
-							for(var i = 0; i < 3 && i < vparts.length; i++) {
-								vsum = int.parse(vparts[i]) + 100 * vsum;
-							}
-						}
-						if (vsum > 10000) {
-							Mwp.sticks_ok = true;
-							if (vsum >= FL2LTMVERS) {
-								Mwp.bblosd_ok = true;
-								ok = true;
-							}
-						}
-						text = p;
-						break;
+				vsum = extract_version(text);
+				if (vsum > 0x10000) {
+					Mwp.sticks_ok = true;
+					if (vsum >= FL2LTMVERS) {
+						Mwp.bblosd_ok = true;
+						MWPLog.message("Using %s (%x)\n", text, vsum);
+						ok = true;
 					}
 				}
-				if (!ok) {
-					var oldmsg = "\"%s\" (%d) may be too old, upgrade recommended".printf(text, vsum);
-					MWPLog.message(oldmsg+"\n");
-					Mwp.add_toast_text(oldmsg);
-					res = false;
-				} else {
-					MWPLog.message("Using %s (%d)\n", text, vsum);
+			}
+			appsts[6] = ok;
+		}
+		if (appsts[6] == false) {
+			var oldmsg = "fl2ltm too old or missing, upgrade recommended";
+			MWPLog.message("%s\n", oldmsg);
+			Mwp.add_toast_text(oldmsg);
+		}
+
+		if(appsts[1]) {
+			string text;
+			var ok = get_app_status("flightlog2kml", out text);
+			text = text.chomp();
+			if(ok == false || text == null || text.length == 0) {
+				ok = false;
+			} else {
+				uint vsum = extract_version(text);
+				if (vsum >= FL2KMLVERS) {
+					ok = true;
+					MWPLog.message("Using %s (%x)\n", text, vsum);
 				}
 			}
-			appsts[6] = res;
-			appsts[6] = true;
+			appsts[1] = ok;
 		}
+
+		if (appsts[1] == false) {
+			var oldmsg = "flightlog2kml may be too old, upgrade recommended";
+			MWPLog.message("%s\n", oldmsg);
+			Mwp.add_toast_text(oldmsg);
+		}
+
 		if (Mwp.conf.show_sticks == 1)
 			Mwp.sticks_ok = false;
 
+		Mwp.x_fl2kml = (appsts[0]&&appsts[1]);
 		Mwp.x_plot_elevations_rb = (appsts[2]&&appsts[3]);
         Mwp.x_kmz = appsts[4];
-		Mwp.x_fl2ltm = Mwp.x_otxlog = appsts[6];
+		Mwp.x_fl2ltm = Mwp.x_otxlog = (appsts[0]&&appsts[6]);
 		Mwp.x_aplog = appsts[7];
         Mwp.x_rawreplay = appsts[8];
 		Mwp.x_mwpset = appsts[9];
+
 		MwpMenu.set_menu_state(Mwp.window, "mwpset", Mwp.x_mwpset);
 
 		if(Mwp.x_plot_elevations_rb == false) {
@@ -367,7 +393,11 @@ namespace Cli {
 			var vfn = MWPFileType.validate_cli_file(Mwp.bfile);
 			Mwp.bfile = null;
 			if(vfn != null) {
-				BBL.replay_bbl(vfn);
+				if(Environment.get_variable("MWP_PREFER_XLOG") != null) {
+					SLG.replay_bbl(vfn);
+				} else {
+					BBL.replay_bbl(vfn);
+				}
 			}
 		} else if(Mwp.otxfile != null) {
 			var vfn = MWPFileType.validate_cli_file(Mwp.otxfile);

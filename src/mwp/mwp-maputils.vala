@@ -84,6 +84,7 @@ namespace MapUtils {
 	public int evince_zoom(BoundingBox b) {
 		var h = Gis.map.get_height();
 		var w = Gis.map.get_width();
+
 		var alat = b.get_centre_latitude();
 		var alon = b.get_centre_longitude();
 		double c, dlat, dlon;
@@ -91,17 +92,18 @@ namespace MapUtils {
 		Geo.csedist(b.minlat, alon, b.maxlat, alon, out dlat, out c);
 		dlon *= 1852;
 		dlat *= 1852;
-		uint rz = 0;
+
+		int rz = (int)Gis.map.viewport.max_zoom_level+1;
 		for(var z = Gis.map.viewport.min_zoom_level; z <= Gis.map.viewport.max_zoom_level; z++) {
 			var spix = WCIRC*Math.cos(alat*Math.PI/180.0)/(256* Math.pow(2.0, z));
 			var hpix = dlon/spix;
 			var vpix = dlat/spix;
 			if (hpix > w || vpix > h) {
-				rz = z;
+				rz = (int)z;
 				break;
 			}
 		}
-		return (int)rz-1;
+		return rz-1;
 	}
 
 	public void get_centre_location(out double clat, out double clon) {

@@ -71,6 +71,9 @@ mwpsrcs = files('mwp-about.vala', 'mwp-ah_widget.vala',
                 'mwp-chan-window.vala',
                 'mwp-video-player.vala', 'mwp-volume-button.vala',
                 'mwp-recentv.vala',
+                'mwp-sl-dialog.vala',
+                'mwp-log-sql.vala',
+                'mwp-sql-player.vala',
                )
 
 mwpdeps = [deps,
@@ -86,6 +89,7 @@ mwpdeps = [deps,
            dependency('json-glib-1.0'),
            dependency('libsecret-1'),
            dependency('librsvg-2.0'),
+           dependency('sqlite3'),
            meson.get_compiler('vala').find_library('posix'),
            meson.get_compiler('vala').find_library('linux'),
           ]
