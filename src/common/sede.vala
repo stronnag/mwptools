@@ -54,7 +54,7 @@ namespace SEDE {
 	}
 
 	public uint8 * serialise_i16(uint8* rp, int16 v) {
-		return serialise_u16(rp, (int16)v);
+		return serialise_u16(rp, v);
 	}
 
 	public uint8 * serialise_u32(uint8* rp, uint32 v) {
@@ -66,7 +66,6 @@ namespace SEDE {
 	}
 
 	public uint8 * serialise_i32(uint8* rp, int32 v) {
-		return serialise_u32(rp, (int32)v);
+		return serialise_u32(rp, v);
 	}
-
 }
