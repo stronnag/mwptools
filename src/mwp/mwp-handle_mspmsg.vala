@@ -1600,8 +1600,10 @@ namespace Mwp {
 								}
 
                                 if(navmodes) {
-                                    sb.append(" • Reason unknown; is a nav mode engaged?");
-                                    sb.append_c(sep);
+									if((af & ARMFLAGS.ARMING_DISABLED_RC_LINK) == 0) {
+										sb.append(" • Reason unknown; is a nav mode engaged?");
+										sb.append_c(sep);
+									}
                                 }
                             } else
                                 sb.append_c(sep);

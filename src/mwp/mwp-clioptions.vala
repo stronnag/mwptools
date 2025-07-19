@@ -194,6 +194,8 @@ namespace Cli {
 						Mwp.bblosd_ok = true;
 						MWPLog.message("Using %s (%x)\n", text, vsum);
 						ok = true;
+					}  else {
+						ok = false;
 					}
 				}
 			}
@@ -216,6 +218,8 @@ namespace Cli {
 				if (vsum >= FL2KMLVERS) {
 					ok = true;
 					MWPLog.message("Using %s (%x)\n", text, vsum);
+				} else {
+					ok = false;
 				}
 			}
 			appsts[1] = ok;
