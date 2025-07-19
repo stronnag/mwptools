@@ -47,6 +47,21 @@ namespace Mwp {
 		STATUSX
 	}
 
+	private enum VAR {
+		UINT8 = 0,
+		INT8 = 1,
+		UINT16 = 2,
+		INT16 = 3,
+		UINT32 = 4,
+		FLOAT = 5,
+		STRING = 6,
+	}
+
+	private enum MODE {
+		DIRECT = 0,
+		LOOKUP = 1,
+	}
+
 	StartupTasks starttasks = 0;
 	bool need_startup= false;
 
@@ -93,7 +108,59 @@ namespace Mwp {
 		}
 		msg[k++] = 0;
 		MWPLog.message("Request setting %s\n", s);
-		queue_cmd(Msp.Cmds.COMMON_SETTING, msg, k);
+		queue_cmd(Msp.Cmds.COMMON_SETTING_INFO, msg, k);
+	}
+
+	void parse_common_info(uint8[] raw, uint len, void* p) {
+		int n = ((string)raw).length;
+		uint8* rp = ((uint8*)raw + n + 1);
+		// pg
+		rp += 2;
+		VAR  type = (VAR)*rp++;
+		rp++; // section
+		MODE mode = (MODE)(*rp++ >> 6);
+		uint32 vmin, vmax;
+		rp = SEDE.deserialise_u32(rp, out vmin);
+		rp = SEDE.deserialise_u32(rp, out vmax);
+		rp += 2+2; // settingsindex , profile settings
+
+		if(mode == MODE.LOOKUP) {
+			for(var i = vmin; i <= vmax; i++) {
+				rp = rp+((string)rp).length+1;
+			}
+		}
+
+		switch(type) {
+		case VAR.UINT8:
+			*((uint8*)p) = *rp;
+			break;
+		case VAR.INT8:
+			*((int8*)p) = *rp;
+			break;
+		case VAR.UINT16:
+			uint16 v;
+			SEDE.deserialise_u16(rp, out v);
+			*((uint16*)p) = v;
+			break;
+		case VAR.INT16:
+			int16 v;
+			SEDE.deserialise_i16(rp, out v);
+			*((int16*)p) = v;
+			break;
+		case VAR.UINT32:
+			uint32 v;
+			SEDE.deserialise_u32(rp, out v);
+			*((uint32*)p) = v;
+			break;
+		case VAR.FLOAT:
+			uint32 v;
+			SEDE.deserialise_u32(rp, out v);
+			*((float*)p) = (float)(*(float*)&v);
+			break;
+		case VAR.STRING:
+			p = (string)rp;
+			break;
+		}
 	}
 
 	private void cancel_msprc() {
@@ -108,7 +175,7 @@ namespace Mwp {
 		lastrx = lastok = nticks;
 
 		if(errs == true) {
-            MWPLog.message("Msp Error: %s [%db] %s\n", cmd.format(), len, (cmd == Msp.Cmds.COMMON_SETTING) ? (string)lastmsg.data : "");
+            MWPLog.message("Msp Error: %s [%db] %s\n", cmd.format(), len, (cmd == Msp.Cmds.COMMON_SETTING_INFO) ? (string)lastmsg.data : "");
             switch(cmd) {
 			case Msp.Cmds.SET_RAW_RC:
 			case Msp.Cmds.RC:
@@ -772,129 +839,92 @@ namespace Mwp {
 			}
 			break;
 
-		case Msp.Cmds.COMMON_SETTING:
-			var lset =  csdq.pop_head();
+		case Msp.Cmds.COMMON_SETTING_INFO:
+			csdq.pop_head();
 			var sb = new StringBuilder();
-			sb.append_printf("Received %s: ", lset);
-			switch ((string)lset) {
+			sb.append_printf("Received %s: ", (string)raw);
+			switch ((string)raw) {
 			case "nav_wp_multi_mission_index":
-				if (len == 1) {
-					sb.append_printf("%u\n", raw[0]);
-					if (raw[0] > 0) {
-						imdx = raw[0]-1;
-					} else {
-						imdx = 0;
-					}
-					if ((wpmgr.wp_flag & WPDL.KICK_DL) != 0) {
-					   wpmgr.wp_flag &= ~WPDL.KICK_DL;
-					   start_download();
-					}
+				uint _imdx = 0;
+				parse_common_info(raw, len, &_imdx);
+				sb.append_printf("%u\n", _imdx);
+				if (_imdx > 0) {
+					imdx = (int)_imdx-1;
 				} else {
-					sb.append_printf("length error %u\n", len);
+					imdx = 0;
+				}
+				if ((wpmgr.wp_flag & WPDL.KICK_DL) != 0) {
+					wpmgr.wp_flag &= ~WPDL.KICK_DL;
+					start_download();
 				}
 				break;
 			case "gps_min_sats":
-				if (len == 1) {
-					msats = raw[0];
-					sb.append_printf("%u\n", msats);
-				} else {
-					sb.append_printf("length error %u\n", len);
-				}
+				parse_common_info(raw, len, &msats);
+				sb.append_printf("%u\n", msats);
 				break;
 			case "nav_wp_safe_distance":
-				if (len == 2) {
-					SEDE.deserialise_u16(raw, out nav_wp_safe_distance);
-					wpdist = nav_wp_safe_distance / 100;
-					sb.append_printf("%um\n", wpdist);
-				} else {
-					sb.append_printf("length error %u\n", len);
-				}
+				parse_common_info(raw, len, &nav_wp_safe_distance);
+				wpdist = nav_wp_safe_distance / 100;
+				sb.append_printf("%um\n", wpdist);
 				break;
 			case "safehome_max_distance":
-				if (len == 2) {
-					SEDE.deserialise_u16(raw, out safehome_max_distance);
-					safehome_max_distance /= 100;
-					Safehome.manager.set_distance(safehome_max_distance);
-					sb.append_printf("%um\n", wpdist);
-				} else {
-					sb.append_printf("length error %u\n", len);
-				}
+				parse_common_info(raw, len, &safehome_max_distance);
+				safehome_max_distance /= 100;
+				Safehome.manager.set_distance(safehome_max_distance);
+				sb.append_printf("%um\n", wpdist);
 				break;
 			case "nav_wp_max_safe_distance":
-				if (len == 2) {
-					SEDE.deserialise_u16(raw, out nav_wp_safe_distance);
-					wpdist = nav_wp_safe_distance;
-					sb.append_printf("%um\n", safehome_max_distance);
-				} else {
-					sb.append_printf("length error %u\n", len);
-				}
+				parse_common_info(raw, len, &nav_wp_safe_distance);
+				wpdist = nav_wp_safe_distance;
+				sb.append_printf("%um\n", safehome_max_distance);
 				break;
 			case "nav_fw_land_approach_length":
-				if (len == 4) {
-					uint32 fwlal;
-					SEDE.deserialise_u32(raw, out fwlal);
-					fwlal /= 100;
-					if (fwlal != FWPlot.nav_fw_land_approach_length) {
-						FWPlot.nav_fw_land_approach_length = fwlal;
-						fwachanged = true;
-					}
-					sb.append_printf("%um\n", FWPlot.nav_fw_land_approach_length);
-				} else {
-					sb.append_printf("length error %u\n", len);
+				uint32 fwlal = 0;
+				parse_common_info(raw, len, &fwlal);
+				fwlal /= 100;
+				if (fwlal != FWPlot.nav_fw_land_approach_length) {
+					FWPlot.nav_fw_land_approach_length = fwlal;
+					fwachanged = true;
 				}
+				sb.append_printf("%um\n", FWPlot.nav_fw_land_approach_length);
 				break;
 			case "nav_fw_loiter_radius":
-				if(len == 2) {
-					uint16 fwr;
-					SEDE.deserialise_u16(raw, out fwr);
-					fwr /= 100;
-					if (fwr != FWPlot.nav_fw_loiter_radius) {
-						FWPlot.nav_fw_loiter_radius = fwr;
-						fwachanged = true;
-					}
-					sb.append_printf("%um (%s)\n", FWPlot.nav_fw_loiter_radius, fwachanged.to_string());
-					if(fwachanged) {
-						Safehome.manager.redraw_homes();
-						MissionManager.update_all_fwa();
-						fwachanged = false;
-					}
-				} else {
-					sb.append_printf("length error %u\n", len);
+				uint16 fwr = 0;
+				parse_common_info(raw, len, &fwr);
+				fwr /= 100;
+				if (fwr != FWPlot.nav_fw_loiter_radius) {
+					FWPlot.nav_fw_loiter_radius = fwr;
+					fwachanged = true;
+				}
+				sb.append_printf("%um (%s)\n", FWPlot.nav_fw_loiter_radius, fwachanged.to_string());
+				if(fwachanged) {
+					Safehome.manager.redraw_homes();
+					MissionManager.update_all_fwa();
+					fwachanged = false;
 				}
 				break;
 
 			case "inav_max_eph_epv":
 				// .. all the world's a VAX
-				if (len == 4) {
-					float f = (float)*((float*)raw);
-					inav_max_eph_epv = (uint16)f;
-					sb.append_printf("%u\n", inav_max_eph_epv);
-				} else {
-					sb.append_printf("length error %u\n", len);
-				}
+				float f = 0f;
+				parse_common_info(raw, len, &f);
+				inav_max_eph_epv = (uint16)f;
+				sb.append_printf("%u\n", inav_max_eph_epv);
 				break;
 			case "nav_rth_home_offset_distance":
-				if(len == 2) {
-					SEDE.deserialise_u16(raw, out nav_rth_home_offset_distance);
-					sb.append_printf("%um\n", nav_rth_home_offset_distance/100);
-					if(nav_rth_home_offset_distance != 0) {
-						request_common_setting("nav_rth_home_offset_direction");
-					}
-				} else {
-					sb.append_printf("length error %u\n", len);
+				parse_common_info(raw, len, &nav_rth_home_offset_distance);
+				sb.append_printf("%um\n", nav_rth_home_offset_distance/100);
+				if(nav_rth_home_offset_distance != 0) {
+					request_common_setting("nav_rth_home_offset_direction");
 				}
 				break;
 			case "nav_rth_home_offset_direction":
-				if (len == 2) {
-					uint16 odir;
-					SEDE.deserialise_u16(raw, out odir);
-					sb.append_printf("%u°\n", odir);
-				} else {
-					sb.append_printf("length error %u\n", len);
-				}
+				uint16 odir = 0;
+				parse_common_info(raw, len, &odir);
+				sb.append_printf("%u°\n", odir);
 				break;
 			default:
-				sb.append_printf("**UNKNOWN**\n");
+				sb.append_printf("**UNKNOWN %s**\n", (string)raw);
 				break;
 			}
 			MWPLog.message(sb.str);
