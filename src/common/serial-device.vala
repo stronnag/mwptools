@@ -747,7 +747,7 @@ public class MWSerial : Object {
 #if !WINDOWS
 					while (sz < 0) {
 						if(lasterr == Posix.EAGAIN || lasterr == Posix.EINTR) {
-							Thread.usleep(50);
+							Thread.usleep(1000);
 							sz =  _write(sqi.data, sqi.len);
 						} else {
 							MWPLog.message(":Serial writer:  %s\n", format_last_err());
@@ -760,6 +760,7 @@ public class MWSerial : Object {
 						ok = false;
 					}
 #endif
+                    Thread.usleep(100);
 				}
 				while(sq.try_pop() != null)
 					;
