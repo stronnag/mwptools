@@ -64,6 +64,7 @@ namespace Mwp {
 
 	StartupTasks starttasks = 0;
 	bool need_startup= false;
+	bool can_startup = false;
 
     private void msp_publish_home(uint8 id) {
         if(id < Safehome.MAXHOMES) {
@@ -100,7 +101,6 @@ namespace Mwp {
     }
 
 	private void request_common_setting(string s) {
-		lastsetting = s;
 		uint8 msg[128];
 		var k = 0;
 		for(; k < s.length; k++) {
@@ -789,21 +789,7 @@ namespace Mwp {
 			need_startup = true;
 			if(vi.fc_vers >= FCVERS.hasTZ) {
 				string maxdstr = (vi.fc_vers >= FCVERS.hasWP1m) ? "nav_wp_max_safe_distance" : "nav_wp_safe_distance";
-				MWPLog.message("Requesting common settings\n");
 				request_common_setting(maxdstr);
-				request_common_setting("inav_max_eph_epv");
-				request_common_setting("gps_min_sats");
-				if(vi.fc_vers > FCVERS.hasJUMP && vi.fc_vers <= FCVERS.hasPOI) { // also 2.6 feature
-					request_common_setting("nav_rth_home_offset_distance");
-				}
-				if(vi.fc_vers >= FCVERS.hasSAFEAPI) {
-					request_common_setting("safehome_max_distance");
-				}
-				if(vi.fc_vers >= FCVERS.hasFWApp) {
-					fwachanged = false;
-					request_common_setting("nav_fw_land_approach_length");
-					request_common_setting("nav_fw_loiter_radius");
-				}
 			}
 
 			if(vi.fc_vers > FCVERS.hasSAFEAPI && conf.autoload_safehomes) {
@@ -841,7 +827,7 @@ namespace Mwp {
 
 		case Msp.Cmds.COMMON_SETTING_INFO:
 			var sb = new StringBuilder();
-			sb.append_printf("Received %s: ", (string)raw);
+			sb.append_printf("Receive setting %s: ", (string)raw);
 			switch ((string)raw) {
 			case "nav_wp_multi_mission_index":
 				uint _imdx = 0;
@@ -856,27 +842,85 @@ namespace Mwp {
 					wpmgr.wp_flag &= ~WPDL.KICK_DL;
 					start_download();
 				}
+				MWPLog.message(sb.str);
 				break;
-			case "gps_min_sats":
-				parse_common_info(raw, len, &msats);
-				sb.append_printf("%u\n", msats);
-				break;
+
 			case "nav_wp_safe_distance":
 				parse_common_info(raw, len, &nav_wp_safe_distance);
 				wpdist = nav_wp_safe_distance / 100;
 				sb.append_printf("%um\n", wpdist);
+				MWPLog.message(sb.str);
+				request_common_setting("inav_max_eph_epv");
 				break;
+
+			case "nav_wp_max_safe_distance":
+				parse_common_info(raw, len, &nav_wp_safe_distance);
+				wpdist = nav_wp_safe_distance;
+				sb.append_printf("%um\n", safehome_max_distance);
+				MWPLog.message(sb.str);
+				request_common_setting("inav_max_eph_epv");
+				break;
+
+			case "inav_max_eph_epv":
+				// .. all the world's a VAX
+				float f = 0f;
+				parse_common_info(raw, len, &f);
+				inav_max_eph_epv = (uint16)f;
+				sb.append_printf("%u\n", inav_max_eph_epv);
+				MWPLog.message(sb.str);
+				request_common_setting("gps_min_sats");
+				break;
+
+			case "gps_min_sats":
+				parse_common_info(raw, len, &msats);
+				sb.append_printf("%u\n", msats);
+				MWPLog.message(sb.str);
+				if(vi.fc_vers > FCVERS.hasJUMP && vi.fc_vers <= FCVERS.hasPOI) { // 2.6 feature
+					request_common_setting("nav_rth_home_offset_distance");
+				} else {
+					request_common_setting("safehome_max_distance");
+				}
+				break;
+
+			case "nav_rth_home_offset_distance":
+				parse_common_info(raw, len, &nav_rth_home_offset_distance);
+				sb.append_printf("%um\n", nav_rth_home_offset_distance/100);
+				MWPLog.message(sb.str);
+				if(nav_rth_home_offset_distance != 0) {
+					request_common_setting("nav_rth_home_offset_direction");
+				} else if(vi.fc_vers >= FCVERS.hasSAFEAPI) {
+					request_common_setting("safehome_max_distance");
+				} else {
+					can_startup = true;
+				}
+				break;
+
+			case "nav_rth_home_offset_direction":
+				uint16 odir = 0;
+				parse_common_info(raw, len, &odir);
+				sb.append_printf("%u°\n", odir);
+				MWPLog.message(sb.str);
+				if(vi.fc_vers >= FCVERS.hasSAFEAPI) {
+					request_common_setting("safehome_max_distance");
+				} else {
+					can_startup = true;
+				}
+				break;
+
 			case "safehome_max_distance":
 				parse_common_info(raw, len, &safehome_max_distance);
 				safehome_max_distance /= 100;
 				Safehome.manager.set_distance(safehome_max_distance);
 				sb.append_printf("%um\n", wpdist);
+				MWPLog.message(sb.str);
+				if(vi.fc_vers >= FCVERS.hasFWApp) {
+					fwachanged = false;
+					request_common_setting("nav_fw_land_approach_length");
+				} else {
+					can_startup = true;
+				}
 				break;
-			case "nav_wp_max_safe_distance":
-				parse_common_info(raw, len, &nav_wp_safe_distance);
-				wpdist = nav_wp_safe_distance;
-				sb.append_printf("%um\n", safehome_max_distance);
-				break;
+
 			case "nav_fw_land_approach_length":
 				uint32 fwlal = 0;
 				parse_common_info(raw, len, &fwlal);
@@ -886,7 +930,10 @@ namespace Mwp {
 					fwachanged = true;
 				}
 				sb.append_printf("%um\n", FWPlot.nav_fw_land_approach_length);
+				MWPLog.message(sb.str);
+				request_common_setting("nav_fw_loiter_radius");
 				break;
+
 			case "nav_fw_loiter_radius":
 				uint16 fwr = 0;
 				parse_common_info(raw, len, &fwr);
@@ -896,44 +943,26 @@ namespace Mwp {
 					fwachanged = true;
 				}
 				sb.append_printf("%um (%s)\n", FWPlot.nav_fw_loiter_radius, fwachanged.to_string());
+				MWPLog.message(sb.str);
 				if(fwachanged) {
 					Safehome.manager.redraw_homes();
 					MissionManager.update_all_fwa();
 					fwachanged = false;
 				}
+				can_startup = true;
 				break;
 
-			case "inav_max_eph_epv":
-				// .. all the world's a VAX
-				float f = 0f;
-				parse_common_info(raw, len, &f);
-				inav_max_eph_epv = (uint16)f;
-				sb.append_printf("%u\n", inav_max_eph_epv);
-				break;
-			case "nav_rth_home_offset_distance":
-				parse_common_info(raw, len, &nav_rth_home_offset_distance);
-				sb.append_printf("%um\n", nav_rth_home_offset_distance/100);
-				if(nav_rth_home_offset_distance != 0) {
-					request_common_setting("nav_rth_home_offset_direction");
-				}
-				break;
-			case "nav_rth_home_offset_direction":
-				uint16 odir = 0;
-				parse_common_info(raw, len, &odir);
-				sb.append_printf("%u°\n", odir);
-				break;
 			default:
 				sb.append_printf("**UNKNOWN %s**\n", (string)raw);
+				MWPLog.message(sb.str);
 				break;
 			}
-			MWPLog.message(sb.str);
-			if ((string)raw == lastsetting) {
-				if(need_startup) {
-					need_startup = false;
-					handle_misc_startup();
-				}
-				lastsetting = null;
+			if(need_startup && can_startup) {
+				can_startup = false;
+				need_startup = false;
+				handle_misc_startup();
 			}
+
 			break;
 
 		case Msp.Cmds.STATUS:

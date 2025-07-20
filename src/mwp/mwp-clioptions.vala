@@ -38,7 +38,6 @@ namespace Mwp {
 	bool sticks_ok;
 	bool bblosd_ok;
     uint8 spapi =  0;
-	string? lastsetting;
 	MSP_WP_GETINFO wpi;
 	uint gpsintvl = 0;
     int nrings = 0;
