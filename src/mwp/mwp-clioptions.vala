@@ -38,7 +38,7 @@ namespace Mwp {
 	bool sticks_ok;
 	bool bblosd_ok;
     uint8 spapi =  0;
-	Queue<string> csdq;
+	string? lastsetting;
 	MSP_WP_GETINFO wpi;
 	uint gpsintvl = 0;
     int nrings = 0;
@@ -255,7 +255,6 @@ namespace Cli {
         if (Environment.get_variable("CFG_UGLY_XML") != null) {
 			XmlIO.ugly = true;
 		}
-		Mwp.csdq = new Queue<string>();
 
         if(Mwp.exvox == null) {
 			uint8 spapi_mask  = MwpSpeech.get_api_mask();

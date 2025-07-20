@@ -100,7 +100,7 @@ namespace Mwp {
     }
 
 	private void request_common_setting(string s) {
-		csdq.push_tail(s);
+		lastsetting = s;
 		uint8 msg[128];
 		var k = 0;
 		for(; k < s.length; k++) {
@@ -840,7 +840,6 @@ namespace Mwp {
 			break;
 
 		case Msp.Cmds.COMMON_SETTING_INFO:
-			csdq.pop_head();
 			var sb = new StringBuilder();
 			sb.append_printf("Received %s: ", (string)raw);
 			switch ((string)raw) {
@@ -928,11 +927,12 @@ namespace Mwp {
 				break;
 			}
 			MWPLog.message(sb.str);
-			if(csdq.is_empty ()) {
+			if ((string)raw == lastsetting) {
 				if(need_startup) {
 					need_startup = false;
 					handle_misc_startup();
 				}
+				lastsetting = null;
 			}
 			break;
 
