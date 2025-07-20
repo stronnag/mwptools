@@ -114,7 +114,7 @@ namespace Msp {
 		Mwp.msp.is_main = true;
 		Mwp.mq = new Queue<Msp.MQI?>();
         Mwp.lastmsg = Msp.MQI(){cmd = Msp.Cmds.INVALID};
-		Mwp.csdq = new Queue<string>();
+		Mwp.lastsetting = null;
 		Mwp.fwddev = new Forwarder(Mwp.forward_device);
         Mwp.msp.serial_lost.connect(() => {
 				close_serial();
@@ -214,7 +214,6 @@ namespace Msp {
 				Mwp.nopoll = Mwp.xnopoll;
 		}
         MWPLog.message("Serial closed replay %d\n", Mwp.replayer);
-		Mwp.csdq.clear();
 		Mwp.clear_gps_flash();
         if(Mwp.inhibit_cookie != 0) {
 			MwpIdle.uninhibit(Mwp.inhibit_cookie);
