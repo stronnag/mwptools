@@ -1734,9 +1734,12 @@ mwp-log-replay -d udp://localhost:40001 /path/to/my/logfile.raw
 </ul>
 <h2 id="interactive-player">Interactive player<a class="headerlink" href="#interactive-player" title="Permanent link">#</a></h2>
 <p>The (new, July 2025) "interactive" player loads a somewhat familiar chooser for Blackbox and OTX/ETX logs.</p>
+<p><img alt="log-chooser" src="../images/mwp-interactive-replay-chooser.png" /></p>
 <ul>
 <li>Selecting a log entry and clicking "OK" will present the player; if the (default) "Autostart" chooser option was enabled, then replay starts immediately, otherwise the replay can be manually started.</li>
-<li>The replay may be paused / advanced / retarded / restarted using the play button / slider / goto start / goto end buttons.</li>
+<li>The replay may be paused / advanced / retarded / restarted using the play button / slider / goto start / goto end buttons.
+  <img alt="slider" src="../images/mwp-play-slider.png" /></li>
+<li>The replay may be single stepped, with the "slider" in focus,  using the "arrow" (⇦, ⇨) keys, and "paged" (jumped) using the "Page Up" / "Page Down") keys.</li>
 <li>Closing the slider window terminates the replay.</li>
 <li>If the log file contains multiple logs,  there will be a player menu so one can switch logs without having to re-parse the whole file.</li>
 </ul>
@@ -1744,11 +1747,12 @@ mwp-log-replay -d udp://localhost:40001 /path/to/my/logfile.raw
 <h3 id="other-notes">Other notes<a class="headerlink" href="#other-notes" title="Permanent link">#</a></h3>
 <ul>
 <li>Some feature of the extant replay will not be implemented at first (video linking, mission "OSD" (if at all)).</li>
-<li>The "Flight Statistics" dialog is updated whenever the replay is paused (or closed). It always details for  the whole flight rather than incremental  values.</li>
+<li>The "Flight Statistics" dialog is updated whenever the replay is paused (or closed). It always shows details for  the whole flight rather than incremental  values.</li>
 <li>Direction (GGS v. mag) analysis is not yet implemented.</li>
 <li>The new chooser / player will be used for command line<code>-b, --replay-bbox</code> and drag / drop files on to the mwp window if the environment variable <code>MWP_PREFER_XLOG</code> is set (to anything), e.g:
 <div class="highlight"><pre><span></span><code>  $ MWP_PREFER_XLOG=1 mwp -b /t/inav-contrib/LOG00006.TXT
 </code></pre></div></li>
+<li>Setting <code>MWP_PREFER_XLOG</code> also has the side effect of showing the sample number in the slider (as above image).</li>
 </ul>
 
 
