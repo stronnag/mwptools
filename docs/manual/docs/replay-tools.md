@@ -99,8 +99,12 @@ Where such data is available (Blackbox, OTX/ETX logs), {{ mwp }} can display the
 
 The (new, July 2025) "interactive" player loads a somewhat familiar chooser for Blackbox and OTX/ETX logs.
 
+![log-chooser](images/mwp-interactive-replay-chooser.png)
+
 * Selecting a log entry and clicking "OK" will present the player; if the (default) "Autostart" chooser option was enabled, then replay starts immediately, otherwise the replay can be manually started.
 * The replay may be paused / advanced / retarded / restarted using the play button / slider / goto start / goto end buttons.
+  ![slider](images/mwp-play-slider.png)
+* The replay may be single stepped, with the "slider" in focus,  using the "arrow" (⇦, ⇨) keys, and "paged" (jumped) using the "Page Up" / "Page Down") keys.
 * Closing the slider window terminates the replay.
 * If the log file contains multiple logs,  there will be a player menu so one can switch logs without having to re-parse the whole file.
 
@@ -109,9 +113,10 @@ The (new, July 2025) "interactive" player loads a somewhat familiar chooser for 
 ### Other notes
 
 * Some feature of the extant replay will not be implemented at first (video linking, mission "OSD" (if at all)).
-* The "Flight Statistics" dialog is updated whenever the replay is paused (or closed). It always details for  the whole flight rather than incremental  values.
+* The "Flight Statistics" dialog is updated whenever the replay is paused (or closed). It always shows details for  the whole flight rather than incremental  values.
 * Direction (GGS v. mag) analysis is not yet implemented.
 * The new chooser / player will be used for command line` -b, --replay-bbox` and drag / drop files on to the mwp window if the environment variable `MWP_PREFER_XLOG` is set (to anything), e.g:
 ```
   $ MWP_PREFER_XLOG=1 mwp -b /t/inav-contrib/LOG00006.TXT
 ```
+* Setting `MWP_PREFER_XLOG` also has the side effect of showing the sample number in the slider (as above image).
