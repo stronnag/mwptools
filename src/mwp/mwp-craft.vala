@@ -18,7 +18,6 @@
  */
 
 /* Layer usage
-   crpath     : craft movement (grey path, coloured dots)
    crlayer    : craft icon
    pmlayer  : special points (home, RTH, WP start)
 */
@@ -51,7 +50,6 @@ public class Craft : Object {
 	private MWPMarker cricon;
 	private Shumate.MarkerLayer crlayer;
 	private bool trail;
-	private Shumate.PathLayer   crpath;
 	private Shumate.MarkerLayer pmlayer;
 	private int npath = 0;
 	private int mpath = 0;
@@ -94,14 +92,9 @@ public class Craft : Object {
 	public Craft (string img=MODEL_IMG) {
 		cricon = new MWPMarker.from_image_file(img);
 		path_colour = trk_cyan;
-        IconTools.Hexcol ladyjane = {0xa0, 0xa0, 0xa0, 0xa0}; //grey (of course)
         pmlayer = new Shumate.MarkerLayer(Gis.map.viewport);
-        crpath = new Shumate.PathLayer(Gis.map.viewport);
         crlayer = new Shumate.MarkerLayer(Gis.map.viewport);
-        crpath.set_stroke_color(ladyjane.to_rgba());
-        crpath.set_stroke_width (4);
 
-		Gis.map.insert_layer_above (crpath, Gis.hp_layer); // above home layer
 		Gis.map.insert_layer_above (crlayer, Gis.hm_layer); // above home layer
 		Gis.map.insert_layer_above (pmlayer, Gis.mp_layer); // above mission path layer
         posp = rthp = wpp = null;
@@ -122,7 +115,6 @@ public class Craft : Object {
 		var nds = pmlayer.get_markers();
 		if (nds.length() != 0) {
 			pmlayer.remove_all();
-			crpath.remove_all();
 		}
 		npath = 0;
 		mpath = 0;
@@ -168,7 +160,6 @@ public class Craft : Object {
                     }
                 }
             }
-			//crpath.add_node(marker);
 			npath++;
         }
 		cricon.set_location (lat, lon);
@@ -181,48 +172,26 @@ public class Craft : Object {
 		}
     }
 
-	/*
-	public void info() {
-		var nds = pmlayer.get_markers();
-		var mk = nds.first().data as MWPMarker;
-		var mkx = nds.last().data as MWPMarker;
-		MWPLog.message("Craft.info %u %d %d\n", nds.length(), mk.no, mkx.no);
-	}
-	*/
-	/*
-	public void remove_at(int n) {
-		var nds = pmlayer.get_markers();
-		var k = nds.length()-1;
-		for(var j = k; j != 0 ; j--) {
-			var mkx = nds.nth_data(j) as MWPMarker;
-			if (mkx != null && mkx.no >= n) {
-				pmlayer.remove_marker(mkx);
-			} else {
-				break;
-			}
-		}
-	}
-	*/
 	public void remove_back(int startat, int n) {
 		for(var j = startat; j >= n; j--) {
 			var nds = pmlayer.get_markers();
 			var k = nds.length()-1;
-			//var mkz = nds.nth_data(k) as MWPMarker;
-			//var ln = mkz.no;
-			//print("Starting at %u (%u) for %d with no=%d\n", nds.length(), k, j, ln);
 			for(int jj = (int)k; jj >= 0 ; jj--) {
-				//print(" get element  %u from %u\n",  jj, k);
 				var mkx = nds.nth_data(jj) as MWPMarker;
 				if (mkx != null && mkx.no >= j) {
-					//print("  remove no=%d at %u\n", j, jj);
 					pmlayer.remove_marker(mkx);
-					//print("  removed %d\n", j);
+					if(mkx == posp) {
+						posp = null;
+					} else if(mkx == rthp) {
+						rthp = null;
+					} else 	if(mkx == wpp) {
+						wpp = null;
+					}
 				} else {
 					break;
 				}
 			}
 		}
-		//print("Was removing %d - %d\n", startat, n);
 	}
 
 	public void set_normal() {

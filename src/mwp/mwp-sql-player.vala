@@ -53,14 +53,12 @@ public class SQLSlider : Gtk.Window {
 				pstate = true;
 				toggle_pstate();
 				dragq.push(0.0);
-				slider.set_value(0.0);
 			});
 
 		end_button.clicked.connect (() => {
 				pstate = true;
 				toggle_pstate();
 				dragq.push(smax);
-				slider.set_value(smax);
 			});
 
 		sp.newpos.connect((v) => {
@@ -141,7 +139,6 @@ public class SQLSlider : Gtk.Window {
 		slider = new Gtk.Scale.with_range(Gtk.Orientation.HORIZONTAL, 0, smax, 1);
 		slider.set_draw_value(Environment.get_variable("MWP_PREFER_XLOG") != null);
 		slider.change_value.connect((stype, d) => {
-				slider.set_value(d);
 				if(pstate) {
 					toggle_pstate();
 				}
@@ -233,6 +230,7 @@ public class SQLPlayer : Object {
 									Mwp.craft.remove_back(startat, n);
 									display(tx);
 									startat = tx.idx;
+									newpos(n);
 									return false;
 								});
 						}
@@ -247,9 +245,9 @@ public class SQLPlayer : Object {
 								startat = tx.idx;
 								Idle.add(() => {
 										display(tx);
+										newpos(j);
 										return false;
 									});
-								Thread.usleep(5);
 							}
 						}
 					}
