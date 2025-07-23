@@ -368,7 +368,7 @@ namespace SLG {
 					df = fn[:n];
 				}
 				var pb = new PathBuf();
-				pb.push(Environment.get_tmp_dir());
+				pb.push(Utils.get_tmp_dir());
 				pb.push(df);
 				pb.set_extension("db");
 				dbname = pb.to_path();

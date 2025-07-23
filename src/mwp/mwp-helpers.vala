@@ -227,61 +227,6 @@ namespace PosFormat  {
 }
 
 namespace Utils {
-#if TACKYBOX
-	public class Warning_box : Gtk.Window {
-		private uint tid;
-		public Warning_box(string warnmsg, int timeout = 0, Gtk.Window? w = null, Gtk.Widget? extra=null) {
-			MWPLog.message("Warning: %s\n", warnmsg);
-			tid = 0;
-			title = "Mwp Message";
-			var vbox = new Gtk.Box(Gtk.Orientation.VERTICAL, 8);
-			var hbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 12);
-			var label = new Gtk.Label(null);
-			label.use_markup = true;
-			label.label = warnmsg;
-			//label.margin = 8;
-			label.hexpand = true;
-
-			hbox.append(label);
-			vbox.append((hbox));
-
-			var button = new Gtk.Button.with_label("OK");
-			button.hexpand = false;
-			button.halign = Gtk.Align.END;
-			button.vexpand = false;
-
-			if(extra != null) {
-				vbox.append(extra);
-			}
-
-			vbox.append(button);
-
-			button.clicked.connect(() => {
-					/*					if(tid != 0) {
-						Source.remove(tid);
-					}
-					*/
-					this.close();
-				});
-			/*
-			if(timeout > 0) {
-				Timeout.add_seconds(timeout, () => {
-						tid = 0;
-						this.close();
-						return false;;
-					});
-			}
-			*/
-			label.selectable = true;
-			set_child(vbox);
-			if(w == null) {
-				w = Mwp.window;
-			}
-			set_transient_for(w);
-		}
-	}
-
-#else
 	public class Warning_box : Object {
 		public uint tid = 0;
 		public  Adw.AlertDialog am;
@@ -319,9 +264,24 @@ namespace Utils {
 		public void present() {
 			am.present(w);
 		}
-
 	}
+
+	public string get_tmp_dir() {
+		var t = Environment.get_tmp_dir();
+#if !WINDOWS
+		var ps = ".mwp-%lu-%d".printf(Posix.getuid(), Posix.getpid());
+#else
+		var ps = ".mwp-%s-%d".printf(Environment.get_user_name(), Posix.getpid());
 #endif
+		var tmpname = Path.build_filename(t, ps);
+		var f = File.new_for_path(tmpname);
+		if(f.query_exists() == false) {
+			try {
+				f.make_directory_with_parents();
+            } catch {};
+		}
+		return tmpname;
+	}
 
 	public void rmrf(string dname) {
 		try {
@@ -402,7 +362,7 @@ namespace Utils {
 	}
 
     public string mstempname(bool xlate = true) {
-        var t = Environment.get_tmp_dir();
+        var t = Utils.get_tmp_dir();
         var ir = new Rand().int_range (0, 0xffffff);
         var s = Path.build_filename (t, ".mi-%d-%08x.xml".printf(Posix.getpid(), ir));
         return s;

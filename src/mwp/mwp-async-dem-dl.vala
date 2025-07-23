@@ -78,7 +78,7 @@ public class AsyncDL : Object  {
 								MWPLog.message("Skipping %s\n", xfn);
 								Posix.close(fd);
 							} else {
-								var tmp = Environment.get_tmp_dir();
+								var tmp = Utils.get_tmp_dir();
 								var fn = s + ".gz";
 								var uri = "https://s3.amazonaws.com/elevation-tiles-prod/skadi/" + fn[0:3]+"/"+ fn;
 								fn = tmp + "/" + fn;

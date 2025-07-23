@@ -25,7 +25,7 @@ namespace TAClean {
 	}
 
 	public string get_tmp(int pid) {
-		return Path.build_filename(Environment.get_tmp_dir(), ".mplot_%d".printf(pid));
+		return Path.build_filename(Utils.get_tmp_dir(), ".mplot_%d".printf(pid));
 	}
 }
 
