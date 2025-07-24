@@ -428,14 +428,18 @@ namespace  UpdateFile {
 }
 
 
-namespace Rebase {
-	struct Point {
-		double lat;
-		double lon;
+public class Rebase  : Object {
+	public struct Point {
+		public double lat;
+		public double lon;
 	}
-	Point orig;
-	Point reloc;
-	uint8 status;
+	public Point orig;
+	public Point reloc;
+	public uint8 status;
+
+	public Rebase() {
+		status = 0;
+	}
 
 	public void set_reloc(double rlat, double rlon) {
 		reloc.lat = rlat;
@@ -459,6 +463,10 @@ namespace Rebase {
 
 	public bool is_valid() {
 		return ((status & 3) == 3);
+	}
+
+	public void set_invalid() {
+		status &= ~2;;
 	}
 
 	public void relocate(ref double lat, ref double lon) {

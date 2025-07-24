@@ -233,7 +233,7 @@ namespace MissionManager {
 				}
 				mnp += m.npoints;
 			}
-			if(Rebase.has_reloc()) {
+			if(Mwp.rebase.has_reloc()) {
 				for(var j = 0; j < msx.length; j++) {
 					rewrite_mission(ref msx[j]);
 				}
@@ -354,12 +354,15 @@ namespace MissionManager {
 	}
 
 	private void rewrite_mission(ref Mission m) {
-		if (Rebase.has_reloc()) {
+		if (Mwp.rebase.has_reloc()) {
 			if (m.homex != 0 && m.homey != 0) {
-				Rebase.set_origin(m.homey, m.homex);
+				if (!Mwp.rebase.has_origin()) {
+					Mwp.rebase.set_origin(m.homey, m.homex);
+					MWPLog.message("Mission Set rebase %f %f\n", m.homey, m.homex);
+				}
 			}
-			m.homey = Rebase.reloc.lat;
-			m.homex = Rebase.reloc.lon;
+			m.homey = Mwp.rebase.reloc.lat;
+			m.homex = Mwp.rebase.reloc.lon;
 			m.maxy=-90;
 			m.maxx=-180;
 			m.miny=90;
@@ -368,21 +371,21 @@ namespace MissionManager {
 
 		for(var i = 0; i < m.npoints; i++) {
 			if (m.points[i].is_geo()) {
-				if(!Rebase.is_valid()) {
+				if(!Mwp.rebase.is_valid()) {
 					MWPLog.message("WARNING: No home for relocated mission, using WP %d\n",
 								   m.points[i].no);
-					Rebase.set_origin(m.points[i].lat, m.points[i].lon);
+					Mwp.rebase.set_origin(m.points[i].lat, m.points[i].lon);
 				}
 				var _lat = m.points[i].lat;
 				var _lon = m.points[i].lon;
-				Rebase.relocate(ref _lat, ref _lon);
+				Mwp.rebase.relocate(ref _lat, ref _lon);
 				m.points[i].lat = _lat;
 				m.points[i].lon = _lon;
 				m.check_wp_sanity(ref m.points[i]);
 			}
 		}
-		if (Rebase.is_valid()) {
-			Rebase.relocate(ref m.cy, ref m.cx);
+		if (Mwp.rebase.is_valid()) {
+			Mwp.rebase.relocate(ref m.cy, ref m.cx);
 		}
 	}
 

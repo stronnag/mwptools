@@ -64,8 +64,8 @@ namespace Flysky {
 			double ddm;
 			double dlat = t.ilat / 1e7;
 			double dlon = t.ilon / 1e7;
-			if(Rebase.is_valid()) {
-				Rebase.relocate(ref dlat, ref dlon);
+			if(Mwp.rebase.is_valid()) {
+				Mwp.rebase.relocate(ref dlat, ref dlon);
 			}
 
 			var cse = Mwp.calc_cse_dist_delta(dlat, dlon, out ddm);

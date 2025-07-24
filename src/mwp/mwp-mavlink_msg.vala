@@ -124,12 +124,12 @@ namespace Mwp {
 			double mlat = m.lat/1e7;
 			double mlon = m.lon/1e7;
 
-			if (Rebase.has_reloc()) {
+			if (rebase.has_reloc()) {
 				if (mlat != 0.0 && mlon != 0.0) {
-					if (!Rebase.has_origin()) {
-						Rebase.set_origin(mlat, mlon);
+					if (!rebase.has_origin()) {
+						rebase.set_origin(mlat, mlon);
 					}
-					Rebase.relocate(ref mlat, ref mlon);
+					rebase.relocate(ref mlat, ref mlon);
 				}
 			}
 
@@ -272,12 +272,12 @@ namespace Mwp {
 			double mlat =  m.latitude / 1e7;
 			double mlon = m.longitude / 1e7;
 
-			if (Rebase.has_reloc()) {
+			if (rebase.has_reloc()) {
 				if (mlat != 0.0 && mlon != 0.0) {
-					if (!Rebase.has_origin()) {
-						Rebase.set_origin(mlat, mlon);
+					if (!rebase.has_origin()) {
+						rebase.set_origin(mlat, mlon);
 					}
-					Rebase.relocate(ref mlat, ref mlon);
+					rebase.relocate(ref mlat, ref mlon);
 				}
 			}
 			if (ser.is_main) {

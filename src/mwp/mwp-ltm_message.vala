@@ -34,12 +34,12 @@ namespace Mwp {
 
 			of.fix = raw[13];
 			if(ser.is_main) {
-				if (Rebase.has_reloc()) {
+				if (rebase.has_reloc()) {
 					if (lat != 0.0 && lon != 0.0) {
-						if (!Rebase.has_origin()) {
-							Rebase.set_origin(lat, lon);
+						if (!rebase.has_origin()) {
+							rebase.set_origin(lat, lon);
 						}
-						Rebase.relocate(ref lat, ref lon);
+						rebase.relocate(ref lat, ref lon);
 					}
 				}
 				if(home_changed(lat, lon)) {
@@ -81,13 +81,13 @@ namespace Mwp {
 			gf.sats = *rp;
 			double lat = gf.lat/1.0e7;
 			double lon = gf.lon/1.0e7;
-			if (Rebase.has_reloc()) {
+			if (rebase.has_reloc()) {
 				if (lat != 0.0 && lon != 0.0) {
-					if (!Rebase.has_origin()) {
-							Rebase.set_origin(lat, lon);
+					if (!rebase.has_origin()) {
+							rebase.set_origin(lat, lon);
 					}
 				}
-				Rebase.relocate(ref lat,ref lon);
+				rebase.relocate(ref lat,ref lon);
 			}
 			gf.alt /= 100;
 			var fix = (gf.sats & 3);

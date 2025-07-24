@@ -283,6 +283,12 @@
       <description>Directory for log files (for save), default / not set  = current directory</description>
     </key>
 
+    <key name="sqlite-log-path" type="s">
+      <default>""</default>
+      <summary>Directory to save SQLite log files</summary>
+      <description>Directory to save SQLite log files, if not set, SQLite log files ("Interactive FlightLog replay" are not persisted.</description>
+    </key>
+
     <key name="speech-api" type="s">
       <choices>
         <choice value='none'/>

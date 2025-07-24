@@ -42,6 +42,7 @@ namespace Mwp {
 	uint gpsintvl = 0;
     int nrings = 0;
     double ringint = 0;
+	Rebase rebase;
 }
 
 namespace Cli {
@@ -289,7 +290,7 @@ namespace Cli {
 			double dlon = 0;
 			uint zz = 0;
 			if (LLparse.llparse(Mwp.rebasestr, ref dlat, ref dlon, ref zz)) {
-				Rebase.set_reloc(dlat, dlon);
+				Mwp.rebase.set_reloc(dlat, dlon);
 				MWPLog.message("Rebase to %f %f\n", dlat, dlon);
 			}
         }
@@ -324,9 +325,9 @@ namespace Cli {
         Mwp.clon = Mwp.conf.longitude;
         var zm = Mwp.conf.zoom;
 
-        if(Rebase.has_reloc()) {
-            Mwp.clat = Rebase.reloc.lat;
-            Mwp.clon = Rebase.reloc.lon;
+        if(Mwp.rebase.has_reloc()) {
+            Mwp.clat = Mwp.rebase.reloc.lat;
+            Mwp.clon = Mwp.rebase.reloc.lon;
 			MWPLog.message(":DBG: Using reloc %f %f\n", Mwp.clat, Mwp.clon);
         }
 
@@ -414,7 +415,7 @@ namespace Cli {
 			Mwp.sh_load = null;
 			if (vfn != null) {
 				Safehome.manager.load_homes(vfn, Mwp.sh_disp);
-				  if(Rebase.is_valid()) {
+				  if(Mwp.rebase.is_valid()) {
 					  Safehome.manager.relocate_safehomes();
 				  }
 			}

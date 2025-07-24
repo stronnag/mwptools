@@ -21,7 +21,7 @@ namespace SQL {
 	public struct Meta {
 		int id;
 		string dtg;
-		int duration;
+		double duration;
 		string name;
 		string firmware;
 	}
@@ -101,7 +101,7 @@ namespace SQL {
 			while (mtstmt.step () == Sqlite.ROW) {
 				m.id = idx;
 				m.dtg = mtstmt.column_text(0);
-				m.duration = mtstmt.column_int(1);
+				m.duration = mtstmt.column_double(1);
 				m.name = mtstmt.column_text(2);
 				m.firmware = mtstmt.column_text(3);
 				n++;
@@ -119,7 +119,7 @@ namespace SQL {
                 var m = Meta();
 				m.id = stmt.column_int(0);
 				m.dtg = stmt.column_text(1);
-				m.duration = stmt.column_int(2);
+				m.duration = stmt.column_double(2);
 				m.name = stmt.column_text(3);
 				m.firmware = stmt.column_text(4);
 				n++;

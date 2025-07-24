@@ -187,6 +187,7 @@ namespace Mwp {
 
 			Mwp.window = this;
 			Mwp.toaster = toaster;
+			Mwp.rebase = new Rebase();
 
 			var provider = new Gtk.CssProvider ();
 			string cssfile = MWPUtils.find_conf_file("mwp.css");

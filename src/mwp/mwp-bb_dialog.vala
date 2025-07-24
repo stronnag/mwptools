@@ -627,8 +627,8 @@ namespace BBL {
 				}
 			}
 
-			if (Rebase.is_valid()) {
-				Rebase.relocate(ref xlat, ref xlon);
+			if (Mwp.rebase.is_valid()) {
+				Mwp.rebase.relocate(ref xlat, ref xlon);
 			}
 			MWPLog.message("Getting base location from index %s %f %f %s\n", index, xlat, xlon, ok.to_string());
 			return ok;
@@ -814,9 +814,9 @@ namespace BBL {
 						}
 						try { chan.shutdown(false); } catch {}
 						if(bbox.minlat > -90 && bbox.maxlat < 90 && bbox.minlon > -180 && bbox.maxlon < 180) {
-							if (Rebase.is_valid()) {
-								Rebase.relocate(ref bbox.minlat, ref bbox.minlon);
-								Rebase.relocate(ref bbox.maxlat, ref bbox.maxlon);
+							if (Mwp.rebase.is_valid()) {
+								Mwp.rebase.relocate(ref bbox.minlat, ref bbox.minlon);
+								Mwp.rebase.relocate(ref bbox.maxlat, ref bbox.maxlon);
 							}
 							Idle.add(()=> { rescale();return false;});
 						}

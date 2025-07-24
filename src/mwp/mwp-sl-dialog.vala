@@ -32,10 +32,7 @@ namespace SLG {
 	bool vactive;
 	int skiptime;
 	int64 nsecs;
-
 	string []mlist;
-
-
 
 	public void replay_bbl(string? fn) {
 		var bbl = new SLG.Window();
@@ -117,6 +114,7 @@ namespace SLG {
 		double clon;
 		int zoom;
 		SQL.Db db;
+
 		string dbname;
 
 		private void setup_factories() {
@@ -216,8 +214,17 @@ namespace SLG {
 						SLGEntry e = lstore.get_item(j) as SLGEntry;
 						if(j == n) {
 							e.issel = true;
+							double hlat, hlon;
 							db.get_bounding_box(e.idx, out bbox);
-							validate_bbox(ref bbox);
+							SQL.TrackEntry t = {};
+							db.get_log_entry(e.idx, 1, out t);
+							hlat = t.hlat;
+							hlon = t.hlon;
+							Rebase rb = new Rebase();
+							if(Mwp.rebase.has_reloc()) {
+								rb.set_reloc(Mwp.rebase.reloc.lat, Mwp.rebase.reloc.lon);
+							}
+							validate_bbox(rb, ref bbox, ref hlat, ref hlon);
 							var z= MapUtils.evince_zoom(bbox);
 							MapUtils.centre_on(bbox.get_centre_latitude(), bbox.get_centre_longitude(), z);
 						} else {
@@ -287,9 +294,12 @@ namespace SLG {
 					if (o != null) {
 						SLG.duras = uint.parse(o.duration);
 					}
-
-					var z= MapUtils.evince_zoom(bbox);
-					MapUtils.centre_on(bbox.get_centre_latitude(), bbox.get_centre_longitude(), z);
+					SQL.TrackEntry t = {};
+					db.get_log_entry(o.idx, 1, out t);
+					var hlat = t.hlat;
+					var hlon = t.hlon;
+					validate_bbox(Mwp.rebase, ref bbox, ref hlat, ref hlon);
+					// already zoomed / centred
 					for(var j = 0; j < lstore.n_items; j++) {
 						SLGEntry e = lstore.get_item(j) as SLGEntry;
 						string ms = "%3d: %s %s".printf(e.idx, e.timestamp, format_duration(e.duration));
@@ -320,7 +330,7 @@ namespace SLG {
 
 			log_btn.clicked.connect(() => {
 					IChooser.Filter []ifm = {
-						{"Flightlog", {"TXT", "bbl", "csv" }},
+						{"Flightlog", {"TXT", "bbl", "csv", "db"}},
 					};
 					var fc = IChooser.chooser(Mwp.conf.logpath, ifm);
 					fc.title = "Open Flightlog File";
@@ -363,16 +373,27 @@ namespace SLG {
 				var fn = bblname.get_basename();
 				log_name.label = fn;
 				string df = fn;
+				string ext = null;
 				var n = fn.last_index_of(".");
 				if (n != -1) {
 					df = fn[:n];
+					ext = fn[n:];
 				}
-				var pb = new PathBuf();
-				pb.push(Utils.get_tmp_dir());
-				pb.push(df);
-				pb.set_extension("db");
-				dbname = pb.to_path();
-				get_bbox_file_status();
+				if(ext == ".db") {
+					dbname = s;
+					get_bbox_file_status(false);
+				} else {
+					var pb = new PathBuf();
+					string spath = Mwp.conf.sqlite_log_path;
+					if (spath.length < 1) {
+						spath = Utils.get_tmp_dir();
+					}
+					pb.push(spath);
+					pb.push(df);
+					pb.set_extension("db");
+					dbname = pb.to_path();
+					get_bbox_file_status(true);
+				}
 			}
 			present();
 		}
@@ -396,13 +417,42 @@ namespace SLG {
 		}
 
 
-		private void get_bbox_file_status() {
+		private void get_bbox_file_status(bool use_fl) {
 			lstore.remove_all();
 			reset_tzoptions();
 			bb_items.label = "Analysing log ...";
 			bb_spinner.start();
-			find_valid();
 			apply.sensitive = false;
+			if(use_fl) {
+				find_valid();
+			} else {
+				reprocess_db();
+			}
+		}
+
+		private void reprocess_db() {
+			SQL.Meta[] ms = {};
+			MWPLog.message("Reprocess existing DB %s\n", dbname);
+			db = new SQL.Db(dbname);
+			if(db.get_metas(out ms)) {
+				is_valid = true;
+				foreach(var m in ms) {
+					var ds = m.dtg;
+					var dp = ds.split(" ");
+					var dstr = "%s %s%s".printf(dp[0], dp[1], dp[2]);
+					orig_times += dstr;
+					var b = new SLGEntry(m.id, dstr, m.duration.to_string(), false);
+					lstore.append(b);
+				}
+				set_log_parsed();
+			} else {
+				set_normal("No valid log detected.\n");
+			}
+		}
+
+		private void set_log_parsed() {
+			set_normal("Log successfully parsed.\n");
+			process_tz_record();
 		}
 
 		private bool tz_exists(string s, out int row_count) {
@@ -485,9 +535,8 @@ namespace SLG {
 						if(!is_valid) {
 							set_normal("No valid log detected.\n");
 						} else {
-							set_normal("Log successfully parsed.\n");
 							db = new SQL.Db(dbname);
-							process_tz_record();
+							set_log_parsed();
 						}
 					});
 			} else {
@@ -496,25 +545,39 @@ namespace SLG {
 		}
 
 		private void process_tz_record() {
-			double xlat,xlon;
 			for(var j = 0; j < lstore.n_items; j++) {
 				SLGEntry e = lstore.get_item(j) as SLGEntry;
+				double hlat, hlon;
 				if(db.get_bounding_box(e.idx, out bbox)) {
-					validate_bbox(ref bbox);
-					xlat = bbox.get_centre_latitude();
-					xlon = bbox.get_centre_longitude();
-					MapUtils.centre_on(xlat, xlon);
-					get_tz(xlat, xlon);
+					SQL.TrackEntry t = {};
+					db.get_log_entry(e.idx, 1, out t);
+					hlat = t.hlat;
+					hlon = t.hlon;
+					Rebase rb = new Rebase();
+					if(Mwp.rebase.has_reloc()) {
+						rb.set_reloc(Mwp.rebase.reloc.lat, Mwp.rebase.reloc.lon);
+					}
+					validate_bbox(rb, ref bbox, ref hlat, ref hlon);
+					MapUtils.centre_on(bbox.get_centre_latitude(), bbox.get_centre_longitude());
+					get_tz(hlat, hlon);
 					break;
 				}
 			}
 		}
 
-		private void validate_bbox(ref MapUtils.BoundingBox bbox) {
+		private void validate_bbox(Rebase r, ref MapUtils.BoundingBox bbox, ref double xlat, ref double xlon) {
 			if(bbox.minlat > -90 && bbox.maxlat < 90 && bbox.minlon > -180 && bbox.maxlon < 180) {
-				if (Rebase.is_valid()) {
-					Rebase.relocate(ref bbox.minlat, ref bbox.minlon);
-					Rebase.relocate(ref bbox.maxlat, ref bbox.maxlon);
+				if (r.has_reloc()) {
+					if (!r.has_origin()) {
+						MWPLog.message("SQL Set rebase %f %f\n",  xlat, xlon);
+						r.set_origin(xlat, xlon);
+					}
+					r.relocate(ref xlat, ref xlon);
+				}
+
+				if (r.is_valid()) {
+					r.relocate(ref bbox.minlat, ref bbox.minlon);
+					r.relocate(ref bbox.maxlat, ref bbox.maxlon);
 				}
 			}
 		}

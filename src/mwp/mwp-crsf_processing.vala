@@ -129,8 +129,8 @@ namespace CRSF {
 				d.fix = 1;
 
 			double ddm;
-			if(Rebase.is_valid()) {
-				Rebase.relocate(ref dlat, ref dlon);
+			if(Mwp.rebase.is_valid()) {
+				Mwp.rebase.relocate(ref dlat, ref dlon);
 			}
 
 			Mwp.calc_cse_dist_delta(dlat, dlon, out ddm);

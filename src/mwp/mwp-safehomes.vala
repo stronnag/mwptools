@@ -248,7 +248,7 @@ public class  SafeHomeDialog : Adw.Window {
 			if (sh.enabled) {
 				var lat = sh.lat;
 				var lon = sh.lon;
-				Rebase.relocate(ref lat, ref lon);
+				Mwp.rebase.relocate(ref lat, ref lon);
 				sh.lat = lat;
 				sh.lon = lon;
 			}

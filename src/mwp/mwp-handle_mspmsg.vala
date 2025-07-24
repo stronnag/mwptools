@@ -1180,8 +1180,8 @@ namespace Mwp {
 				double lat, lon;
 				lat = rg.gps_lat/1.0e7;
 				lon = rg.gps_lon/1.0e7;
-				if(Rebase.is_valid()) {
-					Rebase.relocate(ref lat,ref lon);
+				if(Mwp.rebase.is_valid()) {
+					Mwp.rebase.relocate(ref lat,ref lon);
 				}
 
 				var pdiff = Mwp.pos_diff(lat, lon, ser.td.gps.lat, ser.td.gps.lon);
@@ -1344,7 +1344,7 @@ namespace Mwp {
 			if (id < Safehome.MAXHOMES && id < last_safehome) {
 				queue_cmd(Msp.Cmds.SAFEHOME,(uint8[])&id,1);
 			} else {
-				if(Rebase.is_valid()) {
+				if(Mwp.rebase.is_valid()) {
 					Safehome.manager.relocate_safehomes();
 				}
 				Safehome.manager.set_status(sh_disp);

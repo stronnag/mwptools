@@ -359,11 +359,12 @@ public class SQLPlayer : Object {
 	}
 
 	private void display(SQL.TrackEntry t) {
-		if (Rebase.has_reloc()) {
-			if (!Rebase.has_origin()) {
-				Rebase.set_origin(t.hlat, t.hlon);
+		if (Mwp.rebase.has_reloc()) {
+			//MWPLog.message("Rebase %f %f status %x\n", Mwp.rebase.orig.lat, Mwp.rebase.orig.lon, Mwp.rebase.status);
+			if (!Mwp.rebase.has_origin()) {
+				Mwp.rebase.set_origin(t.hlat, t.hlon);
 			}
-			Rebase.relocate(ref t.hlat, ref t.hlon);
+			Mwp.rebase.relocate(ref t.hlat, ref t.hlon);
 		}
 
 		if(Mwp.home_changed(t.hlat, t.hlon)) {
@@ -372,9 +373,13 @@ public class SQLPlayer : Object {
 			Mwp.process_pos_states(t.hlat, t.hlon, 0, "SQL Origin", -2); // FIXME ALT
 		}
 
-		if (Rebase.has_reloc()) {
-			if (Rebase.has_origin()) {
-				Rebase.relocate(ref t.lat,ref t.lon);
+		if (Mwp.rebase.has_reloc()) {
+			if (Mwp.rebase.has_origin()) {
+				//StringBuilder sb = new StringBuilder();
+				//sb.append_printf("Rebase orig %f %f pos %f %f",  Mwp.rebase.orig.lat, Mwp.rebase.orig.lon, t.lat, t.lon);
+				Mwp.rebase.relocate(ref t.lat,ref t.lon);
+				//sb.append_printf(" to %f %f\n",  t.lat, t.lon);
+				//MWPLog.message(sb.str);
 			}
 		}
 
