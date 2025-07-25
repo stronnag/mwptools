@@ -8,10 +8,11 @@ dnf install gstreamer1-devel \
     libgudev-devel espeak-devel \
     ncurses-devel ninja-build meson desktop-file-utils \
     protobuf-c-devel protobuf-c librsvg2-devel \
-    sdl2-compat-devel readline-devel
+    sdl2-compat-devel readline-devel libadwaita-devel \
+    gstreamer1-plugins-base-devel espeak-ng-devel bash-completion-devel
 
 # To build mwp-plot-elevation and other tools, golang
-dnf install golang
+dnf install go
 
 ## Shallow clone mwp ....
 # git clone --depth 1 https://github.com/stronnag/mwptools
