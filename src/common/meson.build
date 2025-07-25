@@ -75,7 +75,7 @@ libargs = {
   'install': true,
 }
 
-libargs += { 'install_dir': [ get_option('prefix') / 'lib', true, true] }
+libargs += { 'install_dir': get_option('prefix') / 'lib'  }
 
 if dynalib
   libargs += {  'version': '3.0.0', 'soversion': '3', }
