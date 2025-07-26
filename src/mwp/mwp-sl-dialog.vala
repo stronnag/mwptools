@@ -330,7 +330,7 @@ namespace SLG {
 
 			log_btn.clicked.connect(() => {
 					IChooser.Filter []ifm = {
-						{"Flightlog", {"TXT", "bbl", "csv", "db"}},
+						{"Flightlog", {"TXT", "bbl", "csv", "db", "log"}},
 					};
 					var fc = IChooser.chooser(Mwp.conf.sqlite_log_path, ifm);
 					fc.title = "Open Flightlog File";

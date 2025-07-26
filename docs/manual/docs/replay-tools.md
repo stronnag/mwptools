@@ -83,9 +83,9 @@ Otherwise it is necessary to build and install [`mwp-log-replay`](https://github
 
 Raw logs containing MSP, LTM, MAVLink, CRSF and MPM Smartport and IBUS messages can be replayed.
 
-## Pause / Resume
+## Legacy Pause / Resume
 
-The playing state may be toggled with the **space** bar. If a [video is associated with the blackbox replay](mwp_video_player.md), then pausing the video will pause the blackbox replay and vice-versa.
+The legacy playing state may be toggled with the **space** bar. If a [video is associated with the blackbox replay](mwp_video_player.md), then pausing the video will pause the blackbox replay and vice-versa.
 
 ## Display of RC Stick positions
 
@@ -97,7 +97,7 @@ Where such data is available (Blackbox, OTX/ETX logs), {{ mwp }} can display the
 
 ## Interactive player
 
-The (new, July 2025) "interactive" player loads a somewhat familiar chooser for Blackbox and OTX/ETX logs.
+The (new, July 2025) "interactive" player loads a somewhat familiar chooser for Blackbox, OTX/ETX, mwp JSON, BulletGCSS and SQLite logs.
 
 ![log-chooser](images/mwp-interactive-replay-chooser.png)
 
@@ -106,6 +106,7 @@ The (new, July 2025) "interactive" player loads a somewhat familiar chooser for 
   ![slider](images/mwp-play-slider.png)
 * The replay may be single stepped, with the "slider" in focus,  using the "arrow" (⇦, ⇨) keys, and "paged" (jumped) using the "Page Up" / "Page Down") keys.
 * Closing the slider window terminates the replay.
+* The user can speed up the replay using the "Speed" dropdown.
 * If the log file contains multiple logs,  there will be a player menu so one can switch logs without having to re-parse the whole file.
 
 ![multilogs](https://github.com/user-attachments/assets/f30d9c45-4730-4e65-b6f0-7924bc1e3b98)
@@ -120,3 +121,4 @@ The (new, July 2025) "interactive" player loads a somewhat familiar chooser for 
   $ MWP_PREFER_XLOG=1 mwp -b /t/inav-contrib/LOG00006.TXT
 ```
 * Setting `MWP_PREFER_XLOG` also has the side effect of showing the sample number in the slider (as above image).
+* SQLite logs resulting from "Interactve Log" replay may be stored in the directory defined by rge setting `sqlite-log-path`. Thus it only only necessary to perform the slow conversion once; after that logs are available for interactive replay immediately from the generated SQLite file.
