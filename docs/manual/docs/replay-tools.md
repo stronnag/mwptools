@@ -107,6 +107,8 @@ The (new, July 2025) "interactive" player loads a somewhat familiar chooser for 
 * The replay may be single stepped, with the "slider" in focus,  using the "arrow" (⇦, ⇨) keys, and "paged" (jumped) using the "Page Up" / "Page Down") keys.
 * Closing the slider window terminates the replay.
 * The user can speed up the replay using the "Speed" dropdown.
+  ![speedup](images/mwp-sql-speed.png)
+
 * If the log file contains multiple logs,  there will be a player menu so one can switch logs without having to re-parse the whole file.
 
 ![multilogs](https://github.com/user-attachments/assets/f30d9c45-4730-4e65-b6f0-7924bc1e3b98)
@@ -121,4 +123,4 @@ The (new, July 2025) "interactive" player loads a somewhat familiar chooser for 
   $ MWP_PREFER_XLOG=1 mwp -b /t/inav-contrib/LOG00006.TXT
 ```
 * Setting `MWP_PREFER_XLOG` also has the side effect of showing the sample number in the slider (as above image).
-* SQLite logs resulting from "Interactve Log" replay may be stored in the directory defined by rge setting `sqlite-log-path`. Thus it only only necessary to perform the slow conversion once; after that logs are available for interactive replay immediately from the generated SQLite file.
+* SQLite logs resulting from "Interactve Log" replay may be stored in the directory defined by rthe setting `sqlite-log-path`. Thus it only only necessary to perform the slow conversion once; after that logs are available for interactive replay immediately from the generated SQLite file.
