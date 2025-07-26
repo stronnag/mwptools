@@ -589,9 +589,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#pause-resume" class="md-nav__link">
+  <a href="#legacy-pause-resume" class="md-nav__link">
     <span class="md-ellipsis">
-      Pause / Resume
+      Legacy Pause / Resume
     </span>
   </a>
   
@@ -1600,9 +1600,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#pause-resume" class="md-nav__link">
+  <a href="#legacy-pause-resume" class="md-nav__link">
     <span class="md-ellipsis">
-      Pause / Resume
+      Legacy Pause / Resume
     </span>
   </a>
   
@@ -1723,8 +1723,8 @@ mwp  -a -d udp://:40001
 mwp-log-replay -d udp://localhost:40001 /path/to/my/logfile.raw
 </code></pre>
 <p>Raw logs containing MSP, LTM, MAVLink, CRSF and MPM Smartport and IBUS messages can be replayed.</p>
-<h2 id="pause-resume">Pause / Resume<a class="headerlink" href="#pause-resume" title="Permanent link">#</a></h2>
-<p>The playing state may be toggled with the <strong>space</strong> bar. If a <a href="../mwp_video_player/">video is associated with the blackbox replay</a>, then pausing the video will pause the blackbox replay and vice-versa.</p>
+<h2 id="legacy-pause-resume">Legacy Pause / Resume<a class="headerlink" href="#legacy-pause-resume" title="Permanent link">#</a></h2>
+<p>The legacy playing state may be toggled with the <strong>space</strong> bar. If a <a href="../mwp_video_player/">video is associated with the blackbox replay</a>, then pausing the video will pause the blackbox replay and vice-versa.</p>
 <h2 id="display-of-rc-stick-positions">Display of RC Stick positions<a class="headerlink" href="#display-of-rc-stick-positions" title="Permanent link">#</a></h2>
 <p>Where such data is available (Blackbox, OTX/ETX logs), <a href="https://github.com/stronnag/mwptools">mwp</a> can display the position of the 'sticks'. This is displayed in the bottom right corner of the map.</p>
 <ul>
@@ -1733,7 +1733,7 @@ mwp-log-replay -d udp://localhost:40001 /path/to/my/logfile.raw
 <li>A right mouse click on the sticks display reveals a "Hide" option. Clicking this reverts to the icon.</li>
 </ul>
 <h2 id="interactive-player">Interactive player<a class="headerlink" href="#interactive-player" title="Permanent link">#</a></h2>
-<p>The (new, July 2025) "interactive" player loads a somewhat familiar chooser for Blackbox and OTX/ETX logs.</p>
+<p>The (new, July 2025) "interactive" player loads a somewhat familiar chooser for Blackbox, OTX/ETX, mwp JSON, BulletGCSS and SQLite logs.</p>
 <p><img alt="log-chooser" src="../images/mwp-interactive-replay-chooser.png" /></p>
 <ul>
 <li>Selecting a log entry and clicking "OK" will present the player; if the (default) "Autostart" chooser option was enabled, then replay starts immediately, otherwise the replay can be manually started.</li>
@@ -1741,7 +1741,13 @@ mwp-log-replay -d udp://localhost:40001 /path/to/my/logfile.raw
   <img alt="slider" src="../images/mwp-play-slider.png" /></li>
 <li>The replay may be single stepped, with the "slider" in focus,  using the "arrow" (⇦, ⇨) keys, and "paged" (jumped) using the "Page Up" / "Page Down") keys.</li>
 <li>Closing the slider window terminates the replay.</li>
-<li>If the log file contains multiple logs,  there will be a player menu so one can switch logs without having to re-parse the whole file.</li>
+<li>
+<p>The user can speed up the replay using the "Speed" dropdown.
+  <img alt="speedup" src="../images/mwp-sql-speed.png" /></p>
+</li>
+<li>
+<p>If the log file contains multiple logs,  there will be a player menu so one can switch logs without having to re-parse the whole file.</p>
+</li>
 </ul>
 <p><img alt="multilogs" src="https://github.com/user-attachments/assets/f30d9c45-4730-4e65-b6f0-7924bc1e3b98" /></p>
 <h3 id="other-notes">Other notes<a class="headerlink" href="#other-notes" title="Permanent link">#</a></h3>
@@ -1753,6 +1759,7 @@ mwp-log-replay -d udp://localhost:40001 /path/to/my/logfile.raw
 <div class="highlight"><pre><span></span><code>  $ MWP_PREFER_XLOG=1 mwp -b /t/inav-contrib/LOG00006.TXT
 </code></pre></div></li>
 <li>Setting <code>MWP_PREFER_XLOG</code> also has the side effect of showing the sample number in the slider (as above image).</li>
+<li>SQLite logs resulting from "Interactve Log" replay may be stored in the directory defined by rthe setting <code>sqlite-log-path</code>. Thus it only only necessary to perform the slow conversion once; after that logs are available for interactive replay immediately from the generated SQLite file.</li>
 </ul>
 
 
