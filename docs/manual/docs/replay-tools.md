@@ -123,4 +123,4 @@ The (new, July 2025) "interactive" player loads a somewhat familiar chooser for 
   $ MWP_PREFER_XLOG=1 mwp -b /t/inav-contrib/LOG00006.TXT
 ```
 * Setting `MWP_PREFER_XLOG` also has the side effect of showing the sample number in the slider (as above image).
-* SQLite logs resulting from "Interactve Log" replay may be stored in the directory defined by rthe setting `sqlite-log-path`. Thus it only only necessary to perform the slow conversion once; after that logs are available for interactive replay immediately from the generated SQLite file.
+* SQLite logs resulting from "Interactve Log" replay may be stored in the directory defined by the setting `sqlite-log-path`. Thus it only only necessary to perform the slow conversion once; after that logs are available for interactive replay immediately from the generated SQLite file.
