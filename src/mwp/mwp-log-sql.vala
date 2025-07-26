@@ -238,31 +238,41 @@ namespace SQL {
 			if (rc == Sqlite.OK) {
 				cmd = get_max_with_time("vrange", idx);
 				db.exec(cmd, (nc, values, cn) => {
-						Odo.stats.range = double.parse(values[0]);
-						Odo.stats.rng_secs = uint.parse(values[1])/(1000*1000);
+						if(nc > 1) {
+							Odo.stats.range = double.parse(values[0]);
+							Odo.stats.rng_secs = uint.parse(values[1])/(1000*1000);
+						}
 						return 0;
 					}, null);
 				cmd = get_max_with_time("alt", idx);
 				db.exec(cmd, (nc, values, cn) => {
-						Odo.stats.alt = double.parse(values[0]);
-						Odo.stats.alt_secs = int.parse(values[1])/(1000*1000);
+						if(nc > 1) {
+							Odo.stats.alt = double.parse(values[0]);
+							Odo.stats.alt_secs = int.parse(values[1])/(1000*1000);
+						}
 						return 0;
 					}, null);
 				cmd = get_max_with_time("spd", idx);
 				db.exec(cmd, (nc, values, cn) => {
-						Odo.stats.speed = double.parse(values[0]);
-						Odo.stats.spd_secs = int.parse(values[1])/(1000*1000);
+						if(nc > 1) {
+							Odo.stats.speed = double.parse(values[0]);
+							Odo.stats.spd_secs = int.parse(values[1])/(1000*1000);
+						}
 						return 0;
 					}, null);
 				cmd = "select max(tdist) from logs where id=%d;".printf(idx);
 				db.exec(cmd, (nc, values, cn) => {
-						Odo.stats.distance = double.parse(values[0]);
+						if(nc > 0 && values[0] != null) {
+							Odo.stats.distance = double.parse(values[0]);
+						}
 						return 0;
 					}, null);
 
 				cmd = "select max(amps) from logs where id=%d;".printf(idx);
 				db.exec(cmd, (nc, values, cn) => {
-						Odo.stats.amps = (uint16)(double.parse(values[0])*100);
+						if(nc > 0) {
+							Odo.stats.amps = (uint16)(double.parse(values[0])*100);
+						}
 						return 0;
 					}, null);
 				return true;
@@ -302,7 +312,7 @@ static int main(string?[]args) {
 		var res = d.get_metas(out ms);
 		if(res) {
 			foreach (var m in ms) {
-				print("%d %d %s %s %s\n", m.id, m.duration, m.dtg, m.name, m.firmware);
+				print("%d %f %s %s %s\n", m.id, m.duration, m.dtg, m.name, m.firmware);
 			}
 		}
 

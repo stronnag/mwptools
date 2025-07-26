@@ -27,10 +27,12 @@ public class SQLSlider : Gtk.Window {
 	private SQLPlayer sp;
 	private GLib.Menu menu;
 	private GLib.SimpleActionGroup dg;
-
 	public AsyncQueue<double?> dragq;
 
 	public SQLSlider(string fn, int idx) {
+
+		Mwp.craft.remove_all();
+
 		dragq = new  AsyncQueue<double?>();
 		sp = new SQLPlayer(dragq);
 		sp.opendb(fn);
@@ -103,6 +105,22 @@ public class SQLSlider : Gtk.Window {
 			}
 			insert_action_group("meta", dg);
 		}
+
+
+		var dbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);
+
+		Gtk.DropDown dd = new Gtk.DropDown.from_strings({"1", "2", "4", "8", "16", "32"});
+		dbox.append(new Gtk.Label("Speed:"));
+		dbox.append(dd);
+		hb.pack_start(dbox);
+
+		dd.notify["selected"].connect(() =>  {
+				var k = dd.selected;
+				var ml = (Gtk.StringList)dd.model;
+				var tstr = ml.get_string(k);
+				int speed = int.parse(tstr);
+				sp.speed = speed;
+			});
 
 		if(SLG.speedup) {
 			toggle_pstate();
@@ -200,6 +218,8 @@ public class SQLPlayer : Object {
 	private int startat;
 	private SQL.Db d;
 	private int idx;
+
+	public int speed;
 	public signal void newpos(int n);
 	private AsyncQueue<double?> dragq;
 
@@ -212,6 +232,7 @@ public class SQLPlayer : Object {
 
 	public SQLPlayer(AsyncQueue<double?> _dragq) {
 		dragq = _dragq;
+		speed = 1;
 	}
 
 	public void stop() {
@@ -342,8 +363,8 @@ public class SQLPlayer : Object {
 			var res = d.get_log_entry(t0.id, nidx, out t);
 			if (res) {
 				var et = (t.stamp - t0.stamp)/1000;
-				if(et > 0) {
-					tid = Timeout.add(et, () => {
+				if(et >= 0) {
+					tid = Timeout.add(et / speed, () => {
 							tid = 0;
 							display(t);
 							startat = t.idx;
