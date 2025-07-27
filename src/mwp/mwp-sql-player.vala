@@ -30,9 +30,13 @@ public class SQLSlider : Gtk.Window {
 	public AsyncQueue<double?> dragq;
 
 	public SQLSlider(string fn, int idx) {
+        Mwp.xlog = Mwp.conf.logarmed;
+        Mwp.xaudio = Mwp.conf.audioarmed;
+
+		Mwp.conf.logarmed = false;
+		Mwp.conf.audioarmed = false;
 
 		Mwp.craft.remove_all();
-
 		dragq = new  AsyncQueue<double?>();
 		sp = new SQLPlayer(dragq);
 		sp.opendb(fn);
@@ -90,6 +94,8 @@ public class SQLSlider : Gtk.Window {
 				dragq.push(-1);
 				sp.stop();
 				sp = null;
+				Mwp.conf.logarmed = Mwp.xlog;
+				Mwp.conf.audioarmed = Mwp.xaudio;
 				return false;
 			});
 
