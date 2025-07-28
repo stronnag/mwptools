@@ -4,7 +4,7 @@ _mwp_complete()
 {
   local cur prev OPTS
   local devs
-  local mwpexts='@(TXT|BBL|mission|json|csv|db)'
+  local mwpexts='@(TXT|BBL|mission|json|csv|db|log)'
 
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
@@ -142,7 +142,7 @@ _mwp_files()
       _filedir '@(json|mission)'
       ;;
     'TXT')
-      _filedir '@(txt|TXT|bbl|BBL|db|csv)'
+      _filedir '@(txt|TXT|bbl|BBL|db|csv|log)'
       ;;
     'log')
       _filedir '@(log|LOG)'

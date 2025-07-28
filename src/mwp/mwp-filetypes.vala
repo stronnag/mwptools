@@ -25,11 +25,12 @@ public enum FType {
 	MWPLOG = 8,
 	KMLZ = 16,
 	INAV_CLI = 32,
-	INAV_CLI_M = INAV_CLI|MISSION,
 	XML = 64,
-	MISSION_XML = XML|MISSION,
 	JSON = 128,
+	INAV_CLI_M = INAV_CLI|MISSION,
+	MISSION_XML = XML|MISSION,
 	MISSION_JSON = JSON|MISSION,
+	SQLITE = 256
 }
 
 namespace MWPFileType {
@@ -41,6 +42,9 @@ namespace MWPFileType {
 				Mwp.mission = fn;
 				break;
 			case FType.BBL:
+				Mwp.bfile = fn;
+				break;
+			case FType.SQLITE:
 				Mwp.bfile = fn;
 				break;
 			case FType.OTXLOG:
@@ -115,6 +119,8 @@ namespace MWPFileType {
 						ftyp = FType.BBL;
 					} else if (((string)buf).has_prefix("{\"type\":\"environment\"")) {
 						ftyp = FType.MWPLOG;
+					} else if (((string)buf).has_prefix("SQLite format 3")) {
+						ftyp = FType.SQLITE;
 					} else if (((string)buf).has_prefix("Date,Time,")) {
 						ftyp = FType.OTXLOG;
 					} else if (((string)buf).contains("<kml xmlns=\"http://www.opengis.net/kml/2.2\">")) {
