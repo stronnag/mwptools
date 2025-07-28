@@ -93,6 +93,7 @@ namespace CRSF {
 		uint32 val32;
 		uint16 val16;
 
+		Mwp.lastrx = Mwp.nticks;
 
 		switch(id) {
 		case CRSF.GPS_ID:
@@ -319,8 +320,11 @@ namespace CRSF {
 			uint8 ltmflags = 0;
 			bool failsafe = false;
 			string fm = (string)ptr;
-				//			stdout.printf("FM %s\n", (string)ptr );
-			switch(fm) {
+			int n = fm.length;
+			if (fm.has_suffix("*")) {
+				n--;
+			}
+			switch(fm[:n]) {
 			case "AIR":
 			case "ACRO":
 				// Ardupilot WTF ...

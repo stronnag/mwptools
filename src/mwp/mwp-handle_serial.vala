@@ -370,7 +370,8 @@ namespace Mwp {
 						if(((serstate == SERSTATE.POLLER || serstate == SERSTATE.TELEM)) && mintvl >= ndata) {
 							if(rxerr == false) {
 								Mwp.add_toast_text("No data for 5s");
-								MWPLog.message("No data for 5s\n");
+								MWPLog.message("No data for 5s (%s %s)\n",
+											   mintvl.to_string(), ndata.to_string());
 								rxerr=true;
 							}
 						}
