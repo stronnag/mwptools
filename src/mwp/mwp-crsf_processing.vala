@@ -47,12 +47,14 @@ namespace CRSF {
 		public double volts;
 		public uint16 rssi;
 		public bool setlab;
+		public int count;
 	}
 
 
 	private Teledata init(MWSerial ser) {
 		var d = new Teledata();
 		d.id = 'C';
+		d.count = 0;
 		return d;
 	}
 
@@ -97,6 +99,7 @@ namespace CRSF {
 
 		switch(id) {
 		case CRSF.GPS_ID:
+			d.count++;
 			int fvup = 0;
 			int ttup = 0;
 			ptr= SEDE.deserialise_u32(ptr, out val32);  // Latitude (deg * 1e7)
@@ -527,6 +530,20 @@ namespace CRSF {
 			break;
 		default:
 			break;
+		}
+
+
+		if(ser.is_main && Mwp.fwddev.available() && (Mwp.conf.forward  == Mwp.FWDS.LTM || Mwp.conf.forward > Mwp.FWDS.ALL)) { // LTM, MSP1/2, MAV1/2
+			if(id == CRSF.GPS_ID) {
+				MessageForward.position();
+				if (Mwp.have_home && (d.count % 16) == 0) {
+					MessageForward.origin();
+				}
+			} else if (id == CRSF.ATTI_ID) {
+				MessageForward.attitude();
+			} else if (id == CRSF.FM_ID || id == CRSF.BAT_ID) {
+				MessageForward.status();
+			}
 		}
 	}
 }
