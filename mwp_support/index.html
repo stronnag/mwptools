@@ -1813,6 +1813,17 @@
 <li>If your issue concerns telemetry, include a sample of data that causes the issue. Raw logs may be captured with the <code>--raw-log</code> option.</li>
 <li>If you're having a problem playing a blackbox log (or other flight log), include the problematic log.</li>
 </ul>
+<p>The logs are stored in  your home directory (or <code>Documents\mwp</code> for Windows), or the directory defined by the environment variable <code>MWP_LOG_DIR</code>.</p>
+<ul>
+<li>"stderr" log : <code>mwp_stderr_YYYY-MM-DD.txt</code></li>
+<li>"raw" log : <code>mwp.DEVICENAME.YYYY-MM-DDTHHMMSS.raw</code></li>
+</ul>
+<p>where:</p>
+<ul>
+<li><code>YYYY-MM-DD</code> : date</li>
+<li><code>HHMMSS</code> : time</li>
+<li><code>DEVICENAME</code> : normalised device name.</li>
+</ul>
 <p>Due to Github's file type theatre, it may be necessary to encapsulate such artefacts in <code>gzip</code>, <code>tar.gz</code> or <code>zip</code> file.</p>
 <p>Issues that do not meet these information requirements most likely be ignored / closed without explanation.</p>
 <h3 id="unsupported">Unsupported<a class="headerlink" href="#unsupported" title="Permanent link">#</a></h3>
