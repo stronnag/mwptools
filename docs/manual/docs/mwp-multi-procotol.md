@@ -236,7 +236,10 @@ Offering:
 
 These settings have two distinct behaviours:
 
-### Forwarding "same type" messages
+In addition to forwarding inbound MSP, LTM and MAVLink, as of mwp 25.07.28, it is possible to foward received CRSF as one of MSP, LTM and MAVLink
+
+
+### Forwarding "same type" messages (MSP, LTM, MAVLink)
 
 The following settings, apply to received telemetry of  the specified type. No message translation is done, and all data received will be regenerated and sent on to the `forward-device`.
 
@@ -246,7 +249,9 @@ The following settings, apply to received telemetry of  the specified type. No m
 
 ### Translated "capability" messages
 
-The following settings are "capability" based and may involve translation of a forwarded protocol into a different protocol. For example, a MSP `MSP_RAW_GPS` might be forwarded to a `LTM` consumer as LTM `G_FRAME` or to a MAVLink consumer as `MAVLINK_MSG_GPS_RAW_INT`. Messages are grouped into the following "capailities":
+The following settings are "capability" based and may involve translation of a forwarded protocol into a different protocol. For example, a MSP `MSP_RAW_GPS` might be forwarded to a `LTM` consumer as LTM `G_FRAME` or to a MAVLink consumer as `MAVLINK_MSG_GPS_RAW_INT`.  As of mwp 25.07.28, this also allows CRSF to the translated and forwarded.
+
+Messages are grouped into the following "capailities":
 
 * GPS Position / velocity / status
 * Attitude
