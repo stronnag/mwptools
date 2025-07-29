@@ -50,6 +50,13 @@ fn crc8_dvb_s2(c: u8, a: u8) -> u8 {
     crc
 }
 
+fn str_from_u8_nul_utf8(utf8_src: &[u8]) -> &str {
+    let nul_range_end = utf8_src.iter()
+        .position(|&c| c == b'\0')
+        .unwrap_or(utf8_src.len()); // default to length if no `\0` present
+    return ::std::str::from_utf8(&utf8_src[0..nul_range_end]).expect("Utf8 string")
+}
+
 impl CRSFReader {
     pub fn init(&mut self) {
         self.len = 0;
@@ -262,8 +269,7 @@ impl CRSFReader {
             }
             FM_ID => {
                 format!(
-                    "FM: {}",
-                    String::from_utf8_lossy(&self.payload[..self.payload.len() - 1])
+                    "FM: {}", str_from_u8_nul_utf8(&self.payload[..self.payload.len() - 1])
                 )
             }
             DEV_ID => {
