@@ -249,9 +249,7 @@ namespace Panel {
 				if (ahiv != null) {
 					ahiv.update(stuff);
 				}
-                if(Logger.is_logging) {
-                    Logger.attitude();
-                }
+				Logger.attitude();
 				break;
 			case Panel.View.RSSI:
 				if (rssiv != null) {

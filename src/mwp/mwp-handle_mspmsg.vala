@@ -1909,9 +1909,7 @@ namespace Mwp {
 				Idle.add(() => {
 						gzone.display();
 						gzedit.refresh(gzone);
-						if (Logger.is_logging) {
-							Logger.logstring("geozone", gzr.to_string());
-						}
+						Logger.logstring("geozone", gzr.to_string());
 						return false;
 					});
 			} else {

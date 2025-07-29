@@ -63,10 +63,8 @@ namespace Battery {
                 if (curr.centiA > Odo.stats.amps)
                     Odo.stats.amps = curr.centiA;
             }
-			if(Logger.is_logging) {
-                Logger.power();
-			}
-            set_bat_stat(an.vbat);
+			Logger.power();
+			set_bat_stat(an.vbat);
         }
     }
 

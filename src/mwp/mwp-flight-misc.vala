@@ -152,9 +152,7 @@ namespace Mwp {
 		}
 		MBus.update_wp();
 
-		if(Logger.is_logging) {
-			Logger.status();
-		}
+		Logger.status();
 
 		bool bok = ((vi.fc_vers >= FCVERS.hasActiveWP) && bblosd_ok) || ((replayer & Player.BBOX) == 0);
 		if(bok) {
@@ -409,9 +407,7 @@ namespace Mwp {
 				Mwp.msp.td.origin.alt = elev;
 			}
 		}
-		if(Logger.is_logging) {
-			Logger.origin();
-		}
+		Logger.origin();
 	}
 
 	private bool home_changed(double lat, double lon) {

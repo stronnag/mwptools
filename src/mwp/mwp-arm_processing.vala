@@ -37,10 +37,8 @@ namespace Mwp {
                 duration -= armtime;
             }
         }
-        if(Logger.is_logging) {
-            Logger.armed((armed == 1), duration, flag,sensor, telem);
-        }
-        if(armed != larmed) {
+		Logger.armed((armed == 1), duration, flag,sensor, telem);
+		if(armed != larmed) {
             changed = true;
 			//  navstatus.set_replay_mode((replayer != Player.NONE)); // FIXME
             // radstatus.annul(); /; FIXME
@@ -79,10 +77,8 @@ namespace Mwp {
                 if(conf.logarmed == true && !mqtt_available) {
                     Mwp.window.logger_cb.active = true;
                 }
-                if(Logger.is_logging) {
-                    Logger.armed(true,duration,flag, sensor,telem);
-                }
-            } else {
+				Logger.armed(true,duration,flag, sensor,telem);
+			} else {
 				Mwp.window.armed_state(false);
                 if(Odo.stats.time > 5) {
                     MWPLog.message("Distance = %.1f, max speed = %.1f time = %u\n",
@@ -107,10 +103,8 @@ namespace Mwp {
 					}
                 }
                 if(conf.logarmed == true) {
-                    if(Logger.is_logging) {
-                        Logger.armed(false,duration,flag, sensor,telem);
-					}
-                    Mwp.window.logger_cb.active=false;
+					Logger.armed(false,duration,flag, sensor,telem);
+					Mwp.window.logger_cb.active=false;
                 }
                 reboot_status();
 			}

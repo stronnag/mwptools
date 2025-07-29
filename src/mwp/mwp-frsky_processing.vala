@@ -80,9 +80,6 @@ namespace Frsky {
 		}
 
         double r;
-		if(Logger.is_logging) {
-			Logger.log_time();
-		}
 
         Mwp.lastrx = Mwp.lastok = Mwp.nticks;
         //if(rxerr) {

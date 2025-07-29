@@ -65,9 +65,7 @@ namespace Mwp {
 
 				//			if(achg || mchg)
 				//	update_mss_state(ltmflags);
-				if(Logger.is_logging) {
-					Logger.mav_heartbeat(m);
-				}
+				Logger.mav_heartbeat(m);
 			}
 			break;
 
@@ -95,9 +93,7 @@ namespace Mwp {
 					if (Battery.curr.centiA > Odo.stats.amps)
 						Odo.stats.amps = Battery.curr.centiA;
 				}
-				if(Logger.is_logging) {
-					Logger.mav_sys_status(m);
-				}
+				Logger.mav_sys_status(m);
 			}
 			break;
 
@@ -215,9 +211,7 @@ namespace Mwp {
 
 					if(want_special != 0)
 						process_pos_states(mlat, mlon, dalt, "MavGPS");
-					if(Logger.is_logging) {
-						Logger.mav_gps_raw_int (m);
-					}
+					Logger.mav_gps_raw_int (m);
 				}
 				if(fvup != 0) {
 					Mwp.panelbox.update(Panel.View.FVIEW, fvup);
@@ -260,9 +254,7 @@ namespace Mwp {
 		case Msp.Cmds.MAVLINK_MSG_RC_CHANNELS_RAW:
 			if(ser.is_main) {
 				Mav.MAVLINK_RC_CHANNELS m = *(Mav.MAVLINK_RC_CHANNELS*)raw;
-				if (Logger.is_logging) {
-					Logger.mav_rc_channels(m);
-				}
+				Logger.mav_rc_channels(m);
 			}
 			break;
 
@@ -287,9 +279,7 @@ namespace Mwp {
 					want_special |= POSMODE.HOME;
 					process_pos_states(mlat, mlon, m.altitude / 1000.0, "MAvOrig");
 				}
-				if(Logger.is_logging) {
-					Logger.mav_gps_global_origin(m);
-				}
+				Logger.mav_gps_global_origin(m);
 			}
 			break;
 

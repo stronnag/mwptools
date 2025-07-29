@@ -82,19 +82,17 @@ namespace FlightBox {
 				set_heading(Mwp.msp.td.atti.yaw);
             }
 
-			if(Logger.is_logging) {
-                if(Update.ALT in what) {
-                    Logger.altitude();
-                }
-                if(Update.RANGE|Update.BEARING in what) {
-                    Logger.range_bearing();
-                }
-
-				if ((what & (Update.LAT|Update.LON|Update.GALT|Update.SPEED|Update.GPS)) != 0) {
-                    Logger.gps();
-				}
+			if(Update.ALT in what) {
+				Logger.altitude();
 			}
-        }
+			if(Update.RANGE|Update.BEARING in what) {
+				Logger.range_bearing();
+			}
+
+			if ((what & (Update.LAT|Update.LON|Update.GALT|Update.SPEED|Update.GPS)) != 0) {
+				Logger.gps();
+			}
+		}
 
 		private void set_latitude (double lat) {
 			var s = PosFormat.lat(lat, Mwp.conf.dms);
