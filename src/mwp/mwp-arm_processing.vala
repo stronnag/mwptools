@@ -81,13 +81,6 @@ namespace Mwp {
                 }
                 if(Logger.is_logging) {
                     Logger.armed(true,duration,flag, sensor,telem);
-                    if(rhdop != 10000) {
-                        LTM_XFRAME xf = LTM_XFRAME();
-                        xf = {0};
-                        xf.hdop = rhdop;
-                        xf.sensorok = (sensor >> 15);
-                        Logger.ltm_xframe(xf);
-                    }
                 }
             } else {
 				Mwp.window.armed_state(false);

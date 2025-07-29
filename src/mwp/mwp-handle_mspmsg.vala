@@ -757,7 +757,6 @@ namespace Mwp {
 			break;
 
 		case Msp.Cmds.GPSSTATISTICS:
-			LTM_XFRAME xf = LTM_XFRAME();
 			SEDE.deserialise_u16(raw, out gpsstats.last_message_dt);
 			SEDE.deserialise_u16(raw+2, out gpsstats.errors);
 			SEDE.deserialise_u16(raw+6, out gpsstats.timeouts);
@@ -765,14 +764,11 @@ namespace Mwp {
 			SEDE.deserialise_u16(raw+14, out gpsstats.hdop);
 			SEDE.deserialise_u16(raw+16, out gpsstats.eph);
 			SEDE.deserialise_u16(raw+18, out gpsstats.epv);
-			rhdop = xf.hdop = gpsstats.hdop;
+			rhdop = gpsstats.hdop;
 
 			//			MWPLog.message(":DBG: GPS dt: %hu err %hu to %hu cnt %hu hdop %hu eph %hu epv %hu\n", gpsstats.last_message_dt, gpsstats.errors, gpsstats.timeouts, gpsstats.packet_count, gpsstats.hdop, gpsstats.eph, gpsstats.epv);
 
-			ser.td.gps.hdop = xf.hdop/100.0;
-			if(Logger.is_logging) {
-			   Logger.ltm_xframe(xf);
-			}
+			Mwp.msp.td.gps.hdop = rhdop/100.0;
 			break;
 
 		case Msp.Cmds.ACTIVEBOXES:
@@ -1017,7 +1013,8 @@ namespace Mwp {
 			break;
 
 		case Msp.Cmds.NAV_STATUS:
-			handle_n_frame(ser, cmd, raw);
+			var ns = decode_n_frame(raw);
+			handle_n_frame(ser, ns);
             break;
 
 		case Msp.Cmds.NAV_POSHOLD:
@@ -1181,7 +1178,7 @@ namespace Mwp {
 
 				if(Math.fabs(ser.td.alt.alt - rg.gps_altitude) > 1.0) {
 					ser.td.gps.alt =  rg.gps_altitude;
-					//fvup |= FlightBox.Update.ALT;
+					fvup |= FlightBox.Update.GALT;
 				}
 
 				double gspd = rg.gps_speed/100.0;
@@ -1195,11 +1192,6 @@ namespace Mwp {
 				if (cogup) {
 					ser.td.gps.cog = dcog;
 					Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.COG);
-				}
-
-				if(Logger.is_logging) {
-					Logger.raw_gps(lat, lon, ser.td.gps.cog, ser.td.gps.gspeed,
-								   rg.gps_altitude, rg.gps_fix, rg.gps_numsat, rg.gps_hdop);
 				}
 
 				if(rg.gps_fix != 0) {
@@ -1664,6 +1656,9 @@ namespace Mwp {
                 MWPLog.message("request sensor info\n");
                 queue_cmd(Msp.Cmds.SENSOR_STATUS,null,0);
             }
+			if(Logger.is_logging) {
+				Logger.xframe();
+			}
         }
     }
 
@@ -1877,6 +1872,7 @@ namespace Mwp {
 				Mwp.window.update_state();
 				var lmstr = Msp.ltm_mode(ltmflags);
 				Mwp.window.fmode.set_label(lmstr);
+				Logger.sframe();
 				last_ltmf = ltmflags;
 			}
 			xbits = bxflag;

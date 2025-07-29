@@ -57,15 +57,13 @@ namespace Mwp {
 					want_special |= POSMODE.HOME;
 					process_pos_states(lat, lon, ser.td.origin.alt, "LTM OFrame");
 				}
-				if(Logger.is_logging) {
-					Logger.ltm_oframe(of);
-				}
 				MBus.update_home();
 			}
 			break;
 		case Msp.Cmds.TN_FRAME:
 			if(ser.is_main) {
-				handle_n_frame(ser, cmd, raw);
+				var ns = decode_n_frame(raw);
+				handle_n_frame(ser, ns);
 			}
 			break;
 
@@ -157,9 +155,6 @@ namespace Mwp {
 					sat_coverage();
 					_nsats = nsats;
 					update_pos_info();
-					if(Logger.is_logging) {
-						Logger.raw_gps(lat, lon, cse, gf.speed, (int16)gf.alt, fix, lsats, rhdop);
-					}
 					if(armed != 0) {
 						if(HomePoint.is_valid()) {
 							if(nsats >= msats || ltm_force_sats) {
@@ -244,11 +239,10 @@ namespace Mwp {
 				xf.ltm_x_count = *rp++;
 				xf.disarm_reason = *rp;
 				ser.td.gps.hdop = rhdop/100.0;
+				ser.td.state.sensorok = xf.sensorok;
+				ser.td.state.reason = xf.disarm_reason;
 				alert_broken_sensors(xf.sensorok);
 				// hw_status // FIXME
-				if(Logger.is_logging) {
-					Logger.ltm_xframe(xf);
-				}
 
 				if(armed == 0 && xf.disarm_reason != 0 &&
 				   xf.disarm_reason < disarm_reason.length)
@@ -397,6 +391,7 @@ namespace Mwp {
 									   ls_state, ltmflags, last_ltmf, armed, duration,
 									   xlat, xlon, xws, want_special);
 						Mwp.window.fmode.set_label(ls_state);
+						Logger.sframe();
 						last_ltmf = ltmflags;
 					}
 
@@ -452,14 +447,6 @@ namespace Mwp {
 						else if (Battery.curr.lmah - mah > 100) {
 							MWPLog.message("Negative energy usage %u %u\n", Battery.curr.lmah, mah);
 						}
-					}
-					if(Logger.is_logging) {
-						var ls_action = "%s %s".printf(((armed == 1) ? "armed" : "disarmed"),
-												   ((failsafe) ? "failsafe" : ""));
-						var b = new StringBuilder (ls_action.strip());
-						b.append_c(' ');
-						b.append(ls_state);
-						Logger.ltm_sframe(sf, b.str);
 					}
 					Battery.set_bat_stat(ivbat);
 				}

@@ -556,9 +556,7 @@ namespace Mwp {
 					mstate = (msp.td.state.ltmstate ==  Msp.Ltm.POSHOLD);
 					wpstate = (msp.td.state.ltmstate ==  Msp.Ltm.WAYPOINTS);
 				}
-				//				MWPLog.message(":DBG: window state %d (%s)\n", msp.td.state.ltmstate, wpstate.to_string());
 				MwpMenu.set_menu_state(Mwp.window, "followme", mstate);
-
 				if (conf.armed_msp_placebo) {
 					MwpMenu.set_menu_state(Mwp.window, "upload-mission", !wpstate);
 				}

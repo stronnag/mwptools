@@ -489,6 +489,7 @@ namespace CRSF {
 								   lmstr, ltmflags, Mwp.armed, Mwp.duration, Mwp.xlat, Mwp.xlon,
 								   xws, Mwp.want_special);
 				}
+				Logger.sframe();
 
 				if(achg || mchg)
 					MBus.update_state();

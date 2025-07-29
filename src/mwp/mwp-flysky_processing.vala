@@ -198,6 +198,7 @@ namespace Flysky {
 
 			ser.td.state.ltmstate = ltmflags;
 			ser.td.state.state = (uint8)fl_armed | (((uint8)failsafe) << 1);
+
 			if(ser.is_main) {
 				if(Mwp.xfailsafe != failsafe) {
 					if(failsafe) {
@@ -264,6 +265,7 @@ namespace Flysky {
 
 				if(achg || mchg)
 					MBus.update_state();
+				Logger.sframe();
 
 				if(Mwp.want_special != 0 /* && have_home*/) {
 					Mwp.process_pos_states(Mwp.xlat,Mwp.xlon, 0, "Flysky");

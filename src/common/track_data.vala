@@ -169,12 +169,17 @@ public struct StateData {
 	public uint8 state ;
 	public uint8 navmode ;
 	public uint8 ltmstate ;
-	public uint8 wpno ;
+	public uint8 wpno;
+	public uint8 sensorok ;
+	public uint8 reason;
+
 	public void annul() {
 		state = 0;
 		navmode = 0;
 		ltmstate = 0;
 		wpno = 0;
+		sensorok = 0;
+		reason = 0;
 	}
 	public string to_string() {
 		var sb = new StringBuilder("State: ");

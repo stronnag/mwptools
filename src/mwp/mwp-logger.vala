@@ -73,23 +73,7 @@ namespace Logger {
         gen.set_root (root);
         write_stream();
     }
-	/*
-	public void rawdata(uint16 cmd, uint8[]raw, uint len) {
-		var builder = init("rawdata");
-		builder.set_member_name ("mid");
-		builder.add_int_value(cmd);
-		builder.set_member_name ("msg");
-		var sb = new StringBuilder();
-		for (var j = 0; j < len; j++) {
-			sb.append_printf("%02x", raw[j]);
-        }
-		builder.add_string_value(sb.str);
-        builder.end_object ();
-        Json.Node root = builder.get_root ();
-        gen.set_root (root);
-        write_stream();
-	}
-	*/
+
 	public void logstring(string id, string msg) {
 		var builder = init("text");
 		builder.set_member_name ("id");
@@ -246,7 +230,7 @@ namespace Logger {
     public void armed(bool armed, time_t _duration, uint64 flags,
                              uint32 sensor, bool telem=false) {
         duration = (int)_duration;
-        var builder = init("armed");
+        var builder = init("td.armed");
         builder.set_member_name("armed");
         builder.add_boolean_value(armed);
         if(duration > -1) {
@@ -265,50 +249,38 @@ namespace Logger {
         write_stream();
     }
 
-    public void ltm_sframe(LTM_SFRAME s, string? status) {
-        var builder = init("ltm_raw_sframe");
-        builder.set_member_name("vbat");
-        builder.add_int_value(s.vbat);
-        builder.set_member_name("vcurr");
-        builder.add_int_value(s.vcurr);
-        builder.set_member_name("rssi");
-        builder.add_int_value(s.rssi);
-        builder.set_member_name("airspeed");
-        builder.add_int_value(s.airspeed);
+    public void sframe() {
+        var builder = init("td.sframe");
         builder.set_member_name("flags");
-        builder.add_int_value(s.flags);
-        builder.set_member_name("status");
-        builder.add_string_value(status);
+        builder.add_int_value(Mwp.msp.td.state.state);
+        builder.set_member_name("ltmmode");
+        builder.add_int_value(Mwp.msp.td.state.ltmstate);
         builder.end_object ();
         Json.Node root = builder.get_root ();
 		gen.set_root (root);
         write_stream();
     }
 
-    public void ltm_oframe(LTM_OFRAME o) {
-        var builder = init("ltm_raw_oframe");
+    public void origin() {
+        var builder = init("td.origin");
         builder.set_member_name ("lat");
-        builder.add_int_value(o.lat);
+        builder.add_double_value(Mwp.msp.td.origin.lat);
         builder.set_member_name ("lon");
-        builder.add_int_value(o.lon);
-        builder.set_member_name ("fix");
-        builder.add_int_value(o.fix);
+        builder.add_double_value(Mwp.msp.td.origin.lon);
+        builder.set_member_name ("alt");
+        builder.add_double_value(Mwp.msp.td.origin.alt);
         builder.end_object ();
         Json.Node root = builder.get_root ();
 		gen.set_root (root);
         write_stream();
     }
 
-    public void ltm_xframe(LTM_XFRAME x) {
-        var builder = init("ltm_xframe");
-        builder.set_member_name ("hdop");
-        builder.add_int_value(x.hdop);
+    public void xframe() {
+        var builder = init("td.xframe");
         builder.set_member_name ("sensorok");
-        builder.add_int_value(x.sensorok);
-        builder.set_member_name ("count");
-        builder.add_int_value(x.ltm_x_count);
+        builder.add_int_value(Mwp.msp.td.state.sensorok);
         builder.set_member_name ("reason");
-        builder.add_int_value(x.disarm_reason);
+        builder.add_int_value(Mwp.msp.td.state.reason);
         builder.end_object ();
         Json.Node root = builder.get_root ();
 		gen.set_root (root);
@@ -331,7 +303,6 @@ namespace Logger {
         write_stream();
     }
 
-
     public void range_bearing() {
 		var builder = init ("td.range_bearing");
         builder.set_member_name ("bearing");
@@ -344,39 +315,24 @@ namespace Logger {
         write_stream();
     }
 
-    public void comp_gps(int brg, uint16 range, uint8 update) {
-		var builder = init ("comp_gps");
-        builder.set_member_name ("bearing");
-        builder.add_int_value(brg);
-        builder.set_member_name ("range");
-        builder.add_int_value(range);
-        builder.set_member_name ("update");
-        builder.add_int_value(update);
-        builder.end_object ();
-        Json.Node root = builder.get_root ();
-		gen.set_root (root);
-        write_stream();
-    }
-
-    public void raw_gps(double lat, double lon, double cse, double spd,
-                               int16 alt, uint8 fix, uint8 numsat, uint16 hdop) {
-        var builder = init ("raw_gps");
+    public void gps() {
+        var builder = init ("td.gps");
         builder.set_member_name ("lat");
-        builder.add_double_value(lat);
+        builder.add_double_value(Mwp.msp.td.gps.lat);
         builder.set_member_name ("lon");
-        builder.add_double_value(lon);
-        builder.set_member_name ("cse");
-        builder.add_double_value(cse);
-        builder.set_member_name ("spd");
-        builder.add_double_value(spd);
+        builder.add_double_value(Mwp.msp.td.gps.lon);
+        builder.set_member_name ("cog");
+        builder.add_double_value(Mwp.msp.td.gps.cog);
+        builder.set_member_name ("speed");
+        builder.add_double_value(Mwp.msp.td.gps.gspeed);
         builder.set_member_name ("alt");
-        builder.add_int_value(alt);
+        builder.add_double_value(Mwp.msp.td.gps.alt);
         builder.set_member_name ("fix");
-        builder.add_int_value(fix);
+        builder.add_int_value(Mwp.msp.td.gps.fix);
         builder.set_member_name ("numsat");
-        builder.add_int_value(numsat);
+        builder.add_int_value(Mwp.msp.td.gps.nsats);
         builder.set_member_name ("hdop");
-        builder.add_int_value(hdop);
+        builder.add_double_value(Mwp.msp.td.gps.hdop);
         builder.end_object ();
         Json.Node root = builder.get_root ();
 		gen.set_root (root);
@@ -409,36 +365,12 @@ namespace Logger {
         write_stream();
     }
 
-    public void status(MSP_NAV_STATUS n) {
-        var builder = init ("status");
-        builder.set_member_name ("gps_mode");
-        builder.add_int_value(n.gps_mode);
+    public void status() {
+        var builder = init ("td.navstatus");
         builder.set_member_name ("nav_mode");
-        builder.add_int_value(n.nav_mode);
-        builder.set_member_name ("action");
-        builder.add_int_value(n.action);
+        builder.add_int_value(Mwp.msp.td.state.navmode);
         builder.set_member_name ("wp_number");
-        builder.add_int_value(n.wp_number);
-        builder.set_member_name ("nav_error");
-        builder.add_int_value(n.nav_error);
-        builder.set_member_name ("target_bearing");
-        builder.add_int_value(n.target_bearing);
-        builder.end_object ();
-        Json.Node root = builder.get_root ();
-		gen.set_root (root);
-        write_stream();
-    }
-
-    public void wp_poll(MSP_WP w) {
-        var builder = init ("wp_poll");
-        builder.set_member_name ("wp_no");
-        builder.add_int_value(w.wp_no);
-        builder.set_member_name ("wp_lat");
-        builder.add_double_value(w.lat/10000000.0);
-        builder.set_member_name ("wp_lon");
-        builder.add_double_value(w.lon/10000000.0);
-        builder.set_member_name ("wp_alt");
-        builder.add_double_value(w.altitude/100.0);
+        builder.add_int_value(Mwp.msp.td.state.wpno);
         builder.end_object ();
         Json.Node root = builder.get_root ();
 		gen.set_root (root);

@@ -439,6 +439,8 @@ namespace Frsky {
 					Mwp.window.fmode.set_label(lmstr);
 				}
 
+				Logger.sframe();
+
 				if(achg || mchg)
 					MBus.update_state();
 

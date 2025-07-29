@@ -110,96 +110,91 @@ namespace Mwp {
         }
 	}
 
-	private void handle_n_frame(MWSerial ser, Msp.Cmds cmd, uint8[] raw) {
-			MSP_NAV_STATUS ns = MSP_NAV_STATUS();
-			uint8 flg = 0;
-			uint8* rp = raw;
-			ns.gps_mode = *rp++;
+	private MSP_NAV_STATUS  decode_n_frame(uint8[] raw) {
+		var ns = MSP_NAV_STATUS();
+		uint8* rp = raw;
+		ns.gps_mode = *rp++;
+		ns.nav_mode = *rp++;
+		ns.action = *rp++;
+		ns.wp_number = *rp++;
+		ns.nav_error = *rp++;
+		return ns;
+	}
 
-			if(ns.gps_mode == 15) {
-				if (nticks - last_crit > 6*CRITINTVL) {
-					Audio.play_alarm_sound(MWPAlert.GENERAL);
-					MWPLog.message("GPS Critial Failure!!!\n");
-					Mwp.add_toast_text("GPS Critial Failure!!!");
-					last_crit = nticks;
+	private void handle_n_frame(MWSerial ser, MSP_NAV_STATUS ns) {
+		if(ns.gps_mode == 15) {
+			if (nticks - last_crit > 6*CRITINTVL) {
+				Audio.play_alarm_sound(MWPAlert.GENERAL);
+				MWPLog.message("GPS Critial Failure!!!\n");
+				Mwp.add_toast_text("GPS Critial Failure!!!");
+				last_crit = nticks;
+			}
+		} else
+			last_crit = 0;
+
+		ser.td.state.navmode = 	ns.nav_mode;
+		ser.td.state.wpno = ns.wp_number;
+		if(ns.nav_mode != last_nmode  || last_nwp != ns.wp_number) {
+			TTS.say(TTS.Vox.NAV_STATUS);
+		}
+
+		if(ns.gps_mode == 3) {
+			if (last_gmode != 3 || ns.wp_number != last_nwp) {
+				var ms = MissionManager.current();
+				if(ms != null && ns.wp_number > 0) {
+					var lat = ms.points[ns.wp_number-1].lat;
+					var lon = ms.points[ns.wp_number-1].lon;
+					Posring.set_location(lat, lon);
 				}
-			} else
-				last_crit = 0;
-
-			ns.nav_mode = *rp++;
-			ns.action = *rp++;
-			ns.wp_number = *rp++;
-			ns.nav_error = *rp++;
-
-			if(cmd == Msp.Cmds.NAV_STATUS)
-				SEDE.deserialise_u16(rp, out ns.target_bearing);
-			else {
-				flg = 1;
-				ns.target_bearing = *rp++;
 			}
-			ser.td.state.navmode = 	ns.nav_mode;
-			ser.td.state.wpno = ns.wp_number;
-			if(ns.nav_mode != last_nmode  || last_nwp != ns.wp_number) {
-				TTS.say(TTS.Vox.NAV_STATUS);
-			}
+		} else if (last_gmode == 3) {
+			Posring.hide();
+		}
+		MBus.update_wp();
 
-			if(ns.gps_mode == 3) {
-				if (last_gmode != 3 || ns.wp_number != last_nwp) {
-					var ms = MissionManager.current();
-					if(ms != null && ns.wp_number > 0) {
-						var lat = ms.points[ns.wp_number-1].lat;
-						var lon = ms.points[ns.wp_number-1].lon;
-						Posring.set_location(lat, lon);
+		if(Logger.is_logging) {
+			Logger.status();
+		}
+
+		bool bok = ((vi.fc_vers >= FCVERS.hasActiveWP) && bblosd_ok) || ((replayer & Player.BBOX) == 0);
+		if(bok) {
+			if (ns.gps_mode == 3) {
+				var ms = MissionManager.current();
+				uint np = (ms != null) ? ms.npoints : 0;
+				if(np > 0 && ns.wp_number > 0) {
+					StringBuilder sb = new StringBuilder();
+					if ((conf.osd_mode & Mwp.OSD.show_mission) != 0) {
+						if (last_nmode != 3 || ns.wp_number != last_nwp) {
+							if(ns.wp_number == np && ms.points[np-1].action == Msp.Action.RTH) {
+								sb.append("RTH");
+							} else {
+								sb.append_printf("%u", ns.wp_number);
+								if(np > 0) {
+									sb.append_printf("<span size='60%%'>/%u</span>", ms.npoints);
+								}
+							}
+							//mss.m_wp = ns.wp_number;  // FIXME
+							//mss.waypoint_changed(mss.m_wp); // FIXME
+						}
 					}
+					if ((conf.osd_mode & Mwp.OSD.show_dist) != 0) {
+						var dstr = show_wp_distance(ms, ser.td.gps, ns);
+						if(dstr != null) {
+							sb.append_c('\n');
+							sb.append(dstr);
+						}
+					}
+					Gis.map_show_osd(sb.str);
 				}
 			} else if (last_gmode == 3) {
-				Posring.hide();
+				Gis.map_hide_osd();
+				// mss.m_wp = -1;  // FIXME
+				// mss.waypoint_changed(mss.m_wp); // FIXME
 			}
-			MBus.update_wp();
-
-			if(Logger.is_logging) {
-				Logger.status(ns);
-			}
-
-			bool bok = ((vi.fc_vers >= FCVERS.hasActiveWP) && bblosd_ok) || ((replayer & Player.BBOX) == 0);
-			if(bok) {
-				if (ns.gps_mode == 3) {
-					var ms = MissionManager.current();
-					uint np = (ms != null) ? ms.npoints : 0;
-					if(np > 0 && ns.wp_number > 0) {
-						StringBuilder sb = new StringBuilder();
-						if ((conf.osd_mode & Mwp.OSD.show_mission) != 0) {
-							if (last_nmode != 3 || ns.wp_number != last_nwp) {
-								if(ns.wp_number == np && ms.points[np-1].action == Msp.Action.RTH) {
-									sb.append("RTH");
-								} else {
-									sb.append_printf("%u", ns.wp_number);
-									if(np > 0) {
-										sb.append_printf("<span size='60%%'>/%u</span>", ms.npoints);
-									}
-								}
-								//mss.m_wp = ns.wp_number;  // FIXME
-								//mss.waypoint_changed(mss.m_wp); // FIXME
-							}
-						}
-						if ((conf.osd_mode & Mwp.OSD.show_dist) != 0) {
-							var dstr = show_wp_distance(ms, ser.td.gps, ns);
-							if(dstr != null) {
-								sb.append_c('\n');
-								sb.append(dstr);
-							}
-						}
-						Gis.map_show_osd(sb.str);
-					}
-				} else if (last_gmode == 3) {
-					Gis.map_hide_osd();
-					// mss.m_wp = -1;  // FIXME
-					// mss.waypoint_changed(mss.m_wp); // FIXME
-				}
-			}
-			last_nmode = ns.nav_mode;
-			last_gmode = ns.gps_mode;
-			last_nwp= ns.wp_number;
+		}
+		last_nmode = ns.nav_mode;
+		last_gmode = ns.gps_mode;
+		last_nwp= ns.wp_number;
 	}
 
 	private string? show_wp_distance(Mission ms, GPSData g, MSP_NAV_STATUS ns) {
@@ -414,13 +409,9 @@ namespace Mwp {
 				Mwp.msp.td.origin.alt = elev;
 			}
 		}
-		/*
-		MWPLog.message(":DBG: Set td alt %f %f %.0f\n",
-					   Mwp.msp.td.origin.lat,
-					   Mwp.msp.td.origin.lon,
-					   Mwp.msp.td.origin.alt
-			);
-		*/
+		if(Logger.is_logging) {
+			Logger.origin();
+		}
 	}
 
 	private bool home_changed(double lat, double lon) {

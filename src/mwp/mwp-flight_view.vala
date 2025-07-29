@@ -27,7 +27,8 @@ namespace FlightBox {
 		SPEED,
 		RANGE,
 		BEARING,
-		GPS
+		GPS,
+		GALT
 	}
 
 	[GtkTemplate (ui = "/org/stronnag/mwp/fb.ui")]
@@ -88,7 +89,11 @@ namespace FlightBox {
                 if(Update.RANGE|Update.BEARING in what) {
                     Logger.range_bearing();
                 }
-           }
+
+				if ((what & (Update.LAT|Update.LON|Update.GALT|Update.SPEED|Update.GPS)) != 0) {
+                    Logger.gps();
+				}
+			}
         }
 
 		private void set_latitude (double lat) {
