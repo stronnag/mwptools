@@ -56,6 +56,7 @@ namespace Battery {
             curr.centiA = an.amps;
             curr.mah = an.mahdraw;
 			Mwp.msp.td.power.mah = (int)an.mahdraw;
+			Mwp.msp.td.power.amps = (float)an.amps/100.0;
             if(curr.centiA != 0 || curr.mah != 0) {
                 curr.ampsok = true;
 				Battery.update = true;

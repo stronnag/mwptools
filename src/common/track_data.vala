@@ -31,14 +31,14 @@ public enum TrackDataSet {
 }
 
 public struct GPSData {
-	public double lat ;
-	public double lon ;
-	public double alt ;
-	public double hdop ;
-	public double cog ;
-	public double gspeed ;
-	public uint8 nsats ;
-	public uint8 fix ;
+	public double lat ; 	// decimal degrees
+	public double lon ; 	// decimal degrees
+	public double alt ; 	// metres
+	public double hdop ; 	// "units"
+	public double cog ; 	// degress
+	public double gspeed ; 	// m/s
+	public uint8 nsats ; 	// number
+	public uint8 fix ; 		// number
 	public void annul() {
 		lat = 0.0;
 		lon = 0.0;
@@ -59,9 +59,9 @@ public struct GPSData {
 
 
 public struct OriginData {
-	public double lat ;
-	public double lon ;
-	public double alt ;
+	public double lat ;		// decimal degrees
+	public double lon ;		// decimal degrees
+	public double alt ;		// metres
 	public void annul() {
 		lat = 0.0;
 		lon = 0.0;
@@ -76,8 +76,8 @@ public struct OriginData {
 }
 
 public struct CompData {
-	public int  range ;
-	public int  bearing ;
+	public int  range ;		// metres
+	public int  bearing ;	// degress
 	public void annul() {
 		range = 0;
 		bearing = 0;
@@ -90,8 +90,8 @@ public struct CompData {
 }
 
 public struct AltData {
-	public double alt ; // {get; construct set;}   // m
-	public double vario ; // {get; construct set;} // m/s
+	public double alt ; 	// m
+	public double vario ; 	// m/s
 	public void annul() {
 		alt = 0;
 		vario = 0;
@@ -104,9 +104,9 @@ public struct AltData {
 }
 
 public struct AttiData {
-	public int angx ;
-	public int angy ;
-	public int yaw ;
+	public int angx ;		// degrees, roll, cw +ve
+	public int angy ;		// degrees, pitch down +ve
+	public int yaw ;        // degrees
 	public void annul() {
 		angx = 0;
 		angy = 0;
@@ -121,9 +121,9 @@ public struct AttiData {
 
 public struct WindData {
 	public bool has_wind;
-	public int16 w_x ;
-	public int16 w_y ;
-	public int16 w_z ;
+	public int16 w_x ;		// m/s
+	public int16 w_y ;		// m/s
+	public int16 w_z ;		// m/s
 	public void annul() {
 		has_wind = false;
 		w_x = 0;
@@ -138,11 +138,13 @@ public struct WindData {
 }
 
 public struct  PowerData {
-	public float volts ;
-	public int mah ;
+	public float volts ; 	// volts
+	public int mah;			// mah
+	public float amps;		// amps
 	public void annul() {
 		volts = 0;
 		mah = 0;
+		amps = 0;
 	}
 	public string to_string() {
 		var sb = new StringBuilder("Power: ");
@@ -152,7 +154,7 @@ public struct  PowerData {
 }
 
 public struct RSSIData  {
-	public int rssi ;
+	public int rssi ;		// 0-100 (%)
 	public void annul() {
 		rssi = 0;
 	}
