@@ -1054,9 +1054,6 @@ namespace Mwp {
 			if(fvup != 0) {
 				Mwp.panelbox.update(Panel.View.FVIEW, fvup);
 			}
-			if(Logger.is_logging) {
-				Logger.comp_gps(cg.direction, cg.range, 1);
-			}
 			break;
 
 		case Msp.Cmds.ATTITUDE:
@@ -1088,9 +1085,6 @@ namespace Mwp {
 				Mwp.panelbox.update(Panel.View.FVIEW, FlightBox.Update.YAW);
 				Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.YAW);
 			}
-			if(Logger.is_logging) {
-				Logger.attitude(at.angx, at.angy, mhead);
-			}
 			break;
 
 		case Msp.Cmds.ALTITUDE:
@@ -1111,9 +1105,6 @@ namespace Mwp {
 			  if(altup) {
 				  ser.td.alt.alt = dea;
 				  Mwp.panelbox.update(Panel.View.FVIEW, FlightBox.Update.ALT);
-			  }
-			  if(Logger.is_logging) {
-				   Logger.altitude(ser.td.alt.alt, ser.td.alt.vario);
 			  }
 			  break;
 

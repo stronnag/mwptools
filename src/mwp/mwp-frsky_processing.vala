@@ -478,10 +478,7 @@ namespace Frsky {
 					Mwp.panelbox.update(Panel.View.AHI, AHI.Update.AHI);
 				}
 				ser.td.atti.yaw = Mwp.mhead;
-				if(Logger.is_logging) {
-					Logger.attitude((double)s.pitch, (double)s.roll, (int)Mwp.mhead);
-				}
-			}
+		}
 			break;
 
 		case SportDev.FrID.HOME_DIST:
@@ -526,10 +523,7 @@ namespace Frsky {
 					ser.td.atti.angy = s.pitch;
 					Mwp.panelbox.update(Panel.View.AHI, AHI.Update.AHI);
 				}
-				if(Logger.is_logging) {
-					Logger.attitude((double)s.pitch, (double)s.roll, (int16) s.cse);
-				}
-			}
+  			}
 			break;
 
 		case SportDev.FrID.VARIO_ID:

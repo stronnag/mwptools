@@ -153,9 +153,6 @@ namespace Mwp {
 						Mwp.panelbox.update(Panel.View.VARIO, Vario.Update.VARIO);
 					}
 					al.vario = (int16)dv;
-					if (Logger.is_logging) {
-						Logger.altitude(al.estalt, (int16)al.vario);
-					}
 
 					sat_coverage();
 					_nsats = nsats;
@@ -183,9 +180,6 @@ namespace Mwp {
 										if(Math.fabs(ser.td.comp.bearing - cg.direction) > 1.0) {
 											ser.td.comp.bearing =  cg.direction;
 											fvup |= FlightBox.Update.BEARING;
-										}
-										if(Logger.is_logging) {
-											Logger.comp_gps(cg.direction, cg.range, 1);
 										}
 									}
 								}
@@ -286,9 +280,6 @@ namespace Mwp {
 					Atti._sy = af.pitch;
 					ser.td.atti.angx = af.roll;
 					ser.td.atti.angy = af.pitch;
-					if(Logger.is_logging) {
-						Logger.attitude(af.roll, af.pitch, mhead);
-					}
 					Mwp.panelbox.update(Panel.View.AHI, AHI.Update.AHI);
 				}
 				if(fvup) {

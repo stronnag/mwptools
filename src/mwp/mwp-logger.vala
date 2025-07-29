@@ -315,58 +315,29 @@ namespace Logger {
         write_stream();
     }
 
-    public void gpssvinfo(uint8 []raw) {
-        var builder = init("gpssvinfo");
-        builder.set_member_name ("no_sats");
-        builder.add_int_value(raw[0]);
-        builder.set_member_name("satellites");
-        builder.begin_array ();
-        var n = 1;
-        for(var i = 0; i < raw[0]; i++) {
-            builder.begin_object ();
-            builder.set_member_name ("channel");
-            builder.add_int_value(raw[n++]);
-            builder.set_member_name ("svid");
-            builder.add_int_value(raw[n++]);
-            builder.set_member_name ("quality");
-            builder.add_int_value(raw[n++]);
-            builder.set_member_name ("cno");
-            builder.add_int_value(raw[n++]);
-            builder.end_object();
-        }
-        builder.end_array();
+    public void power() {
+        var builder = init("td.power");
+        builder.set_member_name ("voltage");
+        builder.add_double_value(Mwp.msp.td.power.volts);
+        builder.set_member_name ("power");
+        builder.add_int_value(	Mwp.msp.td.power.mah);
+        builder.set_member_name ("rssi");
+        builder.add_int_value(Mwp.msp.td.rssi.rssi);
+        builder.set_member_name ("amps");
+        builder.add_double_value(Mwp.msp.td.power.amps);
         builder.end_object ();
         Json.Node root = builder.get_root ();
 		gen.set_root (root);
         write_stream();
     }
 
-    public void analog(MSP_ANALOG a) {
-        var builder = init("analog");
-        builder.set_member_name ("voltage");
-        builder.add_double_value(((double)a.vbat/10.0));
-        builder.set_member_name ("power");
-        builder.add_int_value(a.powermetersum);
-        builder.set_member_name ("rssi");
-        builder.add_int_value(a.rssi);
-        builder.set_member_name ("amps");
-        builder.add_int_value(a.amps);
-        builder.end_object ();
-        Json.Node root = builder.get_root ();
-		gen.set_root (root);
-        write_stream();
-    }
 
-    public void analog2(MSP_ANALOG2 a) {
-        var builder = init("analog2");
-        builder.set_member_name ("voltage");
-        builder.add_double_value(((double)a.vbat/100.0));
-        builder.set_member_name ("power");
-        builder.add_int_value(a.mahdraw);
-        builder.set_member_name ("rssi");
-        builder.add_int_value(a.rssi);
-        builder.set_member_name ("amps");
-        builder.add_int_value(a.amps);
+    public void range_bearing() {
+		var builder = init ("td.range_bearing");
+        builder.set_member_name ("bearing");
+        builder.add_int_value(Mwp.msp.td.comp.bearing);
+        builder.set_member_name ("range");
+        builder.add_int_value(Mwp.msp.td.comp.range);
         builder.end_object ();
         Json.Node root = builder.get_root ();
 		gen.set_root (root);
@@ -412,26 +383,26 @@ namespace Logger {
         write_stream();
      }
 
-    public void attitude(double dax, double day, int hdr) {
-        var builder = init ("attitude");
-        builder.set_member_name ("angx");
-        builder.add_double_value(dax);
-        builder.set_member_name ("angy");
-        builder.add_double_value(day);
-        builder.set_member_name ("heading");
-        builder.add_int_value(hdr);
+    public void attitude() {
+        var builder = init ("td.attitude");
+        builder.set_member_name ("roll");
+        builder.add_int_value(Mwp.msp.td.atti.angx);
+        builder.set_member_name ("pitch");
+        builder.add_int_value(Mwp.msp.td.atti.angy);
+        builder.set_member_name ("yaw");
+        builder.add_int_value(Mwp.msp.td.atti.yaw);
         builder.end_object ();
         Json.Node root = builder.get_root ();
 		gen.set_root (root);
         write_stream();
     }
 
-    public void altitude(double estalt, double vario) {
-        var builder = init ("altitude");
+    public void altitude() {
+        var builder = init ("td.altitude");
         builder.set_member_name ("estalt");
-        builder.add_double_value(estalt);
+        builder.add_double_value(Mwp.msp.td.alt.alt);
         builder.set_member_name ("vario");
-        builder.add_double_value(vario);
+        builder.add_double_value(Mwp.msp.td.alt.vario);
         builder.end_object ();
         Json.Node root = builder.get_root ();
 		gen.set_root (root);

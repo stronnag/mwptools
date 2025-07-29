@@ -80,7 +80,16 @@ namespace FlightBox {
 			if(Update.YAW in what) {
 				set_heading(Mwp.msp.td.atti.yaw);
             }
-		}
+
+			if(Logger.is_logging) {
+                if(Update.ALT in what) {
+                    Logger.altitude();
+                }
+                if(Update.RANGE|Update.BEARING in what) {
+                    Logger.range_bearing();
+                }
+           }
+        }
 
 		private void set_latitude (double lat) {
 			var s = PosFormat.lat(lat, Mwp.conf.dms);
