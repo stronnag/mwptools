@@ -483,7 +483,7 @@ namespace AHI {
 
 		public void update (Update what) {
 			if(Update.AHI in what) {
-				update_ahi(Mwp.msp.td.atti.angx, Mwp.msp.td.atti.angy);
+				update_ahi(-Mwp.msp.td.atti.angx, -Mwp.msp.td.atti.angy);
             }
 		}
 
