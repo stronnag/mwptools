@@ -834,9 +834,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#forwarding-same-type-messages" class="md-nav__link">
+  <a href="#forwarding-same-type-messages-msp-ltm-mavlink" class="md-nav__link">
     <span class="md-ellipsis">
-      Forwarding "same type" messages
+      Forwarding "same type" messages (MSP, LTM, MAVLink)
     </span>
   </a>
   
@@ -1841,9 +1841,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#forwarding-same-type-messages" class="md-nav__link">
+  <a href="#forwarding-same-type-messages-msp-ltm-mavlink" class="md-nav__link">
     <span class="md-ellipsis">
-      Forwarding "same type" messages
+      Forwarding "same type" messages (MSP, LTM, MAVLink)
     </span>
   </a>
   
@@ -2106,7 +2106,8 @@ Types of message to forward (none, LTM, minLTM, minMAV, all, MSP1, MSP2, MAV1, M
 </li>
 </ul>
 <p>These settings have two distinct behaviours:</p>
-<h3 id="forwarding-same-type-messages">Forwarding "same type" messages<a class="headerlink" href="#forwarding-same-type-messages" title="Permanent link">#</a></h3>
+<p>In addition to forwarding inbound MSP, LTM and MAVLink, as of mwp 25.07.28, it is possible to foward received CRSF as one of MSP, LTM and MAVLink</p>
+<h3 id="forwarding-same-type-messages-msp-ltm-mavlink">Forwarding "same type" messages (MSP, LTM, MAVLink)<a class="headerlink" href="#forwarding-same-type-messages-msp-ltm-mavlink" title="Permanent link">#</a></h3>
 <p>The following settings, apply to received telemetry of  the specified type. No message translation is done, and all data received will be regenerated and sent on to the <code>forward-device</code>.</p>
 <ul>
 <li><code>all</code>: Any <code>MSP</code>, <code>LTM</code> <code>MAVLink</code> , All received responses will be forwarded.</li>
@@ -2114,7 +2115,8 @@ Types of message to forward (none, LTM, minLTM, minMAV, all, MSP1, MSP2, MAV1, M
 <li><code>minMAV</code>: Minimal set of <code>MAVLink</code> (typically for antenna trackers; <code>ID_HEARTBEAT</code>, <code>ID_SYS_STATUS</code>, <code>GPS_RAW_INT</code>, <code>ATTITUDE</code>) will be forwarded.</li>
 </ul>
 <h3 id="translated-capability-messages">Translated "capability" messages<a class="headerlink" href="#translated-capability-messages" title="Permanent link">#</a></h3>
-<p>The following settings are "capability" based and may involve translation of a forwarded protocol into a different protocol. For example, a MSP <code>MSP_RAW_GPS</code> might be forwarded to a <code>LTM</code> consumer as LTM <code>G_FRAME</code> or to a MAVLink consumer as <code>MAVLINK_MSG_GPS_RAW_INT</code>. Messages are grouped into the following "capailities":</p>
+<p>The following settings are "capability" based and may involve translation of a forwarded protocol into a different protocol. For example, a MSP <code>MSP_RAW_GPS</code> might be forwarded to a <code>LTM</code> consumer as LTM <code>G_FRAME</code> or to a MAVLink consumer as <code>MAVLINK_MSG_GPS_RAW_INT</code>.  As of mwp 25.07.28, this also allows CRSF to the translated and forwarded.</p>
+<p>Messages are grouped into the following "capailities":</p>
 <ul>
 <li>GPS Position / velocity / status</li>
 <li>Attitude</li>
