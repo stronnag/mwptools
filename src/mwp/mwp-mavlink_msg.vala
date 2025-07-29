@@ -236,8 +236,8 @@ namespace Mwp {
 				mhead += 360;
 			bool fvup = (Math.fabs(ser.td.atti.yaw - mhead) > 1.0);
 				ser.td.atti.yaw = mhead;
-				int16 roll = (int16)(-m.roll*Mwp.RAD2DEG);
-				int16 pitch = (int16)(m.pitch*Mwp.RAD2DEG);
+				int16 roll = (int16)(m.roll*Mwp.RAD2DEG);
+				int16 pitch = (int16)(-m.pitch*Mwp.RAD2DEG);
 
 				var vdiff = ((Math.fabs(ser.td.atti.angx-roll) > 1) || (Math.fabs(ser.td.atti.angy-pitch) > 1));
 				ser.td.atti.angx = (int16)roll;

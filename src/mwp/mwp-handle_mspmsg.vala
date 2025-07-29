@@ -1072,9 +1072,6 @@ namespace Mwp {
 			at.angx /= 10;
 			at.angy /= 10;
 
-			var sb = new StringBuilder();
-			sb.append_printf(":MSP ATTI: x=%d y=%d ", at.angx, at.angy);
-
 			var vdiff = (at.angx != Atti._sx) || (at.angy != Atti._sy);
 
 			if(vdiff) {
@@ -1082,8 +1079,6 @@ namespace Mwp {
 				Atti._sy = at.angy;
 				ser.td.atti.angx = at.angx;
 				ser.td.atti.angy = at.angy;
-				sb.append_printf(" LOG ATTI: x=%d y=%d\n", at.angx, at.angy);
-				MWPLog.message(sb.str);
 				Mwp.panelbox.update(Panel.View.AHI, AHI.Update.AHI);
 			}
 

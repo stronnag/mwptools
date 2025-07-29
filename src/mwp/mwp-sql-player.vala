@@ -460,8 +460,8 @@ public class SQLPlayer : Object {
 		if(vdiff) {
 			Atti._sx = t.roll;
 			Atti._sy = t.pitch;
-			Mwp.msp.td.atti.angx = -t.roll;
-			Mwp.msp.td.atti.angy = -t.pitch;
+			Mwp.msp.td.atti.angx = t.roll;
+			Mwp.msp.td.atti.angy = t.pitch;
 			Mwp.panelbox.update(Panel.View.AHI, AHI.Update.AHI);
 		}
 		if(fvh) {

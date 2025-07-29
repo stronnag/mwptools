@@ -284,10 +284,8 @@ namespace Mwp {
 				if(vdiff) {
 					Atti._sx = af.roll;
 					Atti._sy = af.pitch;
-					var roll = -af.roll;
-					var pitch = -af.pitch;
-					ser.td.atti.angx = roll;
-					ser.td.atti.angy = pitch;
+					ser.td.atti.angx = af.roll;
+					ser.td.atti.angy = af.pitch;
 					if(Logger.is_logging) {
 						Logger.attitude(af.roll, af.pitch, mhead);
 					}
