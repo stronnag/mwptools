@@ -348,3 +348,15 @@ Note also that for mwp to load SVG icons, `librsvg` requires that the `svg` elem
     <a name="mnote1">1.</a> The file manager (at least Nautilus / Gnome) will offer mwp as the default application to open the file.
 
     <a name="mnote2">2.</a>  DnD. The file can be dropped onto the mwp map and will be opened. The file may also be provided on the mwp command line without `--option`; e.g. `mwp --mission demo.mission` and `mwp demo.mission` will behave in the same way.
+
+## Cached files
+
+{{ mwp }}, directly or indirectly caches some data. The root of the cache is the user's XDG cache directory `~/.cache` (Windows `%UserProfile%\AppData\Local\Microsoft\Windows\INetCache` / `$LOCALAPPDATA/Microsoft/Windows/INetCache`).
+
+The following sub-directories of the cache are used by mwp (by design):
+
+* `shumate` : Tile caches
+* `mwp/DEMs` : Digital Elevation Models (aka Terrain data)
+* `fl2x` : Flight log metadata cache.
+
+If the directories are cleared (or deleted), they will be progressively repopulated on demand.

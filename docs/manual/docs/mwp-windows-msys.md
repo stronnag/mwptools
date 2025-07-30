@@ -144,8 +144,9 @@ The above external applications will need to be on the `PATH` available to the i
 * And sub-directories:
     * `shumate` : Tile caches
 	* `mwp/DEMs` : Digital Elevation Models (aka Terrain data)
+    * `fl2x` : Flight log metadata cache.
 
-Neither of these locations are cleared by an uninstall.
+None of these locations are cleared by an uninstall.
 
 ## Settings
 
