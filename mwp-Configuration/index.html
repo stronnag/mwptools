@@ -918,6 +918,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#cached-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cached files
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1941,6 +1950,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#cached-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cached files
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2325,6 +2343,15 @@ To backup the settings:</p>
 <p><a name="mnote1">1.</a> The file manager (at least Nautilus / Gnome) will offer mwp as the default application to open the file.</p>
 <p><a name="mnote2">2.</a>  DnD. The file can be dropped onto the mwp map and will be opened. The file may also be provided on the mwp command line without <code>--option</code>; e.g. <code>mwp --mission demo.mission</code> and <code>mwp demo.mission</code> will behave in the same way.</p>
 </div>
+<h2 id="cached-files">Cached files<a class="headerlink" href="#cached-files" title="Permanent link">#</a></h2>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a>, directly or indirectly caches some data. The root of the cache is the user's XDG cache directory <code>~/.cache</code> (Windows <code>%UserProfile%\AppData\Local\Microsoft\Windows\INetCache</code> / <code>$LOCALAPPDATA/Microsoft/Windows/INetCache</code>).</p>
+<p>The following sub-directories of the cache are used by mwp (by design):</p>
+<ul>
+<li><code>shumate</code> : Tile caches</li>
+<li><code>mwp/DEMs</code> : Digital Elevation Models (aka Terrain data)</li>
+<li><code>fl2x</code> : Flight log metadata cache.</li>
+</ul>
+<p>If the directories are cleared (or deleted), they will be progressively repopulated on demand.</p>
 
 
 
