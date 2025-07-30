@@ -74,7 +74,7 @@ namespace SQL {
 		Sqlite.Statement flstmt;
 
 		const string bbquery = "SELECT min(lat),min(lon),max(lat),max(lon) FROM logs WHERE id = $1;";
-		const string mtquery = "SELECT dtg,duration,mname,firmware,fwdate,sensors,features from meta WHERE id = $1;";
+		const string mtquery = "SELECT * from meta WHERE id = $1;";
 		const string flquery = "SELECT id,idx,stamp,lat,lon,alt,galt,spd,amps,volts,hlat,hlon,vrange,cse,cog,bearing,roll,pitch,hdop,ail,ele,rud,thr,fix,numsat,fmode,rssi,status,activewp,navmode,hwfail,windx,windy,windz,energy from logs WHERE id = $1 and idx=$2;";
 
 		public Db(string fn) {
@@ -96,20 +96,46 @@ namespace SQL {
 			}
 		}
 
+		private void read_meta(Sqlite.Statement stmt, out Meta m) {
+			m = {};
+			var ns = stmt.column_count();
+			for (int i = 0; i < ns; i++) {
+				switch (stmt.column_name(i)) {
+				case "id":
+					m.id = stmt.column_int(i);
+					break;
+				case "dtg":
+					m.dtg = stmt.column_text(i);
+					break;
+				case "duration":
+					m.duration = stmt.column_double(i);
+					break;
+				case "name":
+					m.name = stmt.column_text(i);
+					break;
+				case "firmware":
+					m.firmware = stmt.column_text(i);
+					break;
+				case "fwdate":
+					m.fwdate = stmt.column_text(i);
+					break;
+				case "sensors":
+					m.sensors = stmt.column_int(i);
+					break;
+				case "features":
+					m.features = stmt.column_int(i);
+					break;
+				}
+			}
+		}
+
 		public bool get_meta(int idx, out Meta m) {
 			int n = 0;
 			m = {};
 			mtstmt.reset();
 			mtstmt.bind_int (1, idx);
 			while (mtstmt.step () == Sqlite.ROW) {
-				m.id = idx;
-				m.dtg = mtstmt.column_text(0);
-				m.duration = mtstmt.column_double(1);
-				m.name = mtstmt.column_text(2);
-				m.firmware = mtstmt.column_text(3);
-				m.fwdate = mtstmt.column_text(4);
-				m.sensors = mtstmt.column_int(5);
-				m.features = mtstmt.column_int(6);
+				read_meta(mtstmt, out m);
 				n++;
 			}
 			return (n==1);
@@ -117,21 +143,17 @@ namespace SQL {
 
 		public bool get_metas(out Meta[] ms) {
 			int n = 0;
-			ms = {};
+			Meta[]mms = {};
 			Sqlite.Statement stmt;
 			const string query = "SELECT * FROM meta;";
 			db.prepare_v2 (query, query.length, out stmt);
 			while (stmt.step () == Sqlite.ROW) {
                 var m = Meta();
-				m.id = stmt.column_int(0);
-				m.dtg = stmt.column_text(1);
-				m.duration = stmt.column_double(2);
-				m.name = stmt.column_text(3);
-				m.firmware = stmt.column_text(4);
+				read_meta(stmt, out m);
+				mms += m;
 				n++;
-				ms.resize(n);
-				ms[n-1] = m;
 			}
+			ms = mms;
 			return (n>0);
 		}
 
@@ -318,7 +340,7 @@ static int main(string?[]args) {
 		var res = d.get_metas(out ms);
 		if(res) {
 			foreach (var m in ms) {
-				print("%d %f %s %s %s\n", m.id, m.duration, m.dtg, m.name, m.firmware);
+				print("id=%d dur=%f dtg=%s name=%s fw=%s\n", m.id, m.duration, m.dtg, m.name, m.firmware);
 			}
 		}
 
