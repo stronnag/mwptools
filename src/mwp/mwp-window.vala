@@ -358,8 +358,7 @@ namespace Mwp {
 							if(msp.available) {
 								devnam = dev_entry.text;
 							}
-							Logger.fcinfo(MissionManager.last_file,vi,capability,profile, null,
-										  vname, devnam, boxids);
+							Logger.fcinfo(devnam);
 							if(gzone != null) {
 								Logger.logstring("geozone", gzr.to_string());
 							}

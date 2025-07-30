@@ -43,6 +43,13 @@ namespace Mwp {
 			//  navstatus.set_replay_mode((replayer != Player.NONE)); // FIXME
             // radstatus.annul(); /; FIXME
             if (armed == 1) {
+				string devnam;
+				if(Mwp.msp.available) {
+					devnam = dev_entry.text;
+				} else {
+					devnam = "unknown";
+				}
+				Logger.fcinfo(devnam);
 				Mwp.window.armed_state(true);
 				magdt = -1;
                 Odo.stats = {0};

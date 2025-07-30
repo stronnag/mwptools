@@ -78,12 +78,13 @@ public struct VersInfo {
     uint8 mrtype;
     uint8 mvers;
     MWChooser.MWVAR fctype;
+    uint16 fc_api;
+    uint32 fc_vers;
     string fc_var;
     string board;
     string name;
     string fc_git;
-    uint16 fc_api;
-    uint32 fc_vers;
+	string fc_date;
 }
 
 public struct TelemStats {

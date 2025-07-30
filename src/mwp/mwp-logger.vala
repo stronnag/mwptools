@@ -85,67 +85,71 @@ namespace Logger {
 			write_stream();
 		}
 	}
-
-	public void fcinfo(string? title, VersInfo vi,uint32 capability,
-                              uint8 profile, string? boxnames = null,
-                              string? vname = null, string? device = null,
-							  uint8[] boxids = {})  {
+	// MissionManager.last_file, vi, capability, sensor, profile, boxnames, vname, devnam, boxids);
+	// string? title, VersInfo vi,uint32 capability, uint16 sensor, uint8 profile, string? boxnames = null, string? vname = null, string? device = null, uint8[] boxids = {})  {
+	public void fcinfo(string? device = null) {
 		if (is_logging) {
 			gen = new Json.Generator ();
 			var builder = init("init");
-			if(title != null) {
+			if(MissionManager.last_file != null) {
 				builder.set_member_name ("mission");
-				builder.add_string_value (title);
+				builder.add_string_value (MissionManager.last_file);
 			}
 
 			builder.set_member_name ("mwvers");
-			builder.add_int_value (vi.mvers);
+			builder.add_int_value (Mwp.vi.mvers);
 			builder.set_member_name ("mrtype");
-			builder.add_int_value (vi.mrtype);
+			builder.add_int_value (Mwp.vi.mrtype);
 			builder.set_member_name ("capability");
-			builder.add_int_value (capability);
+			builder.add_int_value (Mwp.capability);
 			builder.set_member_name ("fctype");
-			builder.add_int_value (vi.fctype);
+			builder.add_int_value (Mwp.vi.fctype);
 			builder.set_member_name ("profile");
-			builder.add_int_value (profile);
+			builder.add_int_value (Mwp.profile);
 			builder.set_member_name ("fcboard");
-			builder.add_string_value (vi.board);
+			builder.add_string_value (Mwp.vi.board);
 			builder.set_member_name ("fcname");
-			builder.add_string_value (vi.name);
+			builder.add_string_value (Mwp.vi.name);
+			builder.set_member_name ("fcdate");
+			builder.add_string_value (Mwp.vi.fc_date);
+			builder.set_member_name ("sensors");
+			builder.add_int_value (Mwp.sensor);
+			builder.set_member_name ("features");
+			builder.add_int_value (Mwp.feature_mask);
 
-			if(vname != null) {
+			if(Mwp.vname != null) {
 				builder.set_member_name ("vname");
-				builder.add_string_value (vname);
+				builder.add_string_value (Mwp.vname);
 			}
 
-			if(boxnames != null) {
+			if(Mwp.boxnames != null) {
 				builder.set_member_name ("boxnames");
-				builder.add_string_value (boxnames);
+				builder.add_string_value (Mwp.boxnames);
 			}
 
-			if (boxids.length != 0) {
+			if (Mwp.boxids.length != 0) {
 				builder.set_member_name ("boxids");
 				builder.begin_array();
-				for(var i = 0; i < boxids.length; i++) {
-					builder.add_int_value(boxids[i]);
+				for(var i = 0; i < Mwp.boxids.length; i++) {
+					builder.add_int_value(Mwp.boxids[i]);
 				}
 				builder.end_array();
 			}
 
-			if(vi.fc_var != null) {
+			if(Mwp.vi.fc_var != null) {
 				builder.set_member_name ("fc_var");
-				builder.add_string_value (vi.fc_var);
+				builder.add_string_value (Mwp.vi.fc_var);
 				builder.set_member_name ("fc_verx");
-				builder.add_string_value ("%06x".printf(vi.fc_vers));
+				builder.add_string_value ("%06x".printf(Mwp.vi.fc_vers));
 				builder.set_member_name ("fc_vers");
-				builder.add_int_value (vi.fc_vers);
+				builder.add_int_value (Mwp.vi.fc_vers);
 				builder.set_member_name ("fc_vers_str");
 				uchar vs[4];
-				SEDE.serialise_u32(vs, vi.fc_vers);
+				SEDE.serialise_u32(vs, Mwp.vi.fc_vers);
 				builder.add_string_value ("%d.%d.%d".printf(vs[2],vs[1],vs[0]));
-				if(vi.fc_git != null) {
+				if(Mwp.vi.fc_git != null) {
 					builder.set_member_name ("git_info");
-					builder.add_string_value (vi.fc_git);
+					builder.add_string_value (Mwp.vi.fc_git);
 				}
 			}
 

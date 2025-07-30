@@ -332,6 +332,9 @@ public class SQLPlayer : Object {
 		Mwp.init_have_home();
 		Mwp.init_state();
 		Mwp.hard_display_reset();
+		Mwp.feature_mask = (uint32)m.features;
+		Mwp.sensor = (uint16)m.sensors;
+		Mwp.update_sensor_array();
 
 		Odo.stats = {};
 		if(d.get_log_entry(idx, startat, out t)) {
@@ -394,7 +397,7 @@ public class SQLPlayer : Object {
 			Mwp.rebase.relocate(ref t.hlat, ref t.hlon);
 		}
 
-		if(Mwp.home_changed(t.hlat, t.hlon)) {
+		if(!Mwp.have_home || Mwp.home_changed(t.hlat, t.hlon)) {
 			Mwp.sflags |= Mwp.SPK.GPS;
 			Mwp.want_special |= Mwp.POSMODE.HOME;
 			Mwp.process_pos_states(t.hlat, t.hlon, 0, "SQL Origin", -2); // FIXME ALT
@@ -498,9 +501,32 @@ public class SQLPlayer : Object {
 		if(fvup != 0) {
 			Mwp.panelbox.update(Panel.View.FVIEW, fvup);
 		}
+		process_nav(t);
 		Mwp.update_pos_info(t.idx);
 		Sticks.update(t.ail, t.ele, t.rud, t.thr);
 
+	}
+
+	private void process_nav(SQL.TrackEntry t) {
+		var ns =  MSP_NAV_STATUS();
+		ns.nav_mode = (uint8)t.navmode;
+		switch(t.fmode) {
+		case Msp.Ltm.POSHOLD,Msp.Ltm.ALTHOLD:
+			ns.gps_mode	= 1;
+			break;
+		case Msp.Ltm.RTH:
+			ns.gps_mode	= 2;
+			break;
+		case Msp.Ltm.WAYPOINTS:
+			ns.gps_mode	= 3;
+			ns.action = 1;
+			ns.wp_number = (uint8)t.activewp;
+			break;
+		default:
+			ns.gps_mode	= 0;
+			break;
+		}
+		Mwp.handle_n_frame(Mwp.msp, ns);
 	}
 
 	private void process_energy(SQL.TrackEntry t) {

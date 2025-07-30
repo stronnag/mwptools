@@ -24,6 +24,9 @@ namespace SQL {
 		double duration;
 		string name;
 		string firmware;
+		string fwdate;
+		int sensors;
+		int features;
 	}
 
 	public struct TrackEntry {
@@ -71,7 +74,7 @@ namespace SQL {
 		Sqlite.Statement flstmt;
 
 		const string bbquery = "SELECT min(lat),min(lon),max(lat),max(lon) FROM logs WHERE id = $1;";
-		const string mtquery = "SELECT dtg,duration,mname,firmware from meta WHERE id = $1;";
+		const string mtquery = "SELECT dtg,duration,mname,firmware,fwdate,sensors,features from meta WHERE id = $1;";
 		const string flquery = "SELECT id,idx,stamp,lat,lon,alt,galt,spd,amps,volts,hlat,hlon,vrange,cse,cog,bearing,roll,pitch,hdop,ail,ele,rud,thr,fix,numsat,fmode,rssi,status,activewp,navmode,hwfail,windx,windy,windz,energy from logs WHERE id = $1 and idx=$2;";
 
 		public Db(string fn) {
@@ -104,6 +107,9 @@ namespace SQL {
 				m.duration = mtstmt.column_double(1);
 				m.name = mtstmt.column_text(2);
 				m.firmware = mtstmt.column_text(3);
+				m.fwdate = mtstmt.column_text(4);
+				m.sensors = mtstmt.column_int(5);
+				m.features = mtstmt.column_int(6);
 				n++;
 			}
 			return (n==1);

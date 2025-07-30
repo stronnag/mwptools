@@ -32,6 +32,7 @@ namespace Mwp {
 	bool prlabel;
 	bool gz_from_msp;
 	uint8 []boxids;
+	string boxnames = null;
 	int idcount;
 	bool fwachanged;
 	int16[] rcchans;
@@ -584,6 +585,9 @@ namespace Mwp {
 				gi[len-19] = 0;
 				vi.fc_git = (string)gi;
 			}
+			var vdate = (string)raw[:11];
+			var vtime = (string)raw[11:19];
+			vi.fc_date = "%.11s %.8s".printf(vdate, vtime);
 			uchar vs[4];
 			SEDE.serialise_u32(vs, vi.fc_vers);
 			if(vi.name == null)
@@ -593,7 +597,7 @@ namespace Mwp {
 													  vi.name, vi.fc_git);
 			Mwp.window.verlab.label = vers;
 			Mwp.window.verlab.tooltip_text = vers;
-			MWPLog.message("%s\n", vers);
+			MWPLog.message("%s %s\n", vers,	vi.fc_date);
 			queue_cmd(Msp.Cmds.COMMON_SERIAL_CONFIG,null,0);
 			break;
 
@@ -664,7 +668,7 @@ namespace Mwp {
 				}
 
 			}
-			string boxnames = null;
+
 			if (cmd == Msp.Cmds.BOXNAMES) {
 				raw[len] = 0;
 				boxnames = (string)raw;
@@ -746,12 +750,6 @@ namespace Mwp {
 
 			set_typlab();
 
-			if(Logger.is_logging) {
-				string devnam = null;
-				if(ser.available)
-					devnam = dev_entry.text;
-				Logger.fcinfo(MissionManager.last_file, vi, capability, profile, boxnames, vname, devnam, raw[0:len]);
-			}
 			need_mission = false;
 			queue_cmd(Msp.Cmds.RX_MAP, null,0);
 			break;
@@ -1626,7 +1624,7 @@ namespace Mwp {
         return sb.str;
     }
 
-    private void update_sensor_array() {
+    public void update_sensor_array() {
         alert_broken_sensors((uint8)(sensor >> 15));
         for(int i = 0; i < 5; i++) {
             uint16 mask = (1 << i);
