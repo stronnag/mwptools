@@ -23,6 +23,7 @@
 | default-longitude | Default Longitude | Default Longitude when no GPS | -1.532936 |
 | default-map | Default Map | Default map *key* | "" |
 | default-nav-speed | Default Nav speed | Default Nav speed (m/s). For calculating durations only. | 7.0 |
+| default-video-uri | Default video URI | Default entry in the video player URI chooser | "" |
 | default-zoom | Default Map zoom | Default map zoom | 15 |
 | delta-minspeed | Minimum speed for elapsed distance updates | Minimum speed for elapsed distance updates (m/s). Default is zero, which means the elapsed distance is always updated; larger values will take out hover / jitter movements. | 0.0 |
 | device-names | Device names | A list of device names to be added to those that can be auto-discovered | [] |
@@ -62,6 +63,10 @@
 | mission-meta-tag | Use meta vice mwp in mission file | If true, the legacy 'mwp' tag for optional data in mission files is named 'meta' | false |
 | mission-path | Directory for mission files | Directory for mission files, default / not set = current directory | "" |
 | msp2-adsb | MSP2_ADSB_VEHICLE_LIST usage | Options for requesting MSP2_ADSB_VEHICLE_LIST. "off": never request, "on:" always request, "auto:" heuristic based on serial settings / bandwidth | "off" |
+| msprc-cycletime | MSP_SET_RAW_RC cycle time (microseconds) | Cycle time (ms) for MSP_SET_RAW_RC messages (if enabled). INAV requires a minimum of 5Hz refresh (200ms). A lower cycle time will improve RC response but reduce the MSP telemetry refresh rate | 150 |
+| msprc-enabled | MSP_SET_RAW_RC enablement | Whether MSP_SET_RAW_RC message transmission is enabled. Requires a mapping file | false |
+| msprc-full-duplex | MSP_SET_RAW_RC full duplex transmission | Use full duplex transmission for MSP_SET_RAW_RC messages. This will better ensure that the cycle-time requirement is met. <b>If the device does not support full duplex, enabling this will result in major telemetry failure</b>. | false |
+| msprc-settings | Handset Mapping file | Mapping file defining the mapping between handset input devices to RC channels for MSP_SET_RAW_RC messages | "" |
 | mwxml-version | MultiMission XML version | Version value in MW XML mission files. Legacy MW requires `2.3 pre8`. Note that INAV mission files may not be NOT compatible with legacy MW (and vice versa). If not set, the mwp version number is used. | "" |
 | no-poller-pause | Don't pause the MSP poller for bulk transfers | Traditionally, mwp pauses the MSP poller for bulk transfers (WP, Geozone, Safehome). This option allows polling to continue, interleaved with the bulk transfer. | false |
 | osd-mode | Data items overlaid on the map OSD | 0 = none, 1 = current WP/Max WP, 2 = next WP distance and course. This is a mask, so 3 means both OSD items. | 3 |
@@ -86,6 +91,7 @@
 | speak-interval | Interval between voice prompts | Interval between voice prompts, 0 disables | 15 |
 | speech-api | API for speech synthesis | On of espeak, speechd, flite. Only change this if you know you have the required development files at build time | "espeak" |
 | speechd-voice | Default speechd voice | Default speechd voice (see speechd documentation) | "male1" |
+| sqlite-log-path | Directory to save SQLite log files | Directory to save SQLite log files, if not set, SQLite log files ("Interactive FlightLog replay" are not persisted. | "" |
 | stats-timeout | Timeout for flight statistics display (s) | Timeout before the flight statistics popup automatically closes. A value of 0 means no timeout. | 30 |
 | symbol-scale | Symbol scale | Symbol scale factor, scales map symbols as multiplier (see also `touch-scale`), | 1.0 |
 | touch-scale | Touch symbol scale | Symbol scale factor, scales map symbols as multiplier (for touch screens); (see also `symbol-scale`), | 1.0 |
