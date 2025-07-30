@@ -115,7 +115,7 @@ namespace Cli {
 #else
 	const int FL2LTMVERS = 0x10026;
 #endif
-	const int FL2KMLVERS = 0x10030;
+	const int FL2KMLVERS = 0x10031;
 
 	private void parse_options() {
 		Mwp.gpsstats = {0, 0, 0, 0, 9999, 9999, 9999};
