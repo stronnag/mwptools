@@ -1572,6 +1572,12 @@
 <td>7.0</td>
 </tr>
 <tr>
+<td>default-video-uri</td>
+<td>Default video URI</td>
+<td>Default entry in the video player URI chooser</td>
+<td>""</td>
+</tr>
+<tr>
 <td>default-zoom</td>
 <td>Default Map zoom</td>
 <td>Default map zoom</td>
@@ -1806,6 +1812,30 @@
 <td>"off"</td>
 </tr>
 <tr>
+<td>msprc-cycletime</td>
+<td>MSP_SET_RAW_RC cycle time (microseconds)</td>
+<td>Cycle time (ms) for MSP_SET_RAW_RC messages (if enabled). INAV requires a minimum of 5Hz refresh (200ms). A lower cycle time will improve RC response but reduce the MSP telemetry refresh rate</td>
+<td>150</td>
+</tr>
+<tr>
+<td>msprc-enabled</td>
+<td>MSP_SET_RAW_RC enablement</td>
+<td>Whether MSP_SET_RAW_RC message transmission is enabled. Requires a mapping file</td>
+<td>false</td>
+</tr>
+<tr>
+<td>msprc-full-duplex</td>
+<td>MSP_SET_RAW_RC full duplex transmission</td>
+<td>Use full duplex transmission for MSP_SET_RAW_RC messages. This will better ensure that the cycle-time requirement is met. <b>If the device does not support full duplex, enabling this will result in major telemetry failure</b>.</td>
+<td>false</td>
+</tr>
+<tr>
+<td>msprc-settings</td>
+<td>Handset Mapping file</td>
+<td>Mapping file defining the mapping between handset input devices to RC channels for MSP_SET_RAW_RC messages</td>
+<td>""</td>
+</tr>
+<tr>
 <td>mwxml-version</td>
 <td>MultiMission XML version</td>
 <td>Version value in MW XML mission files. Legacy MW requires <code>2.3 pre8</code>. Note that INAV mission files may not be NOT compatible with legacy MW (and vice versa). If not set, the mwp version number is used.</td>
@@ -1948,6 +1978,12 @@
 <td>Default speechd voice</td>
 <td>Default speechd voice (see speechd documentation)</td>
 <td>"male1"</td>
+</tr>
+<tr>
+<td>sqlite-log-path</td>
+<td>Directory to save SQLite log files</td>
+<td>Directory to save SQLite log files, if not set, SQLite log files ("Interactive FlightLog replay" are not persisted.</td>
+<td>""</td>
 </tr>
 <tr>
 <td>stats-timeout</td>
