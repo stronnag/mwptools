@@ -228,7 +228,7 @@ public class SQLPlayer : Object {
 	private AsyncQueue<double?> dragq;
 
 	~SQLPlayer() {
-		MWPLog.message("~SQLPlayer ... \n");
+		MWPLog.message("~SQLPlayer ... disarm %s (%d)\n", Msp.bb_disarm(Mwp.msp.td.state.reason), Mwp.msp.td.state.reason);
 		Mwp.serstate = Mwp.SERSTATE.NONE;
 		Mwp.replayer = Mwp.Player.NONE;
 		Mwp.stack_size = xstack;
@@ -314,12 +314,6 @@ public class SQLPlayer : Object {
 
 		SQL.Meta m;
 		var res = d.get_meta(idx, out m);
-		if(res) {
-			Mwp.vname = m.name;
-			Mwp.set_typlab();
-			Mwp.window.verlab.label = m.firmware;
-		}
-
 		lstamp = 0;
 		tid = 0;
 		SQL.TrackEntry t = {};
@@ -332,9 +326,15 @@ public class SQLPlayer : Object {
 		Mwp.init_have_home();
 		Mwp.init_state();
 		Mwp.hard_display_reset();
-		Mwp.feature_mask = (uint32)m.features;
-		Mwp.sensor = (uint16)m.sensors;
-		Mwp.update_sensor_array();
+		if(res) {
+			Mwp.vname = m.name;
+			Mwp.set_typlab();
+			Mwp.window.verlab.label = m.firmware;
+			Mwp.feature_mask = (uint32)m.features;
+			Mwp.sensor = (uint16)m.sensors;
+			Mwp.update_sensor_array();
+			Mwp.msp.td.state.reason = m.disarm;
+		}
 
 		Odo.stats = {};
 		if(d.get_log_entry(idx, startat, out t)) {
@@ -390,7 +390,6 @@ public class SQLPlayer : Object {
 
 	private void display(SQL.TrackEntry t) {
 		if (Mwp.rebase.has_reloc()) {
-			//MWPLog.message("Rebase %f %f status %x\n", Mwp.rebase.orig.lat, Mwp.rebase.orig.lon, Mwp.rebase.status);
 			if (!Mwp.rebase.has_origin()) {
 				Mwp.rebase.set_origin(t.hlat, t.hlon);
 			}
@@ -405,11 +404,7 @@ public class SQLPlayer : Object {
 
 		if (Mwp.rebase.has_reloc()) {
 			if (Mwp.rebase.has_origin()) {
-				//StringBuilder sb = new StringBuilder();
-				//sb.append_printf("Rebase orig %f %f pos %f %f",  Mwp.rebase.orig.lat, Mwp.rebase.orig.lon, t.lat, t.lon);
 				Mwp.rebase.relocate(ref t.lat,ref t.lon);
-				//sb.append_printf(" to %f %f\n",  t.lat, t.lon);
-				//MWPLog.message(sb.str);
 			}
 		}
 
@@ -542,8 +537,8 @@ public class SQLPlayer : Object {
 		bool c_armed = true;
 		uint64 mwflags = 0;
 		uint8 ltmflags = 0;
-		bool failsafe = false;
 
+		var failsafe = ((t.status & 2) == 2);
 		ltmflags = (uint8)t.fmode;
 		Mwp.msp.td.state.state = (uint8)t.status;
 		Mwp.msp.td.state.ltmstate = ltmflags;

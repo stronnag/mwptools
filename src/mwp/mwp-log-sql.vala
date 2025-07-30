@@ -27,6 +27,7 @@ namespace SQL {
 		string fwdate;
 		int sensors;
 		int features;
+		uint8 disarm;
 	}
 
 	public struct TrackEntry {
@@ -124,6 +125,9 @@ namespace SQL {
 					break;
 				case "features":
 					m.features = stmt.column_int(i);
+					break;
+				case "disarm":
+					m.disarm = (uint8)stmt.column_int(i);
 					break;
 				}
 			}
