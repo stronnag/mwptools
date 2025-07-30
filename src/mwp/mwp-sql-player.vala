@@ -94,8 +94,6 @@ public class SQLSlider : Gtk.Window {
 				dragq.push(-1);
 				sp.stop();
 				sp = null;
-				Mwp.conf.logarmed = Mwp.xlog;
-				Mwp.conf.audioarmed = Mwp.xaudio;
 				return false;
 			});
 
@@ -234,6 +232,8 @@ public class SQLPlayer : Object {
 		Mwp.serstate = Mwp.SERSTATE.NONE;
 		Mwp.replayer = Mwp.Player.NONE;
 		Mwp.stack_size = xstack;
+		Mwp.conf.logarmed = Mwp.xlog;
+		Mwp.conf.audioarmed = Mwp.xaudio;
 	}
 
 	public SQLPlayer(AsyncQueue<double?> _dragq) {

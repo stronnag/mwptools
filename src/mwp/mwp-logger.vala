@@ -238,7 +238,7 @@ namespace Logger {
                              uint32 sensor, bool telem=false) {
 		if (is_logging) {
 			duration = (int)_duration;
-			var builder = init("td.armed");
+			var builder = init("v0:armed");
 			builder.set_member_name("armed");
 			builder.add_boolean_value(armed);
 			if(duration > -1) {
@@ -260,7 +260,7 @@ namespace Logger {
 
     public void sframe() {
 		if (is_logging) {
-			var builder = init("td.sframe");
+			var builder = init("v0:sframe");
 			builder.set_member_name("flags");
 			builder.add_int_value(Mwp.msp.td.state.state);
 			builder.set_member_name("ltmmode");
@@ -274,7 +274,7 @@ namespace Logger {
 
     public void origin() {
 		if (is_logging) {
-			var builder = init("td.origin");
+			var builder = init("v0:origin");
 			builder.set_member_name ("lat");
 			builder.add_double_value(Mwp.msp.td.origin.lat);
 			builder.set_member_name ("lon");
@@ -290,7 +290,7 @@ namespace Logger {
 
     public void xframe() {
 		if (is_logging) {
-			var builder = init("td.xframe");
+			var builder = init("v0:xframe");
 			builder.set_member_name ("sensorok");
 			builder.add_int_value(Mwp.msp.td.state.sensorok);
 			builder.set_member_name ("reason");
@@ -304,7 +304,7 @@ namespace Logger {
 
     public void power() {
 		if (is_logging) {
-			var builder = init("td.power");
+			var builder = init("v0:power");
 			builder.set_member_name ("voltage");
 			builder.add_double_value(Mwp.msp.td.power.volts);
 			builder.set_member_name ("power");
@@ -322,7 +322,7 @@ namespace Logger {
 
     public void range_bearing() {
 		if (is_logging) {
-			var builder = init ("td.range_bearing");
+			var builder = init ("v0:range_bearing");
 			builder.set_member_name ("bearing");
 			builder.add_int_value(Mwp.msp.td.comp.bearing);
 			builder.set_member_name ("range");
@@ -336,7 +336,7 @@ namespace Logger {
 
     public void gps() {
 		if (is_logging) {
-			var builder = init ("td.gps");
+			var builder = init ("v0:gps");
 			builder.set_member_name ("lat");
 			builder.add_double_value(Mwp.msp.td.gps.lat);
 			builder.set_member_name ("lon");
@@ -362,7 +362,7 @@ namespace Logger {
 
     public void attitude() {
 		if (is_logging) {
-			var builder = init ("td.attitude");
+			var builder = init ("v0:attitude");
 			builder.set_member_name ("roll");
 			builder.add_int_value(Mwp.msp.td.atti.angx);
 			builder.set_member_name ("pitch");
@@ -378,7 +378,7 @@ namespace Logger {
 
     public void altitude() {
 		if (is_logging) {
-			var builder = init ("td.altitude");
+			var builder = init ("v0:altitude");
 			builder.set_member_name ("estalt");
 			builder.add_double_value(Mwp.msp.td.alt.alt);
 			builder.set_member_name ("vario");
@@ -392,7 +392,7 @@ namespace Logger {
 
     public void status() {
 		if (is_logging) {
-			var builder = init ("td.navstatus");
+			var builder = init ("v0:navstatus");
 			builder.set_member_name ("nav_mode");
 			builder.add_int_value(Mwp.msp.td.state.navmode);
 			builder.set_member_name ("wp_number");
