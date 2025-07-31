@@ -611,7 +611,7 @@ public class SQLPlayer : Object {
 						   t.lat, t.lon, xws, Mwp.want_special);
 			Mwp.window.fmode.set_label(ls_state);
 			Mwp.last_ltmf = ltmflags;
-			Logger.sframe();
+			Logger.mode_flags();
 		}
 		if(Mwp.want_special != 0 /* && have_home*/) {
 			Mwp.process_pos_states(t.lat, t.lon, 0, "Sql status", t.idx);

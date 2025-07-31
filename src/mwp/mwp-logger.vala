@@ -258,9 +258,9 @@ namespace Logger {
 		}
 	}
 
-    public void sframe() {
+    public void mode_flags() {
 		if (is_logging) {
-			var builder = init("v0:sframe");
+			var builder = init("v0:mode-flags");
 			builder.set_member_name("flags");
 			builder.add_int_value(Mwp.msp.td.state.state);
 			builder.set_member_name("ltmmode");
@@ -288,9 +288,9 @@ namespace Logger {
 		}
 	}
 
-    public void xframe() {
+    public void sensor_reason() {
 		if (is_logging) {
-			var builder = init("v0:xframe");
+			var builder = init("v0:sensor-reason");
 			builder.set_member_name ("sensorok");
 			builder.add_int_value(Mwp.msp.td.state.sensorok);
 			builder.set_member_name ("reason");
@@ -322,7 +322,7 @@ namespace Logger {
 
     public void range_bearing() {
 		if (is_logging) {
-			var builder = init ("v0:range_bearing");
+			var builder = init ("v0:range-bearing");
 			builder.set_member_name ("bearing");
 			builder.add_int_value(Mwp.msp.td.comp.bearing);
 			builder.set_member_name ("range");
@@ -390,9 +390,9 @@ namespace Logger {
 		}
 	}
 
-    public void status() {
+    public void navstatus() {
 		if (is_logging) {
-			var builder = init ("v0:navstatus");
+			var builder = init ("v0:nav-status");
 			builder.set_member_name ("nav_mode");
 			builder.add_int_value(Mwp.msp.td.state.navmode);
 			builder.set_member_name ("wp_number");

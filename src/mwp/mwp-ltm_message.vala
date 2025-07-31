@@ -391,7 +391,7 @@ namespace Mwp {
 									   ls_state, ltmflags, last_ltmf, armed, duration,
 									   xlat, xlon, xws, want_special);
 						Mwp.window.fmode.set_label(ls_state);
-						Logger.sframe();
+						Logger.mode_flags();
 						last_ltmf = ltmflags;
 					}
 

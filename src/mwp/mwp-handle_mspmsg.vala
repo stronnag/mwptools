@@ -1655,7 +1655,7 @@ namespace Mwp {
                 queue_cmd(Msp.Cmds.SENSOR_STATUS,null,0);
             }
 			if(Logger.is_logging) {
-				Logger.xframe();
+				Logger.sensor_reason();
 			}
         }
     }
@@ -1870,7 +1870,7 @@ namespace Mwp {
 				Mwp.window.update_state();
 				var lmstr = Msp.ltm_mode(ltmflags);
 				Mwp.window.fmode.set_label(lmstr);
-				Logger.sframe();
+				Logger.mode_flags();
 				last_ltmf = ltmflags;
 			}
 			xbits = bxflag;

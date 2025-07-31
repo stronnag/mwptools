@@ -152,7 +152,7 @@ namespace Mwp {
 		}
 		MBus.update_wp();
 
-		Logger.status();
+		Logger.navstatus();
 
 		bool bok = ((vi.fc_vers >= FCVERS.hasActiveWP) && bblosd_ok) || ((replayer & Player.BBOX) == 0);
 		if(bok) {

@@ -265,7 +265,8 @@ namespace Flysky {
 
 				if(achg || mchg)
 					MBus.update_state();
-				Logger.sframe();
+
+				Logger.mode_flags();
 
 				if(Mwp.want_special != 0 /* && have_home*/) {
 					Mwp.process_pos_states(Mwp.xlat,Mwp.xlon, 0, "Flysky");
