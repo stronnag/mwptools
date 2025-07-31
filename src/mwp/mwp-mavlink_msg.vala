@@ -62,10 +62,10 @@ namespace Mwp {
 					var ls_state = Msp.ltm_mode(ltmflags);
 					Mwp.window.fmode.set_label(ls_state);
 				}
-
+				Logger.mode_flags();
 				//			if(achg || mchg)
 				//	update_mss_state(ltmflags);
-				Logger.mav_heartbeat(m);
+				//Logger.mav_heartbeat(m);
 			}
 			break;
 
@@ -86,14 +86,18 @@ namespace Mwp {
 						mavsensors |= Msp.Sensors.MAG;
 					}
 				}
-				Battery.set_bat_stat(m.voltage_battery/10);
 				Battery.curr.centiA = m.current_battery/10;
 				if(Battery.curr.centiA != 0 || Battery.curr.mah != 0) {
 					Battery.curr.ampsok = true;
 					if (Battery.curr.centiA > Odo.stats.amps)
 						Odo.stats.amps = Battery.curr.centiA;
 				}
-				Logger.mav_sys_status(m);
+
+				var  mavan = MSP_ANALOG2();
+				mavan.amps = m.current_battery/10;
+				mavan.vbat = m.voltage_battery/10;
+				mavan.mahdraw = Battery.curr.mah;
+				Battery.process_msp_analog(mavan);
 			}
 			break;
 
@@ -202,7 +206,7 @@ namespace Mwp {
 								}
 								if(Math.fabs(ser.td.comp.bearing - cg.direction) > 1.0) {
 									ser.td.comp.bearing =  cg.direction;
-									fvup = FlightBox.Update.BEARING;
+									fvup |= FlightBox.Update.BEARING;
 								}
 							}
 						}
@@ -211,7 +215,7 @@ namespace Mwp {
 
 					if(want_special != 0)
 						process_pos_states(mlat, mlon, dalt, "MavGPS");
-					Logger.mav_gps_raw_int (m);
+					//Logger.mav_gps_raw_int (m);
 				}
 				if(fvup != 0) {
 					Mwp.panelbox.update(Panel.View.FVIEW, fvup);
@@ -252,10 +256,12 @@ namespace Mwp {
 				break;
 
 		case Msp.Cmds.MAVLINK_MSG_RC_CHANNELS_RAW:
+			/*
 			if(ser.is_main) {
 				Mav.MAVLINK_RC_CHANNELS m = *(Mav.MAVLINK_RC_CHANNELS*)raw;
 				Logger.mav_rc_channels(m);
 			}
+			*/
 			break;
 
 		case Msp.Cmds.MAVLINK_MSG_GPS_GLOBAL_ORIGIN:
@@ -279,7 +285,8 @@ namespace Mwp {
 					want_special |= POSMODE.HOME;
 					process_pos_states(mlat, mlon, m.altitude / 1000.0, "MAvOrig");
 				}
-				Logger.mav_gps_global_origin(m);
+				//Logger.mav_gps_global_origin(m);
+				Logger.origin();
 			}
 			break;
 
@@ -322,20 +329,24 @@ namespace Mwp {
 			break;
 
 		case Msp.Cmds.MAVLINK_MSG_BATTERY_STATUS:
-			/*
-			int32 mavmah;
-			int16 mavamps;
+			if(ser.is_main) {
+				int32 mavmah;
+				SEDE.deserialise_i32(raw, out mavmah);
+				Battery.curr.mah = mavmah;
+			  /*
+			  int16 mavamps;
 
-			SEDE.deserialise_i32(raw, out mavmah);
-			SEDE.deserialise_i16(&raw[30], out mavamps);
-			Battery.curr.centiA = mavamps;
-			Battery.curr.mah = mavmah;
-			if(Battery.curr.centiA != 0 || Battery.curr.mah != 0) {
-				Battery.curr.ampsok = true;
-				if (Battery.curr.centiA > Odo.stats.amps)
-					Odo.stats.amps = Battery.curr.centiA;
-			}
+			  SEDE.deserialise_i32(raw, out mavmah);
+			  SEDE.deserialise_i16(&raw[30], out mavamps);
+			  Battery.curr.centiA = mavamps;
+
+			  if(Battery.curr.centiA != 0 || Battery.curr.mah != 0) {
+			  Battery.curr.ampsok = true;
+			  if (Battery.curr.centiA > Odo.stats.amps)
+			  Odo.stats.amps = Battery.curr.centiA;
+			  }
 			*/
+			}
 			break;
 
 		case Msp.Cmds.MAVLINK_MSG_STATUSTEXT:

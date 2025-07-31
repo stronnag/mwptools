@@ -527,9 +527,8 @@ public class SQLPlayer : Object {
 	private void process_energy(SQL.TrackEntry t) {
 		MSP_ANALOG2 an = MSP_ANALOG2();
 		an.vbat = (uint16)(100*t.volts);
-		Battery.curr.mah = (uint16)t.energy;
-		an.mahdraw = (uint16)Battery.curr.mah;
-		an.amps = Battery.curr.centiA = (uint16)t.amps*100;
+		an.mahdraw = (uint16)t.energy;
+		an.amps = (uint16)(t.amps*100);
 		Battery.process_msp_analog(an);
 	}
 

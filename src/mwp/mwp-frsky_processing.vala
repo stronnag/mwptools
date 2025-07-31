@@ -39,7 +39,9 @@ namespace Frsky {
 		public uint16 range;
 		public uint16 rssi;
 		public int16 vario;
-		public double volts;
+		public uint16 volts;
+		public uint16 amps;
+		public uint16 mah;
 	}
 
 	private uint8 sport_parse_lat_lon(uint val, out int32 value) {
@@ -91,10 +93,14 @@ namespace Frsky {
 		case SportDev.FrID.VFAS_ID:
 			if(ser.is_main) {
 				if (val /100  < 80) {
-					s.volts = val / 100.0;
+					s.volts = (uint16)val;
 					Mwp.sflags |=  Mwp.SPK.Volts;
 				}
-				Battery.set_bat_stat((uint16)val);
+				var an = MSP_ANALOG2();
+				an.vbat = s.volts;
+				an.amps = s.amps;
+				an.mahdraw = s.mah;
+				Battery.process_msp_analog(an);
 			}
 			break;
 
@@ -491,19 +497,8 @@ namespace Frsky {
 		case SportDev.FrID.CURR_ID:
 			if(ser.is_main) {
 				if((val / 10) < 999) {
-					Battery.curr.ampsok = true;
-					Battery.update = true;
-					Battery.curr.centiA =  (uint16)(val * 10);
-					if (Battery.curr.centiA > Odo.stats.amps) {
-						Odo.stats.amps = Battery.curr.centiA;
-					}
+					s.amps = (uint16)(val * 10);
 				}
-				//			LTM_SFRAME sf = LTM_SFRAME ();
-				//sf.vbat = (uint16)(s.volts*1000);
-				//sf.flags = ((failsafe) ? 2 : 0) | (armed & 1) | (ltmflags << 2);
-				//sf.vcurr = (conf.smartport_fuel == 2) ? (uint16)curr.mah : 0;
-				//sf.rssi = (uint8)(s.rssi * 255/ 1023);
-				//sf.airspeed = 0;
 			}
 			break;
 		case SportDev.FrID.ACCX_ID:
@@ -540,15 +535,15 @@ namespace Frsky {
 			if(ser.is_main) {
 				switch (Mwp.conf.smartport_fuel) {
 				case 0:
-					Battery.curr.mah = 0;
+					s.mah = 0;
 					break;
 				case 1:
 				case 2:
-					Battery.curr.mah = (val > 0xffff) ? 0xffff : (uint16)val;
+					s.mah = (val > 0xffff) ? 0xffff : (uint16)val;
 					break;
 				case 3:
 				default:
-					Battery.curr.mah = val;
+					s.mah = (uint16)val;
 					break;
 				}
 			}

@@ -44,7 +44,9 @@ namespace CRSF {
 		public int16 pitch;
 		public int16 roll;
 		public int16 yaw;
-		public double volts;
+		public uint16 volts;
+		public uint16 ciamps;
+		public uint32 mah;
 		public uint16 rssi;
 		public bool setlab;
 		public int count;
@@ -65,10 +67,9 @@ namespace CRSF {
 
 	private void crsf_analog(Teledata d) {
 		MSP_ANALOG2 an = MSP_ANALOG2();
-		an.rssi = d.rssi;
-		an.vbat = (uint16)(100*d.volts);
-		an.mahdraw = (Mwp.conf.smartport_fuel == 2 )? (uint16)Battery.curr.mah :0;
-		an.amps = Battery.curr.centiA;
+		an.vbat = d.volts;
+		an.mahdraw = (Mwp.conf.smartport_fuel == 2 )? d.mah :0;
+		an.amps = d.ciamps;
 		Battery.process_msp_analog(an);
 	}
 
@@ -240,23 +241,16 @@ namespace CRSF {
 		case CRSF.BAT_ID:
 			if (ser.is_main) {
 				ptr= SEDE.deserialise_u16(ptr, out val16);  // Voltage ( mV * 100 )
-				double volts = 0;
 				if (val16 != 0xffff) {
-					volts = __builtin_bswap16(val16) / 10.0; // Volts
+					d.volts = __builtin_bswap16(val16) * 10; // decivolts => centiVolts
 				}
-				ptr= SEDE.deserialise_u16(ptr, out val16);  // Voltage ( mV * 100 )
-				double amps = 0;
+				ptr= SEDE.deserialise_u16(ptr, out val16);  // amps
+
 				if (val16 != 0xffff) {
-					amps = __builtin_bswap16(val16) / 10.0; // Amps
+					d.ciamps = __builtin_bswap16(val16) * 10; // deciAmps = centiAmps
 				}
 				ptr = CRSF.deserialise_be_u24(ptr, out val32);
-				uint32 capa = val32;
-				d.volts = volts;
-				Battery.curr.mah = capa;
-				Battery.curr.centiA = (int16)amps*100;
-				Battery.curr.ampsok = true;
-				if (Battery.curr.centiA > Odo.stats.amps)
-					Odo.stats.amps = Battery.curr.centiA;
+				d.mah = val32;
 				crsf_analog(d);
 			}
 			break;

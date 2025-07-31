@@ -403,19 +403,15 @@ namespace Mwp {
 						process_pos_states(xlat, xlon, 0, "SFrame");
 					}
 					uint16 mah = sf.vcurr;
-					uint16 ivbat = (sf.vbat + 50) / 10;
+					uint16 vbat = (sf.vbat + 50) / 10;
+					var centiA = 0;
 					Battery.update = false;
 					if (((replayer & Player.BBOX) == Player.BBOX) && Battery.curr.bbla > 0) {
 						Battery.curr.ampsok = true;
-						Battery.curr.centiA = Battery.curr.bbla;
+						centiA = Battery.curr.bbla;
 						if (mah > Battery.curr.mah) {
-							Battery.curr.mah = mah;
 							Battery.update = true;
 						}
-					} else if (replayer == Player.MWP_FAST || replayer == Player.OTX_FAST) {
-						Battery.curr.ampsok = true;
-						Battery.curr.mah = mah;
-						Battery.update = true;
 					} else if (Battery.curr.lmah == 0) {
 						Battery.curr.lmahtm = nticks;
 						Battery.curr.lmah = mah;
@@ -427,13 +423,9 @@ namespace Mwp {
 							// should be time aware
 							if(cdiff < 100 || Battery.curr.lmahtm == 0) {
 								Battery.curr.ampsok = true;
-								Battery.curr.mah = mah;
 								var iamps = (uint16)(cdiff * 3600 / tdiff);
 								if (iamps >=  0 && tdiff > 5) {
-									Battery.curr.centiA = iamps;
-									// navstatus.current(curr, 2);
-									if (Battery.curr.centiA > Odo.stats.amps)
-										Odo.stats.amps = Battery.curr.centiA;
+									centiA = iamps;
 									Battery.curr.lmahtm = mahtm;
 									Battery.curr.lmah = mah;
 								}
@@ -448,7 +440,11 @@ namespace Mwp {
 							MWPLog.message("Negative energy usage %u %u\n", Battery.curr.lmah, mah);
 						}
 					}
-					Battery.set_bat_stat(ivbat);
+					var an = MSP_ANALOG2();
+					an.vbat = vbat;
+					an.amps = centiA;
+					an.mahdraw = mah;
+					Battery.process_msp_analog(an);
 				}
 				if(rssiup) {
 					if(ser.is_main) {

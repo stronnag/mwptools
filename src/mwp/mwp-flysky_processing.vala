@@ -32,11 +32,11 @@ namespace Flysky {
 		int ttup = 0;
 
 		if ((t.mask & (1 << Flysky.Func.VBAT)) != 0) {
-			Battery.curr.ampsok = true;
-			Battery.curr.centiA =  (uint16)t.curr;
-			ser.td.power.volts = (float)t.vbat;
 			if(ser.is_main) {
-				Battery.set_bat_stat((uint16)t.vbat*100);
+				var an = MSP_ANALOG2();
+				an.vbat = (uint16)(t.vbat*100);
+				an.amps = (uint16)t.curr;
+				Battery.process_msp_analog(an);
 			}
 		}
 
