@@ -147,7 +147,6 @@ namespace Mwp {
     bool gpsfix;
     bool ltm_force_sats;
     NAVCAPS navcap;
-	uint lmin = 0;
 	uint rccount;
 	uint ltoc = 0;
 	uint ltticks = 0;
@@ -465,21 +464,15 @@ namespace Mwp {
 					}
 				}
 
-				if(duration != 0 && duration != last_dura) {
+				if(duration != last_dura) {
 					int mins;
 					int secs;
 					if(duration < 0) {
-						mins = secs = 0;
 						duration = 0;
-                    } else {
-						mins = (int)duration / 60;
-						secs = (int)duration % 60;
-						if(mins != lmin) {
-							//navstatus.update_duration(mins); // FIXME
-							lmin = mins;
-						}
-					}
-					Mwp.window.elapsedlab.set_text("%02d:%02d".printf(mins,secs));
+                    }
+					mins = (int)duration / 60;
+					secs = (int)duration % 60;
+					Mwp.window.elapsedlab.set_text("%03d:%02d".printf(mins,secs));
 					last_dura = duration;
 				}
 				return Source.CONTINUE;

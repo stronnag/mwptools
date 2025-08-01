@@ -91,7 +91,7 @@ public class SQLSlider : Gtk.Window {
 			});
 
 		close_request.connect (() => {
-				dragq.push(-1);
+				dragq.push(double.NAN);
 				sp.stop();
 				sp = null;
 				return false;
@@ -266,17 +266,20 @@ public class SQLPlayer : Object {
 		new Thread<bool>("loader", () => {
 				while(true) {
 					var dd = dragq.pop();
-					int n = (int)dd;
-					if (n < 0) {
+					if (dd == double.NAN) {
 						break;
 					}
-					if (n < startat) {
-						SQL.TrackEntry tx = {};
-						if (d.get_log_entry(idx, n, out tx)) {
+					int n = (int)dd;
+					if(n < 0) {
+						n = 0;
+					}
+					if (n <= startat) {
+						SQL.TrackEntry t = {};
+						if (d.get_log_entry(idx, n, out t)) {
 							Idle.add(() => {
 									Mwp.craft.remove_back(startat, n);
-									display(tx);
-									startat = tx.idx;
+									display(t);
+									startat = t.idx;
 									newpos(n);
 									return false;
 								});
@@ -287,11 +290,11 @@ public class SQLPlayer : Object {
 							n = nentry-1;
 						}
 						for(var j = startat+1; j <= n; j++) {
-							SQL.TrackEntry tx = {};
-							if (d.get_log_entry(idx, j, out tx)) {
-								startat = tx.idx;
+							SQL.TrackEntry t= {};
+							if (d.get_log_entry(idx, j, out t)) {
+								startat = t.idx;
 								Idle.add(() => {
-										display(tx);
+										display(t);
 										newpos(j);
 										return false;
 									});
@@ -371,7 +374,7 @@ public class SQLPlayer : Object {
 		if (nidx < nentry) {
 			var res = d.get_log_entry(t0.id, nidx, out t);
 			if (res) {
-				var et = (t.stamp - t0.stamp)/1000;
+				uint et = (uint)((t.stamp - t0.stamp)/1000);
 				if(et >= 0) {
 					tid = Timeout.add(et / speed, () => {
 							tid = 0;
@@ -487,8 +490,6 @@ public class SQLPlayer : Object {
 			Mwp.panelbox.update(Panel.View.VARIO, Vario.Update.VARIO);
 		}
 
-			/* hwfail / direction sanity / WP status */
-
 		process_status(t);
 		process_energy(t);
 		Mwp.alert_broken_sensors((uint8)t.hwfail);
@@ -497,9 +498,9 @@ public class SQLPlayer : Object {
 			Mwp.panelbox.update(Panel.View.FVIEW, fvup);
 		}
 		process_nav(t);
+		Mwp.duration = (int)(t.stamp / (1000*1000));
 		Mwp.update_pos_info(t.idx);
 		Sticks.update(t.ail, t.ele, t.rud, t.thr);
-
 	}
 
 	private void process_nav(SQL.TrackEntry t) {
@@ -569,8 +570,9 @@ public class SQLPlayer : Object {
 		else
 			mwflags = Mwp.xbits; // don't know better
 
+
 		Mwp.armed_processing(mwflags,"Sql");
-		Mwp.duration = t.stamp / (1000*1000);
+
 		var xws = Mwp.want_special;
 		var mchg = (ltmflags != Mwp.last_ltmf);
 		if (mchg) {

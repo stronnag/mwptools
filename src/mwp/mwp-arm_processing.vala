@@ -37,7 +37,7 @@ namespace Mwp {
                 duration -= armtime;
             }
         }
-		Logger.armed((armed == 1), duration, flag,sensor, telem);
+		Logger.armed((armed == 1), duration, flag, sensor, telem);
 		if(armed != larmed) {
             changed = true;
 			//  navstatus.set_replay_mode((replayer != Player.NONE)); // FIXME

@@ -33,7 +33,7 @@ namespace SQL {
 	public struct TrackEntry {
 		public int id;
 		public int idx;
-		public int stamp;
+		public int64 stamp;
 		double lat;
 		double lon;
 		int alt;
@@ -214,7 +214,7 @@ namespace SQL {
 				n++;
 				t.id = flstmt.column_int(0);
 				t.idx = flstmt.column_int(1);
-				t.stamp = flstmt.column_int(2);
+				t.stamp = flstmt.column_int64(2);
 				t.lat = flstmt.column_double(3);
 				t.lon = flstmt.column_double(4);
 				t.alt = flstmt.column_int(5);
