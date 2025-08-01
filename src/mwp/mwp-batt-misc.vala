@@ -52,20 +52,21 @@ namespace Battery {
     }
 
 	private void process_msp_analog(MSP_ANALOG2 an) {
-        if ((Mwp.replayer & Mwp.Player.MWP) == Mwp.Player.NONE) {
-            curr.centiA = an.amps;
-            curr.mah = an.mahdraw;
-			Mwp.msp.td.power.mah = (int)an.mahdraw;
-			Mwp.msp.td.power.amps = (float)an.amps/100.0f;
-            if(curr.centiA != 0 || curr.mah != 0) {
-                curr.ampsok = true;
-				Battery.update = true;
-                if (curr.centiA > Odo.stats.amps)
-                    Odo.stats.amps = curr.centiA;
-            }
-			Logger.power();
-			set_bat_stat(an.vbat);
-        }
+		curr.centiA = an.amps;
+		curr.mah = an.mahdraw;
+		float af = (float)an.amps/100.0f;
+
+		bool cdiff = ((Mwp.msp.td.power.mah != (int)an.mahdraw) || (Mwp.msp.td.power.amps !=  af));
+		Mwp.msp.td.power.mah = (int)an.mahdraw;
+		Mwp.msp.td.power.amps = af;
+		if(cdiff) {
+			curr.ampsok = true;
+			Battery.update = true;
+			if (curr.centiA > Odo.stats.amps)
+				Odo.stats.amps = curr.centiA;
+		}
+		Logger.power();
+		set_bat_stat(an.vbat);
     }
 
     private void set_bat_stat(uint16 ivbat) {
@@ -80,20 +81,21 @@ namespace Battery {
 			Mwp.panelbox.update(Panel.View.VOLTS, Voltage.Update.CURR|Voltage.Update.VOLTS);
 		} else {
             float  vf = ((float)ivbat)/100.0f;
-            if (nsampl == Mwp.MAXVSAMPLE) {
-                for(var i = 1; i < Mwp.MAXVSAMPLE; i++)
-                    vbsamples[i-1] = vbsamples[i];
-            } else {
-                nsampl += 1;
-			}
+			if(Mwp.replayer == Mwp.Player.NONE) {
+				if (nsampl == Mwp.MAXVSAMPLE) {
+					for(var i = 1; i < Mwp.MAXVSAMPLE; i++)
+						vbsamples[i-1] = vbsamples[i];
+				} else {
+					nsampl += 1;
+				}
 
-            vbsamples[nsampl-1] = vf;
-            vf = 0;
-            for(var i = 0; i < nsampl; i++) {
-                vf += vbsamples[i];
+				vbsamples[nsampl-1] = vf;
+				vf = 0;
+				for(var i = 0; i < nsampl; i++) {
+					vf += vbsamples[i];
+				}
+				vf /= nsampl;
 			}
-            vf /= nsampl;
-
             if(vinit == false) {
                 init_battery(ivbat/10);  // now centivolts for mwp4
 			}
@@ -108,7 +110,6 @@ namespace Battery {
                 icol = 3;
 
 			if (Math.fabs(Mwp.msp.td.power.volts - vf) > 0.1) {
-				Battery.update = false;
 				Mwp.msp.td.power.volts = vf;
 				Mwp.panelbox.update(Panel.View.VOLTS, Voltage.Update.VOLTS);
 				if(icol != licol) {
@@ -125,9 +126,9 @@ namespace Battery {
 				}
             }
 			if (Battery.update) {
-				Battery.update = false;
 				Mwp.panelbox.update(Panel.View.VOLTS, Voltage.Update.CURR);
 			}
+			Battery.update = false;
 		}
 	}
 }

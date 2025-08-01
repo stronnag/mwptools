@@ -256,11 +256,6 @@ public class SQLPlayer : Object {
 	public void opendb(string fn) {
 		nentry = 0;
 		xstack = Mwp.stack_size;
-		Mwp.stack_size = 0;
-		Mwp.set_replay_menus(false);
-		Mwp.serstate = Mwp.SERSTATE.TELEM;
-		Mwp.replayer = Mwp.Player.SQL;
-		Mwp.usemag = true;
 		d = new SQL.Db(fn);
 
 		new Thread<bool>("loader", () => {
@@ -283,6 +278,7 @@ public class SQLPlayer : Object {
 									newpos(n);
 									return false;
 								});
+							Thread.usleep((startat-n)/10);
 						}
 					} else {
 						if(n > nentry) {
@@ -298,6 +294,7 @@ public class SQLPlayer : Object {
 										newpos(j);
 										return false;
 									});
+								Thread.usleep((n-startat)/10);
 							}
 						}
 					}
@@ -338,7 +335,11 @@ public class SQLPlayer : Object {
 			Mwp.update_sensor_array();
 			Mwp.msp.td.state.reason = m.disarm;
 		}
-
+		Mwp.stack_size = 0;
+		Mwp.set_replay_menus(false);
+		Mwp.serstate = Mwp.SERSTATE.NONE; // TELEM
+		Mwp.replayer = Mwp.Player.SQL;
+		Mwp.usemag = true;
 		Odo.stats = {};
 		if(d.get_log_entry(idx, startat, out t)) {
 			display(t);
@@ -531,6 +532,7 @@ public class SQLPlayer : Object {
 		an.mahdraw = (uint16)t.energy;
 		an.amps = (uint16)(t.amps*100);
 		Battery.process_msp_analog(an);
+		//print("PLAYER: %u %u %u\n", an.vbat, an.amps, an.mahdraw);
 	}
 
 	private void process_status(SQL.TrackEntry t) {
