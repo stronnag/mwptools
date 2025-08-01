@@ -172,10 +172,13 @@ namespace CRSF {
 				ttup |= TelemTracker.Fields.SAT;
 			}
 
-			if(ser.td.gps.cog != hdg) {
+			if(Math.fabs(hdg - ser.td.gps.cog) > 1) {
 				ser.td.gps.cog = hdg;
-				fvup |= Direction.Update.COG;
-				ttup |= TelemTracker.Fields.CSE;
+				if (ser.is_main) {
+					Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.COG);
+				} else {
+					TelemTracker.ttrk.update(ser, TelemTracker.Fields.CSE);
+				}
 			}
 
 			if (d.fix > 0) {
@@ -208,7 +211,7 @@ namespace CRSF {
 										}
 										if(Math.fabs(ser.td.comp.bearing - cg.direction) > 1.0) {
 											ser.td.comp.bearing =  cg.direction;
-											fvup = FlightBox.Update.BEARING;
+											fvup |= FlightBox.Update.BEARING;
 										}
 										Mwp.update_odo(gspeed, ddm);
 									}
