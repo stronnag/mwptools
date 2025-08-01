@@ -569,7 +569,6 @@ namespace SLG {
 			if(bbox.minlat > -90 && bbox.maxlat < 90 && bbox.minlon > -180 && bbox.maxlon < 180) {
 				if (r.has_reloc()) {
 					if (!r.has_origin()) {
-						MWPLog.message("SQL Set rebase %f %f\n",  xlat, xlon);
 						r.set_origin(xlat, xlon);
 					}
 					r.relocate(ref xlat, ref xlon);
