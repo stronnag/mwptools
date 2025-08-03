@@ -100,7 +100,7 @@ public class AsyncDL : Object  {
 									decompress(fn, s);
 									loaded(s);
 								} catch (Error e){
-									MWPLog.message("failed D/L %s\n", e.message);
+									MWPLog.message("failed D/L %s (q:%u c:%d)\n", e.message, e.domain, e.code);
 								}
 							}
 							mutex.lock();

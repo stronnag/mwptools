@@ -259,7 +259,7 @@ namespace TileUtils {
 												  false,
 												  FileCreateFlags.REPLACE_DESTINATION,null);
 						} catch (Error e) {
-							MWPLog.message("Tile %s %s, failure status %u\n", tile_uri, e.message, msg.status_code);
+							MWPLog.message("Tile %s %s (q:%u,c:%d), http code %u\n", tile_uri, e.message, e.domain, e.code, msg.status_code);
 							stats.dlerr++;
 						}
 						update_stats();
