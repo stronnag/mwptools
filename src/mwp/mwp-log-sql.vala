@@ -111,7 +111,7 @@ namespace SQL {
 				case "duration":
 					m.duration = stmt.column_double(i);
 					break;
-				case "name":
+				case "mname":
 					m.name = stmt.column_text(i);
 					break;
 				case "firmware":
