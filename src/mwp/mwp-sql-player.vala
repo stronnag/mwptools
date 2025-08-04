@@ -220,7 +220,7 @@ public class SQLPlayer : Object {
 	private int nentry;
 	private uint tid;
 	private int startat;
-	private SQL.Db d;
+	private SQL.Db db;
 	private int idx;
 
 	public int speed;
@@ -228,6 +228,7 @@ public class SQLPlayer : Object {
 	private AsyncQueue<double?> dragq;
 
 	~SQLPlayer() {
+		db = null;
 		MWPLog.message("~SQLPlayer ... disarm %s (%d)\n", Msp.bb_disarm(Mwp.msp.td.state.reason), Mwp.msp.td.state.reason);
 		Mwp.serstate = Mwp.SERSTATE.NONE;
 		Mwp.replayer = Mwp.Player.NONE;
@@ -247,16 +248,16 @@ public class SQLPlayer : Object {
 			Source.remove(tid);
 			tid = 0;
 		}
-		d.populate_odo(idx);
+		db.populate_odo(idx);
 		Odo.view.populate(Odo.stats);
-		d = null;
+		db = null;
 		Mwp.set_replay_menus(true);
 	}
 
 	public void opendb(string fn) {
 		nentry = 0;
 		xstack = Mwp.stack_size;
-		d = new SQL.Db(fn);
+		db = new SQL.Db(fn);
 
 		new Thread<bool>("loader", () => {
 				while(true) {
@@ -270,7 +271,7 @@ public class SQLPlayer : Object {
 					}
 					if (n <= startat) {
 						SQL.TrackEntry t = {};
-						if (d.get_log_entry(idx, n, out t)) {
+						if (db.get_log_entry(idx, n, out t)) {
 							Idle.add(() => {
 									Mwp.craft.remove_back(startat, n);
 									display(t);
@@ -287,7 +288,7 @@ public class SQLPlayer : Object {
 						}
 						for(var j = startat+1; j <= n; j++) {
 							SQL.TrackEntry t= {};
-							if (d.get_log_entry(idx, j, out t)) {
+							if (db.get_log_entry(idx, j, out t)) {
 								startat = t.idx;
 								Idle.add(() => {
 										display(t);
@@ -305,7 +306,7 @@ public class SQLPlayer : Object {
 
 	public SQL.Meta [] get_metas() {
 		SQL.Meta []ms;
-		d.get_metas(out ms);
+		db.get_metas(out ms);
 		return ms;
 	}
 
@@ -313,11 +314,11 @@ public class SQLPlayer : Object {
 		idx = _idx;
 
 		SQL.Meta m;
-		var res = d.get_meta(idx, out m);
+		var res = db.get_meta(idx, out m);
 		lstamp = 0;
 		tid = 0;
 		SQL.TrackEntry t = {};
-		nentry = d.get_log_count(idx);
+		nentry = db.get_log_count(idx);
 		startat = 0;
 		Mwp.armed = 0;
 		Mwp.larmed = 0;
@@ -341,7 +342,7 @@ public class SQLPlayer : Object {
 		Mwp.replayer = Mwp.Player.SQL;
 		Mwp.usemag = true;
 		Odo.stats = {};
-		if(d.get_log_entry(idx, startat, out t)) {
+		if(db.get_log_entry(idx, startat, out t)) {
 			display(t);
 			if(t.thr > 0) {
 				if(Mwp.conf.show_sticks != 1) {
@@ -355,7 +356,7 @@ public class SQLPlayer : Object {
 	public void on_play(bool s) {
 		if(s) {
 			SQL.TrackEntry t = {};
-			if(d.get_log_entry(idx, startat, out t)) {
+			if(db.get_log_entry(idx, startat, out t)) {
 				display(t);
 			}
 			get_next_entry(t);
@@ -364,7 +365,7 @@ public class SQLPlayer : Object {
 				Source.remove(tid);
 				tid = 0;
 			}
-			d.populate_odo(idx);
+			db.populate_odo(idx);
 			Odo.view.populate(Odo.stats);
 		}
 	}
@@ -373,7 +374,7 @@ public class SQLPlayer : Object {
 		SQL.TrackEntry t;
 		var nidx = t0.idx+1;
 		if (nidx < nentry) {
-			var res = d.get_log_entry(t0.id, nidx, out t);
+			var res = db.get_log_entry(t0.id, nidx, out t);
 			if (res) {
 				uint et = (uint)((t.stamp - t0.stamp)/1000);
 				if(et >= 0) {
@@ -386,8 +387,6 @@ public class SQLPlayer : Object {
 							return false;
 						});
 				}
-			} else {
-				d = null;
 			}
 		}
 	}

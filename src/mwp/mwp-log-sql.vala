@@ -330,12 +330,12 @@ static int main(string?[]args) {
 		var nr = d.get_log_count(idx);
 		print("No log %d\n", nr);
 		SQL.TrackEntry t;
-		int last = 0;
+		int64 last = 0;
 		for(var j = 0; j < nr; j++) {
 			var res = d.get_log_entry(idx, j, out t);
 			if (res) {
 				var et = t.stamp - last;
-				print("%4d %8d %f %f %d\n", t.idx, t.stamp, t.lat, t.lon, et);
+				print("%4d %8jd %f %f %d\n", t.idx, t.stamp, t.lat, t.lon, et);
 				last = t.stamp;
 			}
 		}
@@ -356,7 +356,9 @@ static int main(string?[]args) {
 			print("Odo spd %f %u\n", Odo.stats.speed, Odo.stats.spd_secs);
 			print("Odo time %u, tdist %.1f, centiamps %u\n", Odo.stats.time, Odo.stats.distance, Odo.stats.amps);
 		}
+		d=null;
 	}
+
 	return 0;
 }
 #endif
