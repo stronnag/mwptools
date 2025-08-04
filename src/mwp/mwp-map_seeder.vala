@@ -251,6 +251,17 @@ namespace TileUtils {
 			if(r == TILE_ITER_RES.FETCH) {
 				var msg = new Soup.Message ("GET", tile_uri);
 				//            msg.get_request_headers().append("X-Requested-With", "Anticipation");
+				msg.accept_certificate.connect ((c, e) => {
+						var tlserr = e.to_string();
+						if (tlserr.has_prefix("G_TLS_CERTIFICATE_")) {
+							tlserr = tlserr[18:];
+						}
+						var sa = msg.get_remote_address();
+						var sas = sa.to_string();
+						MWPLog.message("Tile fetchm cert validation fails %s %s\n", sas, tlserr);
+						return false;
+					});
+
 				session.send_and_read_async.begin(msg, 0, null, (obj,res) => {
 						try {
 							var byt = session.send_and_read_async.end(res);

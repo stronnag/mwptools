@@ -329,12 +329,8 @@ namespace SLG {
 				});
 
 			log_btn.clicked.connect(() => {
-					IChooser.Filter []ifm = {
-						{"Flightlog", {"TXT", "bbl", "csv", "db", "log"}},
-					};
-					string? slp;
-					slp = (Mwp.conf.sqlite_log_path=="") ? null : Mwp.conf.sqlite_log_path;
-					var fc = IChooser.chooser(slp, ifm);
+					IChooser.Filter []ifm = {{"Flightlog", {"TXT", "bbl", "csv", "db", "log"}},};
+					var fc = IChooser.chooser(Mwp.conf.sqlite_log_path, ifm);
 					fc.title = "Open Flightlog File";
 					fc.modal = true;
 					fc.open.begin (Mwp.window, null, (o,r) => {
@@ -348,9 +344,7 @@ namespace SLG {
 				});
 			/*
 			video_btn.clicked.connect(() => {
-					IChooser.Filter []ifm = {
-						{"Video", {"mp4", "webm","mkv"}},
-					};
+					IChooser.Filter []ifm = {{"Video", {"mp4", "webm","mkv"}},};
 					var hd = Environment.get_home_dir();
 					var vpath = Path.build_filename(hd, "Videos");
 					var fc = IChooser.chooser(vpath, ifm);

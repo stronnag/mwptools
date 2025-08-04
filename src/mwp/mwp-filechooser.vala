@@ -25,7 +25,7 @@ namespace IChooser {
 
 	Gtk.FileDialog chooser(string? _fn, IChooser.Filter[] filters={}) {
 		Gtk.FileDialog fd = new Gtk.FileDialog();
-		if (_fn != null) {
+		if (!(_fn == null || _fn == "")) {
 			var fl = File.new_for_path (_fn);
 			fd.initial_folder = fl;
 		}
