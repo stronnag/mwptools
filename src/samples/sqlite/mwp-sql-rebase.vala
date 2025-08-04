@@ -73,10 +73,10 @@ public class LogRebase : Object {
 
 	static int main (string[] args) {
 		const OptionEntry[] options = {
-			{"old-db", 'd', 0, OptionArg.FILENAME, out olddb, "Extant databse", null},
-			{"lat", 0, 0, OptionArg.DOUBLE, out nlat, "Base latitude", null},
-			{"lon", 0, 0, OptionArg.DOUBLE, out nlon, "Base longitude", null},
-			{"id", 'i', 0, OptionArg.INT, out idx, "Log index", "1"},
+			{"old-db", 'd', 0, OptionArg.FILENAME, out olddb, "Extant databse", "DATABASE"},
+			{"lat", 0, 0, OptionArg.DOUBLE, out nlat, "Base latitude", "LAT"},
+			{"lon", 0, 0, OptionArg.DOUBLE, out nlon, "Base longitude", "LON"},
+			{"id", 'i', 0, OptionArg.INT, out idx, "Log index", "ID (default 1)"},
 			{"verbose", 0, 0, OptionArg.NONE, ref verbose, "verbose", null},
 			{null}
 		};
