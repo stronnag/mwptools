@@ -428,57 +428,6 @@ namespace  UpdateFile {
     }
 }
 
-
-public class Rebase  : Object {
-	public struct Point {
-		public double lat;
-		public double lon;
-	}
-	public Point orig;
-	public Point reloc;
-	public uint8 status;
-
-	public Rebase() {
-		status = 0;
-	}
-
-	public void set_reloc(double rlat, double rlon) {
-		reloc.lat = rlat;
-		reloc.lon = rlon;
-		status |= 1;
-	}
-
-	public void set_origin(double olat, double olon) {
-		status |= 2;
-		orig.lat = olat;
-		orig.lon = olon;
-	}
-
-	public bool has_reloc() {
-		return ((status & 1) == 1);
-	}
-
-	public bool has_origin() {
-		return ((status & 2) == 2);
-	}
-
-	public bool is_valid() {
-		return ((status & 3) == 3);
-	}
-
-	public void set_invalid() {
-		status &= ~2;;
-	}
-
-	public void relocate(ref double lat, ref double lon) {
-		if (is_valid()) {
-			double c,d;
-			Geo.csedist(orig.lat, orig.lon, lat, lon, out d, out c);
-			Geo.posit(reloc.lat, reloc.lon, c, d, out lat, out lon);
-		}
-	}
-}
-
 namespace LLparse {
 	bool llparse(string llstr, ref double clat, ref double clon, ref uint zm) {
 		var llok = false;
