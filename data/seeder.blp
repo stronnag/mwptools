@@ -31,6 +31,18 @@ template $TileUtilsDialog: Adw.Window {
     content: Box box4 {
       spacing: 4;
       orientation: vertical;
+      hexpand: false;
+
+      Label warn {
+	hexpand: false;
+	vexpand: true;
+	justify: center;
+        wrap: true;
+        use-markup: true;
+	wrap-mode: word_char;
+
+	label: _("<big>Please be advised that many map providers have policies against bulk downloading.\n<b>Exceeding acceptable usage may result in you receiving 'spoiled' tiles or being banned</b></big>.\n");
+      }
 
       Label label {
         halign: start;
@@ -41,12 +53,13 @@ template $TileUtilsDialog: Adw.Window {
         wrap: true;
         use-markup: true;
 	wrap-mode: word_char;
-        max-width-chars: 96;
+	max-width-chars: 140;
       }
 
       Box {
-        hexpand: true;
+        hexpand: false;
         homogeneous: true;
+	styles [ "toolbar" ]
 
         Box box5 {
           margin-top: 2;

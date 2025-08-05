@@ -584,18 +584,38 @@ namespace JSMisc {
 		return true;
 	}
 	// This is ludicrous ...
+	public calss ReaderObj : Object {
+		public uint[] buf;
+		public string cmd;
+	}
+
 	private async ssize_t read_hid_async(uint8 []buf, string cmd) {
-		ssize_t sz = -1;
-		new Thread<bool>("fake-win-async", () => {
-				sz = Posix.write(hstdin,  cmd.data, cmd.length);
-				if(sz > 0) {
-					sz = Posix.read(hstdout,  buf, 256);
+	ssize_t r = 0;
+		var o = new ReaderObj();
+		o.buf = buf;
+		o.cmd = cmd;
+
+		var task = new Task (o, null, (obj, atask) => {
+				try {
+					r = (ssize_t)atask.propagate_int();
+				} catch (Error error) {
+					MWPLog.message("Task: %s\n", error.message);
+				} finally {
+					read_hid_async.callback ();
 				}
-				Idle.add(read_hid_async.callback);
-				return true;
+			});
+
+		task.set_task_data (o, null);
+
+		task.run_in_thread ((atask, obj, ptr, cancellable) => {
+				ReaderObj o = (ReaderObj)ptr;
+				var sz = Posix.write(hstdin,  o.cmd.data, o.cmd.length);
+				if(sz > 0) {
+					sz = Posix.read(hstdout,  o.buf, 256);
+				}
+				atask.return_int(sz);
 			});
 		yield;
-		return sz;
 	}
 #endif
 }

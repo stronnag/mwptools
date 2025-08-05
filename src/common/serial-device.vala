@@ -1120,13 +1120,28 @@ public class MWSerial : Object {
 	}
 
 	public async bool open_async(string device, uint rate) {
-		var thr = new Thread<bool> (device, () => {
-				var res = open_w(device, rate);
-				Idle.add (open_async.callback);
-				return res;
+		devname = device;
+		baudrate = rate;
+		bool r = false;
+		var task = new Task (this, null, (obj, atask) => {
+				try {
+					r = atask.propagate_boolean();
+				} catch (Error error) {
+					MWPLog.message("Task: %s\n", error.message);
+				} finally {
+					open_async.callback ();
+				}
+			});
+
+		task.set_task_data (this, null);
+
+		task.run_in_thread ((atask, obj, ptr, cancellable) => {
+				var msp = (MWSerial)ptr;
+				var code = msp.open_w(msp.devname, msp.baudrate);
+				atask.return_boolean (code);
 			});
 		yield;
-		return thr.join();
+		return r;
 	}
 
 	public bool open(string device, uint rate, out string estr) {
@@ -1429,13 +1444,25 @@ public class MWSerial : Object {
 	}
 
 	public async bool close_async() {
-		var thr = new Thread<bool> ("aclose",  () => {
-				close();
-				Idle.add (close_async.callback);
-				return true;
+		bool r = false;
+		var task = new Task (this, null, (obj, atask) => {
+				try {
+					r = atask.propagate_boolean();
+				} catch (Error error) {
+					MWPLog.message("Task: %s\n", error.message);
+				} finally {
+					close_async.callback ();
+				}
+			});
+
+		task.set_task_data (this, null);
+		task.run_in_thread ((atask, obj, ptr, cancellable) => {
+				var msp = (MWSerial)ptr;
+				msp.close();
+				atask.return_boolean (true);
 			});
 		yield;
-		return thr.join();
+		return r;
 	}
 
 	public SerialStats getstats() {

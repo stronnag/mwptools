@@ -48,70 +48,103 @@ public class AsyncDL : Object  {
 		FileUtils.unlink(gzname);
 	}
 
-	public async bool run_async () {
-		var thr = new Thread<bool>("hqueue", () => {
-				while (true) {
-                    mutex.lock ();
-					while (!pop) {
-						cond.wait(mutex);
-					}
-					pop = false;
-					mutex.unlock();
-					while (true) {
-						uint n;
-						mutex.lock();
-						n = list.length();
-						mutex.unlock();
-						if ( n == 0) {
-							break;
-						}
-						mutex.lock();
-						var s = list.nth_data(0);
-						mutex.unlock();
-						if (s == "!") {
-							Idle.add (run_async.callback);
-							return false;
-						} else {
-							var xfn = Path.build_filename(_demdir, s);
-							var fd = Posix.open(xfn, Posix.O_RDONLY);
-							if (fd != -1) {
-								MWPLog.message("Skipping %s\n", xfn);
-								Posix.close(fd);
-							} else {
-								var tmp = Utils.get_tmp_dir();
-								var fn = s + ".gz";
-								var uri = "https://s3.amazonaws.com/elevation-tiles-prod/skadi/" + fn[0:3]+"/"+ fn;
-								fn = tmp + "/" + fn;
-								File file = File.new_for_path(fn);
-								MWPLog.message("start DEM D/L %s => %s\n", uri, fn);
-								FileUtils.unlink(fn);
-								try {
-									FileOutputStream os = file.create (FileCreateFlags.REPLACE_DESTINATION);
-									var session = new Soup.Session();
 
-									var message = new Soup.Message ("GET", uri);
-#if MODERN_SOUP
-									session.send_and_splice(message, os,  OutputStreamSpliceFlags.CLOSE_TARGET);
-#else
-									var stream = session.send(message, null);
-									os.splice (stream, OutputStreamSpliceFlags.CLOSE_TARGET);
-#endif
-									MWPLog.message("Finished DEM D/L %s\n", fn);
-									decompress(fn, s);
-									loaded(s);
-								} catch (Error e){
-									MWPLog.message("failed D/L %s (q:%u c:%d)\n", e.message, e.domain, e.code);
-								}
-							}
-							mutex.lock();
-							list.remove_link(list);
-							mutex.unlock();
-						}
-					}
-				}
+#if !USE_TASK
+	public async bool run_async () {
+		MWPLog.message("Starting threaded async tile d/l\n");
+		var thr = new Thread<bool>("hqueue", () => {
+				service_queue();
+				Idle.add (run_async.callback);
+				return false;
 			});
 		yield;
 		return thr.join();
+	}
+#else
+	public async bool run_async () {
+		bool r = false;
+		MWPLog.message("Starting async tile d/l task\n");
+		var task = new Task (this, null, (obj, atask) => {
+				try {
+					r = atask.propagate_boolean();
+				} catch (Error error) {
+					print(error.message);
+				} finally {
+					this.run_async.callback ();
+				}
+			});
+
+		task.set_task_data (this, null);
+
+		task.run_in_thread ((task, obj, tr, cancellable) => {
+				unowned var adl = (AsyncDL)tr;
+				var ok = adl.service_queue();
+				task.return_boolean (ok);
+			});
+		yield;
+		return r;
+	}
+#endif
+
+	private bool service_queue() {
+		while (true) {
+			mutex.lock ();
+			while (!pop) {
+				cond.wait(mutex);
+			}
+			pop = false;
+			mutex.unlock();
+			while (true) {
+				uint n;
+				mutex.lock();
+				n = list.length();
+				mutex.unlock();
+				if ( n == 0) {
+					break;
+				}
+				mutex.lock();
+				var s = list.nth_data(0);
+				mutex.unlock();
+				if (s == "!") {
+					return false;
+				} else {
+					var xfn = Path.build_filename(_demdir, s);
+					var fd = Posix.open(xfn, Posix.O_RDONLY);
+					if (fd != -1) {
+						MWPLog.message("Skipping %s\n", xfn);
+						Posix.close(fd);
+					} else {
+						var tmp = Utils.get_tmp_dir();
+						var fn = s + ".gz";
+						var uri = "https://s3.amazonaws.com/elevation-tiles-prod/skadi/" + fn[0:3]+"/"+ fn;
+						fn = tmp + "/" + fn;
+						File file = File.new_for_path(fn);
+						MWPLog.message("start DEM D/L %s => %s\n", uri, fn);
+						FileUtils.unlink(fn);
+						try {
+							FileOutputStream os = file.create (FileCreateFlags.REPLACE_DESTINATION);
+							var session = new Soup.Session();
+
+							var message = new Soup.Message ("GET", uri);
+#if MODERN_SOUP
+							session.send_and_splice(message, os,  OutputStreamSpliceFlags.CLOSE_TARGET);
+#else
+							var stream = session.send(message, null);
+							os.splice (stream, OutputStreamSpliceFlags.CLOSE_TARGET);
+#endif
+							MWPLog.message("Finished DEM D/L %s\n", fn);
+							decompress(fn, s);
+							loaded(s);
+						} catch (Error e){
+							MWPLog.message("failed D/L %s (q:%u c:%d)\n", e.message, e.domain, e.code);
+						}
+					}
+					mutex.lock();
+					list.remove_link(list);
+					mutex.unlock();
+				}
+			}
+		}
 	}
 
 	public void add_queue(string s) {

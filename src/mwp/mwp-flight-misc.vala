@@ -365,7 +365,7 @@ namespace Mwp {
 				}
             }
         } else {
-            vpos = true;
+            vpos = (msp.td.gps.fix > 0);
 		}
         return vpos;
     }

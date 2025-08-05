@@ -147,18 +147,31 @@ namespace Kml {
 		}
 
 		private async bool async_loader(string _fname) {
-			var thr = new Thread<bool>("kmlloader", () => {
-					bool ok;
-					if(_fname.has_suffix(".kmz")) {
-						ok = read_kmz(_fname);
-					} else {
-						ok = parse(_fname);
+			filename = _fname;
+			bool r = false;
+			var task = new Task (this, null, (obj, atask) => {
+					try {
+						r = atask.propagate_boolean();
+					} catch (Error error) {
+						MWPLog.message("Task: %s\n", error.message);
+					} finally {
+						async_loader.callback ();
 					}
-					Idle.add (async_loader.callback);
-					return ok;
+				});
+
+			task.set_task_data (this, null);
+			task.run_in_thread ((atask, obj, ptr, cancellable) => {
+					var k = (KmlOverlay)ptr;
+					bool ok;
+					if(k.filename.has_suffix(".kmz")) {
+						ok = k.read_kmz(k.filename);
+					} else {
+						ok = k.parse(k.filename);
+					}
+					atask.return_boolean (ok);
 				});
 			yield;
-			return thr.join();
+			return r;
 		}
 
 		public void from_file_async(string _fname) {
@@ -228,8 +241,11 @@ namespace Kml {
 			} catch (Error e) {
 				MWPLog.message("KMZ error: %s\n", e.message);
 			}
-			if(ok)
+			if(ok) {
 				filename = kname;
+			} else  {
+				filename = null;
+			}
 			return ok;
 		}
 
