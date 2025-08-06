@@ -273,6 +273,9 @@ public class SQLPlayer : Object {
 			for(var j = startat+1; j <= n; j++) {
 				display(trks[j]);
 				newpos(j);
+				if((j % 16) == 0) {
+					MainContext.@default().iteration(true);
+				}
 			}
 			startat = n;
 		}
