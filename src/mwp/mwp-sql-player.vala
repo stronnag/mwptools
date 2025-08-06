@@ -27,7 +27,6 @@ public class SQLSlider : Gtk.Window {
 	private SQLPlayer sp;
 	private GLib.Menu menu;
 	private GLib.SimpleActionGroup dg;
-	//	public AsyncQueue<double?> dragq;
 
 	public SQLSlider(string fn, int idx) {
         Mwp.xlog = Mwp.conf.logarmed;
@@ -37,7 +36,6 @@ public class SQLSlider : Gtk.Window {
 		Mwp.conf.audioarmed = false;
 
 		Mwp.craft.remove_all();
-		//		dragq = new  AsyncQueue<double?>();
 		sp = new SQLPlayer(/*dragq*/);
 		sp.opendb(fn);
 
@@ -77,7 +75,6 @@ public class SQLSlider : Gtk.Window {
 		start_button.clicked.connect (() => {
 				pstate = true;
 				toggle_pstate();
-				//				dragq.push(0.0);
 				sp.move_at(0);
 			});
 
@@ -85,7 +82,6 @@ public class SQLSlider : Gtk.Window {
 				pstate = true;
 				toggle_pstate();
 				sp.move_at((int)smax);
-				//dragq.push(smax);
 			});
 
 		sp.newpos.connect((v) => {
@@ -93,7 +89,6 @@ public class SQLSlider : Gtk.Window {
 			});
 
 		close_request.connect (() => {
-				//dragq.push(double.NAN);
 				sp.stop();
 				sp = null;
 				return false;
@@ -186,7 +181,6 @@ public class SQLSlider : Gtk.Window {
 				if(pstate) {
 					toggle_pstate();
 				}
-				//dragq.push(d);
 				sp.move_at((int)d);
 				return true;
 			});
@@ -230,7 +224,6 @@ public class SQLPlayer : Object {
 
 	public int speed;
 	public signal void newpos(int n);
-	//private AsyncQueue<double?> dragq;
 
 	~SQLPlayer() {
 		db = null;
@@ -244,8 +237,7 @@ public class SQLPlayer : Object {
 
 	}
 
-	public SQLPlayer(/*AsyncQueue<double?> _dragq*/) {
-		//dragq = _dragq;
+	public SQLPlayer() {
 		speed = 1;
 	}
 
@@ -265,22 +257,6 @@ public class SQLPlayer : Object {
 		nentry = 0;
 		xstack = Mwp.stack_size;
 		db = new SQL.Db(fn);
-		/*
-		new Thread<bool>("loader", () => {
-				while(true) {
-					var dd = dragq.pop();
-					if (dd == double.NAN) {
-						break;
-					}
-					int n = (int)dd;
-					if(n < 0) {
-						n = 0;
-					}
-					moveto(n);
-				}
-				return true;
-			});
-		*/
 	}
 
 	public void move_at(int n) {
@@ -339,7 +315,7 @@ public class SQLPlayer : Object {
 		Mwp.usemag = true;
 		Odo.stats = {};
 
-		trks = new SQL.TrackEntry[idx]{};
+		trks = new SQL.TrackEntry[nentry]{};
 		db.get_log(idx, ref trks);
 
 		display(trks[startat]);
@@ -392,7 +368,7 @@ public class SQLPlayer : Object {
 		if(!Mwp.have_home || Mwp.home_changed(t.hlat, t.hlon)) {
 			Mwp.sflags |= Mwp.SPK.GPS;
 			Mwp.want_special |= Mwp.POSMODE.HOME;
-			Mwp.process_pos_states(t.hlat, t.hlon, 0, "SQL Origin", -2); // FIXME ALT
+			Mwp.process_pos_states(t.hlat, t.hlon, 0, "SQL Origin", -2);
 		}
 
 		if (Mwp.rebase.has_reloc()) {
@@ -521,7 +497,6 @@ public class SQLPlayer : Object {
 		an.mahdraw = (uint16)t.energy;
 		an.amps = (uint16)(t.amps*100);
 		Battery.process_msp_analog(an);
-		//print("PLAYER: %u %u %u\n", an.vbat, an.amps, an.mahdraw);
 	}
 
 	private void process_status(SQL.TrackEntry t) {
