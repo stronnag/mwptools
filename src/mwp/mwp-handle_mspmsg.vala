@@ -1478,7 +1478,7 @@ namespace Mwp {
 			cmap[rcmap[3]] = 'T';
 			cmap[4] = 0;
 			var has_rc = (have_status & ((xarm_flags & ARMFLAGS.ARMING_DISABLED_RC_LINK) == 0));
-			MWPLog.message("RC (%s) %s %d/%d %s", (string)cmap, has_rc.to_string(), nchn, Mwp.nrc_chan, sb.str.substring(4));
+			MWPLog.message("RC (%s) %s %d/%d %s", (string)cmap, has_rc.to_string(), nchn, Mwp.nrc_chan, sb.str);
 			if(has_rc) {
 				JSMisc.read_hid_async.begin(jbuf, sb.str,  (o, r) => {
 						JSMisc.read_hid_async.end(r);

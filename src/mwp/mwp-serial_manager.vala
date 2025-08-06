@@ -309,7 +309,7 @@ namespace Msp {
 
 	private void request_hid_info() {
 		if ((Mwp.MspRC.ON|Mwp.MspRC.ACT) in Mwp.use_rc) {
-			//MWPLog.message("Requesting HID Info\n");
+			MWPLog.message("Requesting HID Info\n");
 			var jbuf = new uint8 [1024];
 			JSMisc.read_hid_async.begin(jbuf, "info\n",  (o, r) => {
 					var sz = JSMisc.read_hid_async.end(r);
@@ -376,7 +376,7 @@ namespace Msp {
 					try {
 						var sz = ssocket.receive((uint8[])buf);
 						if (sz > 0) {
-							//MWPLog.message(":DBG: Sin reader: %u %u\n", buf[0], buf[1]);
+							MWPLog.message(":DBG: Sin reader: %u %u\n", buf[0], buf[1]);
 							if (buf[0] < Mwp.nrc_chan) {
 								Mwp.rcchans[buf[0]] = (int16)buf[1];
 							}
