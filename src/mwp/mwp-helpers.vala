@@ -584,13 +584,13 @@ namespace JSMisc {
 		return true;
 	}
 	// This is ludicrous ...
-	public calss ReaderObj : Object {
-		public uint[] buf;
+	public class ReaderObj : Object {
+		public void *buf;
 		public string cmd;
 	}
 
-	private async ssize_t read_hid_async(uint8 []buf, string cmd) {
-	ssize_t r = 0;
+	private async ssize_t read_hid_async(void *buf, string cmd) {
+		ssize_t r = 0;
 		var o = new ReaderObj();
 		o.buf = buf;
 		o.cmd = cmd;
@@ -606,16 +606,16 @@ namespace JSMisc {
 			});
 
 		task.set_task_data (o, null);
-
 		task.run_in_thread ((atask, obj, ptr, cancellable) => {
-				ReaderObj o = (ReaderObj)ptr;
-				var sz = Posix.write(hstdin,  o.cmd.data, o.cmd.length);
+				ReaderObj ob = (ReaderObj)ptr;
+				var sz = Posix.write(hstdin,  ob.cmd.data, ob.cmd.length);
 				if(sz > 0) {
-					sz = Posix.read(hstdout,  o.buf, 256);
+					sz = Posix.read(hstdout,  ob.buf, 256);
 				}
 				atask.return_int(sz);
 			});
 		yield;
+		return r;
 	}
 #endif
 }
