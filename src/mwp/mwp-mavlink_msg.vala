@@ -97,7 +97,10 @@ namespace Mwp {
 				mavan.amps = m.current_battery/10;
 				mavan.vbat = m.voltage_battery/10;
 				mavan.mahdraw = Battery.curr.mah;
-				Battery.process_msp_analog(mavan);
+				var vres = Battery.process_msp_analog(mavan);
+				if (vres != 0) {
+					Mwp.panelbox.update(Panel.View.VOLTS, vres);
+				}
 			}
 			break;
 

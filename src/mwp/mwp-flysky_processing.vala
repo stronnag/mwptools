@@ -36,7 +36,10 @@ namespace Flysky {
 				var an = MSP_ANALOG2();
 				an.vbat = (uint16)(t.vbat*100);
 				an.amps = (uint16)t.curr;
-				Battery.process_msp_analog(an);
+				var vres = Battery.process_msp_analog(an);
+				if (vres != 0) {
+					Mwp.panelbox.update(Panel.View.VOLTS, vres);
+				}
 			}
 		}
 

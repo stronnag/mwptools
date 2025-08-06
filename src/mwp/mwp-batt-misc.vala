@@ -39,7 +39,7 @@ namespace Battery {
                 vbsamples[i] = 0;
         nsampl = 0;
 		icol = 4;
-    }
+	}
 
 	private void init_battery(uint16 ivbat) {
         bat_annul();
@@ -51,7 +51,7 @@ namespace Battery {
         vinit = true;
     }
 
-	private void process_msp_analog(MSP_ANALOG2 an) {
+	private int process_msp_analog(MSP_ANALOG2 an) {
 		curr.centiA = an.amps;
 		curr.mah = an.mahdraw;
 		float af = (float)an.amps/100.0f;
@@ -66,10 +66,11 @@ namespace Battery {
 				Odo.stats.amps = curr.centiA;
 		}
 		Logger.power();
-		set_bat_stat(an.vbat);
+		return set_bat_stat(an.vbat);
     }
 
-    private void set_bat_stat(uint16 ivbat) {
+    private int set_bat_stat(uint16 ivbat) {
+		int res = 0;
 		if(ivbat < 20) {
 			icol = vcol.levels.length-1;
 			if(icol != licol) {
@@ -78,7 +79,7 @@ namespace Battery {
 			ivbat = 0;
 			curr = {false,0,0,0,0 ,0};
 			Mwp.msp.td.power.volts = 0.0f;
-			Mwp.panelbox.update(Panel.View.VOLTS, Voltage.Update.CURR|Voltage.Update.VOLTS);
+			res |= Voltage.Update.CURR|Voltage.Update.VOLTS;
 		} else {
             float  vf = ((float)ivbat)/100.0f;
 			if(Mwp.replayer == Mwp.Player.NONE) {
@@ -111,7 +112,7 @@ namespace Battery {
 
 			if (Math.fabs(Mwp.msp.td.power.volts - vf) > 0.1) {
 				Mwp.msp.td.power.volts = vf;
-				Mwp.panelbox.update(Panel.View.VOLTS, Voltage.Update.VOLTS);
+				res |= Voltage.Update.VOLTS;
 				if(icol != licol) {
 					licol = icol;
 				}
@@ -126,9 +127,10 @@ namespace Battery {
 				}
             }
 			if (Battery.update) {
-				Mwp.panelbox.update(Panel.View.VOLTS, Voltage.Update.CURR);
+				res |= Voltage.Update.CURR;
 			}
 			Battery.update = false;
 		}
+		return res;
 	}
 }

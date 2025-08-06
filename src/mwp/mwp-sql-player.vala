@@ -58,6 +58,7 @@ public class SQLSlider : Gtk.Window {
 		end_button = new Gtk.Button.from_icon_name("media-skip-forward");
 		start_button = new Gtk.Button.from_icon_name("media-skip-backward");
 		add_slider(smax);
+		slider.set_increments(1, smax/20);
 		pstate = false;
 		box.append(vbox);
 		set_child(box);
@@ -151,8 +152,10 @@ public class SQLSlider : Gtk.Window {
 				 disable_item(jn);
 				 pstate = true;
 				 toggle_pstate();
-				 sp.init(oid);
+				 var smax = sp.init(oid) - 1;
 				 slider.set_value(0.0);
+				 slider.set_range(0.0, smax);
+				 slider.set_increments(1, smax/20);
 				 if(SLG.speedup) {
 					 toggle_pstate();
 				 }
@@ -259,25 +262,40 @@ public class SQLPlayer : Object {
 		db = new SQL.Db(fn);
 	}
 
+	private void move_fwd(int m, int n) {
+		bool draw = false;
+		int jmod = (n+1-m) / 30;
+		if (jmod < 8)
+			jmod = 8;
+		for(var j = m; j <= n; j++) {
+			if (j == n || (j % jmod) == 0) {
+				draw = true;
+			} else {
+				draw = false;
+			}
+			display(trks[j], draw);
+			newpos(j);
+			startat = j;
+		}
+	}
+
 	public void move_at(int n) {
+		if (n < 0) {
+			//MWPLog.message("SQLLOG WARN Min N %d (%d, %d)\n", n, startat, nentry);
+			n = 0;
+		}
+		if(n >= nentry) {
+			//MWPLog.message("SQLLOG WARN Max N %d (%d, %d)\n", n, startat, nentry);
+			n = nentry-1;
+		}
 		if (n <= startat) {
 			Mwp.craft.remove_back(startat, n);
 			startat = n;
 			display(trks[n]);
 			newpos(n);
 		} else {
-			if(n > nentry) {
-				MWPLog.message("SQLLOG WARN Max N %d (%d)\n", n, nentry);
-				n = nentry-1;
-			}
-			for(var j = startat+1; j <= n; j++) {
-				display(trks[j]);
-				newpos(j);
-				if((j % 16) == 0) {
-					MainContext.@default().iteration(true);
-				}
-			}
-			startat = n;
+			var js = startat+1;
+			move_fwd(js, n);
 		}
 	}
 
@@ -294,6 +312,7 @@ public class SQLPlayer : Object {
 		lstamp = 0;
 		tid = 0;
 		nentry = db.get_log_count(idx);
+		MWPLog.message("Set nentry %d\n", nentry);
 		startat = 0;
 		Mwp.armed = 0;
 		Mwp.larmed = 0;
@@ -360,7 +379,7 @@ public class SQLPlayer : Object {
 		}
 	}
 
-	private void display(SQL.TrackEntry t) {
+	private void display(SQL.TrackEntry t, bool vupd=true) {
 		if (Mwp.rebase.has_reloc()) {
 			if (!Mwp.rebase.has_origin()) {
 				Mwp.rebase.set_origin(t.hlat, t.hlon);
@@ -408,7 +427,8 @@ public class SQLPlayer : Object {
 		bool fvg = false;
 		if(Mwp.msp.td.gps.cog != t.cog) {
 			Mwp.msp.td.gps.cog = t.cog;
-			Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.COG);
+			if (vupd)
+				Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.COG);
 			fvg = true;
 		}
 		if(Math.fabs(Mwp.msp.td.comp.range -  t.vrange) > 1.0) {
@@ -432,44 +452,56 @@ public class SQLPlayer : Object {
 			Atti._sy = t.pitch;
 			Mwp.msp.td.atti.angx = t.roll;
 			Mwp.msp.td.atti.angy = t.pitch;
-			Mwp.panelbox.update(Panel.View.AHI, AHI.Update.AHI);
+			if (vupd)
+				Mwp.panelbox.update(Panel.View.AHI, AHI.Update.AHI);
 		}
 		if(fvh) {
-			Mwp.panelbox.update(Panel.View.FVIEW, FlightBox.Update.YAW);
-			Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.YAW);
+			if (vupd) {
+				Mwp.panelbox.update(Panel.View.FVIEW, FlightBox.Update.YAW);
+				Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.YAW);
+			}
 		}
 		if(fvh || fvg) {
 			if ((int16)t.windx != Mwp.msp.td.wind.w_x || (int16)t.windy != Mwp.msp.td.wind.w_y) {
 				Mwp.msp.td.wind.has_wind = true;
 				Mwp.msp.td.wind.w_x = (int16)t.windx;
 				Mwp.msp.td.wind.w_y = (int16)t.windy;
-				Mwp.panelbox.update(Panel.View.WIND, WindEstimate.Update.ANY);
+				if (vupd)
+					Mwp.panelbox.update(Panel.View.WIND, WindEstimate.Update.ANY);
 			}
 		}
 
 		int xrssi = t.rssi * 1023/100;
 		if (xrssi != Mwp.msp.td.rssi.rssi) {
 			Mwp.msp.td.rssi.rssi = xrssi;
-			Mwp.panelbox.update(Panel.View.RSSI, RSSI.Update.RSSI);
+			if (vupd)
+				Mwp.panelbox.update(Panel.View.RSSI, RSSI.Update.RSSI);
 		}
 
 		double dv;
 		if(Mwp.calc_vario(t.alt, out dv)) {
 			Mwp.msp.td.alt.vario = dv;
-			Mwp.panelbox.update(Panel.View.VARIO, Vario.Update.VARIO);
+			if (vupd)
+				Mwp.panelbox.update(Panel.View.VARIO, Vario.Update.VARIO);
 		}
 
 		process_status(t);
-		process_energy(t);
+		var res = process_energy(t);
+		if (vupd && res != 0) {
+			Mwp.panelbox.update(Panel.View.VOLTS, res);
+		}
+
 		Mwp.alert_broken_sensors((uint8)t.hwfail);
 
 		if(fvup != 0) {
-			Mwp.panelbox.update(Panel.View.FVIEW, fvup);
+			if (vupd)
+				Mwp.panelbox.update(Panel.View.FVIEW, fvup);
 		}
 		process_nav(t);
 		Mwp.duration = (int)(t.stamp / (1000*1000));
 		Mwp.update_pos_info(t.idx);
-		Sticks.update(t.ail, t.ele, t.rud, t.thr);
+		if (vupd)
+			Sticks.update(t.ail, t.ele, t.rud, t.thr);
 	}
 
 	private void process_nav(SQL.TrackEntry t) {
@@ -494,12 +526,12 @@ public class SQLPlayer : Object {
 		Mwp.handle_n_frame(Mwp.msp, ns);
 	}
 
-	private void process_energy(SQL.TrackEntry t) {
+	private int process_energy(SQL.TrackEntry t) {
 		MSP_ANALOG2 an = MSP_ANALOG2();
 		an.vbat = (uint16)(100*t.volts);
 		an.mahdraw = (uint16)t.energy;
 		an.amps = (uint16)(t.amps*100);
-		Battery.process_msp_analog(an);
+		return Battery.process_msp_analog(an);
 	}
 
 	private void process_status(SQL.TrackEntry t) {

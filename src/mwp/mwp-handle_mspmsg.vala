@@ -1109,7 +1109,10 @@ namespace Mwp {
 			SEDE.deserialise_u16(raw+3, out an.amps);
 			SEDE.deserialise_u32(raw+9, out an.mahdraw);
 			SEDE.deserialise_u16(raw+22, out an.rssi);
-			Battery.process_msp_analog(an);
+			var vres = Battery.process_msp_analog(an);
+			if (vres != 0) {
+				Mwp.panelbox.update(Panel.View.VOLTS, vres);
+			}
 			var rssiup = (ser.td.rssi.rssi != an.rssi);
 			if(rssiup) {
 				ser.td.rssi.rssi = an.rssi;

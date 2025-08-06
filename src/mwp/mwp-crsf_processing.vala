@@ -70,7 +70,10 @@ namespace CRSF {
 		an.vbat = d.volts;
 		an.mahdraw = (Mwp.conf.smartport_fuel == 2 )? d.mah :0;
 		an.amps = d.ciamps;
-		Battery.process_msp_analog(an);
+		var vres = Battery.process_msp_analog(an);
+		if (vres != 0) {
+			Mwp.panelbox.update(Panel.View.VOLTS, vres);
+		}
 	}
 
 	private void ProcessCRSF(MWSerial ser, uint8 []buffer) {

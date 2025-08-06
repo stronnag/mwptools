@@ -100,7 +100,10 @@ namespace Frsky {
 				an.vbat = s.volts;
 				an.amps = s.amps;
 				an.mahdraw = s.mah;
-				Battery.process_msp_analog(an);
+				var vres = Battery.process_msp_analog(an);
+				if (vres != 0) {
+					Mwp.panelbox.update(Panel.View.VOLTS, vres);
+				}
 			}
 			break;
 

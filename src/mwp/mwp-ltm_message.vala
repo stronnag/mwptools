@@ -444,7 +444,10 @@ namespace Mwp {
 					an.vbat = vbat;
 					an.amps = centiA;
 					an.mahdraw = mah;
-					Battery.process_msp_analog(an);
+					var vres = Battery.process_msp_analog(an);
+					if (vres != 0) {
+						Mwp.panelbox.update(Panel.View.VOLTS, vres);
+					}
 				}
 				if(rssiup) {
 					if(ser.is_main) {
