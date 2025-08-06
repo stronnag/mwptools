@@ -31,19 +31,19 @@ namespace SQL {
 	}
 
 	public struct TrackEntry {
-		public int id;
-		public int idx;
 		public int64 stamp;
 		double lat;
 		double lon;
-		int alt;
-		int galt;
 		double spd;
 		double amps;
 		double volts;
 		double hlat;
 		double hlon;
 		double vrange;
+		public int id;
+		public int idx;
+		int alt;
+		int galt;
 		int cse;
 		int cog;
 		int bearing;
@@ -73,10 +73,12 @@ namespace SQL {
 		Sqlite.Statement bbstmt;
 		Sqlite.Statement mtstmt;
 		Sqlite.Statement flstmt;
+		Sqlite.Statement logstmt;
 
 		const string bbquery = "SELECT min(lat),min(lon),max(lat),max(lon) FROM logs WHERE id = $1;";
 		const string mtquery = "SELECT * from meta WHERE id = $1;";
 		const string flquery = "SELECT id,idx,stamp,lat,lon,alt,galt,spd,amps,volts,hlat,hlon,vrange,cse,cog,bearing,roll,pitch,hdop,ail,ele,rud,thr,fix,numsat,fmode,rssi,status,activewp,navmode,hwfail,windx,windy,windz,energy from logs WHERE id = $1 and idx=$2;";
+		const string logquery = "SELECT id,idx,stamp,lat,lon,alt,galt,spd,amps,volts,hlat,hlon,vrange,cse,cog,bearing,roll,pitch,hdop,ail,ele,rud,thr,fix,numsat,fmode,rssi,status,activewp,navmode,hwfail,windx,windy,windz,energy from logs WHERE id = $1;";
 
 		public Db(string fn) {
 			var rc = Sqlite.Database.open_v2 (fn, out db, Sqlite.OPEN_READONLY);
@@ -94,6 +96,10 @@ namespace SQL {
 			rc = db.prepare_v2 (flquery, flquery.length, out flstmt);
 			if (rc != Sqlite.OK) {
 				MWPLog.message ("Failed to prepare flstmt %s\n", fn);
+			}
+			rc = db.prepare_v2 (logquery, logquery.length, out logstmt);
+			if (rc != Sqlite.OK) {
+				MWPLog.message ("Failed to prepare logstmt %s\n", fn);
 			}
 		}
 
@@ -203,6 +209,52 @@ namespace SQL {
 			}
 			return nr;
 		}
+
+		public int get_log(int idx, ref TrackEntry[] tks) {
+			logstmt.reset();
+			logstmt.bind_int (1, idx);
+			int n = 0;
+			while (logstmt.step () == Sqlite.ROW) {
+				tks[n].id = logstmt.column_int(0);
+				tks[n].idx = logstmt.column_int(1);
+				tks[n].stamp = logstmt.column_int64(2);
+				tks[n].lat = logstmt.column_double(3);
+				tks[n].lon = logstmt.column_double(4);
+				tks[n].alt = logstmt.column_int(5);
+				tks[n].galt = logstmt.column_int(6);
+				tks[n].spd =  logstmt.column_double(7);
+				tks[n].amps = logstmt.column_double(8);
+				tks[n].volts = logstmt.column_double(9);
+				tks[n].hlat = logstmt.column_double(10);
+				tks[n].hlon = logstmt.column_double(11);
+				tks[n].vrange =  logstmt.column_double(12);
+				tks[n].cse = logstmt.column_int(13);
+				tks[n].cog = logstmt.column_int(14);
+				tks[n].bearing = logstmt.column_int(15);
+				tks[n].roll = logstmt.column_int(16);
+				tks[n].pitch = logstmt.column_int(17);
+				tks[n].hdop = logstmt.column_int(18);
+				tks[n].ail = logstmt.column_int(19);
+				tks[n].ele = logstmt.column_int(20);
+				tks[n].rud = logstmt.column_int(21);
+				tks[n].thr = logstmt.column_int(22);
+				tks[n].fix = logstmt.column_int(23);
+				tks[n].numsat = logstmt.column_int(24);
+				tks[n].fmode = logstmt.column_int(25);
+				tks[n].rssi  = logstmt.column_int(26);
+				tks[n].status = logstmt.column_int(27);
+				tks[n].activewp = logstmt.column_int(28);
+				tks[n].navmode = logstmt.column_int(29);
+				tks[n].hwfail = logstmt.column_int(30);
+				tks[n].windx = logstmt.column_int(31);
+				tks[n].windy = logstmt.column_int(32);
+				tks[n].windz = logstmt.column_int(33);
+				tks[n].energy = logstmt.column_int(34);
+				n++;
+			}
+			return n;
+		}
+
 
 		public bool get_log_entry(int idx, int nidx, out TrackEntry t) {
 			t = {};

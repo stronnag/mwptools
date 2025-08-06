@@ -27,7 +27,7 @@ public class SQLSlider : Gtk.Window {
 	private SQLPlayer sp;
 	private GLib.Menu menu;
 	private GLib.SimpleActionGroup dg;
-	public AsyncQueue<double?> dragq;
+	//	public AsyncQueue<double?> dragq;
 
 	public SQLSlider(string fn, int idx) {
         Mwp.xlog = Mwp.conf.logarmed;
@@ -37,8 +37,8 @@ public class SQLSlider : Gtk.Window {
 		Mwp.conf.audioarmed = false;
 
 		Mwp.craft.remove_all();
-		dragq = new  AsyncQueue<double?>();
-		sp = new SQLPlayer(dragq);
+		//		dragq = new  AsyncQueue<double?>();
+		sp = new SQLPlayer(/*dragq*/);
 		sp.opendb(fn);
 
 		double smax = sp.init(idx);
@@ -77,13 +77,15 @@ public class SQLSlider : Gtk.Window {
 		start_button.clicked.connect (() => {
 				pstate = true;
 				toggle_pstate();
-				dragq.push(0.0);
+				//				dragq.push(0.0);
+				sp.move_at(0);
 			});
 
 		end_button.clicked.connect (() => {
 				pstate = true;
 				toggle_pstate();
-				dragq.push(smax);
+				sp.move_at((int)smax);
+				//dragq.push(smax);
 			});
 
 		sp.newpos.connect((v) => {
@@ -91,7 +93,7 @@ public class SQLSlider : Gtk.Window {
 			});
 
 		close_request.connect (() => {
-				dragq.push(double.NAN);
+				//dragq.push(double.NAN);
 				sp.stop();
 				sp = null;
 				return false;
@@ -184,7 +186,8 @@ public class SQLSlider : Gtk.Window {
 				if(pstate) {
 					toggle_pstate();
 				}
-				dragq.push(d);
+				//dragq.push(d);
+				sp.move_at((int)d);
 				return true;
 			});
 
@@ -223,22 +226,26 @@ public class SQLPlayer : Object {
 	private SQL.Db db;
 	private int idx;
 
+	private SQL.TrackEntry[] trks;
+
 	public int speed;
 	public signal void newpos(int n);
-	private AsyncQueue<double?> dragq;
+	//private AsyncQueue<double?> dragq;
 
 	~SQLPlayer() {
 		db = null;
+		trks={};
 		MWPLog.message("~SQLPlayer ... disarm %s (%d)\n", Msp.bb_disarm(Mwp.msp.td.state.reason), Mwp.msp.td.state.reason);
 		Mwp.serstate = Mwp.SERSTATE.NONE;
 		Mwp.replayer = Mwp.Player.NONE;
 		Mwp.stack_size = xstack;
 		Mwp.conf.logarmed = Mwp.xlog;
 		Mwp.conf.audioarmed = Mwp.xaudio;
+
 	}
 
-	public SQLPlayer(AsyncQueue<double?> _dragq) {
-		dragq = _dragq;
+	public SQLPlayer(/*AsyncQueue<double?> _dragq*/) {
+		//dragq = _dragq;
 		speed = 1;
 	}
 
@@ -258,7 +265,7 @@ public class SQLPlayer : Object {
 		nentry = 0;
 		xstack = Mwp.stack_size;
 		db = new SQL.Db(fn);
-
+		/*
 		new Thread<bool>("loader", () => {
 				while(true) {
 					var dd = dragq.pop();
@@ -269,39 +276,30 @@ public class SQLPlayer : Object {
 					if(n < 0) {
 						n = 0;
 					}
-					if (n <= startat) {
-						SQL.TrackEntry t = {};
-						if (db.get_log_entry(idx, n, out t)) {
-							Idle.add(() => {
-									Mwp.craft.remove_back(startat, n);
-									display(t);
-									startat = t.idx;
-									newpos(n);
-									return false;
-								});
-							Thread.usleep((startat-n)/10);
-						}
-					} else {
-						if(n > nentry) {
-							MWPLog.message("SQLLOG WARN Max N %d (%d)\n", n, nentry);
-							n = nentry-1;
-						}
-						for(var j = startat+1; j <= n; j++) {
-							SQL.TrackEntry t= {};
-							if (db.get_log_entry(idx, j, out t)) {
-								startat = t.idx;
-								Idle.add(() => {
-										display(t);
-										newpos(j);
-										return false;
-									});
-								Thread.usleep((n-startat)/10);
-							}
-						}
-					}
+					moveto(n);
 				}
 				return true;
 			});
+		*/
+	}
+
+	public void move_at(int n) {
+		if (n <= startat) {
+			Mwp.craft.remove_back(startat, n);
+			startat = n;
+			display(trks[n]);
+			newpos(n);
+		} else {
+			if(n > nentry) {
+				MWPLog.message("SQLLOG WARN Max N %d (%d)\n", n, nentry);
+				n = nentry-1;
+			}
+			for(var j = startat+1; j <= n; j++) {
+				display(trks[j]);
+				newpos(j);
+			}
+			startat = n;
+		}
 	}
 
 	public SQL.Meta [] get_metas() {
@@ -312,12 +310,10 @@ public class SQLPlayer : Object {
 
 	public double init(int _idx) {
 		idx = _idx;
-
 		SQL.Meta m;
 		var res = db.get_meta(idx, out m);
 		lstamp = 0;
 		tid = 0;
-		SQL.TrackEntry t = {};
 		nentry = db.get_log_count(idx);
 		startat = 0;
 		Mwp.armed = 0;
@@ -342,12 +338,14 @@ public class SQLPlayer : Object {
 		Mwp.replayer = Mwp.Player.SQL;
 		Mwp.usemag = true;
 		Odo.stats = {};
-		if(db.get_log_entry(idx, startat, out t)) {
-			display(t);
-			if(t.thr > 0) {
-				if(Mwp.conf.show_sticks != 1) {
-					Sticks.create_sticks();
-				}
+
+		trks = new SQL.TrackEntry[idx]{};
+		db.get_log(idx, ref trks);
+
+		display(trks[startat]);
+		if (trks[startat].thr > 0) {
+			if(Mwp.conf.show_sticks != 1) {
+				Sticks.create_sticks();
 			}
 		}
 		return (double)nentry;
@@ -355,11 +353,8 @@ public class SQLPlayer : Object {
 
 	public void on_play(bool s) {
 		if(s) {
-			SQL.TrackEntry t = {};
-			if(db.get_log_entry(idx, startat, out t)) {
-				display(t);
-			}
-			get_next_entry(t);
+			display(trks[startat]);
+			get_next_entry();
 		} else {
 			if(tid != 0) {
 				Source.remove(tid);
@@ -370,23 +365,18 @@ public class SQLPlayer : Object {
 		}
 	}
 
-	public void get_next_entry(SQL.TrackEntry t0) {
-		SQL.TrackEntry t;
-		var nidx = t0.idx+1;
-		if (nidx < nentry) {
-			var res = db.get_log_entry(t0.id, nidx, out t);
-			if (res) {
-				uint et = (uint)((t.stamp - t0.stamp)/1000);
-				if(et >= 0) {
-					tid = Timeout.add(et / speed, () => {
-							tid = 0;
-							display(t);
-							startat = t.idx;
-							newpos(t.idx);
-							get_next_entry(t);
-							return false;
-						});
-				}
+	public void get_next_entry() {
+		if (startat < nentry-1) {
+			uint et = (uint)((trks[startat+1].stamp - trks[startat].stamp)/1000);
+			if(et >= 0) {
+				tid = Timeout.add(et / speed, () => {
+						tid = 0;
+						startat++;
+						display(trks[startat]);
+						newpos(startat);
+						get_next_entry();
+						return false;
+					});
 			}
 		}
 	}
