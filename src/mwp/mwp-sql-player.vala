@@ -436,12 +436,14 @@ public class SQLPlayer : Object {
 				Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.COG);
 			fvg = true;
 		}
-		if(Math.fabs(Mwp.msp.td.comp.range -  t.vrange) > 1.0 || upd == DrawMode.FORCE) {
-			Mwp.msp.td.comp.range =  (int)t.vrange;
+		var ival = Math.round(t.vrange);
+		if(Math.fabs(Mwp.msp.td.comp.range -  ival) > 1.0 || upd == DrawMode.FORCE) {
+			Mwp.msp.td.comp.range =  (int)ival;
 			fvup |= FlightBox.Update.RANGE;
 		}
-		if(Math.fabs(Mwp.msp.td.comp.bearing - t.bearing) > 1.0 || upd == DrawMode.FORCE) {
-			Mwp.msp.td.comp.bearing =  t.bearing;
+		ival = Math.round(t.bearing);
+		if(Math.fabs(Mwp.msp.td.comp.bearing - ival) > 1.0 || upd == DrawMode.FORCE) {
+			Mwp.msp.td.comp.bearing =  (int)ival;
 			fvup |= FlightBox.Update.BEARING;
 		}
 
