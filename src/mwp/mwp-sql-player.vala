@@ -466,14 +466,12 @@ public class SQLPlayer : Object {
 				Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.YAW);
 			}
 		}
-		if(fvh || fvg || upd == DrawMode.FORCE) {
-			if ((int16)t.windx != Mwp.msp.td.wind.w_x || (int16)t.windy != Mwp.msp.td.wind.w_y) {
-				Mwp.msp.td.wind.has_wind = true;
-				Mwp.msp.td.wind.w_x = (int16)t.windx;
-				Mwp.msp.td.wind.w_y = (int16)t.windy;
-				if (upd != DrawMode.OFF) {
-					Mwp.panelbox.update(Panel.View.WIND, WindEstimate.Update.ANY);
-				}
+		if(upd == DrawMode.FORCE || ((fvh || fvg) && ((int16)t.windx != Mwp.msp.td.wind.w_x || (int16)t.windy != Mwp.msp.td.wind.w_y))) {
+			Mwp.msp.td.wind.has_wind = true;
+			Mwp.msp.td.wind.w_x = (int16)t.windx;
+			Mwp.msp.td.wind.w_y = (int16)t.windy;
+			if (upd != DrawMode.OFF) {
+				Mwp.panelbox.update(Panel.View.WIND, WindEstimate.Update.ANY);
 			}
 		}
 
@@ -496,8 +494,12 @@ public class SQLPlayer : Object {
 		Mwp.check_heading(t.cog, (int)t.spd);
 
 		process_status(t);
+
 		var res = process_energy(t);
-		if (res != 0 || upd == DrawMode.FORCE) {
+		if ( upd == DrawMode.FORCE) {
+			res = (Voltage.Update.VOLTS|Voltage.Update.CURR);
+		}
+		if (res != 0) {
 			if (upd != DrawMode.OFF) {
 				Mwp.panelbox.update(Panel.View.VOLTS, res);
 			}

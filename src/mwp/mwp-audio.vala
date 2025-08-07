@@ -20,8 +20,8 @@
 namespace Audio {
 	uint spktid = 0;
 	void play_alarm_sound(string sfn) {
-		if(Mwp.conf.beep) {
-            var fn = MWPUtils.find_conf_file(sfn);
+		if(Mwp.conf.beep && Mwp.replayer != Mwp.Player.SQL) {
+			var fn = MWPUtils.find_conf_file(sfn);
             if(fn != null) {
 				var m = Gtk.MediaFile.for_filename(fn);
 				if (m != null) {
