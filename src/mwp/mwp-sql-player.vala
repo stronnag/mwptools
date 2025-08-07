@@ -312,7 +312,6 @@ public class SQLPlayer : Object {
 		lstamp = 0;
 		tid = 0;
 		nentry = db.get_log_count(idx);
-		MWPLog.message("Set nentry %d\n", nentry);
 		startat = 0;
 		Mwp.armed = 0;
 		Mwp.larmed = 0;
