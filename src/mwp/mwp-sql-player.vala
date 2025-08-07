@@ -270,17 +270,17 @@ public class SQLPlayer : Object {
 
 	private void move_fwd(int m, int n) {
 		DrawMode draw = DrawMode.OFF;
-		int jmod = (n+1-m) / 30;
+		int jmod = (n+1-m) / 8;
 		if (jmod < 8)
 			jmod = 8;
 		for(var j = m; j <= n; j++) {
 			if ((j % jmod) == 0) {
 				draw = DrawMode.FORCE;
+				newpos(j);
 			} else {
 				draw = DrawMode.OFF;
 			}
 			display(trks[j], draw);
-			newpos(j);
 			startat = j;
 		}
 	}
