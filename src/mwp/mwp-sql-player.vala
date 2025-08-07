@@ -228,6 +228,12 @@ public class SQLPlayer : Object {
 	public int speed;
 	public signal void newpos(int n);
 
+	public  enum DrawMode {
+		OFF,
+		ON,
+		FORCE
+	}
+
 	~SQLPlayer() {
 		db = null;
 		trks={};
@@ -263,15 +269,15 @@ public class SQLPlayer : Object {
 	}
 
 	private void move_fwd(int m, int n) {
-		bool draw = false;
+		DrawMode draw = DrawMode.OFF;
 		int jmod = (n+1-m) / 30;
 		if (jmod < 8)
 			jmod = 8;
 		for(var j = m; j <= n; j++) {
-			if (j == n || (j % jmod) == 0) {
-				draw = true;
+			if ((j % jmod) == 0) {
+				draw = DrawMode.FORCE;
 			} else {
-				draw = false;
+				draw = DrawMode.OFF;
 			}
 			display(trks[j], draw);
 			newpos(j);
@@ -291,12 +297,12 @@ public class SQLPlayer : Object {
 		if (n <= startat) {
 			Mwp.craft.remove_back(startat, n);
 			startat = n;
-			display(trks[n]);
-			newpos(n);
 		} else {
 			var js = startat+1;
 			move_fwd(js, n);
 		}
+		display(trks[n], DrawMode.FORCE);
+		newpos(n);
 	}
 
 	public SQL.Meta [] get_metas() {
@@ -378,7 +384,7 @@ public class SQLPlayer : Object {
 		}
 	}
 
-	private void display(SQL.TrackEntry t, bool vupd=true) {
+	private void display(SQL.TrackEntry t, DrawMode upd=DrawMode.ON) {
 		if (Mwp.rebase.has_reloc()) {
 			if (!Mwp.rebase.has_origin()) {
 				Mwp.rebase.set_origin(t.hlat, t.hlon);
@@ -400,23 +406,23 @@ public class SQLPlayer : Object {
 
 		int fvup = 0;
 		var pdiff = Mwp.pos_diff(t.lat, t.lon, Mwp.msp.td.gps.lat, Mwp.msp.td.gps.lon);
-		if (Mwp.PosDiff.LAT in pdiff) {
+		if (Mwp.PosDiff.LAT in pdiff || upd == DrawMode.FORCE) {
 			Mwp.msp.td.gps.lat = t.lat;
 			fvup |= FlightBox.Update.LAT;
 		}
-		if (Mwp.PosDiff.LON in pdiff) {
+		if (Mwp.PosDiff.LON in pdiff || upd == DrawMode.FORCE) {
 			Mwp.msp.td.gps.lon = t.lon;
 			fvup |= FlightBox.Update.LON;
 		}
-		if(Math.fabs(Mwp.msp.td.alt.alt - t.alt) > 1.0) {
+		if(Math.fabs(Mwp.msp.td.alt.alt - t.alt) > 1.0 || upd == DrawMode.FORCE) {
 			Mwp.msp.td.alt.alt = t.alt;
 			fvup |= FlightBox.Update.ALT;
 		}
-		if(Math.fabs(Mwp.msp.td.gps.gspeed - t.spd) > 0.1) {
+		if(Math.fabs(Mwp.msp.td.gps.gspeed - t.spd) > 0.1 || upd == DrawMode.FORCE) {
 			Mwp.msp.td.gps.gspeed = t.spd;
 			fvup |= FlightBox.Update.SPEED;
 		}
-		if(Mwp.msp.td.gps.nsats != t.numsat) {
+		if(Mwp.msp.td.gps.nsats != t.numsat || upd == DrawMode.FORCE) {
 			Mwp.msp.td.gps.fix = (uint8)t.fix;
 			Mwp.msp.td.gps.nsats = (uint8)t.numsat;
 			Mwp.msp.td.gps.hdop = t.hdop/100.0;
@@ -424,85 +430,92 @@ public class SQLPlayer : Object {
 		}
 
 		bool fvg = false;
-		if(Mwp.msp.td.gps.cog != t.cog) {
+		if(Mwp.msp.td.gps.cog != t.cog || upd == DrawMode.FORCE) {
 			Mwp.msp.td.gps.cog = t.cog;
-			if (vupd)
+			if (upd != DrawMode.OFF)
 				Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.COG);
 			fvg = true;
 		}
-		if(Math.fabs(Mwp.msp.td.comp.range -  t.vrange) > 1.0) {
+		if(Math.fabs(Mwp.msp.td.comp.range -  t.vrange) > 1.0 || upd == DrawMode.FORCE) {
 			Mwp.msp.td.comp.range =  (int)t.vrange;
 			fvup |= FlightBox.Update.RANGE;
 		}
-		if(Math.fabs(Mwp.msp.td.comp.bearing - t.bearing) > 1.0) {
+		if(Math.fabs(Mwp.msp.td.comp.bearing - t.bearing) > 1.0 || upd == DrawMode.FORCE) {
 			Mwp.msp.td.comp.bearing =  t.bearing;
 			fvup |= FlightBox.Update.BEARING;
 		}
 
-		bool fvh = (Math.fabs(Mwp.msp.td.atti.yaw - t.cse) > 1.0);
+		bool fvh = (Math.fabs(Mwp.msp.td.atti.yaw - t.cse) > 1.0 || upd == DrawMode.FORCE);
 
 		if (fvh) {
 			Mwp.msp.td.atti.yaw = t.cse;
 		}
 		Mwp.mhead = (int16)t.cse;
 		var vdiff = (t.roll != Atti._sx) || (t.pitch != Atti._sy);
-		if(vdiff) {
+		if(vdiff || upd == DrawMode.FORCE) {
 			Atti._sx = t.roll;
 			Atti._sy = t.pitch;
 			Mwp.msp.td.atti.angx = t.roll;
 			Mwp.msp.td.atti.angy = t.pitch;
-			if (vupd)
+			if (upd != DrawMode.OFF)
 				Mwp.panelbox.update(Panel.View.AHI, AHI.Update.AHI);
 		}
-		if(fvh) {
-			if (vupd) {
+		if(fvh || upd == DrawMode.FORCE) {
+			if (upd != DrawMode.OFF) {
 				Mwp.panelbox.update(Panel.View.FVIEW, FlightBox.Update.YAW);
 				Mwp.panelbox.update(Panel.View.DIRN, Direction.Update.YAW);
 			}
 		}
-		if(fvh || fvg) {
+		if(fvh || fvg || upd == DrawMode.FORCE) {
 			if ((int16)t.windx != Mwp.msp.td.wind.w_x || (int16)t.windy != Mwp.msp.td.wind.w_y) {
 				Mwp.msp.td.wind.has_wind = true;
 				Mwp.msp.td.wind.w_x = (int16)t.windx;
 				Mwp.msp.td.wind.w_y = (int16)t.windy;
-				if (vupd)
+				if (upd != DrawMode.OFF) {
 					Mwp.panelbox.update(Panel.View.WIND, WindEstimate.Update.ANY);
+				}
 			}
 		}
 
 		int xrssi = t.rssi * 1023/100;
-		if (xrssi != Mwp.msp.td.rssi.rssi) {
+		if (xrssi != Mwp.msp.td.rssi.rssi || upd == DrawMode.FORCE) {
 			Mwp.msp.td.rssi.rssi = xrssi;
-			if (vupd)
+			if (upd != DrawMode.OFF) {
 				Mwp.panelbox.update(Panel.View.RSSI, RSSI.Update.RSSI);
+			}
 		}
 
 		double dv;
-		if(Mwp.calc_vario(t.alt, out dv)) {
+		if(Mwp.calc_vario(t.alt, out dv) || upd == DrawMode.FORCE) {
 			Mwp.msp.td.alt.vario = dv;
-			if (vupd)
+			if (upd != DrawMode.OFF) {
 				Mwp.panelbox.update(Panel.View.VARIO, Vario.Update.VARIO);
+			}
 		}
 
 		Mwp.check_heading(t.cog, (int)t.spd);
 
 		process_status(t);
 		var res = process_energy(t);
-		if (vupd && res != 0) {
-			Mwp.panelbox.update(Panel.View.VOLTS, res);
+		if (res != 0 || upd == DrawMode.FORCE) {
+			if (upd != DrawMode.OFF) {
+				Mwp.panelbox.update(Panel.View.VOLTS, res);
+			}
 		}
 
 		Mwp.alert_broken_sensors((uint8)t.hwfail);
 
 		if(fvup != 0) {
-			if (vupd)
+			if (upd != DrawMode.OFF) {
 				Mwp.panelbox.update(Panel.View.FVIEW, fvup);
+			}
 		}
 		process_nav(t);
 		Mwp.duration = (int)(t.stamp / (1000*1000));
 		Mwp.update_pos_info(t.idx);
-		if (vupd)
+		if (upd != DrawMode.OFF) {
 			Sticks.update(t.ail, t.ele, t.rud, t.thr);
+		}
 	}
 
 	private void process_nav(SQL.TrackEntry t) {
