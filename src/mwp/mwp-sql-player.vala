@@ -82,7 +82,16 @@ public class SQLSlider : Gtk.Window {
 		end_button.clicked.connect (() => {
 				pstate = true;
 				toggle_pstate();
-				sp.move_at((int)smax);
+				var cpos = slider.get_value();
+				var incr = (smax-cpos)/12.0;
+				Idle.add(() => {
+						cpos = double.min(smax, cpos + incr);
+						sp.move_at((int)cpos);
+						if (cpos >= smax)
+							return false;
+						return true;
+					});
+
 			});
 
 		sp.newpos.connect((v) => {
