@@ -160,8 +160,10 @@ namespace SQL {
 			while (stmt.step () == Sqlite.ROW) {
                 var m = Meta();
 				read_meta(stmt, out m);
-				mms += m;
-				n++;
+				if (m.duration > 10) {
+					mms += m;
+					n++;
+				}
 			}
 			ms = mms;
 			return (n>0);

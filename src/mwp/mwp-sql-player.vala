@@ -484,6 +484,8 @@ public class SQLPlayer : Object {
 				Mwp.panelbox.update(Panel.View.VARIO, Vario.Update.VARIO);
 		}
 
+		Mwp.check_heading(t.cog, (int)t.spd);
+
 		process_status(t);
 		var res = process_energy(t);
 		if (vupd && res != 0) {

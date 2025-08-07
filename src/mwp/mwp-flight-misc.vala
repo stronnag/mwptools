@@ -40,6 +40,35 @@ namespace Mwp {
 	double lvticks=0;
 	double lfdiff = 0.0;
 
+
+	void check_heading(double cse, int speed) {
+		int gcse = (int)cse;
+		if(last_ltmf != Msp.Ltm.POSHOLD && last_ltmf != Msp.Ltm.LAND) {
+			if(speed > 3) {
+				if(magcheck && magtime > 0 && magdiff > 0) {
+					if(get_heading_diff(gcse, mhead) > magdiff) {
+						if(magdt == -1) {
+							magdt = (int)duration;
+						}
+					} else if (magdt != -1) {
+						magdt = -1;
+						Gis.map_hide_warning();
+					}
+				}
+			} else if (magdt != -1) {
+				magdt = -1;
+				Gis.map_hide_warning();
+			}
+		}
+		if(magdt != -1 && ((int)duration - magdt) > magtime) {
+			MWPLog.message(" ****** Heading anomaly detected %d %d %d\n", mhead, (int)gcse, magdt);
+			Gis.map_show_warning("HEADING ANOMALY");
+			Audio.play_alarm_sound(MWPAlert.RED);
+			magdt = -1;
+		}
+	}
+
+
 	PosDiff pos_diff(double lat0, double lon0, double lat1, double lon1) {
 		PosDiff d = PosDiff.NONE;
 		if((Math.fabs(lat0 - lat1) > POSDELTA)) {
