@@ -72,6 +72,20 @@ namespace Logger {
         write_stream();
     }
 
+	public void fwa() {
+		if (is_logging) {
+			var builder = init("fwa");
+			builder.set_member_name ("loiter_radius");
+			builder.add_int_value(FWPlot.nav_fw_loiter_radius);
+			builder.set_member_name ("approach_length");
+			builder.add_int_value(FWPlot.nav_fw_land_approach_length);
+			builder.end_object ();
+			Json.Node root = builder.get_root ();
+			gen.set_root (root);
+			write_stream();
+		}
+	}
+
 	public void logstring(string id, string msg) {
 		if (is_logging) {
 			var builder = init("text");
@@ -163,6 +177,7 @@ namespace Logger {
 			if(Mwp.gzone != null) {
 				Logger.logstring("geozone", Mwp.gzr.to_string());
 			}
+			Logger.fwa();
 		}
     }
 

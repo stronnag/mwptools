@@ -333,6 +333,30 @@ public class SQLPlayer : Object {
 		Mwp.clear_sidebar(Mwp.msp);
 		Mwp.init_have_home();
 		Mwp.init_state();
+
+		var fwastr = db.get_misc(idx, "fwa");
+		if (fwastr != null) {
+			var parts = fwastr.split(" ");
+			if(parts.length == 2) {
+				foreach(var p in parts) {
+					var lp = p.split("=");
+					if (lp.length == 2) {
+						int val = int.parse(lp[1]);
+						if (val > 0) {
+							switch (lp[0]) {
+							case "loiter_radius":
+								FWPlot.nav_fw_loiter_radius = val;
+								break;
+							case "approach_length":
+								FWPlot.nav_fw_land_approach_length = val;
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+
 		var mfn = db.get_misc(idx, "mission");
 		if (mfn != null) {
 			Mwp.hard_display_reset(true);
