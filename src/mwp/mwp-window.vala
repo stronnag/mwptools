@@ -359,9 +359,6 @@ namespace Mwp {
 								devnam = dev_entry.text;
 							}
 							Logger.fcinfo(devnam);
-							if(gzone != null) {
-								Logger.logstring("geozone", gzr.to_string());
-							}
 						}
 					} else {
 						Logger.stop();

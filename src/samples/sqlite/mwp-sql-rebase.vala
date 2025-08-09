@@ -37,8 +37,11 @@ public class LogRebase : Object {
 						hlon = stmt.column_double(1);
 					}
 					str = "update logs set hlat=%f, hlon=%f where id=%d".printf(nlat, nlon, idx);
+					db.exec("BEGIN");
 					rc = db.exec(str, null);
 					update_pos(hlat, hlon, nlat, nlon);
+					db.exec("COMMIT");
+
 				}
 			}
 		}

@@ -154,14 +154,16 @@ namespace Mwp {
 		if(ns.gps_mode == 15) {
 			if (nticks - last_crit > 6*CRITINTVL) {
 				Audio.play_alarm_sound(MWPAlert.GENERAL);
-				MWPLog.message("GPS Critial Failure!!!\n");
-				Mwp.add_toast_text("GPS Critial Failure!!!");
+				MWPLog.message("GPS Emergency Mode\n");
+				Mwp.add_toast_text("GPS Emergency Mode");
 				last_crit = nticks;
 			}
 		} else
 			last_crit = 0;
 
 		ser.td.state.navmode = 	ns.nav_mode;
+		ser.td.state.gpsmode = 	ns.gps_mode;
+		ser.td.state.action  = 	ns.action;
 		ser.td.state.wpno = ns.wp_number;
 		if(ns.nav_mode != last_nmode  || last_nwp != ns.wp_number) {
 			TTS.say(TTS.Vox.NAV_STATUS);

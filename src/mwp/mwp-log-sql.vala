@@ -183,6 +183,21 @@ namespace SQL {
 			return val;
 		}
 
+		public string? get_misc(int idx, string type) {
+			Sqlite.Statement stmt;
+			string? val = null;
+			const string str = "SELECT content FROM misc WHERE id = $1 and type = $2;";
+			var rc = db.prepare_v2 (str, str.length, out stmt);
+			if (rc == Sqlite.OK) {
+				stmt.bind_int (1, idx);
+				stmt.bind_text (2, type);
+				while (stmt.step () == Sqlite.ROW) {
+					val = stmt.column_text(0);
+				}
+			}
+			return val;
+		}
+
 		public bool get_bounding_box(int idx, out MapUtils.BoundingBox bbox) {
 			int n = 0;
 			bbox = {999.0, 999.0, -999.0, -999.0};
@@ -410,6 +425,8 @@ static int main(string?[]args) {
 			print("Odo spd %f %u\n", Odo.stats.speed, Odo.stats.spd_secs);
 			print("Odo time %u, tdist %.1f, centiamps %u\n", Odo.stats.time, Odo.stats.distance, Odo.stats.amps);
 		}
+		var mfn = d.get_misc(idx, "mission");
+		print("Get mission %s\n", mfn);
 		d=null;
 	}
 

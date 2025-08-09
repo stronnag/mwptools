@@ -34,6 +34,7 @@ var (
 	_jump    = flag.Float64("j", 0, "jump some seconds")
 	_raw     = flag.Bool("raw", false, "write raw log")
 	_verbose = flag.Bool("verbose", false, "show each read")
+	_ftype   = flag.Int("ftype", -1, "File type")
 )
 
 type SerDev interface {
@@ -48,10 +49,18 @@ type header struct {
 	Dirn   byte
 }
 
+type oheader struct {
+	Offset float64
+	Size   uint8
+	Dirn   byte
+}
+
 const (
-	LOG_LEGACY = 0
-	LOG_V2     = 2
-	LOG_JSON   = 42
+	LOG_UNKNOWN = 0xff
+	LOG_LEGACY  = 0
+	LOG_V1      = 1
+	LOG_V2      = 2
+	LOG_JSON    = 42
 )
 
 type MWPLog struct {
@@ -60,7 +69,7 @@ type MWPLog struct {
 	last  float64
 	skip  bool
 	noout bool
-	vers  byte
+	vers  uint8
 }
 
 func check_device() (string, int) {
@@ -86,12 +95,27 @@ func (l *MWPLog) readlog() ([]byte, error) {
 	delay := 0.0
 	var buf []byte
 	n := 0
+	hdr := header{}
 
 	switch l.vers {
 	case LOG_V2:
-		hdr := header{}
 		err = binary.Read(l.fh, binary.LittleEndian, &hdr)
 		if err == nil {
+			delay = hdr.Offset - l.last
+			l.last = hdr.Offset
+			buf = make([]byte, hdr.Size)
+			n, err = l.fh.Read(buf)
+			if (*_jump > 0 && hdr.Offset < *_jump) || hdr.Dirn == 'o' {
+				return nil, nil
+			}
+		}
+	case LOG_V1:
+		ohdr := oheader{}
+		err = binary.Read(l.fh, binary.LittleEndian, &ohdr)
+		if err == nil {
+			hdr.Size = uint16(ohdr.Size)
+			hdr.Offset = ohdr.Offset
+			hdr.Dirn = ohdr.Dirn
 			delay = hdr.Offset - l.last
 			l.last = hdr.Offset
 			buf = make([]byte, hdr.Size)
@@ -136,24 +160,34 @@ func (l *MWPLog) readlog() ([]byte, error) {
 }
 
 func (l *MWPLog) checkvers() string {
-	logfmt := "raw data"
-	sig := make([]byte, 7)
-	_, err := l.fh.Read(sig)
-	if err == nil {
-		if string(sig)[0:3] == "v2\n" {
-			logfmt = "mwp binary log v2"
-			l.vers = LOG_V2
-			l.fh.Seek(3, 0)
-		} else {
-			if string(sig) == `{"stamp` {
-				l.fh.Seek(0, 0)
-				logfmt = "mwp JSON log"
-				l.vers = LOG_JSON
-				l.rd = bufio.NewReader(l.fh)
+	var logfmt string
+	if l.vers == LOG_UNKNOWN {
+		sig := make([]byte, 7)
+		_, err := l.fh.Read(sig)
+		if err == nil {
+			if string(sig)[0:3] == "v2\n" {
+				l.vers = LOG_V2
 			} else {
-				l.fh.Seek(0, 0)
+				if string(sig) == `{"stamp` {
+					l.vers = LOG_JSON
+					l.rd = bufio.NewReader(l.fh)
+				} else {
+					l.vers = LOG_LEGACY
+				}
 			}
 		}
+	}
+	l.fh.Seek(0, 0)
+	switch l.vers {
+	case LOG_LEGACY:
+		logfmt = "raw data"
+	case LOG_V1:
+		logfmt = "mwp binary log v1"
+	case LOG_V2:
+		l.fh.Seek(3, 0)
+		logfmt = "mwp binary log v2"
+	case LOG_JSON:
+		logfmt = "mwp JSON log"
 	}
 	return logfmt
 }
@@ -270,7 +304,15 @@ func main() {
 		defer sd.Close()
 	}
 
-	logfmt := logf.checkvers()
+	var logfmt string
+
+	if *_ftype == -1 {
+		logf.vers = LOG_UNKNOWN
+	} else {
+		logf.vers = uint8(*_ftype)
+	}
+	logfmt = logf.checkvers()
+
 	fmt.Fprintf(os.Stderr, "%s: %s\n", adata[0], logfmt)
 
 	var rl *os.File

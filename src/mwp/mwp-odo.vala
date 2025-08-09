@@ -169,7 +169,7 @@ namespace Odo {
 		public void reset(Odostats o) {
 			cname = o.cname;
 			atime = o.atime;
-			odoframe.sensitive  = odotview.sensitive = o.live;
+			odoframe.sensitive  = odotview.sensitive = odotview.editable = o.live;
 			to = (o.live) ? 120 : 30;
 			dismiss();
 		}

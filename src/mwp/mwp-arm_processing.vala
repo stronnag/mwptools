@@ -37,7 +37,6 @@ namespace Mwp {
                 duration -= armtime;
             }
         }
-		Logger.armed((armed == 1), duration, flag, sensor, telem);
 		if(armed != larmed) {
             changed = true;
 			//  navstatus.set_replay_mode((replayer != Player.NONE)); // FIXME
@@ -50,13 +49,14 @@ namespace Mwp {
 					devnam = "unknown";
 				}
 				Logger.fcinfo(devnam);
+
 				Mwp.window.armed_state(true);
 				magdt = -1;
                 Odo.stats = {0};
 				Odo.stats.atime = armtime;
                 Odo.stats.alt = -9999;
 				Odo.stats.cname = vname;
-				Odo.stats.live = (replayer == Player.NONE);
+				Odo.stats.live = (replayer == Player.NONE || Environment.get_variable("MWP_ODO_LIVE") != null);
                 Odo.view.reset(Odo.stats);
 				if (Odo.stats.live) {
 					Odo.view.add_summary_event("Armed");
@@ -85,6 +85,7 @@ namespace Mwp {
                     Mwp.window.logger_cb.active = true;
                 }
 				Logger.armed(true,duration,flag, sensor,telem);
+				Logger.origin();
 			} else {
 				Mwp.window.armed_state(false);
                 if(Odo.stats.time > 5) {
@@ -116,6 +117,7 @@ namespace Mwp {
                 reboot_status();
 			}
         }
+		Logger.armed((armed == 1), duration, flag, sensor, telem);
         larmed = armed;
         return changed;
     }

@@ -16,9 +16,16 @@ type Header struct {
 	Dirn   byte
 }
 
+type OldHeader struct {
+	Offset float64
+	Size   uint8
+	Dirn   byte
+}
+
 type MWPLog struct {
-	fh   *os.File
-	last float64
+	fh    *os.File
+	last  float64
+	fvers int
 }
 
 type HexArray []byte
@@ -41,14 +48,39 @@ func (l *MWPLog) readlog() (Header, HexArray, error) {
 	var buf []byte
 
 	hdr := Header{}
-	err = binary.Read(l.fh, binary.LittleEndian, &hdr)
-	if err == nil {
-		l.last = hdr.Offset
+	switch l.fvers {
+	case 2:
+		err = binary.Read(l.fh, binary.LittleEndian, &hdr)
+		if err == nil {
+			l.last = hdr.Offset
+			buf = make([]byte, hdr.Size)
+			l.fh.Read(buf)
+		}
+	case 1:
+		ohdr := OldHeader{}
+		err = binary.Read(l.fh, binary.LittleEndian, &ohdr)
+		if err == nil {
+			hdr.Size = uint16(ohdr.Size)
+			hdr.Offset = ohdr.Offset
+			hdr.Dirn = ohdr.Dirn
+			l.last = ohdr.Offset
+			buf = make([]byte, hdr.Size)
+			l.fh.Read(buf)
+		}
+	case 0:
+		hdr.Size = 128
+		hdr.Dirn = 'i'
 		buf = make([]byte, hdr.Size)
 		l.fh.Read(buf)
-		return hdr, buf, err
+		hdr.Offset = l.last + 0.1
+		l.last = hdr.Offset
 	}
-	return hdr, nil, err
+
+	if err == nil {
+		return hdr, buf, err
+	} else {
+		return hdr, nil, err
+	}
 }
 
 func (l *MWPLog) checkvers() bool {
@@ -60,6 +92,7 @@ func (l *MWPLog) checkvers() bool {
 			return true
 		}
 	}
+	l.fh.Seek(0, 0)
 	return false
 }
 
@@ -68,9 +101,11 @@ func main() {
 	var metafh io.WriteCloser
 	mspfile := "-"
 	metafile := "-"
+	fvers := -1
 
 	flag.StringVar(&mspfile, "msp", "-", "msp / ltm output file name ('-' => stderr)")
 	flag.StringVar(&metafile, "meta", "-", "metadata output file name ('-' => stdout)")
+	flag.IntVar(&fvers, "fvers", 0, "force file version")
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: mwplogstats [options] logfile\n")
@@ -110,10 +145,16 @@ func main() {
 	mspinit()
 	logf := MWPLog{}
 	logf.fh = fh
+	logf.fvers = fvers
+
 	defer logf.fh.Close()
 
 	if !logf.checkvers() {
-		log.Fatalln("Check format")
+		if fvers == -1 {
+			log.Fatalln("Check format")
+		}
+	} else {
+		fvers = 2
 	}
 
 	ni := 0

@@ -252,7 +252,6 @@ public class SQLPlayer : Object {
 		Mwp.stack_size = xstack;
 		Mwp.conf.logarmed = Mwp.xlog;
 		Mwp.conf.audioarmed = Mwp.xaudio;
-
 	}
 
 	public SQLPlayer() {
@@ -334,7 +333,29 @@ public class SQLPlayer : Object {
 		Mwp.clear_sidebar(Mwp.msp);
 		Mwp.init_have_home();
 		Mwp.init_state();
-		Mwp.hard_display_reset();
+		var mfn = db.get_misc(idx, "mission");
+		if (mfn != null) {
+			Mwp.hard_display_reset(true);
+            MissionManager.open_mission_file(mfn, false);
+		} else {
+			Mwp.hard_display_reset(false);
+		}
+
+		var gzstr = db.get_misc(idx, "geozone");
+		if (gzstr != null) {
+			if(Mwp.gzone != null) {
+				Mwp.set_gzsave_state(false);
+				Mwp.gzone.remove();
+				Mwp.gzone = null;
+			}
+			Mwp.gzr.from_string(gzstr);
+			Mwp.gzone = Mwp.gzr.generate_overlay();
+			Idle.add(() => {
+					Mwp.gzone.display();
+					return false;
+				});
+		}
+
 		if(res) {
 			Mwp.vname = m.name;
 			Mwp.set_typlab();
@@ -401,7 +422,8 @@ public class SQLPlayer : Object {
 			Mwp.rebase.relocate(ref t.hlat, ref t.hlon);
 		}
 
-		if(!Mwp.have_home || Mwp.home_changed(t.hlat, t.hlon)) {
+		if(!Mwp.have_home) {
+			Mwp.home_changed(t.hlat, t.hlon);
 			Mwp.sflags |= Mwp.SPK.GPS;
 			Mwp.want_special |= Mwp.POSMODE.HOME;
 			Mwp.process_pos_states(t.hlat, t.hlon, 0, "SQL Origin", -2);
@@ -533,22 +555,28 @@ public class SQLPlayer : Object {
 
 	private void process_nav(SQL.TrackEntry t) {
 		var ns =  MSP_NAV_STATUS();
-		ns.nav_mode = (uint8)t.navmode;
-		switch(t.fmode) {
-		case Msp.Ltm.POSHOLD,Msp.Ltm.ALTHOLD:
-			ns.gps_mode	= 1;
-			break;
-		case Msp.Ltm.RTH:
-			ns.gps_mode	= 2;
-			break;
-		case Msp.Ltm.WAYPOINTS:
-			ns.gps_mode	= 3;
-			ns.action = 1;
-			ns.wp_number = (uint8)t.activewp;
-			break;
-		default:
-			ns.gps_mode	= 0;
-			break;
+		ns.nav_mode = (uint8)(t.navmode & 0xff);
+		var extra = (uint8)((t.navmode >> 8) &0xff);
+		ns.wp_number = (uint8)t.activewp;
+		if (extra != 0) {
+			ns.gps_mode	= extra & 0xf;
+			ns.action = extra >> 4;
+		} else {
+			switch(t.fmode) {
+			case Msp.Ltm.POSHOLD,Msp.Ltm.ALTHOLD:
+				ns.gps_mode	= 1;
+				break;
+			case Msp.Ltm.RTH:
+				ns.gps_mode	= 2;
+				break;
+			case Msp.Ltm.WAYPOINTS:
+				ns.gps_mode	= 3;
+				ns.action = 1;
+				break;
+			default:
+				ns.gps_mode	= 0;
+				break;
+			}
 		}
 		Mwp.handle_n_frame(Mwp.msp, ns);
 	}

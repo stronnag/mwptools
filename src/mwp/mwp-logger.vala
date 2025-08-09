@@ -85,8 +85,7 @@ namespace Logger {
 			write_stream();
 		}
 	}
-	// MissionManager.last_file, vi, capability, sensor, profile, boxnames, vname, devnam, boxids);
-	// string? title, VersInfo vi,uint32 capability, uint16 sensor, uint8 profile, string? boxnames = null, string? vname = null, string? device = null, uint8[] boxids = {})  {
+
 	public void fcinfo(string? device = null) {
 		if (is_logging) {
 			gen = new Json.Generator ();
@@ -95,7 +94,6 @@ namespace Logger {
 				builder.set_member_name ("mission");
 				builder.add_string_value (MissionManager.last_file);
 			}
-
 			builder.set_member_name ("mwvers");
 			builder.add_int_value (Mwp.vi.mvers);
 			builder.set_member_name ("mrtype");
@@ -162,6 +160,9 @@ namespace Logger {
 			Json.Node root = builder.get_root ();
 			gen.set_root (root);
 			write_stream();
+			if(Mwp.gzone != null) {
+				Logger.logstring("geozone", Mwp.gzr.to_string());
+			}
 		}
     }
 
@@ -395,8 +396,12 @@ namespace Logger {
 			var builder = init ("v0:nav-status");
 			builder.set_member_name ("nav_mode");
 			builder.add_int_value(Mwp.msp.td.state.navmode);
+			builder.set_member_name ("gps_mode");
+			builder.add_int_value(Mwp.msp.td.state.gpsmode);
 			builder.set_member_name ("wp_number");
 			builder.add_int_value(Mwp.msp.td.state.wpno);
+			builder.set_member_name ("action");
+			builder.add_int_value(Mwp.msp.td.state.action);
 			builder.end_object ();
 			Json.Node root = builder.get_root ();
 			gen.set_root (root);

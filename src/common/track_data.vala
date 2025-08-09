@@ -167,9 +167,11 @@ public struct RSSIData  {
 
 public struct StateData {
 	public uint8 state ;
+	public uint8 gpsmode ;
 	public uint8 navmode ;
 	public uint8 ltmstate ;
 	public uint8 wpno;
+	public uint8 action;
 	public uint8 sensorok ;
 	public uint8 reason;
 
@@ -180,6 +182,8 @@ public struct StateData {
 		wpno = 0;
 		sensorok = 0;
 		reason = 0;
+		gpsmode = 0;
+		action = 0;
 	}
 	public string to_string() {
 		var sb = new StringBuilder("State: ");

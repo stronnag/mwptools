@@ -1378,7 +1378,8 @@ namespace Mwp {
 				wp_reset_poller();
 			}
 			break;
-
+			/*
+			 * Obsolete - old replayer
 		case Msp.Cmds.PRIV_TEXT_EOM:
 			var txt = (string)raw[0:len];
 			Odo.view.set_text(txt);
@@ -1400,7 +1401,7 @@ namespace Mwp {
 					});
 			}
 			break;
-
+			*/
 		case Msp.Cmds.MAVLINK_MSG_ID_RADIO:
 			//			handle_radio(raw);
 			break;

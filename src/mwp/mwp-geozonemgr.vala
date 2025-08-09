@@ -795,6 +795,7 @@ public class GeoZoneManager {
 		DataInputStream ds = new DataInputStream (ms);
 		string line;
 		var res = true;
+		int nvalid = 0;
 		try {
 			reset();
 			while ((line = ds.read_line (null)) != null) {
@@ -812,6 +813,7 @@ public class GeoZoneManager {
 						vs[k].longitude = int.parse(parts[5]);
 						break;
 					default:
+						nvalid++;
 						var z = GeoZone(){};
 						var index = int.parse(parts[1]);
 						z.shape = (GZShape)int.parse(parts[2]);
@@ -827,6 +829,7 @@ public class GeoZoneManager {
 					}
 				}
 			}
+			res = (nvalid > 0);
 		} catch {
 			reset();
 			res = false;
@@ -834,12 +837,14 @@ public class GeoZoneManager {
 		return res;
 	}
 
-	public void from_file(string fn) {
+	public bool from_file(string fn) {
+		bool res = false;
 		string str;
 		try {
 			if(FileUtils.get_contents(fn, out str)) {
-				from_string(str);
+				res = from_string(str);
 			}
 		} catch {}
+		return res;
 	}
 }

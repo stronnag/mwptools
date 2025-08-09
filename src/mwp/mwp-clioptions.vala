@@ -362,6 +362,17 @@ namespace Cli {
 			Mwp.clifile = null;
 		}
 
+		if(Mwp.sh_load != null && Mwp.sh_load != "-FC-") {
+			var vfn = MWPFileType.validate_cli_file(Mwp.sh_load);
+			Mwp.sh_load = null;
+			if (vfn != null) {
+				Safehome.manager.load_homes(vfn, Mwp.sh_disp);
+				  if(Mwp.rebase.is_valid()) {
+					  Safehome.manager.relocate_safehomes();
+				  }
+			}
+		}
+
 		if (Mwp.mission != null) {
 			var fn = Mwp.mission;
 			Mwp.mission = null;
@@ -406,28 +417,18 @@ namespace Cli {
 			}
 		}
 
-		if(Mwp.sh_load != null && Mwp.sh_load != "-FC-") {
-			var vfn = MWPFileType.validate_cli_file(Mwp.sh_load);
-			Mwp.sh_load = null;
-			if (vfn != null) {
-				Safehome.manager.load_homes(vfn, Mwp.sh_disp);
-				  if(Mwp.rebase.is_valid()) {
-					  Safehome.manager.relocate_safehomes();
-				  }
-			}
-		}
-
 		if(Mwp.gz_load != null) {
 			var vfn = MWPFileType.validate_cli_file(Mwp.gz_load);
 			Mwp.gz_load = null;
 			if (vfn != null) {
-				Mwp.gzr.from_file(vfn);
-				if(Mwp.gzone != null) {
-					Mwp.gzone.remove();
+				if(Mwp.gzr.from_file(vfn)) {
+					if(Mwp.gzone != null) {
+						Mwp.gzone.remove();
+					}
+					Mwp.gzone = Mwp.gzr.generate_overlay();
+					Mwp.gzone.display();
+					Mwp.set_gzsave_state(true);
 				}
-				Mwp.gzone = Mwp.gzr.generate_overlay();
-				Mwp.gzone.display();
-				Mwp.set_gzsave_state(true);
 			}
 		}
 	}
