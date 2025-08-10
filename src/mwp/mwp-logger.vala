@@ -168,7 +168,7 @@ namespace Logger {
 		}
 
 		if(MissionManager.last_file != null) {
-			Logger.logstring("mission", MissionManager.last_file);
+			Logger.logstring("mission-file", MissionManager.last_file);
 		}
 		var sb = new StringBuilder();
 		var s = Safehome.manager.to_safe_string();

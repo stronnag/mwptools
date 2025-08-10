@@ -338,7 +338,7 @@ public class SQLPlayer : Object {
 			Safehome.manager.load_string(sfwa, Mwp.sh_disp);
 		}
 
-		var mfn = db.get_misc(idx, "mission");
+		var mfn = db.get_misc(idx, "mission-file");
 		if (mfn != null) {
 			Mwp.hard_display_reset(true);
             MissionManager.open_mission_file(mfn, false);
