@@ -1,5 +1,5 @@
 /*
- * This program is free software: you can redistribute it and/or modify
+
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
@@ -72,20 +72,6 @@ namespace Logger {
         write_stream();
     }
 
-	public void fwa() {
-		if (is_logging) {
-			var builder = init("fwa");
-			builder.set_member_name ("loiter_radius");
-			builder.add_int_value(FWPlot.nav_fw_loiter_radius);
-			builder.set_member_name ("approach_length");
-			builder.add_int_value(FWPlot.nav_fw_land_approach_length);
-			builder.end_object ();
-			Json.Node root = builder.get_root ();
-			gen.set_root (root);
-			write_stream();
-		}
-	}
-
 	public void logstring(string id, string msg) {
 		if (is_logging) {
 			var builder = init("text");
@@ -104,10 +90,6 @@ namespace Logger {
 		if (is_logging) {
 			gen = new Json.Generator ();
 			var builder = init("init");
-			if(MissionManager.last_file != null) {
-				builder.set_member_name ("mission");
-				builder.add_string_value (MissionManager.last_file);
-			}
 			builder.set_member_name ("mwvers");
 			builder.add_int_value (Mwp.vi.mvers);
 			builder.set_member_name ("mrtype");
@@ -174,14 +156,41 @@ namespace Logger {
 			Json.Node root = builder.get_root ();
 			gen.set_root (root);
 			write_stream();
-			if(Mwp.gzone != null) {
-				Logger.logstring("geozone", Mwp.gzr.to_string());
-			}
-			Logger.fwa();
+			Logger.misc();
 		}
     }
 
-    public string get_host_info(out string os) {
+	private void misc() {
+		if(Mwp.gzone != null) {
+			var sb = new StringBuilder("# geozone\n");
+			sb.append(Mwp.gzr.to_string());
+			Logger.logstring("geozone", sb.str);
+		}
+
+		if(MissionManager.last_file != null) {
+			Logger.logstring("mission", MissionManager.last_file);
+		}
+		var sb = new StringBuilder();
+		var s = Safehome.manager.to_safe_string();
+		if (s != "") {
+			sb.append("# safehome\n");
+			sb.append(s);
+		}
+		s = Safehome.manager.to_fwa_string();
+		if (s != "") {
+			sb.append("# Fixed Wing Approach\n");
+			sb.append(s);
+		}
+		if(sb.len > 0 || MissionManager.last_file != null) {
+			sb.append("# master\n");
+			sb.append_printf("set nav_fw_land_approach_length = %u\nset nav_fw_loiter_radius = %u\n", FWPlot.nav_fw_land_approach_length*100, FWPlot.nav_fw_loiter_radius*100);
+		}
+		if (sb.len > 0) {
+			Logger.logstring("climisc", sb.str);
+		}
+	}
+
+	public string get_host_info(out string os) {
 		os="";
 #if UNIX
         string r=null;

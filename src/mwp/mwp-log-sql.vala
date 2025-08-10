@@ -419,12 +419,10 @@ static int main(string?[]args) {
 
 		Odo.stats={};
 		d.populate_odo(idx);
-		if (Odo.stats.range > 0) {
-			print("Odo rng %f %u\n", Odo.stats.range, Odo.stats.rng_secs);
-			print("Odo alt %f %u\n", Odo.stats.alt, Odo.stats.alt_secs);
-			print("Odo spd %f %u\n", Odo.stats.speed, Odo.stats.spd_secs);
-			print("Odo time %u, tdist %.1f, centiamps %u\n", Odo.stats.time, Odo.stats.distance, Odo.stats.amps);
-		}
+		print("Odo rng %f %u\n", Odo.stats.range, Odo.stats.rng_secs);
+		print("Odo alt %f %u\n", Odo.stats.alt, Odo.stats.alt_secs);
+		print("Odo spd %f %u\n", Odo.stats.speed, Odo.stats.spd_secs);
+		print("Odo time %u, tdist %.1f, centiamps %u\n", Odo.stats.time, Odo.stats.distance, Odo.stats.amps);
 		var mfn = d.get_misc(idx, "mission");
 		print("Get mission %s\n", mfn);
 		d=null;

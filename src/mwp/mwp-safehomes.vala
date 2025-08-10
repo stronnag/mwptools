@@ -756,80 +756,89 @@ public class  SafeHomeDialog : Adw.Window {
     }
 
     private void read_file() {
-        FileStream fs = FileStream.open (filename, "r");
-        if(fs == null) {
-            return;
-        }
-        string s;
-		while((s = fs.read_line()) != null) {
-            if(s.has_prefix("safehome ")) {
-                var sh = new SafeHome();
-                var parts = s.split_set(" ");
-				var idx = int.parse(parts[1]);
-				if (idx >= 0 && idx < Safehome.MAXHOMES) {
-					sh.enabled = (parts[2] == "1") ? true : false;
-					sh.lat = double.parse(parts[3]) /10000000.0;
-					sh.lon = double.parse(parts[4]) /10000000.0;
-                    upsert(idx, sh);
-				}
-			} else if(s.has_prefix("fwapproach ")) {
-				var parts = s.split_set(" ");
-				var idx = int.parse(parts[1]);
-				if (idx >= 0 && idx < FWApproach.MAXAPPROACH) {
-					FWApproach.approach l={};
-					if(parts.length == 8) {
-						l.appalt = double.parse(parts[2]) /100.0;
-						l.landalt = double.parse(parts[3]) /100.0;
-						l.dref = (parts[4] == "1") ? true : false;
-						l.dirn1 = (int16)int.parse(parts[5]);
-						if(l.dirn1 < 0) {
-							l.dirn1 = -l.dirn1;
-							l.ex1 = true;
+		File f = File.new_for_path(filename);
+		try {
+			var ios = f.read ();
+			if(ios == null) {
+				return;
+			}
+			DataInputStream ds = new DataInputStream (ios);
+			from_stream(ds);
+		} catch {}
+	}
+
+	public void from_stream(DataInputStream ds) {
+		string s;
+		try {
+			while((s = ds.read_line()) != null) {
+				if(s.has_prefix("safehome ")) {
+					var sh = new SafeHome();
+					var parts = s.split_set(" ");
+					var idx = int.parse(parts[1]);
+					if (idx >= 0 && idx < Safehome.MAXHOMES) {
+						sh.enabled = (parts[2] == "1") ? true : false;
+						sh.lat = double.parse(parts[3]) /10000000.0;
+						sh.lon = double.parse(parts[4]) /10000000.0;
+						upsert(idx, sh);
+					}
+				} else if(s.has_prefix("fwapproach ")) {
+					var parts = s.split_set(" ");
+					var idx = int.parse(parts[1]);
+					if (idx >= 0 && idx < FWApproach.MAXAPPROACH) {
+						FWApproach.approach l={};
+						if(parts.length == 8) {
+							l.appalt = double.parse(parts[2]) /100.0;
+							l.landalt = double.parse(parts[3]) /100.0;
+							l.dref = (parts[4] == "1") ? true : false;
+							l.dirn1 = (int16)int.parse(parts[5]);
+							if(l.dirn1 < 0) {
+								l.dirn1 = -l.dirn1;
+								l.ex1 = true;
+							}
+							l.dirn2 = (int16)int.parse(parts[6]);
+							if(l.dirn2 < 0) {
+								l.dirn2 = -l.dirn2;
+								l.ex2 = true;
+							}
+							l.aref = (parts[7] == "1") ? true : false;
+							FWApproach.set(idx, l);
+							if (idx < Safehome.MAXHOMES) {
+								var sh = lstore.get_item(idx) as SafeHome;
+								if(sh != null) {
+									sh.appalt = l.appalt;
+									sh.landalt =  l.landalt;
+									sh.dref = l.dref;
+									sh.aref = l.aref;
+									sh.dirn1 = l.dirn1;
+									sh.ex1 = l.ex1;
+									sh.dirn2 = l.dirn2;
+									sh.ex2 = l.ex2;
+								} else {
+									MWPLog.message("Failed to find SH for FWA %d\n", idx);
+								}
+							}
 						}
-						l.dirn2 = (int16)int.parse(parts[6]);
-						if(l.dirn2 < 0) {
-							l.dirn2 = -l.dirn2;
-							l.ex2 = true;
-						}
-						l.aref = (parts[7] == "1") ? true : false;
-						FWApproach.set(idx, l);
-						if (idx < Safehome.MAXHOMES) {
-							var sh = lstore.get_item(idx) as SafeHome;
-							if(sh != null) {
-								sh.appalt = l.appalt;
-								sh.landalt =  l.landalt;
-								sh.dref = l.dref;
-								sh.aref = l.aref;
-								sh.dirn1 = l.dirn1;
-								sh.ex1 = l.ex1;
-								sh.dirn2 = l.dirn2;
-								sh.ex2 = l.ex2;
-							} else {
-								MWPLog.message("Failed to find SH for FWA %d\n", idx);
+					}
+				} else if(s.has_prefix("set ")) {
+					if(!Mwp.msp.available) {
+						int val;
+						if (s.contains("nav_fw_land_approach_length")) {
+							if (Cli.get_set_val(s, out val)) {
+								FWPlot.nav_fw_land_approach_length = val/100;
+							}
+						} else if (s.contains("nav_fw_loiter_radius")) {
+							if (Cli.get_set_val(s, out val)) {
+								FWPlot.nav_fw_loiter_radius = val/100;
 							}
 						}
 					}
 				}
-			} else if(s.has_prefix("set ")) {
-				if(!Mwp.msp.available) {
-					int val;
-					if (s.contains("nav_fw_land_approach_length")) {
-						if (Cli.get_set_val(s, out val)) {
-							FWPlot.nav_fw_land_approach_length = val/100;
-						}
-					} else if (s.contains("nav_fw_loiter_radius")) {
-						if (Cli.get_set_val(s, out val)) {
-							FWPlot.nav_fw_loiter_radius = val/100;
-						}
-					}
-				}
 			}
-        }
-		for(var j = 0; j < Safehome.MAXHOMES; j++) {
-			var sh = lstore.get_item(j) as SafeHome;
-			redraw_home(j, sh);
-		}
-
+			for(var j = 0; j < Safehome.MAXHOMES; j++) {
+				var sh = lstore.get_item(j) as SafeHome;
+				redraw_home(j, sh);
+			}
+		} catch {}
     }
 
 	public void reset_fwa() {
@@ -865,7 +874,6 @@ public class  SafeHomeDialog : Adw.Window {
 		redraw_home(idx, sh);
     }
 
-
 	void redraw_home(int idx, SafeHome sh, bool forced = true) {
 		if(switcher.active || forced) {
             if(sh.lat != 0 && sh.lon != 0)
@@ -893,6 +901,13 @@ public class  SafeHomeDialog : Adw.Window {
 		set_status(disp);
     }
 
+    public void load_string(string s, bool disp) {
+		MemoryInputStream ms = new MemoryInputStream.from_data (s.data);
+		DataInputStream ds = new DataInputStream (ms);
+		from_stream(ds);
+		set_status(disp);
+    }
+
 	public void set_status(bool disp) {
         if (disp) {
             display_homes(true);
@@ -900,7 +915,7 @@ public class  SafeHomeDialog : Adw.Window {
         }
 	}
 
-    private void save_file() {
+	public string to_safe_string() {
 		StringBuilder sb = new StringBuilder();
         for(var idx = 0; idx < Safehome.MAXHOMES; idx++) {
             var sh = lstore.get_item(idx) as SafeHome;
@@ -908,10 +923,11 @@ public class  SafeHomeDialog : Adw.Window {
 			sb.append_printf("safehome %d %d %d %d\n", idx, ena,
 							 (int)(sh.lat*10000000), (int)(sh.lon*10000000));
         }
+		return sb.str;
+	}
 
-		UpdateFile.save(filename, "safehome", sb.str);
-
-		sb = new StringBuilder();
+	public string to_fwa_string() {
+		var sb = new StringBuilder();
 		for(var j = 0; j < FWApproach.MAXAPPROACH; j++) {
 			var l = FWApproach.get(j);
 			if(l.dirn1 != 0 || l.dirn2 != 0) {
@@ -930,7 +946,14 @@ public class  SafeHomeDialog : Adw.Window {
 								 d1, d2, aref);
 			}
 		}
-		UpdateFile.save(filename, "fwapproach", sb.str);
+		return sb.str;
+	}
+
+    private void save_file() {
+		var s = to_safe_string();
+		UpdateFile.save(filename, "safehome", s);
+		s = to_fwa_string();
+		UpdateFile.save(filename, "fwapproach", s);
     }
 
     private void run_chooser(Gtk.FileChooserAction action) {

@@ -117,7 +117,6 @@ public class SQLSlider : Gtk.Window {
 			insert_action_group("meta", dg);
 		}
 
-
 		var dbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);
 
 		Gtk.DropDown dd = new Gtk.DropDown.from_strings({"1", "2", "4", "8", "16", "32"});
@@ -334,27 +333,9 @@ public class SQLPlayer : Object {
 		Mwp.init_have_home();
 		Mwp.init_state();
 
-		var fwastr = db.get_misc(idx, "fwa");
-		if (fwastr != null) {
-			var parts = fwastr.split(" ");
-			if(parts.length == 2) {
-				foreach(var p in parts) {
-					var lp = p.split("=");
-					if (lp.length == 2) {
-						int val = int.parse(lp[1]);
-						if (val > 0) {
-							switch (lp[0]) {
-							case "loiter_radius":
-								FWPlot.nav_fw_loiter_radius = val;
-								break;
-							case "approach_length":
-								FWPlot.nav_fw_land_approach_length = val;
-								break;
-							}
-						}
-					}
-				}
-			}
+		var sfwa = db.get_misc(idx, "climisc");
+		if (sfwa != null) {
+			Safehome.manager.load_string(sfwa, Mwp.sh_disp);
 		}
 
 		var mfn = db.get_misc(idx, "mission");
@@ -395,7 +376,8 @@ public class SQLPlayer : Object {
 		Mwp.replayer = Mwp.Player.SQL;
 		Mwp.usemag = true;
 		Odo.stats = {};
-
+		Odo.view.clear_text();
+		setup_odo();
 		trks = new SQL.TrackEntry[nentry]{};
 		db.get_log(idx, ref trks);
 
@@ -408,6 +390,15 @@ public class SQLPlayer : Object {
 		return (double)nentry;
 	}
 
+	private void setup_odo() {
+		db.populate_odo(idx);
+		Odo.view.populate(Odo.stats);
+		var smstr = db.get_misc(idx, "summary");
+		if (smstr != null) {
+			Odo.view.set_text(smstr);
+		}
+	}
+
 	public void on_play(bool s) {
 		if(s) {
 			display(trks[startat]);
@@ -417,9 +408,8 @@ public class SQLPlayer : Object {
 				Source.remove(tid);
 				tid = 0;
 			}
-			db.populate_odo(idx);
-			Odo.view.populate(Odo.stats);
 		}
+		//setup_odo();
 	}
 
 	public void get_next_entry() {

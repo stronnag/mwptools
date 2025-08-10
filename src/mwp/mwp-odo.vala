@@ -138,7 +138,6 @@ namespace Odo {
 			}
 		}
 
-
 		public void display_ui (Odostats o, bool autohide=false) {
 			unhide(o);
 			if(autohide) {
@@ -174,19 +173,25 @@ namespace Odo {
 			dismiss();
 		}
 
+		public void clear_text() {
+			odotview.buffer.text="";
+		}
+
 		public void dismiss() {
 			if(tid != 0)
 				Source.remove(tid);
 			tid = 0;
-			var t = odotview.buffer.text.strip();
-			if (t.length > 0) {
-				add_summary_log("Note", t);
-				t  = t.replace("\n", "\n ");
-				MWPLog.message("User comment: %s\n", t);
+			if (this.visible) {
+				var t = odotview.buffer.text.strip();
+				if (t.length > 0 && Mwp.replayer == Mwp.Player.NONE) {
+					add_summary_log("Note", t);
+					t  = t.replace("\n", "\n ");
+					MWPLog.message("User comment: %s\n", t);
+					Logger.logstring("summary", t);
+				}
+				odo_visible=false;
+				set_visible(false);
 			}
-			odotview.buffer.text="";
-			odo_visible=false;
-			set_visible(false);
 		}
 
 		public void add_summary_event(string ev) {

@@ -487,7 +487,40 @@ namespace SLG {
 		private void find_valid() {
 			var subp = new ProcessLauncher();
 			bool is_valid = false;
-			var res = subp.run_argv({"flightlog2kml", "-interval", "100", "-sql", dbname, bblname.get_path()}, ProcessLaunch.STDOUT|ProcessLaunch.STDERR);
+			string []args = {"flightlog2kml", "-interval", "100", "-sql", dbname};
+			if(MissionManager.last_file != null) {
+				args += "-mission";
+				args += MissionManager.last_file;
+			}
+
+			var sb = new StringBuilder();
+			var s = Safehome.manager.to_safe_string();
+			if (s != "") {
+				sb.append(s);
+			}
+			s = Safehome.manager.to_fwa_string();
+			if (s != "") {
+				sb.append(s);
+			}
+			if(sb.len > 0 || MissionManager.last_file != null) {
+				sb.append_printf("set nav_fw_land_approach_length = %u\nset nav_fw_loiter_radius = %u\n", FWPlot.nav_fw_land_approach_length*100, FWPlot.nav_fw_loiter_radius*100);
+			}
+
+			if(Mwp.gzone != null) {
+				sb.append(Mwp.gzr.to_string());
+			}
+			if(sb.len > 0) {
+				var fn = Path.build_filename(Utils.get_tmp_dir(), ".cli.txt");
+				var fp = FileStream.open (fn, "w");
+				if (fp != null) {
+					fp.write(sb.str.data);
+				}
+				args += "-cli";
+				args += fn;
+			}
+			args += bblname.get_path();
+			MWPLog.message("DBG: %s\n", string.joinv(" ", args));
+			var res = subp.run_argv(args, ProcessLaunch.STDOUT|ProcessLaunch.STDERR);
             size_t len = 0;
 			string? line = null;
 			if(res) {

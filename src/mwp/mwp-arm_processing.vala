@@ -52,15 +52,19 @@ namespace Mwp {
 
 				Mwp.window.armed_state(true);
 				magdt = -1;
-                Odo.stats = {0};
-				Odo.stats.atime = armtime;
-                Odo.stats.alt = -9999;
-				Odo.stats.cname = vname;
+				if (Mwp.replayer != Mwp.Player.SQL) {
+					Odo.stats = {0};
+					Odo.view.clear_text();
+					Odo.stats.atime = armtime;
+					Odo.stats.alt = -9999;
+					Odo.stats.cname = vname;
+				}
 				Odo.stats.live = (replayer == Player.NONE || Environment.get_variable("MWP_ODO_LIVE") != null);
-                Odo.view.reset(Odo.stats);
+				Odo.view.reset(Odo.stats);
 				if (Odo.stats.live) {
 					Odo.view.add_summary_event("Armed");
 				}
+
 				DeltaCache.dlat = DeltaCache.dlon = 0.0;
                 reboot_status();
                 init_have_home(); // FIXME
