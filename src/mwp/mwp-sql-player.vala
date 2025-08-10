@@ -338,12 +338,21 @@ public class SQLPlayer : Object {
 			Safehome.manager.load_string(sfwa, Mwp.sh_disp);
 		}
 
-		var mfn = db.get_misc(idx, "mission-file");
-		if (mfn != null) {
+		var msxml = db.get_misc(idx, "mission");
+		if (msxml != null) {
 			Mwp.hard_display_reset(true);
-            MissionManager.open_mission_file(mfn, false);
+			var _msx = XmlIO.read_xml_string(msxml, true);
+			MissionManager.msx = _msx;
+			MissionManager.mdx = 0;
+			MissionManager.setup_mission_from_mm();
 		} else {
-			Mwp.hard_display_reset(false);
+			var mfn = db.get_misc(idx, "mission-file");
+			if (mfn != null) {
+				Mwp.hard_display_reset(true);
+				MissionManager.open_mission_file(mfn, false);
+			} else {
+				Mwp.hard_display_reset(false);
+			}
 		}
 
 		var gzstr = db.get_misc(idx, "geozone");

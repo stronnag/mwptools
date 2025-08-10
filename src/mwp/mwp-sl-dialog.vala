@@ -488,9 +488,13 @@ namespace SLG {
 			var subp = new ProcessLauncher();
 			bool is_valid = false;
 			string []args = {"flightlog2kml", "-interval", "100", "-sql", dbname};
-			if(MissionManager.last_file != null) {
+
+			var ms = MissionManager.current();
+			if(ms != null) {
+				var fn = Path.build_filename(Utils.get_tmp_dir(), ".mission.txt");
+				XmlIO.to_xml_file(fn, {ms});
 				args += "-mission";
-				args += MissionManager.last_file;
+				args += fn;
 			}
 
 			var sb = new StringBuilder();

@@ -167,8 +167,10 @@ namespace Logger {
 			Logger.logstring("geozone", sb.str);
 		}
 
-		if(MissionManager.last_file != null) {
-			Logger.logstring("mission-file", MissionManager.last_file);
+		var ms = MissionManager.current();
+		if (ms != null) {
+			var s = XmlIO.to_xml_string({ms}, false);
+			Logger.logstring("mission", s);
 		}
 		var sb = new StringBuilder();
 		var s = Safehome.manager.to_safe_string();
