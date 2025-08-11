@@ -27,6 +27,7 @@ namespace SLG {
 	bool is_broken;
 	uint selidx;
 	bool speedup;
+	bool useartefacts;
 	uint duras;
 	string videofile;
 	bool vactive;
@@ -74,6 +75,8 @@ namespace SLG {
 		private unowned Gtk.DropDown tzoption;
 		[GtkChild]
 		private unowned Gtk.CheckButton speedup;
+		[GtkChild]
+		private unowned Gtk.CheckButton useartefacts;
 		[GtkChild]
 		private unowned Gtk.ColumnView bblist;
 		[GtkChild]
@@ -166,7 +169,7 @@ namespace SLG {
 			isok.set_factory(f3);
 			f3.setup.connect((f,o) => {
 					Gtk.ListItem list_item = (Gtk.ListItem)o;
-					var btn = new Gtk.Button.from_icon_name("dialog-error-symbolic");
+					var btn = new Gtk.Button.from_icon_name("messagebox_warning-symbolic");
 					list_item.set_child(btn);
 					btn.clicked.connect(() => {
 							var lidx = list_item.position;
@@ -182,6 +185,7 @@ namespace SLG {
 					if(mi.iserr) {
 						btn.visible = true;
 						btn.sensitive = true;
+						btn.tooltip_text = "Log has errors";
 					}
 				});
 
@@ -215,6 +219,7 @@ namespace SLG {
 						if(j == n) {
 							e.issel = true;
 							double hlat, hlon;
+							check_artefacts(e.idx);
 							db.get_bounding_box(e.idx, out bbox);
 							SQL.TrackEntry t = {};
 							db.get_log_entry(e.idx, 1, out t);
@@ -232,6 +237,21 @@ namespace SLG {
 						}
 					}
 				});
+		}
+
+		private void check_artefacts(int idx) {
+			useartefacts.sensitive = false;
+			useartefacts.active = false;
+			var msxml = db.get_misc(idx, "mission");
+			var mfn = db.get_misc(idx, "mission-file");
+			var gzstr = db.get_misc(idx, "geozone");
+			var sfwa = db.get_misc(idx, "climisc");
+			if(msxml != null || mfn != null || gzstr != null || sfwa != null) {
+				useartefacts.sensitive = true;
+				if(Mwp.gzone == null && MissionManager.current() == null) {
+					useartefacts.active = true;
+				}
+			}
 		}
 
 		private string format_duration(string str) {
@@ -266,30 +286,7 @@ namespace SLG {
 
 			apply.clicked.connect((id) => {
 					SLG.speedup = this.speedup.active;
-					/**
-					SLG.vactive = vidbutton.active;
-					SLG.skiptime = int.parse(skip_entry.text);
-					if(SLG.vactive) {
-						bool neg = false;
-						var s = min_entry.text;
-						if (s.has_prefix("-")) {
-							neg = true;
-						}
-						var mins = (int.parse(min_entry.text)).abs();
-						var secs = DStr.strtod(sec_entry.text);
-						SLG.nsecs = (int64)((mins*60 + secs)*1e9);
-						if(neg && SLG.nsecs > 0) { // for the '-0' case
-							SLG.nsecs *= -1;
-						}
-					}
-					if(videofile != null && videofile != "") {
-						MWPLog.message("BBL videofile %s offset=%d\n", videofile, nsecs);
-					}
-					if(SLG.speedup) {
-						videofile = null;
-						vactive = false;
-					}
-					**/
+					SLG.useartefacts = this.useartefacts.active;
 					var o = lstore.get_item(selidx) as SLGEntry;
 					if (o != null) {
 						SLG.duras = uint.parse(o.duration);
@@ -437,7 +434,8 @@ namespace SLG {
 					var dp = ds.split(" ");
 					var dstr = "%s %s%s".printf(dp[0], dp[1], dp[2]);
 					orig_times += dstr;
-					var b = new SLGEntry(m.id, dstr, m.duration.to_string(), false);
+					var iserr = (db.get_errors(m.id) != null);
+					var b = new SLGEntry(m.id, dstr, m.duration.to_string(), iserr);
 					lstore.append(b);
 				}
 				set_log_parsed();

@@ -55,8 +55,14 @@ template $SLGWindow: Adw.Window {
             ]
           };
 	}
-	Gtk.CheckButton speedup {
+	Gtk.CheckButton useartefacts {
 	  hexpand: true;
+	  halign: end;
+          label: "Use Artefacts";
+	  sensitive: false;
+	}
+	Gtk.CheckButton speedup {
+	  hexpand: false;
 	  halign: end;
           label: "Autostart";
 	}
@@ -108,89 +114,6 @@ template $SLGWindow: Adw.Window {
           }
 	}
       }
-      /***
-      // Row 5
-      Box {
-	orientation: horizontal;
-	hexpand: false;
-	halign: end;
-	spacing: 8;
-	[End]
-	Label {
-	  halign: end;
-	  label: "Jump to (ms): ";
-	}
-	Entry skip_entry {
-          hexpand: true;
-          halign: end;
-          editable: true;
-          max-width-chars: 20;
-          placeholder-text: "000000";
-	}
-      }
-
-      // Row 5
-      Box {
-	orientation: horizontal;
-	[start]
-	Box {
-          orientation: horizontal;
-	  Label {
-	    label: "Video: ";
-	  }
-	  Button video_btn {
-	    Box {
-	      spacing: 4;
-
-              Label video_name {
-		label: "(none)";
-		halign: fill;
-		hexpand: true;
-		tooltip-text: "Optional Video file";
-              }
-	      [End]
-              Image {
-		icon-name: "document-open-symbolic";
-              }
-	    }
-	  }
-	}
-	[End]
-	Box {
-          orientation: horizontal;
-          halign: end;
-          hexpand: false;
-	  spacing: 8;
-
-          CheckButton vidbutton {
-            hexpand: false;
-            halign: end;
-            label: "Start @ ";
-            active: false;
-          }
-
-          Entry min_entry {
-            hexpand: false;
-            halign: end;
-            editable: true;
-            max-width-chars: 4;
-            placeholder-text: "(MM)";
-          }
-
-          Label {
-            label: ":";
-          }
-
-          Entry sec_entry {
-            hexpand: false;
-            halign: end;
-            editable: true;
-            max-width-chars: 6;
-            placeholder-text: "(SS.sss)";
-          }
-	}
-      }
-    ***/
     };
     [bottom]
     // Row 5

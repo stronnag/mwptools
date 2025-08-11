@@ -333,41 +333,41 @@ public class SQLPlayer : Object {
 		Mwp.init_have_home();
 		Mwp.init_state();
 
-		var sfwa = db.get_misc(idx, "climisc");
-		if (sfwa != null) {
-			Safehome.manager.load_string(sfwa, Mwp.sh_disp);
-		}
-
-		var msxml = db.get_misc(idx, "mission");
-		if (msxml != null) {
-			Mwp.hard_display_reset(true);
-			var _msx = XmlIO.read_xml_string(msxml, true);
-			MissionManager.msx = _msx;
-			MissionManager.mdx = 0;
-			MissionManager.setup_mission_from_mm();
-		} else {
-			var mfn = db.get_misc(idx, "mission-file");
-			if (mfn != null) {
+		if(SLG.useartefacts) {
+			var sfwa = db.get_misc(idx, "climisc");
+			if (sfwa != null) {
+				Safehome.manager.load_string(sfwa, Mwp.sh_disp);
+			}
+			var msxml = db.get_misc(idx, "mission");
+			if (msxml != null) {
 				Mwp.hard_display_reset(true);
-				MissionManager.open_mission_file(mfn, false);
+				var _msx = XmlIO.read_xml_string(msxml, true);
+				if (_msx != null) {
+					MissionManager.msx = _msx;
+					MissionManager.mdx = 0;
+					MissionManager.setup_mission_from_mm();
+				}
 			} else {
-				Mwp.hard_display_reset(false);
+				var mfn = db.get_misc(idx, "mission-file");
+				if (mfn != null) {
+					Mwp.hard_display_reset(true);
+					MissionManager.open_mission_file(mfn, false);
+				} else {
+					Mwp.hard_display_reset(false);
+				}
 			}
-		}
 
-		var gzstr = db.get_misc(idx, "geozone");
-		if (gzstr != null) {
-			if(Mwp.gzone != null) {
-				Mwp.set_gzsave_state(false);
-				Mwp.gzone.remove();
-				Mwp.gzone = null;
+			var gzstr = db.get_misc(idx, "geozone");
+			if (gzstr != null) {
+				if(Mwp.gzone != null) {
+					Mwp.set_gzsave_state(false);
+					Mwp.gzone.remove();
+					Mwp.gzone = null;
+				}
+				Mwp.gzr.from_string(gzstr);
+				Mwp.gzone = Mwp.gzr.generate_overlay();
+				Mwp.gzone.display();
 			}
-			Mwp.gzr.from_string(gzstr);
-			Mwp.gzone = Mwp.gzr.generate_overlay();
-			Idle.add(() => {
-					Mwp.gzone.display();
-					return false;
-				});
 		}
 
 		if(res) {
