@@ -7,11 +7,17 @@ mwptools revisited
 
 ## Overview
 
-**mwptools** provides a mission planner, ground control station, real time flight logger, terrain analysis, line of sight analysis and log replay / blackbox replay functions for [INAV](https://github.com/iNavFlight/inav) FC equipped model aircraft / UAS.
+**mwptools** provides:
 
-The current default (`master`) branch is the (re)implementation of mwp using Gtk4 / libshumate.
+* Mission planning
+* Ground control statio
+* Real time flight logger
+* Terrain analysis
+* Line of sight analysis
+* Log replay / blackbox replay
+* Genera; aviation (ADSB) monitoring and alarm
 
-See the [migration guide](https://github.com/stronnag/mwptools/blob/master/docs/mwp-Gtk4-migration-guide.md) for dependencies (and migration from the legacy version (`legacy` branch).
+for [INAV](https://github.com/iNavFlight/inav) FC equipped model aircraft / UAS.
 
 mwp supports the following telemetry protocols:
 
@@ -36,7 +42,7 @@ mwp provides logging and the replay of:
 
 * mwp log files
 * Blackbox logs
-* OpenTX CSV (sdcard) logs
+* OpenTX / EgdeTX CSV (sdcard) logs
 * BulletGCSS logs
 * Ardupilot (`.bin`) log
 
@@ -46,7 +52,7 @@ mwp also proivdes legacy suport for Multiwii navigation functions.
 
 ## User Guide
 
-There is am [online user guide](https://stronnag.github.io/mwptools/).
+There is an [online user guide](https://stronnag.github.io/mwptools/).
 
 ## Tools
 
@@ -55,20 +61,25 @@ There is am [online user guide](https://stronnag.github.io/mwptools/).
 
 ## Platforms and OS
 
-The tools are designed to be portable and as far as possible platform and hardware agnostic. The suite is developed on Arch Linux and is additionally tested on Alpine (Edge), Debian (Trixie / Sid), Fedora (current)  and FreeBSD (current release) (at least). It is also possible to build and run mwp on MacOS (from mwptools 2024.11.20) and Windows (Msys2 / standalone installer from 2024.12.07).
+The tools are designed to be portable and as far as possible platform and hardware agnostic. The suite is developed on Arch Linux and is additionally tested on Debian (Trixie / Sid), Fedora (current), Void and FreeBSD (current release) (at least). It is also possible to build and run mwp on MacOS (from mwptools 2024.11.20) and Windows (Msys2 / standalone installer from 2024.12.07).
 
-mwp should  build and run on any platform that provides modern Gtk and POSIX APIs.
+mwp should  build and run on any platform that provides modern GTK4 and POSIX APIs.
 
-mwptools is tested on x86_64, ia32, aarch64 and riscv64 architectures (Linux / FreeBSD).
+mwptools is tested on aarch64, riscv64 and x86_64 architectures om Linux and FreeBSD.
 
 ## Installation
 
-See the [migration guide](docs/mwp-Gtk4-migration-guide.md) for dependencies (and migration from the legacy version).
+Binary installers, Debian packages (`*.deb`) and a Windows installer are provided in the release area.
+
+Otherwise the [online user guide](https://stronnag.github.io/mwptools/) provides dependency and build instructions.
+
+There is a [migration guide](docs/mwp-Gtk4-migration-guide.md) describing migration from the legacy version.
 
 ```
 meson setup _build --prefix=~/.local --strip
 ninja -C _build install
 ```
+
 ## Licence
 
 GPL v3 or later
