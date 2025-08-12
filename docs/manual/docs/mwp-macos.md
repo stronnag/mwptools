@@ -57,7 +57,6 @@ Note: homebrew does not supply the librsvg VAPI (vala API) files. It will be nec
 brew install bash-completion
 ```
 
-
 ### Blueprint compiler
 
 The required `blueprint-compiler` is not in `homebrew`, so is install locally:

@@ -11,7 +11,7 @@ Somewhat experimental, however most things work.
 
 ## Building
 
-It is necessary to install the [Msys2](https://www.msys2.org/) toolchain.
+It is necessary to install the [Msys2](https://www.msys2.org/) toolchain. This is not required for a binary install.
 
 ### System Build Dependencies
 
@@ -91,7 +91,7 @@ The following  binary components are from the [Msys2](https://www.msys2.org/) Pr
 Also included (replay tools):
 
 * INAV `blackbox_decode` : GPL3 [https://github.com/iNavFlight/blackbox-tools](https://github.com/iNavFlight/blackbox-tools)
-* `fl2ltm` : GPL3 [https://github.com/stronnag/bbl2kml](https://github.com/stronnag/bbl2kml)
+* `fl2ltm` `flightlog2kml` : GPL3 [https://github.com/stronnag/bbl2kml](https://github.com/stronnag/bbl2kml)
 
 ## Post Install Tasks
 
@@ -130,7 +130,7 @@ The above external applications will need to be on the `PATH` available to the i
 * Bluetooth in general may be unreliable, in some part due to the difficulty in consistently enumerating BT devices.
 * BLE is not available
 * Terrain Analysis and Line of Sight Analysis is only available "off-line"
-* In the event that mwp should crash, it may leave behind some spawned applications, for example one of more of `fl2ltm`, `blackbox_decode`, `espeak`, `voice`, `bproxy`, `gmproxy`, `gdbus`. In particular, mwp may not restart if an `gdbus` orphaned remains. In such cases, the user is advised to clean up using the Task Manager.
+* In the event that mwp should crash, it may leave behind some spawned applications, for example one of more of `fl2ltm`, `blackbox_decode`, `espeak`, `voice`, `bproxy`, `gmproxy`, `gdbus`. In particular, mwp may not restart if a `gdbus` orphaned remains. In such cases, the user is advised to clean up using the Windows Task Manager.
 
 ## Data Locations
 
@@ -163,7 +163,7 @@ None of these locations are cleared by an uninstall.
 	PS C:\Users\win11> gsettings set org.stronnag.mwp smartport-fuel-unit 'mAh'
     ```
 
-You may also the graphical [mwpset](mwpset.md) application to maintain settings.
+You may also the graphical [mwpset](mwpset.md) application to maintain settings. This is part of mwp.
 
 ## Other
 

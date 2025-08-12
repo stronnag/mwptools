@@ -8,20 +8,21 @@ This document describes the migration from legacy (Gtk+-3.0) mwp to contemporary
 
 ### Supported OS
 
-* Modern Open Source POSIX operating system, for example:
+* Modern Open Source POSIX operating system, (illustrative, non-inclusive):
     * Alpine Linux 3.20+
     * Arch Linux
     * Debian "Trixie" / "Sid" (and derivatives)
     * Fedora 40+
     * FreeBSD 14+
 	* Ubuntu 24.04 and later (and derivatives).
+	* Void Linux
 
 ### Unsupported but usable OS
 
 * MacOS (Ventura or later), requires `homebrew`. [Platform specifics](mwp-macos.md)
 * Windows (10 or later), requires `MSys2`. [Platform specifics](mwp-windows-msys.md)
 
-Note that most of the documentation assumes open source OS (Linux, FreeBSD) semantics. See the "Platform Specifics" documents for differences.
+Note that most of the documentation assumes open source POSIX OS (Linux, FreeBSD) semantics. See the "Platform Specifics" documents for differences.
 
 ### Specific components
 
@@ -37,7 +38,7 @@ The following are minimum versions.
 * libsecret-1
 * librsvg
 
-For replaying blackbox log, [bbl2kml](https://github.com/stronnag/bbl2kml) 1.0.24 or later is rquired.
+For replaying blackbox log, [bbl2kml](https://github.com/stronnag/bbl2kml) 1.0.32 or later is rquired.
 
 ## GSettings /DConf schema
 
@@ -167,9 +168,7 @@ There are a couple of Gtk related environment variables that may affect the perf
   On some older / less well supported GPUs it may be necessary to use the `cairo` renderer;  `cairo` is also necessary on the author's touch screen tablet for correct touch screen WP dragging. Note that there may well be trade offs: on one of the author's machines, WP dragging seems slightly snappier using the `cairo` `GSK_RENDERER`, however the CPU usage for BBL replay is much greater using `cairo` compared to `vulkan`.
 * `GDK_BACKEND` : In the event that your hardware / software stack is almost hopelessly broken such that mwp is aborted with a Gdk message like  "Error 71 (Protocol error) dispatching to Wayland display", then setting this variable to `x11` may allow `mwp` to continue.
 
-From mwp 24.10.28, mwp will set `GSK_RENDERER=cairo` for its own use if the OS or user has not previously set `GSK_RENDERER`.
-
-The environment variable(s) may be set in `~/.config/mwp/cmdopts` for mwp exclusive use if required.
+Environment variable(s) may be set in `~/.config/mwp/cmdopts` for mwp exclusive use if required.
 ```
 GSK_RENDERER=cairo
 ```
@@ -191,7 +190,6 @@ If you use a map sources file in `~/.config/mwp`, you may optionally convert the
 For the Debian package runtime dependencies:
 
 ```
-
 libadwaita-1-0 (>= 1.5~beta)
 libc6 (>= 2.38)
 libcairo2 (>= 1.2.4)
@@ -213,6 +211,7 @@ libvte-2.91-gtk4-0
 libxml2 (>= 2.7.4)
 librsvg
 ```
+
 Example packages:
 
 ```
@@ -223,7 +222,7 @@ sudo apt install -y blueprint-compiler libprotobuf-c-dev \
 
 ### Ubuntu
 
-The Ubuntu 24.04 version of `meson` is too old. A more update version may be installed locally using `pipx`. For Ubuntu 24.10, the distro version is adequate.
+The Ubuntu 24.04 version of `meson` is too old. A more update version may be installed locally using `pipx`. For Ubuntu 24.10 and later, the distro version is adequate.
 
 ```
 sudo apt install pipx

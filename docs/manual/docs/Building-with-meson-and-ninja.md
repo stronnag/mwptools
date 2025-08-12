@@ -10,7 +10,7 @@ Otherwise, if you're using a different (not Debian based) distribution, just cur
 
 The **mwptools** suite is built using the [meson](https://mesonbuild.com/SimpleStart.html) and [ninja](https://ninja-build.org/) toolchain. For most users these will be automatically provided by a `build-essentials` type of package.
 
-For Debian and derivatives there is a ["one stop" installation script](#easy-first-time-install-on-debian-and-derivatives), (based on Debian "Sid", ymmv), as well as a x86_64 "Release" `.deb` archive. For older Debian based OS, you may need slightly different or additional packages(`libxml2-dev/`, `libsdl2-dev` vice `libsdl2-compat-dev`).
+For Debian and derivatives there is a ["one stop" installation script](#easy-first-time-install-on-debian-and-derivatives), (based on Debian "Trixie", ymmv), as well as a x86_64 "Release" `.deb` archive. For older Debian based OS, you may need slightly different or additional packages(`libxml2-dev/`, `libsdl2-dev` vice `libsdl2-compat-dev`).
 
 For Fedora, the is a also a documented list of packages.
 
@@ -54,7 +54,7 @@ Set up the `meson` build system from the top level. Note that `_build` is a dire
 * For a Linux system wide install, set `--prefix /usr`
 * For FreeBSD (*BSD), for a system-wide install,  don't set `--prefix` as the default (`/usr/local`) is suitable
 
-Unless you need a multi-user setup, a local install is preferable, as you don't need `sudo` to install, and you'll not risk messing up build permissions.
+Unless you need a multi-user setup, a local install is preferable, as you don't need `sudo` / `doas` to install, and you'll not risk messing up build permissions.
 
 ### "Easy" first-time install on Debian and derivatives
 
@@ -94,9 +94,9 @@ The user needs to have read / write permissions on the serial port in order to c
 | Application | Usage |
 | ----------- | ----- |
 | `mwp` | Mission planner, GCS, log replay etc. |
-| `mwp-plot-elevations` [1](#note1) | Mission elevation / terrain analysis |
+| `mwp-plot-elevations` | Mission elevation / terrain analysis |
 | `cliterm` | Interact with the CLI |
-| `fc-get`, `fc-set` [2](#note2) | Backup / restore CLI diff |
+| `fc-get`, `fc-set` | Backup / restore CLI diff |
 | `inav_states.rb` | Summarise BBL state changes, also installed `inav_states_data.rb` |
 | `fcflash` | FC flashing tool, requires `dfu-util` and / or `stmflash32` |
 | `flashgo` | Tools to examine, download logs and erase from dataflash |
@@ -109,11 +109,6 @@ The user needs to have read / write permissions on the serial port in order to c
     $prefix/lib/libmwpvlib.*so.x.0.0
     $prefix/lib/libmwpclib.a
 
-
-!!! note "Notes:"
-    <a name="note1">1.</a> This may either be the new Go executable or the legacy, less functional Ruby script.
-
-	<a name="note2">2.</a> `fc-set` is a hard link to `fc-get`
 
 ### Optional
 

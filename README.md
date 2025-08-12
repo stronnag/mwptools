@@ -69,7 +69,7 @@ mwptools is tested on aarch64, riscv64 and x86_64 architectures om Linux and Fre
 
 ## Installation
 
-Binary installers, Debian packages (`*.deb`) and a Windows installer are provided in the release area.
+Binary installers, Debian packages (`*.deb`) and a Windows installer are provided in the [Release Area](https://github.com/stronnag/mwptools/releases).
 
 Otherwise the [online user guide](https://stronnag.github.io/mwptools/) provides dependency and build instructions.
 
