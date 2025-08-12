@@ -3,8 +3,36 @@ public class LogRebase : Object {
 	static double nlon = -99999;
 	static string olddb;
 	static bool verbose;
-	static int idx = 1;
+	static string aidx;
 	Sqlite.Database db;
+
+	private int[] process_aidx() {
+		string? a = aidx;
+		int[] res = {};
+		bool b = false;
+
+		while(!b) {
+			int k;
+			unowned string rem;
+			b = int.try_parse(a, out k, out rem);
+			res += k;
+			if (rem[0] == ',') {
+				a = rem.substring(1);
+			} else if (rem[0] == '-') {
+				a = rem.substring(1);
+				int j;
+				b = int.try_parse(a, out j, out rem);
+				for(int i = k+1; i <= j; i++) {
+					res += i;
+				}
+				if (!b)
+					a = rem.substring(1);
+			} else {
+				break;
+			}
+		}
+		return res;
+	}
 
 	public LogRebase(string dbname) {
 		var src = File.new_for_path (olddb);
@@ -24,30 +52,45 @@ public class LogRebase : Object {
 
 	private void run() {
 		if (db != null) {
-			Sqlite.Statement stmt;
 			double hlat=0, hlon=0;
-			var str = "select hlat,hlon from logs where id=$1 limit 1";
-			var rc = db.prepare_v2 (str, str.length, out stmt);
-			if (rc == Sqlite.OK) {
-				stmt.bind_int (1, idx);
-				int cols = stmt.column_count ();
-				if (cols == 2) {
-					while (stmt.step () == Sqlite.ROW) {
-						hlat = stmt.column_double(0);
-						hlon = stmt.column_double(1);
-					}
-					str = "update logs set hlat=%f, hlon=%f where id=%d".printf(nlat, nlon, idx);
-					db.exec("BEGIN");
-					rc = db.exec(str, null);
-					update_pos(hlat, hlon, nlat, nlon);
-					db.exec("COMMIT");
+			int imin=1,imax=1;
+			int []indices={};
 
+			if(aidx == null || aidx == "all") {
+				db.exec("select min(id),max(id) from meta", (n_columns, values, column_names) => {
+						if (n_columns == 2) {
+							imin = int.parse(values[0]);
+							imax = int.parse(values[1]);
+						}
+						return 0;
+					}, null);
+
+				for(int i = imin; i <=imax; i++) {
+					indices += i;
 				}
+			} else {
+				indices = process_aidx();
+			}
+
+			foreach (var idx in indices) {
+				var str = "select hlat,hlon from logs where id=%d limit 1".printf(idx);
+				db.exec(str, (n_columns, values, column_names) => {
+						if (n_columns == 2) {
+							hlat = double.parse(values[0]);
+							hlon = double.parse(values[1]);
+							str = "update logs set hlat=%f, hlon=%f where id=%d".printf(nlat, nlon, idx);
+							db.exec("BEGIN");
+							db.exec(str, null);
+							update_pos(idx, hlat, hlon, nlat, nlon);
+							db.exec("COMMIT");
+						}
+						return 0;
+					}, null);
 			}
 		}
 	}
 
-	private void update_pos(double olat, double olon, double nlat, double nlon) {
+	private void update_pos(int idx, double olat, double olon, double nlat, double nlon) {
 		var rebase = new Rebase();
 		rebase.set_origin(olat, olon);
 		rebase.set_reloc(nlat, nlon);
@@ -79,7 +122,7 @@ public class LogRebase : Object {
 			{"old-db", 'd', 0, OptionArg.FILENAME, out olddb, "Extant databse", "DATABASE"},
 			{"lat", 0, 0, OptionArg.DOUBLE, out nlat, "Base latitude", "LAT"},
 			{"lon", 0, 0, OptionArg.DOUBLE, out nlon, "Base longitude", "LON"},
-			{"id", 'i', 0, OptionArg.INT, out idx, "Log index", "ID (default 1)"},
+			{"id", 'i', 0, OptionArg.STRING, out aidx, "Log index", "ID (default all)"},
 			{"verbose", 0, 0, OptionArg.NONE, ref verbose, "verbose", null},
 			{null}
 		};
