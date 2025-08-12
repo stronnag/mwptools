@@ -1870,13 +1870,14 @@
 <h2 id="system-requirements">System Requirements<a class="headerlink" href="#system-requirements" title="Permanent link">#</a></h2>
 <h3 id="supported-os">Supported OS<a class="headerlink" href="#supported-os" title="Permanent link">#</a></h3>
 <ul>
-<li>Modern Open Source POSIX operating system, for example:<ul>
+<li>Modern Open Source POSIX operating system, (illustrative, non-inclusive):<ul>
 <li>Alpine Linux 3.20+</li>
 <li>Arch Linux</li>
 <li>Debian "Trixie" / "Sid" (and derivatives)</li>
 <li>Fedora 40+</li>
 <li>FreeBSD 14+</li>
 <li>Ubuntu 24.04 and later (and derivatives).</li>
+<li>Void Linux</li>
 </ul>
 </li>
 </ul>
@@ -1885,7 +1886,7 @@
 <li>MacOS (Ventura or later), requires <code>homebrew</code>. <a href="../mwp-macos/">Platform specifics</a></li>
 <li>Windows (10 or later), requires <code>MSys2</code>. <a href="../mwp-windows-msys/">Platform specifics</a></li>
 </ul>
-<p>Note that most of the documentation assumes open source OS (Linux, FreeBSD) semantics. See the "Platform Specifics" documents for differences.</p>
+<p>Note that most of the documentation assumes open source POSIX OS (Linux, FreeBSD) semantics. See the "Platform Specifics" documents for differences.</p>
 <h3 id="specific-components">Specific components<a class="headerlink" href="#specific-components" title="Permanent link">#</a></h3>
 <p>The following are minimum versions.</p>
 <ul>
@@ -1899,7 +1900,7 @@
 <li>libsecret-1</li>
 <li>librsvg</li>
 </ul>
-<p>For replaying blackbox log, <a href="https://github.com/stronnag/bbl2kml">bbl2kml</a> 1.0.24 or later is rquired.</p>
+<p>For replaying blackbox log, <a href="https://github.com/stronnag/bbl2kml">bbl2kml</a> 1.0.32 or later is rquired.</p>
 <h2 id="gsettings-dconf-schema">GSettings /DConf schema<a class="headerlink" href="#gsettings-dconf-schema" title="Permanent link">#</a></h2>
 <p>The gsettings / dconf schema is now <code>/org/stronnag/mwp/</code>. The keys are (mainly) the same as for legacy mwp/gtk3 and may be migrated:</p>
 <div class="highlight"><pre><span></span><code>dconf dump /org/mwptools/planner/ | dconf load /org/stronnag/mwp/
@@ -2032,8 +2033,7 @@ volts, 3, 0
   On some older / less well supported GPUs it may be necessary to use the <code>cairo</code> renderer;  <code>cairo</code> is also necessary on the author's touch screen tablet for correct touch screen WP dragging. Note that there may well be trade offs: on one of the author's machines, WP dragging seems slightly snappier using the <code>cairo</code> <code>GSK_RENDERER</code>, however the CPU usage for BBL replay is much greater using <code>cairo</code> compared to <code>vulkan</code>.</li>
 <li><code>GDK_BACKEND</code> : In the event that your hardware / software stack is almost hopelessly broken such that mwp is aborted with a Gdk message like  "Error 71 (Protocol error) dispatching to Wayland display", then setting this variable to <code>x11</code> may allow <code>mwp</code> to continue.</li>
 </ul>
-<p>From mwp 24.10.28, mwp will set <code>GSK_RENDERER=cairo</code> for its own use if the OS or user has not previously set <code>GSK_RENDERER</code>.</p>
-<p>The environment variable(s) may be set in <code>~/.config/mwp/cmdopts</code> for mwp exclusive use if required.
+<p>Environment variable(s) may be set in <code>~/.config/mwp/cmdopts</code> for mwp exclusive use if required.
 <div class="highlight"><pre><span></span><code>GSK_RENDERER=cairo
 </code></pre></div></p>
 <p>Otherwise, the variable(s) may be set in <code>/etc/environment</code>, <code>.profile</code> or a <code>.config/environment.d</code> file if required.</p>
@@ -2046,7 +2046,7 @@ volts, 3, 0
 <h2 id="os-specifics">OS Specifics<a class="headerlink" href="#os-specifics" title="Permanent link">#</a></h2>
 <h3 id="debian">Debian<a class="headerlink" href="#debian" title="Permanent link">#</a></h3>
 <p>For the Debian package runtime dependencies:</p>
-<p><div class="highlight"><pre><span></span><code>libadwaita-1-0 (&gt;= 1.5~beta)
+<div class="highlight"><pre><span></span><code>libadwaita-1-0 (&gt;= 1.5~beta)
 libc6 (&gt;= 2.38)
 libcairo2 (&gt;= 1.2.4)
 libgdk-pixbuf-2.0-0 (&gt;= 2.22.0)
@@ -2067,13 +2067,13 @@ libvte-2.91-gtk4-0
 libxml2 (&gt;= 2.7.4)
 librsvg
 </code></pre></div>
-Example packages:</p>
+<p>Example packages:</p>
 <div class="highlight"><pre><span></span><code>sudo apt install -y blueprint-compiler libprotobuf-c-dev \
   libvte-2.91-gtk4-dev libshumate-dev libpaho-mqtt-dev libgtk-4-dev \
   libadwaita-1-dev libsecret-1-dev librsvg2-dev
 </code></pre></div>
 <h3 id="ubuntu">Ubuntu<a class="headerlink" href="#ubuntu" title="Permanent link">#</a></h3>
-<p>The Ubuntu 24.04 version of <code>meson</code> is too old. A more update version may be installed locally using <code>pipx</code>. For Ubuntu 24.10, the distro version is adequate.</p>
+<p>The Ubuntu 24.04 version of <code>meson</code> is too old. A more update version may be installed locally using <code>pipx</code>. For Ubuntu 24.10 and later, the distro version is adequate.</p>
 <div class="highlight"><pre><span></span><code>sudo apt install pipx
 pipx install meson
 </code></pre></div>

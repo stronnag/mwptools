@@ -1845,7 +1845,7 @@
 <h2 id="status">Status<a class="headerlink" href="#status" title="Permanent link">#</a></h2>
 <p>Somewhat experimental, however most things work.</p>
 <h2 id="building">Building<a class="headerlink" href="#building" title="Permanent link">#</a></h2>
-<p>It is necessary to install the <a href="https://www.msys2.org/">Msys2</a> toolchain.</p>
+<p>It is necessary to install the <a href="https://www.msys2.org/">Msys2</a> toolchain. This is not required for a binary install.</p>
 <h3 id="system-build-dependencies">System Build Dependencies<a class="headerlink" href="#system-build-dependencies" title="Permanent link">#</a></h3>
 <ul>
 <li>Add <code>export LC_ALL=C.utf8</code> to <code>.profile</code> (<code>.bash_profile</code>) so the <code>blueprint</code> UI definitions will compile.</li>
@@ -1906,7 +1906,7 @@ Licences:</p>
 <p>Also included (replay tools):</p>
 <ul>
 <li>INAV <code>blackbox_decode</code> : GPL3 <a href="https://github.com/iNavFlight/blackbox-tools">https://github.com/iNavFlight/blackbox-tools</a></li>
-<li><code>fl2ltm</code> : GPL3 <a href="https://github.com/stronnag/bbl2kml">https://github.com/stronnag/bbl2kml</a></li>
+<li><code>fl2ltm</code> <code>flightlog2kml</code> : GPL3 <a href="https://github.com/stronnag/bbl2kml">https://github.com/stronnag/bbl2kml</a></li>
 </ul>
 <h2 id="post-install-tasks">Post Install Tasks<a class="headerlink" href="#post-install-tasks" title="Permanent link">#</a></h2>
 <h3 id="pkgbuild-msys-2-local-build">PKGBuild / Msys 2 local build<a class="headerlink" href="#pkgbuild-msys-2-local-build" title="Permanent link">#</a></h3>
@@ -1936,7 +1936,7 @@ Licences:</p>
 <li>Bluetooth in general may be unreliable, in some part due to the difficulty in consistently enumerating BT devices.</li>
 <li>BLE is not available</li>
 <li>Terrain Analysis and Line of Sight Analysis is only available "off-line"</li>
-<li>In the event that mwp should crash, it may leave behind some spawned applications, for example one of more of <code>fl2ltm</code>, <code>blackbox_decode</code>, <code>espeak</code>, <code>voice</code>, <code>bproxy</code>, <code>gmproxy</code>, <code>gdbus</code>. In particular, mwp may not restart if an <code>gdbus</code> orphaned remains. In such cases, the user is advised to clean up using the Task Manager.</li>
+<li>In the event that mwp should crash, it may leave behind some spawned applications, for example one of more of <code>fl2ltm</code>, <code>blackbox_decode</code>, <code>espeak</code>, <code>voice</code>, <code>bproxy</code>, <code>gmproxy</code>, <code>gdbus</code>. In particular, mwp may not restart if a <code>gdbus</code> orphaned remains. In such cases, the user is advised to clean up using the Windows Task Manager.</li>
 </ul>
 <h2 id="data-locations">Data Locations<a class="headerlink" href="#data-locations" title="Permanent link">#</a></h2>
 <h3 id="configuration-files">Configuration Files<a class="headerlink" href="#configuration-files" title="Permanent link">#</a></h3>
@@ -1968,7 +1968,7 @@ PS C:\Users\win11&gt; gsettings set org.stronnag.mwp smartport-fuel-unit &#39;mA
 </code></pre></div>
 </li>
 </ul>
-<p>You may also the graphical <a href="../mwpset/">mwpset</a> application to maintain settings.</p>
+<p>You may also the graphical <a href="../mwpset/">mwpset</a> application to maintain settings. This is part of mwp.</p>
 <h2 id="other">Other<a class="headerlink" href="#other" title="Permanent link">#</a></h2>
 <p>Note that mwp creates and consumes IP services. It may be necessary to ensure that <code>mwp.exe</code> is white-listed in the Windows firewall.</p>
 <h2 id="reporting-issues">Reporting Issues<a class="headerlink" href="#reporting-issues" title="Permanent link">#</a></h2>

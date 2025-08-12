@@ -1816,7 +1816,7 @@
 <p>For Arch Linux, you can install the AUR package <code>mwptools-git</code>. This tracks <code>master</code>.</p>
 <p>Otherwise, if you're using a different (not Debian based) distribution, just curious about building mwptools, you want to explore other tools and scripts in the repository or you're using a different architecture (ia32, Arm7, aarch64, riscv64, ppc etc.), or you want the most recent code, then you can build from source. This is the recommended installation method.</p>
 <p>The <strong>mwptools</strong> suite is built using the <a href="https://mesonbuild.com/SimpleStart.html">meson</a> and <a href="https://ninja-build.org/">ninja</a> toolchain. For most users these will be automatically provided by a <code>build-essentials</code> type of package.</p>
-<p>For Debian and derivatives there is a <a href="#easy-first-time-install-on-debian-and-derivatives">"one stop" installation script</a>, (based on Debian "Sid", ymmv), as well as a x86_64 "Release" <code>.deb</code> archive. For older Debian based OS, you may need slightly different or additional packages(<code>libxml2-dev/</code>, <code>libsdl2-dev</code> vice <code>libsdl2-compat-dev</code>).</p>
+<p>For Debian and derivatives there is a <a href="#easy-first-time-install-on-debian-and-derivatives">"one stop" installation script</a>, (based on Debian "Trixie", ymmv), as well as a x86_64 "Release" <code>.deb</code> archive. For older Debian based OS, you may need slightly different or additional packages(<code>libxml2-dev/</code>, <code>libsdl2-dev</code> vice <code>libsdl2-compat-dev</code>).</p>
 <p>For Fedora, the is a also a documented list of packages.</p>
 <p>For Arch, the <code>PKGBLD</code> lists the required packages.</p>
 <p>For MacOS, use Homebrew to install required packages, having evinced the names from one of the Linux guides.</p>
@@ -1852,7 +1852,7 @@
 <li>For a Linux system wide install, set <code>--prefix /usr</code></li>
 <li>For FreeBSD (*BSD), for a system-wide install,  don't set <code>--prefix</code> as the default (<code>/usr/local</code>) is suitable</li>
 </ul>
-<p>Unless you need a multi-user setup, a local install is preferable, as you don't need <code>sudo</code> to install, and you'll not risk messing up build permissions.</p>
+<p>Unless you need a multi-user setup, a local install is preferable, as you don't need <code>sudo</code> / <code>doas</code> to install, and you'll not risk messing up build permissions.</p>
 <h3 id="easy-first-time-install-on-debian-and-derivatives">"Easy" first-time install on Debian and derivatives<a class="headerlink" href="#easy-first-time-install-on-debian-and-derivatives" title="Permanent link">#</a></h3>
 <ul>
 <li>Download the <a href="https://raw.githubusercontent.com/stronnag/mwptools/master/docs/deb-install.sh">first time build script</a></li>
@@ -1900,7 +1900,7 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="df11", MODE="0660
 <td>Mission planner, GCS, log replay etc.</td>
 </tr>
 <tr>
-<td><code>mwp-plot-elevations</code> <a href="#note1">1</a></td>
+<td><code>mwp-plot-elevations</code></td>
 <td>Mission elevation / terrain analysis</td>
 </tr>
 <tr>
@@ -1908,7 +1908,7 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="df11", MODE="0660
 <td>Interact with the CLI</td>
 </tr>
 <tr>
-<td><code>fc-get</code>, <code>fc-set</code> <a href="#note2">2</a></td>
+<td><code>fc-get</code>, <code>fc-set</code></td>
 <td>Backup / restore CLI diff</td>
 </tr>
 <tr>
@@ -1935,11 +1935,6 @@ $prefix/lib/libmwpclib.a
 $prefix/lib/libmwpvlib.*so.x.0.0
 $prefix/lib/libmwpclib.a
 </code></pre>
-<div class="admonition note">
-<p class="admonition-title">Notes:</p>
-<p><a name="note1">1.</a> This may either be the new Go executable or the legacy, less functional Ruby script.</p>
-<p><a name="note2">2.</a> <code>fc-set</code> is a hard link to <code>fc-get</code></p>
-</div>
 <h3 id="optional">Optional<a class="headerlink" href="#optional" title="Permanent link">#</a></h3>
 <p>These are only built by explicit target name; they will be installed if built.</p>
 <pre><code># one of more of the following targets
