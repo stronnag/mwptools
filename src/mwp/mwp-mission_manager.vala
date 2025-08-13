@@ -354,20 +354,17 @@ namespace MissionManager {
 	}
 
 	private void rewrite_mission(ref Mission m) {
-		if (Mwp.rebase.has_reloc()) {
-			if (m.homex != 0 && m.homey != 0) {
-				if (!Mwp.rebase.has_origin()) {
-					Mwp.rebase.set_origin(m.homey, m.homex);
-					MWPLog.message("Mission Set rebase %f %f\n", m.homey, m.homex);
-				}
+		if (!(m.homex == 0 && m.homey == 0)) {
+			if (!Mwp.rebase.has_origin()) {
+				Mwp.rebase.set_origin(m.homey, m.homex);
 			}
-			m.homey = Mwp.rebase.reloc.lat;
-			m.homex = Mwp.rebase.reloc.lon;
-			m.maxy=-90;
-			m.maxx=-180;
-			m.miny=90;
-			m.minx=180;
 		}
+		m.homey = Mwp.rebase.reloc.lat;
+		m.homex = Mwp.rebase.reloc.lon;
+		m.maxy=-90;
+		m.maxx=-180;
+		m.miny=90;
+		m.minx=180;
 
 		for(var i = 0; i < m.npoints; i++) {
 			if (m.points[i].is_geo()) {
