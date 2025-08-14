@@ -110,12 +110,8 @@ namespace Cli {
 		return vsum;
 	}
 
-#if UNIX
-	const int FL2LTMVERS = 0x10024;
-#else
-	const int FL2LTMVERS = 0x10026;
-#endif
-	const int FL2KMLVERS = 0x10032;
+
+	const int FL2XVERS = 0x10032;
 
 	private void parse_options() {
 		Mwp.gpsstats = {0, 0, 0, 0, 9999, 9999, 9999};
@@ -190,7 +186,7 @@ namespace Cli {
 				vsum = extract_version(text);
 				if (vsum > 0x10000) {
 					Mwp.sticks_ok = true;
-					if (vsum >= FL2LTMVERS) {
+					if (vsum >= FL2XVERS) {
 						Mwp.bblosd_ok = true;
 						MWPLog.message("Using %s (%x)\n", text, vsum);
 						ok = true;
@@ -215,7 +211,7 @@ namespace Cli {
 				ok = false;
 			} else {
 				uint vsum = extract_version(text);
-				if (vsum >= FL2KMLVERS) {
+				if (vsum >= FL2XVERS) {
 					ok = true;
 					MWPLog.message("Using %s (%x)\n", text, vsum);
 				} else {
@@ -226,7 +222,7 @@ namespace Cli {
 		}
 
 		if (appsts[1] == false) {
-			var oldmsg = "flightlog2kml may be too old, upgrade recommended";
+			var oldmsg = "flightlog2kml may be too old, disabling log replay";
 			MWPLog.message("%s\n", oldmsg);
 			Mwp.add_toast_text(oldmsg);
 		}
@@ -247,6 +243,14 @@ namespace Cli {
 		if(Mwp.x_plot_elevations_rb == false) {
 			MWPLog.message(":DBG: No TA for you!\n");
 			MwpMenu.set_menu_state(Mwp.window, "mta", false);
+		}
+
+		if(Mwp.x_fl2kml == false) {
+			MwpMenu.set_menu_state(Mwp.window, "replay-sql-log", false);
+		}
+
+		if(Mwp.x_fl2ltm == false) {
+			MwpMenu.set_menu_state(Mwp.window, "replay-bb-log", false);
 		}
 
         XmlIO.uc = Mwp.conf.ucmissiontags;
