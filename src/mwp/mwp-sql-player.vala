@@ -27,6 +27,8 @@ public class SQLSlider : Gtk.Window {
 	private SQLPlayer sp;
 	private GLib.Menu menu;
 	private GLib.SimpleActionGroup dg;
+	private Gtk.Label tlabel;
+	private int smax;
 
 	public SQLSlider(string fn, int idx) {
         Mwp.xlog = Mwp.conf.logarmed;
@@ -39,8 +41,7 @@ public class SQLSlider : Gtk.Window {
 		sp = new SQLPlayer(/*dragq*/);
 		sp.opendb(fn);
 
-		double smax = sp.init(idx);
-		smax--;
+		smax = sp.init(idx) - 1;
 		vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
 		var box = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);
 		box.margin_top = 2;
@@ -96,6 +97,9 @@ public class SQLSlider : Gtk.Window {
 
 		sp.newpos.connect((v) => {
 				slider.set_value(v);
+				var n = (int)Math.round(v);
+				var tm = sp.get_timer_for(n);
+				format_time(tm, n);
 			});
 
 		close_request.connect (() => {
@@ -132,6 +136,12 @@ public class SQLSlider : Gtk.Window {
 				sp.speed = speed;
 			});
 
+		tlabel = new Gtk.Label("");
+		tlabel.use_markup = true;
+
+		format_time(0,0);
+		hb.pack_end(tlabel);
+
 		if(SLG.speedup) {
 			toggle_pstate();
 		}
@@ -160,7 +170,7 @@ public class SQLSlider : Gtk.Window {
 				 disable_item(jn);
 				 pstate = true;
 				 toggle_pstate();
-				 var smax = sp.init(oid) - 1;
+				 smax = sp.init(oid) - 1;
 				 slider.set_value(0.0);
 				 slider.set_range(0.0, smax);
 				 slider.set_increments(1, smax/20);
@@ -192,12 +202,16 @@ public class SQLSlider : Gtk.Window {
 				if(pstate) {
 					toggle_pstate();
 				}
-				sp.move_at((int)d);
+				sp.move_at((int)Math.round(d));
 				return true;
 			});
 
 		slider.value_changed.connect(() => {
-				if(slider.get_value() == smax) {
+				var v = slider.get_value();
+				var n = (int)Math.round(v);
+				var tm = sp.get_timer_for(n); // Round
+				format_time(tm, n);
+				if(v == smax) {
 					if(pstate) {
 						toggle_pstate();
 					}
@@ -219,6 +233,16 @@ public class SQLSlider : Gtk.Window {
 		provider.load_from_data(css.data);
 		var stylec = w.get_style_context();
 		stylec.add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
+	}
+
+	private void format_time(int64 tm, int n) {
+		int mins;
+		int secs;
+		int itm = (int)((tm + 500*1000)/(1000*1000));
+		mins = (int)itm / 60;
+		secs = (int)itm % 60;
+		var pct = (n * 100) / smax;
+		tlabel.label = "<tt>%03d:%02d %3d%</tt>".printf(mins,secs,pct);
 	}
 }
 
@@ -292,6 +316,18 @@ public class SQLPlayer : Object {
 		}
 	}
 
+
+	public int64 get_timer_for(int n) {
+		if (n < 0) {
+			n = 0;
+		}
+		if(n >= nentry) {
+			n = nentry-1;
+		}
+		return trks[n].stamp;
+	}
+
+
 	public void move_at(int n) {
 		if (n < 0) {
 			//MWPLog.message("SQLLOG WARN Min N %d (%d, %d)\n", n, startat, nentry);
@@ -318,7 +354,7 @@ public class SQLPlayer : Object {
 		return ms;
 	}
 
-	public double init(int _idx) {
+	public int  init(int _idx) {
 		idx = _idx;
 		SQL.Meta m;
 		var res = db.get_meta(idx, out m);
@@ -396,7 +432,7 @@ public class SQLPlayer : Object {
 				Sticks.create_sticks();
 			}
 		}
-		return (double)nentry;
+		return nentry;
 	}
 
 	private void setup_odo() {
@@ -569,7 +605,7 @@ public class SQLPlayer : Object {
 			}
 		}
 		process_nav(t);
-		Mwp.duration = (int)(t.stamp / (1000*1000));
+		Mwp.duration = (int)((t.stamp + (500*1000)) / (1000*1000));
 		Mwp.update_pos_info(t.idx);
 		if (upd != DrawMode.OFF) {
 			Sticks.update(t.ail, t.ele, t.rud, t.thr);
