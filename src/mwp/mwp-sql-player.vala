@@ -242,7 +242,7 @@ public class SQLSlider : Gtk.Window {
 		mins = (int)itm / 60;
 		secs = (int)itm % 60;
 		var pct = (n * 100) / smax;
-		tlabel.label = "<tt>%03d:%02d %3d%</tt>".printf(mins,secs,pct);
+		tlabel.label = "<tt>%03d:%02d %3d%%</tt>".printf(mins,secs,pct);
 	}
 }
 
