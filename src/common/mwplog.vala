@@ -25,6 +25,8 @@ public class MWPLog : GLib.Object {
     private static string tfstr;
     private static bool echo = false;
 	private static bool addcr;
+	private static string file_name;
+	private static Mutex mutex;
 
     public static void set_time_format(string _t) {
         tfstr = _t;
@@ -52,6 +54,7 @@ public class MWPLog : GLib.Object {
 
     public static void message(string format, ...) {
         if(init == false) {
+			mutex = new Mutex();
             time_t currtime;
             time_t(out currtime);
 			Posix.Stat st;
@@ -64,14 +67,16 @@ public class MWPLog : GLib.Object {
 			var dt = new DateTime.from_unix_local(currtime);
             var fn = Path.build_filename(logdir, "mwp_stderr_%s.txt".printf(dt.format("%F")));
 
-            fs = FileStream.open(fn,"a");
-            if(fs == null) {
+            fs = FileStream.open(fn,"a+");
+
+			if(fs == null) {
                 echo = false;
                 fs  = FileStream.fdopen(stderr.fileno(), "a");
-            }
+            } else {
+				file_name = fn;
+			}
 
             init = true;
-
             if ((tfstr = Environment.get_variable ("MWP_TIME_FMT")) == null)
 				tfstr = "%T.%f";
         }
@@ -82,8 +87,10 @@ public class MWPLog : GLib.Object {
         sb.append(now.format(tfstr));
         sb.append_c(' ');
         sb.append_vprintf(format, args);
+		mutex.lock();
         fs.puts(sb.str);
 		fs.flush();
+		mutex.unlock();
         if(echo) {
 			if(addcr) {
 				var sout = sb.str.replace("\n", "\r\n");
@@ -92,5 +99,17 @@ public class MWPLog : GLib.Object {
 				stderr.puts(sb.str);
 			}
 		}
+	}
+
+	public static string get_content() {
+		mutex.lock();
+		long n = fs.tell();
+		uint8[]buf = new uint8[n+1];
+		fs.seek(0, FileSeek.SET);
+		fs.read(buf);
+		buf[n] = 0;
+		fs.seek(0, FileSeek.END);
+		mutex.unlock();
+		return (string)buf;
 	}
 }

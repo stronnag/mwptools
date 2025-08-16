@@ -21,11 +21,13 @@ namespace About {
 	const string CODE_NAME="Have You Ever Seen the Rain?";
 	public void show_about () {
 		string[] developers = { "Jonathan Hudson" };
-		string release_notes = "<p>This release adds the following features:</p>\n<ul><li>GTK4 UI</li>\n  <li>Shumate Map layer.</li>\n  <li>Bug fixes and performance improvements.</li>\n</ul>\n\n";
+		//		string release_notes = "<p>This release adds the following features:</p>\n<ul><li>GTK4 UI</li>\n  <li>Shumate Map layer.</li>\n  <li>Bug fixes and performance improvements.</li>\n</ul>\n\n";
+		var release_notes = "<p>For release info, please see : https://github.com/stronnag/mwptools/releases</p>";
 		var copyright = "© 2014-%d Jonathan Hudson".printf(new DateTime.now_local().get_year());
 
 		var details = "\"A mission planner for the rest of us\"\n\nCommit: %s\n".printf(MwpVers.get_build());
 		var avers = "%s \"%s\"".printf(MwpVers.get_id(), CODE_NAME);
+		var dbgstr = MWPLog.get_content();
 		var about = new Adw.AboutDialog () {
 				application_name = "mwp",
 					application_icon = "mwp_icon",
@@ -39,16 +41,17 @@ namespace About {
 					comments = details,
 					website = "https://stronnag.github.io/mwptools/",
 					release_notes = release_notes,
-					release_notes_version = avers
+					release_notes_version = avers,
+					debug_info = dbgstr,
+					support_url = "https://stronnag.github.io/mwptools/mwp_support/"
 					};
 
-
 		about.add_link("User Gude", "https://stronnag.github.io/mwptools/");
-		about.add_link("Githut Repository", "https://github.com/stronnag/mwptools");
+		about.add_link("Github Repository", "https://github.com/stronnag/mwptools");
 
 		about.add_link("Flightlog2kml", "https://github.com/stronnag/bbl2kml");
 		about.add_link("Blackbox decode", "https://github.com/iNavFlight/blackbox-tools");
-
+		about.width_request = 600;
 		about.present (Mwp.window);
 	}
 }

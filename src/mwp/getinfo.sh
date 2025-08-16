@@ -15,6 +15,7 @@ LDVERS=$($LD -v 2>&1 | head -n 1)
 GITVERS=$(git rev-parse  --short HEAD)
 GITBRANCH=$(git branch --show-current)
 GITSTAMP=$(git log -1 --format=%cI)
+GITTAG=$(git describe --tags --abbrev=0)
 
 > $OUTPUT echo "#define BUILDINFO \"${TNOW}Z ${PLAT} ${NODE}\""
 >> $OUTPUT echo "#define COMPINFO \"${CVERS} / ${LDVERS} / ${VVERS}\""
