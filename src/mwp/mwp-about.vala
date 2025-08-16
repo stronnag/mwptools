@@ -35,12 +35,20 @@ namespace About {
 					documenters = developers,
 					copyright = copyright,
 					license_type = Gtk.License.GPL_3_0,
-					issue_url = "https://github.com/stronnag/mwptools",
+					issue_url = "https://github.com/stronnag/mwptools/issues",
 					comments = details,
 					website = "https://stronnag.github.io/mwptools/",
 					release_notes = release_notes,
 					release_notes_version = avers
 					};
+
+
+		about.add_link("User Gude", "https://stronnag.github.io/mwptools/");
+		about.add_link("Githut Repository", "https://github.com/stronnag/mwptools");
+
+		about.add_link("Flightlog2kml", "https://github.com/stronnag/bbl2kml");
+		about.add_link("Blackbox decode", "https://github.com/iNavFlight/blackbox-tools");
+
 		about.present (Mwp.window);
 	}
 }
