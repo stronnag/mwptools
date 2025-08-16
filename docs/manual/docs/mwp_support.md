@@ -15,21 +15,23 @@
 
 * [**GitHub Issues preferred**](https://github.com/stronnag/mwptools/issues)
 * [irc.libera.chat #mwptools](ircs://irc.libera.chat/mwptools)
-* Most likely you will be requested to raise a [GitHub Issue](https://github.com/stronnag/mwptools/issues) for non-trivial cases or if there is an [Information requirement](#information-requirements). Hint, you can easily cut out the middle-man here.
-* Ensure you're running the latest `master` version.
+* Most likely you will be requested to raise a [GitHub Issue](https://github.com/stronnag/mwptools/issues) for non-trivial cases or if there is an [Information requirement](#information-requirements). Hint ... you can easily cut out the middle-man here.
+* Ensure you're running the latest `master` version (unless otherwise requested),
 * See also [Information requirements](#information-requirements). Without this information, it is unlikely that any, non-trivial, support can be given. Please note that images are unlikely to be helpful compared to log files.
 
 ### "Supported" OS
 
+Modern, open source operating systems (for example:)
+
 * Arch Linux
 * Alpine Linux (Edge)
-* Chimera Linux
+* Void Linux
 * Debian Testing (`trixie`, `sid`), and contemporaneous derivatives.
 * Fedora latest
 * FreeBSD latest `RELEASE`
 * Supported Desktop Enviroment / Window Managers: basically must comply with XDG standards, specifically GNOME, KDE, xfce, LXqt, labwc, wayfire.
 
-#### Tolerated / Unsupported OS
+#### Unsupported OS
 
 * Windows (via Msys2)
 * MacOS (Homebrew)
@@ -57,6 +59,8 @@ The logs are stored in  your home directory (or `Documents\mwp` for Windows), or
 
 * "stderr" log : `mwp_stderr_YYYY-MM-DD.txt`
 * "raw" log : `mwp.DEVICENAME.YYYY-MM-DDTHHMMSS.raw`
+
+The "stderr" log may also be obtained from "About / Troubleshooting / Debugging Information".
 
 where:
 
