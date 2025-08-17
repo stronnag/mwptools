@@ -38,8 +38,11 @@ namespace Mwpset {
 		private unowned Gtk.ScrolledWindow sw;
 		[GtkChild]
 		private unowned  Gtk.Button savelist;
+		[GtkChild]
+		private unowned  Gtk.SearchEntry search_entry;
 
 		private XReader x;
+		private Regex? regex;
 
 		public void add_toast_text(string s) {
 			var t = new Adw.Toast(s);
@@ -72,10 +75,38 @@ namespace Mwpset {
 
 
 		public Window() {
+			regex = null;
 			title = schm;
 			add_action_entries (ACTION_ENTRIES, this);
 			x = new XReader(schm);
 			x.parse_schema();
+
+			search_entry.search_changed.connect(() => {
+					if (search_entry.text.length < 1) {
+						regex = null;
+					} else {
+						try {
+							regex = new Regex(search_entry.text, RegexCompileFlags.CASELESS);
+						} catch (Error e) {
+							stderr.printf("Mwpset regex error: %s\n", e.message);
+							regex = null;
+						}
+					}
+					lbox.invalidate_filter();
+				});
+
+			lbox.set_filter_func((row) => {
+					if(search_entry.text.length < 1 || regex == null) {
+						return true;
+					} else {
+						int n = row.get_index();
+						var res = regex.match (x.keys.data[n].summary);
+						if (!res) {
+							res = regex.match (x.keys.data[n].description);
+						}
+						return res;
+					}
+				});
 
 			savelist.clicked.connect(() => {
 					save_settings();

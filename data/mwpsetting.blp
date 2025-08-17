@@ -45,10 +45,22 @@ template $MwpsetWindow: Adw.ApplicationWindow {
       hexpand: true;
       vexpand: true;
 
+      Gtk.Box {
+	SearchBar search_bar {
+          child: SearchEntry search_entry {
+	    tooltip-text: _("Search for text in summary or description");
+	    hexpand: true;
+	    activates-default: true;
+          };
+          search-mode-enabled: true;
+          visible: true;
+	}
+      }
+
       Adw.ToastOverlay toaster {
 	Gtk.Box mbox {
 	  spacing: 8;
-	  orientation: horizontal;
+	  orientation: vertical;
 	  vexpand: true;
 	  Gtk.ScrolledWindow sw {
 	    vexpand: false;
