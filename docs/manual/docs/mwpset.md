@@ -56,7 +56,7 @@ In a few cases, mwp caches settings on startup. Changes to these settings will n
 
 ### Search Bar
 
-++ctrl+f++ (Control-F) toggles the display of the search bar, providing an incremental, case insensitive regular expression search filter.
+++ctrl+f++ (Control-F) toggles the display of the search bar, providing an incremental, case insensitive regular expression search filter. The search uses the "summary" and "description" fields of the settings.
 
 ![mwset-search](images/set-search.png)
 
