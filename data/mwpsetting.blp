@@ -48,11 +48,11 @@ template $MwpsetWindow: Adw.ApplicationWindow {
       Gtk.Box {
 	SearchBar search_bar {
           child: SearchEntry search_entry {
-	    tooltip-text: _("Search for text in summary or description");
+	    tooltip-text: _("Search for text in summary or description (case insensitive regex)");
 	    hexpand: true;
 	    activates-default: true;
           };
-          search-mode-enabled: true;
+          search-mode-enabled: false;
           visible: true;
 	}
       }
@@ -84,6 +84,13 @@ template $MwpsetWindow: Adw.ApplicationWindow {
       Gtk.Button savelist {
 	label: "Save";
       }
+    }
+  }
+  Gtk.ShortcutController sctrl {
+    scope: managed;
+    Gtk.Shortcut {
+      trigger: "<Ctrl>f";
+      action: "action(win.search)";
     }
   }
 }

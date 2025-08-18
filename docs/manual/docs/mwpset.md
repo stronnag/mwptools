@@ -54,6 +54,13 @@ Changed settings may be saved back to the settings database using the "Save" but
 
 In a few cases, mwp caches settings on startup. Changes to these settings will not take effect until mwp is restarted.
 
+### Search Bar
+
+++ctrl+f++ (Control-F) toggles the display of the search bar, providing an incremental, case insensitive regular expression search filter.
+
+![mwset-search](images/set-search.png)
+
+
 ## Settings Window Menu
 
 The settings window menu provides options :

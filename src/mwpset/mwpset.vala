@@ -40,6 +40,8 @@ namespace Mwpset {
 		private unowned  Gtk.Button savelist;
 		[GtkChild]
 		private unowned  Gtk.SearchEntry search_entry;
+		[GtkChild]
+		private unowned  Gtk.SearchBar search_bar;
 
 		private XReader x;
 		private Regex? regex;
@@ -80,6 +82,12 @@ namespace Mwpset {
 			add_action_entries (ACTION_ENTRIES, this);
 			x = new XReader(schm);
 			x.parse_schema();
+
+			var saq = new GLib.SimpleAction("search",null);
+			saq.activate.connect(() => {
+					search_bar.search_mode_enabled = !search_bar.search_mode_enabled;
+				});
+			this.add_action(saq);
 
 			search_entry.search_changed.connect(() => {
 					if (search_entry.text.length < 1) {
