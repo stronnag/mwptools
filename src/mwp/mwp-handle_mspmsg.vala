@@ -154,9 +154,9 @@ namespace Mwp {
 			*((uint32*)p) = v;
 			break;
 		case VAR.FLOAT:
-			uint32 v;
-			SEDE.deserialise_u32(rp, out v);
-			*((float*)p) = (float)(*(float*)&v);
+			MwpUnion.FU fu={};
+			SEDE.deserialise_u32(rp, out fu.u);
+			*((float*)p) = fu.f;
 			break;
 		case VAR.STRING:
 			p = (string)rp;

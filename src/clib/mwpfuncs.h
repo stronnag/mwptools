@@ -41,3 +41,13 @@ typedef union  {
   _smwprawhdr_t s;
   uint8_t bytes[MWP_RAW_HSIZE];
 } _mwprawhdr_t;
+
+typedef union {
+  uint32_t u;
+  float f;
+} _floatu_t;
+
+typedef union {
+  uint64_t u;
+  double d;
+} _doubleu_t;

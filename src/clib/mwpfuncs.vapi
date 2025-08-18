@@ -158,3 +158,17 @@ namespace MwpRaw {
 		uint8 bytes[HSIZE];
 	}
 }
+
+[CCode (cheader_filename = "mwpfuncs.h")]
+namespace MwpUnion {
+	[CCode (cname = "_floatu_t")]
+	public struct FU {
+		uint32 u;
+		float f;
+	}
+	[CCode (cname = "_double_t")]
+	public struct DU {
+		uint64 u;
+		double d;
+	}
+}
