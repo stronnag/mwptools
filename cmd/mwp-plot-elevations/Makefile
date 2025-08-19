@@ -1,3 +1,4 @@
+prefix ?= $$HOME/.local
 
 APP = mwp-plot-elevations
 
@@ -9,7 +10,7 @@ clean:
 	rm -f $(APP)
 
 local:
-	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
+	$(MAKE) prefix=$(prefix) datadir=$(prefix)/ install
 
 install: $(APP)
 	-install -d $(prefix)/bin

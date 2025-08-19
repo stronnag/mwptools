@@ -691,7 +691,18 @@ namespace SLG {
 
 			if(Mwp.conf.zone_detect != null && Mwp.conf.zone_detect != "") {
 				var subp = new ProcessLauncher();
-				var res = subp.run_argv ({Mwp.conf.zone_detect, (string)cbuflat, (string)cbuflon}, ProcessLaunch.STDOUT);
+				string[] args = {};
+				var parts = Mwp.conf.zone_detect.split(" ");
+				foreach (var p in parts) {
+					var ps = p.strip();
+					if (ps.length > 0) {
+						args += ps;
+					}
+				}
+				args += (string)cbuflat;
+				args += (string)cbuflon;
+
+				var res = subp.run_argv (args, ProcessLaunch.STDOUT);
 				if (res){
 					var chan = subp.get_stdout_iochan();
 
