@@ -4,7 +4,17 @@ Windows, in its finest tradition of gratuitous incompatibility with everyone els
 
 As a result, the "standard" time zone detection code in mwp is unable to provide local timezones for Blackbox files on Windows.
 
-The `wintz` application may be used to determine the local time zone in mwp, by defining the `zone-detect` setting:
+The `wintz` application may be used to mitigate this problem and provide the local time zone to  mwp.
+
+In order for mwp on Windows to get the OS specific timezone name it is necessary:
+
+* Build and install the `wintz` application
+* Define the `zone-detect` setting to use `wintz`
+* [Windows] download the latest [IANA / Olsen database mapping file](https://github.com/unicode-org/cldr/blob/main/common/supplemental/windowsZones.xml)
+
+### Gsettings
+
+The necessary setting (key name `zone-detect`) can be via  `mwpset` or using the CLI `gsettings`:
 
 ```
 # Windows
@@ -14,11 +24,9 @@ gsettings set org.stronnag.mwp zone-detect 'wintz -xml /path/to/windowsZones.xml
 gsettings set org.stronnag.mwp zone-detect 'wintz --'
 ```
 
-For Window, the `-xml` parameter is required. `/path/to/windowsZones.xml` represents to full path of the `windowsZones.xml` file.
+For Window, **the `-xml` parameter is required**. `/path/to/windowsZones.xml` represents to full path of the `windowsZones.xml` file.
 
-* Download the latest [IANA / Olsen database mapping](https://github.com/unicode-org/cldr/blob/main/common/supplemental/windowsZones.xml)
-
-Note the trailing `--` is necessary to prevent the command line parser being confused by southern hemisphere locations.
+Note also the trailing `--` is necessary to prevent the command line parser being confused by southern / western hemisphere locations.
 
 ## Building
 
@@ -29,9 +37,11 @@ go build -ldflags "-w -s"
 
 Place the resulting `wintz` / `wintz.exe` somewhere that mwp can find it.
 
+Note: You can download the Windows `wintz.exe` from [wiki assets](https://github.com/stronnag/mwptools/wiki/assets/mwp-misc-windows-exe.zip) .
+
 ## On POSIX platforms
 
-You can also use `wintz` on POSIX platforms (FreeBSD, Linux, MacOS). If you do not supply the `-xml FILE` parameter, it will return the Olsen name used on these platforms
+You can also use `wintz` on POSIX platforms (FreeBSD, Linux, MacOS). If you do not supply the `-xml FILE` parameter, it will return the Olsen name used on these platforms rather than translate it to the Windows name.
 
 ## Examples
 
@@ -53,6 +63,8 @@ $ curl -s "https://api.geotimezone.com/public/timezone?latitude=54.35&longitude=
   "current_utc_datetime": "2025-08-19T18:18:28.506Z"
 }
 ```
+
+When the `-xml database` parameter is provided, this name is then translated to the Windows name.
 
 Note that when used by mwp, the latitude and longitude parameters are supplied by mwp from the bounding box of the log file.
 
