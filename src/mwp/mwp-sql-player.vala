@@ -267,7 +267,10 @@ public class SQLPlayer : Object {
 	}
 
 	~SQLPlayer() {
-		db = null;
+		if (db != null) {
+			db.dbclose();
+			db = null;
+		}
 		trks={};
 		MWPLog.message("~SQLPlayer ... disarm %s (%d)\n", Msp.bb_disarm(Mwp.msp.td.state.reason), Mwp.msp.td.state.reason);
 		Mwp.serstate = Mwp.SERSTATE.NONE;
@@ -289,6 +292,7 @@ public class SQLPlayer : Object {
 		}
 		db.populate_odo(idx);
 		Odo.view.populate(Odo.stats);
+		db.dbclose();
 		db = null;
 		Mwp.set_replay_menus(true);
 	}

@@ -302,18 +302,18 @@ namespace SLG {
 						string ms = "%3d: %s %s".printf(e.idx, e.timestamp, format_duration(e.duration));
 						SLG.mlist += ms;
 					}
-
-
-					db = null;
+					db.dbclose();
 					MWPLog.message("Sql log player %s %s\n", bblname.get_path(), dbname);
 					complete(dbname, o.idx);
 					close();
 				});
 
 			cancel.clicked.connect(() => {
+					db.dbclose();
 					MapUtils.centre_on(clat, clon, zoom);
 					close();
 				});
+
 
 			tzoption.notify["selected"].connect(() => {
 					var k = tzoption.selected;
@@ -339,25 +339,6 @@ namespace SLG {
 							}
 						});
 				});
-			/*
-			video_btn.clicked.connect(() => {
-					IChooser.Filter []ifm = {{"Video", {"mp4", "webm","mkv"}},};
-					var hd = Environment.get_home_dir();
-					var vpath = Path.build_filename(hd, "Videos");
-					var fc = IChooser.chooser(vpath, ifm);
-					fc.title = "Open Video File";
-					fc.modal = true;
-					fc.open.begin (Mwp.window, null, (o,r) => {
-							try {
-								var file = fc.open.end(r);
-								videofile = file.get_path ();
-								video_name.label = file.get_basename();
-							} catch (Error e) {
-								MWPLog.message("Failed to open Video file: %s\n", e.message);
-							}
-						});
-				});
-			*/
 		}
 
 		public void run(string? s=null) {

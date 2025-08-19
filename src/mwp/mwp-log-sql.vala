@@ -381,14 +381,21 @@ namespace SQL {
 				return false;
 			}
 		}
+
+		public void dbclose() {
+			bbstmt = null;
+			mtstmt = null;
+			flstmt = null;
+			logstmt = null;
+			db = null;
+			MWPLog.message("Closing SQLite db\n");
+		}
 	}
 }
 
 #if TEST
-static int main(string?[]args) {
-	if (args.length > 2) {
-		var d = new SQL.Db(args[1]);
-		var idx = int.parse(args[2]);
+void testdb(string dbname, int idx) {
+		var d = new SQL.Db(dbname);
 		var s = d.get_errors(idx);
 		print("Idx %d, errs %s\n", idx, s);
 
@@ -425,7 +432,15 @@ static int main(string?[]args) {
 		print("Odo time %u, tdist %.1f, centiamps %u\n", Odo.stats.time, Odo.stats.distance, Odo.stats.amps);
 		var mfn = d.get_misc(idx, "mission");
 		print("Get mission %s\n", mfn);
-		d=null;
+		print("finish DB\n");
+		d.dbclose();
+}
+
+static int main(string?[]args) {
+	if (args.length > 2) {
+		var idx = int.parse(args[2]);
+		testdb(args[1], idx);
+		Thread.usleep(1000*1000*1000);
 	}
 
 	return 0;
