@@ -17,17 +17,6 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-namespace TAClean {
-	public void clean_tmps(string []tempdirs) {
-		foreach(var t in tempdirs) {
-			Utils.rmrf(t);
-		}
-	}
-
-	public string get_tmp(int pid) {
-		return Path.build_filename(Utils.get_tmp_dir(), ".mplot_%d".printf(pid));
-	}
-}
 
 namespace TA {
 	[GtkTemplate (ui = "/org/stronnag/mwp/tadialog.ui")]
@@ -61,8 +50,6 @@ namespace TA {
 
 		private ScrollView? altview;
 
-		internal string[] tempdirs;
-
 		public Dialog() {
 			altview = null;
 			close_request.connect (() => {
@@ -71,7 +58,6 @@ namespace TA {
 				});
 
 			pe_ok.clicked.connect(() => {
-					tempdirs={};
 					run_elevation_tool();
 				});
 
@@ -90,7 +76,6 @@ namespace TA {
 				altview.close();
 			}
 			visible=false;
-			TAClean.clean_tmps(tempdirs);
 		}
 
 		public void run() {
@@ -194,8 +179,7 @@ namespace TA {
 						var ok = subp.get_status(out sts);
 						if(ok) {
 							Idle.add(() => {
-									var pid = subp.get_pid();
-									var gdir = TAClean.get_tmp(pid);
+									var gdir = Utils.get_tmp_dir();
 									var fn = Path.build_filename(gdir, "mwpmission.plt");
 									var file = File.new_for_path(fn);
 									if (file.query_exists ()) {
@@ -241,9 +225,7 @@ namespace TA {
 							MWPLog.message(sb.str);
 						}
 					});
-				var pid = subp.get_pid();
-				var gdir = TAClean.get_tmp(pid);
-				tempdirs += gdir;
+				var gdir = Utils.get_tmp_dir();
 			} else {
 				MWPLog.message("Failed to launch 'mwp-plot-elevations'\n");
 				pe_ok.sensitive=true;

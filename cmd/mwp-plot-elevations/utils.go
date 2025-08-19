@@ -47,6 +47,7 @@ type Options struct {
 	Upland    bool
 	Dump      bool
 	Keep      bool
+	Tmpdir    string
 }
 
 func Dump_data(mpts []Point, fn string) {
@@ -67,7 +68,7 @@ func Dump_climb_dive(mpts []Point, tofs bool) {
 	var err error
 	havefh := false
 	if tofs {
-		fn := filepath.Join(os.TempDir(), "mwpmission-angles.txt")
+		fn := filepath.Join(Conf.Tmpdir, "mwpmission-angles.txt")
 		fh, err = os.Create(fn)
 		if err == nil {
 			defer fh.Close()

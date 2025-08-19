@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -54,13 +53,6 @@ func Gnuplot_mission(mpts []Point, gnd []int, spt bool, los int) int {
 	ddif := mr / float64(np-1)
 	minz := 99999
 
-	tmpext := fmt.Sprintf(".mplot_%d", os.Getpid())
-	tmpdir := filepath.Join(os.TempDir(), tmpext)
-	err := os.Mkdir(tmpdir, 0o755)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	ttypes := getGnuplotCaps()
 	termstr := ""
 	if (ttypes & 1) == 1 {
@@ -76,7 +68,7 @@ func Gnuplot_mission(mpts []Point, gnd []int, spt bool, los int) int {
 	}
 
 	d := 0.0
-	tfname := filepath.Join(tmpdir, "terrain.csv")
+	tfname := filepath.Join(Conf.Tmpdir, "terrain.csv")
 	w, _ := os.Create(tfname)
 	fmt.Fprintln(w, "Dist\tAMSL\tMargin")
 	for _, g := range gnd {
@@ -89,7 +81,7 @@ func Gnuplot_mission(mpts []Point, gnd []int, spt bool, los int) int {
 	}
 	w.Close()
 
-	mfname := filepath.Join(tmpdir, "mission.csv")
+	mfname := filepath.Join(Conf.Tmpdir, "mission.csv")
 	w, _ = os.Create(mfname)
 	fmt.Fprintln(w, "Dist\tMission")
 	for _, p := range mpts {
@@ -100,7 +92,7 @@ func Gnuplot_mission(mpts []Point, gnd []int, spt bool, los int) int {
 	}
 	w.Close()
 
-	pfname := filepath.Join(tmpdir, "mwpmission.plt")
+	pfname := filepath.Join(Conf.Tmpdir, "mwpmission.plt")
 
 	w, _ = os.Create(pfname)
 	w.WriteString(`#!/usr/bin/gnuplot -p
@@ -187,7 +179,7 @@ replot`)
 	if Conf.Nognuplot == false {
 		gp := exec.Command("gnuplot", "-p", pfname)
 		SetSilentProcess(gp)
-		err = gp.Start()
+		err := gp.Start()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "gnuplot failed with %+v\n", err)
 			return -1

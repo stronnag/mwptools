@@ -169,7 +169,6 @@ public class LOSSlider : Adw.Window {
 	internal ProcessLauncher los;
 	internal int lospid;
 	internal int losstdin;
-	internal string[] tempdirs;
 	internal Timer atimer;
 
 	public void set_log(bool _mlog) {
@@ -260,7 +259,6 @@ public class LOSSlider : Adw.Window {
 	}
 
 	public LOSSlider (int lmargin) {
-		tempdirs = {};
 		_can_auto = true;
 		_margin = lmargin;
 		atimer = new Timer();
@@ -395,7 +393,6 @@ public class LOSSlider : Adw.Window {
 				LOSPoint.clear_all();
 				Utils.terminate_plots();
 				set_marker_state(true);
-				TAClean.clean_tmps(tempdirs);
 				if (Mwp.serstate == Mwp.SERSTATE.MISC_WORK) {
 					Mwp.reset_poller();
 				}
@@ -498,11 +495,12 @@ public class LOSSlider : Adw.Window {
 
 		char cbuflat[16];
 		char cbuflon[16];
-
+		var gdir = Utils.get_tmp_dir();
 		spawn_args += "-localdem=%s".printf(DemManager.demdir);
 		spawn_args += "-margin=%d".printf(_margin);
         spawn_args += "-home=%s,%s".printf(	HomePoint.hp.latitude.format(cbuflat, "%.8f"),
 											HomePoint.hp.longitude.format(cbuflon, "%.8f"));
+		spawn_args += "-tmpdir=%s".printf(gdir);
 		spawn_args += "-stdin";
 		MWPLog.message("LOS spawn %s\n", string.joinv(" ",spawn_args));
 
@@ -512,8 +510,6 @@ public class LOSSlider : Adw.Window {
 			var chan = los.get_stdout_iochan();
 			losstdin = los.get_stdin_pipe();
 			lospid = los.get_pid();
-			var gdir = TAClean.get_tmp(lospid);
-			tempdirs += gdir;
 			los.complete.connect(() => {
 					if(mlog) {
 						MWPLog.message(":DBG: close mpe %d\n", lospid);

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -59,6 +60,7 @@ func main() {
 	flag.StringVar(&Conf.Homepos, "home", Conf.Homepos, "home as DD.dddd,DDD.dddd")
 	flag.StringVar(&Conf.Svgfile, "svg", "", "SVG graph file")
 	flag.StringVar(&Conf.Output, "output", "", "Revised mission file")
+	flag.StringVar(&Conf.Tmpdir, "tmpdir", "", "Temp dir")
 	flag.IntVar(&Conf.Rthalt, "rth-alt", Conf.Rthalt, "RTH altitude (m)")
 	flag.IntVar(&Conf.P3, "force-alt", -1, "Force Altitude Mode (-1=from mission, 0=Relative, 1=Absolute")
 	flag.IntVar(&Conf.Margin, "margin", Conf.Margin, "Clearance margin (m)")
@@ -75,6 +77,15 @@ func main() {
 	files := flag.Args()
 	if len(files) < 1 && !spt {
 		log.Fatal("need mission")
+	}
+
+	if Conf.Tmpdir == "" {
+		if len(files) > 0 {
+			Conf.Tmpdir = filepath.Dir(files[0])
+		}
+		if Conf.Tmpdir == "" {
+			Conf.Tmpdir = os.TempDir()
+		}
 	}
 
 	dm := InitDem(demdir)
@@ -113,11 +124,10 @@ func main() {
 			m.MissionItems = mis
 			mpts = m.Get_points()
 			mpts[1].Wpname = "Query"
-			//			fmt.Fprintf(os.Stderr, "DBG Process with data %s\n", p)
 			process_elevations(dm, mpts, m, true)
 		}
 	}
-	Dump_data(mpts, "/tmp/.mwpmission.json")
+	Dump_data(mpts, filepath.Join(Conf.Tmpdir, ".mwpmission.json"))
 }
 
 func process_elevations(dm *DEMMgr, mpts []Point, m *Mission, spt bool) {
