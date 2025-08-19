@@ -267,12 +267,18 @@ namespace Utils {
 		}
 	}
 
+	static uint32 rno;
+
 	public string get_tmp_dir() {
 		var t = Environment.get_tmp_dir();
+		if (rno == 0) {
+			var r = new Rand();
+			rno = r.next_int();
+		}
 #if !WINDOWS
-		var ps = ".mwp-%lu-%d".printf(Posix.getuid(), Posix.getpid());
+		var ps = ".mwp-%lu-%d-%u".printf(Posix.getuid(), Posix.getpid(), rno);
 #else
-		var ps = ".mwp-%s-%d".printf(Environment.get_user_name(), Posix.getpid());
+		var ps = ".mwp-%s-%d-%u".printf(Environment.get_user_name(), Posix.getpid(), rno);
 #endif
 		var tmpname = Path.build_filename(t, ps);
 		var f = File.new_for_path(tmpname);

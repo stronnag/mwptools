@@ -225,7 +225,6 @@ namespace TA {
 							MWPLog.message(sb.str);
 						}
 					});
-				var gdir = Utils.get_tmp_dir();
 			} else {
 				MWPLog.message("Failed to launch 'mwp-plot-elevations'\n");
 				pe_ok.sensitive=true;
