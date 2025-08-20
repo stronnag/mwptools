@@ -70,36 +70,20 @@ namespace SQL {
 
 	public class Db {
 		Sqlite.Database db;
-		Sqlite.Statement bbstmt;
-		Sqlite.Statement mtstmt;
-		Sqlite.Statement flstmt;
-		Sqlite.Statement logstmt;
 
 		const string bbquery = "SELECT min(lat),min(lon),max(lat),max(lon) FROM logs WHERE id = $1;";
 		const string mtquery = "SELECT * from meta WHERE id = $1;";
 		const string flquery = "SELECT id,idx,stamp,lat,lon,alt,galt,spd,amps,volts,hlat,hlon,vrange,cse,cog,bearing,roll,pitch,hdop,ail,ele,rud,thr,fix,numsat,fmode,rssi,status,activewp,navmode,hwfail,windx,windy,windz,energy from logs WHERE id = $1 and idx=$2;";
 		const string logquery = "SELECT id,idx,stamp,lat,lon,alt,galt,spd,amps,volts,hlat,hlon,vrange,cse,cog,bearing,roll,pitch,hdop,ail,ele,rud,thr,fix,numsat,fmode,rssi,status,activewp,navmode,hwfail,windx,windy,windz,energy from logs WHERE id = $1;";
 
+		~Db() {
+			MWPLog.message("Closing SQLite db\n");
+		}
+
 		public Db(string fn) {
 			var rc = Sqlite.Database.open_v2 (fn, out db, Sqlite.OPEN_READONLY);
 			if(rc != Sqlite.OK) {
 				MWPLog.message ("Failed to open %s\n", fn);
-			}
-			rc = db.prepare_v2 (bbquery, bbquery.length, out bbstmt);
-			if (rc != Sqlite.OK) {
-				MWPLog.message ("Failed to prepare bbstmt %s\n", fn);
-			}
-			rc = db.prepare_v2 (mtquery, mtquery.length, out mtstmt);
-			if (rc != Sqlite.OK) {
-				MWPLog.message ("Failed to prepare mtstmt %s\n", fn);
-			}
-			rc = db.prepare_v2 (flquery, flquery.length, out flstmt);
-			if (rc != Sqlite.OK) {
-				MWPLog.message ("Failed to prepare flstmt %s\n", fn);
-			}
-			rc = db.prepare_v2 (logquery, logquery.length, out logstmt);
-			if (rc != Sqlite.OK) {
-				MWPLog.message ("Failed to prepare logstmt %s\n", fn);
 			}
 		}
 
@@ -142,7 +126,8 @@ namespace SQL {
 		public bool get_meta(int idx, out Meta m) {
 			int n = 0;
 			m = {};
-			mtstmt.reset();
+			Sqlite.Statement mtstmt;
+			db.prepare_v2 (mtquery, mtquery.length, out mtstmt);
 			mtstmt.bind_int (1, idx);
 			while (mtstmt.step () == Sqlite.ROW) {
 				read_meta(mtstmt, out m);
@@ -201,14 +186,17 @@ namespace SQL {
 		public bool get_bounding_box(int idx, out MapUtils.BoundingBox bbox) {
 			int n = 0;
 			bbox = {999.0, 999.0, -999.0, -999.0};
-			bbstmt.reset();
-			bbstmt.bind_int (1, idx);
-			while (bbstmt.step () == Sqlite.ROW) {
-				bbox.minlat = bbstmt.column_double(0);
-				bbox.minlon = bbstmt.column_double(1);
-				bbox.maxlat = bbstmt.column_double(2);
-				bbox.maxlon = bbstmt.column_double(3);
-				n++;
+			Sqlite.Statement bbstmt;
+			var rc = db.prepare_v2 (bbquery, bbquery.length, out bbstmt);
+			if (rc == Sqlite.OK) {
+				bbstmt.bind_int (1, idx);
+				while (bbstmt.step () == Sqlite.ROW) {
+					bbox.minlat = bbstmt.column_double(0);
+					bbox.minlon = bbstmt.column_double(1);
+					bbox.maxlat = bbstmt.column_double(2);
+					bbox.maxlon = bbstmt.column_double(3);
+					n++;
+				}
 			}
 			return (n==1);
 		}
@@ -228,46 +216,49 @@ namespace SQL {
 		}
 
 		public int get_log(int idx, ref TrackEntry[] tks) {
-			logstmt.reset();
-			logstmt.bind_int (1, idx);
+			Sqlite.Statement logstmt;
 			int n = 0;
-			while (logstmt.step () == Sqlite.ROW) {
-				tks[n].id = logstmt.column_int(0);
-				tks[n].idx = logstmt.column_int(1);
-				tks[n].stamp = logstmt.column_int64(2);
-				tks[n].lat = logstmt.column_double(3);
-				tks[n].lon = logstmt.column_double(4);
-				tks[n].alt = logstmt.column_int(5);
-				tks[n].galt = logstmt.column_int(6);
-				tks[n].spd =  logstmt.column_double(7);
-				tks[n].amps = logstmt.column_double(8);
-				tks[n].volts = logstmt.column_double(9);
-				tks[n].hlat = logstmt.column_double(10);
-				tks[n].hlon = logstmt.column_double(11);
-				tks[n].vrange =  logstmt.column_double(12);
-				tks[n].cse = logstmt.column_int(13);
-				tks[n].cog = logstmt.column_int(14);
-				tks[n].bearing = logstmt.column_int(15);
-				tks[n].roll = logstmt.column_int(16);
-				tks[n].pitch = logstmt.column_int(17);
-				tks[n].hdop = logstmt.column_int(18);
-				tks[n].ail = logstmt.column_int(19);
-				tks[n].ele = logstmt.column_int(20);
-				tks[n].rud = logstmt.column_int(21);
-				tks[n].thr = logstmt.column_int(22);
-				tks[n].fix = logstmt.column_int(23);
-				tks[n].numsat = logstmt.column_int(24);
-				tks[n].fmode = logstmt.column_int(25);
-				tks[n].rssi  = logstmt.column_int(26);
-				tks[n].status = logstmt.column_int(27);
-				tks[n].activewp = logstmt.column_int(28);
-				tks[n].navmode = logstmt.column_int(29);
-				tks[n].hwfail = logstmt.column_int(30);
-				tks[n].windx = logstmt.column_int(31);
-				tks[n].windy = logstmt.column_int(32);
-				tks[n].windz = logstmt.column_int(33);
-				tks[n].energy = logstmt.column_int(34);
-				n++;
+			var rc = db.prepare_v2 (logquery, logquery.length, out logstmt);
+			if (rc == Sqlite.OK) {
+				logstmt.bind_int (1, idx);
+				while (logstmt.step () == Sqlite.ROW) {
+					tks[n].id = logstmt.column_int(0);
+					tks[n].idx = logstmt.column_int(1);
+					tks[n].stamp = logstmt.column_int64(2);
+					tks[n].lat = logstmt.column_double(3);
+					tks[n].lon = logstmt.column_double(4);
+					tks[n].alt = logstmt.column_int(5);
+					tks[n].galt = logstmt.column_int(6);
+					tks[n].spd =  logstmt.column_double(7);
+					tks[n].amps = logstmt.column_double(8);
+					tks[n].volts = logstmt.column_double(9);
+					tks[n].hlat = logstmt.column_double(10);
+					tks[n].hlon = logstmt.column_double(11);
+					tks[n].vrange =  logstmt.column_double(12);
+					tks[n].cse = logstmt.column_int(13);
+					tks[n].cog = logstmt.column_int(14);
+					tks[n].bearing = logstmt.column_int(15);
+					tks[n].roll = logstmt.column_int(16);
+					tks[n].pitch = logstmt.column_int(17);
+					tks[n].hdop = logstmt.column_int(18);
+					tks[n].ail = logstmt.column_int(19);
+					tks[n].ele = logstmt.column_int(20);
+					tks[n].rud = logstmt.column_int(21);
+					tks[n].thr = logstmt.column_int(22);
+					tks[n].fix = logstmt.column_int(23);
+					tks[n].numsat = logstmt.column_int(24);
+					tks[n].fmode = logstmt.column_int(25);
+					tks[n].rssi  = logstmt.column_int(26);
+					tks[n].status = logstmt.column_int(27);
+					tks[n].activewp = logstmt.column_int(28);
+					tks[n].navmode = logstmt.column_int(29);
+					tks[n].hwfail = logstmt.column_int(30);
+					tks[n].windx = logstmt.column_int(31);
+					tks[n].windy = logstmt.column_int(32);
+					tks[n].windz = logstmt.column_int(33);
+					tks[n].energy = logstmt.column_int(34);
+					n++;
+				}
 			}
 			return n;
 		}
@@ -276,46 +267,49 @@ namespace SQL {
 		public bool get_log_entry(int idx, int nidx, out TrackEntry t) {
 			t = {};
 			int n = 0;
-			flstmt.reset();
-			flstmt.bind_int (1, idx);
-			flstmt.bind_int (2, nidx);
-			while (flstmt.step () == Sqlite.ROW) {
-				n++;
-				t.id = flstmt.column_int(0);
-				t.idx = flstmt.column_int(1);
-				t.stamp = flstmt.column_int64(2);
-				t.lat = flstmt.column_double(3);
-				t.lon = flstmt.column_double(4);
-				t.alt = flstmt.column_int(5);
-				t.galt = flstmt.column_int(6);
-				t.spd =  flstmt.column_double(7);
-				t.amps = flstmt.column_double(8);
-				t.volts = flstmt.column_double(9);
-				t.hlat = flstmt.column_double(10);
-				t.hlon = flstmt.column_double(11);
-				t.vrange =  flstmt.column_double(12);
-				t.cse = flstmt.column_int(13);
-				t.cog = flstmt.column_int(14);
-				t.bearing = flstmt.column_int(15);
-				t.roll = flstmt.column_int(16);
-				t.pitch = flstmt.column_int(17);
-				t.hdop = flstmt.column_int(18);
-				t.ail = flstmt.column_int(19);
-				t.ele = flstmt.column_int(20);
-				t.rud = flstmt.column_int(21);
-				t.thr = flstmt.column_int(22);
-				t.fix = flstmt.column_int(23);
-				t.numsat = flstmt.column_int(24);
-				t.fmode = flstmt.column_int(25);
-				t.rssi  = flstmt.column_int(26);
-				t.status = flstmt.column_int(27);
-				t.activewp = flstmt.column_int(28);
-				t.navmode = flstmt.column_int(29);
-				t.hwfail = flstmt.column_int(30);
-				t.windx = flstmt.column_int(31);
-				t.windy = flstmt.column_int(32);
-				t.windz = flstmt.column_int(33);
-				t.energy = flstmt.column_int(34);
+			Sqlite.Statement flstmt;
+			var rc = db.prepare_v2 (flquery, flquery.length, out flstmt);
+			if (rc == Sqlite.OK) {
+				flstmt.bind_int (1, idx);
+				flstmt.bind_int (2, nidx);
+				while (flstmt.step () == Sqlite.ROW) {
+					n++;
+					t.id = flstmt.column_int(0);
+					t.idx = flstmt.column_int(1);
+					t.stamp = flstmt.column_int64(2);
+					t.lat = flstmt.column_double(3);
+					t.lon = flstmt.column_double(4);
+					t.alt = flstmt.column_int(5);
+					t.galt = flstmt.column_int(6);
+					t.spd =  flstmt.column_double(7);
+					t.amps = flstmt.column_double(8);
+					t.volts = flstmt.column_double(9);
+					t.hlat = flstmt.column_double(10);
+					t.hlon = flstmt.column_double(11);
+					t.vrange =  flstmt.column_double(12);
+					t.cse = flstmt.column_int(13);
+					t.cog = flstmt.column_int(14);
+					t.bearing = flstmt.column_int(15);
+					t.roll = flstmt.column_int(16);
+					t.pitch = flstmt.column_int(17);
+					t.hdop = flstmt.column_int(18);
+					t.ail = flstmt.column_int(19);
+					t.ele = flstmt.column_int(20);
+					t.rud = flstmt.column_int(21);
+					t.thr = flstmt.column_int(22);
+					t.fix = flstmt.column_int(23);
+					t.numsat = flstmt.column_int(24);
+					t.fmode = flstmt.column_int(25);
+					t.rssi  = flstmt.column_int(26);
+					t.status = flstmt.column_int(27);
+					t.activewp = flstmt.column_int(28);
+					t.navmode = flstmt.column_int(29);
+					t.hwfail = flstmt.column_int(30);
+					t.windx = flstmt.column_int(31);
+					t.windy = flstmt.column_int(32);
+					t.windz = flstmt.column_int(33);
+					t.energy = flstmt.column_int(34);
+				}
 			}
 			return (n==1);
 		}
@@ -381,20 +375,13 @@ namespace SQL {
 				return false;
 			}
 		}
-
-		public void dbclose() {
-			bbstmt = null;
-			mtstmt = null;
-			flstmt = null;
-			logstmt = null;
-			db = null;
-			MWPLog.message("Closing SQLite db\n");
-		}
 	}
 }
 
 #if TEST
-void testdb(string dbname, int idx) {
+
+public class TestDB : Object {
+	public void testdb(string dbname, int idx) {
 		var d = new SQL.Db(dbname);
 		var s = d.get_errors(idx);
 		print("Idx %d, errs %s\n", idx, s);
@@ -433,16 +420,15 @@ void testdb(string dbname, int idx) {
 		var mfn = d.get_misc(idx, "mission");
 		print("Get mission %s\n", mfn);
 		print("finish DB\n");
-		d.dbclose();
+	}
 }
 
 static int main(string?[]args) {
 	if (args.length > 2) {
 		var idx = int.parse(args[2]);
-		testdb(args[1], idx);
-		Thread.usleep(1000*1000*1000);
+		var tb = new TestDB();
+		tb.testdb(args[1], idx);
 	}
-
 	return 0;
 }
 #endif

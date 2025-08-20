@@ -89,20 +89,6 @@ namespace SLG {
 		private unowned Gtk.ColumnViewColumn isok;
 		[GtkChild]
 		private unowned Gtk.ColumnViewColumn cb;
-		/**
-		[GtkChild]
-		private unowned Gtk.Button video_btn;
-		[GtkChild]
-		private unowned Gtk.Label video_name;
-		[GtkChild]
-		internal unowned Gtk.CheckButton vidbutton;
-		[GtkChild]
-		internal unowned Gtk.Entry min_entry;
-		[GtkChild]
-		internal unowned Gtk.Entry sec_entry;
-		[GtkChild]
-		internal unowned Gtk.Entry skip_entry;
-		**/
 		[GtkChild]
 		private unowned Gtk.Button cancel;
 		[GtkChild]
@@ -302,14 +288,14 @@ namespace SLG {
 						string ms = "%3d: %s %s".printf(e.idx, e.timestamp, format_duration(e.duration));
 						SLG.mlist += ms;
 					}
-					db.dbclose();
+					db=null;
 					MWPLog.message("Sql log player %s %s\n", bblname.get_path(), dbname);
 					complete(dbname, o.idx);
 					close();
 				});
 
 			cancel.clicked.connect(() => {
-					db.dbclose();
+					db=null;
 					MapUtils.centre_on(clat, clon, zoom);
 					close();
 				});

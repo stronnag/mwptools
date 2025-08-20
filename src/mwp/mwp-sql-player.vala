@@ -268,7 +268,6 @@ public class SQLPlayer : Object {
 
 	~SQLPlayer() {
 		if (db != null) {
-			db.dbclose();
 			db = null;
 		}
 		trks={};
@@ -292,7 +291,6 @@ public class SQLPlayer : Object {
 		}
 		db.populate_odo(idx);
 		Odo.view.populate(Odo.stats);
-		db.dbclose();
 		db = null;
 		Mwp.set_replay_menus(true);
 	}
