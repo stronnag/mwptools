@@ -20,10 +20,11 @@
 
 namespace Msp {
     public enum Feature {
+		VBAT = (1<<1),
 		GEOZONE = (1 << 4),
         GPS = (1 << 7),
         TELEMETRY = (1 << 10),
-        CURRENT = (1 << 11)
+        CURRENT = (1 << 11),
     }
 
     public enum Ltm {

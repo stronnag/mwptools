@@ -122,6 +122,8 @@ public class MWPSettings : GLib.Object {
 	public string default_video_uri {get; set; default="";}
 	public string sqlite_log_path {get; set; default="";}
 
+	public bool touch_drag_disconnected {get; set; default=false;}
+
 	construct {
 #if DARWIN
 		string uc =  Environment.get_user_config_dir();
@@ -251,6 +253,7 @@ public class MWPSettings : GLib.Object {
 		settings.bind("msprc-settings", this, "msprc-settings", SettingsBindFlags.DEFAULT);
 		settings.bind("default-video-uri", this, "default-video-uri", SettingsBindFlags.DEFAULT);
 		settings.bind("sqlite-log-path", this, "sqlite-log-path", SettingsBindFlags.DEFAULT);
+		settings.bind("touch-drag-disconnected", this, "touch-drag-disconnected", SettingsBindFlags.DEFAULT);
 
 		settings.bind("p-width", Mwp.window, "default-width", SettingsBindFlags.DEFAULT);
 		settings.bind("p-height", Mwp.window, "default-height", SettingsBindFlags.DEFAULT);

@@ -416,6 +416,17 @@ public class SQLPlayer : Object {
 			Mwp.sensor = (uint16)m.sensors;
 			Mwp.update_sensor_array();
 			Mwp.msp.td.state.reason = m.disarm;
+			if ((Mwp.feature_mask & Msp.Feature.GPS) == Msp.Feature.GPS) {
+				Mwp.sflags |= Mwp.SPK.GPS;
+			}
+			if ((Mwp.feature_mask & Msp.Feature.VBAT) == Msp.Feature.VBAT) {
+					Mwp.sflags |= Mwp.SPK.Volts;
+			}
+			if((Mwp.sensor & Msp.Sensors.BARO) == Msp.Sensors.BARO) {
+				Mwp.sflags |= Mwp.SPK.BARO;
+			} else if((Mwp.sensor & Msp.Sensors.GPS) == Msp.Sensors.GPS) {
+				Mwp.sflags |= Mwp.SPK.ELEV;
+			}
 		}
 		Mwp.stack_size = 0;
 		Mwp.set_replay_menus(false);
@@ -485,7 +496,6 @@ public class SQLPlayer : Object {
 
 		if(!Mwp.have_home) {
 			Mwp.home_changed(t.hlat, t.hlon);
-			Mwp.sflags |= Mwp.SPK.GPS;
 			Mwp.want_special |= Mwp.POSMODE.HOME;
 			Mwp.process_pos_states(t.hlat, t.hlon, 0, "SQL Origin", -2);
 		}

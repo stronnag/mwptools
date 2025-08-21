@@ -127,7 +127,7 @@ namespace Flysky {
 						Mwp.update_odo(spd, ddm);
 						if(Mwp.have_home == false && (nsat > 5) && (t.ilat != 0 && t.ilon != 0) ) {
 							Mwp.home_changed(dlat, dlon);
-							Mwp.sflags |=  Mwp.SPK.GPS;
+							Mwp.sflags |=  (Mwp.SPK.GPS|Mwp.SPK.ELEV);
 							Mwp.want_special |= Mwp.POSMODE.HOME;
 							MBus.update_home();
 						}

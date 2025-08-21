@@ -801,7 +801,7 @@ namespace Mwp {
         }
 
         if((sensor & Msp.Sensors.GPS) == Msp.Sensors.GPS) {
-            sflags |= SPK.GPS;
+            sflags |= (SPK.GPS|SPK.ELEV);
             if((navcap & NAVCAPS.NAVSTATUS) == NAVCAPS.NAVSTATUS) {
                 requests += Msp.Cmds.NAV_STATUS;
                 reqsize += MSize.MSP_NAV_STATUS;

@@ -171,11 +171,10 @@ namespace TTS {
 					mt.message(TTS.Vox.HEADING);
 					mt.message(TTS.Vox.RANGE_BRG);
 				}
-				if((mask & Mwp.SPK.ELEV) == Mwp.SPK.ELEV) {
-					mt.message(TTS.Vox.ELEVATION);
-				}
-				else if((mask & Mwp.SPK.BARO) == Mwp.SPK.BARO) {
+				if((mask & Mwp.SPK.BARO) == Mwp.SPK.BARO) {
 					mt.message(TTS.Vox.BARO);
+				} else if((mask & Mwp.SPK.ELEV) == Mwp.SPK.ELEV) {
+					mt.message(TTS.Vox.ELEVATION);
 				}
 			}
 			if((mask & Mwp.SPK.Volts) == Mwp.SPK.Volts && Mwp.msp.td.power.volts > 0.0) {
@@ -333,7 +332,7 @@ public class AudioThread : Object {
 						s = "Voltage %.1f".printf(Mwp.msp.td.power.volts).replace(".0","");
 						break;
 					case TTS.Vox.ELEVATION:
-						s = "Elevation %s.".printf(say_nicely((int)Units.distance(Mwp.msp.td.alt.alt)));
+						s = "Elevation %s.".printf(say_nicely((int)Units.distance(Mwp.msp.td.gps.alt)));
 						break;
 					case TTS.Vox.BARO:
 						double estalt = (double)Mwp.msp.td.alt.alt;

@@ -82,38 +82,31 @@ public class MWPMarker : Shumate.Marker {
 		((Gtk.Widget)this).add_controller(gestd);
 		gestd.set_exclusive(true);
 		gestd.drag_begin.connect((x,y) => {
+				gestd.set_state(Gtk.EventSequenceState.CLAIMED); // stops drag being propogated
 				var dev = gestd.get_device();
 				bool t = (dev != null && dev.source ==  Gdk.InputSource.TOUCHSCREEN);
-				gestd.set_state(Gtk.EventSequenceState.CLAIMED); // stops drag being propogated
 				Gis.map.viewport.location_to_widget_coords(Gis.map, this.latitude, this.longitude, out _sx, out _sy);
 				drag_begin(t);
 			});
 		gestd.drag_update.connect((x,y) => {
-				var seq = gestd.get_last_updated_sequence();
-				if(gestd.get_sequence_state(seq) == Gtk.EventSequenceState.CLAIMED) {
-					double lat,lon;
-					var dev = gestd.get_device();
-					bool t = (dev != null && dev.source ==  Gdk.InputSource.TOUCHSCREEN);
-					if(t) {
-						var tfactor = MwpScreen.get_scale();
-						x = x / tfactor;
-						y = y / tfactor;
-					}
-					_sx +=x;
-					_sy +=y;
-					Gis.map.viewport.widget_coords_to_location (Gis.map, _sx, _sy, out lat, out lon);
-					/**
-					Gis.map.viewport.location_to_widget_coords(this, this.latitude, this.longitude, out _sx, out _sy);
-					_sx += x;
-					_sy += y;
-					Gis.map.viewport.widget_coords_to_location (this, _sx, _sy, out lat, out lon);
-					**/
-					this.set_location (lat, lon);
-					Mwp.set_pos_label(lat, lon);
-					drag_motion(lat, lon);
+				gestd.set_state(Gtk.EventSequenceState.CLAIMED); // stops drag being propogated
+				double lat,lon;
+				var dev = gestd.get_device();
+				bool t = (dev != null && dev.source ==  Gdk.InputSource.TOUCHSCREEN);
+				if(t) {
+					var tfactor = MwpScreen.get_scale();
+					x = x / tfactor;
+					y = y / tfactor;
 				}
+				_sx +=x;
+				_sy +=y;
+				Gis.map.viewport.widget_coords_to_location (Gis.map, _sx, _sy, out lat, out lon);
+				this.set_location (lat, lon);
+				Mwp.set_pos_label(lat, lon);
+				drag_motion(lat, lon);
 			});
 		gestd.drag_end.connect((x,y) => {
+				gestd.set_state(Gtk.EventSequenceState.CLAIMED); // stops drag being propogated
 				var dev = gestd.get_device();
 				bool t = (dev != null && dev.source ==  Gdk.InputSource.TOUCHSCREEN);
 				drag_end(t);

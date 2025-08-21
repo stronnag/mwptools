@@ -1634,8 +1634,14 @@ namespace Mwp {
             uint16 mask = (1 << i);
             bool setx = ((sensor & mask) != 0);
             sensor_sts[i+1].label = "<span foreground = \"%s\">▌</span>".printf((setx) ? "green" : "red");
-        }
-        sensor_sts[0].label = sensor_sts[1].label;
+		}
+		if ((sensor & Msp.Sensors.BARO) == Msp.Sensors.BARO) {
+			sflags |= Mwp.SPK.BARO;
+		}
+		if ((sensor & Msp.Sensors.GPS) == Msp.Sensors.GPS) {
+			sflags |= Mwp.SPK.GPS;
+		}
+		sensor_sts[0].label = sensor_sts[1].label;
     }
 
     private void  alert_broken_sensors(uint8 val) {

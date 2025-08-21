@@ -223,7 +223,7 @@ namespace CRSF {
 						} else if(Mwp.have_home == false && (nsat > 5) && (lat != 0 && lon != 0) ) {
 
 							Mwp.home_changed(dlat, dlon);
-							Mwp.sflags |= Mwp.SPK.GPS;
+							Mwp.sflags |= (Mwp.SPK.GPS|Mwp.SPK.ELEV);
 							Mwp.want_special |= Mwp.POSMODE.HOME;
 							MBus.update_home();
 						}

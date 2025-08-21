@@ -128,9 +128,8 @@ namespace MsnTools {
 	}
 
 	Shumate.PathLayer []jumplist;
-
-	Shumate.Marker tempmk = null;
 	int temppt = 0;
+
 	public void alt_updates(Mission m, Gtk.Bitset bs, double v, bool as_amsl) {
 		for(var i = 0; i < m.npoints; i++) {
 			if (bs.contains(i)) {
@@ -591,10 +590,6 @@ namespace MsnTools {
 
 			mk.set_tooltip_markup(set_tip(mk, m, true));
 			mk.drag_motion.connect((la, lo) => {
-					if(tempmk != null) {
-						tempmk.latitude = la;
-						tempmk.longitude = lo;
-					}
 					MissionManager.is_dirty = true;
 					var idx = m.get_index(mk.no);
 					if(m.points[idx].action == Msp.Action.LAND) {
@@ -608,8 +603,8 @@ namespace MsnTools {
 				});
 
 			mk.drag_begin.connect((t) => {
-					if(t) {
-						temppt = 0;
+					if(t && Mwp.conf.touch_drag_disconnected) {
+						temppt = -1;
 						var rl = Gis.mm_layer.get_markers();
 						uint len = rl.length ();
 						for( unowned var lp = rl.first(); lp != null; lp = lp.next) {
@@ -618,20 +613,25 @@ namespace MsnTools {
 								break;
 							}
 						}
-						Gis.mp_layer.remove_node(mk);
-						tempmk = new Shumate.Marker();
-						tempmk.set_location (mk.latitude, mk.longitude);
-						Gis.mp_layer.insert_node(tempmk, temppt);
+						if(temppt != -1) {
+							Gis.mp_layer.remove_node(mk);
+							var tempmk = new Shumate.Point();
+							tempmk.set_location (mk.latitude, mk.longitude);
+							Gis.mp_layer.insert_node(tempmk, temppt);
+						}
 					}
 					mk.set_tooltip_markup(set_tip(mk,m,false));
 				});
 
 			mk.drag_end.connect((t) => {
 					MissionManager.is_dirty = true;
-					if(t) {
-						Gis.mp_layer.remove_node(tempmk);
-						Gis.mp_layer.insert_node(mk, temppt);
-						tempmk = null;
+					if(t && Mwp.conf.touch_drag_disconnected) {
+						if (temppt != -1) {
+							Gis.mp_layer.remove_all();
+							Gis.mm_layer.get_markers().@foreach((mm) => {
+									Gis.mp_layer.add_node(mm);
+								});
+						}
 					}
 					m.calc_mission_distance();
 					mk.set_tooltip_markup(set_tip(mk,m,true));
