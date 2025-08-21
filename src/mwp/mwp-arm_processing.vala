@@ -79,7 +79,7 @@ namespace Mwp {
 
 				sflags |= SPK.Volts;
 
-                if (conf.audioarmed == true) {
+                if (conf.audioarmed == true || Mwp.window.audio_cb.active) {
                     TTS.say_state |= SAY_WHAT.Nav;
                     MWPLog.message("Enable nav speak (%x)\n", sflags);
                     //navstatus.set_audio_status(say_state);

@@ -32,10 +32,10 @@ public class SQLSlider : Gtk.Window {
 
 	public SQLSlider(string fn, int idx) {
         Mwp.xlog = Mwp.conf.logarmed;
-        Mwp.xaudio = Mwp.conf.audioarmed;
+        //Mwp.xaudio = Mwp.conf.audioarmed;
 
 		Mwp.conf.logarmed = false;
-		Mwp.conf.audioarmed = false;
+		//Mwp.conf.audioarmed = false;
 
 		Mwp.craft.remove_all();
 		sp = new SQLPlayer(/*dragq*/);
@@ -276,7 +276,7 @@ public class SQLPlayer : Object {
 		Mwp.replayer = Mwp.Player.NONE;
 		Mwp.stack_size = xstack;
 		Mwp.conf.logarmed = Mwp.xlog;
-		Mwp.conf.audioarmed = Mwp.xaudio;
+		//		Mwp.conf.audioarmed = Mwp.xaudio;
 	}
 
 	public SQLPlayer() {

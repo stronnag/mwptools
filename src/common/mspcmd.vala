@@ -299,6 +299,24 @@ namespace Msp {
         "RTH",
         "Mission" };
 
+	public enum NavStates {
+		NONE=0,
+		RTH_START=1,
+		RTH_INTERRUPT=2,
+		POSHOLD_INF=3,
+		POSHOLD_TIMED=4,
+		WP_ENROUTE=5,
+		WP_NEXT=6,
+		JUMP=7,
+		START_LAND=8,
+		LANDING=9,
+		LANDED=10,
+		SETTLE=11,
+		START_DESCENT=12,
+		HOVER_HOME=13,
+		EMERGENCY_LAND=14
+	}
+
     private const string[] nav_states =  {
         "None",			// 0
         "RTH Start",           	// 1

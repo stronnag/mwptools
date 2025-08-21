@@ -161,6 +161,11 @@ namespace Mwp {
 		} else
 			last_crit = 0;
 
+		// FIxME? INAV does not tranistion the nav mode alas
+		if (ns.nav_mode  == Msp.NavStates.NONE && ser.td.state.ltmstate == Msp.Ltm.LAND) {
+			ns.nav_mode = Msp.NavStates.LANDING;
+		}
+
 		ser.td.state.navmode = 	ns.nav_mode;
 		ser.td.state.gpsmode = 	ns.gps_mode;
 		ser.td.state.action  = 	ns.action;
