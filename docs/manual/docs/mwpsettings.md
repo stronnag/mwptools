@@ -94,6 +94,7 @@
 | sqlite-log-path | Directory to save SQLite log files | Directory to save SQLite log files, if not set, SQLite log files ("Interactive FlightLog replay" are not persisted. | "" |
 | stats-timeout | Timeout for flight statistics display (s) | Timeout before the flight statistics popup automatically closes. A value of 0 means no timeout. | 30 |
 | symbol-scale | Symbol scale | Symbol scale factor, scales map symbols as multiplier (see also `touch-scale`), | 1.0 |
+| touch-drag-disconnected | Touch drag behaviour | If true, dragging a mission point on a touch screen will disconnect the marker from the path, and reconnect it when the drag is completed. This may improve touch drag behaviour. | false |
 | touch-scale | Touch symbol scale | Symbol scale factor, scales map symbols as multiplier (for touch screens); (see also `symbol-scale`), | 1.0 |
 | uc-mission-tags | Upper case mission XML tags | If true, MISSION, VERSION and MISSIONITEM tags are upper case (for interoperability with legacy Android applications) | false |
 | uilang | Language Handling | "en" do everything as English (UI numeric decimal points, voice), "ev" do voice as English (so say 'point' for decimals even when shown as 'comma') | "" |
