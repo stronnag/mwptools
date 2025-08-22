@@ -380,7 +380,7 @@ public class WPPopEdit : Adw.Window {
 	public void setup_ll_listener(int idx) {
 		unowned MWPMarker? m0 = MsnTools.search_markers_by_id(idx);
 		showlle(m0.latitude, m0.longitude);
-		m0.drag_motion.connect((la, lo) => {
+		m0.drag_motion.connect((la, lo, t) => {
 				showlle(la, lo);
 			});
 	}

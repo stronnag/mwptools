@@ -43,6 +43,9 @@ public class GZEdit : Adw.Window {
 	private GLib.MenuModel menu;
 	private GLib.SimpleActionGroup dg;
 
+	private MWPMarker dmk;
+	private int dmkpos;
+
 	enum Buttons {
 		ADD,
 		PREV,
@@ -67,6 +70,8 @@ public class GZEdit : Adw.Window {
 	public GZEdit() {
 		var gbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 2);
 
+		dmk = null;
+		dmkpos = -1;
 		var tbox = new Adw.ToolbarView();
 		var header_bar = new Adw.HeaderBar();
 		tbox.add_top_bar(header_bar);
@@ -123,7 +128,7 @@ public class GZEdit : Adw.Window {
 					MwpMenu.set_menu_state(Mwp.window, "gzdelete", true);
 				}
 				mk.drag_end.connect(on_poly_finish);
-
+				mk.drag_begin.connect(on_poly_begin);
 			});
 		dg.add_action(aq);
 		aq = new GLib.SimpleAction("gzdelete", null);
@@ -134,6 +139,7 @@ public class GZEdit : Adw.Window {
 				var i = 0;
 				el.pl.get_nodes().foreach( (e) => {
 						if(i == popno) {
+							((MWPMarker)e).drag_begin.disconnect(on_poly_begin);
 							((MWPMarker)e).drag_end.disconnect(on_poly_finish);
 							((MWPMarker)e).popup_request.disconnect(on_poly_capture);
 							el.pl.remove_node(e);
@@ -438,6 +444,7 @@ public class GZEdit : Adw.Window {
 					((MWPLabel)mk).set_draggable(true);
 					ovl.add_marker((MWPLabel)mk);
 					((MWPLabel)mk).drag_end.connect(on_poly_finish);
+					((MWPLabel)mk).drag_begin.connect(on_poly_begin);
 					((MWPLabel)mk).popup_request.connect(on_poly_capture);
 					nz++;
 				});
@@ -472,6 +479,7 @@ public class GZEdit : Adw.Window {
 			if(ml != null) {
 				ovl.get_mlayer().get_markers().foreach((mk) => {
 						((MWPMarker)mk).drag_end.disconnect(on_poly_finish);
+						((MWPMarker)mk).drag_end.disconnect(on_poly_begin);
 						((MWPMarker)mk).popup_request.disconnect(on_poly_capture);
 						((MWPMarker)mk).drag_end.disconnect(on_circ_finish);
 						((MWPMarker)mk).drag_motion.disconnect(on_circ_motion);
@@ -631,7 +639,41 @@ public class GZEdit : Adw.Window {
 	}
 	*/
 
+	public void on_poly_begin(MWPMarker mk, bool t) {
+		if (t) {
+			unowned OverlayItem el = ovl.get_elements().nth_data(nitem);
+			var mplist = el.pl.get_nodes();
+			int lpos = -1;
+			for (unowned var lp = mplist.first(); lp != null; lp = lp.next) {
+				if(((MWPMarker)lp.data).no == mk.no) {
+					if ((MWPMarker)lp.data == mk) {
+						lpos = mplist.position(lp);
+						break;
+					}
+				}
+			}
+			if (lpos != -1) {
+				dmk = new MWPMarker();
+				dmk.latitude = mk.latitude;
+				dmk.longitude = mk.longitude;
+				dmk.draggable = false;
+				dmk.visible = false;
+				var len = (int)mplist.length();
+				el.pl.remove_node(mk);
+				dmkpos = len - lpos - 1;
+				el.pl.insert_node(dmk, dmkpos);
+			}
+		}
+	}
+
 	public void on_poly_finish(MWPMarker mk, bool t) {
+		if(t && dmk != null) {
+			unowned OverlayItem el = ovl.get_elements().nth_data(nitem);
+			el.pl.remove_node(dmk);
+			el.pl.insert_node(mk, dmkpos);
+			dmk = null;
+		}
+
 		var txt = ((MWPLabel)mk).get_text();
 		if (txt != null) {
 			var parts = txt.split("/");
@@ -650,8 +692,10 @@ public class GZEdit : Adw.Window {
 		}
 	}
 
-	public void on_circ_motion(MWPMarker mk, double x, double y) {
-		update_circle(mk);
+	public void on_circ_motion(MWPMarker mk, double x, double y, bool t) {
+		if (!t) {
+			update_circle(mk);
+		}
 	}
 
 	public void update_circle(MWPMarker mk) {
@@ -668,6 +712,10 @@ public class GZEdit : Adw.Window {
 	}
 
 	public void on_circ_finish(MWPMarker mk, bool t) {
+		if (t) {
+			update_circle(mk);
+		}
+
 		unowned OverlayItem elm = ovl.get_elements().nth_data(nitem);
 		elm.circ.lat = mk.latitude;
 		int k = Mwp.gzr.find_vertex(nitem, 0);

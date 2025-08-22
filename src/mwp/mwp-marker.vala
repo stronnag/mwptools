@@ -31,7 +31,7 @@ public class MWPMarker : Shumate.Marker {
 	public signal void leave();
 	public signal void enter(double x, double y);
 	public signal void popup_request(int n, double x, double y);
-	public signal void drag_motion(double lat, double lon);
+	public signal void drag_motion(double lat, double lon, bool t);
 	public signal void drag_begin(bool t);
 	public signal void drag_end(bool t);
 
@@ -93,17 +93,19 @@ public class MWPMarker : Shumate.Marker {
 				double lat,lon;
 				var dev = gestd.get_device();
 				bool t = (dev != null && dev.source ==  Gdk.InputSource.TOUCHSCREEN);
+				/*
 				if(t) {
 					var tfactor = MwpScreen.get_scale();
 					x = x / tfactor;
 					y = y / tfactor;
 				}
+				**/
 				_sx +=x;
 				_sy +=y;
 				Gis.map.viewport.widget_coords_to_location (Gis.map, _sx, _sy, out lat, out lon);
 				this.set_location (lat, lon);
 				Mwp.set_pos_label(lat, lon);
-				drag_motion(lat, lon);
+				drag_motion(lat, lon, t);
 			});
 		gestd.drag_end.connect((x,y) => {
 				gestd.set_state(Gtk.EventSequenceState.CLAIMED); // stops drag being propogated

@@ -731,6 +731,7 @@
     </key>
 
    <key name="touch-drag-disconnected" type="b">
+     <default>true</default>
      <summary>Touch drag behaviour</summary>
      <description>If true, dragging a mission point on a touch screen will disconnect the marker from the path, and reconnect it when the drag is completed. This may improve touch drag behaviour.</description>
      <default>false</default>

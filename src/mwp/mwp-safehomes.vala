@@ -90,8 +90,17 @@ public class SafeHomeMarkers : GLib.Object {
 	public void show_safe_home(int idx, SafeHome h) {
 		if(onscreen[idx] == false) {
 			safelayer.add_marker(safept[idx]);
-			safept[idx].drag_motion.connect((la,lo) => {
-					safept_move(idx, la, lo);
+
+			safept[idx].drag_motion.connect((la,lo,t) => {
+					if (!t) {
+						safept_move(idx, la, lo);
+					}
+				});
+
+			safept[idx].drag_end.connect((t) => {
+					if (t) {
+						safept_move(idx, safept[idx].latitude, safept[idx].longitude);
+					}
 				});
 
 			safept[idx].popup_request.connect(( n, x, y) => {

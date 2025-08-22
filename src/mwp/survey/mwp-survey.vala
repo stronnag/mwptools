@@ -446,15 +446,36 @@ namespace Survey {
 					pop.pop.popup();
 				});
 			Gis.svy_markers.add_marker(mk);
+			MWPMarker mp = new MWPMarker();
+			mp.no = mk.no;
+			mp.latitude = plat;
+			mp.longitude = plon;
+			mp.visible = false;
+
+
 			if(ipt == -1) {
-				Gis.svy_path.add_node(mk);
+				Gis.svy_path.add_node(mp);
 			} else {
-				Gis.svy_path.insert_node (mk, (uint)ipt);
+				Gis.svy_path.insert_node (mp, (uint)ipt);
 			}
-			mk.drag_motion.connect((la,lo) => {
-					validate_bbox();
-					if(genpts != 0) {
-						generate_path();
+			mk.drag_motion.connect((la,lo, t) => {
+					if(!t) {
+						mp.latitude = mk.latitude;
+						mp.longitude = mk.longitude;
+						validate_bbox();
+						if(genpts != 0) {
+							generate_path();
+						}
+					}
+				});
+			mk.drag_end.connect((t) => {
+					if(t) {
+						mp.latitude = mk.latitude;
+						mp.longitude = mk.longitude;
+						validate_bbox();
+						if(genpts != 0) {
+							generate_path();
+						}
 					}
 				});
 			return mk;

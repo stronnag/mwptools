@@ -122,7 +122,7 @@ public class MWPSettings : GLib.Object {
 	public string default_video_uri {get; set; default="";}
 	public string sqlite_log_path {get; set; default="";}
 
-	public bool touch_drag_disconnected {get; set; default=false;}
+	public bool touch_drag_disconnected {get; set; default=true;}
 
 	construct {
 #if DARWIN

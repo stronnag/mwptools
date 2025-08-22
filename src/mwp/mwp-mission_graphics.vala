@@ -128,7 +128,6 @@ namespace MsnTools {
 	}
 
 	Shumate.PathLayer []jumplist;
-	int temppt = 0;
 
 	public void alt_updates(Mission m, Gtk.Bitset bs, double v, bool as_amsl) {
 		for(var i = 0; i < m.npoints; i++) {
@@ -507,6 +506,7 @@ namespace MsnTools {
 	public void draw_mission(Mission m) {
 		bool have_hp = false;
 		bool have_jump = false;
+		MWPMarker? pt = null;
 		Shumate.PathLayer []jumps = {};
 		int jumptgt;
 
@@ -579,7 +579,12 @@ namespace MsnTools {
 			mk.set_location (lat, lon);
 			Gis.mm_layer.add_marker(mk);
 			if (m.points[i].action != Msp.Action.SET_POI) {
-				Gis.mp_layer.add_node(mk);
+				MWPMarker mz = new MWPMarker();
+				mz.set_location (lat, lon);
+				mz.no = mk.no;
+				mz.set_draggable(false);
+				mz.visible = false;
+				Gis.mp_layer.add_node(mz);
 			}
 
 			if(m.points[i].action == Msp.Action.LAND) {
@@ -589,12 +594,18 @@ namespace MsnTools {
 			}
 
 			mk.set_tooltip_markup(set_tip(mk, m, true));
-			mk.drag_motion.connect((la, lo) => {
+			mk.drag_motion.connect((la, lo, t) => {
 					MissionManager.is_dirty = true;
 					var idx = m.get_index(mk.no);
-					if(m.points[idx].action == Msp.Action.LAND) {
-						if(FWApproach.is_active((int)MissionManager.mdx+8)) {
-							FWPlot.update_laylines((int)MissionManager.mdx+8, mk, true);
+					if (!t) {
+						if (pt != null) {
+							pt.latitude = mk.latitude;
+							pt.longitude = mk.longitude;
+						}
+						if(m.points[idx].action == Msp.Action.LAND) {
+							if(FWApproach.is_active((int)MissionManager.mdx+8)) {
+								FWPlot.update_laylines((int)MissionManager.mdx+8, mk, true);
+							}
 						}
 					}
 					m.points[idx].lat = la;
@@ -603,21 +614,11 @@ namespace MsnTools {
 				});
 
 			mk.drag_begin.connect((t) => {
-					if(t && Mwp.conf.touch_drag_disconnected) {
-						temppt = -1;
-						var rl = Gis.mm_layer.get_markers();
-						uint len = rl.length ();
-						for( unowned var lp = rl.first(); lp != null; lp = lp.next) {
-							if(((MWPMarker)lp.data).no == mk.no) {
-								temppt = (int)len - rl.position(lp) - 1;
-								break;
-							}
-						}
-						if(temppt != -1) {
-							Gis.mp_layer.remove_node(mk);
-							var tempmk = new Shumate.Point();
-							tempmk.set_location (mk.latitude, mk.longitude);
-							Gis.mp_layer.insert_node(tempmk, temppt);
+					var mplist =  Gis.mp_layer.get_nodes();
+					for (unowned var lp = mplist.first(); lp != null; lp = lp.next) {
+						if(((MWPMarker)lp.data).no == mk.no) {
+							pt = (MWPMarker)lp.data;
+							break;
 						}
 					}
 					mk.set_tooltip_markup(set_tip(mk,m,false));
@@ -625,14 +626,19 @@ namespace MsnTools {
 
 			mk.drag_end.connect((t) => {
 					MissionManager.is_dirty = true;
-					if(t && Mwp.conf.touch_drag_disconnected) {
-						if (temppt != -1) {
-							Gis.mp_layer.remove_all();
-							Gis.mm_layer.get_markers().@foreach((mm) => {
-									Gis.mp_layer.add_node(mm);
-								});
+					if (t) {
+						if (pt != null) {
+							pt.latitude = mk.latitude;
+							pt.longitude = mk.longitude;
+						}
+						var idx = m.get_index(mk.no);
+						if(m.points[idx].action == Msp.Action.LAND) {
+							if(FWApproach.is_active((int)MissionManager.mdx+8)) {
+								FWPlot.update_laylines((int)MissionManager.mdx+8, mk, true);
+							}
 						}
 					}
+					pt = null;
 					m.calc_mission_distance();
 					mk.set_tooltip_markup(set_tip(mk,m,true));
 				});

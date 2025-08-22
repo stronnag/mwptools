@@ -86,8 +86,10 @@ namespace FWPlot {
 			var pts = lpaths[pi].get_nodes();
 			bool upd = (pts != null && pts.length() > 0);
 			if(lnd.ex1) {
-				ip0 = mk;
-			} else {
+				ip0 = new Shumate.Marker(); //mk;
+                ip0.latitude = mk.latitude;
+                ip0.longitude = mk.longitude;
+            } else {
 				ip0 =  set_laypoint(lnd.dirn1, mk.latitude, mk.longitude);
 			}
 			if (upd) {
@@ -114,7 +116,9 @@ namespace FWPlot {
 			var pts = lpaths[pi].get_nodes();
 			bool upd = (pts != null && pts.length() > 0);
 			if(lnd.ex2) {
-				ip0 = mk;
+				ip0 = new Shumate.Marker(); //mk;
+                ip0.latitude = mk.latitude;
+                ip0.longitude = mk.longitude;
 			} else {
 				ip0 =  set_laypoint(lnd.dirn2, mk.latitude, mk.longitude);
 			}
@@ -160,7 +164,10 @@ namespace FWPlot {
 			if(ex) {
 				apaths[pi].add_node(ip0);
 			} else {
-				apaths[pi].add_node(mk);
+                var mp = new Shumate.Marker();
+                mp.latitude = mk.latitude;
+                mp.longitude = mk.longitude;
+                apaths[pi].add_node(mp);
 				ipx =  set_laypoint(xdir, ip0.latitude, ip0.longitude, fwax);
 				apaths[pi].add_node(ipx);
 				apaths[pi].add_node(ip0);

@@ -117,10 +117,24 @@ namespace Measurer {
 			l.latitude = lat;
 			l.longitude = lon;
 			l.set_draggable(true);
-			pl.add_node(l);
+			var pt = new Shumate.Point();
+			pt.latitude = lat;
+			pt.longitude = lon;
+
+			pl.add_node(pt);
 			ml.add_marker(l);
-			l.drag_motion.connect(() => {
+			l.drag_motion.connect((la,lo,t) => {
+					if(!t) {
+						pt.latitude = l.latitude;
+						pt.longitude = l.longitude;
+					}
 					calc_distance();
+				});
+			l.drag_end.connect((t) => {
+					if(t) {
+						pt.latitude = l.latitude;
+						pt.longitude = l.longitude;
+					}
 				});
 			calc_distance();
 		}
@@ -140,7 +154,7 @@ namespace Measurer {
 			double lat = 0;
 			double lon = 0;
 			bool calc = false;
-			pl.get_nodes().foreach((n) => {
+			ml.get_markers().foreach((n) => {
 					lon = ((Shumate.Marker)n).longitude;
 					lat = ((Shumate.Marker)n).latitude;
 					double c;
