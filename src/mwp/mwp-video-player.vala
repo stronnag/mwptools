@@ -1,6 +1,27 @@
 using Gtk;
 using Gst;
 
+public class VideoBox : GLib.Object {
+	public Gtk.MediaFile media;
+
+	public VideoBox() {	}
+
+	public void init(string fn) {
+		File f;
+		if(fn.contains("://")) {
+			f = File.new_for_uri(fn);
+		} else {
+			f = File.new_for_path(fn);
+		}
+		media = Gtk.MediaFile.for_file(f);
+		MWPLog.message(":DBG: Vid from %s %p\n", fn, media);
+		Mwp.window.close_request.connect(() => {
+				media.set_playing(false);
+				return false;
+			});
+	}
+}
+
 public class VideoPlayer : Adw.Window {
 	private Element videosink;
 	private Element playbin;

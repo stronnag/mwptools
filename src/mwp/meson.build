@@ -39,7 +39,7 @@ mwpsrcs = files('mwp-about.vala', 'mwp-ah_widget.vala',
                 'mwp-mission-preview.vala', 'mwp-mission.vala',
                 'mwp-mission_graphics.vala', 'mwp-mission_manager.vala',
                 'mwp-mission_tote.vala', 'mwp-mm_support.vala', 'mwp-msp_radar.vala',
-                'mwp-odo.vala', 'mwp-paned.vala', 'mwp-permids.vala',
+                'mwp-odo.vala', 'mwp-permids.vala',
                 'mwp-prefs.vala', 'mwp-preview-mission.vala', 'mwp-radar-cache.vala',
                 'mwp-radar_decoders.vala', 'mwp-radar_list.vala',
                 'mwp-radar_map_support.vala', 'mwp-range-circles.vala',
@@ -75,6 +75,8 @@ mwpsrcs = files('mwp-about.vala', 'mwp-ah_widget.vala',
                 'mwp-log-sql.vala',
                 'mwp-sql-player.vala',
                 'mwp-rebase.vala',
+                #'mwp-paned.vala'
+                'mwp-boxed.vala',
                )
 
 mwpdeps = [deps,

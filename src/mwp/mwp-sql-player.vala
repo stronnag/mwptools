@@ -281,6 +281,10 @@ public class SQLPlayer : Object {
 
 	public SQLPlayer() {
 		speed = 1;
+		Mwp.window.close_request.connect(() => {
+				db = null;
+				return false;
+			});
 	}
 
 	public void stop() {

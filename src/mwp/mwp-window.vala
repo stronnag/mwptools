@@ -131,6 +131,8 @@ namespace Mwp {
 		[GtkChild]
 		internal unowned Gtk.ToggleButton map_annotations;
 
+
+		public Gtk.Paned vpane;
 		private StrIntStore pis;
 		private Mwp.GotoDialog posdialog;
 		private Mwp.SCWindow scwindow;
@@ -449,6 +451,8 @@ namespace Mwp {
 			hwstatus[0] = 1; // Assume OK
 			Msp.init();
 
+
+#if USE_OLD_PANEL
 			int fw,fh;
 			Utils.check_pango_size(this, "Monospace", "_00:00:00.0N 000.00.00.0W_", out fw, out fh);
 			// Must match 150% scaling in flight_view
@@ -474,7 +478,6 @@ namespace Mwp {
 				pane_type = 1;
 #endif
 			}
-
 			panelbox = new Panel.Box();
 			if(pane_type == 1) {
 				Adw.OverlaySplitView split_view = new 	Adw.OverlaySplitView();
@@ -522,7 +525,41 @@ namespace Mwp {
 					}
 				}
 			}
+#else
+			Gtk.Paned pane;
 
+			bool vertical = Environment.get_variable("MWP_USE_FPVMODE") == null;
+			if(vertical) {
+				int fw,fh;
+				Utils.check_pango_size(this, "Monospace", "_00:00:00.0N 000.00.00.0W_", out fw, out fh);
+				// Must match 150% scaling in flight_view
+				//			MWPLog.message(":DBG: FW0 %s, panetype %s, pane_width %s\n", fw0.to_string(),  conf.pane_type.to_string(), conf.p_pane_width.to_string());
+				fw = 2+(150*fw)/100;
+				panelbox = new Panel.Box(true);
+				pane = new Gtk.Paned(Gtk.Orientation.HORIZONTAL);
+				pane.set_end_child(panelbox);
+				pane.position = window.default_width - fw;
+				vpane = null;
+			} else {
+				panelbox = new Panel.Box(false);
+				pane = new Gtk.Paned(Gtk.Orientation.HORIZONTAL);
+				vpane = new Gtk.Paned(Gtk.Orientation.VERTICAL);
+				pane.set_end_child(vpane);
+				pane.position = window.default_width / 2 - 1;
+				vpane.set_end_child(panelbox);
+				panelbox.vexpand = false;
+				panelbox.valign = Gtk.Align.END;
+			}
+			pane.set_start_child(Gis.overlay);
+			pane.wide_handle = true;
+			pane.shrink_end_child = false;
+			pane.resize_end_child = false;
+			toaster.set_child(pane);
+			show_sidebar_button.clicked.connect(() => {
+					pane.end_child.visible  = show_sidebar_button.active;
+				});
+
+#endif
 			Gis.setup_map_sources(mapdrop);
 			FWPlot.init();
 			MissionManager.init();
