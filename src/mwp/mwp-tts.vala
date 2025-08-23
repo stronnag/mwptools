@@ -332,7 +332,16 @@ public class AudioThread : Object {
 						s = "Voltage %.1f".printf(Mwp.msp.td.power.volts).replace(".0","");
 						break;
 					case TTS.Vox.ELEVATION:
-						s = "Elevation %s.".printf(say_nicely((int)Units.distance(Mwp.msp.td.gps.alt)));
+						double gpsalt;
+						string gtext;
+						if(Mwp.conf.alt_prefer_agl && Mwp.msp.td.alt.alt !=  Hgt.NODATA) {
+							gpsalt = Mwp.msp.td.alt.agl;
+							gtext = "A. G. L.";
+						} else {
+							gpsalt = Mwp.msp.td.gps.alt;
+							gtext = "Elevation";
+						}
+						s = "%s %s.".printf(gtext, say_nicely((int)Units.distance(gpsalt)));
 						break;
 					case TTS.Vox.BARO:
 						double estalt;
