@@ -625,3 +625,19 @@ namespace JSMisc {
 	}
 #endif
 }
+
+namespace AGL {
+	double get_agl(double lat, double lon, double alt) {
+		double hpa;
+		double velev;
+		double agl = Hgt.NODATA;
+		bool res = HomePoint.get_elevation(out hpa);
+		if (res) {
+			velev = DemManager.lookup(lat, lon);
+			if (velev != Hgt.NODATA) {
+				agl = alt - velev + hpa;
+			}
+		}
+		return agl;
+	}
+}
