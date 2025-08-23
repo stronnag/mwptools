@@ -92,13 +92,13 @@ public class SafeHomeMarkers : GLib.Object {
 			safelayer.add_marker(safept[idx]);
 
 			safept[idx].drag_motion.connect((la,lo,t) => {
-					if (!t) {
+					if (!(t && Mwp.conf.touch_drag_disconnected)) {
 						safept_move(idx, la, lo);
 					}
 				});
 
 			safept[idx].drag_end.connect((t) => {
-					if (t) {
+					if ((t && Mwp.conf.touch_drag_disconnected)) {
 						safept_move(idx, safept[idx].latitude, safept[idx].longitude);
 					}
 				});

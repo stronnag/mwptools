@@ -124,14 +124,14 @@ namespace Measurer {
 			pl.add_node(pt);
 			ml.add_marker(l);
 			l.drag_motion.connect((la,lo,t) => {
-					if(!t) {
+					if(!(t && Mwp.conf.touch_drag_disconnected)) {
 						pt.latitude = l.latitude;
 						pt.longitude = l.longitude;
 					}
 					calc_distance();
 				});
 			l.drag_end.connect((t) => {
-					if(t) {
+					if(t && Mwp.conf.touch_drag_disconnected) {
 						pt.latitude = l.latitude;
 						pt.longitude = l.longitude;
 					}

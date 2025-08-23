@@ -597,7 +597,7 @@ namespace MsnTools {
 			mk.drag_motion.connect((la, lo, t) => {
 					MissionManager.is_dirty = true;
 					var idx = m.get_index(mk.no);
-					if (!t) {
+					if (!(t && Mwp.conf.touch_drag_disconnected)) {
 						if (pt != null) {
 							pt.latitude = mk.latitude;
 							pt.longitude = mk.longitude;
@@ -626,7 +626,7 @@ namespace MsnTools {
 
 			mk.drag_end.connect((t) => {
 					MissionManager.is_dirty = true;
-					if (t) {
+					if ((t && Mwp.conf.touch_drag_disconnected)) {
 						if (pt != null) {
 							pt.latitude = mk.latitude;
 							pt.longitude = mk.longitude;

@@ -459,7 +459,7 @@ namespace Survey {
 				Gis.svy_path.insert_node (mp, (uint)ipt);
 			}
 			mk.drag_motion.connect((la,lo, t) => {
-					if(!t) {
+					if(!(t && Mwp.conf.touch_drag_disconnected)) {
 						mp.latitude = mk.latitude;
 						mp.longitude = mk.longitude;
 						validate_bbox();
@@ -469,7 +469,7 @@ namespace Survey {
 					}
 				});
 			mk.drag_end.connect((t) => {
-					if(t) {
+					if((t && Mwp.conf.touch_drag_disconnected)) {
 						mp.latitude = mk.latitude;
 						mp.longitude = mk.longitude;
 						validate_bbox();

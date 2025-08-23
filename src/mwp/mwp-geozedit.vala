@@ -640,7 +640,7 @@ public class GZEdit : Adw.Window {
 	*/
 
 	public void on_poly_begin(MWPMarker mk, bool t) {
-		if (t) {
+		if ((t && Mwp.conf.touch_drag_disconnected)) {
 			unowned OverlayItem el = ovl.get_elements().nth_data(nitem);
 			var mplist = el.pl.get_nodes();
 			int lpos = -1;
@@ -667,7 +667,7 @@ public class GZEdit : Adw.Window {
 	}
 
 	public void on_poly_finish(MWPMarker mk, bool t) {
-		if(t && dmk != null) {
+		if((t && Mwp.conf.touch_drag_disconnected) && dmk != null) {
 			unowned OverlayItem el = ovl.get_elements().nth_data(nitem);
 			el.pl.remove_node(dmk);
 			el.pl.insert_node(mk, dmkpos);
@@ -693,7 +693,7 @@ public class GZEdit : Adw.Window {
 	}
 
 	public void on_circ_motion(MWPMarker mk, double x, double y, bool t) {
-		if (!t) {
+		if (!(t && Mwp.conf.touch_drag_disconnected)) {
 			update_circle(mk);
 		}
 	}
@@ -712,7 +712,7 @@ public class GZEdit : Adw.Window {
 	}
 
 	public void on_circ_finish(MWPMarker mk, bool t) {
-		if (t) {
+		if ((t && Mwp.conf.touch_drag_disconnected)) {
 			update_circle(mk);
 		}
 
