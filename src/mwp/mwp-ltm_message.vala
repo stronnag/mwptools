@@ -196,6 +196,9 @@ namespace Mwp {
 
 			if(ser.is_main) {
 				if(fvup != 0) {
+					if (Mwp.conf.alt_prefer_agl) {
+						fvup = AGL.prefer_agl(fvup, ref ser.td);
+					}
 					Mwp.panelbox.update(Panel.View.FVIEW, fvup);
 				}
 			} else {

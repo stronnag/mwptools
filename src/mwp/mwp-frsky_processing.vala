@@ -190,6 +190,9 @@ namespace Frsky {
 				}
 				if(ser.is_main) {
 					if(fvup != 0) {
+						if (Mwp.conf.alt_prefer_agl) {
+							fvup = AGL.prefer_agl(fvup, ref ser.td);
+						}
 						Mwp.panelbox.update(Panel.View.FVIEW, fvup);
 					}
 				} else {
@@ -205,13 +208,6 @@ namespace Frsky {
 			s.galt = r;
 			if(ser.td.gps.alt != r) {
 			   ser.td.gps.alt = r;
-			   /*
-			   if (ser.is_main) {
-				   Mwp.panelbox.update(Panel.View.FVIEW, FlightBox.Update.ALT);
-			   } else {
-				   TelemTracker.ttrk.update(ser, TelemTracker.Fields.ALT);
-			   }
-			   */
 			}
 			break;
 
