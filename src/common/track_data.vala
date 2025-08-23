@@ -92,9 +92,11 @@ public struct CompData {
 public struct AltData {
 	public double alt ; 	// m
 	public double vario ; 	// m/s
+	public double agl ; 	// m
 	public void annul() {
 		alt = 0;
 		vario = 0;
+		agl = 0;
 	}
 	public string to_string() {
 		var sb = new StringBuilder("Alt: ");

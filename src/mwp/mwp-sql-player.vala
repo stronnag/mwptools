@@ -612,11 +612,8 @@ public class SQLPlayer : Object {
 		Mwp.alert_broken_sensors((uint8)t.hwfail);
 
 		if(fvup != 0) {
-			if ((fvup & (FlightBox.Update.LAT|FlightBox.Update.LON|FlightBox.Update.ALT)) != 0) 	 {
-				var agl = AGL.get_agl(t.lat, t.lon, (double)t.alt);
-				if (agl !=  Hgt.NODATA) {
-					MWPLog.message(":DBG: idx=%d AGL=%.1f alt=%d\n", t.idx, agl, t.alt);
-				}
+			if (Mwp.conf.alt_prefer_agl) {
+				fvup = AGL.prefer_agl(fvup, ref Mwp.msp.td);
 			}
 			if (upd != DrawMode.OFF) {
 				Mwp.panelbox.update(Panel.View.FVIEW, fvup);

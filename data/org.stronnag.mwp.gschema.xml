@@ -737,5 +737,11 @@
      <default>false</default>
    </key>
 
+   <key name="alt-prefer-agl" type="b">
+     <default>false</default>
+     <summary>Altitude / AGL Display</summary>
+     <description>If true, where valid DEM is available for home and vehicle locations, AGL (Above Ground Level) will be shown in place of home relative altitude.</description>
+     <default>false</default>
+   </key>
  </schema>
 </schemalist>

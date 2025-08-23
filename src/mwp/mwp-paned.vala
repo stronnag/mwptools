@@ -63,15 +63,20 @@ namespace Panel {
 
 		public Box() {
 			v = new Gtk.Paned(Gtk.Orientation.VERTICAL);
+			v.wide_handle = true;
 			// first panel
 			v0 = new Gtk.Paned(Gtk.Orientation.VERTICAL);
+			v0.wide_handle = true;
 			v0h0 = new Gtk.Paned(Gtk.Orientation.HORIZONTAL);
+			v0h0.wide_handle = true;
 			v0h1 = new Gtk.Paned(Gtk.Orientation.HORIZONTAL);
+			v0h1.wide_handle = true;
 			v0.start_child = v0h0;
 			v0.end_child = v0h1;
 			v0.resize_start_child = true;
 			v0.resize_end_child = true;
 			v0h0h0 = new Gtk.Paned(Gtk.Orientation.HORIZONTAL);
+			v0h0h0.wide_handle = true;
 			v0h0.start_child = v0h0h0;
 			v0h0.resize_start_child = true;
 			v0h0.resize_end_child = true;
@@ -85,8 +90,12 @@ namespace Panel {
 			// v0h1.start_clint
 			// v0h1.end_client
 			v1 = new Gtk.Paned(Gtk.Orientation.VERTICAL);
+			v1.wide_handle = true;
+
 			v1h0 = new Gtk.Paned(Gtk.Orientation.HORIZONTAL);
+			v1h0.wide_handle = true;
 			v1h1 = new Gtk.Paned(Gtk.Orientation.HORIZONTAL);
+			v1h1.wide_handle = true;
 
 			v1.start_child = v1h0;
 			v1.end_child = v1h1;
@@ -105,6 +114,7 @@ namespace Panel {
 			v.resize_end_child = true;
 			build_mm();
 			upanes = {v0h0h0, v0h0, v0h1, v1h0, v1h1};
+
 			wmap = {
 				{"ahi", "AHIView"},
 				{"dirn", "DirectionView"},

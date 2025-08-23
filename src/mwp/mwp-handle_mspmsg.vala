@@ -1099,7 +1099,11 @@ namespace Mwp {
 			  }
 			  if(altup) {
 				  ser.td.alt.alt = dea;
-				  Mwp.panelbox.update(Panel.View.FVIEW, FlightBox.Update.ALT);
+				  int fvup = FlightBox.Update.ALT;
+				  if (Mwp.conf.alt_prefer_agl) {
+					  fvup = AGL.prefer_agl(fvup, ref ser.td);
+				  }
+				  Mwp.panelbox.update(Panel.View.FVIEW, fvup);
 			  }
 			  break;
 
@@ -1211,6 +1215,9 @@ namespace Mwp {
 				}
 
 				if(fvup != 0) {
+					if (Mwp.conf.alt_prefer_agl) {
+						fvup = AGL.prefer_agl(fvup, ref Mwp.msp.td);
+					}
 					Mwp.panelbox.update(Panel.View.FVIEW, fvup);
 				}
 

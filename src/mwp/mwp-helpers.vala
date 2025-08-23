@@ -640,4 +640,16 @@ namespace AGL {
 		}
 		return agl;
 	}
+
+	int prefer_agl(int fvup, ref TrackData aloc) {
+		if ((fvup & (FlightBox.Update.LAT|FlightBox.Update.LON|FlightBox.Update.ALT)) != 0) {
+			var agl = AGL.get_agl(aloc.gps.lat, aloc.gps.lon, aloc.alt.alt);
+			if (agl !=  Hgt.NODATA) {
+				fvup &= ~FlightBox.Update.ALT;
+				fvup |= FlightBox.Update.AGL;
+			}
+			aloc.alt.agl = agl;
+		}
+		return fvup;
+	}
 }

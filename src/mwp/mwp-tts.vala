@@ -335,12 +335,20 @@ public class AudioThread : Object {
 						s = "Elevation %s.".printf(say_nicely((int)Units.distance(Mwp.msp.td.gps.alt)));
 						break;
 					case TTS.Vox.BARO:
-						double estalt = (double)Mwp.msp.td.alt.alt;
+						double estalt;
+						string atext;
+						if(Mwp.conf.alt_prefer_agl && Mwp.msp.td.alt.alt !=  Hgt.NODATA) {
+							estalt = Mwp.msp.td.alt.agl;
+							atext = "A. G. L.";
+						} else {
+							estalt = Mwp.msp.td.alt.alt;
+							atext = "Altitude";
+						}
 						if(estalt < 0.0 || estalt > 20.0) {
 							estalt = Math.round(estalt);
-							s = "Altitude %s".printf(say_nicely((int)estalt));
+							s = "%s %s".printf(atext, say_nicely((int)estalt));
 						} else
-							s = "Altitude %.1f".printf(estalt).replace(".0","");
+							s = "%s %.1f".printf(atext, estalt).replace(".0","");
 						break;
 					case TTS.Vox.HEADING:
 						s = "Heading %s".printf(say_nicely(Mwp.msp.td.atti.yaw));

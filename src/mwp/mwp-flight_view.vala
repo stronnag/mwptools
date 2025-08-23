@@ -28,7 +28,8 @@ namespace FlightBox {
 		RANGE,
 		BEARING,
 		GPS,
-		GALT
+		GALT,
+		AGL
 	}
 
 	[GtkTemplate (ui = "/org/stronnag/mwp/fb.ui")]
@@ -60,7 +61,9 @@ namespace FlightBox {
 				set_longitude(Mwp.msp.td.gps.lon);
 			}
 			if(Update.ALT in what) {
-				set_altitude(Mwp.msp.td.alt.alt);
+				set_altitude(Mwp.msp.td.alt.alt, false);
+			} else if(Update.AGL in what) {
+				set_altitude(Mwp.msp.td.alt.agl, true);
 			}
 
 			if(Update.SPEED in what) {
@@ -107,11 +110,12 @@ namespace FlightBox {
 		private void set_heading (int hdg) {
 			heading.label = "<span size='small'>Heading</span><span size=\"300%%\" font=\"monospace\">%03d°</span>".printf(hdg);
 		}
-		private void set_altitude (double alt) {
+		private void set_altitude (double alt, bool is_agl) {
 			string sd;
 			string su;
+			string atext = (is_agl) ? "AGL" : "Alt";
 			Units.scaled_distance(alt, out sd, out su, true);
-			altitude.label = "<span size='small'>Alt</span><span size=\"300%%\" font=\"monospace\">%s</span><span size=\"x-small\">%s</span>".printf(sd, su);
+			altitude.label = "<span size='small'>%s</span><span size=\"300%%\" font=\"monospace\">%s</span><span size=\"x-small\">%s</span>".printf(atext, sd, su);
 		}
 
 		private void set_speed (double spd) {
