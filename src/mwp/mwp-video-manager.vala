@@ -88,9 +88,16 @@ namespace VideoMan {
 		PAUSED=3
 	}
 
+	private Gtk.MediaFile mf;
+
 	public void load_v4l2_video() {
 		string uri = null;
 		int res = -1;
+		if (mf != null) {
+			mf.close();
+			mf = null;
+		}
+
 		var vid_dialog = new V4L2.Window(GstDev.viddev_c);
 		vid_dialog.response.connect((id) => {
 				if(id == 0) {
@@ -129,38 +136,39 @@ namespace VideoMan {
 						if (Mwp.window.vpane == null) {
 							var vp = new VideoPlayer();
 							vp.present();
-							vp.add_stream(uri);
-						} else {
-
-							var vp = new VideoBox();
 							vp.init(uri);
-							var image = new Gtk.Picture.for_paintable (vp.media);
-							image.hexpand = true;
-							image.vexpand = true;
-							MWPLog.message("DBG: %p %p\n", vp, image);
-							ulong active_id = 0;
-							active_id = vp.media.invalidate_size.connect (()=>{
-									var w = vp.media.get_intrinsic_height();
-									var h = vp.media.get_intrinsic_width();
-									MWPLog.message("Media %dx%d\n", (int)w, (int)h);
-									vp.media.disconnect (active_id);
-								});
-							image.width_request = 640;
-							image.height_request = 480;
-							Mwp.window.vpane.set_start_child(image);
-							vp.media.notify["ended"].connect(() => {
-									var es = vp.media.ended;
-									MWPLog.message("DBG: ended %s\n", es.to_string());
-								});
-							image.show();
-							vp.media.play();
-
-							//var label = new Gtk.Label("VIDEO");
-							//Mwp.window.vpane.set_start_child(label);
+							mf = vp.mf;
+						} else {
+							paned_player(uri);
 						}
 					}
 				}
 			});
 		vid_dialog.present();
+	}
+
+	public static void paned_player(string uri) {
+		var vp = new VideoBox();
+		vp.init(uri);
+		mf = vp.mf;
+		var image = new Gtk.Picture.for_paintable (vp.mf);
+		image.hexpand = true;
+		image.vexpand = true;
+		ulong active_id = 0;
+		active_id = vp.mf.invalidate_size.connect (()=>{
+				var w = vp.mf.get_intrinsic_height();
+				var h = vp.mf.get_intrinsic_width();
+				image.width_request = w;
+				image.height_request = h;
+				vp.mf.disconnect (active_id);
+			});
+		image.width_request = 640;
+		image.height_request = 480;
+		Mwp.window.vpane.set_start_child(image);
+		vp.mf.notify["ended"].connect(() => {
+				mf = null;
+			});
+		image.show();
+		vp.mf.play();
 	}
 }

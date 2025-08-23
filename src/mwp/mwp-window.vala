@@ -547,8 +547,22 @@ namespace Mwp {
 				pane.set_end_child(vpane);
 				pane.position = window.default_width / 2 - 1;
 				vpane.set_end_child(panelbox);
+				vpane.shrink_end_child = false;
+				vpane.shrink_start_child = false;
+				vpane.resize_end_child = false;
+				vpane.resize_start_child = false;
 				panelbox.vexpand = false;
 				panelbox.valign = Gtk.Align.END;
+				var vfn =  VideoBox.save_file_name();
+				try {
+					string defset;
+					if(FileUtils.get_contents(vfn, out defset)) {
+						Idle.add(() => {
+								VideoMan.paned_player(defset);
+								return false;
+							});
+					}
+				} catch {}
 			}
 			pane.set_start_child(Gis.overlay);
 			pane.wide_handle = true;
