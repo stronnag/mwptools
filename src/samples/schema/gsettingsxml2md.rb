@@ -50,7 +50,11 @@ File.open(dfile, "w") do |f0|
       end
       f0.puts "| #{[k,s, d, v[:default]].join(' | ')} |"
       df = v[:default]
-      df.gsub!('"', "'")
+      begin
+        df.gsub!('"', "'")
+      rescue
+        STDERR.puts "Fail for #{k} #{df}"
+      end
       f1.puts "#{k}=#{df}"
     end
   end

@@ -3,6 +3,7 @@
 | Name | Summary | Description | Default |
 | ---- | ------- | ----------- | ------ |
 | adjust-tz | Adjust FC's TZ (and DST) | Option for whether mwp should adjust FC's TZ (and DST) based on the local clock | true |
+| alt-prefer-agl | Altitude / AGL Display | If true, where valid DEM is available for home and vehicle locations, AGL (Above Ground Level) will be shown in place of home relative altitude. | false |
 | armed-msp-placebo | Antidote to armed menus placebo | Whether to suppress desensitising of MSP action items when armed. | false |
 | arming-speak | Speak arming states | Whether to reporting arming state by audio | false |
 | assist-key | Ublox Assist now key | Ublox Assist now key. Setting blank ('') disables, unless the API key is in the `libsecret` credential store. | "" |
@@ -73,6 +74,7 @@
 | p-height | Internal setting |  | 720 |
 | p-is-fullscreen | Internal setting |  | false |
 | p-is-maximised | Internal setting |  | true |
+| p-pane-vertical | Internal setting | Please do not change this unless you appreciate the consequences | true |
 | p-pane-width | Internal setting | Please do not change this unless you appreciate the consequences | 0 |
 | p-width | Internal setting |  | 1280 |
 | poll-timeout | Poll messages timeout (ms) | Timeout in milliseconds for telemetry poll messages. Note that timer loop has a resolution of 10ms. | 900 |
@@ -94,7 +96,7 @@
 | sqlite-log-path | Directory to save SQLite log files | Directory to save SQLite log files, if not set, SQLite log files ("Interactive FlightLog replay" are not persisted. | "" |
 | stats-timeout | Timeout for flight statistics display (s) | Timeout before the flight statistics popup automatically closes. A value of 0 means no timeout. | 30 |
 | symbol-scale | Symbol scale | Symbol scale factor, scales map symbols as multiplier (see also `touch-scale`), | 1.0 |
-| touch-drag-disconnected | Touch drag behaviour | If true, dragging a mission point on a touch screen will disconnect the marker from the path, and reconnect it when the drag is completed. This may improve touch drag behaviour. | false |
+| touch-drag-disconnected | Touch drag behaviour | If true, dragging a mission point on a touch screen will disconnect the marker from the path, and reconnect it when the drag is completed. This may improve touch drag behaviour. | true |
 | touch-scale | Touch symbol scale | Symbol scale factor, scales map symbols as multiplier (for touch screens); (see also `symbol-scale`), | 1.0 |
 | uc-mission-tags | Upper case mission XML tags | If true, MISSION, VERSION and MISSIONITEM tags are upper case (for interoperability with legacy Android applications) | false |
 | uilang | Language Handling | "en" do everything as English (UI numeric decimal points, voice), "ev" do voice as English (so say 'point' for decimals even when shown as 'comma') | "" |
