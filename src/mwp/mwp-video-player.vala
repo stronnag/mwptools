@@ -20,7 +20,6 @@ public class VideoBox : GLib.Object {
 		mf.notify["error"].connect(() => {
 				FileUtils.unlink(cfile);
 			});
-
 		try {
 			FileUtils.set_contents(cfile, fn);
 		} catch {}
@@ -99,9 +98,11 @@ public class VideoPlayer : Adw.Window {
 				video_playing(mf.playing);
 			});
 		mf.notify["error"].connect(() => {
-				if(mf.error != null) {
-					MWPLog.message("GTKVideo: %s\n", mf.error.message);
+				var str = "unknown";
+				if (mf.error != null) {
+					str = mf.error.message;
 				}
+				MWPLog.message(":DBG: windowed video error: %s\n", str);
 			});
 		v.set_media_stream(mf);
 	}

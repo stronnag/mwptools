@@ -156,8 +156,8 @@ namespace VideoMan {
 		image.vexpand = true;
 		ulong active_id = 0;
 		active_id = vp.mf.invalidate_size.connect (()=>{
-				var w = vp.mf.get_intrinsic_height();
-				var h = vp.mf.get_intrinsic_width();
+				var h = vp.mf.get_intrinsic_height();
+				var w = vp.mf.get_intrinsic_width();
 				if (Mwp.DebugFlags.VIDEO in Mwp.debug_flags) {
 					MWPLog.message(":DBG: Embedded video %dx%d \n", w, h);
 				}

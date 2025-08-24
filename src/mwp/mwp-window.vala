@@ -54,6 +54,7 @@ namespace Mwp {
 	}
 
 	private void final_clean() {
+		VideoMan.stop_paned_player();
 		TTS.stop_audio();
 		if (inhibit_cookie != 0) {
 			MwpIdle.uninhibit(inhibit_cookie);
