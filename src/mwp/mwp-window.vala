@@ -131,12 +131,13 @@ namespace Mwp {
 		[GtkChild]
 		internal unowned Gtk.ToggleButton map_annotations;
 
-
 		public Gtk.Paned vpane;
+		public Gtk.Paned pane;
 		private StrIntStore pis;
 		private Mwp.GotoDialog posdialog;
 		private Mwp.SCWindow scwindow;
 		private CloseCheck close_check;
+		private GLib.SimpleAction swaq;
 
 		public signal void armed_state(bool armed);
 		public signal void status_change(uint8 lflags);
@@ -223,6 +224,8 @@ namespace Mwp {
 				popover.flags = Gtk.PopoverMenuFlags.NESTED;
 			}
 #endif
+			conf = new MWPSettings();
+
 			setup_accels(app);
 			setup_misc_controls();
 			map_annotations.active = false;
@@ -276,7 +279,6 @@ namespace Mwp {
 				});
 
 			init_basics();
-
 			setup_terminal_reboot();
 			follow_button.active = conf.autofollow;
 			show_window();
@@ -293,7 +295,6 @@ namespace Mwp {
 
 		private void init_basics() {
 			use_rc = MspRC.OFF;
-			conf = new MWPSettings();
 			if(conf.uilang == "en") {
 				Intl.setlocale(LocaleCategory.NUMERIC, "C");
 			}
@@ -314,7 +315,7 @@ namespace Mwp {
 							Sticks.done();
 						}
 					}
-					MWPLog.message(":DBG: msprc action set to %s, use_rc=%x\n", b.to_string(), Mwp.use_rc);
+					//					MWPLog.message(":DBG: msprc action set to %s, use_rc=%x\n", b.to_string(), Mwp.use_rc);
 				});
 			window.add_action(msprcact);
 
@@ -377,7 +378,6 @@ namespace Mwp {
 		}
 
 		private void show_window() {
-
 			ProxyPids.init();
 			DemManager.init();
 
@@ -451,129 +451,20 @@ namespace Mwp {
 			hwstatus[0] = 1; // Assume OK
 			Msp.init();
 
-
-#if USE_OLD_PANEL
-			int fw,fh;
-			Utils.check_pango_size(this, "Monospace", "_00:00:00.0N 000.00.00.0W_", out fw, out fh);
-			// Must match 150% scaling in flight_view
-            //			MWPLog.message(":DBG: FW0 %s, panetype %s, pane_width %s\n", fw0.to_string(),  conf.pane_type.to_string(), conf.p_pane_width.to_string());
-			fw = 2+(150*fw)/100;
-
-			var pane_type = conf.pane_type;
-			if(conf.pane_type == 0) {
-#if DARWIN
-                if(pane_type == 0) {
-                    pane_type = 1;
-                }
-                if(pane_type == 1) {
-                    int mfact=128;
-                    var mfe = Environment.get_variable("MWP_MAC_FACTOR");
-                    if (mfe != null) {
-                        mfact = int.parse(mfe);
-                    }
-                    fw = fw*mfact/100;
-                    //                    MWPLog.message(":DBG: MACOS width %d\n", fw);
-                }
-#else
-				pane_type = 1;
-#endif
-			}
 			panelbox = new Panel.Box();
-			if(pane_type == 1) {
-				Adw.OverlaySplitView split_view = new 	Adw.OverlaySplitView();
-				split_view.vexpand = true;
-				split_view.sidebar_position = Gtk.PackType.END;
-				toaster.set_child(split_view);
-				show_sidebar_button.clicked.connect(() => {
-						split_view.show_sidebar = show_sidebar_button.active;
-					});
-				split_view.sidebar_width_unit = Adw.LengthUnit.SP;
-				split_view.min_sidebar_width = fw;
-				split_view.content = Gis.overlay;
-				split_view.sidebar = panelbox;
-			} else {
-				Gtk.Paned pane = new Gtk.Paned(Gtk.Orientation.HORIZONTAL);
-				pane.set_start_child(Gis.overlay);
-				pane.set_end_child(panelbox);
-				pane.wide_handle = true;
-				if (conf.p_pane_width > 0) {
-					fw = conf.p_pane_width;
-				}
-				pane.position = window.default_width - fw;
-				pane.shrink_end_child = false;
-				pane.resize_end_child = false;
-				toaster.set_child(pane);
-				show_sidebar_button.clicked.connect(() => {
-						pane.end_child.visible  = show_sidebar_button.active;
-					});
-				{
-					var w = pane.get_first_child();
-					while (w != null) {
-						var s = w.get_type().name();
-						if (s == "GtkPanedHandle") {
-							var pevtck = new Gtk.EventControllerMotion();
-							w.add_controller(pevtck);
-							pevtck.leave.connect(() => {
-									var ww = window.get_width();
-									conf.p_pane_width = ww - pane.position;
-									MWPLog.message(":DBG: leave paned ww=%d ppos=%d pw=%d\n",
-												   ww, pane.position, conf.p_pane_width);
-								});
-							break;
-						}
-						w = w.get_next_sibling();
-					}
-				}
-			}
-#else
-			Gtk.Paned pane;
-
-			bool vertical = Environment.get_variable("MWP_USE_FPVMODE") == null;
-			if(vertical) {
-				int fw,fh;
-				Utils.check_pango_size(this, "Monospace", "_00:00:00.0N 000.00.00.0W_", out fw, out fh);
-				// Must match 150% scaling in flight_view
-				//			MWPLog.message(":DBG: FW0 %s, panetype %s, pane_width %s\n", fw0.to_string(),  conf.pane_type.to_string(), conf.p_pane_width.to_string());
-				fw = 2+(150*fw)/100;
-				panelbox = new Panel.Box(true);
-				pane = new Gtk.Paned(Gtk.Orientation.HORIZONTAL);
-				pane.set_end_child(panelbox);
-				pane.position = window.default_width - fw;
-				vpane = null;
-			} else {
-				panelbox = new Panel.Box(false);
-				pane = new Gtk.Paned(Gtk.Orientation.HORIZONTAL);
-				vpane = new Gtk.Paned(Gtk.Orientation.VERTICAL);
-				pane.set_end_child(vpane);
-				pane.position = window.default_width / 2 - 1;
-				vpane.set_end_child(panelbox);
-				vpane.shrink_end_child = false;
-				vpane.shrink_start_child = false;
-				vpane.resize_end_child = false;
-				vpane.resize_start_child = false;
-				panelbox.vexpand = false;
-				panelbox.valign = Gtk.Align.END;
-				var vfn =  VideoBox.save_file_name();
-				try {
-					string defset;
-					if(FileUtils.get_contents(vfn, out defset)) {
-						Idle.add(() => {
-								VideoMan.paned_player(defset);
-								return false;
-							});
-					}
-				} catch {}
-			}
+			pane = new Gtk.Paned(Gtk.Orientation.HORIZONTAL);
+			panelbox.set_mode(conf.is_vertical);
+			set_panel_mode();
 			pane.set_start_child(Gis.overlay);
 			pane.wide_handle = true;
 			pane.shrink_end_child = false;
 			pane.resize_end_child = false;
+
 			toaster.set_child(pane);
 			show_sidebar_button.clicked.connect(() => {
 					pane.end_child.visible  = show_sidebar_button.active;
 				});
 
-#endif
 			Gis.setup_map_sources(mapdrop);
 			FWPlot.init();
 			MissionManager.init();
@@ -593,6 +484,54 @@ namespace Mwp {
 			swatcher.run();
 #endif
 			Radar.init_readers();
+		}
+
+		private void set_panel_mode() {
+			if(conf.is_vertical) {
+				int fw,fh;
+				Utils.check_pango_size(this, "Monospace", "_00:00:00.0N 000.00.00.0W_", out fw, out fh);
+				fw = 2+(150*fw)/100;
+				VideoMan.stop_paned_player();
+				pane.set_end_child(null);
+				vpane = null;
+				pane.set_end_child(panelbox);
+				panelbox.hexpand = false;
+				panelbox.valign = Gtk.Align.FILL;
+				pane.position = window.default_width - fw;
+			} else {
+				vpane = new Gtk.Paned(Gtk.Orientation.VERTICAL);
+				pane.set_end_child(null);
+				pane.set_end_child(vpane);
+				vpane.set_end_child(panelbox);
+				vpane.shrink_end_child = false;
+				vpane.shrink_start_child = false;
+				vpane.resize_end_child = false;
+				vpane.resize_start_child = false;
+				panelbox.hexpand = false;
+				panelbox.halign = Gtk.Align.END;
+				panelbox.vexpand = false;
+				panelbox.valign = Gtk.Align.END;
+				pane.position = window.default_width / 2 - 1;
+				panelbox.vexpand = false;
+				panelbox.valign = Gtk.Align.END;
+				var vfn =  VideoBox.save_file_name();
+				try {
+					string defset;
+					if(FileUtils.get_contents(vfn, out defset)) {
+						Idle.add(() => {
+								VideoMan.paned_player(defset);
+								return false;
+							});
+					}
+				} catch {}
+			}
+		}
+
+		public void switch_panel_mode(bool b) {
+			panelbox.reset();
+			conf.is_vertical = !conf.is_vertical;
+			panelbox.set_mode(conf.is_vertical);
+			set_panel_mode();
 		}
 
 		public void update_state() {
@@ -1006,6 +945,15 @@ namespace Mwp {
 					lsaq.set_state (s);
 				});
 			window.add_action(lsaq);
+
+			swaq = new GLib.SimpleAction.stateful ("modeswitch", null, false);
+			swaq.set_state (!conf.is_vertical);
+			swaq.change_state.connect((s) => {
+					var b = s.get_boolean();
+					swaq.set_state (s);
+					switch_panel_mode(!b);
+				});
+			window.add_action(swaq);
 
 			app.set_accels_for_action ("win.vlegend", { "<primary>v" });
 			app.set_accels_for_action ("win.about", { "<primary>a" });

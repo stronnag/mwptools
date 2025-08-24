@@ -586,6 +586,12 @@
       <description>Please do not change this unless you appreciate the consequences</description>
     </key>
 
+    <key name="p-pane-vertical" type="b">
+      <default>true</default>
+      <summary>Internal setting</summary>
+      <description>Please do not change this unless you appreciate the consequences</description>
+    </key>
+
     <key name="p-width" type="i">
       <default>1280</default>
       <summary>Internal setting</summary>

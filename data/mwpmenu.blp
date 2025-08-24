@@ -76,15 +76,6 @@ menu menubar {
         label: 'Interactive FlighLlog player';
         action: 'win.replay-sql-log';
       }
-      submenu {
-        label: 'Legacy replayers';
-        section {
-	  item {
-	    label: 'Replay blackbox log';
-	    action: 'win.replay-bb-log';
-      	  }
-	}
-      }
 
       item {
         label: 'Replay mwp RAW log';
@@ -261,6 +252,13 @@ menu menubar {
 
   submenu {
     label: '_View';
+
+    section {
+      item {
+        label: 'FPV Mode';
+        action: 'win.modeswitch';
+      }
+    }
 
     section {
       item {

@@ -13,7 +13,9 @@ public class VideoBox : GLib.Object {
 		} else {
 			f = File.new_for_path(fn);
 		}
-		MWPLog.message(":DBG: Video %s\n", fn);
+		if (Mwp.DebugFlags.VIDEO in Mwp.debug_flags) {
+			MWPLog.message(":DBG: Video %s\n", fn);
+		}
 		mf = Gtk.MediaFile.for_file(f);
 		mf.notify["error"].connect(() => {
 				FileUtils.unlink(cfile);

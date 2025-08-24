@@ -124,6 +124,7 @@ public class MWPSettings : GLib.Object {
 
 	public bool touch_drag_disconnected {get; set; default=true;}
 	public bool alt_prefer_agl {get; set; default=false;}
+	public bool is_vertical {get; set; default=true;}
 
 	construct {
 #if DARWIN
@@ -261,6 +262,7 @@ public class MWPSettings : GLib.Object {
 		settings.bind("p-height", Mwp.window, "default-height", SettingsBindFlags.DEFAULT);
 		settings.bind("p-is-maximised", Mwp.window, "maximized", SettingsBindFlags.DEFAULT);
 		settings.bind("p-is-fullscreen", Mwp.window, "fullscreened", SettingsBindFlags.DEFAULT);
+		settings.bind("p-pane-vertical", this, "is-vertical", SettingsBindFlags.DEFAULT);
 	}
 
     public MWPSettings() {

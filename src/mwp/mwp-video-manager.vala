@@ -158,17 +158,30 @@ namespace VideoMan {
 		active_id = vp.mf.invalidate_size.connect (()=>{
 				var w = vp.mf.get_intrinsic_height();
 				var h = vp.mf.get_intrinsic_width();
-				image.width_request = w;
-				image.height_request = h;
+				if (Mwp.DebugFlags.VIDEO in Mwp.debug_flags) {
+					MWPLog.message(":DBG: Embedded video %dx%d \n", w, h);
+				}
 				vp.mf.disconnect (active_id);
 			});
 		image.width_request = 640;
 		image.height_request = 480;
+		image.content_fit = Gtk.ContentFit.CONTAIN;
+		image.can_shrink = true;
 		Mwp.window.vpane.set_start_child(image);
 		vp.mf.notify["ended"].connect(() => {
+				if (Mwp.DebugFlags.VIDEO in Mwp.debug_flags) {
+					MWPLog.message(":DBG: embeded video player done\n");
+				}
 				mf = null;
 			});
-		image.show();
 		vp.mf.play();
+	}
+
+	public static void stop_paned_player() {
+		if (mf != null) {
+			mf.playing = false;
+			mf.clear();
+			mf = null;
+		}
 	}
 }
