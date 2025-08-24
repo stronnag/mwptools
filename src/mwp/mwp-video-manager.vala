@@ -168,6 +168,13 @@ namespace VideoMan {
 		image.content_fit = Gtk.ContentFit.CONTAIN;
 		image.can_shrink = true;
 		Mwp.window.vpane.set_start_child(image);
+		vp.mf.notify["error"].connect(() => {
+				var str = "unknown";
+				if (vp.mf.error != null) {
+					str = vp.mf.error.message;
+				}
+				MWPLog.message(":DBG: embeded video error: %s\n", str);
+			});
 		vp.mf.notify["ended"].connect(() => {
 				if (Mwp.DebugFlags.VIDEO in Mwp.debug_flags) {
 					MWPLog.message(":DBG: embeded video player done\n");
