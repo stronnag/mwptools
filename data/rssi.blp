@@ -2,13 +2,13 @@ using Gtk 4.0;
 
 template $RSSIView : Gtk.Box {
   orientation: vertical;
-  hexpand: true;
+//  hexpand: true;
 
   // Row
   [Start]
   Label title {
     label: "RSSI";
-  //  hexpand: true;
+    hexpand: true;
     vexpand: false;
     justify: center;
     styles [ 'small' ]
@@ -21,7 +21,7 @@ template $RSSIView : Gtk.Box {
       justify: center;
     }
     ProgressBar pbar {
-      hexpand: true;
+//      hexpand: true;
       vexpand: true;
   }
 }

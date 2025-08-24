@@ -22,8 +22,8 @@ namespace Panel {
 
 	public struct WidgetMap {
 		string name;
-		int col;
 		int row;
+		int col;
 		int width;
 		int height;
 		int span;
@@ -111,7 +111,7 @@ namespace Panel {
 					load = ((w.mode & Modes.H) == Modes.H);
 				}
 				if(load) {
-					load_widget(w.name, w.col, w.row, w.width, w.height, w.span);
+					load_widget(w.name, w.row, w.col, w.width, w.height, w.span);
 				} else {
 					unload_widget(w.name);
 				}
@@ -198,7 +198,7 @@ namespace Panel {
 				break;
 			}
 		}
-		public void load_widget(string name, int col, int row, int sw=-1, int sh=-1, int span=1) {
+		public void load_widget(string name, int row, int col, int sw=-1, int sh=-1, int span=1) {
 			Gtk.Widget? w = null;
 			switch (name) {
 			case "ahi":
@@ -217,7 +217,7 @@ namespace Panel {
 				}
 				w = rssiv;
 				w.vexpand = false;
-				w.halign = Gtk.Align.FILL;
+				w.hexpand = false;
 				Panel.status |= Panel.View.RSSI;
 				break;
 			case "dirn":
@@ -226,8 +226,9 @@ namespace Panel {
 				}
 				w = dirnv;
 				w.vexpand = false;
-				w.halign = Gtk.Align.FILL;
-				w.valign = Gtk.Align.FILL;
+				w.hexpand = false;
+				//w.halign = Gtk.Align.FILL;
+				//w.valign = Gtk.Align.FILL;
 				Panel.status |= Panel.View.DIRN;
 				break;
 			case "flight":
@@ -235,8 +236,9 @@ namespace Panel {
 					fboxv = new FlightBox.View();
 				}
 				w = fboxv;
-				w.halign = Gtk.Align.FILL;
-				w.valign = Gtk.Align.FILL;
+				w.hexpand = false;
+				//w.halign = Gtk.Align.FILL;
+				//w.valign = Gtk.Align.FILL;
 				Panel.status |= Panel.View.FVIEW;
 				break;
 			case "volts":
@@ -253,8 +255,9 @@ namespace Panel {
 				}
 				w = vario;
 				w.vexpand = false;
-				w.halign = Gtk.Align.FILL;
-				w.valign = Gtk.Align.FILL;
+				w.hexpand = false;
+				//w.halign = Gtk.Align.FILL;
+				//w.valign = Gtk.Align.FILL;
 				Panel.status |= Panel.View.VARIO;
 				break;
 			case "wind":
@@ -263,18 +266,19 @@ namespace Panel {
 				}
 				w = wind;
 				w.vexpand = false;
-				w.halign = Gtk.Align.FILL;
-				w.valign = Gtk.Align.FILL;
+				w.hexpand = false;
+				//w.halign = Gtk.Align.FILL;
+				//w.valign = Gtk.Align.FILL;
 				Panel.status |= Panel.View.WIND;
 				break;
 			}
 			if(w != null) {
 				int sr = 1;
 				int sc = 1;
-				if(is_vertical) {
-					var t = col;
-					col = row;
-					row = t;
+				if(!is_vertical) {
+					var t = row;
+					row = col;
+					col = t;
 					sr = span;
 				} else {
 					sc = span;
@@ -291,7 +295,7 @@ namespace Panel {
 				w.visible = true;
 				 var f = new Gtk.Frame(null);
 				 f.child=w;
-				grid.attach(f, col, row, sr, sc);
+				grid.attach(f, col, row, sc, sr);
 				wlist += f;
 			}
 		}
@@ -312,8 +316,8 @@ namespace Panel {
 							ok = true;
 							var w = WidgetMap();
 							w.name = parts[0].strip();
-							w.col = int.parse(parts[1].strip());
-							w.row = int.parse(parts[2].strip());
+							w.row = int.parse(parts[1].strip());
+							w.col = int.parse(parts[2].strip());
 							w.width = int.parse(parts[3].strip());
 							w.height = int.parse(parts[4].strip());
 							w.span = int.parse(parts[5].strip());
@@ -328,14 +332,12 @@ namespace Panel {
 
 		private void write_panel_config() {
 			var fn = MWPUtils.find_conf_file(".panel.conf");
-			if (fn != null) {
-				var fs = FileStream.open (fn, "w");
-				if (fs != null) {
-					fs.puts("# mwp panel v2\n");
-					fs.puts("# name, col, row, width, height, span, mode\n");
-					foreach(var w in wmap) {
-						fs.printf("%s,%d,%d,%d,%d,%d,%d\n", w.name, w.col, w.row, w.width, w.height, w.span, w.mode);
-					}
+			var fs = FileStream.open (fn, "w");
+			if (fs != null) {
+				fs.puts("# mwp panel v2\n");
+				fs.puts("# name, row, col, width, height, span, mode\n");
+				foreach(var w in wmap) {
+					fs.printf("%s,%d,%d,%d,%d,%d,%d\n", w.name, w.row, w.col, w.width, w.height, w.span, w.mode);
 				}
 			}
 		}

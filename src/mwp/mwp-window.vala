@@ -143,6 +143,8 @@ namespace Mwp {
 		public signal void armed_state(bool armed);
 		public signal void status_change(uint8 lflags);
 
+		private 			int mww;
+
 		public async bool checker() {
 			bool ok = false;
 			var am = new Adw.AlertDialog("MWP Message",  "Mission has uncommitted changes");
@@ -185,6 +187,7 @@ namespace Mwp {
 
 		public Window (Adw.Application app) {
             Object (application: app);
+
 			mapdrop.factory = null;
 			protodrop.factory = null;
 			actmission.factory = null;
@@ -205,7 +208,10 @@ namespace Mwp {
 			active_id = this.notify["is-active"].connect(() => {
 					if(!winit && this.is_active) {
 						winit = Cli.main_window_ready();
-						MWPLog.message("Main window activated %s\n", winit.to_string());
+						mww = window.get_width();
+						int iwp;
+						panelbox.measure(Gtk.Orientation.HORIZONTAL, -1, null, out iwp, null, null);
+						pane.position = mww - iwp;
 						this.disconnect (active_id);
 					}
 				});
@@ -456,15 +462,27 @@ namespace Mwp {
 			pane = new Gtk.Paned(Gtk.Orientation.HORIZONTAL);
 			panelbox.set_mode(conf.is_vertical);
 			set_panel_mode();
-			pane.set_start_child(Gis.overlay);
 			pane.wide_handle = true;
-			pane.shrink_end_child = false;
-			pane.resize_end_child = false;
+			pane.shrink_end_child = true;
+			pane.resize_end_child = true;
+			Gis.overlay.hexpand = true;
+			Gis.overlay.halign=Gtk.Align.FILL;
+			pane.set_start_child(Gis.overlay);
 
 			toaster.set_child(pane);
 			show_sidebar_button.clicked.connect(() => {
 					pane.end_child.visible  = show_sidebar_button.active;
 				});
+
+			panelbox.map.connect(() => {
+					if(mww != 0) {
+						int iwp;
+						panelbox.measure(Gtk.Orientation.HORIZONTAL, -1, null, out iwp, null, null);
+						int iww = window.get_width();
+						pane.position = iww - iwp;
+					}
+				});
+
 
 			Gis.setup_map_sources(mapdrop);
 			FWPlot.init();
@@ -490,15 +508,12 @@ namespace Mwp {
 		private void set_panel_mode() {
 			VideoMan.stop_paned_player();
 			if(conf.is_vertical) {
-				int fw,fh;
-				Utils.check_pango_size(this, "Monospace", "_00:00:00.0N 000.00.00.0W_", out fw, out fh);
-				fw = 2+(150*fw)/100;
 				pane.set_end_child(null);
 				vpane = null;
 				pane.set_end_child(panelbox);
 				panelbox.hexpand = false;
+				panelbox.halign=Gtk.Align.END;
 				panelbox.valign = Gtk.Align.FILL;
-				pane.position = window.default_width - fw;
 			} else {
 				vpane = new Gtk.Paned(Gtk.Orientation.VERTICAL);
 				pane.set_end_child(null);
@@ -508,11 +523,10 @@ namespace Mwp {
 				vpane.shrink_start_child = false;
 				vpane.resize_end_child = false;
 				vpane.resize_start_child = false;
-				panelbox.hexpand = false;
+				panelbox.hexpand = true;
 				panelbox.halign = Gtk.Align.END;
 				panelbox.vexpand = false;
 				panelbox.valign = Gtk.Align.END;
-				pane.position = window.default_width / 2 - 1;
 				panelbox.vexpand = false;
 				panelbox.valign = Gtk.Align.END;
 				var vfn =  VideoBox.save_file_name();
@@ -526,6 +540,7 @@ namespace Mwp {
 					}
 				} catch {}
 			}
+			panelbox.show();
 		}
 
 		public void switch_panel_mode(bool b) {
