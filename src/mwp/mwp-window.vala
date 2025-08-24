@@ -487,11 +487,11 @@ namespace Mwp {
 		}
 
 		private void set_panel_mode() {
+			VideoMan.stop_paned_player();
 			if(conf.is_vertical) {
 				int fw,fh;
 				Utils.check_pango_size(this, "Monospace", "_00:00:00.0N 000.00.00.0W_", out fw, out fh);
 				fw = 2+(150*fw)/100;
-				VideoMan.stop_paned_player();
 				pane.set_end_child(null);
 				vpane = null;
 				pane.set_end_child(panelbox);
