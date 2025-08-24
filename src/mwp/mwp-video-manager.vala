@@ -178,9 +178,13 @@ namespace VideoMan {
 	}
 
 	public static void stop_paned_player() {
+		if (Mwp.DebugFlags.VIDEO in Mwp.debug_flags) {
+			MWPLog.message(":DBG: embeded video player close (is null=%s)\n", (mf == null).to_string());
+		}
 		if (mf != null) {
 			mf.playing = false;
 			mf.clear();
+			mf.close();
 			mf = null;
 		}
 	}
