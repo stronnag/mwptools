@@ -203,32 +203,18 @@ namespace Mwp {
 				provider.load_from_file(File.new_for_path(cssfile));
 				Gtk.StyleContext.add_provider_for_display(Gdk.Display.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
 			}
-			bool winit = false;
-			ulong active_id = 0;
 
 			this.map.connect(() => {
 					Timeout.add(500, () => {
-					int mwp=0,iwp;
-					panelbox.measure(Gtk.Orientation.HORIZONTAL, -1, null, out iwp, null, null);
-					this.measure(Gtk.Orientation.HORIZONTAL, -1, null, out mwp, null, null);
-					int iww = this.get_width();
-					MWPLog.message("Window map %d %d %d\n", mwp, iww, iwp, iww-iwp);
-					pane.position = iww - iwp;
-					return false;
+							int mwp=0,iwp=0;
+							panelbox.measure(Gtk.Orientation.HORIZONTAL, -1, null, out iwp, null, null);
+							this.measure(Gtk.Orientation.HORIZONTAL, -1, null, out mwp, null, null);
+							int iww = this.get_width();
+							mww = int.max(mwp,iww);
+							pane.position = mww - iwp;
+							MWPLog.message("Window map %d %d %d\n", mww, iww, iwp, pane.position);
+							return false;
 						});
-				});
-
-			active_id = this.notify["is-active"].connect(() => {
-					if(!winit && this.is_active) {
-						winit = Cli.main_window_ready();
-						int iwp;
-						panelbox.measure(Gtk.Orientation.HORIZONTAL, -1, null, out iwp, null, null);
-						this.measure(Gtk.Orientation.HORIZONTAL, -1, null, out mww, null, null);
-
-						pane.position = mww - iwp;
-						MWPLog.message("Main activate %d %d %d\n", mww, iwp, pane.position);
-						this.disconnect (active_id);
-					}
 				});
 
 			var builder = new Builder.from_resource ("/org/stronnag/mwp/mwpmenu.ui");
@@ -483,17 +469,10 @@ namespace Mwp {
 			Gis.overlay.hexpand = true;
 			Gis.overlay.halign=Gtk.Align.FILL;
 			pane.set_start_child(Gis.overlay);
-
+			pane.position = 9999;
 			toaster.set_child(pane);
 			show_sidebar_button.clicked.connect(() => {
 					pane.end_child.visible  = show_sidebar_button.active;
-				});
-
-			panelbox.realize.connect(() => {
-					int iwp;
-					panelbox.measure(Gtk.Orientation.HORIZONTAL, -1, null, out iwp, null, null);
-					int iww = window.get_width();
-					MWPLog.message("Panel rel %d %d %d\n", iww, iwp, iww-iwp);
 				});
 
 			panelbox.map.connect(() => {
