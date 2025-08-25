@@ -443,7 +443,14 @@ namespace Mwp {
 			Mwp.cleanup();
 			Utils.rmrf(Utils.get_tmp_dir());
 			if(ready && Mwp.conf.atexit != null && Mwp.conf.atexit.length > 0) {
-				new ProcessLauncher().run_command(Mwp.conf.atexit, ProcessLaunch.WAIT);
+				var p = new ProcessLauncher();
+				var res = p.run_command(Mwp.conf.atexit, ProcessLaunch.WAIT|ProcessLaunch.STDOUT);
+				int sts = -69;
+				MWPLog.message("Atexit: [%s] (%s)\n", Mwp.conf.atexit, res.to_string());
+				p.complete.connect(() => {
+						var ok = p.get_status(out sts);
+						MWPLog.message("atexit exited %s %d\n", ok.to_string(), sts);
+					});
 			}
 		}
 	}

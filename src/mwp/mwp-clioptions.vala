@@ -315,7 +315,14 @@ namespace Cli {
         }
 
         if(Mwp.conf.atstart != null && Mwp.conf.atstart.length > 0) {
-			new ProcessLauncher().run_command(Mwp.conf.atstart, 0);
+			var p = new ProcessLauncher();
+			var res = p.run_command(Mwp.conf.atstart, ProcessLaunch.STDOUT);
+			int sts = -69;
+			MWPLog.message("Atstart [%s] (%s)\n", Mwp.conf.atstart, res.to_string());
+			p.complete.connect(() => {
+					var ok = p.get_status(out sts);
+					MWPLog.message("atstart exited %s %d\n", ok.to_string(), sts);
+				});
         }
 
 		Mwp.msp.use_v2 = false;
