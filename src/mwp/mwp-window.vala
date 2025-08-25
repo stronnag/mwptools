@@ -143,7 +143,7 @@ namespace Mwp {
 		public signal void armed_state(bool armed);
 		public signal void status_change(uint8 lflags);
 
-		private 			int mww;
+		private int mww;
 
 		public async bool checker() {
 			bool ok = false;
@@ -212,6 +212,7 @@ namespace Mwp {
 						int iwp;
 						panelbox.measure(Gtk.Orientation.HORIZONTAL, -1, null, out iwp, null, null);
 						pane.position = mww - iwp;
+						MWPLog.message("Main activate %d %d\n", mww, pane.position);
 						this.disconnect (active_id);
 					}
 				});
@@ -480,6 +481,7 @@ namespace Mwp {
 						panelbox.measure(Gtk.Orientation.HORIZONTAL, -1, null, out iwp, null, null);
 						int iww = window.get_width();
 						pane.position = iww - iwp;
+						MWPLog.message("Panel map %d %d\n", iww, pane.position);
 					}
 				});
 
