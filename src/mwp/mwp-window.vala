@@ -205,14 +205,28 @@ namespace Mwp {
 			}
 			bool winit = false;
 			ulong active_id = 0;
+
+			this.map.connect(() => {
+					Timeout.add(500, () => {
+					int mwp=0,iwp;
+					panelbox.measure(Gtk.Orientation.HORIZONTAL, -1, null, out iwp, null, null);
+					this.measure(Gtk.Orientation.HORIZONTAL, -1, null, out mwp, null, null);
+					int iww = this.get_width();
+					MWPLog.message("Window map %d %d %d\n", mwp, iww, iwp, iww-iwp);
+					pane.position = iww - iwp;
+					return false;
+						});
+				});
+
 			active_id = this.notify["is-active"].connect(() => {
 					if(!winit && this.is_active) {
 						winit = Cli.main_window_ready();
-						mww = window.get_width();
 						int iwp;
 						panelbox.measure(Gtk.Orientation.HORIZONTAL, -1, null, out iwp, null, null);
+						this.measure(Gtk.Orientation.HORIZONTAL, -1, null, out mww, null, null);
+
 						pane.position = mww - iwp;
-						MWPLog.message("Main activate %d %d\n", mww, pane.position);
+						MWPLog.message("Main activate %d %d %d\n", mww, iwp, pane.position);
 						this.disconnect (active_id);
 					}
 				});
@@ -475,13 +489,20 @@ namespace Mwp {
 					pane.end_child.visible  = show_sidebar_button.active;
 				});
 
+			panelbox.realize.connect(() => {
+					int iwp;
+					panelbox.measure(Gtk.Orientation.HORIZONTAL, -1, null, out iwp, null, null);
+					int iww = window.get_width();
+					MWPLog.message("Panel rel %d %d %d\n", iww, iwp, iww-iwp);
+				});
+
 			panelbox.map.connect(() => {
 					if(mww != 0) {
 						int iwp;
 						panelbox.measure(Gtk.Orientation.HORIZONTAL, -1, null, out iwp, null, null);
 						int iww = window.get_width();
 						pane.position = iww - iwp;
-						MWPLog.message("Panel map %d %d\n", iww, pane.position);
+						MWPLog.message("Panel map %d %d %d\n", iww, iwp, pane.position);
 					}
 				});
 
