@@ -73,10 +73,6 @@ namespace Mwp {
 				Mwp.window.armed_spinner.set_visible(true);
                 check_mission_home();
 
-				if(BBLV.vp != null) {
-					BBLV.vp.start_at(BBL.nsecs);
-				}
-
 				sflags |= SPK.Volts;
 
                 if (conf.audioarmed == true || Mwp.window.audio_cb.active) {

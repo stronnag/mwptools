@@ -48,13 +48,12 @@ namespace Mwp {
 	public void cleanup() {
 		if (!cleaned) {
 			cleaned =true;
-			Mwp.stop_replayer();
 			final_clean();
 		}
 	}
 
 	private void final_clean() {
-		VideoMan.stop_paned_player();
+		MwpVideo.stop_embedded_player();
 		TTS.stop_audio();
 		if (inhibit_cookie != 0) {
 			MwpIdle.uninhibit(inhibit_cookie);
@@ -508,7 +507,8 @@ namespace Mwp {
 		}
 
 		private void set_panel_mode() {
-			VideoMan.stop_paned_player();
+			string defset = MwpVideo.last_uri;
+			MwpVideo.stop_embedded_player();
 			if(conf.is_vertical) {
 				pane.set_end_child(null);
 				vpane = null;
@@ -531,12 +531,14 @@ namespace Mwp {
 				panelbox.valign = Gtk.Align.END;
 				panelbox.vexpand = false;
 				panelbox.valign = Gtk.Align.END;
-				var vfn =  VideoBox.save_file_name();
+				var vfn =  MwpVideo.save_file_name();
 				try {
-					string defset;
-					if(FileUtils.get_contents(vfn, out defset)) {
+					if (defset == null) {
+						FileUtils.get_contents(vfn, out defset);
+					}
+					if(defset != null) {
 						Idle.add(() => {
-								VideoMan.paned_player(defset);
+								MwpVideo.embedded_player(defset);
 								return false;
 							});
 					}
@@ -640,24 +642,12 @@ namespace Mwp {
 			rdr.present();
 		}
 
-		private void launch_bbl() {
-			BBL.replay_bbl(null);
-		}
-
 		private void launch_slg() {
 			SLG.replay_bbl(null);
 		}
 
-		private void launch_etx() {
-			ETX.replay_etx(null);
-		}
-
 		private void launch_raw() {
 			Raw.replay_raw(null);
-		}
-
-		private void launch_json() {
-			Mwpjs.replay_js(null);
 		}
 
 		private void set_def_loc() {
@@ -907,11 +897,8 @@ namespace Mwp {
 				{"fmtcliploc", fmt_get_location},
 				{"seed-map", mapseed},
 				{"dmeasure", start_measurer},
-				{"replay-bb-log", launch_bbl},
 				{"replay-sql-log", launch_slg},
-				{"replay-etx-log", launch_etx},
 				{"replay-raw-log", launch_raw},
-				{"replay-mwp-log", launch_json},
 				{"vstream", launch_vidwin},
 				{"ttrack-view", show_ttracker},
 				{"flight-stats", show_odo},

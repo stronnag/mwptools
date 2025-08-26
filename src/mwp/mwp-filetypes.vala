@@ -48,10 +48,10 @@ namespace MWPFileType {
 				Mwp.bfile = fn;
 				break;
 			case FType.OTXLOG:
-				Mwp.otxfile = fn;
+				Mwp.bfile = fn;
 				break;
 			case FType.MWPLOG:
-				Mwp.rfile = fn;
+				Mwp.bfile = fn;
 				break;
 			case FType.KMLZ:
 				if(Mwp.kmlfile == null) {

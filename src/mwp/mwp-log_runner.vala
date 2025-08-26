@@ -17,20 +17,14 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-namespace BBLV {
-	VideoPlayer vp = null;
-}
-
 namespace LogPlay {
 	int child_pid;
 }
 
 namespace Mwp {
 	int playfd[2];
-    Thread<int> thr;
     bool xlog;
     bool xaudio;
-	ReplayThread robj;
 
     private void handle_replay_pause(bool from_vid=false) {
         magcheck = false;
@@ -43,12 +37,7 @@ namespace Mwp {
         } else { //ProcessSignal.STOP;
             time_t (out pausetm);
         }
-		if(!from_vid) {
-			if(BBLV.vp != null) {
-				BBLV.vp.toggle_stream();
-			}
-		}
-        if((replayer & (Player.BBOX|Player.OTX|Player.RAW)) != 0 && LogPlay.child_pid != 0) {
+        if((replayer & Player.RAW) != 0 && LogPlay.child_pid != 0) {
 			if(!replay_paused) {
 				MWPLog.message("Resuming %d\n", LogPlay.child_pid);
 				ProcessLauncher.resume(LogPlay.child_pid);
@@ -56,8 +45,6 @@ namespace Mwp {
 				MWPLog.message("Suspending %d\n", LogPlay.child_pid);
 				ProcessLauncher.suspend(LogPlay.child_pid);
 			}
-        } else if(thr != null) {
-			robj.pause(replay_paused);
         }
     }
 
@@ -65,34 +52,11 @@ namespace Mwp {
         if(replay_paused)
             handle_replay_pause();
 
-		if((replayer & (Player.BBOX|Player.OTX)) != 0 && LogPlay.child_pid != 0) {
+		if( LogPlay.child_pid != 0) {
 			ProcessLauncher.kill(LogPlay.child_pid);
 			LogPlay.child_pid = 0;
 		}
-		if((Mwp.replayer & Mwp.Player.MWP) == Mwp.Player.MWP && thr != null) {
-			robj.stop();
-		}
 		replay_paused = false;
-		if(BBLV.vp != null) {
-			BBLV.vp.close();
-			BBLV.vp = null;
-		}
-	}
-
-	private string? check_mission_format(string lfn) {
-		var tfile = lfn;
-		string _fu;
-		var res = MWPFileType.guess_content_type(lfn, out _fu);
-		if (res != FType.MISSION_XML) {
-			var m = MissionManager.current();
-            if(m != null && m.npoints > 0) {
-				tfile=Utils.mstempname(false);
-				XmlIO.to_xml_file(tfile, {m});
-			} else {
-				tfile = null;
-			}
-		}
-		return tfile;
 	}
 
 	private void spawn_otx_task(string fn, bool delay, int idx, int typ=0, uint dura=0) {
@@ -108,140 +72,73 @@ namespace Mwp {
                 args += "-delay";
                 args += "%.3f".printf(dly);
             }
-        } else {
-            if (x_fl2ltm) {
-                args += "fl2ltm";
-                if (MissionManager.last_file != null) {
-					tfile = check_mission_format(MissionManager.last_file);
-					if (tfile != null) {
-						args += "-mission";
-						args += tfile;
+			string sargs = string.joinv(" ",args);
+
+			LogPlay.child_pid = 0;
+			var subp = new ProcessLauncher();
+			var res = subp.run_argv(args, ProcessLaunch.STDOUT|ProcessLaunch.STDERR);
+			if (!res) {
+				return;
+			}
+			MwpMisc.start_cpu_stats();
+			LogPlay.child_pid = subp.get_pid();
+
+			string line = null;
+			string csline = null;
+			size_t len = 0;
+			size_t cslen = 0;
+
+			IOChannel error = subp.get_stderr_iochan();
+			IOChannel cstdout = subp.get_stdout_iochan();
+			cstdout.add_watch (IOCondition.IN|IOCondition.HUP, (src, cond) => {
+					try {
+						if (cond == IOCondition.HUP)
+							return false;
+						IOStatus eos = src.read_line (out csline, out cslen, null);
+						if(eos == IOStatus.EOF)
+                            return false;
+						if(csline == null || cslen == 0)
+							return true;
+						MWPLog.message("<%s> %s", args[0], csline);
+					} catch {}
+					return true;
+				});
+
+			error.add_watch (IOCondition.IN|IOCondition.HUP, (src, cond) => {
+					try {
+						if (cond == IOCondition.HUP)
+							return false;
+						IOStatus eos = src.read_line (out line, out len, null);
+						if(eos == IOStatus.EOF)
+                            return false;
+						if(line == null || len == 0)
+							return true;
+						MWPLog.message("<%s> %s", args[0], line);
+					} catch {}
+					return true;
+				});
+			MWPLog.message("%s # pid=%u\n", sargs, LogPlay.child_pid);
+
+			subp.complete.connect(() => {
+					double cpu0=0, cpu1=0;
+					if (MwpMisc.end_cpu_stats(&cpu0, &cpu1) == 0) {
+						MWPLog.message("FYI: CPU: on core: %.2f%%, system: %.2f%%\n", cpu0, cpu1);
 					}
-                }
-                args += "-device";
-            }
-            args += dstr;
-            args += "--index";
-            args += idx.to_string();
-            if(delay == false)
-                args += "--fast";
+					try {
+						cstdout.shutdown(false);
+						error.shutdown(false);
+					} catch {}
 
-			if(BBL.skiptime > 0) {
-				args += "-skiptime";
-				args += BBL.skiptime.to_string();
-			}
-
-            args += "--type";
-            args += typ.to_string();
-            if (dura > 600) {
-                uint intvl  =  100 * dura / 600;
-                args += "-interval";
-                args += intvl.to_string();
-            } else if (x_fl2ltm) {
-                args += "-interval";
-                args += "100";
-            }
-        }
-        args += fn;
-
-		string sargs = string.joinv(" ",args);
-
-		if((replayer & Player.BBOX) != 0  && BBL.videofile != null && BBLV.vp == null) {
-			BBLV.vp = new VideoPlayer();
-			 BBLV.vp.video_closed.connect(() => {
-					 BBLV.vp = null;
-				 });
-
-			 BBLV.vp.video_playing.connect((vstate) => {
-					 if((debug_flags & DebugFlags.VIDEO) == DebugFlags.VIDEO) {
-						 MWPLog.message("VIDEO: BBL is %s, video requests %s\n", (replay_paused) ? "paused" : "playing", (vstate) ? "playing" : "paused");
-					 }
-					 if(vstate == replay_paused) {
-						 handle_replay_pause(true);
-					 }
-				 });
-			 BBLV.vp.present();
-			 BBLV.vp.add_stream(BBL.videofile);
+					LogPlay.child_pid = 0;
+					if(tfile != null && tfile != MissionManager.last_file) {
+						FileUtils.unlink(tfile);
+					}
+					Sticks.done();
+					cleanup_replay();
+					replayer = 0;
+				});
 		}
-
-		LogPlay.child_pid = 0;
-		var subp = new ProcessLauncher();
-		var res = subp.run_argv(args, ProcessLaunch.STDOUT|ProcessLaunch.STDERR);
-		if (!res) {
-			return;
-		}
-		MwpMisc.start_cpu_stats();
-		LogPlay.child_pid = subp.get_pid();
-
-		if((replayer & (Player.RAW|Player.MWP)) == 0) {
-			if(conf.show_sticks != 1) {
-				Sticks.create_sticks();
-			}
-		}
-
-		string line = null;
-		string csline = null;
-		size_t len = 0;
-		size_t cslen = 0;
-
-		IOChannel error = subp.get_stderr_iochan();
-		IOChannel cstdout = subp.get_stdout_iochan();
-		cstdout.add_watch (IOCondition.IN|IOCondition.HUP, (src, cond) => {
-				try {
-					if (cond == IOCondition.HUP)
-						return false;
-					IOStatus eos = src.read_line (out csline, out cslen, null);
-					if(eos == IOStatus.EOF)
-                            return false;
-					if(csline == null || cslen == 0)
-						return true;
-					MWPLog.message("<%s> %s", args[0], csline);
-				} catch {}
-				return true;
-			});
-
-		error.add_watch (IOCondition.IN|IOCondition.HUP, (src, cond) => {
-				try {
-					if (cond == IOCondition.HUP)
-						return false;
-					IOStatus eos = src.read_line (out line, out len, null);
-					if(eos == IOStatus.EOF)
-                            return false;
-					if(line == null || len == 0)
-						return true;
-					MWPLog.message("<%s> %s", args[0], line);
-				} catch {}
-				return true;
-			});
-		MWPLog.message("%s # pid=%u\n", sargs, LogPlay.child_pid);
-
-		subp.complete.connect(() => {
-				double cpu0=0, cpu1=0;
-				if (MwpMisc.end_cpu_stats(&cpu0, &cpu1) == 0) {
-					MWPLog.message("FYI: CPU: on core: %.2f%%, system: %.2f%%\n", cpu0, cpu1);
-				}
-				try {
-					cstdout.shutdown(false);
-					error.shutdown(false);
-				} catch {}
-
-				LogPlay.child_pid = 0;
-				if(tfile != null && tfile != MissionManager.last_file) {
-                    FileUtils.unlink(tfile);
-				}
-				Sticks.done();
-				cleanup_replay();
-				replayer = 0;
-			});
 	}
-
-    private void spawn_bbox_task(string fn, int index, int btype,
-                                 bool delay, uint8 force_gps, uint duration) {
-        if(x_fl2ltm) {
-            replayer |= Player.OTX;
-            spawn_otx_task(fn, delay, index, btype, duration);
-		}
-    }
 
 	private void run_replay(string fn, bool delay, Player rtype,
                             int idx=0, int btype=0, uint8 force_gps=0, uint duration =0) {
@@ -265,11 +162,7 @@ namespace Mwp {
 
         if(sr == 0) {
             replay_paused = false;
-            MWPLog.message("Replay \"%s\" log %s model %d\n",
-                           (rtype == Player.OTX) ? "otx" :
-                           (rtype == Player.BBOX) ? "bbox" :
-                           (rtype == Player.RAW) ? "raw" : "mwp",
-                           fn, btype);
+            MWPLog.message("Replay \"raw\" log %s model %d\n", fn, btype);
 
             init_have_home();
             conf.logarmed = false;
@@ -288,29 +181,8 @@ namespace Mwp {
 			Mwp.hard_display_reset();
             MwpMenu.set_menu_state(Mwp.window, "stop-replay", true);
             magcheck = delay; // only check for normal replays (delay == true)
-            switch(replayer) {
-            case Player.MWP:
-            case Player.MWP_FAST:
-                Mwpjs.check_mission(fn);
-                robj = new ReplayThread();
-				MWPLog.message(":DBG: create thread\n");
-                thr = robj.run(playfd[1], fn, delay);
-				MWPLog.message(":DBG: got thread %p\n", thr);
-                break;
-            case Player.BBOX:
-            case Player.BBOX_FAST:
-                spawn_bbox_task(fn, idx, btype, delay, force_gps, duration);
-                break;
-            case Player.RAW:
-            case Player.RAW_FAST:
-                replayer|= Player.OTX;
-                spawn_otx_task(fn, delay, idx, btype, duration);
-                break;
-            case Player.OTX:
-            case Player.OTX_FAST:
-                spawn_otx_task(fn, delay, idx, btype, duration);
-                break;
-            }
+			replayer|= Player.OTX;
+			spawn_otx_task(fn, delay, idx, btype, duration);
         } else {
 			MWPLog.message("[replayer]: get replay fd failed %d\n", sr);
 		}
@@ -319,13 +191,7 @@ namespace Mwp {
     private void cleanup_replay() {
         if (replayer != Player.NONE) {
             MWPLog.message("============== Replay complete ====================\n");
-            if ((replayer & Player.MWP) == Player.MWP) {
-                if(thr != null) {
-                    thr.join();
-                    thr = null;
-                }
-            }
-			msp.close();
+    		msp.close();
 			msp.set_ro(false);
 
             set_replay_menus(true);

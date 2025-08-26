@@ -24,7 +24,6 @@ namespace Mwp {
 	/* Options parsing */
     private string mission;
     private string kmlfile;
-    private string rfile = null;
     private string bfile = null;
 	private string clifile = null;
 
@@ -52,7 +51,6 @@ namespace Mwp {
     private bool ready;
 	private bool xnopoll;
 	private bool nopoll;
-	private string otxfile = null;
     private bool offline = false;
 	private string sh_load = null;
 	private string gz_load = null;
@@ -92,8 +90,7 @@ namespace Mwp {
 		{ "really-really-run-as-root", 0, 0, OptionArg.NONE, null, "no reason to ever use this", null},
 		{ "rebase", 0, 0, OptionArg.STRING, null, "rebase location (for replay)", "lat,lon"},
 		{ "relaxed-msp", 0, 0, OptionArg.NONE, null, "don't check MSP direction flag", null},
-		{ "replay-bbox", 'b', 0, OptionArg.STRING, null, "replay bbox log file", "file-name"},
-		{ "replay-mwp", 'p', 0, OptionArg.STRING, null, "replay mwp log file", "file-name"},
+		{ "replay-log", 'b', 0, OptionArg.STRING, null, "replay log file", "file-name"},
 		{ "rings", 0, 0, OptionArg.STRING, null, "Range rings (number, interval(m)), e.g. --rings 10,20", "number,interval"},
 		{ "serial-device", 's', 0, OptionArg.STRING, null, "Serial device", "device_name"},
 		{ "version", 'v', 0, OptionArg.NONE, null, "show version", null},
@@ -397,8 +394,7 @@ namespace Mwp {
 		private void set_opts_from_dict(VariantDict o) {
 			o.lookup("mission", "s", ref mission);
 			o.lookup("kmlfile", "s", ref kmlfile);
-			o.lookup("replay-mwp", "s", ref rfile);
-			o.lookup("replay-bbox", "s", ref bfile);
+			o.lookup("replay-log", "s", ref bfile);
 			o.lookup("cli-file", "s", ref clifile);
 
 			if(!ready) {

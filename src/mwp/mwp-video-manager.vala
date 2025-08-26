@@ -88,14 +88,14 @@ namespace VideoMan {
 		PAUSED=3
 	}
 
-	private Gtk.MediaFile mf;
-
 	public void load_v4l2_video() {
 		string uri = null;
 		int res = -1;
-		if (mf != null) {
-			mf.close();
-			mf = null;
+		if (MwpVideo.window != null) {
+			MwpVideo.window.close();
+		}
+		if (MwpVideo.playbin != null) {
+			MwpVideo.stop_embedded_player();
 		}
 
 		var vid_dialog = new V4L2.Window(GstDev.viddev_c);
@@ -104,15 +104,15 @@ namespace VideoMan {
 					res = vid_dialog.result(out uri);
 					switch(res) {
 					case 0:
-						 var i = GstDev.viddev_c.get_selected();
-						 var dname = ((Gtk.StringList)GstDev.viddev_c.model).get_string(i);
-						 if (dname != null) {
-							 var devname = GstDev.get_device(dname);
-							 uri = "v4l2://%s".printf(devname);
-						 } else {
-							 res = -1;
-						 }
-						 break;
+						var i = GstDev.viddev_c.get_selected();
+						var dname = ((Gtk.StringList)GstDev.viddev_c.model).get_string(i);
+						if (dname != null) {
+							var devname = GstDev.get_device(dname);
+							uri = "v4l2://%s".printf(devname);
+						} else {
+							res = -1;
+						}
+						break;
 					case 1:
 						uri = uri.strip();
 						if (uri.length > 0) {
@@ -134,65 +134,15 @@ namespace VideoMan {
 					vid_dialog = null;
 					if (res != -1) {
 						if (Mwp.window.vpane == null) {
-							var vp = new VideoPlayer();
+ 							var vp = new MwpVideo.Viewer();
 							vp.present();
-							vp.init(uri);
-							mf = vp.mf;
+							vp.load(uri, true);
 						} else {
-							paned_player(uri);
+							MwpVideo.embedded_player(uri);
 						}
 					}
 				}
 			});
 		vid_dialog.present();
-	}
-
-	public static void paned_player(string uri) {
-		var vp = new VideoBox();
-		vp.init(uri);
-		mf = vp.mf;
-		var image = new Gtk.Picture.for_paintable (vp.mf);
-		image.hexpand = true;
-		image.vexpand = true;
-		ulong active_id = 0;
-		active_id = vp.mf.invalidate_size.connect (()=>{
-				var h = vp.mf.get_intrinsic_height();
-				var w = vp.mf.get_intrinsic_width();
-				if (Mwp.DebugFlags.VIDEO in Mwp.debug_flags) {
-					MWPLog.message(":DBG: Embedded video %dx%d \n", w, h);
-				}
-				vp.mf.disconnect (active_id);
-			});
-		image.width_request = 640;
-		image.height_request = 480;
-		image.content_fit = Gtk.ContentFit.CONTAIN;
-		image.can_shrink = true;
-		Mwp.window.vpane.set_start_child(image);
-		vp.mf.notify["error"].connect(() => {
-				var str = "unknown";
-				if (vp.mf.error != null) {
-					str = vp.mf.error.message;
-				}
-				MWPLog.message(":DBG: embeded video error: %s\n", str);
-			});
-		vp.mf.notify["ended"].connect(() => {
-				if (Mwp.DebugFlags.VIDEO in Mwp.debug_flags) {
-					MWPLog.message(":DBG: embeded video player done\n");
-				}
-				mf = null;
-			});
-		vp.mf.play();
-	}
-
-	public static void stop_paned_player() {
-		if (Mwp.DebugFlags.VIDEO in Mwp.debug_flags) {
-			MWPLog.message(":DBG: embeded video player close (is null=%s)\n", (mf == null).to_string());
-		}
-		if (mf != null) {
-			mf.playing = false;
-			mf.clear();
-			mf.close();
-			mf = null;
-		}
 	}
 }

@@ -245,11 +245,11 @@ namespace MBus {
 		}
 
 		public void load_blackbox (string filename) throws GLib.Error {
-			BBL.replay_bbl(filename);
+			SLG.replay_bbl(filename);
 		}
 
 		public void load_mwp_log (string filename) throws GLib.Error {
-			Mwp.run_replay(filename, true, Mwp.Player.MWP);
+			SLG.replay_bbl(filename);
 		}
 
 		public void get_devices (out string[]devices) throws GLib.Error {

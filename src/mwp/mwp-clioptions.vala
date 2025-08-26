@@ -53,7 +53,6 @@ namespace Cli {
 			if(a != Mwp.mission &&
 			   a != Mwp.clifile &&
 			   a != Mwp.bfile &&
-			   a != Mwp.rfile &&
 			   a != Mwp.kmlfile) {
 				var ftyp = MWPFileType.guess_content_type(a, out fn);
 				if(ftyp != FType.UNKNOWN)  {
@@ -408,26 +407,13 @@ namespace Cli {
 			}
 		}
 
-		if(Mwp.rfile != null) {
-			var vfn = MWPFileType.validate_cli_file(Mwp.rfile);
-			Mwp.rfile = null;
-			if(vfn != null) {
-				Mwp.run_replay(vfn, true, Mwp.Player.MWP);
-			}
-		} else if(Mwp.bfile != null) {
+		if(Mwp.bfile != null) {
 			var vfn = MWPFileType.validate_cli_file(Mwp.bfile);
 			Mwp.bfile = null;
 			if(vfn != null) {
 				SLG.replay_bbl(vfn);
 			}
-		} else if(Mwp.otxfile != null) {
-			var vfn = MWPFileType.validate_cli_file(Mwp.otxfile);
-			Mwp.otxfile = null;
-			if(vfn != null) {
-				ETX.replay_etx(vfn);
-			}
 		}
-
 		if(Mwp.gz_load != null) {
 			var vfn = MWPFileType.validate_cli_file(Mwp.gz_load);
 			Mwp.gz_load = null;
