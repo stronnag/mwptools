@@ -100,7 +100,7 @@ namespace MwpVideo {
 			string playbinx;
 			MwpVideo.playbin = null;
 			if((playbinx = Environment.get_variable("MWP_PLAYBIN")) == null) {
-				playbinx = "playbin";
+				playbinx = "playbin3";
 			}
 
 			var videosink = Gst.ElementFactory.make ("gtk4paintablesink" /*, "video-sink"*/);
