@@ -1,9 +1,11 @@
 namespace MwpVideo {
-		public class Viewer : Adw.Window {
+#if !UNSUPPORTED_OS
+	public class Viewer : Adw.Window {
+		private Gtk.Box vbox;
+		private Gtk.Picture pic;
 		private Gtk.Button play_button;
 		private Gtk.Scale slider;
 		private uint tid;
-		private Gtk.Box vbox;
 		private const Gst.SeekFlags SEEK_FLAGS=(Gst.SeekFlags.FLUSH|Gst.SeekFlags.KEY_UNIT);
 		private Gst.ClockTime duration;
 		private bool seeking = false;
@@ -11,35 +13,40 @@ namespace MwpVideo {
 		private Utils.VolumeButton vb;
 		private Gtk.Label ptim;
 		private Gtk.Label prem;
-		private Gtk.Picture pic;
-
-		~Viewer () {
-			MwpVideo.window = null;
-		}
 
 		public Viewer() {
+			set_transient_for(Mwp.window);
 			set_size_request(640, 480);
-			duration =  (int64)0x7ffffffffffffff;
-			vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
 			title = "mwp Video player";
 			set_icon_name("mwp_icon");
+			vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
 			var header_bar = new Adw.HeaderBar();
 			vbox.append(header_bar);
+			duration =  (int64)0x7ffffffffffffff;
 			vb = new Utils.VolumeButton();
 			pic = new Gtk.Picture();
 			pic.hexpand = true;
 			pic.vexpand = true;
 			vbox.append(pic);
-			play_button = new Gtk.Button.from_icon_name ("gtk-media-play");
+			play_button = new Gtk.Button.from_icon_name ("media-playback-start-symbolic");
 			add_slider();
 			set_content(vbox);
+			MwpVideo.state |= MwpVideo.State.WINDOW;
 		}
 
-		public void load(string uri, bool start) {
-			var p = new Player(uri);
-			if (p.pt != null) {
-				MwpVideo.window = this;
+		public Gdk.Paintable? clear_player() {
+			var p = pic.paintable;
+			pic.paintable= null;
+			MwpVideo.state &= ~MwpVideo.State.PLAYWINDOW;
+			return p;
+		}
 
+		public MwpVideo.Player load(string uri, bool start) {
+			var p = new Player(uri);
+			MwpVideo.window = this;
+			MwpVideo.state |= MwpVideo.State.PLAYWINDOW;
+
+			if (p.pt != null) {
 				slider.change_value.connect((stype, d) => {
 						seeking = true;
 						p.playbin.get_state (out st, null, Gst.CLOCK_TIME_NONE);
@@ -55,8 +62,15 @@ namespace MwpVideo {
 						MWPLog.message("EOS\n");
 					});
 
+				p.error.connect((e) => {
+						Gst.State state;
+						p.playbin.get_state (out state, null, Gst.CLOCK_TIME_NONE);
+						MWPLog.message("Error %d %s\n", e, state.to_string());
+					});
+
+
 				p.state_change.connect((sts) => {
-						play_button.icon_name = (sts) ? "gtk-media-pause" : "gtk-media-play";
+						play_button.icon_name = (sts) ? "media-playback-pause-symbolic" : "media-playback-start-symbolic";
 					});
 				p.async_done.connect(()=> {
 						if (seeking) {
@@ -65,7 +79,7 @@ namespace MwpVideo {
 						}
 					});
 
-				pic.paintable = p.pt;
+				((Gtk.Picture)pic).paintable = p.pt;
 
 				play_button.clicked.connect(() => {
 						on_play(p);
@@ -89,7 +103,14 @@ namespace MwpVideo {
 						if (tid > 0) {
 							Source.remove(tid);
 						}
-						p.playbin.set_state (Gst.State.NULL);
+						print("Closing viewer with %p\n", ((Gtk.Picture)pic).paintable );
+						if(((Gtk.Picture)pic).paintable != null) {
+							p.clear();
+							p=null;
+							MwpVideo.playbin = null;
+						}
+						MwpVideo.window = null;
+						MwpVideo.state &= ~(MwpVideo.State.WINDOW|MwpVideo.State.PLAYWINDOW);
 						return false;
 					});
 
@@ -97,12 +118,15 @@ namespace MwpVideo {
 				if (start) {
 					on_play(p);
 				}
+				MwpVideo.last_uri = uri;
 			}
+			return p;
 		}
 
 		private void add_slider() {
 			if (slider == null) {
 				slider = new Gtk.Scale.with_range(Gtk.Orientation.HORIZONTAL, 0, 1, 1);
+				slider.visible=false;
 				slider.set_draw_value(false);
 				slider.hexpand = true;
 
@@ -115,6 +139,9 @@ namespace MwpVideo {
 				hbox.append (slider);
 				hbox.append(prem);
 				hbox.append(vb);
+				hbox.hexpand = true;
+				vb.hexpand = true;
+				vb.halign = Gtk.Align.END;
 				vbox.append(hbox);
 			}
 		}
@@ -126,15 +153,15 @@ namespace MwpVideo {
 		}
 
 		public void set_slider_max(Player p, Gst.ClockTime max) {
-			ptim = new Gtk.Label("");
 			format_ct(0, false);
-
 			if (max > 0) {
-				prem = new Gtk.Label("");
 				duration = max;
 				double rt =  max / 1e9;
 				slider.set_range(0.0, rt);
 				format_ct(rt, true);
+				slider.visible = true;
+			} else {
+				slider.visible = false;
 			}
 		}
 
@@ -177,6 +204,14 @@ namespace MwpVideo {
 			}
 		}
 
+		public void set_playing(bool play) {
+			if(play) {
+				MwpVideo.playbin.set_state (Gst.State.PLAYING);
+			} else {
+				MwpVideo.playbin.set_state (Gst.State.PAUSED);
+			}
+		}
+
 		public Gst.ClockTime discover(string fn) {
 			Gst.ClockTime id = 0;
 			try {
@@ -187,4 +222,54 @@ namespace MwpVideo {
 			return id;
 		}
 	}
+#else
+	public class Viewer : Adw.Window {
+		private Gtk.Box vbox;
+		private Gtk.Video pic;
+
+		public Viewer() {
+			set_transient_for(Mwp.window);
+			set_size_request(640, 480);
+			title = "mwp video player";
+			set_icon_name("mwp_icon");
+			vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
+			var header_bar = new Adw.HeaderBar();
+			vbox.append(header_bar);
+			pic = new Gtk.Video();
+			pic.vexpand = true;
+			vbox.append(pic);
+			set_content(vbox);
+			MwpVideo.state |= MwpVideo.State.WINDOW;
+		}
+
+		public MwpVideo.Player load(string uri, bool start) {
+			var p = new Player(uri);
+			MwpVideo.window = this;
+			if (p.pt != null) {
+				pic.set_media_stream(p.pt);
+				p.pt.set_playing(true);
+				MwpVideo.state |= MwpVideo.State.PLAYWINDOW;
+				MwpVideo.last_uri = uri;
+			}
+
+			close_request.connect (() => {
+					MwpVideo.window = null;
+					MwpVideo.state &= ~(MwpVideo.State.WINDOW|MwpVideo.State.PLAYWINDOW);
+					return false;
+				});
+			return p;
+		}
+
+		public void set_playing(bool play) {
+			MwpVideo.mmf.playing = true;
+		}
+		
+		public Gdk.Paintable? clear_player() {
+			var pt = pic.media_stream;
+			pic.media_stream = null;
+			MwpVideo.state &= ~MwpVideo.State.PLAYWINDOW;
+			return pt;
+		}
+	}
+#endif
 }

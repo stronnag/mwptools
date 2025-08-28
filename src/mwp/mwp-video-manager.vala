@@ -94,7 +94,7 @@ namespace VideoMan {
 		if (MwpVideo.window != null) {
 			MwpVideo.window.close();
 		}
-		if (MwpVideo.playbin != null) {
+		if (MwpVideo.state != 0) {
 			MwpVideo.stop_embedded_player();
 		}
 
@@ -136,7 +136,10 @@ namespace VideoMan {
 						if (Mwp.window.vpane == null) {
  							var vp = new MwpVideo.Viewer();
 							vp.present();
-							vp.load(uri, true);
+							Idle.add(() => {
+									vp.load(uri, true);
+									return false;
+								});
 						} else {
 							MwpVideo.embedded_player(uri);
 						}

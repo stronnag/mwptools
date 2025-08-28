@@ -468,7 +468,7 @@ namespace Mwp {
 			Gis.overlay.hexpand = true;
 			Gis.overlay.halign=Gtk.Align.FILL;
 			pane.set_start_child(Gis.overlay);
-			pane.position = 9999;
+			pane.position = 32767;
 			toaster.set_child(pane);
 			show_sidebar_button.clicked.connect(() => {
 					pane.end_child.visible  = show_sidebar_button.active;
@@ -508,8 +508,9 @@ namespace Mwp {
 
 		private void set_panel_mode() {
 			string defset = MwpVideo.last_uri;
-			MwpVideo.stop_embedded_player();
 			if(conf.is_vertical) {
+				MWPLog.message(":DBG: PANE: setup legacy Pane\n");
+				MwpVideo.stop_embedded_player();
 				pane.set_end_child(null);
 				vpane = null;
 				pane.set_end_child(panelbox);
@@ -517,6 +518,7 @@ namespace Mwp {
 				panelbox.halign=Gtk.Align.END;
 				panelbox.valign = Gtk.Align.FILL;
 			} else {
+				MWPLog.message(":DBG: PANE: setup VPane [%s]\n", defset);
 				vpane = new Gtk.Paned(Gtk.Orientation.VERTICAL);
 				pane.set_end_child(null);
 				pane.set_end_child(vpane);
@@ -535,6 +537,7 @@ namespace Mwp {
 				try {
 					if (defset == null) {
 						FileUtils.get_contents(vfn, out defset);
+						MWPLog.message(":DBG: defset %s from %s\n", defset, vfn);
 					}
 					if(defset != null) {
 						Idle.add(() => {

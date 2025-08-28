@@ -22,10 +22,12 @@ endif
 
 if host_machine.system() == 'darwin'
   dopts += '--define=DARWIN'
+  dopts += '--define=UNSUPPORTED_OS'
 endif
 
 if host_machine.system() == 'windows'
   dopts += '--define=WINDOWS'
+  dopts += '--define=UNSUPPORTED_OS'
 else
   dopts += '--define=UNIX'
 endif
