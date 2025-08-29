@@ -30,15 +30,16 @@ namespace V4L2 {
 		internal unowned Gtk.Grid g;
 
 		private RecentVideo cbox;
-
+		public Gtk.DropDown viddev_c;
 		public signal void response(int id);
 
-		public Window(Gtk.DropDown viddev_c) {
+		public Window() {
+			viddev_c = new Gtk.DropDown(GstDev.sl, null);
 			transient_for = Mwp.window;
 			urichk.active = true;
 #if WINDOWS
-			webcam.sensitive = false;
-#else
+			GstDev.wincams();
+#endif
 			if(viddev_c != null) {
 				g.attach (viddev_c, 1, 0);
 				var sl = viddev_c.model as Gtk.StringList;
@@ -47,8 +48,10 @@ namespace V4L2 {
 				} else {
 					viddev_c.selected = 1;
 				}
-			}
+#if WINDOWS
+				webcam.sensitive = false;
 #endif
+			}
 			cbox = new  RecentVideo(this);
 			cbox.entry.set_width_chars(48);
 
@@ -98,14 +101,14 @@ namespace VideoMan {
 			MwpVideo.stop_embedded_player();
 		}
 
-		var vid_dialog = new V4L2.Window(GstDev.viddev_c);
+		var vid_dialog = new V4L2.Window();
 		vid_dialog.response.connect((id) => {
 				if(id == 0) {
 					res = vid_dialog.result(out uri);
 					switch(res) {
 					case 0:
-						var i = GstDev.viddev_c.get_selected();
-						var dname = ((Gtk.StringList)GstDev.viddev_c.model).get_string(i);
+						var i = vid_dialog.viddev_c.get_selected();
+						var dname = ((Gtk.StringList)vid_dialog.viddev_c.model).get_string(i);
 						if (dname != null) {
 							var devname = GstDev.get_device(dname);
 							uri = "v4l2://%s".printf(devname);

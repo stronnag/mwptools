@@ -1,4 +1,4 @@
-project('mwptools', 'vala', 'c', version : '25.08.29', meson_version : '>= 1.4.0')
+project('mwptools', 'vala', 'c', version : '25.08.30', meson_version : '>= 1.4.0')
 
 nogo = get_option('nogo')
 
@@ -54,12 +54,23 @@ subdir('src/samples/')
 if host_machine.system() == 'linux'
   subdir('src/mwp-ble-bridge')
 endif
+
+mwpbuildlibs = [mwpclib, libmwpvers, mwpvlib ]
+mwpbuildsrc = [mwpsrcs, mwpcommon, mwpvers_h, mresources]
+
+if build_machine.system() == 'windows'
+  subdir('src/wcam')
+  mwpbuildlibs += wcamclib
+  common_inc_dir += wcam_inc_dir
+  mwpdeps += wcamldeps
+endif
+
 subdir('docs')
 
 exargs = {
-  'sources': [mwpsrcs, mwpcommon, mwpvers_h, mresources],
+  'sources': mwpbuildsrc,
   'dependencies': [mwpdeps ],
-  'link_with': [mwpclib, libmwpvers, mwpvlib ],
+  'link_with': mwpbuildlibs,
   'include_directories': [common_inc_dir, configuration_inc],
   'vala_args': [dopts, mwp_v_args ],
   'c_args': [mwp_c_args, dev_args, vcargs ],

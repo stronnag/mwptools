@@ -19,7 +19,6 @@
 
 namespace GstDev {
 	List<GstMonitor.VideoDev?> viddevs;
-	Gtk.DropDown viddev_c;
 	Gtk.StringList sl;
 
 	public string? get_device(string m) {
@@ -32,13 +31,54 @@ namespace GstDev {
 		return null;
 	}
 
+#if WINDOWS
+	/*
+	  Ugly, but fits in extant POSIX APIs
+	 */
+	private void clear_lists() {
+		while(!viddevs.is_empty()) {
+			viddevs.remove_link(viddevs);
+		}
+
+		for(var j = 1; j < sl.get_n_items(); j++) {
+			var dname = sl.get_string(j);
+			if (dname != "(None)") {
+				MWPLog.message(":DBG:WCAM: remove %d %s\n", j, dname);
+				sl.remove(j);
+			} else {
+				MWPLog.message(":DBG:WCAM: keep %d %s\n", j, dname);
+			}
+		}
+	}
+
+	public void wincams() {
+		string clist = WinCam.get_cameras();
+		if (clist != null) {
+			clear_lists();
+			MWPLog.message(":DBG:WCAM - [%s]\n", clist);
+			var parts = clist.split("\t");
+			MWPLog.message(":DBG:WCAM - parts=%u\n", parts.length);
+			foreach(var p in parts) {
+				MWPLog.message(":DBG:WCAM - Add [%s]\n", p);
+				var d =  GstMonitor.VideoDev();
+				d.devicename=p;
+				d.displayname=p;
+				viddevs.append(d);
+				sl.append(d.displayname);
+			}
+		} else {
+			MWPLog.message(":DBG:WCAM - no camera\n");
+		}
+	}
+#endif
+
 	public void init() {
 		sl = new Gtk.StringList({"(None)"});
 		viddevs = new List<GstMonitor.VideoDev?> ();
+#if (LINUX || FREEBSD)
 		CompareFunc<GstMonitor.VideoDev?>  devname_comp = (a,b) =>  {
 			return strcmp(a.devicename, b.devicename);
 		};
-		viddev_c = new Gtk.DropDown(sl, null);
 		GstMonitor gstdm;
 		gstdm = new GstMonitor();
 		gstdm.source_changed.connect((a,d) => {
@@ -83,5 +123,6 @@ namespace GstDev {
 		if (Environment.get_variable("MWP_NODEVMON") == null) {
 			gstdm.setup_device_monitor();
 		}
+#endif
 	}
 }
