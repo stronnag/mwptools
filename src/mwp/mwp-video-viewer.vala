@@ -17,7 +17,7 @@ namespace MwpVideo {
 		public Viewer() {
 			set_transient_for(Mwp.window);
 			set_size_request(640, 480);
-			title = "mwp Video player";
+			title = "mwp Video Player";
 			set_icon_name("mwp_icon");
 			vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
 			var header_bar = new Adw.HeaderBar();
@@ -129,7 +129,7 @@ namespace MwpVideo {
 				slider.visible=false;
 				slider.set_draw_value(false);
 				slider.hexpand = true;
-
+				slider.halign = Gtk.Align.FILL;
 				ptim = new Gtk.Label("");
 				prem = new Gtk.Label("");
 
@@ -140,8 +140,8 @@ namespace MwpVideo {
 				hbox.append(prem);
 				hbox.append(vb);
 				hbox.hexpand = true;
-				vb.hexpand = true;
 				vb.halign = Gtk.Align.END;
+				vb.visible = false;
 				vbox.append(hbox);
 			}
 		}
@@ -153,16 +153,17 @@ namespace MwpVideo {
 		}
 
 		public void set_slider_max(Player p, Gst.ClockTime max) {
-			format_ct(0, false);
 			if (max > 0) {
 				duration = max;
 				double rt =  max / 1e9;
 				slider.set_range(0.0, rt);
-				format_ct(rt, true);
+				prem.label = format_ct(rt, true);
 				slider.visible = true;
 			} else {
 				slider.visible = false;
+				vb.hexpand = true;
 			}
+			vb.visible = true;
 		}
 
 		public void set_slider_value(double value) {
@@ -263,7 +264,7 @@ namespace MwpVideo {
 		public void set_playing(bool play) {
 			MwpVideo.mmf.playing = true;
 		}
-		
+
 		public Gdk.Paintable? clear_player() {
 			var pt = pic.media_stream;
 			pic.media_stream = null;
