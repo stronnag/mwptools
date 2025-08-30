@@ -1553,15 +1553,20 @@
 <p>In "FPV Mode", no controls are shown.</p>
 <h2 id="os-specific">OS Specific<a class="headerlink" href="#os-specific" title="Permanent link">#</a></h2>
 <ul>
-<li>FreeBSD. FreeBSD offers a video4linux emulation that works with <a href="https://github.com/stronnag/mwptools">mwp</a>. Cameras are not auto-detected but will be recognised if plugged in before mwp is invoked.</li>
-<li>Windows. Uses <code>ksvideosrc</code> for input. The more modern <code>mfvideosrc</code> is not used, as it may not be universally available.</li>
-<li>MacOS. Camera input is unlikely to work.</li>
+<li>FreeBSD. FreeBSD offers a video4linux emulation that works with <a href="https://github.com/stronnag/mwptools">mwp</a>.</li>
+<li>Windows. Uses <code>ksvideosrc</code> for input. The more modern <code>mfvideosrc</code> is not used, as it may not be universally available (also may be device dependent).</li>
+<li>MacOS. Uses <code>afvideosrc</code> for Camera input. Not tested.</li>
 </ul>
 <h2 id="fpv-mode">FPV Mode<a class="headerlink" href="#fpv-mode" title="Permanent link">#</a></h2>
-<p>FPV mode provides a paned view of a camera feed. The user can switch between "Standard" and "FPV Mode" views from the "View / FPV Mode" menu option or by assigning a <a href="../mwp-Configuration/#keyboard-accelerators">shortcut key</a>, for example in <code>~/.config/mwp/accels</code>, the "action" name is "modeswitch"</p>
+<p>FPV mode provides a paned view of a camera feed. The user can switch between "Standard" and "FPV Mode" views from the "View / FPV Mode" menu option or by assigning a <a href="../mwp-Configuration/#keyboard-accelerators">shortcut key</a>, for example in <code>~/.config/mwp/accels</code>, the "action" name is "modeswitch", which is here mapped to <code>F12</code>.</p>
 <div class="highlight"><pre><span></span><code>modeswitch F12
 </code></pre></div>
 <p>The <a href="../dock/">panel</a> will swich as necesary.</p>
+<p>FPV uses the following order to determine what to show (if anything).</p>
+<ul>
+<li>If the windowed player was active, that stream is transferred to the video pane.</li>
+<li>Else, if available, the last panel stream is shown.</li>
+</ul>
 <h3 id="using-rtsp-for-camera-parameter-definitions">Using RTSP for camera parameter definitions<a class="headerlink" href="#using-rtsp-for-camera-parameter-definitions" title="Permanent link">#</a></h3>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> cameras are used in their default configuration. If the user wants more control over the camera properties, is using a remote camera, or is using MacOS where mwp does not currently recognise cameras: then a RTSP server can be used.</p>
 <p><a href="https://github.com/AlexxIT/go2rtc">go2rtc</a> is a useful RTSP server that supports numerous video options. The following configuration file <code>go2rtc.yaml</code> illustrates some of the possibilities:</p>
