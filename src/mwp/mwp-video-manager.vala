@@ -141,6 +141,7 @@ namespace VideoMan {
 									return false;
 								});
 						} else {
+							MWPLog.message("Add %s to embedded\n", uri);
 							MwpVideo.embedded_player(uri);
 						}
 					}
