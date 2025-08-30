@@ -18,11 +18,15 @@
  */
 
 namespace GstDev {
-	List<GstMonitor.VideoDev?> viddevs;
+	public struct VideoDev {
+		string devicename;
+		string displayname;
+	}
+	List<GstDev.VideoDev?> viddevs;
 	Gtk.StringList sl;
 
 	public string? get_device(string m) {
-		for (unowned List<GstMonitor.VideoDev?>lp = viddevs.first(); lp != null; lp = lp.next)  {
+		for (unowned List<GstDev.VideoDev?>lp = viddevs.first(); lp != null; lp = lp.next)  {
 			var dv = lp.data;
 			if (dv.displayname == m) {
 				return dv.devicename;
@@ -31,7 +35,6 @@ namespace GstDev {
 		return null;
 	}
 
-#if WINDOWS
 	/*
 	  Ugly, but fits in extant POSIX APIs
 	 */
@@ -39,90 +42,59 @@ namespace GstDev {
 		while(!viddevs.is_empty()) {
 			viddevs.remove_link(viddevs);
 		}
-
 		for(var j = 1; j < sl.get_n_items(); j++) {
 			var dname = sl.get_string(j);
 			if (dname != "(None)") {
-				MWPLog.message(":DBG:WCAM: remove %d %s\n", j, dname);
 				sl.remove(j);
-			} else {
-				MWPLog.message(":DBG:WCAM: keep %d %s\n", j, dname);
 			}
 		}
 	}
 
-	public void wincams() {
-		string clist = WinCam.get_cameras();
-		if (clist != null) {
-			clear_lists();
-			MWPLog.message(":DBG:WCAM - [%s]\n", clist);
-			var parts = clist.split("\t");
-			MWPLog.message(":DBG:WCAM - parts=%u\n", parts.length);
-			foreach(var p in parts) {
-				MWPLog.message(":DBG:WCAM - Add [%s]\n", p);
-				var d =  GstMonitor.VideoDev();
-				d.devicename=p;
-				d.displayname=p;
-				viddevs.append(d);
-				sl.append(d.displayname);
-			}
-		} else {
-			MWPLog.message(":DBG:WCAM - no camera\n");
+	private VideoDev? get_node_info(Gst.Device device) {
+		VideoDev ds = {};
+		ds.displayname = device.display_name;
+		var s = device.get_properties();
+		if (s == null) {
+			ds.devicename = device.display_name;
 		}
+		if(s != null) {
+			var dn = s.get_string("api.v4l2.path");
+			if (dn == null)
+				dn = s.get_string("device.path");
+			if (dn == null)
+				dn = s.get_string("device.name");
+			if (dn != null) {
+				ds.devicename = dn;
+			} else {
+				ds.devicename = ds.displayname;
+			}
+		}
+		return ds;
 	}
-#endif
+
+	public void find_cameras() {
+		clear_lists();
+		var monitor = new Gst.DeviceMonitor ();
+		var caps = new Gst.Caps.empty_simple ("video/x-raw");
+		var cid= monitor.add_filter ("Video/Source", caps);
+		caps = new Gst.Caps.empty_simple ("image/jpeg");
+		cid = monitor.add_filter ("Video/Source", caps);
+		monitor.start();
+		var devs = monitor.get_devices();
+		if (devs != null) {
+			devs.@foreach((dv) => {
+					var d = get_node_info(dv);
+					if(d != null) {
+						viddevs.append(d);
+						sl.append(d.displayname);
+					}
+				});
+		}
+		monitor.stop();
+	}
 
 	public void init() {
 		sl = new Gtk.StringList({"(None)"});
-		viddevs = new List<GstMonitor.VideoDev?> ();
-#if (LINUX || FREEBSD)
-		CompareFunc<GstMonitor.VideoDev?>  devname_comp = (a,b) =>  {
-			return strcmp(a.devicename, b.devicename);
-		};
-		GstMonitor gstdm;
-		gstdm = new GstMonitor();
-		gstdm.source_changed.connect((a,d) => {
-				bool act = false;
-				switch (a) {
-				case "add":
-				case "init":
-					if(viddevs.find_custom(d, devname_comp) == null) {
-						viddevs.append(d);
-						sl.append(d.displayname);
-						act = true;
-					}
-					break;
-				case "remove":
-					unowned List<GstMonitor.VideoDev?> da  = viddevs.find_custom(d, devname_comp);					if (da != null) {
-						uint pos=-1;
-						for(var j = 0; j < sl.get_n_items(); j++) {
-							if (sl.get_string(j) == da.data.displayname) {
-								pos = j;
-								break;
-							}
-						}
-						if(pos != -1) {
-							sl.remove(pos);
-						}
-						act = true;
-						viddevs.remove_link(da);
-					}
-					break;
-				}
-				if(act) {
-					MWPLog.message("GST: \"%s\" <%s> <%s>\n", a, d.displayname, d.devicename);
-				}
-				if((Mwp.debug_flags & Mwp.DebugFlags.VIDEO) == Mwp.DebugFlags.VIDEO) {
-					//					viddevs.@foreach((d) =>
-					for (unowned List<GstMonitor.VideoDev?>lp = viddevs.first(); lp != null; lp = lp.next)  {
-						var dv = lp.data;
-						MWPLog.message("VideoDevs <%s> <%s>\n", dv.devicename, dv.displayname);
-					}
-				}
-			});
-		if (Environment.get_variable("MWP_NODEVMON") == null) {
-			gstdm.setup_device_monitor();
-		}
-#endif
+		viddevs = new List<GstDev.VideoDev?> ();
 	}
 }

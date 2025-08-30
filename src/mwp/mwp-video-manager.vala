@@ -37,9 +37,8 @@ namespace V4L2 {
 			viddev_c = new Gtk.DropDown(GstDev.sl, null);
 			transient_for = Mwp.window;
 			urichk.active = true;
-#if WINDOWS
-			GstDev.wincams();
-#endif
+
+			GstDev.find_cameras();
 			if(viddev_c != null) {
 				g.attach (viddev_c, 1, 0);
 				var sl = viddev_c.model as Gtk.StringList;

@@ -148,6 +148,8 @@ namespace MwpVideo {
 				string v4l2src;
 #if WINDOWS
 				v4l2src = "ksvideosrc device-name=";
+#elif DARWIN
+				v4l2src = "avfvideosrc device-name=";
 #else
 				v4l2src = "v4l2src device=";
 #endif
