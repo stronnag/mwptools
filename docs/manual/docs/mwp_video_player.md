@@ -42,19 +42,24 @@ In "FPV Mode", no controls are shown.
 
 ## OS Specific
 
-* FreeBSD. FreeBSD offers a video4linux emulation that works with {{ mwp }}. Cameras are not auto-detected but will be recognised if plugged in before mwp is invoked.
-* Windows. Uses `ksvideosrc` for input. The more modern `mfvideosrc` is not used, as it may not be universally available.
-* MacOS. Camera input is unlikely to work.
+* FreeBSD. FreeBSD offers a video4linux emulation that works with {{ mwp }}.
+* Windows. Uses `ksvideosrc` for input. The more modern `mfvideosrc` is not used, as it may not be universally available (also may be device dependent).
+* MacOS. Uses `afvideosrc` for Camera input. Not tested.
 
 ## FPV Mode
 
-FPV mode provides a paned view of a camera feed. The user can switch between "Standard" and "FPV Mode" views from the "View / FPV Mode" menu option or by assigning a [shortcut key](mwp-Configuration.md#keyboard-accelerators), for example in `~/.config/mwp/accels`, the "action" name is "modeswitch"
+FPV mode provides a paned view of a camera feed. The user can switch between "Standard" and "FPV Mode" views from the "View / FPV Mode" menu option or by assigning a [shortcut key](mwp-Configuration.md#keyboard-accelerators), for example in `~/.config/mwp/accels`, the "action" name is "modeswitch", which is here mapped to `F12`.
 
 ```
 modeswitch F12
 ```
 
 The [panel](dock.md) will swich as necesary.
+
+FPV uses the following order to determine what to show (if anything).
+
+* If the windowed player was active, that stream is transferred to the video pane.
+* Else, if available, the last panel stream is shown.
 
 ### Using RTSP for camera parameter definitions
 
