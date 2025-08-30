@@ -54,18 +54,10 @@ subdir('src/samples/')
 if host_machine.system() == 'linux'
   subdir('src/mwp-ble-bridge')
 endif
+subdir('docs')
 
 mwpbuildlibs = [mwpclib, libmwpvers, mwpvlib ]
 mwpbuildsrc = [mwpsrcs, mwpcommon, mwpvers_h, mresources]
-
-if build_machine.system() == 'windows'
-  subdir('src/wcam')
-  mwpbuildlibs += wcamclib
-  common_inc_dir += wcam_inc_dir
-  mwpdeps += wcamldeps
-endif
-
-subdir('docs')
 
 exargs = {
   'sources': mwpbuildsrc,
