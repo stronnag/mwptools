@@ -69,6 +69,7 @@ The following tables summarise the available menu options. Where usage is not ob
 
 | Item | Usage |
 | ---- | ----- |
+| FPV Mode | Toggls [FPV Mode](mwp_video_player.md#fpv-mode) |
 | Zoom to Mission | Zooms the map to the currently loaded mission |
 | Set location as default | Sets the current location as the default (startup) location |
 | Centre on position ... | Shows the ["Centre on Position" selector and "favourite places" editor"](misc-ui-elements.md#favourite-places) |

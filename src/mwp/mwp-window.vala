@@ -524,9 +524,9 @@ namespace Mwp {
 				pane.set_end_child(vpane);
 				vpane.set_end_child(panelbox);
 				vpane.shrink_end_child = false;
-				vpane.shrink_start_child = false;
+				vpane.shrink_start_child = true; // ex false;
 				vpane.resize_end_child = false;
-				vpane.resize_start_child = false;
+				vpane.resize_start_child = false; // true?
 				panelbox.hexpand = true;
 				panelbox.halign = Gtk.Align.END;
 				panelbox.vexpand = false;

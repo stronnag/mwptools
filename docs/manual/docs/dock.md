@@ -6,15 +6,11 @@ The **Side Bar**, items 4 and 6 in the main window guide provides an area for op
 
 ![main](images/main-window.png){: width="100%" }
 
-A very simple, bespoke panel comprising embedded resizeable panes has been implemented.
+A very simple, bespoke panel comprising embedded panes on a grid has been implemented. Opinionated settings that work in both "Standard" and "FPV View" modes are provided. Configuration is [described below](#side-bar-configuration).
 
-* The panel consists for four vertical panels
-* The top panel can hold three horizontal panes
-* The other panels can hold two horizontal panes.
+<iframe width="560" height="315" src="https://www.youtube.com/embed/pxWqm9QUlRk?si=An2vccYD7wrFPRfj" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
-Each pane has a divider line between it and adjacent panels. **The size of individual panes may be adjusted by moving the dividers.** mwp will remember the relative sizing of the panels.
-
-The main sidebar (dock) controls are shown below. Please note some of these images are from the legacy version of {{ mwp }}.:
+The main sidebar (dock) controls are shown below. Please note some of these images are from the legacy version of {{ mwp }}:
 
 ## Side Bar Items (Dockets)
 
@@ -52,46 +48,55 @@ The following items are provided.
 
 ## Side Bar Configuration
 
-The configuration may be user defined by a simple text file `~/.config/mwp/panel.conf`.
+The configuration may be user defined by a simple text file `~/.config/mwp/.panel.conf`.
 
-Each entry is defined by a comma separated line defining the panel widget name, the row (0-3) and the column (0-2) and an optional minimum size (only required for the artificial horizon).
+Note that everything is defined in terms of a standard (vertical) panel. When in FPV Mode (horizontal panel), rows are columns are automatically transposed.
 
-The default panel is defined (in the absence of a configuration file) as:
+The default is:
 
 ```
-# default widgets
-ahi,0,1,100
-rssi, 1, 0
-dirn, 1, 1
-flight, 2, 0
-volts, 3, 0
+# mwp panel v2
+# name, row, col, width, height, span, mode
+ahi,0,0,200,200,2,3
+rssi,1,0,-1,-1,1,3
+vario,1,1,-1,-1,1,3
+wind,2,0,-1,-1,1,1
+dirn,2,1,-1,-1,1,1
+flight,3,0,-1,-1,2,3
+volts,4,0,-1,-1,2,3
 ```
 
-Which appears as:
-![mwp4-panel-0](images/mwp4-panel-0.png)
+where:
 
-### In line editor
+* `rows` and `columns` are 0 indexed
+* `span` describes the number of rows (or columns) that widget a spans, allowing "large" items.
+* The combination of `columns` and the sum of `spans` should be consistent across all rows to avoid blank items (see compressed example below).
+* `width` and `height` is only required for the `ahi`; otherwise `-1` means "best fit"
+* `mode` is a bit mask defining whether a widget is shown when vertical (1) and horizontal (2) (so 3 means both).
 
-From 25.04.15, it is possible to edit the panel in-line. A popup menu is displayed on right mouse press on a panel pane. Note that in the default configuration, some of the pane dividers may be flush against an edge, and it will be necessary to drag the dividers to expose all the unused panels.
+No graphical means is currently available to edit the panel, it has to be done by a text editor.
 
-On a blank pane, the popup menu offers all non-deployed widgets. Here only "WindSpeed" is available to be added.
+### Compressed example
 
-![mwp4-panel-e0](images/panel-edit-0.png)
+This FreeBSD VM has a quite restricted screen size. In order to have a useful panel, it was optimal to have three columns, with spans adjusted for consistency. This works in both modes:
 
-The result after adding "WindSpeed":
+```
+# mwp panel v2
+# 3 row example
+# name, row, col, width, height, span, mode
+rssi,0,0,-1,-1,1,3
+ahi,0,1,100,100,1,3
+vario,0,2,-1,-1,1,3
+wind,2,0,-1,-1,2,1
+dirn,2,2,-1,-1,1,1
+flight,3,0,-1,-1,3,3
+volts,4,0,-1,-1,3,3
+```
 
-![mwp4-panel-e1](images/panel-edit-1.png)
+![freebsd vertical](images/fpvmode/freebsd-std-mode.png)
 
-When the popup menu is invoked for a populated pane, only "Remove Item" is available.
+![freebsd horizontal](images/fpvmode/freebsd-fpv-mode.png)
 
-[Video example](https://youtu.be/U7EpvuZLQ74) showing right mouse button menu usage.
-
-<iframe width="827" height="594"
-src="https://www.youtube.com/embed/U7EpvuZLQ74" title="mwp panel"
-frameborder="0" allow="accelerometer; autoplay; clipboard-write;
-encrypted-media; gyroscope; picture-in-picture; web-share"
-referrerpolicy="strict-origin-when-cross-origin"
-allowfullscreen></iframe>
 
 ### Available Widgets
 
@@ -107,21 +112,3 @@ The available panel widgets are named as:
 |  `wind` | Wind Estimator (BBL replay only) |
 
 No other legacy widgets have been migrated.
-
-So using the following `~/.config/mwp/panel.conf`
-
-```
-# default + vario + wind widgets
-ahi, 0, 1, 100
-vario,0,2
-rssi, 0, 0
-wind, 1, 0
-dirn, 1, 1
-flight, 2, 0
-volts, 3, 0
-```
-
-would appear as:
-![mwp4-panel-1](images/mwp4-panel-1.png)
-
-Panel sizes have been adjusted to make best use of available space.

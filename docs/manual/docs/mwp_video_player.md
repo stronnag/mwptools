@@ -1,11 +1,14 @@
 # Playing Video in mwp
 
-{{ mwp }} provides support for live and recorded video.
+{{ mwp }} provides support for live and recorded video. Use cases might include:
 
+* In ground station mode, for long range monitoring;
 * In ground station mode, in order to repeat the FPV feed to the mwp screen, presumably for the enjoyment of spectators;
 * During Blackbox replay, to show the FPV recorded video during the replay.
 
 Video may be played in either a separate window, or in an embedded pane (FPV Mode).
+
+![FPV View](images/fpvmode/fpv-mode-analogue.png){: width="30%" }
 
 ## Video Player Requirements
 
@@ -21,7 +24,7 @@ mwp uses the open source GStreamer API to provide video playing. As well as any 
 
 ## Live stream mode (GCS)
 
-There is now a **Video Stream** option under the view menu.
+There is a **Video Stream** option under the view menu.
 
 ![View Menu](images/mwp_vid_menu.png){: width="30%" }
 
@@ -42,3 +45,54 @@ In "FPV Mode", no controls are shown.
 * FreeBSD. FreeBSD offers a video4linux emulation that works with {{ mwp }}. Cameras are not auto-detected but will be recognised if plugged in before mwp is invoked.
 * Windows. Uses `ksvideosrc` for input. The more modern `mfvideosrc` is not used, as it may not be universally available.
 * MacOS. Camera input is unlikely to work.
+
+## FPV Mode
+
+FPV mode provides a paned view of a camera feed. The user can switch between "Standard" and "FPV Mode" views from the "View / FPV Mode" menu option or by assigning a [shortcut key](mwp-Configuration.md#keyboard-accelerators), for example in `~/.config/mwp/accels`, the "action" name is "modeswitch"
+
+```
+modeswitch F12
+```
+
+The [panel](dock.md) will swich as necesary.
+
+### Using RTSP for camera parameter definitions
+
+{{ mwp }} cameras are used in their default configuration. If the user wants more control over the camera properties, is using a remote camera, or is using MacOS where mwp does not currently recognise cameras: then a RTSP server can be used.
+
+[go2rtc](https://github.com/AlexxIT/go2rtc) is a useful RTSP server that supports numerous video options. The following configuration file `go2rtc.yaml` illustrates some of the possibilities:
+
+```
+streams:
+  usbcam1: v4l2:device?video=/dev/video0&input_format=mjpeg&video_size=1280x720&framerate=30
+  usbcam2: ffmpeg:/dev/video0#video=h264#audio=aac#scale=1280:720
+  usbcam3: v4l2:device?video=/dev/video0&input_format=mjpeg&video_size=640x480&framerate=30
+
+  file0: exec:ffmpeg -hide_banner -re -stream_loop -1 -i /home/jrh/Videos/Daria-SurfKayak.mp4 -vcodec h264 -rtsp_transport tcp -f rtsp {output}
+  file1: ffmpeg:/home/jrh/Videos/Nokia_18_ft_Skiff_in_heavy_wind.mp4
+  test: exec:ffmpeg -hide_banner -re -f lavfi -i testsrc -vcodec h264 -rtsp_transport tcp -f rtsp {output}
+```
+
+The camera is a 10 year old "Mobius"; remember them?
+
+* `usbcam1` : "Normal" camera configuration (MJPEG feed).
+* `usbcam2` : Camera feed is transcoded using `ffmpeg` to H264 prior to transmission. This appers to be smoother in mwp's video player.
+* `usbcam3` : Sets the camera resolution.
+
+And some test streams:
+
+* `file0` : Streams a `webm` video in a loop
+* `file1` : Streams a `mp4` video
+* `test` : Streams the `ffmpeg` "test card"
+
+It is possible to start and stop `go2rtc` when mwp is started / quit using the `atstart` and `atexit` settings:
+
+Adjust configuration  file path for your environment:
+
+* atstart: `go2rtc -c '/home/jrh/.config/go2rtc/go2rtc.yaml'`
+* atexit: `pkill -f go2rtc.exe`
+
+ and (noting that go2rtc and dependencies (`ffmpeg` etc.) must be on a `PATH` available to `mwp.exe`.
+
+* atstart: `go2rtc.exe -c 'c:\Users\win10\go2rtc.yaml'`
+* atexit: `taskkill.exe -f -im "go2rtc.exe"`
