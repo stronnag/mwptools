@@ -1,5 +1,4 @@
 namespace MwpVideo {
-#if !UNSUPPORTED_OS
 	public class Viewer : Adw.Window {
 		private Gtk.Box vbox;
 		private Gtk.Picture pic;
@@ -116,6 +115,7 @@ namespace MwpVideo {
 						}
 						MwpVideo.window = null;
 						MwpVideo.state &= ~(MwpVideo.State.WINDOW|MwpVideo.State.PLAYWINDOW);
+						MWPLog.message("Close player %p %s\n", 	MwpVideo.playbin, MwpVideo.state.to_string());
 						return false;
 					});
 
@@ -228,54 +228,4 @@ namespace MwpVideo {
 			return id;
 		}
 	}
-#else
-	public class Viewer : Adw.Window {
-		private Gtk.Box vbox;
-		private Gtk.Video pic;
-
-		public Viewer() {
-			set_transient_for(Mwp.window);
-			set_size_request(640, 480);
-			title = "mwp video player";
-			set_icon_name("mwp_icon");
-			vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
-			var header_bar = new Adw.HeaderBar();
-			vbox.append(header_bar);
-			pic = new Gtk.Video();
-			pic.vexpand = true;
-			vbox.append(pic);
-			set_content(vbox);
-			MwpVideo.state |= MwpVideo.State.WINDOW;
-		}
-
-		public MwpVideo.Player load(string uri, bool start) {
-			var p = new Player(uri);
-			MwpVideo.window = this;
-			if (p.pt != null) {
-				pic.set_media_stream(p.pt);
-				p.pt.set_playing(true);
-				MwpVideo.state |= MwpVideo.State.PLAYWINDOW;
-				MwpVideo.last_uri = uri;
-			}
-
-			close_request.connect (() => {
-					MwpVideo.window = null;
-					MwpVideo.state &= ~(MwpVideo.State.WINDOW|MwpVideo.State.PLAYWINDOW);
-					return false;
-				});
-			return p;
-		}
-
-		public void set_playing(bool play) {
-			MwpVideo.mmf.playing = true;
-		}
-
-		public Gdk.Paintable? clear_player() {
-			var pt = pic.media_stream;
-			pic.media_stream = null;
-			MwpVideo.state &= ~MwpVideo.State.PLAYWINDOW;
-			return pt;
-		}
-	}
-#endif
 }

@@ -54,11 +54,7 @@ namespace MwpVideo {
 			MWPLog.message(":DBG: VP Pass over extant pt\n");
 			pt = ((MwpVideo.Viewer)MwpVideo.window).clear_player();
 			((MwpVideo.Viewer)MwpVideo.window).close();
-#if !UNSUPPORTED_OS
 			MwpVideo.playbin.set_state (Gst.State.PLAYING);
-#else
-			MwpVideo.mmf.playing = true;
-#endif
 		} else {
 			MWPLog.message(":DBG: VP Create new player\n");
 			p = new MwpVideo.Player(uri);
@@ -101,17 +97,10 @@ namespace MwpVideo {
 		MWPLog.message(":DBG: stop embedded %s\n", MwpVideo.state.to_string());
 
 		if (MwpVideo.State.PLAYER in MwpVideo.state) {
-#if !UNSUPPORTED_OS
 			if (MwpVideo.playbin != null) {
 				MwpVideo.playbin.set_state (Gst.State.NULL);
 			}
 			MwpVideo.playbin = null;
-#else
-			if (MwpVideo.mmf != null) {
-				MwpVideo.mmf.close();
-			}
-			MwpVideo.mmf = null;
-#endif
 		}
 		if (MwpVideo.State.WINDOW in MwpVideo.state) {
 			MwpVideo.window.close();
@@ -120,7 +109,6 @@ namespace MwpVideo {
 		MwpVideo.last_uri = null;
 	}
 
-#if !UNSUPPORTED_OS
 	public Gst.Element playbin;
 
 	public class Player : GLib.Object {
@@ -164,6 +152,7 @@ namespace MwpVideo {
 				v4l2src = "v4l2src device=";
 #endif
 				var str = "%s\"%s\" ! decodebin ! autovideoconvert !  gtk4paintablesink sync=false".printf(v4l2src, device);
+				MWPLog.message("Playbin: %s\n", str);
 				try {
 					playbin = Gst.parse_launch (str);
 					var gi = ((Gst.Bin)playbin).iterate_elements();
@@ -172,15 +161,13 @@ namespace MwpVideo {
 					while ((res = gi.next(out elm)) != Gst.IteratorResult.DONE) {
 						var o = elm.get_object();
 						var e = o as Gst.Element;
-						//print("Name %s %p\n", e.name, e.bus);
-						if (e.name == "gtk4paintablesink0") {
+						if (e.name.has_prefix("gtk4paintablesink")) {
 							videosink = e;
 						}
 					}
 				} catch (Error e) {
 					MWPLog.message("Video playbin error %s\n", e.message);
 				}
-				//print("get vs%p\n", videosink);
 			} else {
 				string playbinx;
 				if((playbinx = Environment.get_variable("MWP_PLAYBIN")) == null) {
@@ -188,7 +175,7 @@ namespace MwpVideo {
 				}
 				videosink = Gst.ElementFactory.make ("gtk4paintablesink" /*, "video-sink"*/);
 				if (videosink == null) {
-					print("No gtk4 paintable");
+					MWPLog.message("Video fail - no gtk4 paintable");
 					return null;
 				}
 				playbin = Gst.ElementFactory.make (playbinx, playbinx);
@@ -200,7 +187,7 @@ namespace MwpVideo {
 				}
 			}
 			videosink.get("paintable", out pt);
-			print("get vs %p -> %p \n", videosink, pt);
+			MWPLog.message("Videosink, paintable %p -> %p \n", videosink, pt);
 			playbin.set_state (Gst.State.READY);
 			return pt;
 		}
@@ -259,43 +246,4 @@ namespace MwpVideo {
 			MwpVideo.state &= ~MwpVideo.State.PLAYER;
 		}
 	}
-#else
-	public Gtk.MediaFile mmf;
-
-	public class Player : GLib.Object {
-		public Gtk.MediaFile pt;
-		public signal void state_change(bool s);
-		public signal void eos();
-		public signal void error(int e);
-		public signal void async_done();
-
-		~Player() {
-			MwpVideo.state &= ~MwpVideo.State.PLAYER;
-		}
-
-		public Player(string ouri) {
-			var uri = MwpVideo.to_uri(ouri);
-			pt = generate_playbin(uri);
-			if(pt != null) {
-				MWPLog.message("BS: MF %p\n", pt);
-				MwpVideo.mmf = pt;
-			}
-			MwpVideo.state = MwpVideo.State.PLAYER;
-		}
-
-		private Gtk.MediaFile? generate_playbin(string uri) {
-			var f = File.new_for_uri(uri);
-			return Gtk.MediaFile.for_file(f);
-		}
-
-		public void set_playing(bool play) {
-			pt.playing = play;
-		}
-
-		public void clear() {
-			pt.clear();
-			MwpVideo.state &= ~MwpVideo.State.PLAYER;
-		}
-	}
-#endif
 }
