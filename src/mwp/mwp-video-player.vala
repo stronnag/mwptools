@@ -152,26 +152,55 @@ namespace MwpVideo {
 		}
 
 		private Gdk.Paintable? generate_playbin(string uri) {
-			string playbinx;
 			MwpVideo.playbin = null;
-			if((playbinx = Environment.get_variable("MWP_PLAYBIN")) == null) {
-				playbinx = "playbin";
+			Gdk.Paintable pt = null;
+			Gst.Element videosink = null;
+			if(uri.has_prefix("v4l2://")) {
+				var device = uri.substring(7);
+				string v4l2src;
+#if WINDOWS
+				v4l2src = "ksvideosrc device-name=";
+#else
+				v4l2src = "v4l2src device=";
+#endif
+				var str = "%s\"%s\" ! decodebin ! autovideoconvert !  gtk4paintablesink sync=false".printf(v4l2src, device);
+				try {
+					playbin = Gst.parse_launch (str);
+					var gi = ((Gst.Bin)playbin).iterate_elements();
+					Gst.IteratorResult res;
+					Value elm;
+					while ((res = gi.next(out elm)) != Gst.IteratorResult.DONE) {
+						var o = elm.get_object();
+						var e = o as Gst.Element;
+						//print("Name %s %p\n", e.name, e.bus);
+						if (e.name == "gtk4paintablesink0") {
+							videosink = e;
+						}
+					}
+				} catch (Error e) {
+					MWPLog.message("Video playbin error %s\n", e.message);
+				}
+				//print("get vs%p\n", videosink);
+			} else {
+				string playbinx;
+				if((playbinx = Environment.get_variable("MWP_PLAYBIN")) == null) {
+					playbinx = "playbin";
+				}
+				videosink = Gst.ElementFactory.make ("gtk4paintablesink" /*, "video-sink"*/);
+				if (videosink == null) {
+					print("No gtk4 paintable");
+					return null;
+				}
+				playbin = Gst.ElementFactory.make (playbinx, playbinx);
+				playbin.set_property("uri", uri);
+				playbin.set_property("video-sink", videosink);
+				if(uri.has_prefix("rtsp:")) {
+					playbin.set_property("latency", 10);
+					videosink.set_property("sync", false);
+				}
 			}
-
-			var videosink = Gst.ElementFactory.make ("gtk4paintablesink" /*, "video-sink"*/);
-			if (videosink == null) {
-				MWPLog.message("Video Fail: No gtk4 paintable\n");
-				return null;
-			}
-			playbin = Gst.ElementFactory.make (playbinx, playbinx);
-			playbin.set_property("uri", uri);
-			playbin.set_property("video-sink", videosink);
-			if(uri.has_prefix("rtsp:")) {
-				playbin.set_property("latency", 10);
-				videosink.set_property("sync", false);
-			}
-			Gdk.Paintable pt;
 			videosink.get("paintable", out pt);
+			print("get vs %p -> %p \n", videosink, pt);
 			playbin.set_state (Gst.State.READY);
 			return pt;
 		}

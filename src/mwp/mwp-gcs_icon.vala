@@ -57,7 +57,7 @@ namespace GCS {
 									int ih;
 									icon.measure(Gtk.Orientation.VERTICAL, -1, null, out ih, null, null);
 									double d = (double)ih*yalign;
-									icon.set_property("y_hotspot", d);
+									icon.set_property("y-hotspot", d);
 								}
 								icon.disconnect (active_id);
 							});

@@ -85,7 +85,7 @@ namespace MwpVideo {
 						on_play(p);
 					});
 
-				double vol;
+				double vol = 0.0;
 				var rt = get_rt(MwpVideo.to_uri(uri));
 				if (rt ==  Gst.CLOCK_TIME_NONE) {
 					set_slider_max(p,0);
@@ -93,11 +93,16 @@ namespace MwpVideo {
 					set_slider_max(p,rt);
 				}
 
-				p.playbin.get("volume", out vol);
+				Type type = p.playbin.get_type();
+				ObjectClass ocl = (ObjectClass)type.class_ref();
+				unowned ParamSpec? spec = ocl.find_property ("volume");
+				if (spec != null) {
+					p.playbin.get("volume", out vol);
+					vb.value_changed.connect((v) => {
+							p.playbin.set("volume", v);
+						});
+				}
 				vb.value = vol;
-				vb.value_changed.connect((v) => {
-						p.playbin.set("volume", v);
-					});
 
 				close_request.connect (() => {
 						if (tid > 0) {
