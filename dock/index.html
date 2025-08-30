@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/mwp_icon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.17">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.18">
     
     
       
@@ -539,9 +539,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#in-line-editor" class="md-nav__link">
+  <a href="#compressed-example" class="md-nav__link">
     <span class="md-ellipsis">
-      In line editor
+      Compressed example
     </span>
   </a>
   
@@ -1619,9 +1619,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#in-line-editor" class="md-nav__link">
+  <a href="#compressed-example" class="md-nav__link">
     <span class="md-ellipsis">
-      In line editor
+      Compressed example
     </span>
   </a>
   
@@ -1664,14 +1664,10 @@
 <h2 id="side-bar-overview">Side Bar Overview<a class="headerlink" href="#side-bar-overview" title="Permanent link">#</a></h2>
 <p>The <strong>Side Bar</strong>, items 4 and 6 in the main window guide provides an area for optional widgets.</p>
 <p><img alt="main" src="../images/main-window.png" width="100%" /></p>
-<p>A very simple, bespoke panel comprising embedded resizeable panes has been implemented.</p>
-<ul>
-<li>The panel consists for four vertical panels</li>
-<li>The top panel can hold three horizontal panes</li>
-<li>The other panels can hold two horizontal panes.</li>
-</ul>
-<p>Each pane has a divider line between it and adjacent panels. <strong>The size of individual panes may be adjusted by moving the dividers.</strong> mwp will remember the relative sizing of the panels.</p>
-<p>The main sidebar (dock) controls are shown below. Please note some of these images are from the legacy version of <a href="https://github.com/stronnag/mwptools">mwp</a>.:</p>
+<p>A very simple, bespoke panel comprising embedded panes on a grid has been implemented. Opinionated settings that work in both "Standard" and "FPV View" modes are provided. Configuration is <a href="#side-bar-configuration">described below</a>.</p>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/pxWqm9QUlRk?si=An2vccYD7wrFPRfj" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+<p>The main sidebar (dock) controls are shown below. Please note some of these images are from the legacy version of <a href="https://github.com/stronnag/mwptools">mwp</a>:</p>
 <h2 id="side-bar-items-dockets">Side Bar Items (Dockets)<a class="headerlink" href="#side-bar-items-dockets" title="Permanent link">#</a></h2>
 <p>The following items are provided.</p>
 <h3 id="artificial-horizon">Artificial Horizon<a class="headerlink" href="#artificial-horizon" title="Permanent link">#</a></h3>
@@ -1691,33 +1687,43 @@
 <h3 id="wind-estimator-new-gtk4">Wind Estimator (new / Gtk4)<a class="headerlink" href="#wind-estimator-new-gtk4" title="Permanent link">#</a></h3>
 <p><img alt="dockwind" src="../images/panel-vas.png" width="25%" /></p>
 <h2 id="side-bar-configuration">Side Bar Configuration<a class="headerlink" href="#side-bar-configuration" title="Permanent link">#</a></h2>
-<p>The configuration may be user defined by a simple text file <code>~/.config/mwp/panel.conf</code>.</p>
-<p>Each entry is defined by a comma separated line defining the panel widget name, the row (0-3) and the column (0-2) and an optional minimum size (only required for the artificial horizon).</p>
-<p>The default panel is defined (in the absence of a configuration file) as:</p>
-<div class="highlight"><pre><span></span><code># default widgets
-ahi,0,1,100
-rssi, 1, 0
-dirn, 1, 1
-flight, 2, 0
-volts, 3, 0
+<p>The configuration may be user defined by a simple text file <code>~/.config/mwp/.panel.conf</code>.</p>
+<p>Note that everything is defined in terms of a standard (vertical) panel. When in FPV Mode (horizontal panel), rows are columns are automatically transposed.</p>
+<p>The default is:</p>
+<div class="highlight"><pre><span></span><code># mwp panel v2
+# name, row, col, width, height, span, mode
+ahi,0,0,200,200,2,3
+rssi,1,0,-1,-1,1,3
+vario,1,1,-1,-1,1,3
+wind,2,0,-1,-1,1,1
+dirn,2,1,-1,-1,1,1
+flight,3,0,-1,-1,2,3
+volts,4,0,-1,-1,2,3
 </code></pre></div>
-<p>Which appears as:
-<img alt="mwp4-panel-0" src="../images/mwp4-panel-0.png" /></p>
-<h3 id="in-line-editor">In line editor<a class="headerlink" href="#in-line-editor" title="Permanent link">#</a></h3>
-<p>From 25.04.15, it is possible to edit the panel in-line. A popup menu is displayed on right mouse press on a panel pane. Note that in the default configuration, some of the pane dividers may be flush against an edge, and it will be necessary to drag the dividers to expose all the unused panels.</p>
-<p>On a blank pane, the popup menu offers all non-deployed widgets. Here only "WindSpeed" is available to be added.</p>
-<p><img alt="mwp4-panel-e0" src="../images/panel-edit-0.png" /></p>
-<p>The result after adding "WindSpeed":</p>
-<p><img alt="mwp4-panel-e1" src="../images/panel-edit-1.png" /></p>
-<p>When the popup menu is invoked for a populated pane, only "Remove Item" is available.</p>
-<p><a href="https://youtu.be/U7EpvuZLQ74">Video example</a> showing right mouse button menu usage.</p>
-<iframe width="827" height="594"
-src="https://www.youtube.com/embed/U7EpvuZLQ74" title="mwp panel"
-frameborder="0" allow="accelerometer; autoplay; clipboard-write;
-encrypted-media; gyroscope; picture-in-picture; web-share"
-referrerpolicy="strict-origin-when-cross-origin"
-allowfullscreen></iframe>
-
+<p>where:</p>
+<ul>
+<li><code>rows</code> and <code>columns</code> are 0 indexed</li>
+<li><code>span</code> describes the number of rows (or columns) that widget a spans, allowing "large" items.</li>
+<li>The combination of <code>columns</code> and the sum of <code>spans</code> should be consistent across all rows to avoid blank items (see compressed example below).</li>
+<li><code>width</code> and <code>height</code> is only required for the <code>ahi</code>; otherwise <code>-1</code> means "best fit"</li>
+<li><code>mode</code> is a bit mask defining whether a widget is shown when vertical (1) and horizontal (2) (so 3 means both).</li>
+</ul>
+<p>No graphical means is currently available to edit the panel, it has to be done by a text editor.</p>
+<h3 id="compressed-example">Compressed example<a class="headerlink" href="#compressed-example" title="Permanent link">#</a></h3>
+<p>This FreeBSD VM has a quite restricted screen size. In order to have a useful panel, it was optimal to have three columns, with spans adjusted for consistency. This works in both modes:</p>
+<div class="highlight"><pre><span></span><code># mwp panel v2
+# 3 row example
+# name, row, col, width, height, span, mode
+rssi,0,0,-1,-1,1,3
+ahi,0,1,100,100,1,3
+vario,0,2,-1,-1,1,3
+wind,2,0,-1,-1,2,1
+dirn,2,2,-1,-1,1,1
+flight,3,0,-1,-1,3,3
+volts,4,0,-1,-1,3,3
+</code></pre></div>
+<p><img alt="freebsd vertical" src="../images/fpvmode/freebsd-std-mode.png" /></p>
+<p><img alt="freebsd horizontal" src="../images/fpvmode/freebsd-fpv-mode.png" /></p>
 <h3 id="available-widgets">Available Widgets<a class="headerlink" href="#available-widgets" title="Permanent link">#</a></h3>
 <p>The available panel widgets are named as:</p>
 <table>
@@ -1755,19 +1761,6 @@ allowfullscreen></iframe>
 </tbody>
 </table>
 <p>No other legacy widgets have been migrated.</p>
-<p>So using the following <code>~/.config/mwp/panel.conf</code></p>
-<div class="highlight"><pre><span></span><code># default + vario + wind widgets
-ahi, 0, 1, 100
-vario,0,2
-rssi, 0, 0
-wind, 1, 0
-dirn, 1, 1
-flight, 2, 0
-volts, 3, 0
-</code></pre></div>
-<p>would appear as:
-<img alt="mwp4-panel-1" src="../images/mwp4-panel-1.png" /></p>
-<p>Panel sizes have been adjusted to make best use of available space.</p>
 
 
 
