@@ -48,9 +48,6 @@ namespace V4L2 {
 				} else {
 					viddev_c.selected = 1;
 				}
-#if WINDOWS
-				webcam.sensitive = false;
-#endif
 			}
 			cbox = new  RecentVideo(this);
 			cbox.entry.set_width_chars(48);
