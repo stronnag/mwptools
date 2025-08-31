@@ -80,8 +80,8 @@ namespace MwpVideo {
 					}
 					pt.disconnect (active_id);
 				});
-			image.width_request = 640;
-			image.height_request = 480;
+			image.width_request = 480;
+			image.height_request = 360;
 			image.content_fit = Gtk.ContentFit.CONTAIN;
 			image.can_shrink = true;
 			Mwp.window.vpane.set_start_child(image);

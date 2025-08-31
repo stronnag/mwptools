@@ -15,7 +15,7 @@ namespace MwpVideo {
 
 		public Viewer() {
 			set_transient_for(Mwp.window);
-			set_size_request(640, 480);
+			set_size_request(800, 600);
 			title = "mwp Video Player";
 			set_icon_name("mwp_icon");
 			vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
