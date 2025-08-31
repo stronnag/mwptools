@@ -480,7 +480,12 @@ namespace Mwp {
 						panelbox.measure(Gtk.Orientation.HORIZONTAL, -1, null, out iwp, null, null);
 						int iww = window.get_width();
 						pane.position = iww - iwp;
-						MWPLog.message("Panel map %d %d %d\n", iww, iwp, pane.position);
+						if (vpane != null) {
+							int ihp;
+							panelbox.measure(Gtk.Orientation.VERTICAL, -1, null, out ihp, null, null);
+							int ihw = window.get_height();
+							vpane.position = ihw - ihp;
+						}
 					}
 				});
 
