@@ -306,6 +306,12 @@ namespace Mwp {
 				Intl.setlocale(LocaleCategory.NUMERIC, "C");
 			}
 			show_locale();
+
+			if(!MwpVideo.check("gtk4paintablesink")) {
+				MwpMenu.set_menu_state(Mwp.window, "modeswitch", false);
+				MwpMenu.set_menu_state(Mwp.window, "vstream", false);
+			}
+
 			var msprcact = new GLib.SimpleAction.stateful ("usemsprc", null, false);
 			msprcact.change_state.connect((s) => {
 					var b = s.get_boolean();

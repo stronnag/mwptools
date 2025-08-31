@@ -26,6 +26,11 @@ namespace MwpVideo {
 
 	public State state;
 
+	public bool check(string gstplugin) {
+		var pg = Gst.ElementFactory.make (gstplugin);
+		return (pg != null);
+	}
+
 	public string? to_uri(string uri) {
 		string vuri = null;
 		if (!uri.contains("""://""")) {
