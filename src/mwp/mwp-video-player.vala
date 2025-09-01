@@ -99,9 +99,8 @@ namespace MwpVideo {
 	}
 
 	public void stop_embedded_player() {
-		MWPLog.message(":DBG: stop embedded %s\n", MwpVideo.state.to_string());
-
 		if (MwpVideo.State.PLAYER in MwpVideo.state) {
+			MWPLog.message(":DBG: stop embedded %s\n", MwpVideo.state.to_string());
 			if (MwpVideo.playbin != null) {
 				MwpVideo.playbin.set_state (Gst.State.NULL);
 			}
@@ -149,16 +148,42 @@ namespace MwpVideo {
 			Gdk.Paintable pt = null;
 			Gst.Element videosink = null;
 			if(uri.has_prefix("v4l2://")) {
-				var device = uri.substring(7);
-				string v4l2src;
-#if WINDOWS
-				v4l2src = "ksvideosrc device-name=";
-#elif DARWIN
-				v4l2src = "avfvideosrc device-name=";
-#else
-				v4l2src = "v4l2src device=";
-#endif
-				var str = "%s\"%s\" ! decodebin ! autovideoconvert !  gtk4paintablesink sync=false".printf(v4l2src, device);
+				var devname = uri.substring(7);
+				string device = null;
+				string v4l2src = null;
+				var devs = GstDev.get_camera_list();
+				devs.@foreach((dv) => {
+						if(devname == dv.display_name) {
+							var elm = dv.create_element(null);
+							if (elm != null) {
+								var efac  = elm.get_factory();
+								if (efac != null) {
+									v4l2src = efac.name;
+								}
+							}
+							var p = dv.properties;
+							if (p != null) {
+								device = p.get_string("device.path");
+								if (device == null) {
+									device = p.get_string("api.v4l2.path");
+								}
+							}
+						}
+					});
+				if (v4l2src == null || v4l2src == "pipewiresrc") {
+					v4l2src = "v4l2src";
+				}
+				var sb = new StringBuilder(v4l2src);
+				sb.append_c(' ');
+				if(device == null) {
+					sb.append("device-name=");
+					sb.append(devname);
+				} else {
+					sb.append("device=");
+					sb.append(device);
+				}
+				sb.append(" ! decodebin ! autovideoconvert ! gtk4paintablesink sync=false");
+				var str = sb.str;
 				MWPLog.message("Playbin: %s\n", str);
 				try {
 					playbin = Gst.parse_launch (str);

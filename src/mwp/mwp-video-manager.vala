@@ -106,8 +106,7 @@ namespace VideoMan {
 						var i = vid_dialog.viddev_c.get_selected();
 						var dname = ((Gtk.StringList)vid_dialog.viddev_c.model).get_string(i);
 						if (dname != null) {
-							var devname = GstDev.get_device(dname);
-							uri = "v4l2://%s".printf(devname);
+							uri = "v4l2://%s".printf(dname);
 						} else {
 							res = -1;
 						}
