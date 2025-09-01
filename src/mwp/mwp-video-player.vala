@@ -177,7 +177,9 @@ namespace MwpVideo {
 				sb.append_c(' ');
 				if(device == null) {
 					sb.append("device-name=");
+					sb.append_c('"');
 					sb.append(devname);
+					sb.append_c('"');
 				} else {
 					sb.append("device=");
 					sb.append(device);
