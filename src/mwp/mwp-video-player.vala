@@ -217,6 +217,11 @@ namespace MwpVideo {
 					if (mmf != null) {
 						MwpVideo.state = MwpVideo.State.PLAYER;
 						MwpVideo.mmf = mmf;
+						mmf.notify["error"].connect(() => {
+								if(mmf.error != null) {
+									error(mmf.error);
+								}
+							});
 						return mmf;
 					}
 				}
@@ -294,7 +299,6 @@ namespace MwpVideo {
 
 		private bool bus_callback (Gst.Bus bus, Gst.Message message) {
 			switch (message.type) {
-
 			case Gst.MessageType.BUFFERING:
 				int percent = 0;
 				message.parse_buffering (out percent);
