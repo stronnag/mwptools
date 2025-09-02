@@ -203,7 +203,8 @@ namespace Mwp {
 				var dis = new DataInputStream(file.read());
 				string line;
 				while ((line = dis.read_line (null)) != null) {
-					if(line.strip().length > 0) {
+					line = line.strip();
+					if(line.length > 0) {
 						if(line.has_prefix("#") || line.has_prefix(";")) {
 							continue;
 						} else if (line.has_prefix("-")) {

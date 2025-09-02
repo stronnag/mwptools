@@ -307,10 +307,7 @@ namespace Mwp {
 			}
 			show_locale();
 
-			if(!MwpVideo.check("gtk4paintablesink")) {
-				MwpMenu.set_menu_state(Mwp.window, "modeswitch", false);
-				MwpMenu.set_menu_state(Mwp.window, "vstream", false);
-			}
+			MwpVideo.check();
 
 			var msprcact = new GLib.SimpleAction.stateful ("usemsprc", null, false);
 			msprcact.change_state.connect((s) => {
