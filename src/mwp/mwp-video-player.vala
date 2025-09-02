@@ -38,7 +38,7 @@ namespace MwpVideo {
 
 	public void check() {
 		is_fallback = false;
-		if (Environment.get_variable("LEGACY_VIDEO") != null) {
+		if (Mwp.conf.use_fallback_video) {
 			is_fallback = true;
 		} else {
 			var pg = Gst.ElementFactory.make ("gtk4paintablesink");

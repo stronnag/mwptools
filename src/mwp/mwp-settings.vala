@@ -125,6 +125,7 @@ public class MWPSettings : GLib.Object {
 	public bool touch_drag_disconnected {get; set; default=true;}
 	public bool alt_prefer_agl {get; set; default=false;}
 	public bool is_vertical {get; set; default=true;}
+	public bool use_fallback_video {get; set; default=false;}
 
 	construct {
 #if DARWIN
@@ -257,7 +258,7 @@ public class MWPSettings : GLib.Object {
 		settings.bind("sqlite-log-path", this, "sqlite-log-path", SettingsBindFlags.DEFAULT);
 		settings.bind("touch-drag-disconnected", this, "touch-drag-disconnected", SettingsBindFlags.DEFAULT);
 		settings.bind("alt-prefer-agl", this, "alt-prefer-agl", SettingsBindFlags.DEFAULT);
-
+		settings.bind("use-fallback-video", this, "use-fallback-video", SettingsBindFlags.DEFAULT);
 		settings.bind("p-width", Mwp.window, "default-width", SettingsBindFlags.DEFAULT);
 		settings.bind("p-height", Mwp.window, "default-height", SettingsBindFlags.DEFAULT);
 		settings.bind("p-is-maximised", Mwp.window, "maximized", SettingsBindFlags.DEFAULT);

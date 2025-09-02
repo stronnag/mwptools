@@ -747,5 +747,11 @@
      <summary>Altitude / AGL Display</summary>
      <description>If true, where valid DEM is available for home and vehicle locations, AGL (Above Ground Level) will be shown in place of home relative altitude.</description>
    </key>
+
+   <key name="use-fallback-video" type="b">
+     <default>false</default>
+     <summary>Use fallback video player</summary>
+     <description>If true, mwp will use a fallback video player, which will (a) work on Ubuntu 24.04 and derivatives and (b) work on Windows machines that crash with the default player. The downsides of the fallback player include (i) Higher latency for RTSP (c.2000ms) and (ii) no USB Video on Windows.</description>
+   </key>
  </schema>
 </schemalist>
