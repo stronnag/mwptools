@@ -40,6 +40,30 @@ namespace GstDev {
 		return devs;
 	}
 
+	public void get_details (string devname, out string device, out string v4l2src) {
+		device=null;
+		v4l2src=null;
+		var devs = GstDev.get_camera_list();
+		for( unowned var lp = devs; lp != null; lp = lp.next) {
+			var dv = lp.data;
+			if(devname == dv.display_name) {
+				var elm = dv.create_element(null);
+				if (elm != null) {
+					var efac  = elm.get_factory();
+					if (efac != null) {
+						v4l2src = efac.name;
+					}
+				}
+				var p = dv.properties;
+				if (p != null) {
+					device = p.get_string("device.path");
+					if (device == null) {
+						device = p.get_string("api.v4l2.path");
+					}
+				}
+			}
+		}
+	}
 
 	public void find_cameras() {
 		clear_lists();

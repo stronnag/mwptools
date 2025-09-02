@@ -200,8 +200,18 @@ namespace MwpVideo {
 		}
 
 		private Gdk.Paintable? generate_playbin(string uri) {
+			File f;
+			string furi = uri;
 			if(MwpVideo.is_fallback) {
-				var f = File.new_for_uri(uri);
+				if(uri.has_prefix("v4l2://")) {
+					string device = null;
+					string v4l2src = null;
+					var devname = uri.substring(7);
+					GstDev.get_details(devname, out device, out v4l2src);
+					MWPLog.message("FB Device %s %s\n", device, v4l2src);
+					furi = "v4l2://%s".printf(device);
+				}
+				f = File.new_for_uri(furi);
 				if(f != null) {
 					var mmf = Gtk.MediaFile.for_file(f);
 					if (mmf != null) {
@@ -216,32 +226,13 @@ namespace MwpVideo {
 				Gdk.Paintable ptx = null;
 				Gst.Element videosink = null;
 				if(uri.has_prefix("v4l2://")) {
-					var devname = uri.substring(7);
 					string device = null;
 					string v4l2src = null;
-					var devs = GstDev.get_camera_list();
-					devs.@foreach((dv) => {
-							if(devname == dv.display_name) {
-								var elm = dv.create_element(null);
-								if (elm != null) {
-									var efac  = elm.get_factory();
-									if (efac != null) {
-										v4l2src = efac.name;
-									}
-								}
-								var p = dv.properties;
-								if (p != null) {
-									device = p.get_string("device.path");
-									if (device == null) {
-										device = p.get_string("api.v4l2.path");
-									}
-								}
-							}
-						});
+					var devname = uri.substring(7);
+					GstDev.get_details(devname, out device, out v4l2src);
 					if (v4l2src == null) {
 						return null;
 					}
-
 					if(v4l2src == "pipewiresrc") {
 						v4l2src = "v4l2src";
 					}

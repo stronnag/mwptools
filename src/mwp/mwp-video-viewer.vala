@@ -56,7 +56,7 @@ namespace MwpVideo {
 
 		public MwpVideo.Player load(string uri, bool start) {
 			var p = new Player(uri);
-			MWPLog.message("v load %p %p\n", p, p.pt);
+			MWPLog.message("v load %s %p %p\n", uri, p, p.pt);
 			if (p.pt != null) {
 				MwpVideo.window = this;
 				MwpVideo.state |= MwpVideo.State.PLAYWINDOW;
