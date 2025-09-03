@@ -5,6 +5,7 @@ namespace MwpVideo {
 	public Gst.Element playbin;
 	public Gtk.MediaFile mmf;
 	public bool is_fallback;
+	private Gst.State nstate;
 
 	[Flags]
 	public enum State {
@@ -321,10 +322,13 @@ namespace MwpVideo {
 				Gst.State newstate;
 				Gst.State pending;
 				message.parse_state_changed (out oldstate, out newstate, out pending);
-				if(newstate == Gst.State.PLAYING) {
-					state_change(true);
-				} else  {
-					state_change(false);
+				if (newstate != nstate) {
+					if(newstate == Gst.State.PLAYING) {
+						state_change(true);
+					} else  {
+						state_change(false);
+					}
+					nstate = newstate;
 				}
 				break;
 
