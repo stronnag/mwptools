@@ -28,32 +28,47 @@ namespace V4L2 {
 		internal unowned Gtk.Button apply;
 		[GtkChild]
 		internal unowned Gtk.Grid g;
+        public Gtk.StringList sl;
 
 		private RecentVideo cbox;
 		public Gtk.DropDown viddev_c;
 		public signal void response(int id);
 
+		private void build_list() {
+			for(var j = 1; j < sl.get_n_items(); j++) {
+				sl.remove(j);
+			}
+			MwpCameras.list.@foreach((dv) => {
+					var d = dv.displayname;
+					sl.append(d);
+				});
+			if(sl.n_items == 1) {
+				webcam.sensitive = false;
+			} else {
+				webcam.sensitive = true;
+				viddev_c.selected = 1;
+#if WINDOWS
+				if(MwpVideo.is_fallback) {
+					webcam.sensitive = false;
+				}
+#endif
+			}
+		}
+
 		public Window() {
-			viddev_c = new Gtk.DropDown(GstDev.sl, null);
+			sl = new Gtk.StringList({"(None)"});
+			viddev_c = new Gtk.DropDown(sl, null);
+			build_list();
+
+			MwpCameras.cams.updated.connect(() => {
+					build_list();
+				});
+
 			transient_for = Mwp.window;
 			urichk.active = true;
 
-			GstDev.find_cameras();
-			if(viddev_c != null) {
-				g.attach (viddev_c, 1, 0);
-				var sl = viddev_c.model as Gtk.StringList;
-				if(sl.n_items == 1) {
-					webcam.sensitive = false;
-				} else {
-					viddev_c.selected = 1;
-				}
-			}
+			g.attach (viddev_c, 1, 0);
 
-#if WINDOWS
-			if(MwpVideo.is_fallback) {
-				webcam.sensitive = false;
-			}
-#endif
 			cbox = new  RecentVideo(this);
 			cbox.entry.set_width_chars(48);
 
@@ -110,8 +125,8 @@ namespace VideoMan {
 					switch(res) {
 					case 0:
 						var i = vid_dialog.viddev_c.get_selected();
-						var dname = ((Gtk.StringList)vid_dialog.viddev_c.model).get_string(i);
-						if (dname != null) {
+						if (i > 0) {
+							var dname = ((Gtk.StringList)vid_dialog.viddev_c.model).get_string(i);
 							uri = "v4l2://%s".printf(dname);
 						} else {
 							res = -1;

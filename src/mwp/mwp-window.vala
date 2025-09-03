@@ -357,7 +357,7 @@ namespace Mwp {
 			Places.get_places();
 			posdialog = new Mwp.GotoDialog();
 			scwindow = new Mwp.SCWindow();
-			GstDev.init();
+			MwpCameras.init();
 
 			conbutton.clicked.connect(() => {
 					Msp.handle_connect();

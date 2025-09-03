@@ -208,7 +208,7 @@ namespace MwpVideo {
 					string device = null;
 					string v4l2src = null;
 					var devname = uri.substring(7);
-					GstDev.get_details(devname, out device, out v4l2src);
+					MwpCameras.get_details(devname, out device, out v4l2src);
 					MWPLog.message("FB Device %s %s\n", device, v4l2src);
 					furi = "v4l2://%s".printf(device);
 				}
@@ -235,16 +235,13 @@ namespace MwpVideo {
 					string device = null;
 					string v4l2src = null;
 					var devname = uri.substring(7);
-					GstDev.get_details(devname, out device, out v4l2src);
+					MwpCameras.get_details(devname, out device, out v4l2src);
 					if (v4l2src == null) {
 						return null;
 					}
-					if(v4l2src == "pipewiresrc") {
-						v4l2src = "v4l2src";
-					}
 					var sb = new StringBuilder(v4l2src);
 					sb.append_c(' ');
-					if(device == null) {
+					if(device == devname) {
 						sb.append("device-name=");
 						sb.append_c('"');
 						sb.append(devname);
