@@ -517,7 +517,7 @@ namespace Mwp {
 		private void set_panel_mode() {
 			string defset = MwpVideo.last_uri;
 			if(conf.is_vertical) {
-				MWPLog.message(":DBG: PANE: setup legacy Pane\n");
+				MWPLog.message(":DBG: PANE: setup vertical panel\n");
 				MwpVideo.stop_embedded_player();
 				pane.set_end_child(null);
 				vpane = null;
@@ -526,7 +526,7 @@ namespace Mwp {
 				panelbox.halign=Gtk.Align.END;
 				panelbox.valign = Gtk.Align.FILL;
 			} else {
-				MWPLog.message(":DBG: PANE: setup VPane [%s]\n", defset);
+				MWPLog.message(":DBG: PANE: setup horizontal / VPane [%s]\n", defset);
 				vpane = new Gtk.Paned(Gtk.Orientation.VERTICAL);
 				pane.set_end_child(null);
 				pane.set_end_child(vpane);
@@ -545,7 +545,7 @@ namespace Mwp {
 				try {
 					if (defset == null) {
 						FileUtils.get_contents(vfn, out defset);
-						MWPLog.message(":DBG: defset %s from %s\n", defset, vfn);
+						MWPLog.message(":DBG: Video URI %s from %s\n", defset, vfn);
 					}
 					if(defset != null) {
 						Idle.add(() => {
