@@ -107,8 +107,10 @@ namespace MwpVideo {
 						if (tid > 0) {
 							Source.remove(tid);
 						}
-						print("Closing viewer with %p\n", ((Gtk.Picture)pic).paintable );
+						MWPLog.message("Closing Windowed viewer with %p\n", ((Gtk.Picture)pic).paintable );
 						if(((Gtk.Picture)pic).paintable != null) {
+							p.playbin.set_state (Gst.State.NULL);
+
 							p.clear();
 							p=null;
 							MwpVideo.playbin = null;
