@@ -32,6 +32,9 @@ namespace V4L2 {
 
 		private RecentVideo cbox;
 		public Gtk.DropDown viddev_c;
+		public Gtk.DropDown caps_c;
+
+
 		public signal void response(int id);
 
 		private void build_list() {
@@ -57,7 +60,9 @@ namespace V4L2 {
 
 		public Window() {
 			sl = new Gtk.StringList({"(None)"});
+			var cl =new Gtk.StringList({"Default"});
 			viddev_c = new Gtk.DropDown(sl, null);
+			caps_c = new Gtk.DropDown(cl, null);
 			viddev_c.notify["selected-item"].connect(() =>  {
 					var c = (Gtk.StringObject)viddev_c.get_selected_item();
 					var ds = MwpCameras.VideoDev(){ displayname=c.string};
@@ -65,10 +70,15 @@ namespace V4L2 {
 							return strcmp(a.displayname, b.displayname);
 						});
 					if(dp != null) {
+						for(var j = 1; j < cl.get_n_items(); j++) {
+							cl.remove(j);
+						}
 						MWPLog.message(":DBG: Camera: %s\n", c.string);
 						foreach(var cstr in dp.first().data.caps.data) {
+							cl.append(cstr);
 							MWPLog.message("  :DBG: Caps: %s\n", cstr);
 						}
+
 					}
 				});
 
@@ -82,6 +92,7 @@ namespace V4L2 {
 			urichk.active = true;
 
 			g.attach (viddev_c, 1, 0);
+			g.attach (caps_c, 2, 0);
 
 			cbox = new  RecentVideo(this);
 			cbox.entry.set_width_chars(48);
@@ -90,7 +101,7 @@ namespace V4L2 {
 			if (rl.length > 0) {
 				cbox.populate(rl);
 			}
-			g.attach(cbox, 1, 1);
+			g.attach(cbox, 1, 1, 2);
 
 			close_request.connect(()=> {
 					response(-1);
