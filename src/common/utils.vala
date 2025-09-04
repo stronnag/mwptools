@@ -59,10 +59,7 @@ public class MWPUtils : Object {
         }
     }
 
-    public static string? find_conf_file(string fn, string? dir=null) {
-        string cfile=null;
-        string wanted = (dir != null) ? dir+"/"+fn  : fn;
-        var uc = Environment.get_user_config_dir();
+	private static string get_appname() {
 		string app;
 		if (appname == null) {
 			app = Environment.get_application_name();
@@ -71,6 +68,20 @@ public class MWPUtils : Object {
 		} else {
 			app = appname;
 		}
+		return app;
+	}
+
+	public static string get_confdir() {
+        var uc = Environment.get_user_config_dir();
+		var app = get_appname();
+        return GLib.Path.build_filename(uc,app);
+	}
+
+	public static string? find_conf_file(string fn, string? dir=null) {
+        string cfile=null;
+        string wanted = (dir != null) ? dir+"/"+fn  : fn;
+        var uc = Environment.get_user_config_dir();
+		var app = get_appname();
         cfile = have_conf_file(GLib.Path.build_filename(uc,app,wanted));
         if (cfile == null) {
             uc =  Environment.get_user_data_dir();

@@ -62,6 +62,7 @@ namespace Panel {
 		public void init() {
 			Panel.status = Panel.View.VISIBLE;
 			if (!read_panel_config()) {
+				MWPLog.message("Panel: using defaults\n");
 				wmap = {
 					{"ahi", 0, 0, 200, 200, 2, Modes.H|Modes.V},
 					{"rssi",1, 0, -1,  -1, 1, Modes.H|Modes.V},
@@ -72,7 +73,7 @@ namespace Panel {
 					{"volts",  4, 0, -1,   -1, 2, Modes.H|Modes.V}
 				};
 			}
-			 /**
+			/**
 			 nmap = {
 				 {"ahi", "AHIView"}.
 				 {"rssi", "RSSIView"},
@@ -331,7 +332,8 @@ namespace Panel {
 		}
 
 		private void write_panel_config() {
-			var fn = MWPUtils.find_conf_file(".panel.conf");
+			var uc = MWPUtils.get_confdir();
+			var fn = GLib.Path.build_filename(uc, ".panel.conf");
 			var fs = FileStream.open (fn, "w");
 			if (fs != null) {
 				fs.puts("# mwp panel v2\n");
