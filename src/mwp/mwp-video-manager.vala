@@ -32,10 +32,55 @@ namespace V4L2 {
 
 		private RecentVideo cbox;
 		public Gtk.DropDown viddev_c;
-		public Gtk.DropDown caps_c;
 
+		private GLib.Menu menu;
+		private GLib.SimpleActionGroup dg;
 
 		public signal void response(int id);
+
+		private void build_menu(string[] items) {
+			menu.remove_all();
+			int n = 0;
+			foreach (var m in items) {
+				var jn = n;
+				var s = "item%03d".printf(n);
+				var aq = new GLib.SimpleAction.stateful(s, null, false);
+				aq.change_state.connect((s) => {
+						aq.set_state (s);
+						var nm = menu.get_n_items();
+						for(int j = 0; j < nm; j++) {
+							if(j == jn)
+								continue;
+							var alabel = "item%03d".printf(j);
+							var ac = dg.lookup_action(alabel) as SimpleAction;
+							if (ac != null) {
+								ac.set_state(false);
+							}
+						}
+					});
+				dg.add_action(aq);
+				menu.append(m, "meta.%s".printf(s));
+				n++;
+			}
+		}
+
+		public int find_camera_option() {
+			int n = -1;
+			var nm = menu.get_n_items();
+			for(int j = 0; j < nm; j++) {
+				var alabel = "item%03d".printf(j);
+				var ac = dg.lookup_action(alabel) as SimpleAction;
+				if (ac != null) {
+					Variant state = ac.get_state();
+					bool b = state.get_boolean ();
+					if (b) {
+						n = j;
+						break;
+					}
+				}
+			}
+			return n;
+		}
 
 		private void build_list() {
 			for(var j = 1; j < sl.get_n_items(); j++) {
@@ -59,26 +104,25 @@ namespace V4L2 {
 		}
 
 		public Window() {
+			menu = new GLib.Menu();
+			var mb = new Gtk.MenuButton();
+			mb.label = "Settings";
+			mb.menu_model = menu;
+			dg = new GLib.SimpleActionGroup();
+			insert_action_group("meta", dg);
 			sl = new Gtk.StringList({"(None)"});
-			var cl =new Gtk.StringList({"Default"});
 			viddev_c = new Gtk.DropDown(sl, null);
-			caps_c = new Gtk.DropDown(cl, null);
 			viddev_c.notify["selected-item"].connect(() =>  {
 					var c = (Gtk.StringObject)viddev_c.get_selected_item();
-					var ds = MwpCameras.VideoDev(){ displayname=c.string};
-					unowned List<MwpCameras.VideoDev?> dp = MwpCameras.list.find_custom(ds, (a,b) => {
-							return strcmp(a.displayname, b.displayname);
-						});
+					unowned var dp = MwpCameras.find_camera(c.string);
 					if(dp != null) {
-						for(var j = 1; j < cl.get_n_items(); j++) {
-							cl.remove(j);
-						}
 						MWPLog.message(":DBG: Camera: %s\n", c.string);
-						foreach(var cstr in dp.first().data.caps.data) {
-							cl.append(cstr);
+						build_menu(dp.caps.data);
+						foreach(var cstr in dp.caps.data) {
 							MWPLog.message("  :DBG: Caps: %s\n", cstr);
 						}
-
+					} else {
+						menu.remove_all();
 					}
 				});
 
@@ -92,7 +136,7 @@ namespace V4L2 {
 			urichk.active = true;
 
 			g.attach (viddev_c, 1, 0);
-			g.attach (caps_c, 2, 0);
+			g.attach (mb, 2, 0);
 
 			cbox = new  RecentVideo(this);
 			cbox.entry.set_width_chars(48);
@@ -147,6 +191,8 @@ namespace VideoMan {
 		vid_dialog.response.connect((id) => {
 				if(id == 0) {
 					res = vid_dialog.result(out uri);
+					int k = vid_dialog.find_camera_option();
+					MWPLog.message(":CAMBDG: Camera option %d\n", k);
 					switch(res) {
 					case 0:
 						var i = vid_dialog.viddev_c.get_selected();
