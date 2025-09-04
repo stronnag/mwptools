@@ -4,27 +4,48 @@ namespace MwpCameras {
 		string displayname;
 		string driver;
 	}
-	public List<VideoDev?> list;
+	public SList<VideoDev?> list;
 	public Cameras cams;
 
 	public void init() {
 		if (list == null) {
-			list = new List<VideoDev?>();
+			list = new SList<VideoDev?>();
 			cams =  new Cameras();
 			cams.setup_device_monitor();
 		}
 	}
 
+	/**
+	public unowned SList<VideoDev?>? find_camera(string name) {
+		SearchFunc<VideoDev?, string> sfunc = (g,t) => {
+			return strcmp(t, g.displayname);
+		};
+		unowned var ll = list.search(name, sfunc);
+		if (ll != null && ll.length() > 0) {
+			return ll;
+		}
+		return null;
+	}
+	**/
+
+	public unowned VideoDev? find_camera(string name) {
+		SearchFunc<VideoDev?, string> sfunc = (g,t) => {
+			return strcmp(t, g.displayname);
+		};
+		unowned var ll = list.search(name, sfunc);
+		if (ll != null && ll.length() > 0) {
+			return ll.nth_data(0);
+		}
+		return null;
+	}
+
 	public void get_details (string devname, out string device, out string v4l2src) {
 		device=null;
 		v4l2src=null;
-		for( unowned var lp = list; lp != null; lp = lp.next) {
-			var dv = lp.data;
-			if(devname == dv.displayname) {
-				device = dv.devicename;
-				v4l2src = dv.driver;
-				break;
-			}
+		unowned var dv = find_camera(devname);
+		if (dv != null) {
+			device = dv.devicename;
+			v4l2src = dv.driver;
 		}
 	}
 
@@ -80,20 +101,16 @@ namespace MwpCameras {
 		}
 
 		private void add_list(VideoDev ds) {
-			unowned List<VideoDev?> dv = list.find_custom(ds, (a,b) => {
-					return strcmp(a.displayname, b.displayname);
-				});
+			unowned var dv = find_camera(ds.displayname);
 			if(dv == null) {
 				list.append(ds);
 			}
 		}
 
 		private void remove_list(VideoDev ds) {
-			unowned List<VideoDev?> dv = list.find_custom(ds, (a,b) => {
-					return strcmp(a.displayname, b.displayname);
-				});
+			unowned var dv = find_camera(ds.displayname);
 			if (dv != null) {
-				list.remove_link(dv);
+				list.remove(dv);
 			}
 		}
 
