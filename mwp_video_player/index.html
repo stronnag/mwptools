@@ -1532,12 +1532,25 @@
 <p>Video may be played in either a separate window, or in an embedded pane (FPV Mode).</p>
 <p><img alt="FPV View" src="../images/fpvmode/fpv-mode-analogue.png" width="30%" /></p>
 <h2 id="video-player-requirements">Video Player Requirements<a class="headerlink" href="#video-player-requirements" title="Permanent link">#</a></h2>
-<p>mwp uses the open source GStreamer API to provide video playing. As well as any decoders / formats etc. to support the input stream, there is dependency on the <code>gstgtk4</code> Gstreamer plugin. This is available on modern operating systems and its package name is OS dependent, for example:</p>
-<pre><code>* Arch:  `gst-plugin-gtk4`
-* Debian (Sid / Trixie): `gstreamer1.0-gtk4`
-* FreeBSD: `gstreamer1-plugins-rust`
-* Void: `gst-plugins-rs1`
-</code></pre>
+<p>mwp uses the open source GStreamer API to provide video playing. As well as any decoders / formats etc. to support the input stream, there is runtime dependency on the <code>gstgtk4</code> Gstreamer plugin. This is available on modern operating systems and its package name is OS dependent, for example:</p>
+<ul>
+<li>Arch and MSys2 :  <code>gst-plugin-gtk4</code></li>
+<li>Debian (Sid / Trixie): <code>gstreamer1.0-gtk4</code></li>
+<li>FreeBSD: <code>gstreamer1-plugins-rust</code></li>
+<li>Void: <code>gst-plugins-rs1</code></li>
+</ul>
+<p>There is also a fallback video player for older OS (e.g. Ubuntu 24.04). This can also be used on Windows where the graphics driver fails (error message <code>failed to share contexts through wglShareLists 0xaa</code>) (any may crash mwp) using the <code>gstgtk4</code> Gstreamer / OpenGL plugin.</p>
+<p>The "fallback" video widget is based on `Gtk.Video':</p>
+<ul>
+<li>Automatically detects missing <code>gtk4paintablesink</code> on Ubuntu 24.04 et al and uses the fallback player.</li>
+<li>On Windows with "bad" graphics drivers (or to force the fallback widget anyway), fallback video requires that the new setting <code>use-fallback-video</code> is set to <code>true</code>.</li>
+</ul>
+<p>Consequences of using the fallback video player:</p>
+<ul>
+<li>On Windows, no direct USB camera access</li>
+<li>Higher latency (e.g. 2000ms on RTSP feeds)</li>
+<li>Fewer  video codecs available.</li>
+</ul>
 <div class="admonition note">
 <p class="admonition-title">Legacy Images</p>
 <p>The images this section are from legacy mwp, however the capability is the same.</p>
@@ -1545,7 +1558,7 @@
 <h2 id="live-stream-mode-gcs">Live stream mode (GCS)<a class="headerlink" href="#live-stream-mode-gcs" title="Permanent link">#</a></h2>
 <p>There is a <strong>Video Stream</strong> option under the view menu.</p>
 <p><img alt="View Menu" src="../images/mwp_vid_menu.png" width="30%" /></p>
-<p>Selecting this option opens the source selection dialogue. Camera devices offering a "video4linux" or (Windows) <code>ksvideosrc</code> interface (i.e most webcams) will be auto-detected. There is also the option to enter a URI, which could be a <code>http</code>/<code>https</code>, <code>rtsp</code> or other standard streaming protocol, or even a file.</p>
+<p>Selecting this option opens the source selection dialogue. Camera devices (i.e most webcams) will be auto-detected. There is also the option to enter a URI, which could be a <code>http</code>/<code>https</code>, <code>rtsp</code> or other standard streaming protocol, or even a file.</p>
 <p><img alt="Chooser" src="../images/recent-video.png" width="20%" /></p>
 <p>The selected source will then play in a separate window. This window will remain above the mwp application and can be resized, minimised and moved.</p>
 <p>In stream mode, there are minimal video controls; a play/pause button and volume control. Note the volume is that of the video, the overall volume is controlled by the system volume control.</p>
@@ -1553,8 +1566,9 @@
 <p>In "FPV Mode", no controls are shown.</p>
 <h2 id="os-specific">OS Specific<a class="headerlink" href="#os-specific" title="Permanent link">#</a></h2>
 <ul>
+<li>Linux. "Video4Linux" (<code>v4l2src</code>).</li>
 <li>FreeBSD. FreeBSD offers a video4linux emulation that works with <a href="https://github.com/stronnag/mwptools">mwp</a>.</li>
-<li>Windows. Uses <code>ksvideosrc</code> for input. The more modern <code>mfvideosrc</code> is not used, as it may not be universally available (also may be device dependent).</li>
+<li>Windows. Uses <code>ksvideosrc</code> or  <code>mfvideosrc</code> if detected.</li>
 <li>MacOS. Uses <code>afvideosrc</code> for Camera input. Not tested.</li>
 </ul>
 <h2 id="fpv-mode">FPV Mode<a class="headerlink" href="#fpv-mode" title="Permanent link">#</a></h2>
@@ -1568,7 +1582,7 @@
 <li>Else, if available, the last panel stream is shown.</li>
 </ul>
 <h3 id="using-rtsp-for-camera-parameter-definitions">Using RTSP for camera parameter definitions<a class="headerlink" href="#using-rtsp-for-camera-parameter-definitions" title="Permanent link">#</a></h3>
-<p><a href="https://github.com/stronnag/mwptools">mwp</a> cameras are used in their default configuration. If the user wants more control over the camera properties, is using a remote camera, or is using MacOS where mwp does not currently recognise cameras: then a RTSP server can be used.</p>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> cameras are used in their default configuration. If the user wants more control over the camera properties, is using a remote camera, if the camera is not detected or if using Windows with mwp' "fallback" player , then a RTSP server can be used.</p>
 <p><a href="https://github.com/AlexxIT/go2rtc">go2rtc</a> is a useful RTSP server that supports numerous video options. The following configuration file <code>go2rtc.yaml</code> illustrates some of the possibilities:</p>
 <div class="highlight"><pre><span></span><code>streams:
   usbcam1: v4l2:device?video=/dev/video0&amp;input_format=mjpeg&amp;video_size=1280x720&amp;framerate=30
