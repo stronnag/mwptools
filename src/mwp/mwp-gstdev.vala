@@ -44,6 +44,14 @@ namespace MwpCameras {
 		}
 	}
 
+	public unowned string[]? get_caps (string devname) {
+		unowned var dv = find_camera(devname);
+		if (dv != null) {
+			return dv.caps.data;
+		}
+		return null;
+	}
+
 	private string[]? replace_caps(string pr) {
 		string []res = null;
 		MPos []mpos = {};

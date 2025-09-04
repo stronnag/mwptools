@@ -40,8 +40,8 @@ namespace MwpVideo {
 			return p;
 		}
 
-		public MwpVideo.Player load(string uri, bool start) {
-			var p = new Player(uri);
+		public MwpVideo.Player load(string uri, bool start, int camopt) {
+			var p = new Player(uri, camopt);
 			MwpVideo.window = this;
 			MwpVideo.state |= MwpVideo.State.PLAYWINDOW;
 

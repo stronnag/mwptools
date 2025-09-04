@@ -78,7 +78,7 @@ namespace MwpVideo {
 		}
 	}
 
-	public void embedded_player(string uri) {
+	public void embedded_player(string uri, int camopt=-1) {
 		MwpVideo.Player p = null;
 		Gdk.Paintable pt = null;
 
@@ -90,7 +90,7 @@ namespace MwpVideo {
 			((MwpVideo.Viewer)MwpVideo.window).close();
 		} else {
 			MWPLog.message(":DBG: VP Create new player\n");
-			p = new MwpVideo.Player(uri);
+			p = new MwpVideo.Player(uri, camopt);
 			pt = p.pt;
 			if (pt != null) {
 				p.error.connect((e) => {
@@ -184,9 +184,9 @@ namespace MwpVideo {
 			MwpVideo.state &= ~MwpVideo.State.PLAYER;
 		}
 
-		public Player(string ouri) {
+		public Player(string ouri, int camopt) {
 			var uri = MwpVideo.to_uri(ouri);
-			pt = generate_playbin(uri);
+			pt = generate_playbin(uri, camopt);
 			if (pt != null) {
 				if(MwpVideo.is_fallback) {
 					MWPLog.message("BS: MF %p\n", pt);
@@ -200,7 +200,7 @@ namespace MwpVideo {
 			}
 		}
 
-		private Gdk.Paintable? generate_playbin(string uri) {
+		private Gdk.Paintable? generate_playbin(string uri, int camopt=-1) {
 			File f;
 			string furi = uri;
 			if(MwpVideo.is_fallback) {
@@ -239,6 +239,7 @@ namespace MwpVideo {
 					if (v4l2src == null) {
 						return null;
 					}
+
 					var sb = new StringBuilder(v4l2src);
 					sb.append_c(' ');
 					if(device == devname) {
@@ -250,6 +251,13 @@ namespace MwpVideo {
 						sb.append("device=");
 						sb.append(device);
 					}
+					if(camopt != -1) {
+						unowned var caps = 	MwpCameras.get_caps(devname);
+						if (camopt < caps.length) {
+							sb.append_printf(" ! %s", caps[camopt]);
+						}
+					}
+
 					sb.append(" ! decodebin ! autovideoconvert ! gtk4paintablesink sync=false");
 					var str = sb.str;
 					MWPLog.message("Playbin: %s\n", str);

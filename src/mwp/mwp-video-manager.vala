@@ -46,6 +46,11 @@ namespace V4L2 {
 				var s = "item%03d".printf(n);
 				var aq = new GLib.SimpleAction.stateful(s, null, false);
 				aq.change_state.connect((s) => {
+						if(webcam.sensitive) {
+							webcam.active = true;
+							urichk.active = !webcam.active;
+						}
+
 						aq.set_state (s);
 						var nm = menu.get_n_items();
 						for(int j = 0; j < nm; j++) {
@@ -94,13 +99,17 @@ namespace V4L2 {
 				webcam.sensitive = false;
 			} else {
 				webcam.sensitive = true;
+				webcam.active = true;
 				viddev_c.selected = 1;
 #if WINDOWS
 				if(MwpVideo.is_fallback) {
 					webcam.sensitive = false;
+					webcam.active = false;
 				}
 #endif
 			}
+			urichk.active = !webcam.active;
+
 		}
 
 		public Window() {
@@ -116,12 +125,16 @@ namespace V4L2 {
 					var c = (Gtk.StringObject)viddev_c.get_selected_item();
 					unowned var dp = MwpCameras.find_camera(c.string);
 					if(dp != null) {
+						webcam.active = true;
 						MWPLog.message(":DBG: Camera: %s : %s <%s>\n", dp.displayname, dp.devicename, dp.driver);
 						build_menu(dp.caps.data);
 					} else {
+						webcam.active = false;
 						MWPLog.message(":DBG: Camera: %s NOT FOUND\n", c.string);
 						menu.remove_all();
 					}
+					urichk.active = !webcam.active;
+
 				});
 
 			build_list();
@@ -189,8 +202,8 @@ namespace VideoMan {
 		vid_dialog.response.connect((id) => {
 				if(id == 0) {
 					res = vid_dialog.result(out uri);
-					int k = vid_dialog.find_camera_option();
-					MWPLog.message(":CAMBDG: Camera option %d\n", k);
+					int camopt = vid_dialog.find_camera_option();
+					MWPLog.message(":CAMBDG: Camera option %d\n", camopt);
 					switch(res) {
 					case 0:
 						var i = vid_dialog.viddev_c.get_selected();
@@ -225,12 +238,12 @@ namespace VideoMan {
  							var vp = new MwpVideo.Viewer();
 							vp.present();
 							Idle.add(() => {
-									vp.load(uri, true);
+									vp.load(uri, true, camopt);
 									return false;
 								});
 						} else {
 							MWPLog.message("Add %s to embedded\n", uri);
-							MwpVideo.embedded_player(uri);
+							MwpVideo.embedded_player(uri, camopt);
 						}
 					}
 				}
