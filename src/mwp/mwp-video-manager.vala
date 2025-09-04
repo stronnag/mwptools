@@ -58,6 +58,20 @@ namespace V4L2 {
 		public Window() {
 			sl = new Gtk.StringList({"(None)"});
 			viddev_c = new Gtk.DropDown(sl, null);
+			viddev_c.notify["selected-item"].connect(() =>  {
+					var c = (Gtk.StringObject)viddev_c.get_selected_item();
+					var ds = MwpCameras.VideoDev(){ displayname=c.string};
+					unowned List<MwpCameras.VideoDev?> dp = MwpCameras.list.find_custom(ds, (a,b) => {
+							return strcmp(a.displayname, b.displayname);
+						});
+					if(dp != null) {
+						MWPLog.message(":DBG: Camera: %s\n", c.string);
+						foreach(var cstr in dp.first().data.caps.data) {
+							MWPLog.message("  :DBG: Caps: %s\n", cstr);
+						}
+					}
+				});
+
 			build_list();
 
 			MwpCameras.cams.updated.connect(() => {

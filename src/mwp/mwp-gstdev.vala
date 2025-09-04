@@ -3,7 +3,15 @@ namespace MwpCameras {
 		string devicename;
 		string displayname;
 		string driver;
+		Array<string> caps;
 	}
+
+	private struct MPos {
+		int sp;
+		int ep;
+		string str;
+	}
+
 	public List<VideoDev?> list;
 	public Cameras cams;
 
@@ -28,6 +36,54 @@ namespace MwpCameras {
 		}
 	}
 
+	private string[]? replace_caps(string pr) {
+		string []res = null;
+		MPos []mpos = {};
+		int fp=0;
+		int lp=0;
+		for(; ; ) {
+			fp = pr.index_of ("{ ", fp);
+			if (fp == -1)
+				break;
+			lp = pr.index_of(" }", fp);
+			if (lp != -1) {
+				var m = MPos(){sp=fp, ep=lp+2, str=pr.substring(fp+2, (lp-fp-2))};
+				mpos += m;
+			}
+			fp = lp+2;
+		}
+
+		if(mpos.length == 1) {
+			res = {};
+			var fmt = pr.splice(mpos[0].sp, mpos[0].ep, "%s");
+			var parts = mpos[0].str.split(", ");
+			foreach (var p in parts) {
+				res += fmt.printf(p);
+			}
+		}
+		return res;
+	}
+
+	public void process_caps(ref VideoDev ds, string cs) {
+		var capstr = cs.split("; ");
+		try {
+			var regex = new Regex("\\(\\S+\\)");
+			foreach(var c in capstr) {
+				string pr = regex.replace (c, c.length, 0, "");
+				var rparts = replace_caps(pr);
+				if (rparts != null) {
+					foreach(var r in rparts) {
+						ds.caps.append_val(r);
+					}
+				} else {
+					ds.caps.append_val(pr);
+				}
+			}
+		} catch (Error e) {
+			print("Regex: %s\n", e.message);
+		}
+	}
+
 	public class Cameras : Gst.Object {
 		private Gst.DeviceMonitor monitor;
 		public signal void updated();
@@ -39,6 +95,7 @@ namespace MwpCameras {
 
 		private VideoDev? get_node_info(Gst.Device device) {
 			VideoDev ds = {};
+			ds.caps = new Array<string>();
 			ds.displayname = device.display_name;
 			var s = device.get_properties();
 			if (s != null) {
@@ -75,6 +132,10 @@ namespace MwpCameras {
 						ds.driver = "v4l2src";
 					}
 				}
+			}
+			var cs = device.get_caps();
+			if (cs != null) {
+				process_caps(ref ds, cs.to_string());
 			}
 			return ds;
 		}
@@ -148,8 +209,11 @@ public static int main (string? []args) {
 						print("<empty>\n");
 					} else {
 						MwpCameras.list.@foreach((c) => {
-							print("  %s = %s [%s]\n", c.displayname, c.devicename, c.driver);
-						});
+								print("  %s = %s [%s]\n", c.displayname, c.devicename, c.driver);
+								foreach (var s in c.caps.data) {
+									print("    %s\n", s);
+								}
+							});
 					}
 				});
 			return false;
