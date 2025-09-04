@@ -116,12 +116,10 @@ namespace V4L2 {
 					var c = (Gtk.StringObject)viddev_c.get_selected_item();
 					unowned var dp = MwpCameras.find_camera(c.string);
 					if(dp != null) {
-						MWPLog.message(":DBG: Camera: %s\n", c.string);
+						MWPLog.message(":DBG: Camera: %s : %s <%s>\n", dp.displayname, dp.devicename, dp.driver);
 						build_menu(dp.caps.data);
-						foreach(var cstr in dp.caps.data) {
-							MWPLog.message("  :DBG: Caps: %s\n", cstr);
-						}
 					} else {
+						MWPLog.message(":DBG: Camera: %s NOT FOUND\n", c.string);
 						menu.remove_all();
 					}
 				});
