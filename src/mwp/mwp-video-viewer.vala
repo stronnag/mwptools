@@ -99,8 +99,8 @@ namespace MwpVideo {
 			return p;
 		}
 
-		public MwpVideo.Player load(string uri, bool start, int camopt) {
-			var p = new Player(uri, camopt);
+		public MwpVideo.Player load(string uri, bool start) {
+			var p = new Player(uri);
 			MWPLog.message("v load %s %p %p\n", uri, p, p.pt);
 			if (p.pt != null) {
 				MwpVideo.window = this;

@@ -38,19 +38,18 @@ namespace V4L2 {
 
 		public signal void response(int id);
 
-		private void build_menu(string[] items) {
+		private void build_menu(string[] items, int nv) {
 			menu.remove_all();
 			int n = 0;
 			foreach (var m in items) {
 				var jn = n;
 				var s = "item%03d".printf(n);
-				var aq = new GLib.SimpleAction.stateful(s, null, false);
+				var aq = new GLib.SimpleAction.stateful(s, null, (n == nv));
 				aq.change_state.connect((s) => {
 						if(webcam.sensitive) {
 							webcam.active = true;
 							urichk.active = !webcam.active;
 						}
-
 						aq.set_state (s);
 						var nm = menu.get_n_items();
 						for(int j = 0; j < nm; j++) {
@@ -127,7 +126,8 @@ namespace V4L2 {
 					if(dp != null) {
 						webcam.active = true;
 						MWPLog.message(":DBG: Camera: %s : %s <%s>\n", dp.displayname, dp.devicename, dp.driver);
-						build_menu(dp.caps.data);
+						var nv = MwpCameras.lookup_camera_opt(c.string);
+						build_menu(dp.caps.data, (int)nv);
 					} else {
 						webcam.active = false;
 						MWPLog.message(":DBG: Camera: %s NOT FOUND\n", c.string);
@@ -210,6 +210,7 @@ namespace VideoMan {
 						if (i > 0) {
 							var dname = ((Gtk.StringList)vid_dialog.viddev_c.model).get_string(i);
 							uri = "v4l2://%s".printf(dname);
+							MwpCameras.update_camera_opt(dname, (int16)camopt);
 						} else {
 							res = -1;
 						}
@@ -238,12 +239,12 @@ namespace VideoMan {
  							var vp = new MwpVideo.Viewer();
 							vp.present();
 							Idle.add(() => {
-									vp.load(uri, true, camopt);
+									vp.load(uri, true);
 									return false;
 								});
 						} else {
 							MWPLog.message("Add %s to embedded\n", uri);
-							MwpVideo.embedded_player(uri, camopt);
+							MwpVideo.embedded_player(uri);
 						}
 					}
 				}

@@ -78,7 +78,7 @@ namespace MwpVideo {
 		}
 	}
 
-	public void embedded_player(string uri, int camopt=-1) {
+	public void embedded_player(string uri) {
 		MwpVideo.Player p = null;
 		Gdk.Paintable pt = null;
 
@@ -90,7 +90,7 @@ namespace MwpVideo {
 			((MwpVideo.Viewer)MwpVideo.window).close();
 		} else {
 			MWPLog.message(":DBG: VP Create new player\n");
-			p = new MwpVideo.Player(uri, camopt);
+			p = new MwpVideo.Player(uri);
 			pt = p.pt;
 			if (pt != null) {
 				p.error.connect((e) => {
@@ -184,9 +184,9 @@ namespace MwpVideo {
 			MwpVideo.state &= ~MwpVideo.State.PLAYER;
 		}
 
-		public Player(string ouri, int camopt) {
+		public Player(string ouri) {
 			var uri = MwpVideo.to_uri(ouri);
-			pt = generate_playbin(uri, camopt);
+			pt = generate_playbin(uri);
 			if (pt != null) {
 				if(MwpVideo.is_fallback) {
 					MWPLog.message("BS: MF %p\n", pt);
@@ -200,7 +200,7 @@ namespace MwpVideo {
 			}
 		}
 
-		private Gdk.Paintable? generate_playbin(string uri, int camopt=-1) {
+		private Gdk.Paintable? generate_playbin(string uri) {
 			File f;
 			string furi = uri;
 			if(MwpVideo.is_fallback) {
@@ -239,7 +239,7 @@ namespace MwpVideo {
 					if (v4l2src == null) {
 						return null;
 					}
-
+					int16 camopt = MwpCameras.lookup_camera_opt(devname);
 					var sb = new StringBuilder(v4l2src);
 					sb.append_c(' ');
 					if(device == devname) {

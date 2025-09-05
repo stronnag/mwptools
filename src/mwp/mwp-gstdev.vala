@@ -14,12 +14,66 @@ namespace MwpCameras {
 
 	public SList<VideoDev?> list;
 	public Cameras cams;
+	private VariantDict camdict;
+
+	private string camera_dict_fn() {
+		var uc = MWPUtils.get_confdir();
+		return GLib.Path.build_filename(uc, ".cameras.v0.dict");
+	}
 
 	public void init() {
 		if (list == null) {
 			list = new SList<VideoDev?>();
 			cams =  new Cameras();
 			cams.setup_device_monitor();
+			Variant x = null;
+			try {
+				var fn = camera_dict_fn();
+				uint8 []data;
+				FileUtils.get_data(fn, out data);
+				var b = new Bytes(data);
+				x = new Variant.from_bytes(VariantType.VARDICT, b, true);
+				camdict = new  VariantDict(x);
+			} catch (Error e) {
+				camdict = new VariantDict();
+			}
+		}
+	}
+
+	public int16 lookup_camera_opt(string cam) {
+		var v = camdict.lookup_value(cam,  VariantType.INT16);
+		if (v != null) {
+			return v.get_int16();
+		} else {
+			return -1;
+		}
+	}
+
+	public void update_camera_opt(string cam, int16 v) {
+		if (v == -1) {
+			camdict.remove(cam);
+		} else {
+			camdict.insert_value(cam, new Variant.int16(v));
+		}
+		save_camera_dict();
+	}
+
+	public void save_camera_dict() {
+		var fn = camera_dict_fn();
+		var x = camdict.end();
+		var ns = x.get_size();
+		if (ns > 0) {
+			uint8 []data = new uint8[ns];
+			x.store(data);
+			try {
+				FileUtils.set_data(fn, data);
+			} catch (Error e) { }
+			var b = new Bytes(data);
+			x = new Variant.from_bytes(VariantType.VARDICT, b, true);
+			camdict = new  VariantDict(x);
+		} else {
+			camdict = new VariantDict();
+			FileUtils.unlink(fn);
 		}
 	}
 
