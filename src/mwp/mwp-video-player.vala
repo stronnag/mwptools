@@ -257,8 +257,12 @@ namespace MwpVideo {
 							sb.append_printf(" ! %s", caps[camopt]);
 						}
 					}
-
-					sb.append(" ! decodebin ! autovideoconvert ! gtk4paintablesink sync=false");
+					bool dbg = (Environment.get_variable("MWP_SHOW_FPS") != null);
+					if(dbg) {
+						sb.append(" ! decodebin ! autovideoconvert ! fpsdisplaysink video-sink=gtk4paintablesink text-overlay=true sync=false");
+					} else {
+						sb.append(" ! decodebin ! autovideoconvert !  gtk4paintablesink sync=false");
+					}
 					var str = sb.str;
 					MWPLog.message("Playbin: %s\n", str);
 					try {
@@ -276,6 +280,18 @@ namespace MwpVideo {
 					} catch (Error e) {
 						MWPLog.message("Video playbin error %s\n", e.message);
 						ptx = null;
+					}
+
+					if(dbg && videosink == null) {
+						for(var j = 0; j < 9; j++) {
+							var vname = "gtk4paintablesink%d".printf(j);
+							var vsink = ((Gst.Bin)playbin).get_by_name(vname);
+							if (vsink != null) {
+								videosink = vsink;
+								MWPLog.message("DBG:SINK: ******* found sink! %s\n", vname);
+								break;
+							}
+						}
 					}
 				} else {
 					string playbinx;
