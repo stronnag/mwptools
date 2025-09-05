@@ -306,9 +306,11 @@ namespace MwpVideo {
 		private bool bus_callback (Gst.Bus bus, Gst.Message message) {
 			switch (message.type) {
 			case Gst.MessageType.BUFFERING:
-				int percent = 0;
-				message.parse_buffering (out percent);
-				MWPLog.message("Video: buffering (%u percent done)", percent);
+				/*
+				  int percent = 0;
+				  message.parse_buffering (out percent);
+				  MWPLog.message("Video: buffering (%u percent done)\n", percent);
+				*/
 				break;
 
 			case Gst.MessageType.ERROR:
