@@ -830,6 +830,30 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Using RTSP for camera parameter definitions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#linux-freebsd" class="md-nav__link">
+    <span class="md-ellipsis">
+      Linux, FreeBSD
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#windows" class="md-nav__link">
+    <span class="md-ellipsis">
+      Windows
+    </span>
+  </a>
+  
 </li>
         
       </ul>
@@ -1496,6 +1520,30 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Using RTSP for camera parameter definitions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#linux-freebsd" class="md-nav__link">
+    <span class="md-ellipsis">
+      Linux, FreeBSD
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#windows" class="md-nav__link">
+    <span class="md-ellipsis">
+      Windows
+    </span>
+  </a>
+  
 </li>
         
       </ul>
@@ -1567,7 +1615,7 @@
 <h2 id="os-specific">OS Specific<a class="headerlink" href="#os-specific" title="Permanent link">#</a></h2>
 <ul>
 <li>Linux. "Video4Linux" (<code>v4l2src</code>).</li>
-<li>FreeBSD. FreeBSD offers a video4linux emulation that works with <a href="https://github.com/stronnag/mwptools">mwp</a>.</li>
+<li>FreeBSD. FreeBSD offers a video4linux (<code>v4l2src</code>) emulation that works with <a href="https://github.com/stronnag/mwptools">mwp</a>.</li>
 <li>Windows. Uses <code>ksvideosrc</code> or  <code>mfvideosrc</code> if detected.</li>
 <li>MacOS. Uses <code>afvideosrc</code> for Camera input. Not tested.</li>
 </ul>
@@ -1583,14 +1631,16 @@
 </ul>
 <h3 id="using-rtsp-for-camera-parameter-definitions">Using RTSP for camera parameter definitions<a class="headerlink" href="#using-rtsp-for-camera-parameter-definitions" title="Permanent link">#</a></h3>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> cameras are used in their default configuration. If the user wants more control over the camera properties, is using a remote camera, if the camera is not detected or if using Windows with mwp' "fallback" player , then a RTSP server can be used.</p>
-<p><a href="https://github.com/AlexxIT/go2rtc">go2rtc</a> is a useful RTSP server that supports numerous video options. The following configuration file <code>go2rtc.yaml</code> illustrates some of the possibilities:</p>
+<p><a href="https://github.com/AlexxIT/go2rtc">go2rtc</a> is a useful RTSP server that supports numerous video options.</p>
+<h4 id="linux-freebsd">Linux, FreeBSD<a class="headerlink" href="#linux-freebsd" title="Permanent link">#</a></h4>
+<p>The following configuration file <code>go2rtc.yaml</code> illustrates some of the possibilities:</p>
 <div class="highlight"><pre><span></span><code>streams:
   usbcam1: v4l2:device?video=/dev/video0&amp;input_format=mjpeg&amp;video_size=1280x720&amp;framerate=30
   usbcam2: ffmpeg:/dev/video0#video=h264#audio=aac#scale=1280:720
   usbcam3: v4l2:device?video=/dev/video0&amp;input_format=mjpeg&amp;video_size=640x480&amp;framerate=30
 
   file0: exec:ffmpeg -hide_banner -re -stream_loop -1 -i /home/jrh/Videos/Daria-SurfKayak.mp4 -vcodec h264 -rtsp_transport tcp -f rtsp {output}
-  file1: ffmpeg:/home/jrh/Videos/Nokia_18_ft_Skiff_in_heavy_wind.mp4
+  file1: ffmpeg:/home/jrh/Videos/18_ft_Skiff_in_heavy_wind.mp4
   test: exec:ffmpeg -hide_banner -re -f lavfi -i testsrc -vcodec h264 -rtsp_transport tcp -f rtsp {output}
 </code></pre></div>
 <p>The camera is a 10 year old "Mobius"; remember them?</p>
@@ -1608,14 +1658,23 @@
 <p>It is possible to start and stop <code>go2rtc</code> when mwp is started / quit using the <code>atstart</code> and <code>atexit</code> settings:</p>
 <p>Adjust configuration  file path for your environment:</p>
 <ul>
-<li>atstart: <code>go2rtc -c '/home/jrh/.config/go2rtc/go2rtc.yaml'</code></li>
+<li>atstart: <code>go2rtc -c /home/jrh/.config/go2rtc/go2rtc.yaml</code></li>
 <li>atexit: <code>pkill -f go2rtc.exe</code></li>
 </ul>
-<p>and (noting that go2rtc and dependencies (<code>ffmpeg</code> etc.) must be on a <code>PATH</code> available to <code>mwp.exe</code>.</p>
+<h3 id="windows">Windows<a class="headerlink" href="#windows" title="Permanent link">#</a></h3>
+<p>Configuration file for USB webcam:</p>
+<div class="highlight"><pre><span></span><code>streams:
+  webcam0: ffmpeg:device?video=0#width=640#height=480#video=mjpeg
+  webcam1: ffmpeg:device?video=Mobius#width=640#height=480#video=mjpeg
+  webcam2: ffmpeg:device?video=0#width=640#height=480#video=h264
+</code></pre></div>
+<p>Each of the above lines refers to the same device (name/index reference), natural or trans-coded video). At least in the author's VM, it is necessary to downsize the video-stream to avoid <code>ffmpeg</code> overruns.</p>
 <ul>
-<li>atstart: <code>go2rtc.exe -c 'c:\Users\win10\go2rtc.yaml'</code></li>
+<li>atstart: <code>go2rtc.exe -c c:/Users/win10/go2rtc.yaml'</code></li>
 <li>atexit: <code>taskkill.exe -f -im "go2rtc.exe"</code></li>
 </ul>
+<p>It is recommended to use POSIX style forward slashes rather than Windows backslash in order to avoid any "backslash escape" issues.</p>
+<p>Note that go2rtc and dependencies (<code>ffmpeg</code> etc.) must be on a <code>PATH</code> available to <code>mwp.exe</code>.</p>
 
 
 
