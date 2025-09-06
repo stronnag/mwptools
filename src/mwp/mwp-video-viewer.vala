@@ -38,6 +38,17 @@ namespace MwpVideo {
 				title = "mwp Video Player";
 				duration =  (int64)0x7ffffffffffffff;
 				vb = new Utils.VolumeButton();
+				vb.notify["active"].connect(() => {
+						if(vb.active) {
+							if(rtid != 0) {
+								Source.remove(rtid);
+							}
+						} else {
+							rtid = Timeout.add(3000, () => {
+									return hide_media_bar();
+								});
+						}
+					});
 				pic = new Gtk.Picture();
 				pic.add_controller(evtcm);
 				evtcm.motion.connect((x,y) => {

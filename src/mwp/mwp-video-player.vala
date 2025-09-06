@@ -231,6 +231,7 @@ namespace MwpVideo {
 				MwpVideo.playbin = null;
 				Gdk.Paintable ptx = null;
 				Gst.Element videosink = null;
+				bool dbg = (Environment.get_variable("MWP_SHOW_FPS") != null);
 				if(uri.has_prefix("v4l2://")) {
 					string device = null;
 					string v4l2src = null;
@@ -257,7 +258,6 @@ namespace MwpVideo {
 							sb.append_printf(" ! %s", caps[camopt]);
 						}
 					}
-					bool dbg = (Environment.get_variable("MWP_SHOW_FPS") != null);
 					if(dbg) {
 						sb.append(" ! decodebin ! autovideoconvert ! fpsdisplaysink video-sink=gtk4paintablesink text-overlay=true sync=false");
 					} else {
@@ -267,6 +267,12 @@ namespace MwpVideo {
 					MWPLog.message("Playbin: %s\n", str);
 					try {
 						playbin = Gst.parse_launch (str);
+					} catch (Error e) {
+						MWPLog.message("Video playbin error %s\n", e.message);
+						ptx = null;
+					}
+
+					if(!dbg) {
 						var gi = ((Gst.Bin)playbin).iterate_elements();
 						Gst.IteratorResult res;
 						Value elm;
@@ -277,35 +283,34 @@ namespace MwpVideo {
 								videosink = e;
 							}
 						}
-					} catch (Error e) {
-						MWPLog.message("Video playbin error %s\n", e.message);
-						ptx = null;
-					}
-
-					if(dbg && videosink == null) {
-						for(var j = 0; j < 9; j++) {
-							var vname = "gtk4paintablesink%d".printf(j);
-							var vsink = ((Gst.Bin)playbin).get_by_name(vname);
-							if (vsink != null) {
-								videosink = vsink;
-								MWPLog.message("DBG:SINK: ******* found sink! %s\n", vname);
-								break;
-							}
-						}
+					} else {
+						videosink = find_gtk4_sink((Gst.Bin)playbin);
 					}
 				} else {
 					string playbinx;
 					if((playbinx = Environment.get_variable("MWP_PLAYBIN")) == null) {
 						playbinx = "playbin3";
 					}
-					videosink = Gst.ElementFactory.make ("gtk4paintablesink" /*, "video-sink"*/);
+					playbin = Gst.ElementFactory.make (playbinx, playbinx);
+					playbin.set_property("uri", uri);
+					if(dbg) {
+						var vsrc = "fpsdisplaysink video-sink=gtk4paintablesink text-overlay=true sync=false";
+						Gst.Element vbin = null;
+						try {
+							vbin = Gst.parse_launch (vsrc);
+						} catch (Error e) {
+							MWPLog.message("Failed to parse %s: %s\n", vsrc, e.message);
+						}
+						videosink = find_gtk4_sink((Gst.Bin)vbin);
+						playbin.set_property("video-sink", vbin);
+					} else {
+						videosink = Gst.ElementFactory.make ("gtk4paintablesink" );
+						playbin.set_property("video-sink", videosink);
+					}
 					if (videosink == null) {
 						MWPLog.message("Video fail - no gtk4 paintable");
 						return null;
 					}
-					playbin = Gst.ElementFactory.make (playbinx, playbinx);
-					playbin.set_property("uri", uri);
-					playbin.set_property("video-sink", videosink);
 					if(uri.has_prefix("rtsp:")) {
 						playbin.set_property("latency", 10);
 						videosink.set_property("sync", false);
@@ -316,7 +321,17 @@ namespace MwpVideo {
 				playbin.set_state (Gst.State.READY);
 				return ptx;
 			}
+		}
 
+		private Gst.Element? find_gtk4_sink(Gst.Bin vbin) {
+			for(var j = 0; j < 9; j++) {
+				var vname = "gtk4paintablesink%d".printf(j);
+				var vsink = vbin.get_by_name(vname);
+				if (vsink != null) {
+					return vsink;
+				}
+			}
+			return null;
 		}
 
 		private bool bus_callback (Gst.Bus bus, Gst.Message message) {

@@ -262,30 +262,3 @@ namespace MwpCameras {
 		}
 	}
 }
-
-#if TEST
-public static int main (string? []args) {
-	var ml = new GLib.MainLoop();
-	Gst.init (ref args);
-
-	Idle.add (() => {
-			MwpCameras.init();
-			MwpCameras.cams.updated.connect(() => {
-					if ( MwpCameras.list.is_empty()) {
-						print("<empty>\n");
-					} else {
-						MwpCameras.list.@foreach((c) => {
-								print("  %s = %s [%s]\n", c.displayname, c.devicename, c.driver);
-								foreach (var s in c.caps.data) {
-									print("    %s\n", s);
-								}
-							});
-					}
-				});
-			return false;
-		});
-
-	ml.run();
-	return 0;
-}
-#endif
