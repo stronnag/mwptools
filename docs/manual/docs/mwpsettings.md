@@ -100,6 +100,7 @@
 | touch-scale | Touch symbol scale | Symbol scale factor, scales map symbols as multiplier (for touch screens); (see also `symbol-scale`), | 1.0 |
 | uc-mission-tags | Upper case mission XML tags | If true, MISSION, VERSION and MISSIONITEM tags are upper case (for interoperability with legacy Android applications) | false |
 | uilang | Language Handling | "en" do everything as English (UI numeric decimal points, voice), "ev" do voice as English (so say 'point' for decimals even when shown as 'comma') | "" |
+| use-fallback-video | Use fallback video player | If true, mwp will use a fallback video player, which will (a) work on Ubuntu 24.04 and derivatives and (b) work on Windows machines that crash with the default player. The downsides of the fallback player include (i) Higher latency for RTSP (c.2000ms) and (ii) no USB Video on Windows. | false |
 | view-mode | UAV view mode | Options for model view map display | "inview" |
 | vlevels | Voltage levels | Semi-colon(;) separated list of *cell* voltages values for transition between voltage label colours | "" |
 | wp-dist-size | Font size (points) for OSD WP distance display | Font size (points) for OSD WP distance display | 56.0 |

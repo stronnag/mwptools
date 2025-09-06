@@ -56,7 +56,7 @@ In "FPV Mode", no controls are shown.
 ## OS Specific
 
 * Linux. "Video4Linux" (`v4l2src`).
-* FreeBSD. FreeBSD offers a video4linux emulation that works with {{ mwp }}.
+* FreeBSD. FreeBSD offers a video4linux (`v4l2src`) emulation that works with {{ mwp }}.
 * Windows. Uses `ksvideosrc` or  `mfvideosrc` if detected.
 * MacOS. Uses `afvideosrc` for Camera input. Not tested.
 
@@ -79,7 +79,11 @@ FPV uses the following order to determine what to show (if anything).
 
 {{ mwp }} cameras are used in their default configuration. If the user wants more control over the camera properties, is using a remote camera, if the camera is not detected or if using Windows with mwp' "fallback" player , then a RTSP server can be used.
 
-[go2rtc](https://github.com/AlexxIT/go2rtc) is a useful RTSP server that supports numerous video options. The following configuration file `go2rtc.yaml` illustrates some of the possibilities:
+[go2rtc](https://github.com/AlexxIT/go2rtc) is a useful RTSP server that supports numerous video options.
+
+#### Linux, FreeBSD
+
+The following configuration file `go2rtc.yaml` illustrates some of the possibilities:
 
 ```
 streams:
@@ -88,7 +92,7 @@ streams:
   usbcam3: v4l2:device?video=/dev/video0&input_format=mjpeg&video_size=640x480&framerate=30
 
   file0: exec:ffmpeg -hide_banner -re -stream_loop -1 -i /home/jrh/Videos/Daria-SurfKayak.mp4 -vcodec h264 -rtsp_transport tcp -f rtsp {output}
-  file1: ffmpeg:/home/jrh/Videos/Nokia_18_ft_Skiff_in_heavy_wind.mp4
+  file1: ffmpeg:/home/jrh/Videos/18_ft_Skiff_in_heavy_wind.mp4
   test: exec:ffmpeg -hide_banner -re -f lavfi -i testsrc -vcodec h264 -rtsp_transport tcp -f rtsp {output}
 ```
 
@@ -108,10 +112,25 @@ It is possible to start and stop `go2rtc` when mwp is started / quit using the `
 
 Adjust configuration  file path for your environment:
 
-* atstart: `go2rtc -c '/home/jrh/.config/go2rtc/go2rtc.yaml'`
+* atstart: `go2rtc -c /home/jrh/.config/go2rtc/go2rtc.yaml`
 * atexit: `pkill -f go2rtc.exe`
 
- and (noting that go2rtc and dependencies (`ffmpeg` etc.) must be on a `PATH` available to `mwp.exe`.
+### Windows
 
-* atstart: `go2rtc.exe -c 'c:\Users\win10\go2rtc.yaml'`
+Configuration file for USB webcam:
+
+```
+streams:
+  webcam0: ffmpeg:device?video=0#width=640#height=480#video=mjpeg
+  webcam1: ffmpeg:device?video=Mobius#width=640#height=480#video=mjpeg
+  webcam2: ffmpeg:device?video=0#width=640#height=480#video=h264
+```
+
+Each of the above lines refers to the same device (name/index reference), natural or trans-coded video). At least in the author's VM, it is necessary to downsize the video-stream to avoid `ffmpeg` overruns.
+
+* atstart: `go2rtc.exe -c c:/Users/win10/go2rtc.yaml'`
 * atexit: `taskkill.exe -f -im "go2rtc.exe"`
+
+It is recommended to use POSIX style forward slashes rather than Windows backslash in order to avoid any "backslash escape" issues.
+
+Note that go2rtc and dependencies (`ffmpeg` etc.) must be on a `PATH` available to `mwp.exe`.
