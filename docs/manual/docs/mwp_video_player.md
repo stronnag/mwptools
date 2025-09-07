@@ -53,6 +53,14 @@ Up to 10 recent URIs are persisted. In order to access this list it is necessary
 
 In "FPV Mode", no controls are shown.
 
+## Camera Capabilities
+
+mwp requests camera capabilities from Gstreamer and presents them to the user when the "Settings" button clicked.
+
+![settings](images/mwp-video-options.png)
+
+If a capability is selected, it is passed on to GStreamer verbatim and stored for future use.
+
 ## OS Specific
 
 * Linux. "Video4Linux" (`v4l2src`).
