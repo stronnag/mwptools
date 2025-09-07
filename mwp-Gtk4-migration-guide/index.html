@@ -1901,6 +1901,7 @@
 <li>librsvg</li>
 </ul>
 <p>For replaying blackbox log, <a href="https://github.com/stronnag/bbl2kml">bbl2kml</a> 1.0.32 or later is rquired.</p>
+<p>For playing video sources, there are <a href="../mwp_video_player/">OS specific runtime dependencies</a>.</p>
 <h2 id="gsettings-dconf-schema">GSettings /DConf schema<a class="headerlink" href="#gsettings-dconf-schema" title="Permanent link">#</a></h2>
 <p>The gsettings / dconf schema is now <code>/org/stronnag/mwp/</code>. The keys are (mainly) the same as for legacy mwp/gtk3 and may be migrated:</p>
 <div class="highlight"><pre><span></span><code>dconf dump /org/mwptools/planner/ | dconf load /org/stronnag/mwp/
@@ -1953,71 +1954,7 @@ Password: *************************************************
 <li>Bing Hybrid : Imagery with road / place annotations</li>
 </ul>
 <h2 id="side-panel">Side Panel<a class="headerlink" href="#side-panel" title="Permanent link">#</a></h2>
-<p>As <code>libgdl</code> is retired, a simple, bespoke panel comprising embedded resizeable panes has been implemented. The configuration may be user defined by a simple text file <code>~/.config/mwp/panel.conf</code>.</p>
-<ul>
-<li>The panel consists for four vertical panels</li>
-<li>The top panel can hold three horizontal panes</li>
-<li>The other panels can hold two panes.</li>
-</ul>
-<p>Each entry is defined by a comma separated line defining the panel widget, the row (0-3) and the column (0-2) and an optional minimum size (only required for the artificial horizon). The default panel is defined (in the absence of a configuration file) as:</p>
-<div class="highlight"><pre><span></span><code># default widgets
-ahi,0,1,100
-rssi, 1, 0
-dirn, 1, 1
-flight, 2, 0
-volts, 3, 0
-</code></pre></div>
-<p>Which appears as:
-<img alt="mwp4-panel-0" src="../images/mwp4-panel-0.png" /></p>
-<p>The available panel widgets are named as:</p>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Usage</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>ahi</code></td>
-<td>Artificial horizon</td>
-</tr>
-<tr>
-<td><code>dirn</code></td>
-<td>Direction comparison</td>
-</tr>
-<tr>
-<td><code>flight</code></td>
-<td>"Flight View" Position / Velocity / Satellites etc,</td>
-</tr>
-<tr>
-<td><code>volts</code></td>
-<td>Battery information</td>
-</tr>
-<tr>
-<td><code>vario</code></td>
-<td>Vario indicator</td>
-</tr>
-<tr>
-<td><code>wind</code></td>
-<td>Wind Estimator (BBL replay only)</td>
-</tr>
-</tbody>
-</table>
-<p>No other legacy widgets have been migrated.</p>
-<p>So using the following <code>~/.config/mwp/panel.conf</code></p>
-<div class="highlight"><pre><span></span><code># default + vario + wind widgets
-ahi, 0, 1, 100
-vario,0,2
-rssi, 0, 0
-wind, 1, 0
-dirn, 1, 1
-flight, 2, 0
-volts, 3, 0
-</code></pre></div>
-<p>would appear as:
-<img alt="mwp4-panel-1" src="../images/mwp4-panel-1.png" /></p>
-<p>Note: If you change  <code>~/.config/mwp/panel.conf</code>, you should exit <a href="https://github.com/stronnag/mwptools">mwp</a> and delete  <code>~/.config/mwp/.paned</code> before restarting mwp.</p>
+<p>As <code>libgdl</code> is retired, a simple, bespoke panel comprising embedded resizeable panes has been <a href="../dock/">implemented</a>.</p>
 <h2 id="coexistence">Coexistence<a class="headerlink" href="#coexistence" title="Permanent link">#</a></h2>
 <p>mwp (Gtk4) and legacy (Gtk+-3.0) versions can coexist.</p>
 <ul>
