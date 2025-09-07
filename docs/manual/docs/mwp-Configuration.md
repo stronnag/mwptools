@@ -276,11 +276,15 @@ The full list of settings is maintained in a [separate article](mwpsettings.md),
 Either [mwpset](mwpset.md) or the standard system `dconf` application can be used to back up and restore the above `gsettings`.
 To backup the settings:
 
-    dconf dump /org/stronnag/mwp  >/tmp/mwp-dconf.txt
+```
+dconf dump /org/stronnag/mwp  >/tmp/mwp-dconf.txt
+```
 
 To restore the settings (overwrite). This could be for a different user or on a new machine.
 
-    dconf load /org/stronnag/mwp  </tmp/mwp-dconf.txt
+```
+dconf load /org/stronnag/mwp  </tmp/mwp-dconf.txt
+```
 
 ## Settings precedence and user updates
 
@@ -319,7 +323,7 @@ Note also that for mwp to load SVG icons, `librsvg` requires that the `svg` elem
 
 ## Environment variables
 
-{{ mwp }} recognises the following application specific environment variables
+{{ mwp }} recognises, _inter alia_, the following application specific environment variables
 
 | Name  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  | Usage |
 | ------------- | ----- |
@@ -330,6 +334,9 @@ Note also that for mwp to load SVG icons, `librsvg` requires that the `svg` elem
 | `MWP_PRINT_RAW` | If defined, output hex bytes from serial I/O |
 | `MWP_STATS_LOG` | Time (seconds, >0) to automatically log "serial" statistics |
 | `MWP_TIME_FMT` | The time format for log output; by default "%FT%T%z", any GLib2 DateTime (strftime-like) format may be used; "%T.%f" works well on modern GLib. |
+| `MWP_SHOW_FPS` | Show frames/sec in mwp's video player |
+| `GSK_RENDERER` | (see the [migration guide](mwp-Gtk4-migration-guide.md#display-variables-tweaks)) |
+
 
 ## Mime types for common file formats
 

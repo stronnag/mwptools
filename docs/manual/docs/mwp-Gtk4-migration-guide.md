@@ -40,6 +40,9 @@ The following are minimum versions.
 
 For replaying blackbox log, [bbl2kml](https://github.com/stronnag/bbl2kml) 1.0.32 or later is rquired.
 
+For playing video sources, there are [OS specific runtime dependencies](mwp_video_player.md).
+
+
 ## GSettings /DConf schema
 
 The gsettings / dconf schema is now `/org/stronnag/mwp/`. The keys are (mainly) the same as for legacy mwp/gtk3 and may be migrated:
@@ -99,56 +102,7 @@ While it lasts, the Bing services (no registration / key required) provide:
 
 ## Side Panel
 
-As `libgdl` is retired, a simple, bespoke panel comprising embedded resizeable panes has been implemented. The configuration may be user defined by a simple text file `~/.config/mwp/panel.conf`.
-
-* The panel consists for four vertical panels
-* The top panel can hold three horizontal panes
-* The other panels can hold two panes.
-
-Each entry is defined by a comma separated line defining the panel widget, the row (0-3) and the column (0-2) and an optional minimum size (only required for the artificial horizon). The default panel is defined (in the absence of a configuration file) as:
-
-```
-# default widgets
-ahi,0,1,100
-rssi, 1, 0
-dirn, 1, 1
-flight, 2, 0
-volts, 3, 0
-```
-
-Which appears as:
-![mwp4-panel-0](images/mwp4-panel-0.png)
-
-The available panel widgets are named as:
-
-| Name | Usage |
-| ---- | ---- |
-| `ahi` | Artificial horizon |
-| `dirn` | Direction comparison |
-| `flight` | "Flight View" Position / Velocity / Satellites etc, |
-| `volts` | Battery information |
-| `vario` | Vario indicator |
-| `wind` | Wind Estimator (BBL replay only) |
-
-No other legacy widgets have been migrated.
-
-So using the following `~/.config/mwp/panel.conf`
-
-```
-# default + vario + wind widgets
-ahi, 0, 1, 100
-vario,0,2
-rssi, 0, 0
-wind, 1, 0
-dirn, 1, 1
-flight, 2, 0
-volts, 3, 0
-```
-
-would appear as:
-![mwp4-panel-1](images/mwp4-panel-1.png)
-
-Note: If you change  `~/.config/mwp/panel.conf`, you should exit {{ mwp }} and delete  `~/.config/mwp/.paned` before restarting mwp.
+As `libgdl` is retired, a simple, bespoke panel comprising embedded resizeable panes has been [implemented](dock.md).
 
 ## Coexistence
 
