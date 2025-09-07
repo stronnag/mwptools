@@ -805,6 +805,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#camera-capabilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      Camera Capabilities
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#os-specific" class="md-nav__link">
     <span class="md-ellipsis">
       OS Specific
@@ -1495,6 +1504,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#camera-capabilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      Camera Capabilities
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#os-specific" class="md-nav__link">
     <span class="md-ellipsis">
       OS Specific
@@ -1612,6 +1630,10 @@
 <p>In stream mode, there are minimal video controls; a play/pause button and volume control. Note the volume is that of the video, the overall volume is controlled by the system volume control.</p>
 <p>Up to 10 recent URIs are persisted. In order to access this list it is necessary to click the "expander" icon at the end of URI text entry box. The recent files list is stored in a text file <code>~/.config/mwp/recent-video.txt</code>. This file may be maintained with a text editor if required.</p>
 <p>In "FPV Mode", no controls are shown.</p>
+<h2 id="camera-capabilities">Camera Capabilities<a class="headerlink" href="#camera-capabilities" title="Permanent link">#</a></h2>
+<p>mwp requests camera capabilities from Gstreamer and presents them to the user when the "Settings" button clicked.</p>
+<p><img alt="settings" src="../images/mwp-video-options.png" /></p>
+<p>If a capability is selected, it is passed on to GStreamer verbatim and stored for future use.</p>
 <h2 id="os-specific">OS Specific<a class="headerlink" href="#os-specific" title="Permanent link">#</a></h2>
 <ul>
 <li>Linux. "Video4Linux" (<code>v4l2src</code>).</li>
