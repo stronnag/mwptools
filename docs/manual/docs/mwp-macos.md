@@ -49,7 +49,7 @@ brew install gtk4 \
  gnuplot
 ```
 
-Note: homebrew does not supply the librsvg VAPI (vala API) files. It will be necessary to build it from sources (or copy the files from a Linux box).
+Note: homebrew does not supply the librsvg VAPI (vala API) files. It will be necessary to build it from sources (or copy the files from a Linux box, or use `docs/librsvg-2.0.vapi.tar.zst`).
 
 #### Optional / Recommended
 
@@ -59,16 +59,7 @@ brew install bash-completion
 
 ### Blueprint compiler
 
-The required `blueprint-compiler` is not in `homebrew`, so is install locally:
-
-**Note:** If you have a pre-existing python, then the packages installed above may fail to install the dependency `pygobject3` and you will have to install it manually, either via `brew` or `pipx`.
-
-```
-git clone https://gitlab.gnome.org/jwestman/blueprint-compiler
-cd blueprint-compiler/
-meson setup _build
-sudo ninja -C _build install
-```
+The required `blueprint-compiler` is not in `homebrew`, so is install locally by the mwp build script.
 
 ### Build mwp
 
@@ -96,20 +87,8 @@ ninja -C _build install
 
 ## Other notes
 
-macOS appears not measure text width in the same was a other OS. A "fudge factor" is included that works on my MacOS VMs. The user set there own value with the environment variable `MWP_MAC_FACTOR', set to a value greater than 100. Try with values around 125.
-
-e.g.
-```
-mwp MWP_MAC_FACTOR=128
-```
-Once a suitable value is found:
-
-* Reset panel sizing `rm -f ~/.config/mwp/.paned`
-* If required, add the `MWP_MAC_FACTOR` environment variable to `~/.config/mwp/cmdopts`
-
 On Ventura, the menus may behave strangely, to the point of being almost unusable. This may be mitigated by setting the environment variable `MWP_MAC_NO_NEST` (to anything).
 
 `libsrecret` and other Dbus related services are not available.
-
 
 [mwpset](mwpset.md) is recommended to edit mwp's `gsettinngs`.

@@ -148,10 +148,10 @@ namespace MwpVideo {
 							MWPLog.message("EOS\n");
 						});
 
-					p.error.connect((e) => {
+					p.error.connect((e,d) => {
 							Gst.State state;
 							p.playbin.get_state (out state, null, Gst.CLOCK_TIME_NONE);
-							MWPLog.message("Error %s %s %x\n", state.to_string(), e.message, e.code);
+							MWPLog.message("Error %s %s %x\n%s\n", state.to_string(), e.message, e.code,d);
 							var wb = new Utils.Warning_box("Video Error: %s [%x]".printf(e.message, e.code), 0, this);
 							wb.present();
 						});
@@ -174,6 +174,9 @@ namespace MwpVideo {
 						});
 
 					double vol = 0.0;
+					if(!uri.has_prefix("v4l2://")) {
+						discover(uri);
+					}
 
 					Type type = p.playbin.get_type();
 					ObjectClass ocl = (ObjectClass)type.class_ref();
@@ -185,10 +188,6 @@ namespace MwpVideo {
 							});
 					}
 					vb.value = vol;
-
-					if(!uri.has_prefix("v4l2://")) {
-						discover(uri);
-					}
 
 					close_request.connect (() => {
 							if (tid > 0) {
@@ -213,10 +212,10 @@ namespace MwpVideo {
 							return false;
 						});
 
+					MWPLog.message("Start timer\n");
 					start_timer(p);
-					if (start) {
-						on_play(p);
-					}
+					MWPLog.message("Start play\n");
+					p.set_playing(start);
 				}
 				MwpVideo.last_uri = uri;
 			}

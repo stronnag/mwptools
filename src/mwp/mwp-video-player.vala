@@ -167,7 +167,7 @@ namespace MwpVideo {
 		public Gst.Element playbin;
 		public signal void state_change(bool s);
 		public signal void eos();
-		public signal void error(GLib.Error e);
+		public signal void error(GLib.Error e, string debug);
 		public signal void async_done();
 		public Gdk.Paintable pt;
 
@@ -220,7 +220,7 @@ namespace MwpVideo {
 						MwpVideo.mmf = mmf;
 						mmf.notify["error"].connect(() => {
 								if(mmf.error != null) {
-									error(mmf.error);
+									error(mmf.error,"");
 								}
 							});
 						return mmf;
@@ -289,7 +289,7 @@ namespace MwpVideo {
 				} else {
 					string playbinx;
 					if((playbinx = Environment.get_variable("MWP_PLAYBIN")) == null) {
-						playbinx = "playbin3";
+						playbinx = "playbin";
 					}
 					playbin = Gst.ElementFactory.make (playbinx, playbinx);
 					playbin.set_property("uri", uri);
@@ -348,8 +348,8 @@ namespace MwpVideo {
 				GLib.Error err;
 				string debug;
 				message.parse_error (out err, out debug);
-				MWPLog.message("Video error: %s (%d)\n", err.message, err.code);
-				error(err);
+				MWPLog.message("Video error: %s <%s> (%d)\n", err.message, err.code);
+				error(err, debug);
 				break;
 			case Gst.MessageType.EOS:
 				playbin.set_state (Gst.State.READY);
