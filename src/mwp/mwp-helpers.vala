@@ -364,7 +364,7 @@ namespace Utils {
 			}
 		}
 #if DARWIN
-		new ProcessLauncher().run_command("pkill gunplot", ProcessLaunch.NONE);
+		new ProcessLauncher().run_command("pkill gnuplot", ProcessLaunch.NONE);
 #endif
 	}
 

@@ -66,7 +66,6 @@ The required `blueprint-compiler` is not in `homebrew`, so is install locally by
 Only local install is "supported".
 
 * Clone the repository
-* Checkout the **development** branch (for now)
 * `cd mwptools`
 
 ```
