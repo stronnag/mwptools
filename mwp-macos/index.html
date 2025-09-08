@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/mwp_icon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.18">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.19">
     
     
       
@@ -1508,23 +1508,16 @@
  readline \
  gnuplot
 </code></pre></div>
-<p>Note: homebrew does not supply the librsvg VAPI (vala API) files. It will be necessary to build it from sources (or copy the files from a Linux box).</p>
+<p>Note: homebrew does not supply the librsvg VAPI (vala API) files. It will be necessary to build it from sources (or copy the files from a Linux box, or use <code>docs/librsvg-2.0.vapi.tar.zst</code>).</p>
 <h4 id="optional-recommended">Optional / Recommended<a class="headerlink" href="#optional-recommended" title="Permanent link">#</a></h4>
 <div class="highlight"><pre><span></span><code>brew install bash-completion
 </code></pre></div>
 <h3 id="blueprint-compiler">Blueprint compiler<a class="headerlink" href="#blueprint-compiler" title="Permanent link">#</a></h3>
-<p>The required <code>blueprint-compiler</code> is not in <code>homebrew</code>, so is install locally:</p>
-<p><strong>Note:</strong> If you have a pre-existing python, then the packages installed above may fail to install the dependency <code>pygobject3</code> and you will have to install it manually, either via <code>brew</code> or <code>pipx</code>.</p>
-<div class="highlight"><pre><span></span><code>git clone https://gitlab.gnome.org/jwestman/blueprint-compiler
-cd blueprint-compiler/
-meson setup _build
-sudo ninja -C _build install
-</code></pre></div>
+<p>The required <code>blueprint-compiler</code> is not in <code>homebrew</code>, so is install locally by the mwp build script.</p>
 <h3 id="build-mwp">Build mwp<a class="headerlink" href="#build-mwp" title="Permanent link">#</a></h3>
 <p>Only local install is "supported".</p>
 <ul>
 <li>Clone the repository</li>
-<li>Checkout the <strong>development</strong> branch (for now)</li>
 <li><code>cd mwptools</code></li>
 </ul>
 <div class="highlight"><pre><span></span><code>meson setup _build --buildtype=release --strip --prefix=~/.local
@@ -1541,15 +1534,6 @@ tar -xf &lt;PATH TO&gt;/mwptools/docs/mwp.app.tar.gz
 </code></pre></div></li>
 </ul>
 <h2 id="other-notes">Other notes<a class="headerlink" href="#other-notes" title="Permanent link">#</a></h2>
-<p>macOS appears not measure text width in the same was a other OS. A "fudge factor" is included that works on my MacOS VMs. The user set there own value with the environment variable `MWP_MAC_FACTOR', set to a value greater than 100. Try with values around 125.</p>
-<p>e.g.
-<div class="highlight"><pre><span></span><code>mwp MWP_MAC_FACTOR=128
-</code></pre></div>
-Once a suitable value is found:</p>
-<ul>
-<li>Reset panel sizing <code>rm -f ~/.config/mwp/.paned</code></li>
-<li>If required, add the <code>MWP_MAC_FACTOR</code> environment variable to <code>~/.config/mwp/cmdopts</code></li>
-</ul>
 <p>On Ventura, the menus may behave strangely, to the point of being almost unusable. This may be mitigated by setting the environment variable <code>MWP_MAC_NO_NEST</code> (to anything).</p>
 <p><code>libsrecret</code> and other Dbus related services are not available.</p>
 <p><a href="../mwpset/">mwpset</a> is recommended to edit mwp's <code>gsettinngs</code>.</p>
