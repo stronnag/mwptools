@@ -213,6 +213,18 @@ namespace Mwp {
 							mww = int.max(mwp,iww);
 							pane.position = mww - iwp;
 							MWPLog.message("Window map %d %d %d\n", mww, iww, iwp, pane.position);
+							this.notify["default-width"].connect(() => {
+									set_size();
+								});
+
+							this.notify["fullscreened"].connect(() => {
+									set_size();
+								});
+
+							this.notify["maximized"].connect(() => {
+									set_size();
+								});
+
 							return false;
 						});
 				});
@@ -493,7 +505,6 @@ namespace Mwp {
 					}
 				});
 
-
 			Gis.setup_map_sources(mapdrop);
 			FWPlot.init();
 			MissionManager.init();
@@ -514,6 +525,16 @@ namespace Mwp {
 #endif
 			Radar.init_readers();
 		}
+
+		private void set_size() {
+			Idle.add(() => {
+					int iwp;
+					panelbox.measure(Gtk.Orientation.HORIZONTAL, -1, null, out iwp, null, null);
+					pane.position = this.get_width() - iwp;
+					return false;
+				});
+		}
+
 
 		private void set_panel_mode() {
 			string defset = MwpVideo.last_uri;
