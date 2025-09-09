@@ -348,7 +348,7 @@ namespace MwpVideo {
 				GLib.Error err;
 				string debug;
 				message.parse_error (out err, out debug);
-				MWPLog.message("Video error: %s <%s> (%d)\n", err.message, err.code);
+				MWPLog.message("Video error: %s <%s> (%d)\n", err.message, debug, err.code);
 				error(err, debug);
 				break;
 			case Gst.MessageType.EOS:
