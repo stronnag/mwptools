@@ -174,9 +174,15 @@ namespace MwpVideo {
 						});
 
 					double vol = 0.0;
-					if(!uri.has_prefix("v4l2://")) {
-						discover(uri);
-					}
+
+					p.discovered.connect((id) => {
+							if (id ==  Gst.CLOCK_TIME_NONE) {
+								set_slider_max(0);
+							} else {
+								set_slider_max(id);
+							}
+						});
+
 
 					Type type = p.playbin.get_type();
 					ObjectClass ocl = (ObjectClass)type.class_ref();
@@ -220,28 +226,6 @@ namespace MwpVideo {
 				MwpVideo.last_uri = uri;
 			}
 			return p;
-		}
-
-		private void discover(string fn) {
-			Gst.PbUtils.Discoverer d;
-			try {
-				d = new Gst.PbUtils.Discoverer((Gst.ClockTime) (Gst.SECOND * 5));
-				d.discovered.connect((di, e) => {
-						if (e != null) {
-							MWPLog.message("Discover: %s\n", e.message);
-						}
-						var id = di.get_duration ();
-						if (id ==  Gst.CLOCK_TIME_NONE) {
-							set_slider_max(0);
-						} else {
-							set_slider_max(id);
-						}
-					});
-				d.start();
-				d.discover_uri_async(fn);
-			} catch (Error e) {
-				MWPLog.message("GST Discover %s\n", e.message);
-			}
 		}
 
 		private Gtk.Box? add_slider() {

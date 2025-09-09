@@ -65,8 +65,8 @@ If a capability is selected, it is passed on to GStreamer verbatim and stored fo
 
 * Linux. "Video4Linux" (`v4l2src`).
 * FreeBSD. FreeBSD offers a video4linux (`v4l2src`) emulation that works with {{ mwp }}.
-* Windows. Uses `ksvideosrc` or  `mfvideosrc` if detected.
-* MacOS. Uses `afvideosrc` for Camera input. Not tested.
+* Windows. Uses `ksvideosrc` or  `mfvideosrc` as detected / required.
+* MacOS. Uses `afvideosrc` for Camera input.
 
 ## FPV Mode
 
@@ -85,7 +85,7 @@ FPV uses the following order to determine what to show (if anything).
 
 ### Using RTSP for camera parameter definitions
 
-{{ mwp }} cameras are used in their default configuration. If the user wants more control over the camera properties, is using a remote camera, if the camera is not detected or if using Windows with mwp' "fallback" player , then a RTSP server can be used.
+If the user is using a remote camera, if the camera is not detected or if using Windows with mwp' "fallback" player , then a RTSP server can be used to feed the camera stream to mwp.
 
 [go2rtc](https://github.com/AlexxIT/go2rtc) is a useful RTSP server that supports numerous video options.
 
@@ -97,7 +97,7 @@ The following configuration file `go2rtc.yaml` illustrates some of the possibili
 streams:
   usbcam1: v4l2:device?video=/dev/video0&input_format=mjpeg&video_size=1280x720&framerate=30
   usbcam2: ffmpeg:/dev/video0#video=h264#audio=aac#scale=1280:720
-  usbcam3: v4l2:device?video=/dev/video0&input_format=mjpeg&video_size=640x480&framerate=30
+  usbcam3: v4l2:device?video=/dev/video0&input_format=mjpeg&video_size=640x480&framerate=10
 
   file0: exec:ffmpeg -hide_banner -re -stream_loop -1 -i /home/jrh/Videos/Daria-SurfKayak.mp4 -vcodec h264 -rtsp_transport tcp -f rtsp {output}
   file1: ffmpeg:/home/jrh/Videos/18_ft_Skiff_in_heavy_wind.mp4
@@ -107,7 +107,7 @@ streams:
 The camera is a 10 year old "Mobius"; remember them?
 
 * `usbcam1` : "Normal" camera configuration (MJPEG feed).
-* `usbcam2` : Camera feed is transcoded using `ffmpeg` to H264 prior to transmission. This appers to be smoother in mwp's video player.
+* `usbcam2` : Camera feed is transcoded using `ffmpeg` to H264 prior to transmission. This mau appear to be smoother in mwp's video player.
 * `usbcam3` : Sets the camera resolution.
 
 And some test streams:
@@ -123,9 +123,9 @@ Adjust configuration  file path for your environment:
 * atstart: `go2rtc -c /home/jrh/.config/go2rtc/go2rtc.yaml`
 * atexit: `pkill -f go2rtc.exe`
 
-### Windows
+#### Windows
 
-Configuration file for USB webcam:
+Example `go2rtc` configuration file for USB webcam:
 
 ```
 streams:
@@ -136,6 +136,8 @@ streams:
 
 Each of the above lines refers to the same device (name/index reference), natural or trans-coded video). At least in the author's VM, it is necessary to downsize the video-stream to avoid `ffmpeg` overruns.
 
+#### Windows mwp settings to start / stop go2rtc
+
 * atstart: `go2rtc.exe -c c:/Users/win10/go2rtc.yaml'`
 * atexit: `taskkill.exe -f -im "go2rtc.exe"`
 
@@ -145,7 +147,7 @@ Note that go2rtc and dependencies (`ffmpeg` etc.) must be on a `PATH` available 
 
 ## GStreamer debug
 
-Most failures / errors during replay is caused by missing GStreamer plugins. Gstreamer plugin provision is a runtime dependency that should be provisioned by the user. The Windows' installer includes a (ridiculously) large selection of GStreamer plugins, but it's always possible that one is missing.
+Most failures / errors during replay are caused by missing GStreamer plugins. Gstreamer plugin provision is a runtime dependency that should be done by the user. The Windows' installer includes a (ridiculously) large selection of GStreamer plugins, but it's always possible that one is missing.
 
 For the record, on Arch Linux, the following GStreamer packages appear adequate for all sources tested:
 

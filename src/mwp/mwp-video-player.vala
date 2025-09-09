@@ -169,6 +169,7 @@ namespace MwpVideo {
 		public signal void eos();
 		public signal void error(GLib.Error e, string debug);
 		public signal void async_done();
+		public signal void discovered(int64 id);
 		public Gdk.Paintable pt;
 
 		~Player() {
@@ -287,6 +288,7 @@ namespace MwpVideo {
 						videosink = find_gtk4_sink((Gst.Bin)playbin);
 					}
 				} else {
+					discover(uri);
 					string playbinx;
 					if((playbinx = Environment.get_variable("MWP_PLAYBIN")) == null) {
 						playbinx = "playbin";
@@ -320,6 +322,24 @@ namespace MwpVideo {
 				MWPLog.message("Videosink, paintable %p -> %p \n", videosink, ptx);
 				playbin.set_state (Gst.State.READY);
 				return ptx;
+			}
+		}
+
+		private void discover(string fn) {
+			Gst.PbUtils.Discoverer d;
+			try {
+				d = new Gst.PbUtils.Discoverer((Gst.ClockTime) (Gst.SECOND * 5));
+				d.discovered.connect((di, e) => {
+						if (e != null) {
+							MWPLog.message("Discover: %s\n", e.message);
+						}
+						var id = di.get_duration ();
+						discovered((int64)id);
+					});
+				d.start();
+				d.discover_uri_async(fn);
+			} catch (Error e) {
+				MWPLog.message("GST Discover %s\n", e.message);
 			}
 		}
 
