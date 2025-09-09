@@ -870,6 +870,72 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#gstreamer-debug" class="md-nav__link">
+    <span class="md-ellipsis">
+      GStreamer debug
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="GStreamer debug">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#examples-of-gstreamer-debug-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      Examples of GStreamer debug tools.
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Examples of GStreamer debug tools.">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gst-device-monitor" class="md-nav__link">
+    <span class="md-ellipsis">
+      gst-device-monitor
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gst-discoverer-10" class="md-nav__link">
+    <span class="md-ellipsis">
+      gst-discoverer-1.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#play-camera-source-discovered-above" class="md-nav__link">
+    <span class="md-ellipsis">
+      Play camera source discovered above
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#launch-mwp-constructed-pipelines" class="md-nav__link">
+    <span class="md-ellipsis">
+      Launch mwp constructed pipelines
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1569,6 +1635,72 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#gstreamer-debug" class="md-nav__link">
+    <span class="md-ellipsis">
+      GStreamer debug
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="GStreamer debug">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#examples-of-gstreamer-debug-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      Examples of GStreamer debug tools.
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Examples of GStreamer debug tools.">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gst-device-monitor" class="md-nav__link">
+    <span class="md-ellipsis">
+      gst-device-monitor
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gst-discoverer-10" class="md-nav__link">
+    <span class="md-ellipsis">
+      gst-discoverer-1.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#play-camera-source-discovered-above" class="md-nav__link">
+    <span class="md-ellipsis">
+      Play camera source discovered above
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#launch-mwp-constructed-pipelines" class="md-nav__link">
+    <span class="md-ellipsis">
+      Launch mwp constructed pipelines
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1697,6 +1829,158 @@
 </ul>
 <p>It is recommended to use POSIX style forward slashes rather than Windows backslash in order to avoid any "backslash escape" issues.</p>
 <p>Note that go2rtc and dependencies (<code>ffmpeg</code> etc.) must be on a <code>PATH</code> available to <code>mwp.exe</code>.</p>
+<h2 id="gstreamer-debug">GStreamer debug<a class="headerlink" href="#gstreamer-debug" title="Permanent link">#</a></h2>
+<p>Most failures / errors during replay is caused by missing GStreamer plugins. Gstreamer plugin provision is a runtime dependency that should be provisioned by the user. The Windows' installer includes a (ridiculously) large selection of GStreamer plugins, but it's always possible that one is missing.</p>
+<p>For the record, on Arch Linux, the following GStreamer packages appear adequate for all sources tested:</p>
+<ul>
+<li>gstreamer</li>
+<li>gst-plugins-ugly</li>
+<li>gst-plugins-good</li>
+<li>gst-plugins-base-libs</li>
+<li>gst-plugins-base</li>
+<li>gst-plugins-bad-libs</li>
+<li>gst-plugins-bad</li>
+<li>gst-plugin-webrtchttp</li>
+<li>gst-plugin-rswebrtc</li>
+<li>gst-plugin-rsrtp</li>
+<li>gst-plugin-pipewire</li>
+<li>gst-plugin-hlssink3</li>
+<li>gst-plugin-gtk4</li>
+<li>gst-libav</li>
+</ul>
+<p>Package names / capabilities are OS dependent, the above list is a guide.</p>
+<p>The following GStreamer tools are useful to test / debug video sources against installed GStreamer modules.</p>
+<ul>
+<li><code>gst-device-monitor-1.0</code> : Discover device sources, e.g. Cameras.</li>
+<li><code>gst-discoverer-1.0</code> : Discover stream properties.</li>
+<li><code>gst-play-1.0</code> : Play a stream from a URI</li>
+<li><code>gst-launch-1.0</code> : Play a pipeline. Note that mwp reports its constructed pipeline in <code>mwp_stderr*.txt</code></li>
+</ul>
+<p>Note: The Windows installer includes these tools.</p>
+<h3 id="examples-of-gstreamer-debug-tools">Examples of GStreamer debug tools.<a class="headerlink" href="#examples-of-gstreamer-debug-tools" title="Permanent link">#</a></h3>
+<p>Alas, these are all success cases.</p>
+<h4 id="gst-device-monitor"><code>gst-device-monitor</code><a class="headerlink" href="#gst-device-monitor" title="Permanent link">#</a></h4>
+<div class="highlight"><pre><span></span><code>$ gst-device-monitor-1.0 Video/Source
+Probing devices...
+
+Device found:
+
+    name  : Mobius (V4L2)
+    class : Video/Source
+    caps  : image/jpeg, width=1280, height=720, framerate=30/1
+            image/jpeg, width=640, height=480, framerate=30/1
+            image/jpeg, width=320, height=240, framerate=30/1
+    properties:
+        is-default = true
+        api.v4l2.cap.bus_info = usb-0000:00:14.0-4.4
+        api.v4l2.cap.capabilities = 84a00001
+        api.v4l2.cap.card = Mobius
+        api.v4l2.cap.device-caps = 04200001
+        api.v4l2.cap.driver = uvcvideo
+        api.v4l2.cap.version = 6.16.5
+        api.v4l2.path = /dev/video0
+        device.api = v4l2
+        device.devids = [ 20736 ]
+        device.id = 77
+        device.product.id = 0x1002
+        device.vendor.id = 0x0603
+        factory.name = api.v4l2.source
+        media.class = Video/Source
+        node.description = Mobius (V4L2)
+        node.name = v4l2_input.pci-0000_00_14.0-usb-0_4.4_1.0
+        node.nick = Mobius
+        node.pause-on-idle = false
+        object.path = v4l2:/dev/video0
+        priority.session = 1000
+        factory.id = 11
+        client.id = 41
+        clock.quantum-limit = 8192
+        node.loop.name = data-loop.0
+        media.role = Camera
+        node.driver = true
+        object.id = 75
+        object.serial = 601
+    gst-launch-1.0 pipewiresrc target-object=601 ! ...
+</code></pre></div>
+<h4 id="gst-discoverer-10"><code>gst-discoverer-1.0</code><a class="headerlink" href="#gst-discoverer-10" title="Permanent link">#</a></h4>
+<div class="highlight"><pre><span></span><code>$ gst-discoverer-1.0 rtsp://zeropi:8554/test
+Analyzing rtsp://zeropi:8554/test
+Done discovering rtsp://zeropi:8554/test
+
+Properties:
+  Duration: 99:99:99.999999999
+  Seekable: no
+  Live: yes
+  unknown #0: application/x-rtp
+    video #1: H.264 (High 4:4:4 Profile)
+      Stream ID: a2cb945a1d6a987694fb1a99ae73d9531ecca8c82ec7d7b1a50c27d95f26893f/video:0:0:RTP:AVP:96
+      Width: 320
+      Height: 240
+      Depth: 24
+      Frame rate: 25/1
+      Pixel aspect ratio: 1/1
+      Interlaced: false
+      Bitrate: 0
+      Max bitrate: 0
+</code></pre></div>
+<h4 id="play-camera-source-discovered-above">Play camera source discovered above<a class="headerlink" href="#play-camera-source-discovered-above" title="Permanent link">#</a></h4>
+<div class="highlight"><pre><span></span><code>$ gst-play-1.0 v4l2:///dev/video0
+Press &#39;k&#39; to see a list of keyboard shortcuts.
+Now playing v4l2:///dev/video0
+Pipeline is live.
+Redistribute latency...
+ERROR Output window was closed for v4l2:///dev/video0
+ERROR debug information: ../gstreamer/subprojects/gst-plugins-base/sys/xvimage/xvimagesink.c(586): gst_xv_image_sink_handle_xevents (): /GstPlayBin3:playbin/GstPlaySink:playsink/GstBin:vbin/GstAutoVideoSink:videosink/GstXvImageSink:videosink-actual-sink-xvimage
+Reached end of play list.
+</code></pre></div>
+<h4 id="launch-mwp-constructed-pipelines">Launch mwp constructed pipelines<a class="headerlink" href="#launch-mwp-constructed-pipelines" title="Permanent link">#</a></h4>
+<ul>
+<li>Standard, (without <code>MWP_SHOW_FPS</code>)</li>
+<li>Logged as <code>08:05:09.573216 Playbin: v4l2src device=/dev/video0 ! decodebin ! autovideoconvert ! gtk4paintablesink sync=false</code></li>
+</ul>
+<div class="highlight"><pre><span></span><code>$ gst-launch-1.0  v4l2src device=/dev/video0 ! decodebin ! autovideoconvert ! gtk4paintablesink sync=false
+Setting pipeline to PAUSED ...
+MESA-INTEL: warning: Haswell Vulkan support is incomplete
+MESA-INTEL: warning: ../mesa-25.2.2/src/intel/vulkan_hasvk/anv_formats.c:759: FINISHME: support YUV colorspace with DRM format modifiers
+MESA-INTEL: warning: ../mesa-25.2.2/src/intel/vulkan_hasvk/anv_formats.c:790: FINISHME: support more multi-planar formats with DRM modifiers
+Pipeline is live and does not need PREROLL ...
+Got context from element &#39;gtk4paintablesink0&#39;: gst.gl.GLDisplay=context, gst.gl.GLDisplay=(GstGLDisplay)&quot;\(GstGLDisplayWayland\)\ gldisplaywayland0&quot;;
+Got context from element &#39;gtk4paintablesink0&#39;: gst.gl.app_context=context, context=(GstGLContext)&quot;\(GstGLWrappedContext\)\ glwrappedcontext0&quot;;
+Pipeline is PREROLLED ...
+Setting pipeline to PLAYING ...
+New clock: GstSystemClock
+Redistribute latency...
+ERROR: from element /GstPipeline:pipeline0/GstGtk4PaintableSink:gtk4paintablesink0: Output window was closed
+Additional debug info:
+video/gtk4/src/sink/imp.rs(861): gstgtk4::sink::imp::PaintableSink::create_window::{{ closure }}::{{ closure }} (): /GstPipeline:pipeline0/GstGtk4PaintableSink:gtk4paintablesink0
+Execution ended after 0:00:04.214880822
+Setting pipeline to NULL ...
+Freeing pipeline ...
+</code></pre></div>
+<p>Debugging framerate with <code>MWP_SHOW_FPS</code></p>
+<ul>
+<li>Note on Linux, mwp uses v4l2src, not pipewiresrc ...</li>
+<li>Logged as: <code>10:09:23.943487 Playbin: v4l2src device=/dev/video0 ! image/jpeg, width=1280, height=720, framerate=30/1 ! decodebin ! autovideoconvert ! fpsdisplaysink video-sink=gtk4paintablesink text-overlay=true sync=false</code></li>
+</ul>
+<div class="highlight"><pre><span></span><code>$ gst-launch-1.0 v4l2src device=/dev/video0 ! image/jpeg, width=1280, height=720, framerate=30/1 ! decodebin ! autovideoconvert ! fpsdisplaysink video-sink=gtk4paintablesink text-overlay=true sync=false
+Setting pipeline to PAUSED ...
+MESA-INTEL: warning: Haswell Vulkan support is incomplete
+MESA-INTEL: warning: ../mesa-25.2.2/src/intel/vulkan_hasvk/anv_formats.c:759: FINISHME: support YUV colorspace with DRM format modifiers
+MESA-INTEL: warning: ../mesa-25.2.2/src/intel/vulkan_hasvk/anv_formats.c:790: FINISHME: support more multi-planar formats with DRM modifiers
+Pipeline is live and does not need PREROLL ...
+Got context from element &#39;gtk4paintablesink0&#39;: gst.gl.GLDisplay=context, gst.gl.GLDisplay=(GstGLDisplay)&quot;\(GstGLDisplayWayland\)\ gldisplaywayland0&quot;;
+Got context from element &#39;gtk4paintablesink0&#39;: gst.gl.app_context=context, context=(GstGLContext)&quot;\(GstGLWrappedContext\)\ glwrappedcontext0&quot;;
+Pipeline is PREROLLED ...
+Setting pipeline to PLAYING ...
+New clock: GstSystemClock
+Redistribute latency...
+ERROR: from element /GstPipeline:pipeline0/GstFPSDisplaySink:fpsdisplaysink0/GstGtk4PaintableSink:gtk4paintablesink0: Output window was closed
+Additional debug info:
+video/gtk4/src/sink/imp.rs(861): gstgtk4::sink::imp::PaintableSink::create_window::{{ closure }}::{{ closure }} (): /GstPipeline:pipeline0/GstFPSDisplaySink:fpsdisplaysink0/GstGtk4PaintableSink:gtk4paintablesink0
+Execution ended after 0:00:07.353664499
+Setting pipeline to NULL ...
+Freeing pipeline ...
+</code></pre></div>
 
 
 
