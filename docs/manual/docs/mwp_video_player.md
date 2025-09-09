@@ -142,3 +142,175 @@ Each of the above lines refers to the same device (name/index reference), natura
 It is recommended to use POSIX style forward slashes rather than Windows backslash in order to avoid any "backslash escape" issues.
 
 Note that go2rtc and dependencies (`ffmpeg` etc.) must be on a `PATH` available to `mwp.exe`.
+
+## GStreamer debug
+
+Most failures / errors during replay is caused by missing GStreamer plugins. Gstreamer plugin provision is a runtime dependency that should be provisioned by the user. The Windows' installer includes a (ridiculously) large selection of GStreamer plugins, but it's always possible that one is missing.
+
+For the record, on Arch Linux, the following GStreamer packages appear adequate for all sources tested:
+
+* gstreamer
+* gst-plugins-ugly
+* gst-plugins-good
+* gst-plugins-base-libs
+* gst-plugins-base
+* gst-plugins-bad-libs
+* gst-plugins-bad
+* gst-plugin-webrtchttp
+* gst-plugin-rswebrtc
+* gst-plugin-rsrtp
+* gst-plugin-pipewire
+* gst-plugin-hlssink3
+* gst-plugin-gtk4
+* gst-libav
+
+Package names / capabilities are OS dependent, the above list is a guide.
+
+The following GStreamer tools are useful to test / debug video sources against installed GStreamer modules.
+
+* `gst-device-monitor-1.0` : Discover device sources, e.g. Cameras.
+* `gst-discoverer-1.0` : Discover stream properties.
+* `gst-play-1.0` : Play a stream from a URI
+* `gst-launch-1.0` : Play a pipeline. Note that mwp reports its constructed pipeline in `mwp_stderr*.txt`
+
+Note: The Windows installer includes these tools.
+
+### Examples of GStreamer debug tools.
+
+Alas, these are all success cases.
+
+#### `gst-device-monitor`
+
+```
+$ gst-device-monitor-1.0 Video/Source
+Probing devices...
+
+Device found:
+
+	name  : Mobius (V4L2)
+	class : Video/Source
+	caps  : image/jpeg, width=1280, height=720, framerate=30/1
+	        image/jpeg, width=640, height=480, framerate=30/1
+	        image/jpeg, width=320, height=240, framerate=30/1
+	properties:
+		is-default = true
+		api.v4l2.cap.bus_info = usb-0000:00:14.0-4.4
+		api.v4l2.cap.capabilities = 84a00001
+		api.v4l2.cap.card = Mobius
+		api.v4l2.cap.device-caps = 04200001
+		api.v4l2.cap.driver = uvcvideo
+		api.v4l2.cap.version = 6.16.5
+		api.v4l2.path = /dev/video0
+		device.api = v4l2
+		device.devids = [ 20736 ]
+		device.id = 77
+		device.product.id = 0x1002
+		device.vendor.id = 0x0603
+		factory.name = api.v4l2.source
+		media.class = Video/Source
+		node.description = Mobius (V4L2)
+		node.name = v4l2_input.pci-0000_00_14.0-usb-0_4.4_1.0
+		node.nick = Mobius
+		node.pause-on-idle = false
+		object.path = v4l2:/dev/video0
+		priority.session = 1000
+		factory.id = 11
+		client.id = 41
+		clock.quantum-limit = 8192
+		node.loop.name = data-loop.0
+		media.role = Camera
+		node.driver = true
+		object.id = 75
+		object.serial = 601
+	gst-launch-1.0 pipewiresrc target-object=601 ! ...
+```
+
+#### `gst-discoverer-1.0`
+
+```
+$ gst-discoverer-1.0 rtsp://zeropi:8554/test
+Analyzing rtsp://zeropi:8554/test
+Done discovering rtsp://zeropi:8554/test
+
+Properties:
+  Duration: 99:99:99.999999999
+  Seekable: no
+  Live: yes
+  unknown #0: application/x-rtp
+    video #1: H.264 (High 4:4:4 Profile)
+      Stream ID: a2cb945a1d6a987694fb1a99ae73d9531ecca8c82ec7d7b1a50c27d95f26893f/video:0:0:RTP:AVP:96
+      Width: 320
+      Height: 240
+      Depth: 24
+      Frame rate: 25/1
+      Pixel aspect ratio: 1/1
+      Interlaced: false
+      Bitrate: 0
+      Max bitrate: 0
+```
+
+#### Play camera source discovered above
+
+```
+$ gst-play-1.0 v4l2:///dev/video0
+Press 'k' to see a list of keyboard shortcuts.
+Now playing v4l2:///dev/video0
+Pipeline is live.
+Redistribute latency...
+ERROR Output window was closed for v4l2:///dev/video0
+ERROR debug information: ../gstreamer/subprojects/gst-plugins-base/sys/xvimage/xvimagesink.c(586): gst_xv_image_sink_handle_xevents (): /GstPlayBin3:playbin/GstPlaySink:playsink/GstBin:vbin/GstAutoVideoSink:videosink/GstXvImageSink:videosink-actual-sink-xvimage
+Reached end of play list.
+```
+
+#### Launch mwp constructed pipelines
+
+* Standard, (without `MWP_SHOW_FPS`)
+* Logged as `08:05:09.573216 Playbin: v4l2src device=/dev/video0 ! decodebin ! autovideoconvert ! gtk4paintablesink sync=false`
+
+```
+$ gst-launch-1.0  v4l2src device=/dev/video0 ! decodebin ! autovideoconvert ! gtk4paintablesink sync=false
+Setting pipeline to PAUSED ...
+MESA-INTEL: warning: Haswell Vulkan support is incomplete
+MESA-INTEL: warning: ../mesa-25.2.2/src/intel/vulkan_hasvk/anv_formats.c:759: FINISHME: support YUV colorspace with DRM format modifiers
+MESA-INTEL: warning: ../mesa-25.2.2/src/intel/vulkan_hasvk/anv_formats.c:790: FINISHME: support more multi-planar formats with DRM modifiers
+Pipeline is live and does not need PREROLL ...
+Got context from element 'gtk4paintablesink0': gst.gl.GLDisplay=context, gst.gl.GLDisplay=(GstGLDisplay)"\(GstGLDisplayWayland\)\ gldisplaywayland0";
+Got context from element 'gtk4paintablesink0': gst.gl.app_context=context, context=(GstGLContext)"\(GstGLWrappedContext\)\ glwrappedcontext0";
+Pipeline is PREROLLED ...
+Setting pipeline to PLAYING ...
+New clock: GstSystemClock
+Redistribute latency...
+ERROR: from element /GstPipeline:pipeline0/GstGtk4PaintableSink:gtk4paintablesink0: Output window was closed
+Additional debug info:
+video/gtk4/src/sink/imp.rs(861): gstgtk4::sink::imp::PaintableSink::create_window::{{closure}}::{{closure}} (): /GstPipeline:pipeline0/GstGtk4PaintableSink:gtk4paintablesink0
+Execution ended after 0:00:04.214880822
+Setting pipeline to NULL ...
+Freeing pipeline ...
+
+```
+
+Debugging framerate with `MWP_SHOW_FPS`
+
+* Note on Linux, mwp uses v4l2src, not pipewiresrc ...
+* Logged as: `10:09:23.943487 Playbin: v4l2src device=/dev/video0 ! image/jpeg, width=1280, height=720, framerate=30/1 ! decodebin ! autovideoconvert ! fpsdisplaysink video-sink=gtk4paintablesink text-overlay=true sync=false`
+
+```
+$ gst-launch-1.0 v4l2src device=/dev/video0 ! image/jpeg, width=1280, height=720, framerate=30/1 ! decodebin ! autovideoconvert ! fpsdisplaysink video-sink=gtk4paintablesink text-overlay=true sync=false
+Setting pipeline to PAUSED ...
+MESA-INTEL: warning: Haswell Vulkan support is incomplete
+MESA-INTEL: warning: ../mesa-25.2.2/src/intel/vulkan_hasvk/anv_formats.c:759: FINISHME: support YUV colorspace with DRM format modifiers
+MESA-INTEL: warning: ../mesa-25.2.2/src/intel/vulkan_hasvk/anv_formats.c:790: FINISHME: support more multi-planar formats with DRM modifiers
+Pipeline is live and does not need PREROLL ...
+Got context from element 'gtk4paintablesink0': gst.gl.GLDisplay=context, gst.gl.GLDisplay=(GstGLDisplay)"\(GstGLDisplayWayland\)\ gldisplaywayland0";
+Got context from element 'gtk4paintablesink0': gst.gl.app_context=context, context=(GstGLContext)"\(GstGLWrappedContext\)\ glwrappedcontext0";
+Pipeline is PREROLLED ...
+Setting pipeline to PLAYING ...
+New clock: GstSystemClock
+Redistribute latency...
+ERROR: from element /GstPipeline:pipeline0/GstFPSDisplaySink:fpsdisplaysink0/GstGtk4PaintableSink:gtk4paintablesink0: Output window was closed
+Additional debug info:
+video/gtk4/src/sink/imp.rs(861): gstgtk4::sink::imp::PaintableSink::create_window::{{closure}}::{{closure}} (): /GstPipeline:pipeline0/GstFPSDisplaySink:fpsdisplaysink0/GstGtk4PaintableSink:gtk4paintablesink0
+Execution ended after 0:00:07.353664499
+Setting pipeline to NULL ...
+Freeing pipeline ...
+```
