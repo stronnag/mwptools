@@ -37,7 +37,6 @@ public class ProcessLauncher : Object {
 	private Pid child_pid;
 	private int wait_status;
 
-
 	public static Pid pid_from_name(string rname) {
 		string? name = null;
 		try {
@@ -52,8 +51,8 @@ public class ProcessLauncher : Object {
 							FileUtils.get_contents(fn, out cmdline, null);
 							var parts = cmdline.split(" ");
 							if (parts.length > 0) {
-								if (Regex.match_simple(rname, parts[0], RegexCompileFlags.RAW)) {
-								return (Pid)lpid;
+								if (Regex.match_simple(rname, parts[0])) {
+									return (Pid)lpid;
 								}
 							}
 						} catch {}

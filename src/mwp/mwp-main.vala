@@ -17,7 +17,6 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-
 int main (string[] args) {
 	MWPUtils.set_app_name("mwp");
 	Environment.set_application_name ("mwp");

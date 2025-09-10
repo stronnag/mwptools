@@ -356,7 +356,7 @@ namespace Utils {
 
 	public void terminate_plots() {
 		for(;;) {
-			int pid = ProcessLauncher.find_pid_from_name("gnuplot*");
+			int pid = ProcessLauncher.find_pid_from_name("gnuplot.*");
 			if (pid > 0) {
 				ProcessLauncher.kill(pid);
 			} else {

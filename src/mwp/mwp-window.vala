@@ -211,7 +211,7 @@ namespace Mwp {
 							this.measure(Gtk.Orientation.HORIZONTAL, -1, null, out mwp, null, null);
 							int iww = this.get_width();
 							mww = int.max(mwp,iww);
-							pane.position = mww - iwp;
+							pane.position = mww - iwp -2;
 							MWPLog.message("Window map %d %d %d\n", mww, iww, iwp, pane.position);
 							this.notify["default-width"].connect(() => {
 									set_size();
@@ -224,7 +224,7 @@ namespace Mwp {
 							this.notify["maximized"].connect(() => {
 									set_size();
 								});
-
+							Cli.main_window_ready();
 							return false;
 						});
 				});
@@ -495,7 +495,7 @@ namespace Mwp {
 						int iwp;
 						panelbox.measure(Gtk.Orientation.HORIZONTAL, -1, null, out iwp, null, null);
 						int iww = window.get_width();
-						pane.position = iww - iwp;
+						pane.position = iww - iwp - 2;
 						if (vpane != null) {
 							int ihp;
 							panelbox.measure(Gtk.Orientation.VERTICAL, -1, null, out ihp, null, null);
@@ -530,7 +530,7 @@ namespace Mwp {
 			Idle.add(() => {
 					int iwp;
 					panelbox.measure(Gtk.Orientation.HORIZONTAL, -1, null, out iwp, null, null);
-					pane.position = this.get_width() - iwp;
+					pane.position = this.get_width() - iwp - 2;
 					return false;
 				});
 		}

@@ -362,6 +362,7 @@ namespace Cli {
 	}
 
 	public void parse_cli_files() {
+
 		if (Mwp.clifile != null) {
 			if (Mwp.mission == null) {
 				Mwp.mission = Mwp.clifile;
