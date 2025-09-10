@@ -37,8 +37,9 @@ public class ProcessLauncher : Object {
 	private Pid child_pid;
 	private int wait_status;
 
-	public static Pid pid_from_name(string rname) {
+	public static Pid[] pid_from_name(string rname) {
 		string? name = null;
+		Pid[] pids={};
 		try {
 			Dir dir = Dir.open ("/proc", 0);
 			if (dir != null) {
@@ -52,7 +53,7 @@ public class ProcessLauncher : Object {
 							var parts = cmdline.split(" ");
 							if (parts.length > 0) {
 								if (Regex.match_simple(rname, parts[0])) {
-									return (Pid)lpid;
+									pids += (Pid)lpid;
 								}
 							}
 						} catch {}
@@ -60,7 +61,7 @@ public class ProcessLauncher : Object {
 				}
 			}
 		} catch {};
-		return -1;
+		return pids;
 	}
 
 	public bool get_status(out int? sts) {
@@ -156,7 +157,7 @@ public class ProcessLauncher : Object {
 		Posix.kill(pid, ProcessSignal.CONT);
 	}
 
-	public static int find_pid_from_name(string name) {
-		return pid_from_name(name);
+	public static int[] find_pid_from_name(string name) {
+		return (int[])pid_from_name(name);
 	}
 }

@@ -32,7 +32,7 @@ extern bool waitproc(void *h, int* sts);
 extern void proc_kill (int32 pid);
 extern void winsuspend (int32 pid);
 extern void winresume (int32 pid);
-extern int pid_from_name(char *procname);
+extern int[] pid_from_name(char *procname);
 
 public class ProcessLauncher : Object {
 	private int spipe;
@@ -130,7 +130,7 @@ public class ProcessLauncher : Object {
 		winresume(pid);
 	}
 
-	public static int find_pid_from_name(string name) {
+	public static int[] find_pid_from_name(string name) {
 		string pname;
 		if(name.has_suffix(".exe")) {
 			pname = name;
