@@ -250,7 +250,14 @@ namespace MwpVideo {
 						sb.append(devname);
 						sb.append_c('"');
 					} else {
-						sb.append("device=");
+						if(v4l2src == "pipewiresrc") {
+							if(camopt == -1) {
+								camopt = 0;
+							}
+							sb.append("target-object=");
+						} else {
+							sb.append("device=");
+						}
 						sb.append(device);
 					}
 					if(camopt != -1) {

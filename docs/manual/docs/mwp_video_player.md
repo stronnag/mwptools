@@ -267,10 +267,11 @@ Reached end of play list.
 #### Launch mwp constructed pipelines
 
 * Standard, (without `MWP_SHOW_FPS`)
-* Logged as `08:05:09.573216 Playbin: v4l2src device=/dev/video0 ! decodebin ! autovideoconvert ! gtk4paintablesink sync=false`
+* Logged as `08:05:09.573216 Playbin: pipewiresrc target-object=226 ! image/jpeg, width=1280, height=720, framerate=30/1 ! decodebin ! autovideoconvert !  gtk4paintablesink sync=false`
+* Note: If Gstreamer on Linux reports a `pipewiresrc`, then mwp uses that, otherwise it will use thw `v4l2src` (see next example).
 
 ```
-$ gst-launch-1.0  v4l2src device=/dev/video0 ! decodebin ! autovideoconvert ! gtk4paintablesink sync=false
+$ gst-launch-1.0 pipewiresrc target-object=226 ! image/jpeg, width=1280, height=720, framerate=30/1 ! decodebin ! autovideoconvert !  gtk4paintablesink sync=false
 Setting pipeline to PAUSED ...
 MESA-INTEL: warning: Haswell Vulkan support is incomplete
 MESA-INTEL: warning: ../mesa-25.2.2/src/intel/vulkan_hasvk/anv_formats.c:759: FINISHME: support YUV colorspace with DRM format modifiers
@@ -280,20 +281,18 @@ Got context from element 'gtk4paintablesink0': gst.gl.GLDisplay=context, gst.gl.
 Got context from element 'gtk4paintablesink0': gst.gl.app_context=context, context=(GstGLContext)"\(GstGLWrappedContext\)\ glwrappedcontext0";
 Pipeline is PREROLLED ...
 Setting pipeline to PLAYING ...
-New clock: GstSystemClock
+New clock: pipewireclock0
 Redistribute latency...
 ERROR: from element /GstPipeline:pipeline0/GstGtk4PaintableSink:gtk4paintablesink0: Output window was closed
 Additional debug info:
 video/gtk4/src/sink/imp.rs(861): gstgtk4::sink::imp::PaintableSink::create_window::{{closure}}::{{closure}} (): /GstPipeline:pipeline0/GstGtk4PaintableSink:gtk4paintablesink0
-Execution ended after 0:00:04.214880822
+Execution ended after 0:00:04.747077581
 Setting pipeline to NULL ...
 Freeing pipeline ...
-
 ```
 
 Debugging framerate with `MWP_SHOW_FPS`
 
-* Note on Linux, mwp uses v4l2src, not pipewiresrc ...
 * Logged as: `10:09:23.943487 Playbin: v4l2src device=/dev/video0 ! image/jpeg, width=1280, height=720, framerate=30/1 ! decodebin ! autovideoconvert ! fpsdisplaysink video-sink=gtk4paintablesink text-overlay=true sync=false`
 
 ```

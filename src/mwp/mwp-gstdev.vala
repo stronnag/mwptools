@@ -3,6 +3,7 @@ namespace MwpCameras {
 		string devicename;
 		string displayname;
 		string driver;
+		string object_serial;
 		Array<string> caps;
 	}
 
@@ -93,8 +94,8 @@ namespace MwpCameras {
 		v4l2src=null;
 		unowned var dv = find_camera(devname);
 		if (dv != null) {
-			device = dv.devicename;
 			v4l2src = dv.driver;
+			device = dv.devicename;
 		}
 	}
 
@@ -189,6 +190,7 @@ namespace MwpCameras {
 				if(ds.displayname == null) {
 					ds.displayname = "?Camera?";
 				}
+
 			}
 			if (ds.devicename == null) {
 				ds.devicename = ds.displayname;
@@ -198,7 +200,13 @@ namespace MwpCameras {
 				var efac  = elm.get_factory();
 				if (efac != null) {
 					ds.driver = efac.name;
-					if (ds.driver == "pipewiresrc") {
+					string oser = null;
+					if (s != null) {
+						oser = s.get_string("object.serial");
+					}
+					if (ds.driver == "pipewiresrc" && oser != null) {
+						ds.devicename = oser;
+					} else {
 						ds.driver = "v4l2src";
 					}
 				}
