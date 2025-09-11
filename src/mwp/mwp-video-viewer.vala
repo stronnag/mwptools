@@ -10,7 +10,7 @@ namespace MwpVideo {
 		private Gst.ClockTime duration;
 		private bool seeking = false;
 		Gst.State st;
-		private Utils.VolumeButton vb;
+		private Gtk.ScaleButton vb;
 		private Gtk.Label ptim;
 		private Gtk.Label prem;
 		private uint rtid;
@@ -37,7 +37,7 @@ namespace MwpVideo {
 				ovly = new Gtk.Overlay();
 				title = "mwp Video Player";
 				duration =  (int64)0x7ffffffffffffff;
-				vb = new Utils.VolumeButton();
+				vb = new Gtk.ScaleButton(0.0, 1.0, 0.01, {"audio-volume-low-symbolic", "audio-volume-high-symbolic", "audio-volume-medium-symbolic"});
 				vb.notify["active"].connect(() => {
 						if(vb.active) {
 							if(rtid != 0) {
