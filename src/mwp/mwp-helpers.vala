@@ -355,16 +355,12 @@ namespace Utils {
     }
 
 	public void terminate_plots() {
-#if !DARWIN
-		var pids = ProcessLauncher.find_pid_from_name("gnuplot.*");
+		var pids = ProcessLauncher.find_pid_from_name("^gnuplot.*");
 		foreach(var pid in pids) {
 			if (pid > 0) {
 				ProcessLauncher.kill(pid);
 			}
 		}
-#else
-		new ProcessLauncher().run_command("pkill gnuplot", ProcessLaunch.NONE);
-#endif
 	}
 
     public string mstempname(bool xlate = true) {

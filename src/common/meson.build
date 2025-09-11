@@ -17,6 +17,7 @@ vcommon = files( 'serial-device.vala',
 		'mavcmd.vala',
 		'devman.vala',
                 'track_data.vala',
+                'pid_from_name.c',
                )
 
 if build_machine.system() == 'windows'

@@ -28,6 +28,7 @@ public enum ProcessLaunch {
 }
 
 extern int  parse_wstatus(int stst, int* wsts);
+extern int[] pid_from_name(string name);
 
 public class ProcessLauncher : Object {
 	public signal void complete();
@@ -37,32 +38,6 @@ public class ProcessLauncher : Object {
 	private Pid child_pid;
 	private int wait_status;
 
-	public static Pid[] pid_from_name(string rname) {
-		string? name = null;
-		Pid[] pids={};
-		try {
-			Dir dir = Dir.open ("/proc", 0);
-			if (dir != null) {
-				while ((name = dir.read_name ()) != null) {
-					var lpid = int.parse(name);
-					if (lpid > 0) {
-						var fn = GLib.Path.build_filename("/proc", name, "cmdline");
-						try {
-							string cmdline;
-							FileUtils.get_contents(fn, out cmdline, null);
-							var parts = cmdline.split(" ");
-							if (parts.length > 0) {
-								if (Regex.match_simple(rname, parts[0])) {
-									pids += (Pid)lpid;
-								}
-							}
-						} catch {}
-					}
-				}
-			}
-		} catch {};
-		return pids;
-	}
 
 	public bool get_status(out int? sts) {
 		int _sts = -1;

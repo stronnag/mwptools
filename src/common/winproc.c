@@ -1,14 +1,14 @@
-#include <windows.h>
-#include <wchar.h>
-#include <tchar.h>
 #include <stdio.h>
-#include <strsafe.h>
-#include <io.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdbool.h>
+
+#include <windows.h>
+#include <wchar.h>
+#include <tchar.h>
 #include <tlhelp32.h>
-#include <glib.h>
+#include <strsafe.h>
+#include <io.h>
 
 typedef enum  {
   PROCESS_LAUNCH_NONE = 0,
@@ -144,34 +144,4 @@ void proc_kill (DWORD pid) {
 	  TerminateProcess(h, 1);
 	  CloseHandle(h);
      }
-}
-
-int *pid_from_name(char *procname, int* array_length) {
-  HANDLE hSnapshot;
-  PROCESSENTRY32 pe;
-  int pid = -1;
-  BOOL hResult;
-  int nres = 0;
-  int nalloc = 16;
-
-  int *pids = calloc(sizeof(int), nalloc);
-  hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-  if (hSnapshot != INVALID_HANDLE_VALUE) {
-    pe.dwSize = sizeof(PROCESSENTRY32);
-    hResult = Process32First(hSnapshot, &pe);
-    while (hResult) {
-      if (g_regex_match_simple (procname, pe.szExeFile, 0, 0)) {
-	if (nres == nalloc) {
-	  nalloc += 16;
-	  pids = realloc(pids, (nalloc*sizeof(int)));
-	}
-	pids[nres] = (int)pe.th32ProcessID;
-	nres++;
-      }
-      hResult = Process32Next(hSnapshot, &pe);
-    }
-    CloseHandle(hSnapshot);
-  }
-  *array_length = nres;
-  return pids;
 }
