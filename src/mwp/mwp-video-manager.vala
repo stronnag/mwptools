@@ -203,13 +203,13 @@ namespace VideoMan {
 				if(id == 0) {
 					res = vid_dialog.result(out uri);
 					int camopt = vid_dialog.find_camera_option();
-					MWPLog.message(":CAMBDG: Camera option %d\n", camopt);
+					MWPLog.message(":CAMDBG: Camera option %d\n", camopt);
 					switch(res) {
 					case 0:
 						var i = vid_dialog.viddev_c.get_selected();
 						if (i > 0) {
 							var dname = ((Gtk.StringList)vid_dialog.viddev_c.model).get_string(i);
-							uri = "v4l2://%s".printf(dname);
+							uri = "v4l2://".concat(dname);
 							MwpCameras.update_camera_opt(dname, (int16)camopt);
 						} else {
 							res = -1;

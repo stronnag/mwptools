@@ -3,7 +3,7 @@ namespace MwpCameras {
 		string devicename;
 		string displayname;
 		string driver;
-		string object_serial;
+		string altdev;
 		Array<string> caps;
 	}
 
@@ -87,16 +87,6 @@ namespace MwpCameras {
 			return ll.nth_data(0);
 		}
 		return null;
-	}
-
-	public void get_details (string devname, out string device, out string v4l2src) {
-		device=null;
-		v4l2src=null;
-		unowned var dv = find_camera(devname);
-		if (dv != null) {
-			v4l2src = dv.driver;
-			device = dv.devicename;
-		}
 	}
 
 	public unowned string[]? get_caps (string devname) {
@@ -200,14 +190,16 @@ namespace MwpCameras {
 				var efac  = elm.get_factory();
 				if (efac != null) {
 					ds.driver = efac.name;
-					string oser = null;
-					if (s != null) {
-						oser = s.get_string("object.serial");
-					}
-					if (ds.driver == "pipewiresrc" && oser != null) {
-						ds.devicename = oser;
-					} else {
-						ds.driver = "v4l2src";
+					if (ds.driver == "pipewiresrc") {
+						string oser = null;
+						if (s != null) {
+							oser = s.get_string("object.serial");
+						}
+						if (oser != null) {
+							ds.altdev = oser;
+						} else {
+							ds.driver = "v4l2src";
+						}
 					}
 				}
 			}

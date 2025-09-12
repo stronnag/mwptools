@@ -206,12 +206,17 @@ namespace MwpVideo {
 			string furi = uri;
 			if(MwpVideo.is_fallback) {
 				if(uri.has_prefix("v4l2://")) {
-					string device = null;
-					string v4l2src = null;
 					var devname = uri.substring(7);
-					MwpCameras.get_details(devname, out device, out v4l2src);
-					MWPLog.message("FB Device %s %s\n", device, v4l2src);
-					furi = "v4l2://%s".printf(device);
+					MWPLog.message("FB lookup %s\n", devname);
+					var ds = MwpCameras.find_camera(devname);
+					if (ds != null) {
+						furi = "v4l2://".concat(ds.devicename);
+						MWPLog.message("FB Device %s %s -> %s \n", ds.devicename, ds.driver, furi);
+
+					} else {
+						furi = "v4l2://".concat(devname);
+						MWPLog.message("FB Device %s\n", furi);
+					}
 				}
 				f = File.new_for_uri(furi);
 				if(f != null) {
@@ -234,31 +239,42 @@ namespace MwpVideo {
 				Gst.Element videosink = null;
 				bool dbg = (Environment.get_variable("MWP_SHOW_FPS") != null);
 				if(uri.has_prefix("v4l2://")) {
-					string device = null;
-					string v4l2src = null;
 					var devname = uri.substring(7);
-					MwpCameras.get_details(devname, out device, out v4l2src);
-					if (v4l2src == null) {
+					var ds = MwpCameras.find_camera(devname);
+					if (ds.driver == null) {
 						return null;
 					}
 					int16 camopt = MwpCameras.lookup_camera_opt(devname);
-					var sb = new StringBuilder(v4l2src);
+					var sb = new StringBuilder(ds.driver);
 					sb.append_c(' ');
-					if(device == devname) {
-						sb.append("device-name=");
+					switch(ds.driver) {
+					case "pipewiresrc":
+						if(camopt == -1) {
+							camopt = 0;
+						}
+						sb.append("target-object=");
+						sb.append(ds.altdev);
+						break;
+					case "libcamerasrc":
+						sb.append("camera-name=");
 						sb.append_c('"');
-						sb.append(devname);
+						if(ds.devicename.data[0] == '\\') {
+							sb.append_c('\\');
+						}
+						sb.append(ds.devicename);
 						sb.append_c('"');
-					} else {
-						if(v4l2src == "pipewiresrc") {
-							if(camopt == -1) {
-								camopt = 0;
-							}
-							sb.append("target-object=");
+						break;
+					default:
+						if(ds.devicename == devname) {
+							sb.append("device-name=");
+							sb.append_c('"');
+							sb.append(devname);
+							sb.append_c('"');
 						} else {
 							sb.append("device=");
+							sb.append(ds.devicename);
 						}
-						sb.append(device);
+						break;
 					}
 					if(camopt != -1) {
 						unowned var caps = 	MwpCameras.get_caps(devname);
@@ -294,7 +310,7 @@ namespace MwpVideo {
 					} else {
 						videosink = find_gtk4_sink((Gst.Bin)playbin);
 					}
-				} else {
+			} else {
 					discover(uri);
 					string playbinx;
 					if((playbinx = Environment.get_variable("MWP_PLAYBIN")) == null) {
