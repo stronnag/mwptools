@@ -212,7 +212,6 @@ namespace MwpVideo {
 					if (ds != null) {
 						furi = "v4l2://".concat(ds.devicename);
 						MWPLog.message("FB Device %s %s -> %s \n", ds.devicename, ds.driver, furi);
-
 					} else {
 						furi = "v4l2://".concat(devname);
 						MWPLog.message("FB Device %s\n", furi);
@@ -244,38 +243,11 @@ namespace MwpVideo {
 					if (ds.driver == null) {
 						return null;
 					}
+
 					int16 camopt = MwpCameras.lookup_camera_opt(devname);
 					var sb = new StringBuilder(ds.driver);
 					sb.append_c(' ');
-					switch(ds.driver) {
-					case "pipewiresrc":
-						if(camopt == -1) {
-							camopt = 0;
-						}
-						sb.append("target-object=");
-						sb.append(ds.altdev);
-						break;
-					case "libcamerasrc":
-						sb.append("camera-name=");
-						sb.append_c('"');
-						if(ds.devicename.data[0] == '\\') {
-							sb.append_c('\\');
-						}
-						sb.append(ds.devicename);
-						sb.append_c('"');
-						break;
-					default:
-						if(ds.devicename == devname) {
-							sb.append("device-name=");
-							sb.append_c('"');
-							sb.append(devname);
-							sb.append_c('"');
-						} else {
-							sb.append("device=");
-							sb.append(ds.devicename);
-						}
-						break;
-					}
+					sb.append(ds.launch_props);
 					if(camopt != -1) {
 						unowned var caps = 	MwpCameras.get_caps(devname);
 						if (camopt < caps.length) {

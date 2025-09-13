@@ -28,7 +28,7 @@ The "fallback" video widget is based on `Gtk.Video':
 
 Consequences of using the fallback video player:
 
-* On Windows, no direct USB camera access
+* On Windows and MacOS, no direct USB camera access
 * Higher latency (e.g. 2000ms on RTSP feeds)
 * Fewer  video codecs available.
 
@@ -63,10 +63,14 @@ If a capability is selected, it is passed on to GStreamer verbatim and stored fo
 
 ## OS Specific
 
-* Linux. "Video4Linux" (`v4l2src`).
+The following GStreamer video sources (at least) are supported:
+
+* Linux. "Video4Linux" (`v4l2src`), pipewire (`pipewiresrc`) and libcamera (`libcamerasrc`)
 * FreeBSD. FreeBSD offers a video4linux (`v4l2src`) emulation that works with {{ mwp }}.
 * Windows. Uses `ksvideosrc` or  `mfvideosrc` as detected / required.
 * MacOS. Uses `afvideosrc` for Camera input.
+
+mwp introspects Gstreamer for the required video source and parameters.
 
 ## FPV Mode
 
@@ -76,22 +80,22 @@ FPV mode provides a paned view of a camera feed. The user can switch between "St
 modeswitch F12
 ```
 
-The [panel](dock.md) will swich as necesary.
+The [panel](dock.md) will switch as necesary.
 
 FPV uses the following order to determine what to show (if anything).
 
 * If the windowed player was active, that stream is transferred to the video pane.
-* Else, if available, the last panel stream is shown.
+* Else, if available, the last stream show in the FPV pane is invoked.
 
 ### Using RTSP for camera parameter definitions
 
 If the user is using a remote camera, if the camera is not detected or if using Windows with mwp' "fallback" player , then a RTSP server can be used to feed the camera stream to mwp.
 
-[go2rtc](https://github.com/AlexxIT/go2rtc) is a useful RTSP server that supports numerous video options.
+[go2rtc](https://github.com/AlexxIT/go2rtc) is a useful RTSP server that supports numerous video options, including format conversion.
 
 #### Linux, FreeBSD
 
-The following configuration file `go2rtc.yaml` illustrates some of the possibilities:
+The following sample configuration file `go2rtc.yaml` illustrates some of the possibilities:
 
 ```
 streams:
@@ -107,7 +111,7 @@ streams:
 The camera is a 10 year old "Mobius"; remember them?
 
 * `usbcam1` : "Normal" camera configuration (MJPEG feed).
-* `usbcam2` : Camera feed is transcoded using `ffmpeg` to H264 prior to transmission. This mau appear to be smoother in mwp's video player.
+* `usbcam2` : Camera feed is transcoded using `ffmpeg` to H264 prior to transmission.
 * `usbcam3` : Sets the camera resolution.
 
 And some test streams:
@@ -118,7 +122,7 @@ And some test streams:
 
 It is possible to start and stop `go2rtc` when mwp is started / quit using the `atstart` and `atexit` settings:
 
-Adjust configuration  file path for your environment:
+Adjust configuration file path for your environment:
 
 * atstart: `go2rtc -c /home/jrh/.config/go2rtc/go2rtc.yaml`
 * atexit: `pkill -f go2rtc.exe`
@@ -134,7 +138,7 @@ streams:
   webcam2: ffmpeg:device?video=0#width=640#height=480#video=h264
 ```
 
-Each of the above lines refers to the same device (name/index reference), natural or trans-coded video). At least in the author's VM, it is necessary to downsize the video-stream to avoid `ffmpeg` overruns.
+Each of the above lines refers to the same device (name/index reference), natural or trans-coded video). At least in the author's VM, it is necessary to downsize the video stream resolution to avoid `ffmpeg` overruns. This may not be necessary on a non-virtualised system.
 
 #### Windows mwp settings to start / stop go2rtc
 
@@ -183,6 +187,8 @@ Alas, these are all success cases.
 
 #### `gst-device-monitor`
 
+##### Linux, pipewire
+
 ```
 $ gst-device-monitor-1.0 Video/Source
 Probing devices...
@@ -227,6 +233,57 @@ Device found:
 	gst-launch-1.0 pipewiresrc target-object=601 ! ...
 ```
 
+##### Linux, libcamera
+
+Also discovers the `pipewiresrc` option:
+
+```
+$ gst-device-monitor-1.0 Video/Source
+Probing devices...
+
+Device found:
+
+	name  : Mobius (V4L2)
+	    ...
+		object.serial = 57
+	gst-launch-1.0 pipewiresrc target-object=57 ! ...
+
+Device found:
+
+	name  : \_SB_.PCI0.S11_.S00_-4:1.0-0603:1002
+	class : Source/Video
+	caps  : image/jpeg, width=320, height=240
+	        image/jpeg, width=640, height=480
+	        image/jpeg, width=1280, height=720
+	properties:
+		api.libcamera.SystemDevices = < (gint64)20736 >
+		api.libcamera.PixelArrayActiveAreas = < (int)0, (int)0, (int)1280, (int)720 >
+		api.libcamera.PixelArraySize = < (int)1280, (int)720 >
+		api.libcamera.Location = CameraLocationExternal
+		api.libcamera.Model = Mobius
+	gst-launch-1.0 libcamerasrc camera-name='\_SB_.PCI0.S11_.S00_-4:1.0-0603:1002' ! ...
+```
+
+Note user-hostile name provided by libcamera.
+
+##### Windows
+
+```
+PS C:\Users\win10> $env:Path += ";C:\Program Files\mwptools\bin"
+PS C:\Users\win10> gst-device-monitor-1.0.exe Video/Source
+Probing devices...
+
+
+Device found:
+
+        name  : Mobius
+        class : Video/Source
+        caps  : image/jpeg, width=1280, height=720, framerate=30/1, pixel-aspect-ratio=1/1
+                image/jpeg, width=640, height=480, framerate=30/1, pixel-aspect-ratio=1/1
+                image/jpeg, width=320, height=240, framerate=30/1, pixel-aspect-ratio=1/1
+        gst-launch-1.0 ksvideosrc device-path="\\\\\?\\usb\#vid_0603\&pid_1002\&mi_00\#7\&1251d048\&0\&0000\#\{6994ad05-93ef-11d0-a3cc-00a0c9223196\}\\global" ! ...
+```
+
 #### `gst-discoverer-1.0`
 
 ```
@@ -268,7 +325,7 @@ Reached end of play list.
 
 * Standard, (without `MWP_SHOW_FPS`)
 * Logged as `08:05:09.573216 Playbin: pipewiresrc target-object=226 ! image/jpeg, width=1280, height=720, framerate=30/1 ! decodebin ! autovideoconvert !  gtk4paintablesink sync=false`
-* Note: If Gstreamer on Linux reports a `pipewiresrc`, then mwp uses that, otherwise it will use thw `v4l2src` (see next example).
+* Note: If Gstreamer on Linux reports a `pipewiresrc`, then mwp uses that, otherwise it will use  `v4l2src` (see next example). Or `libcamerasrc`.
 
 ```
 $ gst-launch-1.0 pipewiresrc target-object=226 ! image/jpeg, width=1280, height=720, framerate=30/1 ! decodebin ! autovideoconvert !  gtk4paintablesink sync=false

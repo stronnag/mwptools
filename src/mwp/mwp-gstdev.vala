@@ -3,7 +3,7 @@ namespace MwpCameras {
 		string devicename;
 		string displayname;
 		string driver;
-		string altdev;
+		string launch_props;
 		Array<string> caps;
 	}
 
@@ -190,16 +190,9 @@ namespace MwpCameras {
 				var efac  = elm.get_factory();
 				if (efac != null) {
 					ds.driver = efac.name;
-					if (ds.driver == "pipewiresrc") {
-						string oser = null;
-						if (s != null) {
-							oser = s.get_string("object.serial");
-						}
-						if (oser != null) {
-							ds.altdev = oser;
-						} else {
-							ds.driver = "v4l2src";
-						}
+					get_launch_props(elm, ref ds);
+					if(ds.launch_props == null) {
+						ds.launch_props = "device=".concat(ds.devicename);
 					}
 				}
 			}
@@ -208,6 +201,39 @@ namespace MwpCameras {
 				process_caps(ref ds, cs.to_string());
 			}
 			return ds;
+		}
+
+		private void get_launch_props(Gst.Element elm, ref VideoDev ds) {
+			const string[] ignore={ "name", "parent", "direction", "template", "caps"};
+			var pe = Gst.ElementFactory.make (ds.driver);
+			Type type = pe.get_type();
+			ObjectClass ocl = (ObjectClass) type.class_ref ();
+			foreach (ParamSpec spec in ocl.list_properties ()) {
+				var typ = spec.value_type;
+				Value v0= new Value(typ);
+				Value v1= new Value(typ);
+				string name = spec.get_name();
+				bool ignored = false;
+				foreach (var ign in ignore) {
+					if (ign == name) {
+						ignored = true;
+						break;
+					}
+				}
+				if (!ignored) {
+					elm.get_property(name, ref v0);
+					pe.get_property(name, ref v1);
+					if(Gst.Value.compare(v0, v1)  != Gst.VALUE_EQUAL) {
+						var sv = Gst.Value.serialize(v0);
+						StringBuilder sb = new StringBuilder();
+						sb.append(name);
+						sb.append_c('=');
+						sb.append(sv);
+						ds.launch_props = sb.str;
+						break;
+					}
+				}
+			}
 		}
 
 		private void add_list(VideoDev ds) {
