@@ -236,14 +236,14 @@ namespace MwpVideo {
 				MwpVideo.playbin = null;
 				Gdk.Paintable ptx = null;
 				Gst.Element videosink = null;
+				MwpCameras.VideoDev? ds = null;
+				string devname = null;
 				bool dbg = (Environment.get_variable("MWP_SHOW_FPS") != null);
 				if(uri.has_prefix("v4l2://")) {
-					var devname = uri.substring(7);
-					var ds = MwpCameras.find_camera(devname);
-					if (ds.driver == null) {
-						return null;
-					}
-
+					devname = uri.substring(7);
+					ds = MwpCameras.find_camera(devname);
+				}
+				if(ds != null) {
 					int16 camopt = MwpCameras.lookup_camera_opt(devname);
 					var sb = new StringBuilder(ds.driver);
 					sb.append_c(' ');
@@ -283,8 +283,10 @@ namespace MwpVideo {
 					} else {
 						videosink = find_gtk4_sink((Gst.Bin)playbin);
 					}
-			} else {
-					discover(uri);
+				} else {
+					if (devname == null) {
+						discover(uri);
+					}
 					string playbinx;
 					if((playbinx = Environment.get_variable("MWP_PLAYBIN")) == null) {
 						playbinx = "playbin";
