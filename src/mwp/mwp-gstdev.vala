@@ -182,18 +182,12 @@ namespace MwpCameras {
 				}
 
 			}
-			if (ds.devicename == null) {
-				ds.devicename = ds.displayname;
-			}
 			var elm = device.create_element(null);
 			if (elm != null) {
 				var efac  = elm.get_factory();
 				if (efac != null) {
 					ds.driver = efac.name;
 					get_launch_props(elm, ref ds);
-					if(ds.launch_props == null) {
-						ds.launch_props = "device=".concat(ds.devicename);
-					}
 				}
 			}
 			var cs = device.get_caps();
@@ -204,6 +198,10 @@ namespace MwpCameras {
 		}
 
 		private void get_launch_props(Gst.Element elm, ref VideoDev ds) {
+			/*
+			  Find the property that differs between the template element and the
+			  actual element. This will be the launch properties.
+			*/
 			const string[] ignore={ "name", "parent", "direction", "template", "caps"};
 			var pe = Gst.ElementFactory.make (ds.driver);
 			Type type = pe.get_type();
@@ -232,6 +230,18 @@ namespace MwpCameras {
 						ds.launch_props = sb.str;
 						break;
 					}
+				}
+			}
+			if(ds.launch_props == null) {
+				if (ds.devicename != null) {
+					ds.launch_props = "device=".concat(ds.devicename);
+				} else if (ds.displayname != null) {
+					StringBuilder sb = new StringBuilder();
+					sb.append("devicename=");
+					sb.append_c('"');
+					sb.append(ds.displayname);
+					sb.append_c('"');
+					ds.launch_props = sb.str;
 				}
 			}
 		}
