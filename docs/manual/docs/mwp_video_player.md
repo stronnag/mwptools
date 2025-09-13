@@ -67,10 +67,10 @@ The following GStreamer video sources (at least) are supported:
 
 * Linux. "Video4Linux" (`v4l2src`), pipewire (`pipewiresrc`) and libcamera (`libcamerasrc`)
 * FreeBSD. FreeBSD offers a video4linux (`v4l2src`) emulation that works with {{ mwp }}.
-* Windows. Uses `ksvideosrc` or  `mfvideosrc` as detected / required.
-* MacOS. Uses `afvideosrc` for Camera input.
+* Windows. `ksvideosrc` or  `mfvideosrc` as detected / required.
+* MacOS. `avfvideosrc`.
 
-mwp introspects Gstreamer for the required video source and parameters.
+mwp introspects Gstreamer for the required video source and parameters, no user input is required, other than the device specific GStreamer plugin(s) must be installed.
 
 ## FPV Mode
 
@@ -282,7 +282,36 @@ Device found:
                 image/jpeg, width=640, height=480, framerate=30/1, pixel-aspect-ratio=1/1
                 image/jpeg, width=320, height=240, framerate=30/1, pixel-aspect-ratio=1/1
         gst-launch-1.0 ksvideosrc device-path="\\\\\?\\usb\#vid_0603\&pid_1002\&mi_00\#7\&1251d048\&0\&0000\#\{6994ad05-93ef-11d0-a3cc-00a0c9223196\}\\global" ! ...
+
 ```
+
+##### MacOS
+
+```
+$ gst-device-monitor-1.0 Video/Source
+Probing devices...
+
+
+Device found:
+
+	name  : Mobius
+	class : Video/Source
+	caps  : video/x-raw(memory:GLMemory), width=1280, height=720, format={ (string)UYVY, (string)YUY2 }, framerate=30/1, texture-target=rectangle
+	        video/x-raw(memory:GLMemory), width=640, height=480, format={ (string)UYVY, (string)YUY2 }, framerate=30/1, texture-target=rectangle
+	        video/x-raw(memory:GLMemory), width=320, height=240, format={ (string)UYVY, (string)YUY2 }, framerate=30/1, texture-target=rectangle
+	        video/x-raw, width=1280, height=720, format={ (string)UYVY, (string)YUY2, (string)NV12, (string)ARGB, (string)BGRA }, framerate=30/1
+	        video/x-raw, width=640, height=480, format={ (string)UYVY, (string)YUY2, (string)NV12, (string)ARGB, (string)BGRA }, framerate=30/1
+	        video/x-raw, width=320, height=240, format={ (string)UYVY, (string)YUY2, (string)NV12, (string)ARGB, (string)BGRA }, framerate=30/1
+	properties:
+		device.api = avf
+		avf.unique_id = 0x1dd0000006031002
+		avf.model_id = UVC Camera VendorID_1539 ProductID_4098
+		avf.has_flash = false
+		avf.has_torch = false
+		avf.manufacturer = C-DUTEK
+	gst-launch-1.0 avfvideosrc device-index='0' ! ...
+```
+
 
 #### `gst-discoverer-1.0`
 
