@@ -248,11 +248,12 @@ namespace MwpVideo {
 					var sb = new StringBuilder(ds.driver);
 					sb.append_c(' ');
 					sb.append(ds.launch_props);
-					if(camopt != -1) {
-						unowned var caps = 	MwpCameras.get_caps(devname);
-						if (camopt < caps.length) {
-							sb.append_printf(" ! %s", caps[camopt]);
-						}
+					if(camopt == -1) {
+						camopt = 0;
+					}
+					unowned var caps = 	MwpCameras.get_caps(devname);
+					if (camopt < caps.length) {
+						sb.append_printf(" ! %s", caps[camopt]);
 					}
 					if(dbg) {
 						sb.append(" ! decodebin ! autovideoconvert ! fpsdisplaysink video-sink=gtk4paintablesink text-overlay=true sync=false");
