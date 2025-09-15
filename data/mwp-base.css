@@ -23,7 +23,7 @@
    src/mwp/mwp-sql-player.vala
    src/mwp/mwp-chan-window.vala
 */
-.mwp_winbg {background: color-mix(in srgb, @window_bg_color 40%, transparent)  ;  color: @view_fg_color; border-radius: 12px 12px;}
+.mwp_winbg {background: color-mix(in srgb, @window_bg_color 40%, transparent); color: @view_fg_color; border-radius: 12px 12px;}
 .mwp_hbbg {background: rgba(0, 0, 0, 0.0);}
 
 

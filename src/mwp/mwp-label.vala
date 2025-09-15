@@ -57,7 +57,7 @@ public class MWPPointyLabel : MWPMarker, MWPLabel {
 #endif
 		var fs = MwpScreen.rescale(1);
 		bcol = "white";
-		fcol = "black";
+		fcol = "#000000ff";
 		fontsize = FONTSIZE*fs;
 		label = txt;
 		generate_label();
@@ -197,8 +197,9 @@ public class MWPTextyLabel : MWPMarker, MWPLabel {
 			fs *= Mwp.conf.touch_scale;
 		}
 		bcol = "white";
-		fcol = "black";
-		set_css();
+		fcol = "#000000ff";
+		var name = get_name_css();
+		set_css(name);
 		set_font_scale(fs);
 		label.vexpand = false;
 		label.hexpand = false;
@@ -224,25 +225,33 @@ public class MWPTextyLabel : MWPMarker, MWPLabel {
 		label.attributes = attrs;
 	}
 
-	private void set_css() {
-		var name = "%s%s".printf(fcol,bcol);
+	private string get_name_css() {
+		var name = "mwp_%s%s".printf(bcol, fcol);
 		name = name.replace("#", "");
 		name = name.replace("(", "");
 		name = name.replace(")", "");
 		name = name.replace(",", "");
-		string cssstr=".mycol-%s {  padding: 0 0.6rem 0 0.6rem; background-color: %s; color: %s; border-radius: 5px;}".printf(name, bcol, fcol);
+		name = name.replace(".", "");
+		return name;
+	}
+
+	private void set_css(string name) {
+		string cssstr=".%s {  padding: 0 0.6rem 0 0.6rem; background-color: %s; color: %s; border-radius: 5px;}".printf(name, bcol, fcol);
 		MwpCss.load_string(cssstr);
-		this.add_css_class(name);
 	}
 
 	public void set_text_colour(Value v) {
 		fcol = val_to_colour(v);
-		set_css();
+		name = get_name_css();
+		add_css_class(name);
+		set_css(name);
 	}
 
 	public void set_colour(Value v) {
 		bcol = val_to_colour(v);
-		set_css();
+		name = get_name_css();
+		add_css_class(name);
+		set_css(name);
 	}
 }
 

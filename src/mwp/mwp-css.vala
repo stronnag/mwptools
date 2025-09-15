@@ -5,9 +5,12 @@ namespace MwpCss {
 
 	public void load_file(string file) {
 		var provider = new Gtk.CssProvider();
+        provider.parsing_error.connect((s,e) => {
+                MWPLog.message("CSS Error (%s) <%s>\n", e.message, s.to_string());
+            });
 		provider.load_from_file(File.new_for_path(file));
 		Gtk.StyleContext.add_provider_for_display(Gdk.Display.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
-	}
+    }
 
 	public void load_string(string s) {
 		var provider = new Gtk.CssProvider();
