@@ -139,8 +139,8 @@ public class LOSPoint : Object {
 			Gdk.RGBA pcol = wcol;
 			pcol.alpha = wcol.alpha * 0.5f;
 			var strcol = pcol.to_string();
-			var cssstr =  ".map-point { min-width: 5px; min-height: 5px; background: %s; border: 1px solid %s; border-radius: 50%%; }".printf(strcol, strcol);
-			dlos.set_css_style(cssstr);
+			var cssstr =  "{ min-width: 5px; min-height: 5px; background: %s; border: 1px solid %s; border-radius: 50%%; }".printf(strcol, strcol);
+			dlos.set_css_style("los-map-point", cssstr);
 			dlos.set_size_request(15,15);
 			dlos.set_location (dlat, dlon);
 			fmlayer.add_marker(dlos);

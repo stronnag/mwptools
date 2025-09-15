@@ -188,6 +188,17 @@ namespace Mwp {
 		public Window (Adw.Application app) {
             Object (application: app);
 
+			MwpCss.init();
+
+			string cssfile = MWPUtils.find_conf_file("mwp-base.css");
+			if(cssfile != null) {
+				MwpCss.load_file(cssfile);
+			}
+			cssfile = MWPUtils.find_conf_file("mwp.css");
+			if(cssfile != null) {
+				MwpCss.load_file(cssfile);
+			}
+
 			mapdrop.factory = null;
 			protodrop.factory = null;
 			actmission.factory = null;
@@ -195,14 +206,6 @@ namespace Mwp {
 			Mwp.window = this;
 			Mwp.toaster = toaster;
 			Mwp.rebase = new Rebase();
-
-			var provider = new Gtk.CssProvider ();
-			string cssfile = MWPUtils.find_conf_file("mwp.css");
-			if(cssfile != null) {
-				MWPLog.message("Loaded %s\n", cssfile);
-				provider.load_from_file(File.new_for_path(cssfile));
-				Gtk.StyleContext.add_provider_for_display(Gdk.Display.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
-			}
 
 			this.map.connect(() => {
 					Timeout.add(500, () => {

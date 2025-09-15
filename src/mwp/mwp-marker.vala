@@ -226,18 +226,22 @@ public class MWPMarker : Shumate.Marker {
 
 public class MWPPoint: MWPMarker {
 	public MWPPoint()  {
-		set_css_style(".map-point { min-width: 5px; min-height: 5px; background: @theme_selected_bg_color; border: 2px solid @theme_selected_fg_color; border-radius: 50%; }");
+		set_css_style("map-point", "{ min-width: 5px; min-height: 5px; background: @theme_selected_bg_color; border: 2px solid @theme_selected_fg_color; border-radius: 50%; }");
 	}
 
 	public MWPPoint.with_colour(string s, int r=1)  {
-		var cssstr =  ".map-point { min-width: 5px; min-height: 5px; background: %s; border: %dpx solid @theme_selected_fg_color; border-radius: 50%%; }".printf(s,r);
-		set_css_style(cssstr);
+		var cs = s;
+		if (s.has_prefix("#")) {
+			cs = s[1:];
+		}
+		var name = "map-point-%s-%d".printf(cs,r);
+		var cssstr =  "{ min-width: 5px; min-height: 5px; background: %s; border: %dpx solid @theme_selected_fg_color; border-radius: 50%%; }".printf(s,r);
+		remove_css_class("map-point");
+		set_css_style(name, cssstr);
 	}
 
-	public void set_css_style (string cssstr) {
-		var provider = new Gtk.CssProvider ();
-		provider.load_from_string(cssstr);
-		this.get_style_context().add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
-		this.add_css_class("map-point");
+	public void set_css_style (string name, string cssstr) {
+		MwpCss.load_string(".%s %s".printf(name, cssstr));
+		this.add_css_class(name);
 	}
 }

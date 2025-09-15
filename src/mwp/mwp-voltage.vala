@@ -56,11 +56,6 @@ namespace Voltage {
 		}
 
 		private void load_css() {
-			var provider = new Gtk.CssProvider ();
-			string cssfile = MWPUtils.find_conf_file("volts.css");
-			MWPLog.message("Loaded %s\n", cssfile);
-			provider.load_from_file(File.new_for_path(cssfile));
-			this.get_style_context().add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
 			if(Mwp.conf.vlevels != null) {
 				string [] parts;
 				parts = Mwp.conf.vlevels.split(";");

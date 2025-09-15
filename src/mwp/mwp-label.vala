@@ -57,7 +57,7 @@ public class MWPPointyLabel : MWPMarker, MWPLabel {
 #endif
 		var fs = MwpScreen.rescale(1);
 		bcol = "white";
-		fcol = "#000000ff";
+		fcol = "black";
 		fontsize = FONTSIZE*fs;
 		label = txt;
 		generate_label();
@@ -187,20 +187,19 @@ public class MWPTextyLabel : MWPMarker, MWPLabel {
 	public string bcol{get;set;}
 	public string fcol{get;set;}
 
-	private Gtk.CssProvider provider;
 	private Gtk.Label label;
 
 	public MWPTextyLabel(string txt="")  {
-		provider = new Gtk.CssProvider ();
 		label = new Gtk.Label(txt);
 		label.use_markup = true;
-        label.get_style_context().add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
 		var fs = Mwp.conf.symbol_scale;
 		if(MwpScreen.has_touch_screen()) {
 			fs *= Mwp.conf.touch_scale;
 		}
+		bcol = "white";
+		fcol = "black";
+		set_css();
 		set_font_scale(fs);
-		label.add_css_class("mycol");
 		label.vexpand = false;
 		label.hexpand = false;
 		label.halign = Gtk.Align.START;
@@ -209,9 +208,6 @@ public class MWPTextyLabel : MWPMarker, MWPLabel {
 		label.margin_start = 2;
 		label.margin_end = 2;
 		set_child(label);
-		bcol = "white";
-		fcol = "black";
-		set_css();
     }
 
 	public void set_text(string txt) {
@@ -229,8 +225,14 @@ public class MWPTextyLabel : MWPMarker, MWPLabel {
 	}
 
 	private void set_css() {
-		string cssstr=".mycol {  padding: 0 0.6rem 0 0.6rem; background-color: %s; color: %s; border-radius: 5px;}".printf(bcol, fcol);
-		provider.load_from_string(cssstr);
+		var name = "%s%s".printf(fcol,bcol);
+		name = name.replace("#", "");
+		name = name.replace("(", "");
+		name = name.replace(")", "");
+		name = name.replace(",", "");
+		string cssstr=".mycol-%s {  padding: 0 0.6rem 0 0.6rem; background-color: %s; color: %s; border-radius: 5px;}".printf(name, bcol, fcol);
+		MwpCss.load_string(cssstr);
+		this.add_css_class(name);
 	}
 
 	public void set_text_colour(Value v) {

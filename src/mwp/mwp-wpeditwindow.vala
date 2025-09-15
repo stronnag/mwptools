@@ -579,12 +579,12 @@ public class WPPopEdit : Adw.Window {
 	void set_alt_border(Gtk.Widget w, bool flag) {
         string css;
         if (flag) {
-            css =  "entry { border-style: solid; border-color: red; border-width: 1px;}";
+            css =  "wpedit_red";
+			w.remove_css_class("wpedit_orange");
         } else {
-            css =  "entry { border-style: solid; border-color: orange; border-width: 1px;}";
+            css =  "wpedit_orange";
+			w.remove_css_class("wpedit_red");
         }
-		var provider = new CssProvider();
-		provider.load_from_string(css);
-		w.get_style_context().add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
+		w.add_css_class(css);
     }
 }

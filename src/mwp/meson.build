@@ -14,7 +14,7 @@ libmwpvers = static_library('mwpvers', ['_mwpvers.c', mwpvers_h],
 			     include_directories :  include_directories('.','../','../../')
 			   )
 
-mwpsrcs = files('mwp-about.vala', 'mwp-ah_widget.vala',
+mwpsrcs = files('mwp-about.vala', 'mwp-ah_widget.vala', 'mwp-css.vala',
                 'mwp-application.vala', 'mwp-arm_processing.vala',
                 'mwp-async-dem-dl.vala', 'mwp-audio.vala', 'mwp-batt-misc.vala',
                 'mwp-clioptions.vala', 'mwp-clipboard.vala',

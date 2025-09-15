@@ -53,12 +53,13 @@ namespace Chans {
 				lbl = new Gtk.Label("----");
 				g.attach(lbl, j, 2);
 			}
-			set_bg(this, "window {background: color-mix(in srgb, @window_bg_color 40%, transparent)  ;  color: @view_fg_color; border-radius: 12px 12px;}");
+			this.add_css_class("mwp_winbg");
 			set_title("RC Channels");
 			var hb = new Gtk.HeaderBar();
 			set_titlebar(hb);
 			hb.set_decoration_layout("icon:close");
-			set_bg(hb, "headerbar {background: rgba(0, 0, 0, 0.0);}");
+			hb.add_css_class("mwp_hbbg");
+
 			close_request.connect(() => {
 					cwin = null;
 					return false;
@@ -67,13 +68,6 @@ namespace Chans {
 			if(pw != null) {
 				set_transient_for(pw);
 			}
-		}
-
-		private void set_bg(Gtk.Widget w, string css) {
-			var provider = new CssProvider();
-			provider.load_from_data(css.data);
-			var stylec = w.get_style_context();
-			stylec.add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
 		}
 
 		public void update(int16 []chans) {

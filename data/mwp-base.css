@@ -1,0 +1,39 @@
+
+/* These are the colours / styles used by mwp for voltages
+   src/mwp/mwp-voltage.vala
+*/
+.volthigh { background-color: green ; color: white ;}
+.voltmedium { background-color: yellow ; color: slategrey ;}
+.voltlow { background-color: orange ; color: slategrey ;}
+.voltcritical { background-color:  red ; color: white ; }
+.voltundef { background: conic-gradient(
+					    green 90deg,
+					    darkgreen 90deg 180deg,
+					    green 180deg 270deg,
+					    darkgreen 270deg
+					);
+	     background-repeat: repeat ;
+	     background-size: 40px 40px;
+	     background-position: top left;
+	     color: slategray;
+	   }
+.voltsundef { background-color: darkgreen ; color: slategray;}
+
+/* Log player styles and channels
+   src/mwp/mwp-sql-player.vala
+   src/mwp/mwp-chan-window.vala
+*/
+.mwp_winbg {background: color-mix(in srgb, @window_bg_color 40%, transparent)  ;  color: @view_fg_color; border-radius: 12px 12px;}
+.mwp_hbbg {background: rgba(0, 0, 0, 0.0);}
+
+
+/* WP Edit styles
+   src/mwp/mwp-wpeditwindow.vala
+*/
+.wpedit_red { border-style: solid; border-color: red; border-width: 1px;}
+.wpedit_orange { border-style: solid; border-color: orange; border-width: 1px;}
+
+/* Markers
+   src/mwp/mwp-marker.vala
+*/
+.map-point { min-width: 5px; min-height: 5px; background: @theme_selected_bg_color; border: 2px solid @theme_selected_fg_color; border-radius: 50%; }

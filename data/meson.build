@@ -77,7 +77,7 @@ msetresources = gnome.compile_resources(
 )
 
 install_data (
-  ['mwp.css', 'volts.css', 'beep-sound.ogg', 'bleet.ogg', 'orange.ogg', 'sat_alert.ogg'],
+  ['mwp.css', 'mwp-base.css', 'beep-sound.ogg', 'bleet.ogg', 'orange.ogg', 'sat_alert.ogg'],
   install_dir: join_paths(get_option('datadir'), 'mwp')
 )
 
