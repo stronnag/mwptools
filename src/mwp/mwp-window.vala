@@ -543,7 +543,11 @@ namespace Mwp {
 			string defset = MwpVideo.last_uri;
 			if(conf.is_vertical) {
 				MWPLog.message(":DBG: PANE: setup vertical panel\n");
-				MwpVideo.stop_embedded_player();
+				//MwpVideo.stop_embedded_player();
+				if (MwpVideo.State.PLAYER in MwpVideo.state) {
+					MWPLog.message("Switch to windowed player\n");
+					MwpVideo.into_window();
+				}
 				pane.set_end_child(null);
 				vpane = null;
 				pane.set_end_child(panelbox);

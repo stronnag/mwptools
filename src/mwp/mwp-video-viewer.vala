@@ -113,6 +113,12 @@ namespace MwpVideo {
 		public MwpVideo.Player load(string uri, bool start) {
 			var p = new Player(uri);
 			MWPLog.message("v load %s %p %p\n", uri, p, p.pt);
+			setup_window_player(p,start);
+			MwpVideo.last_uri = uri;
+			return p;
+		}
+
+		public void setup_window_player(Player p, bool start=true) {
 			if (p.pt != null) {
 				MwpVideo.window = this;
 				MwpVideo.state |= MwpVideo.State.PLAYWINDOW;
@@ -125,6 +131,7 @@ namespace MwpVideo {
 								p.clear();
 								MwpVideo.mmf.close();
 								p = null;
+								MwpVideo.player = null;
 							} else {
 								MwpVideo.state &= ~MwpVideo.State.PASSOVER;
 							}
@@ -223,9 +230,7 @@ namespace MwpVideo {
 					MWPLog.message("Start play\n");
 					p.set_playing(start);
 				}
-				MwpVideo.last_uri = uri;
 			}
-			return p;
 		}
 
 		private Gtk.Box? add_slider() {

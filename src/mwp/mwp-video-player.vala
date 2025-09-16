@@ -5,6 +5,8 @@ namespace MwpVideo {
 	public Gst.Element playbin;
 	public Gtk.MediaFile mmf;
 	public bool is_fallback;
+	public Player player;
+
 	private Gst.State nstate;
 
 	[Flags]
@@ -76,6 +78,16 @@ namespace MwpVideo {
 		} else {
 			MwpVideo.mmf.playing = play;
 		}
+	}
+
+	public void into_window() {
+		var vp = new MwpVideo.Viewer();
+		vp.present();
+		Idle.add(() => {
+				vp.setup_window_player(MwpVideo.player);
+				//((Gtk.Picture)Mwp.window.vpane.start_child).paintable = null;
+				return false;
+			});
 	}
 
 	public void embedded_player(string uri) {
@@ -183,6 +195,7 @@ namespace MwpVideo {
 				MWPLog.message("Legacy Player destructor\n");
 			}
 			MwpVideo.state &= ~MwpVideo.State.PLAYER;
+			MwpVideo.player = null;
 		}
 
 		public Player(string ouri) {
@@ -199,6 +212,7 @@ namespace MwpVideo {
 				}
 				MwpVideo.state = MwpVideo.State.PLAYER;
 			}
+			MwpVideo.player = this;
 		}
 
 		private Gdk.Paintable? generate_playbin(string uri) {
