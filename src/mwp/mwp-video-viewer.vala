@@ -20,6 +20,20 @@ namespace MwpVideo {
 		private double last_y;
 
 		public Viewer() {
+			var accs = Mwp.window.application.get_accels_for_action("win.modeswitch");
+			if(accs.length > 0) {
+				var evtc = new Gtk.EventControllerKey ();
+				evtc.set_propagation_phase(Gtk.PropagationPhase.CAPTURE);
+				((Gtk.Widget)this).add_controller(evtc);
+				var actkey = Gdk.keyval_from_name(accs[0]);
+				evtc.key_pressed.connect((kv, kc, mfy) => {
+						if (kv == actkey) {
+							Mwp.window.switch_panel_mode(true);
+							return true;
+						}
+						return false;
+					});
+			}
 			set_transient_for(Mwp.window);
 			set_size_request(800, 600);
 			set_icon_name("mwp_icon");
@@ -291,11 +305,12 @@ namespace MwpVideo {
 
 		private void start_timer(Player p) {
 			tid = Timeout.add(50, () => {
-					Gst.Format fmt = Gst.Format.TIME;
 					int64 current = -1;
-					if (p.playbin.query_position (fmt, out current)) {
-						double rtm = current/1e9;
-						set_slider_value(rtm);
+					if (p.playbin.query_position (Gst.Format.TIME, out current)) {
+						if (current !=  Gst.CLOCK_TIME_NONE) {
+							double rtm = current/1e9;
+							set_slider_value(rtm);
+						}
 					}
 					return true;
 				});
