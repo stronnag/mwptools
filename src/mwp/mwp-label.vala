@@ -226,13 +226,15 @@ public class MWPTextyLabel : MWPMarker, MWPLabel {
 	}
 
 	private string get_name_css() {
-		var name = "mwp_%s%s".printf(bcol, fcol);
-		name = name.replace("#", "");
-		name = name.replace("(", "");
-		name = name.replace(")", "");
-		name = name.replace(",", "");
-		name = name.replace(".", "");
-		return name;
+		StringBuilder sb = new StringBuilder();
+		var s = "mwp_%s%s".printf(bcol, fcol);
+		var  parts = s.split_set("().,#");
+		foreach(var p in parts) {
+			if(p.length > 0) {
+				sb.append(p);
+			}
+		}
+		return sb.str;
 	}
 
 	private void set_css(string name) {
