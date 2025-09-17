@@ -17,6 +17,37 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+public class LogVidControls : Gtk.Box {
+  public Gtk.Switch vswitch;
+  public Gtk.Button vseek;
+  public Gtk.Entry ventry;
+
+  public double offset;
+
+  public LogVidControls() {
+	  Object(orientation: Gtk.Orientation.HORIZONTAL);
+
+	  offset = 0.0;
+	  var img = new Gtk.Image.from_icon_name("multimedia-video-player-symbolic");
+	  vswitch = new Gtk.Switch();
+	  vswitch.set_tooltip_text("Drive replay from video");
+
+	  vseek = new Gtk.Button.from_icon_name("forward-symbolic");
+	  vseek.set_tooltip_text("Seek video to replay");
+
+	  ventry = new Gtk.Entry();
+	  ventry.set_placeholder_text("000.0");
+	  ventry.width_chars = 8;
+	  ventry.max_width_chars = 8;
+	  ventry.hexpand = false;
+	  ventry.set_tooltip_text("Time offset for video start (seconds)\n  -ve video start before log\n  +ve log starts before video");
+	  this.append(img);
+	  this.append(vswitch);
+	  this.append(vseek);
+	  this.append(ventry);
+  }
+}
+
 public class SQLSlider : Gtk.Window {
 	private Gtk.Button play_button;
 	private Gtk.Button end_button;
@@ -29,16 +60,20 @@ public class SQLSlider : Gtk.Window {
 	private GLib.SimpleActionGroup dg;
 	private Gtk.Label tlabel;
 	private int smax;
+	private ulong cursig;
+
+	private int64 voffset;
 
 	public SQLSlider(string fn, int idx) {
         Mwp.xlog = Mwp.conf.logarmed;
         //Mwp.xaudio = Mwp.conf.audioarmed;
-
 		Mwp.conf.logarmed = false;
 		//Mwp.conf.audioarmed = false;
 
+		voffset = 0;
+		cursig = 0;
 		Mwp.craft.remove_all();
-		sp = new SQLPlayer(/*dragq*/);
+		sp = new SQLPlayer();
 		sp.opendb(fn);
 
 		smax = sp.init(idx) - 1;
@@ -97,9 +132,6 @@ public class SQLSlider : Gtk.Window {
 
 		sp.newpos.connect((v) => {
 				slider.set_value(v);
-				var n = (int)Math.round(v);
-				var tm = sp.get_timer_for(n);
-				format_time(tm, n);
 			});
 
 		close_request.connect (() => {
@@ -136,14 +168,58 @@ public class SQLSlider : Gtk.Window {
 				sp.speed = speed;
 			});
 
-		tlabel = new Gtk.Label("");
-		tlabel.use_markup = true;
-
-		format_time(0,0);
+		tlabel = new Gtk.Label(format_time(0));
+		tlabel.add_css_class("numeric");
 		hb.pack_end(tlabel);
 
-		if(SLG.speedup) {
-			toggle_pstate();
+		var vidbox = new LogVidControls();
+		hb.pack_start(vidbox);
+		bool has_video = (MwpVideo.State.PLAYER in MwpVideo.state);
+		vidbox.set_visible(has_video);
+
+		if (has_video) {
+			MwpVideo.player.set_playing(false);
+			vidbox.ventry.activate.connect(() => {
+					voffset = (int64)(double.parse(vidbox.ventry.text)* 1e9);
+				});
+
+			vidbox.vseek.clicked.connect(() => {
+					if(MwpVideo.player != null) {
+						var v = slider.get_value();
+						var n = (int)Math.round(v);
+						var tm = sp.get_timer_for(n);
+						tm *= 1000;
+						tm += voffset;
+						MwpVideo.seek(tm);
+						MwpVideo.set_playing(false);
+					}
+				});
+
+			vidbox.vswitch.state_set.connect((s) => {
+					if(MwpVideo.player != null) {
+						if(s) {
+							MwpVideo.set_playing(true);
+							cursig = MwpVideo.player.set_current.connect((t) => {
+									sp.jump_to_time(t);
+								});
+						} else {
+							if (cursig != 0) {
+								MwpVideo.player.disconnect(cursig);
+								cursig = 0;
+							}
+						}
+						play_button.sensitive = !s;
+						end_button.sensitive = !s;
+						start_button.sensitive = !s;
+						slider.sensitive = !s;
+					}
+					return false;
+				});
+
+		} else {
+			if(SLG.speedup) {
+				toggle_pstate();
+			}
 		}
 	}
 
@@ -195,9 +271,25 @@ public class SQLSlider : Gtk.Window {
 		sp.on_play(pstate);
 	}
 
+	private string format_time(int n) {
+		var tm = sp.get_timer_for(n); // Round
+		int mins;
+		int secs;
+		int itm = (int)((tm + 500*1000)/(1000*1000));
+		mins = (int)itm / 60;
+		secs = (int)itm % 60;
+		return  "%03d:%02d".printf(mins,secs);
+	}
+
 	private void add_slider(double smax) {
 		slider = new Gtk.Scale.with_range(Gtk.Orientation.HORIZONTAL, 0, smax, 1);
-		slider.set_draw_value(Environment.get_variable("MWP_PREFER_XLOG") != null);
+		slider.set_format_value_func((s, v) => {
+				var pct = (v * 100) / smax;
+				var n = (int)Math.round(pct);
+				return "%d%%".printf(n);
+			});
+
+		slider.set_draw_value(true);
 		slider.change_value.connect((stype, d) => {
 				if(pstate) {
 					toggle_pstate();
@@ -209,8 +301,7 @@ public class SQLSlider : Gtk.Window {
 		slider.value_changed.connect(() => {
 				var v = slider.get_value();
 				var n = (int)Math.round(v);
-				var tm = sp.get_timer_for(n); // Round
-				format_time(tm, n);
+				tlabel.label = format_time(n);
 				if(v == smax) {
 					if(pstate) {
 						toggle_pstate();
@@ -226,16 +317,6 @@ public class SQLSlider : Gtk.Window {
 		hbox.append(start_button);
 		hbox.append(end_button);
 		vbox.append(hbox);
-	}
-
-	private void format_time(int64 tm, int n) {
-		int mins;
-		int secs;
-		int itm = (int)((tm + 500*1000)/(1000*1000));
-		mins = (int)itm / 60;
-		secs = (int)itm % 60;
-		var pct = (n * 100) / smax;
-		tlabel.label = "<tt>%03d:%02d %3d%%</tt>".printf(mins,secs,pct);
 	}
 }
 
@@ -326,6 +407,16 @@ public class SQLPlayer : Object {
 		return trks[n].stamp;
 	}
 
+	public void jump_to_time(int64 tm) {
+		var mtm = (tm+500)/1000;
+		int j;
+		for(j = 0; j < nentry; j++) {
+			if(trks[j].stamp >= mtm) {
+				break;
+			}
+		}
+		move_at(j);
+	}
 
 	public void move_at(int n) {
 		if (n < 0) {

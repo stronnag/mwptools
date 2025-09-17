@@ -47,7 +47,7 @@ namespace MwpVideo {
 			var pg = Gst.ElementFactory.make ("gtk4paintablesink");
 			is_fallback = (pg == null);
 		}
-	}
+ 	}
 
 	public string? to_uri(string uri) {
 		string vuri = null;
@@ -68,15 +68,19 @@ namespace MwpVideo {
 		return GLib.Path.build_filename(uc,"mwp",".last_fpv-video");
 	}
 
+	public void toggle() {
+		MwpVideo.player.toggle();
+	}
+
 	public void set_playing(bool play) {
+		MwpVideo.player.set_playing(play);
+	}
+
+	public void seek(int64 to) {
 		if(!MwpVideo.is_fallback) {
-			if(play) {
-				MwpVideo.playbin.set_state (Gst.State.PLAYING);
-			} else {
-				MwpVideo.playbin.set_state (Gst.State.PAUSED);
-			}
+			MwpVideo.playbin.seek_simple(Gst.Format.TIME, (Gst.SeekFlags.FLUSH|Gst.SeekFlags.KEY_UNIT), to);
 		} else {
-			MwpVideo.mmf.playing = play;
+			MwpVideo.mmf.seek(to);
 		}
 	}
 
@@ -180,8 +184,33 @@ namespace MwpVideo {
 		public signal void state_change(bool s);
 		public signal void eos();
 		public signal void error(GLib.Error e, string debug);
-		public signal void async_done();
+		public signal void set_duration(int64 t);
+		public signal void set_current(int64 t);
+		private uint tid;
+		private Gst.ClockTime duration;
 		public Gdk.Paintable pt;
+		private Gst.ClockTime current;
+
+		private void start_timer() {
+			tid = Timeout.add(100, () => {
+					if(MwpVideo.is_fallback) {
+						current = ((Gtk.MediaStream)pt).timestamp;
+						set_current((int64)current);
+					} else {
+						if(duration == Gst.CLOCK_TIME_NONE) {
+							if(playbin.query_duration( Gst.Format.TIME, out duration)) {
+								if (duration !=  Gst.CLOCK_TIME_NONE) {
+									set_duration((int64)duration);
+								}
+							}
+						}
+						if(playbin.query_position( Gst.Format.TIME, out current)) {
+							set_current((int64)current);
+						}
+					}
+					return true;
+				});
+		}
 
 		~Player() {
 			if(!MwpVideo.is_fallback) {
@@ -193,11 +222,17 @@ namespace MwpVideo {
 			} else {
 				MWPLog.message("Legacy Player destructor\n");
 			}
+			if (tid > 0) {
+				Source.remove(tid);
+				tid = 0;
+			}
 			MwpVideo.state &= ~MwpVideo.State.PLAYER;
 			MwpVideo.player = null;
 		}
 
 		public Player(string ouri) {
+			current = Gst.CLOCK_TIME_NONE;
+			duration =  Gst.CLOCK_TIME_NONE;
 			var uri = MwpVideo.to_uri(ouri);
 			pt = generate_playbin(uri);
 			if (pt != null) {
@@ -209,6 +244,7 @@ namespace MwpVideo {
 					bus.add_watch(Priority.DEFAULT, bus_callback);
 					MwpVideo.playbin = this.playbin;
 				}
+				start_timer();
 				MwpVideo.state = MwpVideo.State.PLAYER;
 			}
 			MwpVideo.player = this;
@@ -269,7 +305,7 @@ namespace MwpVideo {
 						sb.append_printf(" ! %s", caps[camopt]);
 					}
 					if(dbg) {
-						sb.append(" ! decodebin ! autovideoconvert ! fpsdisplaysink video-sink=gtk4paintablesink text-overlay=true sync=false");
+						sb.append(" ! decodebin ! autovideoconvert ! fpsdisplaysink video-sink=gtk4paintablesink text-overlay=true");
 					} else {
 						sb.append(" ! decodebin ! autovideoconvert !  gtk4paintablesink sync=false");
 					}
@@ -281,7 +317,6 @@ namespace MwpVideo {
 						MWPLog.message("Video playbin error %s\n", e.message);
 						ptx = null;
 					}
-
 					if(!dbg) {
 						var gi = ((Gst.Bin)playbin).iterate_elements();
 						Gst.IteratorResult res;
@@ -304,12 +339,13 @@ namespace MwpVideo {
 					playbin = Gst.ElementFactory.make (playbinx, playbinx);
 					playbin.set_property("uri", uri);
 					if(dbg) {
-						var vsrc = "fpsdisplaysink video-sink=gtk4paintablesink text-overlay=true sync=false";
+						var vsrc = "fpsdisplaysink video-sink=gtk4paintablesink text-overlay=true";
 						Gst.Element vbin = null;
 						try {
 							vbin = Gst.parse_launch (vsrc);
 						} catch (Error e) {
 							MWPLog.message("Failed to parse %s: %s\n", vsrc, e.message);
+							return null;
 						}
 						videosink = find_gtk4_sink((Gst.Bin)vbin);
 						playbin.set_property("video-sink", vbin);
@@ -347,11 +383,6 @@ namespace MwpVideo {
 		private bool bus_callback (Gst.Bus bus, Gst.Message message) {
 			switch (message.type) {
 			case Gst.MessageType.BUFFERING:
-				/*
-				  int percent = 0;
-				  message.parse_buffering (out percent);
-				  MWPLog.message("Video: buffering (%u percent done)\n", percent);
-				*/
 				break;
 
 			case Gst.MessageType.ERROR:
@@ -379,10 +410,6 @@ namespace MwpVideo {
 					nstate = newstate;
 				}
 				break;
-
-			case Gst.MessageType.ASYNC_DONE:
-				async_done();
-				break;
 			default:
 				break;
 			}
@@ -390,11 +417,24 @@ namespace MwpVideo {
 		}
 
 		public void set_playing(bool play) {
-			MWPLog.message("SET PLAY PT %p %s\n", pt, play.to_string());
 			if(MwpVideo.is_fallback) {
 				((Gtk.MediaStream)pt).playing = play;
 			} else {
 				if (play) {
+					playbin.set_state (Gst.State.PLAYING);
+				} else {
+					playbin.set_state (Gst.State.PAUSED);
+				}
+			}
+		}
+
+		public void toggle() {
+			if(MwpVideo.is_fallback) {
+				((Gtk.MediaStream)pt).playing = !((Gtk.MediaStream)pt).playing;
+			} else {
+				Gst.State sts;
+				playbin.get_state (out sts, null, Gst.CLOCK_TIME_NONE);
+				if (sts != Gst.State.PLAYING) {
 					playbin.set_state (Gst.State.PLAYING);
 				} else {
 					playbin.set_state (Gst.State.PAUSED);

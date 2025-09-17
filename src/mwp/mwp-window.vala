@@ -211,11 +211,11 @@ namespace Mwp {
 					Timeout.add(500, () => {
 							int mwp=0,iwp=0;
 							panelbox.measure(Gtk.Orientation.HORIZONTAL, -1, null, out iwp, null, null);
-							this.measure(Gtk.Orientation.HORIZONTAL, -1, null, out mwp, null, null);
-							int iww = this.get_width();
+							window.measure(Gtk.Orientation.HORIZONTAL, -1, null, out mwp, null, null);
+							int iww = window.get_width();
 							mww = int.max(mwp,iww);
-							pane.position = mww - iwp -2;
-							MWPLog.message("Window map %d %d %d\n", mww, iww, iwp, pane.position);
+							pane.position = iww - iwp -2;
+							MWPLog.message("Window map meas=%d getww=%d pmeas=%d\n", mwp, iww, iwp);
 							this.notify["default-width"].connect(() => {
 									set_size();
 								});
@@ -533,7 +533,7 @@ namespace Mwp {
 			Idle.add(() => {
 					int iwp;
 					panelbox.measure(Gtk.Orientation.HORIZONTAL, -1, null, out iwp, null, null);
-					pane.position = this.get_width() - iwp - 2;
+					pane.position = window.get_width() - iwp - 2;
 					return false;
 				});
 		}
@@ -1091,7 +1091,9 @@ namespace Mwp {
 	}
 
 	private void do_replay_pause() {
-		if(replayer != Player.NONE) {
+		if(MwpVideo.player != null) {
+			MwpVideo.player.toggle();
+		} else if(replayer != Player.NONE) {
 			handle_replay_pause();
 		}
 	}

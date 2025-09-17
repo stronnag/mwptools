@@ -5,10 +5,8 @@ namespace MwpVideo {
 		private Gtk.Picture pic;
 		private Gtk.Button play_button;
 		private Gtk.Scale slider;
-		private uint tid;
-		private const Gst.SeekFlags SEEK_FLAGS=(Gst.SeekFlags.FLUSH|Gst.SeekFlags.KEY_UNIT);
 		private Gst.ClockTime duration;
-		private Gtk.ScaleButton vb;
+		private Gtk.ScaleButton volbtn;
 		private Gtk.Label ptim;
 		private Gtk.Label prem;
 		private uint rtid;
@@ -22,6 +20,7 @@ namespace MwpVideo {
 
 		public Viewer() {
 			set_transient_for(Mwp.window);
+			duration =  Gst.CLOCK_TIME_NONE;
 			set_size_request(800, 600);
 			set_icon_name("mwp_icon");
 			vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
@@ -38,9 +37,9 @@ namespace MwpVideo {
 				ovly = new Gtk.Overlay();
 				title = "mwp Video Player";
 				duration = Gst.CLOCK_TIME_NONE;
-				vb = new Gtk.ScaleButton(0.0, 1.0, 0.01, {"audio-volume-low-symbolic", "audio-volume-high-symbolic", "audio-volume-medium-symbolic"});
-				vb.notify["active"].connect(() => {
-						if(vb.active) {
+				volbtn = new Gtk.ScaleButton(0.0, 1.0, 0.01, {"audio-volume-low-symbolic", "audio-volume-high-symbolic", "audio-volume-medium-symbolic"});
+				volbtn.notify["active"].connect(() => {
+						if(volbtn.active) {
 							if(rtid != 0) {
 								Source.remove(rtid);
 							}
@@ -106,26 +105,6 @@ namespace MwpVideo {
 			return false;
 		}
 
-		private bool is_playing() {
-			if (MwpVideo.playbin != null) {
-				Gst.State sts;
-				MwpVideo.playbin.get_state (out sts, null, Gst.CLOCK_TIME_NONE);
-				return (sts == Gst.State.PLAYING);
-			} else {
-				return false;
-			}
-		}
-
-		private bool is_paused() {
-			if (MwpVideo.playbin != null) {
-				Gst.State sts;
-				MwpVideo.playbin.get_state (out sts, null, Gst.CLOCK_TIME_NONE);
-				return (sts == Gst.State.PAUSED);
-			} else {
-				return false;
-			}
-		}
-
 		private void show_media_bar() {
 			rv.set_reveal_child(true);
 			if(rtid != 0) {
@@ -159,24 +138,6 @@ namespace MwpVideo {
 
 		public void setup_window_player(Player p, bool start=true) {
 			if (p.pt != null) {
-				var accs = Mwp.window.application.get_accels_for_action("win.modeswitch");
-				if(accs.length > 0) {
-					var evtc = new Gtk.EventControllerKey ();
-					evtc.set_propagation_phase(Gtk.PropagationPhase.CAPTURE);
-					((Gtk.Widget)this).add_controller(evtc);
-					var actkey = Gdk.keyval_from_name(accs[0]);
-					var spckey = Gdk.keyval_from_name("space");
-					evtc.key_pressed.connect((kv, kc, mfy) => {
-							if (kv == actkey) {
-								Mwp.window.switch_panel_mode(true);
-								return true;
-							} else if (kv == spckey) {
-								on_play(p);
-								return true;
-							}
-							return false;
-						});
-				}
 				MwpVideo.window = this;
 				MwpVideo.state |= MwpVideo.State.PLAYWINDOW;
 				if(MwpVideo.is_fallback) {
@@ -201,8 +162,7 @@ namespace MwpVideo {
 							Gst.State sts;
 							double d = slider.get_value();
 							p.playbin.get_state (out sts, null, Gst.CLOCK_TIME_NONE);
-							p.playbin.seek_simple(Gst.Format.TIME, SEEK_FLAGS, (int64)(d* Gst.SECOND));
-							//              print("Slider: %.3f %s\n", d, sts.to_string());
+							p.playbin.seek_simple(Gst.Format.TIME, (Gst.SeekFlags.FLUSH|Gst.SeekFlags.KEY_UNIT), (int64)(d* Gst.SECOND));
 						});
 
 					p.eos.connect(() => {
@@ -220,15 +180,45 @@ namespace MwpVideo {
 							wb.present();
 						});
 
-
 					p.state_change.connect((sts) => {
 							play_button.icon_name = (sts) ? "media-playback-pause-symbolic" : "media-playback-start-symbolic";
 						});
 
+					p.set_duration.connect((t) => {
+							duration = t;
+							set_slider_max();
+						});
+
+					p.set_current.connect((t) => {
+							double rtm = (double)t/Gst.SECOND;
+							GLib.SignalHandler.block(slider, scvsig);
+							set_slider_value(rtm);
+							GLib.SignalHandler.unblock(slider, scvsig);
+						});
+
 					((Gtk.Picture)pic).paintable = p.pt;
 
+					var accs = Mwp.window.application.get_accels_for_action("win.modeswitch");
+					if(accs.length > 0) {
+						var evtc = new Gtk.EventControllerKey ();
+						evtc.set_propagation_phase(Gtk.PropagationPhase.CAPTURE);
+						((Gtk.Widget)this).add_controller(evtc);
+						var actkey = Gdk.keyval_from_name(accs[0]);
+						var spckey = Gdk.keyval_from_name("space");
+						evtc.key_pressed.connect((kv, kc, mfy) => {
+								if (kv == actkey) {
+									Mwp.window.switch_panel_mode(true);
+									return true;
+								} else if (kv == spckey) {
+									p.toggle();
+									return true;
+								}
+								return false;
+							});
+					}
+
 					play_button.clicked.connect(() => {
-							on_play(p);
+							p.toggle();
 						});
 
 					double vol = 0.0;
@@ -238,16 +228,13 @@ namespace MwpVideo {
 					unowned ParamSpec? spec = ocl.find_property ("volume");
 					if (spec != null) {
 						p.playbin.get("volume", out vol);
-						vb.value_changed.connect((v) => {
+						volbtn.value_changed.connect((v) => {
 								p.playbin.set("volume", v);
 							});
 					}
-					vb.value = vol;
+					volbtn.value = vol;
 
 					close_request.connect (() => {
-							if (tid > 0) {
-								Source.remove(tid);
-							}
 							if(rtid != 0) {
 								Source.remove(rtid);
 							}
@@ -267,8 +254,6 @@ namespace MwpVideo {
 							return false;
 						});
 
-					MWPLog.message("Start timer\n");
-					start_timer(p);
 					MWPLog.message("Start play\n");
 					p.set_playing(start);
 				}
@@ -280,23 +265,28 @@ namespace MwpVideo {
 			if (slider == null) {
 				hbox = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 0);
 				slider = new Gtk.Scale.with_range(Gtk.Orientation.HORIZONTAL, 0, 1, 1);
-				slider.visible=false;
 				slider.set_draw_value(false);
+				slider.restrict_to_fill_level=false;
 				slider.hexpand = true;
+				slider.sensitive=false;
+				slider.add_css_class("osd");
 				slider.halign = Gtk.Align.FILL;
 				ptim = new Gtk.Label("");
-				ptim.add_css_class("monospace");
+				ptim.add_css_class("numeric");
 				prem = new Gtk.Label("");
-				prem.add_css_class("monospace");
+				prem.add_css_class("numeric");
 				hbox.append(play_button);
 				hbox.append(ptim);
 				hbox.append (slider);
 				hbox.append(prem);
-				hbox.append(vb);
+				hbox.append(volbtn);
 				hbox.hexpand = true;
 				hbox.vexpand = false;
-				vb.halign = Gtk.Align.END;
-				vb.visible = false;
+				volbtn.visible = true;
+				volbtn.hexpand = true;
+				volbtn.halign = Gtk.Align.END;
+				slider.set_range(0.0, 0.0);
+				slider.visible = false;
 			}
 			return hbox;
 		}
@@ -307,22 +297,22 @@ namespace MwpVideo {
 			return "%s%02d:%02d".printf((neg) ? "-" : "", m, s);
 		}
 
-		public void set_slider_max(Gst.ClockTime max) {
-			if (max > 0) {
-				duration = max;
-				double rt =  max / 1e9;
+		public void set_slider_max() {
+			slider.visible = true;
+			if (duration > 0) {
+				double rt =  duration / Gst.SECOND;
 				slider.set_range(0.0, rt);
 				prem.label = format_ct(rt, true);
+				prem.halign = Gtk.Align.END;
+				slider.sensitive = true;
 				slider.visible = true;
-			} else {
-				slider.visible = false;
-				vb.hexpand = true;
+				volbtn.hexpand = false;
 			}
-			vb.visible = true;
+			volbtn.visible = true;
 		}
 
 		public void set_slider_value(double value) {
-			if (slider != null) {
+			if (slider != null && duration != Gst.CLOCK_TIME_NONE) {
 				slider.set_value(value);
 				var rt = duration/Gst.SECOND - value;
 				if (prem.label != "") {
@@ -330,39 +320,6 @@ namespace MwpVideo {
 				}
 			}
 			ptim.label = format_ct(value, false);
-		}
-
-
-		private void start_timer(Player p) {
-			tid = Timeout.add(100, () => {
-					if(is_playing() || is_paused()) {
-						Gst.ClockTime current = Gst.CLOCK_TIME_NONE;
-						if(duration == Gst.CLOCK_TIME_NONE) {
-							if(p.playbin.query_duration( Gst.Format.TIME, out duration)) {
-								if (duration !=  Gst.CLOCK_TIME_NONE) {
-									set_slider_max(duration);
-								}
-							}
-						}
-						if(p.playbin.query_position( Gst.Format.TIME, out current)) {
-							double rtm = (double)current/Gst.SECOND;
-							GLib.SignalHandler.block(slider, scvsig);
-							set_slider_value(rtm);
-							GLib.SignalHandler.unblock(slider, scvsig);
-						}
-					}
-					return true;
-				});
-		}
-
-		void on_play(Player p) {
-			Gst.State state;
-			p.playbin.get_state (out state, null, Gst.CLOCK_TIME_NONE);
-			if (state != Gst.State.PLAYING) {
-				p.playbin.set_state (Gst.State.PLAYING);
-			} else {
-				p.playbin.set_state (Gst.State.PAUSED);
-			}
 		}
 	}
 }
