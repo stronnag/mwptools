@@ -8,8 +8,6 @@ namespace MwpVideo {
 		private uint tid;
 		private const Gst.SeekFlags SEEK_FLAGS=(Gst.SeekFlags.FLUSH|Gst.SeekFlags.KEY_UNIT);
 		private Gst.ClockTime duration;
-		private bool seeking = false;
-		Gst.State st;
 		private Gtk.ScaleButton vb;
 		private Gtk.Label ptim;
 		private Gtk.Label prem;
@@ -18,22 +16,11 @@ namespace MwpVideo {
 		private Gtk.Overlay ovly;
 		private double last_x;
 		private double last_y;
+		private double last_cx;
+		private double last_cy;
+		private ulong scvsig = 0;
 
 		public Viewer() {
-			var accs = Mwp.window.application.get_accels_for_action("win.modeswitch");
-			if(accs.length > 0) {
-				var evtc = new Gtk.EventControllerKey ();
-				evtc.set_propagation_phase(Gtk.PropagationPhase.CAPTURE);
-				((Gtk.Widget)this).add_controller(evtc);
-				var actkey = Gdk.keyval_from_name(accs[0]);
-				evtc.key_pressed.connect((kv, kc, mfy) => {
-						if (kv == actkey) {
-							Mwp.window.switch_panel_mode(true);
-							return true;
-						}
-						return false;
-					});
-			}
 			set_transient_for(Mwp.window);
 			set_size_request(800, 600);
 			set_icon_name("mwp_icon");
@@ -50,7 +37,7 @@ namespace MwpVideo {
 				var evtcm = new Gtk.EventControllerMotion();
 				ovly = new Gtk.Overlay();
 				title = "mwp Video Player";
-				duration =  (int64)0x7ffffffffffffff;
+				duration = Gst.CLOCK_TIME_NONE;
 				vb = new Gtk.ScaleButton(0.0, 1.0, 0.01, {"audio-volume-low-symbolic", "audio-volume-high-symbolic", "audio-volume-medium-symbolic"});
 				vb.notify["active"].connect(() => {
 						if(vb.active) {
@@ -75,12 +62,30 @@ namespace MwpVideo {
 							show_media_bar();
 						}
 					});
+
+
 				pic.hexpand = true;
 				pic.vexpand = true;
 				play_button = new Gtk.Button.from_icon_name ("media-playback-start-symbolic");
 				var cbox = add_slider();
 				cbox.valign = Gtk.Align.END;
 				cbox.add_css_class("osd");
+
+				var cevtcm = new Gtk.EventControllerMotion();
+				cbox.add_controller(cevtcm);
+				cevtcm.motion.connect((x,y) => {
+						if(x == last_cx && y == last_cy) {
+							return;
+						}
+						last_cx = x;
+						last_cy = y;
+						if(rtid != 0) {
+							Source.remove(rtid);
+						}
+						rtid = Timeout.add(3000, () => {
+								return hide_media_bar();
+							});
+					});
 				rv  = new Gtk.Revealer();
 				rv.set_child(cbox);
 				rv.valign = Gtk.Align.END;
@@ -99,6 +104,26 @@ namespace MwpVideo {
 			rtid = 0;
 			rv.set_reveal_child(false);
 			return false;
+		}
+
+		private bool is_playing() {
+			if (MwpVideo.playbin != null) {
+				Gst.State sts;
+				MwpVideo.playbin.get_state (out sts, null, Gst.CLOCK_TIME_NONE);
+				return (sts == Gst.State.PLAYING);
+			} else {
+				return false;
+			}
+		}
+
+		private bool is_paused() {
+			if (MwpVideo.playbin != null) {
+				Gst.State sts;
+				MwpVideo.playbin.get_state (out sts, null, Gst.CLOCK_TIME_NONE);
+				return (sts == Gst.State.PAUSED);
+			} else {
+				return false;
+			}
 		}
 
 		private void show_media_bar() {
@@ -134,6 +159,24 @@ namespace MwpVideo {
 
 		public void setup_window_player(Player p, bool start=true) {
 			if (p.pt != null) {
+				var accs = Mwp.window.application.get_accels_for_action("win.modeswitch");
+				if(accs.length > 0) {
+					var evtc = new Gtk.EventControllerKey ();
+					evtc.set_propagation_phase(Gtk.PropagationPhase.CAPTURE);
+					((Gtk.Widget)this).add_controller(evtc);
+					var actkey = Gdk.keyval_from_name(accs[0]);
+					var spckey = Gdk.keyval_from_name("space");
+					evtc.key_pressed.connect((kv, kc, mfy) => {
+							if (kv == actkey) {
+								Mwp.window.switch_panel_mode(true);
+								return true;
+							} else if (kv == spckey) {
+								on_play(p);
+								return true;
+							}
+							return false;
+						});
+				}
 				MwpVideo.window = this;
 				MwpVideo.state |= MwpVideo.State.PLAYWINDOW;
 				if(MwpVideo.is_fallback) {
@@ -154,19 +197,19 @@ namespace MwpVideo {
 							return false;
 						});
 				} else {
-					slider.change_value.connect((stype, d) => {
-							seeking = true;
-							p.playbin.get_state (out st, null, Gst.CLOCK_TIME_NONE);
-							p.playbin.set_state (Gst.State.PAUSED);
-							p.playbin.seek (1.0,
-											Gst.Format.TIME, SEEK_FLAGS,
-											Gst.SeekType.SET, (int64)(d * Gst.SECOND),
-											Gst.SeekType.NONE, (int64)Gst.CLOCK_TIME_NONE);
-							return true;
+					scvsig = slider.value_changed.connect(() => {
+							Gst.State sts;
+							double d = slider.get_value();
+							p.playbin.get_state (out sts, null, Gst.CLOCK_TIME_NONE);
+							p.playbin.seek_simple(Gst.Format.TIME, SEEK_FLAGS, (int64)(d* Gst.SECOND));
+							//              print("Slider: %.3f %s\n", d, sts.to_string());
 						});
 
 					p.eos.connect(() => {
-							MWPLog.message("EOS\n");
+							Gst.State sts;
+							p.playbin.get_state (out sts, null, Gst.CLOCK_TIME_NONE);
+							MWPLog.message("EOS %s\n", sts.to_string());
+							p.playbin.set_state (Gst.State.PAUSED);
 						});
 
 					p.error.connect((e,d) => {
@@ -181,12 +224,6 @@ namespace MwpVideo {
 					p.state_change.connect((sts) => {
 							play_button.icon_name = (sts) ? "media-playback-pause-symbolic" : "media-playback-start-symbolic";
 						});
-					p.async_done.connect(()=> {
-							if (seeking) {
-								seeking = false;
-								p.playbin.set_state (st);
-							}
-						});
 
 					((Gtk.Picture)pic).paintable = p.pt;
 
@@ -195,15 +232,6 @@ namespace MwpVideo {
 						});
 
 					double vol = 0.0;
-
-					p.discovered.connect((id) => {
-							if (id ==  Gst.CLOCK_TIME_NONE) {
-								set_slider_max(0);
-							} else {
-								set_slider_max(id);
-							}
-						});
-
 
 					Type type = p.playbin.get_type();
 					ObjectClass ocl = (ObjectClass)type.class_ref();
@@ -257,8 +285,9 @@ namespace MwpVideo {
 				slider.hexpand = true;
 				slider.halign = Gtk.Align.FILL;
 				ptim = new Gtk.Label("");
+				ptim.add_css_class("monospace");
 				prem = new Gtk.Label("");
-
+				prem.add_css_class("monospace");
 				hbox.append(play_button);
 				hbox.append(ptim);
 				hbox.append (slider);
@@ -295,7 +324,7 @@ namespace MwpVideo {
 		public void set_slider_value(double value) {
 			if (slider != null) {
 				slider.set_value(value);
-				var rt = duration/1e9 - value;
+				var rt = duration/Gst.SECOND - value;
 				if (prem.label != "") {
 					prem.label = format_ct(rt, true);
 				}
@@ -303,13 +332,23 @@ namespace MwpVideo {
 			ptim.label = format_ct(value, false);
 		}
 
+
 		private void start_timer(Player p) {
-			tid = Timeout.add(50, () => {
-					int64 current = -1;
-					if (p.playbin.query_position (Gst.Format.TIME, out current)) {
-						if (current !=  Gst.CLOCK_TIME_NONE) {
-							double rtm = current/1e9;
+			tid = Timeout.add(100, () => {
+					if(is_playing() || is_paused()) {
+						Gst.ClockTime current = Gst.CLOCK_TIME_NONE;
+						if(duration == Gst.CLOCK_TIME_NONE) {
+							if(p.playbin.query_duration( Gst.Format.TIME, out duration)) {
+								if (duration !=  Gst.CLOCK_TIME_NONE) {
+									set_slider_max(duration);
+								}
+							}
+						}
+						if(p.playbin.query_position( Gst.Format.TIME, out current)) {
+							double rtm = (double)current/Gst.SECOND;
+							GLib.SignalHandler.block(slider, scvsig);
 							set_slider_value(rtm);
+							GLib.SignalHandler.unblock(slider, scvsig);
 						}
 					}
 					return true;
