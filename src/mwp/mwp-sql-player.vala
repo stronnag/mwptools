@@ -180,11 +180,12 @@ public class SQLSlider : Gtk.Window {
 		if (has_video) {
 			MwpVideo.player.set_playing(false);
 			vidbox.ventry.activate.connect(() => {
-					voffset = (int64)(double.parse(vidbox.ventry.text) * Gst.SECOND);
+					get_voffset(vidbox);
 				});
 
 			vidbox.vseek.clicked.connect(() => {
 					if(MwpVideo.player != null) {
+						get_voffset(vidbox);
 						var v = slider.get_value();
 						var n = (int)Math.round(v);
 						var tm = sp.get_timer_for(n);
@@ -197,6 +198,7 @@ public class SQLSlider : Gtk.Window {
 
 			vidbox.vswitch.state_set.connect((s) => {
 					if(MwpVideo.player != null) {
+						get_voffset(vidbox);
 						if(s) {
 							MwpVideo.set_playing(true);
 							cursig = MwpVideo.player.set_current.connect((t) => {
@@ -220,6 +222,12 @@ public class SQLSlider : Gtk.Window {
 			if(SLG.speedup) {
 				toggle_pstate();
 			}
+		}
+	}
+
+	private void get_voffset(LogVidControls vidbox) {
+		if(vidbox.ventry.text.length > 0) {
+			voffset = (int64)(double.parse(vidbox.ventry.text) * Gst.SECOND);
 		}
 	}
 
