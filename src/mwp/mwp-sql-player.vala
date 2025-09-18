@@ -62,7 +62,7 @@ public class SQLSlider : Gtk.Window {
 	private int smax;
 	private ulong cursig;
 
-	private int64 voffset;
+	private int64 voffset; // nanoseconds (Gst unit)
 
 	public SQLSlider(string fn, int idx) {
         Mwp.xlog = Mwp.conf.logarmed;
@@ -180,7 +180,7 @@ public class SQLSlider : Gtk.Window {
 		if (has_video) {
 			MwpVideo.player.set_playing(false);
 			vidbox.ventry.activate.connect(() => {
-					voffset = (int64)(double.parse(vidbox.ventry.text)* 1e9);
+					voffset = (int64)(double.parse(vidbox.ventry.text) * Gst.SECOND);
 				});
 
 			vidbox.vseek.clicked.connect(() => {
@@ -200,7 +200,7 @@ public class SQLSlider : Gtk.Window {
 						if(s) {
 							MwpVideo.set_playing(true);
 							cursig = MwpVideo.player.set_current.connect((t) => {
-									sp.jump_to_time(t);
+									sp.jump_to_time(t-voffset);
 								});
 						} else {
 							if (cursig != 0) {
