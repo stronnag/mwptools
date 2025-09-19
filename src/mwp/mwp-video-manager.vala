@@ -87,6 +87,7 @@ namespace V4L2 {
 		}
 
 		private void build_list() {
+			MWPLog.message("DBG:Cams: list size %u\n", MwpCameras.list.length());
 			for(var j = 1; j < sl.get_n_items(); j++) {
 				sl.remove(j);
 			}
@@ -112,6 +113,7 @@ namespace V4L2 {
 		}
 
 		public Window() {
+			MwpCameras.cams.check_cams();
 			menu = new GLib.Menu();
 			var mb = new Gtk.MenuButton();
 			mb.label = "Settings";

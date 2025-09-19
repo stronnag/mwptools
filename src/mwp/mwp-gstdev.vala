@@ -286,6 +286,14 @@ namespace MwpCameras {
 			return true;
 		}
 
+		public void check_cams() {
+			var ll = monitor.get_devices();
+			ll.foreach ((d) => {
+					var ds =  get_node_info(d);
+					add_list(ds);
+				});
+		}
+
 		public void setup_device_monitor () {
 			monitor = new Gst.DeviceMonitor ();
 			var caps = new Gst.Caps.empty_simple ("video/x-raw");
@@ -295,11 +303,7 @@ namespace MwpCameras {
 			var bus  = monitor.get_bus();
 			bus.add_watch(Priority.DEFAULT, bus_callback);
 			monitor.start();
-			var ll = monitor.get_devices();
-			ll.foreach ((d) => {
-					var ds =  get_node_info(d);
-					add_list(ds);
-				});
+			check_cams();
 		}
 	}
 }

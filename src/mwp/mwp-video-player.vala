@@ -185,6 +185,7 @@ namespace MwpVideo {
 		private Gst.ClockTime duration;
 		public Gdk.Paintable pt;
 		private Gst.ClockTime current;
+		private bool show_error;
 
 		private void start_timer() {
 			tid = Timeout.add(100, () => {
@@ -226,6 +227,7 @@ namespace MwpVideo {
 		}
 
 		public Player(string ouri) {
+			show_error = false;
 			current = Gst.CLOCK_TIME_NONE;
 			duration =  Gst.CLOCK_TIME_NONE;
 			var uri = MwpVideo.to_uri(ouri);
@@ -454,12 +456,13 @@ namespace MwpVideo {
 				showme = false;
 			}
 #endif
-			if(showme) {
-				var wb = new Utils.Warning_box("Video Error: [%s]\n%s\n".printf(e.message, d), 0, w);
+			if(!show_error && showme) {
+				var wb = new Utils.Warning_box("A Video error has occurred.\nThis may be recoverable\n(Play button / Space Bar to retry)\n\nSee log for details", 0, w);
 				wb.present();
 			} else {
 				set_playing(true);
 			}
+			show_error = true;
 		}
 	}
 }
