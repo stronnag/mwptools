@@ -28,11 +28,11 @@ public class LogVidControls : Gtk.Box {
 	  Object(orientation: Gtk.Orientation.HORIZONTAL);
 
 	  offset = 0.0;
-	  var img = new Gtk.Image.from_icon_name("multimedia-video-player-symbolic");
+	  var img = new Gtk.Image.from_icon_name("video-x-generic");
 	  vswitch = new Gtk.Switch();
 	  vswitch.set_tooltip_text("Drive replay from video");
 
-	  vseek = new Gtk.Button.from_icon_name("forward-symbolic");
+	  vseek = new Gtk.Button.from_icon_name("forward");
 	  vseek.set_tooltip_text("Seek video to replay");
 
 	  ventry = new Gtk.Entry();
