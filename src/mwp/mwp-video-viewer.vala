@@ -173,11 +173,7 @@ namespace MwpVideo {
 						});
 
 					p.error.connect((e,d) => {
-							Gst.State state;
-							p.playbin.get_state (out state, null, Gst.CLOCK_TIME_NONE);
-							MWPLog.message("GST Error %s %s (%d)\n%s\n", state.to_string(), e.message, e.code, d);
-							var wb = new Utils.Warning_box("Video Error: %s (%d)\n%s\n".printf(e.message, e.code, d), 0, this);
-							wb.present();
+							p.handle_error(e,d,this);
 						});
 
 					p.state_change.connect((sts) => {

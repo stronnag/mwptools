@@ -109,13 +109,8 @@ namespace MwpVideo {
 			p = new MwpVideo.Player(uri);
 			pt = p.pt;
 			if (pt != null) {
-				p.error.connect((e) => {
-						var wb = new Utils.Warning_box("Video Error: %s [%x]".printf( e.message, e.code));
-						wb.present();
-						if (p!=null) {
-							p.clear();
-							p = null;
-						}
+				p.error.connect((e,d) => {
+						p.handle_error(e,d,Mwp.window);
 					});
 				p.eos.connect(() => {
 						if (p!=null) {
@@ -389,7 +384,6 @@ namespace MwpVideo {
 				GLib.Error err;
 				string debug;
 				message.parse_error (out err, out debug);
-				MWPLog.message("Video error: %s <%s> (%d)\n", err.message, debug, err.code);
 				error(err, debug);
 				break;
 			case Gst.MessageType.EOS:
@@ -448,6 +442,23 @@ namespace MwpVideo {
 			} else {
 				playbin.set_state (Gst.State.NULL);
 				MwpVideo.state &= ~MwpVideo.State.PLAYER;
+			}
+		}
+
+		public void handle_error(Error e, string d, Gtk.Window? w) {
+			bool showme = true;
+			MWPLog.message("Gst Error [%s] [%s] (%s,%d)\n", e.message, d,
+						   e.domain.to_string(), e.code);
+#if WINDOWS
+			if(e.domain.to_string() == "gst-resource-error-quark" && e.code == 3) {
+				showme = false;
+			}
+#endif
+			if(showme) {
+				var wb = new Utils.Warning_box("Video Error: [%s]\n%s\n".printf(e.message, d), 0, w);
+				wb.present();
+			} else {
+				set_playing(true);
 			}
 		}
 	}

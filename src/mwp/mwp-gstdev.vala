@@ -295,6 +295,11 @@ namespace MwpCameras {
 			var bus  = monitor.get_bus();
 			bus.add_watch(Priority.DEFAULT, bus_callback);
 			monitor.start();
+			var ll = monitor.get_devices();
+			ll.foreach ((d) => {
+					var ds =  get_node_info(d);
+					add_list(ds);
+				});
 		}
 	}
 }
