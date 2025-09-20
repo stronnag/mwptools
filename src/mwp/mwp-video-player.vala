@@ -263,10 +263,10 @@ namespace MwpVideo {
 						furi = "v4l2://".concat(devname);
 						MWPLog.message("FB Device %s\n", furi);
 					}
-				}
 #else
-				return null;
+					return null;
 #endif
+				}
 				f = File.new_for_uri(furi);
 				if(f != null) {
 					var mmf = Gtk.MediaFile.for_file(f);
