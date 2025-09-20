@@ -574,6 +574,7 @@ namespace Mwp {
 				try {
 					if (defset == null) {
 						FileUtils.get_contents(vfn, out defset);
+						defset = defset.strip();
 						MWPLog.message(":DBG: Video URI %s from %s\n", defset, vfn);
 					}
 					if(defset != null) {

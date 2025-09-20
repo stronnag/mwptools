@@ -302,6 +302,7 @@ namespace Mwp {
 				Posix.exit(127);
 			}
 #endif
+			Legacy.cleanup();
 			if (active_window == null) {
 				show_misc_info();
 				new Thread<int> ("glinfo", () => {

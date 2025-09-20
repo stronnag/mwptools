@@ -211,7 +211,7 @@ namespace VideoMan {
 						var i = vid_dialog.viddev_c.get_selected();
 						if (i > 0) {
 							var dname = ((Gtk.StringList)vid_dialog.viddev_c.model).get_string(i);
-							uri = "v4l2://".concat(dname);
+							uri = "camera://".concat(dname);
 							MwpCameras.update_camera_opt(dname, (int16)camopt);
 						} else {
 							res = -1;
@@ -222,7 +222,7 @@ namespace VideoMan {
 						if (uri.length > 0) {
 							if (uri.has_prefix("~")) {
 								var h = Environment.get_home_dir();
-								uri = h + uri[1:uri.length];
+								uri = h.concat(uri[1:uri.length]);
 							}
 							if (!uri.contains("://")) {
 								try {

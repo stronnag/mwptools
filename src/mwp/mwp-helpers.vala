@@ -175,6 +175,44 @@ namespace Misc {
 }
 
 
+namespace Legacy {
+	void cleanup() {
+		var uc =  Environment.get_user_config_dir();
+		var dn = GLib.Path.build_filename(uc,"mwp");
+		string [] names = {
+			GLib.Path.build_filename(dn, ".last_fpv-video"),
+			GLib.Path.build_filename(dn, "panel.conf")
+		};
+		foreach(var n in names) {
+			async_unlink.begin(n, (obj, res) => {
+					async_unlink.end(res);
+				});
+		}
+	}
+
+	private async bool async_unlink(string name) {
+		bool r = false;
+		var task = new Task (new Object(), null, (obj, atask) => {
+				try {
+					r = atask.propagate_boolean();
+				} catch (Error e) {
+					// print("Async task error: %s\n", e.message);
+				} finally {
+					async_unlink.callback ();
+				}
+			});
+
+		task.set_task_data (name, null);
+		task.run_in_thread ((atask, obj, ptr, cancellable) => {
+				var fn = (string)ptr;
+				FileUtils.unlink(fn);
+				atask.return_boolean (true);
+			});
+		yield;
+		return r;
+    }
+}
+
 namespace PosFormat  {
     public string lat(double _lat, bool dms) {
         if(dms == false)

@@ -65,7 +65,7 @@ namespace MwpVideo {
 
 	public string save_file_name() {
 		var uc =  Environment.get_user_config_dir();
-		return GLib.Path.build_filename(uc,"mwp",".last_fpv-video");
+		return GLib.Path.build_filename(uc,"mwp",".last-fpv-video");
 	}
 
 	public void toggle() {
@@ -251,8 +251,9 @@ namespace MwpVideo {
 			File f;
 			string furi = uri;
 			if(MwpVideo.is_fallback) {
-				if(uri.has_prefix("v4l2://")) {
-					var devname = uri.substring(7);
+				if(uri.has_prefix("camera://")) {
+#if (LINUX || FREEBSD)
+					var devname = uri.substring(9);
 					MWPLog.message("FB lookup %s\n", devname);
 					var ds = MwpCameras.find_camera(devname);
 					if (ds != null) {
@@ -263,6 +264,9 @@ namespace MwpVideo {
 						MWPLog.message("FB Device %s\n", furi);
 					}
 				}
+#else
+				return null;
+#endif
 				f = File.new_for_uri(furi);
 				if(f != null) {
 					var mmf = Gtk.MediaFile.for_file(f);
@@ -285,11 +289,14 @@ namespace MwpVideo {
 				MwpCameras.VideoDev? ds = null;
 				string devname = null;
 				bool dbg = (Environment.get_variable("MWP_SHOW_FPS") != null);
-				if(uri.has_prefix("v4l2://")) {
-					devname = uri.substring(7);
+				MWPLog.message(":DBG:CAM: %s\n", uri);
+				if(uri.has_prefix("camera://")) {
+					devname = uri.substring(9);
+					MWPLog.message(":DBG:CAM: %s\n", devname);
 					ds = MwpCameras.find_camera(devname);
-				}
-				if(ds != null) {
+					if(ds == null) {
+						return null;
+					}
 					int16 camopt = MwpCameras.lookup_camera_opt(devname);
 					var sb = new StringBuilder(ds.driver);
 					sb.append_c(' ');
