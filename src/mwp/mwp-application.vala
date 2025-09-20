@@ -294,6 +294,29 @@ namespace Mwp {
 			return Source.REMOVE;
 		}
 #endif
+
+		static string rptr;
+		async void * async_gl() {
+			void *r = null;
+			var task = new Task (new Object(), null, (obj, atask) => {
+					try {
+						r = atask.propagate_pointer();
+					} catch (Error error) {
+						print(error.message);
+					} finally {
+						async_gl.callback ();
+					}
+				});
+
+			task.set_task_data (null, null);
+			task.run_in_thread ((task, obj, ptr, cancellable) => {
+					rptr = Mwp.get_gl_info();
+					task.return_pointer(rptr, null);
+				});
+			yield;
+			return r;
+		}
+
 		public override void activate () {
 			dex = true;
 #if UNIX
@@ -305,9 +328,11 @@ namespace Mwp {
 			Legacy.cleanup();
 			if (active_window == null) {
 				show_misc_info();
-				new Thread<int> ("glinfo", () => {
-						Mwp.get_gl_info();
-						return 0;
+				async_gl.begin((obj, res) => {
+						var resp = async_gl.end(res);
+						if(resp != null) {
+							MWPLog.message("GL: %s\n", (string)resp);
+						}
 					});
 			}
 			base.activate ();

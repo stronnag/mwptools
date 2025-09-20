@@ -96,7 +96,8 @@ namespace Mwp {
 		}
 	}
 
-	public void get_gl_info() {
+	public string? get_gl_info() {
+		string res = null;
 		string line;
 		string []glexes={"es2_info", "glxinfo"};
 		foreach (var s in glexes) {
@@ -153,18 +154,19 @@ namespace Mwp {
 								sb.append_c(' ');
 								sb.append(glversion.chomp());
 								sb.append_printf(" (%s)", s);
-								MWPLog.message("GL: %s\n", sb.str);
+								res = sb.str;
 								break;
 							}
 						}
 					}
 				} catch (Error e) {
-					MWPLog.message("%s : %s\n", s, e.message);
+					//	MWPLog.message("%s : %s\n", s, e.message);
 				}
 				if(nm == 3)
 					break;
 			}
 		}
+		return res;
 	}
 
 	private static string? check_virtual(string? os) {
