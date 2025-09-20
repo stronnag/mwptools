@@ -296,12 +296,9 @@ namespace MwpCameras {
 
 		public void setup_device_monitor () {
 			monitor = new Gst.DeviceMonitor ();
-			var caps = new Gst.Caps.empty_simple ("video/x-raw");
-			var cid= monitor.add_filter ("Video/Source", caps);
-			caps = new Gst.Caps.empty_simple ("image/jpeg");
-			cid = monitor.add_filter ("Video/Source", caps);
 			var bus  = monitor.get_bus();
 			bus.add_watch(Priority.DEFAULT, bus_callback);
+			monitor.add_filter ("Video/Source", null);
 			monitor.start();
 			check_cams();
 		}
