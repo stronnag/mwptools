@@ -243,8 +243,10 @@ namespace MwpVideo {
 				}
 				start_timer();
 				MwpVideo.state = MwpVideo.State.PLAYER;
+				MwpVideo.player = this;
+			} else {
+				MwpVideo.player = null;
 			}
-			MwpVideo.player = this;
 		}
 
 		private Gdk.Paintable? generate_playbin(string uri) {
@@ -289,7 +291,7 @@ namespace MwpVideo {
 				MwpCameras.VideoDev? ds = null;
 				string devname = null;
 				bool dbg = (Environment.get_variable("MWP_SHOW_FPS") != null);
-				MWPLog.message(":DBG:CAM: %s\n", uri);
+				MWPLog.message(":DBG:URI: %s\n", uri);
 				if(uri.has_prefix("camera://")) {
 					devname = uri.substring(9);
 					MWPLog.message(":DBG:CAM: %s\n", devname);
