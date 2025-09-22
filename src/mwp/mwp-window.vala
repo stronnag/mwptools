@@ -54,7 +54,6 @@ namespace Mwp {
 
 	private void final_clean() {
 		MwpVideo.stop_embedded_player();
-		//		MwpCameras.save_camera_dict();
 		TTS.stop_audio();
 		if (inhibit_cookie != 0) {
 			MwpIdle.uninhibit(inhibit_cookie);
@@ -373,8 +372,6 @@ namespace Mwp {
 			Places.get_places();
 			posdialog = new Mwp.GotoDialog();
 			scwindow = new Mwp.SCWindow();
-			MwpCameras.init();
-
 			conbutton.clicked.connect(() => {
 					Msp.handle_connect();
 				});
