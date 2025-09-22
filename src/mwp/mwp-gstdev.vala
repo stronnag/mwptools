@@ -296,11 +296,11 @@ namespace MwpCameras {
 
 		public void setup_device_monitor () {
 			monitor = new Gst.DeviceMonitor ();
+			monitor.add_filter ("Video/Source", null);
+			check_cams();
 			var bus  = monitor.get_bus();
 			bus.add_watch(Priority.DEFAULT, bus_callback);
-			monitor.add_filter ("Video/Source", null);
 			monitor.start();
-			check_cams();
 		}
 	}
 }

@@ -113,7 +113,6 @@ namespace V4L2 {
 		}
 
 		public Window() {
-			MwpCameras.cams.check_cams();
 			menu = new GLib.Menu();
 			var mb = new Gtk.MenuButton();
 			mb.label = "Settings";
