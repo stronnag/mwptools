@@ -292,15 +292,46 @@ namespace MwpCameras {
 					var ds =  get_node_info(d);
 					add_list(ds);
 				});
+#if WINDOWS
+			if(list.length() == 0) {
+				MWPLog.message("WINDOWS: Use camera fallback\n");
+				MainContext.@default().invoke(() => {
+						string cs = WinCam.get_cameras();
+						MWPLog.message("WINDOWS: Use camera fallback %p\n", cs);
+						if (cs != null) {
+							var parts = cs.split("\r");
+							foreach (var p in parts) {
+								MWPLog.message("WIN-FALLBACK: %s\n", p);
+								var cparts = p.split("\t");
+								VideoDev ds = {};
+								ds.caps = new Array<string>();
+								ds.displayname = cparts[0];
+								ds.devicename = cparts[0];
+								ds.driver = "ksvideosrc";
+								StringBuilder sb = new StringBuilder("device-name=\"");
+								sb.append(ds.displayname);
+								sb.append_c('"');
+								ds.launch_props = sb.str;
+								add_list(ds);
+							}
+						}
+						return false;
+					});
+			}
+#endif
 		}
 
 		public void setup_device_monitor () {
 			monitor = new Gst.DeviceMonitor ();
+			monitor.add_filter ("Video/Source", null);
+			check_cams();
 			var bus  = monitor.get_bus();
 			bus.add_watch(Priority.DEFAULT, bus_callback);
-			monitor.add_filter ("Video/Source", null);
 			monitor.start();
-			check_cams();
+		}
+
+		public void stop() {
+			monitor.stop();
 		}
 	}
 }

@@ -59,6 +59,13 @@ subdir('docs')
 mwpbuildlibs = [mwpclib, libmwpvers, mwpvlib ]
 mwpbuildsrc = [mwpsrcs, mwpcommon, mwpvers_h, mresources]
 
+if build_machine.system() == 'windows'
+  subdir('src/wcam')
+  mwpbuildlibs += wcamclib
+  common_inc_dir += wcam_inc_dir
+  mwpdeps += wcamldeps
+endif
+
 exargs = {
   'sources': mwpbuildsrc,
   'dependencies': [mwpdeps ],
