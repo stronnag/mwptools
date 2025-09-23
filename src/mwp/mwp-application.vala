@@ -337,7 +337,7 @@ namespace Mwp {
 			}
 			base.activate ();
 			if (active_window == null) {
-				MwpCameras.init();
+				MwpCamera.init();
 				ready = true;
 				window = new Mwp.Window (this);
 				window.present ();

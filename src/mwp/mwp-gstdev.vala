@@ -1,4 +1,4 @@
-namespace MwpCameras {
+namespace MwpCamera {
 	public struct VideoDev {
 		string devicename;
 		string displayname;
@@ -293,7 +293,7 @@ namespace MwpCameras {
 					add_list(ds);
 				});
 #if WINDOWS
-			if(list.length() == 0) {
+			if(ll.empty()) {
 				MWPLog.message("WINDOWS: Use camera fallback\n");
 				MainContext.@default().invoke(() => {
 						string cs = WinCam.get_cameras();
@@ -325,12 +325,15 @@ namespace MwpCameras {
 			monitor = new Gst.DeviceMonitor ();
 			monitor.add_filter ("Video/Source", null);
 			check_cams();
+		}
+
+		public void start_device_monitor() {
 			var bus  = monitor.get_bus();
 			bus.add_watch(Priority.DEFAULT, bus_callback);
 			monitor.start();
 		}
 
-		public void stop() {
+		public void stop_monitor() {
 			monitor.stop();
 		}
 	}
