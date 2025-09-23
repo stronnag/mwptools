@@ -293,7 +293,7 @@ namespace MwpCamera {
 					add_list(ds);
 				});
 #if WINDOWS
-			if(ll.empty()) {
+			if(list.length() == 0) {
 				MWPLog.message("WINDOWS: Use camera fallback\n");
 				MainContext.@default().invoke(() => {
 						string cs = WinCam.get_cameras();
