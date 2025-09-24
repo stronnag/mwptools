@@ -136,7 +136,6 @@ namespace Mwp {
 		public Gtk.Paned pane;
 		private StrIntStore pis;
 		private Mwp.GotoDialog posdialog;
-		private Mwp.SCWindow scwindow;
 		private CloseCheck close_check;
 		private GLib.SimpleAction swaq;
 
@@ -373,7 +372,6 @@ namespace Mwp {
 			build_serial_combo();
 			Places.get_places();
 			posdialog = new Mwp.GotoDialog();
-			scwindow = new Mwp.SCWindow();
 			conbutton.clicked.connect(() => {
 					Msp.handle_connect();
 				});
@@ -666,7 +664,7 @@ namespace Mwp {
 		}
 
 		private void launch_scwindow() {
-			scwindow.present();
+			Mwp.Shortcuts.show_dialog();
 		}
 
 		private void launch_safehomes() {
@@ -1062,6 +1060,7 @@ namespace Mwp {
         MwpMenu.set_menu_state(Mwp.window, "terminal", false);
 #endif
 		}
+
 	}
 
 	private void go_base() {

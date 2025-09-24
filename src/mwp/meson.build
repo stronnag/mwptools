@@ -79,9 +79,14 @@ mwpsrcs = files('mwp-about.vala', 'mwp-ah_widget.vala', 'mwp-css.vala',
                 'mwp-video-viewer.vala',
                )
 
+adwaita = dependency ('libadwaita-1', version: '>= 1.5')
+if adwaita.version().version_compare('>=1.8')
+  mwp_v_args += '--define=ADW_SHORTCUTS'
+endif
+
 mwpdeps = [deps,
 	   dependency('gtk4', version: '>=4.14'),
-           dependency ('libadwaita-1', version: '>= 1.5'),
+           adwaita,
 	   dependency('glib-2.0'),
            soupdep,
            dependency('libxml-2.0'),

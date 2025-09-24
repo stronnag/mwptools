@@ -1,7 +1,6 @@
 blpfiles = [
   'mwpmain.blp',
   'mwpmenu.blp',
-  'mwpsc.blp',
   'goto_dialog.blp',
   'kmlremover.blp',
   'wppop.blp',
@@ -40,6 +39,13 @@ blpfiles = [
   'slg_dialog.blp',
 ]
 
+if adwaita.version().version_compare('<1.8')
+  blpfiles += 'mwpsc.blp'
+  resourcexml = 'mwp.gresource-legacy.xml'
+else
+  resourcexml = 'mwp.gresource.xml'
+endif
+
 blueprints_ui = []
 blueprints_vala = []
 foreach b : blpfiles
@@ -62,7 +68,7 @@ blueprints_hack = custom_target('blueprints_hack',
 
 mresources = gnome.compile_resources(
   'm-resources',
-  'mwp.gresource.xml',
+  resourcexml,
   source_dir: 'data',
   c_name: 'm',
   dependencies: [blueprints, ]

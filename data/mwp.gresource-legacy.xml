@@ -3,6 +3,7 @@
   <gresource prefix="/org/stronnag/mwp">
     <file preprocess="xml-stripblanks" compressed="true">mwpmain.ui</file>
     <file preprocess="xml-stripblanks" compressed="true">mwpmenu.ui</file>
+    <file preprocess="xml-stripblanks" compressed="true">mwpsc.ui</file>
     <file preprocess="xml-stripblanks" compressed="true">goto_dialog.ui</file>
     <file preprocess="xml-stripblanks" compressed="true">kmlremover.ui</file>
     <file preprocess="xml-stripblanks" compressed="true">wppop.ui</file>
