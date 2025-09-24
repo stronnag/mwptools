@@ -54,7 +54,7 @@ namespace Mwp {
 
 	private void final_clean() {
 		MwpVideo.stop_embedded_player();
-		//		MwpCameras.save_camera_dict();
+		MwpCamera.cams.stop_monitor();
 		TTS.stop_audio();
 		if (inhibit_cookie != 0) {
 			MwpIdle.uninhibit(inhibit_cookie);
@@ -188,6 +188,7 @@ namespace Mwp {
 		public Window (Adw.Application app) {
             Object (application: app);
 
+			MwpCamera.cams.start_device_monitor();
 			MwpCss.init();
 
 			string cssfile = MWPUtils.find_conf_file("mwp-base.css");
@@ -373,8 +374,6 @@ namespace Mwp {
 			Places.get_places();
 			posdialog = new Mwp.GotoDialog();
 			scwindow = new Mwp.SCWindow();
-			MwpCameras.init();
-
 			conbutton.clicked.connect(() => {
 					Msp.handle_connect();
 				});

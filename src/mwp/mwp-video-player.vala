@@ -257,7 +257,7 @@ namespace MwpVideo {
 #if (LINUX || FREEBSD)
 					var devname = uri.substring(9);
 					MWPLog.message("FB lookup %s\n", devname);
-					var ds = MwpCameras.find_camera(devname);
+					var ds = MwpCamera.find_camera(devname);
 					if (ds != null) {
 						furi = "v4l2://".concat(ds.devicename);
 						MWPLog.message("FB Device %s %s -> %s \n", ds.devicename, ds.driver, furi);
@@ -288,25 +288,25 @@ namespace MwpVideo {
 				MwpVideo.playbin = null;
 				Gdk.Paintable ptx = null;
 				Gst.Element videosink = null;
-				MwpCameras.VideoDev? ds = null;
+				MwpCamera.VideoDev? ds = null;
 				string devname = null;
 				bool dbg = (Environment.get_variable("MWP_SHOW_FPS") != null);
 				MWPLog.message(":DBG:URI: %s\n", uri);
 				if(uri.has_prefix("camera://")) {
 					devname = uri.substring(9);
 					MWPLog.message(":DBG:CAM: %s\n", devname);
-					ds = MwpCameras.find_camera(devname);
+					ds = MwpCamera.find_camera(devname);
 					if(ds == null) {
 						return null;
 					}
-					int16 camopt = MwpCameras.lookup_camera_opt(devname);
+					int16 camopt = MwpCamera.lookup_camera_opt(devname);
 					var sb = new StringBuilder(ds.driver);
 					sb.append_c(' ');
 					sb.append(ds.launch_props);
 					if(camopt == -1) {
 						camopt = 0;
 					}
-					unowned var caps = 	MwpCameras.get_caps(devname);
+					unowned var caps = 	MwpCamera.get_caps(devname);
 					if (camopt < caps.length) {
 						sb.append_printf(" ! %s", caps[camopt]);
 					}

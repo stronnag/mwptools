@@ -87,11 +87,11 @@ namespace V4L2 {
 		}
 
 		private void build_list() {
-			MWPLog.message("DBG:Cams: list size %u\n", MwpCameras.list.length());
+			MWPLog.message("DBG:Cams: list size %u\n", MwpCamera.list.length());
 			for(var j = 1; j < sl.get_n_items(); j++) {
 				sl.remove(j);
 			}
-			MwpCameras.list.@foreach((dv) => {
+			MwpCamera.list.@foreach((dv) => {
 					var d = dv.displayname;
 					sl.append(d);
 				});
@@ -123,11 +123,11 @@ namespace V4L2 {
 			viddev_c = new Gtk.DropDown(sl, null);
 			viddev_c.notify["selected-item"].connect(() =>  {
 					var c = (Gtk.StringObject)viddev_c.get_selected_item();
-					unowned var dp = MwpCameras.find_camera(c.string);
+					unowned var dp = MwpCamera.find_camera(c.string);
 					if(dp != null) {
 						webcam.active = true;
 						MWPLog.message(":DBG: Camera: %s : %s <%s>\n", dp.displayname, dp.devicename, dp.driver);
-						var nv = MwpCameras.lookup_camera_opt(c.string);
+						var nv = MwpCamera.lookup_camera_opt(c.string);
 						build_menu(dp.caps.data, (int)nv);
 					} else {
 						webcam.active = false;
@@ -140,7 +140,7 @@ namespace V4L2 {
 
 			build_list();
 
-			MwpCameras.cams.updated.connect(() => {
+			MwpCamera.cams.updated.connect(() => {
 					build_list();
 				});
 
@@ -211,7 +211,7 @@ namespace VideoMan {
 						if (i > 0) {
 							var dname = ((Gtk.StringList)vid_dialog.viddev_c.model).get_string(i);
 							uri = "camera://".concat(dname);
-							MwpCameras.update_camera_opt(dname, (int16)camopt);
+							MwpCamera.update_camera_opt(dname, (int16)camopt);
 						} else {
 							res = -1;
 						}
