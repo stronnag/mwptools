@@ -45,11 +45,11 @@ namespace Mwp {
 			schash.insert("win.safe-homes", "Invoke Safe home dialog");
 			schash.insert("win.assistnow", "Invoke Assist Now dialog");
 			schash.insert("win.followme", "Invoke MSP Follow-me dialog");
-			schash.insert("win.msprc", "win.msprc");
+			schash.insert("win.msprc", "Show MSPRC dialog");
 			schash.insert("win.mwpset", "All settings dialog");
 			schash.insert("win.areap", "Invoke the survey / area planner");
 			schash.insert("win.mman", "Multi-mission manager");
-			schash.insert("win.mission-info", "win.mission-info");
+			schash.insert("win.mission-info", "(not implemented)");
 			schash.insert("win.seed-map", "Invoke the map seeder");
 			schash.insert("win.audio-test", "Invoke the audio test");
 			schash.insert("win.recentre", "Zoom to mission");
@@ -88,7 +88,7 @@ namespace Mwp {
 			schash.insert("win.quit", "Quit the application");
 			schash.insert("win.radar-devices", "Invoke radar device dialog");
 			schash.insert("win.vlegend", "Show the ADSB altitude legend");
-			schash.insert("win.trackdump", "Track Dump");
+			schash.insert("win.trackdump", "Write current telemetry data to logfile");
 			schash.insert("win.mtote", "Invoke the mission tote");
 			schash.insert("win.usemsprc", "Toggle MSPRC");
 			schash.insert("win.show-channels", "Show MSPRC channels");
