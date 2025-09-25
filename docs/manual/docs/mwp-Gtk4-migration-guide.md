@@ -2,7 +2,7 @@
 
 This document describes the migration from legacy (Gtk+-3.0) mwp to contemporary (Gtk4) mwp.
 
-![mwp](images/mwp4.png)
+![mwp](images/mwp4.avif)
 
 ## System Requirements
 

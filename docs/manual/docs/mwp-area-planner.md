@@ -6,7 +6,7 @@
 
 The area planner is invoked from the "Edit" menu. It loads a dialogue window and presents a basic search area outline.
 
-![area planner](images/survey-dropdown.png)
+![area planner](images/survey-dropdown.avif)
 
 The drop-down in the top right offers options of:
 
@@ -46,7 +46,7 @@ Points may be inserted / deleted from the survey outline from a right mouse / lo
 
 Points may be moved by dragging.
 
-![area planner](images/area-planner_02.png)
+![area planner](images/area-planner_02.avif)
 
 Any plotted outline mission will be recalculated as points are manipulated.
 
@@ -61,29 +61,29 @@ Once an initial solution has been plotted, changing any of the first three param
 After a solution has been calculated, the "Mission Data" summary is updated.
 
 Example of too many points being generated due to over-large area / narrow row separation:
-![area planner](images/area-planner_03.png)
+![area planner](images/area-planner_03.avif)
 
 Example of fewer points being generated with adjusted area and row separation:
-![area planner](images/area-planner_04.png)
+![area planner](images/area-planner_04.avif)
 
 Note also how the angle and turn parameters affect the staring point.
 
 Example of generated mission with KML backdrop showing original survey area:
-![area planner](images/survey-ovl-kml.png)
+![area planner](images/survey-ovl-kml.avif)
 
 ### "Square" pattern generator
 
 The "Square" generator provides a single draggable point with options of start angle, first leg distance and the number of iterations.
 
-![area planner](images/survey-square-ui.png)
+![area planner](images/survey-square-ui.avif)
 
 The default parameters result in the following survey pattern.
 
-![area planner](images/survey-gen-square.png)
+![area planner](images/survey-gen-square.avif)
 
 And a generated mission from these settings looks might look like:
 
-![area planner](images/survey-mission-sq.png)
+![area planner](images/survey-mission-sq.avif)
 
 ### "Spiral" pattern generator
 
@@ -91,17 +91,17 @@ The "Spiral" generator provides a single draggable point with options of first l
 
 The default parameters result in the following survey pattern.
 
-![area planner](images/survey-spiral-01.png)
+![area planner](images/survey-spiral-01.avif)
 
 And a generated mission from these settings looks might look like:
 
-![area planner](images/survey-spiral-02.png)
+![area planner](images/survey-spiral-02.avif)
 
 ### File Menu
 
 The area planner dialog has a drop down menu to load and save **Parallel** area definitions to / from the file system. The files are the same format as for the legacy `mwp-area-planner`.
 
-![area planner](images/area-plan-menu.png)
+![area planner](images/area-plan-menu.avif)
 
 In addition (not shown), it is also possible to save the **Parallel** survey outline as a KML file for future display / analysis.
 

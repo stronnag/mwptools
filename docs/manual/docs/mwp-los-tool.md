@@ -21,7 +21,7 @@ Please be aware of these accuracy / fidelity issues when evaluating the results 
 
  is invoked from any waypoint using the right mouse button.
 
-![Menu Options](images/los-menu.png){: width="30%" }
+![Menu Options](images/los-menu.avif){: width="30%" }
 
 ## Examples
 
@@ -45,7 +45,7 @@ The LOS dialog presents:
 * An "Area LOS" button.
 * A "Clear" button.
 
-![Manual LOS](images/los-manual.png)
+![Manual LOS](images/los-manual.avif)
 
 
 In the image above the user has selected "Line of Sight ..." from the right mouse menu at WP6. The slider is positioned appropriate to WP6. Note that if the mission contains JUMP WPs, these are executed once only (regardless of the mission setting). This is why the slider might appear less advanced compared to the mission length if the JUMP is ignored. The user can reposition the WP using the slider (or the start / end buttons).
@@ -60,7 +60,7 @@ When an analysis results in an orange or red LOS fill, the first point where the
 
 This analysis is iterated along the mission path automatically, providing Area coverage for the mission.
 
-![Auto LOS](images/low-res-los.png)
+![Auto LOS](images/low-res-los.avif)
 
 The image shows the state after a complete "Area" analysis. While the analysis is running, the slider and "Point LOS" are not sensitive; once the run has completed, these controls are available if the user wishes to investigate further. The user can stop (and restart) Area  using the "Area LOS" / "Stop" button.
 
@@ -68,11 +68,11 @@ Note the areas indicated in the SE part of the mission.
 
 If the user now runs a "High Resolution" Area LOS, note how the more fidelity is revealed in the SE part of the mission.
 
-![Auto LOS](images/high-res-los.png)
+![Auto LOS](images/high-res-los.avif)
 
 The user can use the  "Point LOS" to examine a point.
 
-![Auto LOS](images/point-los.png)
+![Auto LOS](images/point-los.avif)
 
 It is important to note that Area LOS is performed at 1% increments of the [naive mission length](#miscellaneous-notes), it is not contiguous.
 

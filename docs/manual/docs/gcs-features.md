@@ -44,7 +44,7 @@
 
 When flying waypoints, if the mission is also loaded into {{ mwp }}, {{ mwp }} can display some limited "OSD" information.
 
-![mwp-osd](images/mwp-osd.png){: width="75%" }
+![mwp-osd](images/mwp-osd.avif){: width="75%" }
 
 Various settings (colour, items displayed etc.) are defined by [settings](mwp-Configuration.md#dconf-gsettings).
 
@@ -54,7 +54,7 @@ A icon representing the GCS location can be activated from the **View/GCS Locati
 
 By default, it will display a tasteful yellow / blue icon which one may drag around. It has a few other  purposes beyond showing some user specified location (but see [below](#radar)).
 
-![GCS-Icon](images/gcs-icon.png)
+![GCS-Icon](images/gcs-icon.avif)
 
 If you don't like the icon, you can override it [by creating your own icon](mwp-Configuration.md#settings-precedence-and-user-updates).
 

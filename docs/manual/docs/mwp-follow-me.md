@@ -12,22 +12,22 @@ In order to use this:
 
 In addition to the manual (drag icon) positioning described below, it is also possible to use a local `gpsd` instance to drive the follow me location by checking the GPSd box.
 
-![Unarmed followme](images/mwp-follow-me4.png)
+![Unarmed followme](images/mwp-follow-me4.avif)
 
 !!! note "Legacy Images"
     The remaining images this section are from legacy mwp, however the capability is the same.
 
 Under the **Edit** menu, there is a new option **Set FollowMe Point**. Until you're armed and in POSHOLD this is not sensitive.
-![Unarmed followme](images/follow_me_1.png)
+![Unarmed followme](images/follow_me_1.avif)
 
 Now armed, but not POSHOLD (orange Home icon showing), still not sensitive ...
-![Armed followme](images/follow_me_2.png)
+![Armed followme](images/follow_me_2.avif)
 
 Now in POSHOLD. note the green POSHOLD icon ... menu option is sensitive!
-![PH_followme](images/follow_me_3.png)
+![PH_followme](images/follow_me_3.avif)
 
 Clicking the menu option invokes the FollowMe dialog:
-![followme_dialog](images/follow_me_4.png)
+![followme_dialog](images/follow_me_4.avif)
 
 The FollowMe desired location is indicated by the  *second* green icon (with the **⨁** symbol). This may be dragged to the required location. An altitude, relative to home may also be set, `0` means don't change altitude.
 

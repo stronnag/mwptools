@@ -13,7 +13,7 @@ Please note that some of the images in this chapter are from the legacy version 
 
 Missions may be added on the map by enabling mission add mode:
 
-![ui_edit](images/wp-create-button.png){: width="40%" }
+![ui_edit](images/wp-create-button.avif){: width="40%" }
 
 This will:
 
@@ -22,7 +22,7 @@ This will:
 
 WPs have a context popup menu via right click on a WP icon
 
-![ui_edit](images/wp-edit-00.png){: width="30%" }
+![ui_edit](images/wp-edit-00.avif){: width="30%" }
 
 Almost all functions are available here, however some advanced functions, acting on multiple WP,  etc. requires the tabular mission editor.
 
@@ -30,7 +30,7 @@ Almost all functions are available here, however some advanced functions, acting
 
 The **Edit Waypoint** option opens an edit form for the current waypoint. The items displayed depend on the type of waypoint.
 
-![ui_edit](images/wp-edit-01.png){: width="30%" }
+![ui_edit](images/wp-edit-01.avif){: width="30%" }
 
 In this image, note:
 
@@ -49,13 +49,13 @@ Multiple attributes may be set.
 
 If the AMSL button is toggled, **and a valid planned home location** is set, then the altitude will be adjusted. For the above example, if the AMSL box is cleared, the dialogue shows:
 
-![ui_edit](images/wpmenu-03.png){: width="30%" }
+![ui_edit](images/wpmenu-03.avif){: width="30%" }
 
 Note that the Altitude box has an orange border to show that the altitude has been automatically updated.
 
 If there is no planned home location, and the AMSL box is toggled, then the Altitude box assumes a red border to indicate to the user that manual intervention is required.
 
-![ui_edit](images/wpmenu-04.png){: width="30%" }
+![ui_edit](images/wpmenu-04.avif){: width="30%" }
 
 In the above image, a relative altitude of 16m has been toggled to absolute; there is no home position, so the altitude entry has a red border, as this is now below the absolute altitude of the terrain.
 
@@ -63,7 +63,7 @@ Note also that this example has multiple option set (SET HEAD and JUMP).
 
 For a `LAND` WP, the FW Approach parameters are available.
 
-![ui_edit](images/wpmenu05.png){: width="30%" }
+![ui_edit](images/wpmenu05.avif){: width="30%" }
 
 ## Mission WP List
 
@@ -79,7 +79,7 @@ It provides the following functions:
 
 There is a right mouse context menu, the availability of items depending on whether zero, one or multiple items are selected.
 
-![tote_menu](images/wp-edit-03.png){: width="30%" }
+![tote_menu](images/wp-edit-03.avif){: width="30%" }
 
 The `param3` value is presented as:
 
@@ -101,7 +101,7 @@ Many of the operations described below are shown in the videos, which probably p
 
 If a SET POI point is added to the mission, (there may also be other extant way-points), this option will display a dialogue to enter the number of points in a shape, the radial distance (from the SET POI to each point), an offset angle and the direction of rotation. i.e this defines a polygon around the POI.
 
-![type](images/add-shape.png){: width="35%" }
+![type](images/add-shape.avif){: width="35%" }
 
 * The offset is relative to North. If you wanted the lines to be horizontal / vertical, specify an offset of 45° for a square.
 * Shape points are appended to any extant mission points, and the shape tool may be invoked multiple times, for example to create 'concentric' circles.
@@ -111,7 +111,7 @@ If a SET POI point is added to the mission, (there may also be other extant way-
 
 Bulk location updates may be applied to selected waypoints.
 
-![mission_upd](images/ui_mission_offset.png){: width="30%" }
+![mission_upd](images/ui_mission_offset.avif){: width="30%" }
 
 If an item if left black (or 0), then no adjustment is applied to that axis. Offsets are in metres, regardless of the user's preference distance unit.
 
@@ -131,7 +131,7 @@ The Clear Mission option clears the mission. There is no confirmation, so be sur
 
 If {{ mwp }} detects uncommitted changes when opening a new mission / downloading from the FC / cleanly exiting the application, then the user is presented with the following dialogue.
 
-![mconfirm](images/m-confirm.png){: width="20%" }
+![mconfirm](images/m-confirm.avif){: width="20%" }
 
 * Don't Save : The mission is not saved, the original action completes.
 * Save : The user is presented with a Save Dialog to save the mission.

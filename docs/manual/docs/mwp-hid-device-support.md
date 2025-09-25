@@ -351,7 +351,7 @@ You should ensure that any manually invoked test `mwp-hid-server` is closed befo
 
 HID support is selectable at run time via mwp's `Edit > MSP RC Setting` menu option. Note, this option is only sensitive when the main serial port is closed, so you cannot change an open MSP session.
 
-![settings](images/mwp-rc-set.png){: width="30%" }
+![settings](images/mwp-rc-set.avif){: width="30%" }
 
 If enabled, `mwp-hid-server` is invoked with the provided mapping file. If you need to pass another option to `mwp-hid-server`  (for example `-f` for testing), this may be done using the environment variable `MWP_HIDOPT`, for example `MWP_HIDOPT=-f`.
 
@@ -359,11 +359,11 @@ By default (if no mapping file has been previously set), the settings UI looks f
 
 With mwp's HID / `MSP_SET_RAW_RC` enabled, when the **main telemetry channel is started**, the "stick display" icon will show in the bottom right of the map:
 
-![SticksIcon](images/mwp-rc-stick-icon.png)
+![SticksIcon](images/mwp-rc-stick-icon.avif)
 
 This may be expanded (click on the icon) to show the sticks.
 
-![stick-open](images/mwp-rc-stick-open.png)
+![stick-open](images/mwp-rc-stick-open.avif)
 
 This may be iconised again by right click.
 
@@ -371,11 +371,11 @@ This may be iconised again by right click.
 
 It is possible to have mwp display channel values (theme sensitive):
 
-![show-channels light](images/hid-light.png)
+![show-channels light](images/hid-light.avif)
 
 or
 
-![show-channels dark](images/hid-dark.png)
+![show-channels dark](images/hid-dark.avif)
 
 The user will have to add their own "hot key" / [keyboard accelerator](mwp-Configuration.md/#keyboard-accelerators) to active the "show-channels" action, for example:
 

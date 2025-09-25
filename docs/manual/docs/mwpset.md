@@ -25,7 +25,7 @@ On MacOS, the {{ mmwp }} `ini` settings file `~/.config/mwp/mwp.ini` is used.
 
 The UI presents an alphabetical list of setting keys and their current value. Clicking on the "Edit Icon" (or double clicking) on a row will open the setting editor.
 
-![mwset-main](images/mwpset-main.png){: width="30%" }
+![mwset-main](images/mwpset-main.avif){: width="30%" }
 
 The edit dialog shows settings name, summary, description default value and a type specific widget to change the value.
 
@@ -35,11 +35,11 @@ The edit dialog shows settings name, summary, description default value and a ty
 * For other entries, there is a text entry box.
 * Where a range (min, max) is enforced, the range values are also shown.
 
-![mwset-dropdown](images/mwpset-dropdown.png){: width="60%" }
+![mwset-dropdown](images/mwpset-dropdown.avif){: width="60%" }
 
-![mwset-entry](images/mwpset-entry.png){: width="60%" }
+![mwset-entry](images/mwpset-entry.avif){: width="60%" }
 
-![mwset-range](images/mwpset-range.png){: width="60%" }
+![mwset-range](images/mwpset-range.avif){: width="60%" }
 
 * Clicking the "Default" button will apply the default.
 * Clicking "Apply" will update the value.
@@ -48,7 +48,7 @@ The edit dialog shows settings name, summary, description default value and a ty
 
 After a value has been changed, it is shown in a highlight colour in the settings list.
 
-![mwset-changed](images/mwpset-changed.png){: width="60%" }
+![mwset-changed](images/mwpset-changed.avif){: width="60%" }
 
 Changed settings may be saved back to the settings database using the "Save" button. Once the new settings are saved, they are immediately available in a running `mwp` application.
 
@@ -58,7 +58,7 @@ In a few cases, mwp caches settings on startup. Changes to these settings will n
 
 ++ctrl+f++ (Control-F) toggles the display of the search bar, providing an incremental, case insensitive regular expression search filter. The search uses the "summary" and "description" fields of the settings.
 
-![mwset-search](images/set-search.png)
+![mwset-search](images/set-search.avif)
 
 
 ## Settings Window Menu

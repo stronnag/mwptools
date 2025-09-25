@@ -6,7 +6,7 @@ There's already quite a long article on  [mwp's terrain analysis tool](Mission-E
 
 First load (or create) the mission in mwp. Here, the pilot chooses to take a cruise around the lake and adjacent country side. The brown / grey icon at the top of the mission is the planned home location.  At first glance, the terrain looks quite benign.
 
-![Lake Mission](images/ta_mission-plan.png){: width="50%" }
+![Lake Mission](images/ta_mission-plan.avif){: width="50%" }
 
 ## 2. Set your avoidance parameters
 
@@ -18,7 +18,7 @@ By right clicking on any waypoint, we can select **Terrain Analysis**. No intern
 * Replace the mission altitudes with the altitudes generated from the analysis
 * Highlight any extreme climb / dive angles
 
-![Analysis Settings](images/ta_avoidance-settings.png){: width="50%" }
+![Analysis Settings](images/ta_avoidance-settings.avif){: width="50%" }
 
 On clicking **Apply**, the analysis will run.
 
@@ -26,7 +26,7 @@ On clicking **Apply**, the analysis will run.
 
 The output is displayed as a chart of the terrain (green), the original mission (red), the avoidance margin (blue, 30m in this example), and the adjusted mission (orange). There is also a Climb / Dive analysis.
 
-![Analysis Result](images/ta_result.png){: width="50%" }
+![Analysis Result](images/ta_result.avif){: width="50%" }
 
 There are a few places that could benefit from further manual adjustment, but in general it looks pretty good.
 
@@ -39,7 +39,7 @@ So it looks good. Or does it?
 
 The terrain analysis is only as good as the terrain data. If we zoom in closely, or look at a difference map source (e.g. OpenTopo), or examine the route in 3D (Google Earth) via [flightlog2kml / mission2kml](https://github.com/stronnag/bbl2kml), maybe from [fl2xui](https://github.com/stronnag/fl2xui) we can see another hazard. Between WP36-WP37 and WP47-WP48 there are high voltage overhead transmission lines. Hitting these, or at WP48, the tower would be sub-optimal.
 
-![Wire alert](images/ta_wires-2d.png){: width="30%" }
-![Tower alert](images/ta_wires-3d.png){: width="30%" }
+![Wire alert](images/ta_wires-2d.avif){: width="30%" }
+![Tower alert](images/ta_wires-3d.avif){: width="30%" }
 
 A re-plan seems like a good idea, at least adding significant altitude on these legs of the mission.

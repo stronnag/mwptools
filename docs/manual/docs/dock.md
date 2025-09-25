@@ -4,7 +4,7 @@
 
 The **Side Bar**, items 4 and 6 in the main window guide provides an area for optional widgets.
 
-![main](images/main-window.png){: width="100%" }
+![main](images/main-window.avif){: width="100%" }
 
 A very simple, bespoke panel comprising embedded panes on a grid has been implemented. Opinionated settings that work in both "Standard" and "FPV View" modes are provided. Configuration is [described below](#side-bar-configuration).
 
@@ -18,33 +18,33 @@ The following items are provided.
 
 ### Artificial Horizon
 
-![dockah](images/dock_ah.png){: width="30%" }
+![dockah](images/dock_ah.avif){: width="30%" }
 
 ### Direction View
 
-![dockdir](images/dock_dirn.png){: width="15%" }
+![dockdir](images/dock_dirn.avif){: width="15%" }
 
 ### Flight View
 
-![dockdir](images/dock_fv.png){: width="33%" }
+![dockdir](images/dock_fv.avif){: width="33%" }
 
 ### RSSI / LQ Status
 
-![dockdir](images/dock_radio.png){: width="15%" }
+![dockdir](images/dock_radio.avif){: width="15%" }
 
 ### Battery Monitor
 
-![dockdir](images/dock_batt.png){: width="30%" }
+![dockdir](images/dock_batt.avif){: width="30%" }
 
 ### Vario View
 
-![dockdir](images/dock_vario.png){: width="25%" }
-![dockdir](images/dock_vario_l.png){: width="25%" }
-![dockdir](images/dock_vario_d.png){: width="25%" }
+![dockdir](images/dock_vario.avif){: width="25%" }
+![dockdir](images/dock_vario_l.avif){: width="25%" }
+![dockdir](images/dock_vario_d.avif){: width="25%" }
 
 ### Wind Estimator (new / Gtk4)
 
-![dockwind](images/panel-vas.png){: width="25%" }
+![dockwind](images/panel-vas.avif){: width="25%" }
 
 ## Side Bar Configuration
 
@@ -93,9 +93,9 @@ flight,3,0,-1,-1,3,3
 volts,4,0,-1,-1,3,3
 ```
 
-![freebsd vertical](images/fpvmode/freebsd-std-mode.png)
+![freebsd vertical](images/fpvmode/freebsd-std-mode.avif)
 
-![freebsd horizontal](images/fpvmode/freebsd-fpv-mode.png)
+![freebsd horizontal](images/fpvmode/freebsd-fpv-mode.avif)
 
 
 ### Available Widgets

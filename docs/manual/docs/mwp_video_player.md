@@ -8,7 +8,7 @@
 
 Video may be played in either a separate window, or in an embedded pane (FPV Mode).
 
-![FPV View](images/fpvmode/fpv-mode-analogue.png){: width="30%" }
+![FPV View](images/fpvmode/fpv-mode-analogue.avif){: width="30%" }
 
 ## Video Player Requirements
 
@@ -39,11 +39,11 @@ Consequences of using the fallback video player:
 
 There is a **Video Stream** option under the view menu.
 
-![View Menu](images/mwp_vid_menu.png){: width="30%" }
+![View Menu](images/mwp_vid_menu.avif){: width="30%" }
 
 Selecting this option opens the source selection dialogue. Camera devices (i.e most webcams) will be auto-detected. There is also the option to enter a URI, which could be a `http`/`https`, `rtsp` or other standard streaming protocol, or even a file.
 
-![Chooser](images/recent-video.png){: width="20%" }
+![Chooser](images/recent-video.avif){: width="20%" }
 
 The selected source will then play in a separate window. This window will remain above the mwp application and can be resized, minimised and moved.
 
@@ -57,7 +57,7 @@ In "FPV Mode", no controls are shown.
 
 mwp requests camera capabilities from Gstreamer and presents them to the user when the "Settings" button clicked.
 
-![settings](images/mwp-video-options.png)
+![settings](images/mwp-video-options.avif)
 
 If a capability is selected, it is passed on to GStreamer verbatim and stored for future use.
 

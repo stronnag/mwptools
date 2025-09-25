@@ -95,15 +95,15 @@ Where such data is available (Blackbox, OTX/ETX logs), {{ mwp }} can display the
 
 The (new, July 2025) "interactive" player loads a somewhat familiar chooser for Blackbox, OTX/ETX, mwp JSON, BulletGCSS and SQLite logs.
 
-![log-chooser](images/mwp-interactive-replay-chooser.png)
+![log-chooser](images/mwp-interactive-replay-chooser.avif)
 
 * Selecting a log entry and clicking "OK" will present the player; if the (default) "Autostart" chooser option was enabled, then replay starts immediately, otherwise the replay can be manually started.
 * The replay may be paused / advanced / retarded / restarted using the play button / slider / goto start / goto end buttons.
-  ![slider](images/mwp-play-slider.png)
+  ![slider](images/mwp-play-slider.avif)
 * The replay may be single stepped, with the "slider" in focus,  using the "arrow" (⇦, ⇨) keys, and "paged" (jumped) using the "Page Up" / "Page Down") keys.
 * Closing the slider window terminates the replay.
 * The user can speed up the replay using the "Speed" dropioniodown.
-  ![speedup](images/mwp-sql-speed.png)
+  ![speedup](images/mwp-sql-speed.avif)
 * The user can select whether to display any embedded artefact from the log file (or SQLite container).
 
 * If the log file contains multiple logs,  there will be a player menu so one can switch logs without having to re-parse the whole file.
@@ -132,7 +132,7 @@ mwp can link log replay with video replay. In order to link a video with log rep
 
 When this condition is met, the log replay dialog gains three new controls:
 
-![logvideo](images/mwp-log-video-link.png)
+![logvideo](images/mwp-log-video-link.avif)
 
 1. When the switch (1) is activated, the log display is driven by the video replay timestamp.
 2. When the button (2) is clicked, the video position is set from the log position.

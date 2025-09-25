@@ -265,7 +265,7 @@ The columns are sortable. Note that since the introduction of [Telemetry Trackin
 | T         | Telemetry Tracker |
 | X         | General Aviation internet REST service |
 
-![Telemetry Tracker](images/ttrk-play.png){: width="70%" }
+![Telemetry Tracker](images/ttrk-play.avif){: width="70%" }
 
 ## Examples
 
@@ -277,22 +277,22 @@ The columns are sortable. Note that since the introduction of [Telemetry Trackin
 
 ### Live ADS-B and simulated INAV targets, with proximity alerts (range < 3000m).
 
-![radar-alerts](images/mwp-radar-alert.png){: width="80%" }
+![radar-alerts](images/mwp-radar-alert.avif){: width="80%" }
 
 ### Local manned aircraft view over Florida (May 2020).
 
-![Florida-may-2020](images/florida-2020-05.png){: width="80%" }
+![Florida-may-2020](images/florida-2020-05.avif){: width="80%" }
 
 ### Simulated INAV radar view
 
-![inav-radar-sim](images/mwp-inav-radar.png){: width="60%" }
+![inav-radar-sim](images/mwp-inav-radar.avif){: width="60%" }
 
 
 ## Radar Devices
 
 The Radar Devices menu option provides a UI to view, edit, add, remove {{ mwp }} radar device entries.
 
-![radar-devices](images/mwp-radar-devices.png){: width="60%" }
+![radar-devices](images/mwp-radar-devices.avif){: width="60%" }
 
 Devices are read from `~/.config/mwp/cmdopts` or provided via the `--radar-device` CLI option. Active devices are listed before non-active devices.
 

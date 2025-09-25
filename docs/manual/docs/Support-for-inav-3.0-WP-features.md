@@ -35,11 +35,11 @@ The required land elevation uses the `P2` WP parameter, **in metres.**
 
 In the image below, the dialogue has been enhanced to allow selection of the altitude mode and adjustment of LAND elevation. The orange graph line shows the generated mission with a 40m clearance of all obstacles.
 
-![Terrain Analysis](images/mwp-inav-3_5.png){: width="80%" }
+![Terrain Analysis](images/mwp-inav-3_5.avif){: width="80%" }
 
 The user can select the following altitude modes:
 
-![Terrain Analysis](images/mwp-inav-3_6.png){: width="30%" }
+![Terrain Analysis](images/mwp-inav-3_6.avif){: width="30%" }
 
 * Mission - use the altitude mode from the mission
 * Relative to home

@@ -74,7 +74,7 @@ In addition to options (`--`), the file may also contain environment variables e
     --dont-maximise
     #-S 8192
     # set the anonymous tile file.
-    MWP_BLACK_TILE=/home/jrh/.config/mwp/mars.png
+    MWP_BLACK_TILE=/home/jrh/.config/mwp/mars.avif
 
 So here the only current, valid options are  `--rings 50,20 --dont-maximise`, and the [environment variable](#environment-variables) MWP_BLACK_TILE is set (for [anonymous maps](Black-Ops.md#custom-tile)).
 
@@ -136,7 +136,7 @@ Here is an example `mwptools/src/samples/sources.json`.
 		  "max_zoom": 19,
 		  "tile_size": 256,
           "projection": "MERCATOR",
-		  "uri_format": "http://map-proxy/mapproxy/tiles/1.0.0/opentopo/EPSG3857/{z}/{x}/{y}.png"
+		  "uri_format": "http://map-proxy/mapproxy/tiles/1.0.0/opentopo/EPSG3857/{z}/{x}/{y}.avif"
       },
       {
           "id": "LandscapeMP",
@@ -147,7 +147,7 @@ Here is an example `mwptools/src/samples/sources.json`.
 		  "max_zoom": 19,
 		  "tile_size": 256,
           "projection": "MERCATOR",
-		  "uri_format": "http://map-proxy/mapproxy/tiles/1.0.0/landscape/EPSG3857/{z}/{x}/{y}.png"
+		  "uri_format": "http://map-proxy/mapproxy/tiles/1.0.0/landscape/EPSG3857/{z}/{x}/{y}.avif"
       },
       {
           "id": "CyclemapMP",
@@ -158,7 +158,7 @@ Here is an example `mwptools/src/samples/sources.json`.
 		  "max_zoom": 19,
 		  "tile_size": 256,
           "projection": "MERCATOR",
-		  "uri_format": "http://map-proxy/mapproxy/tiles/1.0.0/cyclemap/EPSG3857/{z}/{x}/{y}.png"
+		  "uri_format": "http://map-proxy/mapproxy/tiles/1.0.0/cyclemap/EPSG3857/{z}/{x}/{y}.avif"
       },
       {
           "id": "Black",
@@ -257,12 +257,12 @@ and to list then get / set a single item:
 This *may* not be installed by default, but should be available via the OS package manager / software centre.
 
 <figure markdown>
-![dconf editor](images/dconf-0.png){: width="50%" }
+![dconf editor](images/dconf-0.avif){: width="50%" }
 <figcaption>Initial dconf-editor showing all mwp settings</figcaption>
 </figure>
 
 <figure markdown>
-![dconf editor](images/dconf-1.png){: width="50%" }
+![dconf editor](images/dconf-1.avif){: width="50%" }
 <figcaption>dconf-editor, editing a setting</figcaption>
 </figure>
 

@@ -24,26 +24,26 @@ When a "multi-mission" set is uploaded to the FC, mwp will set the active FC mis
 
 The top bar how includes an "Active Mission" item. This always has mission 1 (the legacy mission) and offers "New", allowing multiple missions to be maintained in one mwp session.
 
-![top_bar](images/mm_top_bar.png){: width="30%" }
+![top_bar](images/mm_top_bar.avif){: width="30%" }
 
 ### Open Mission file
 
 The file open dialog has a preview pane that displays the missions in a multi-mission file. The user can select the mission to be the active mission.
 
-![open_file](images/mm_open.png){: width="75%" }
+![open_file](images/mm_open.avif){: width="75%" }
 
 ### Append Mission File
 
 It is now possible to append an existing mission file (which may hold multiple missions) into a multi-mission set. This uses same dialog as [Open Mission File](#open-mission-file).
 
-![append](images/mm_append.png){: width="30%" }
+![append](images/mm_append.avif){: width="30%" }
 
 ### Save As Mission file
 
 The file "Save as" dialog has an option to exclude specific segments from a multi-mission (via the **Remove Segments from file** button in the following image).
 Note that "Save" will always save all mission segments.
 
-![open_file](images/mm_saveas.png){: width="75%" }
+![open_file](images/mm_saveas.avif){: width="75%" }
 
 In this case, only segment 1 of the multi-mission would be saved.
 
@@ -51,13 +51,13 @@ In this case, only segment 1 of the multi-mission would be saved.
 
 The menu options reflect the new capability to upload all or the active mission. The "Save to EEPROM" option may also change to this pattern in future.
 
-![load_menu](images/mm_menus.png){: width="40%" }
+![load_menu](images/mm_menus.avif){: width="40%" }
 
 ### Multi-Mission Manager
 
 The **Edit** menu has a **Multi Mission Manager** option. This allows the user to delete one or more missions from a multi-mission scenario.
 
-![open_file](images/mm_manager.png){: width="20%" }
+![open_file](images/mm_manager.avif){: width="20%" }
 
 
 ## FC Limits

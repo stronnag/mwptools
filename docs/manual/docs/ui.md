@@ -2,7 +2,7 @@
 
 ## Main Window
 
-![main](images/main-window.png){: width="100%" }
+![main](images/main-window.avif){: width="100%" }
 
 The {{ mwp }} main window and the main user interface elements are:
 
@@ -103,9 +103,9 @@ The zoom level may be selected from the control here, or by zooming the map with
 
 The user may add a "Gazetteer" layer (Places and Transportation) overlay to any other map product, by toggling the "Gazetteer" button:
 
-![off](images/gazetteer-off.png)
+![off](images/gazetteer-off.avif)
 
-![on](images/gazetteer-on.png)
+![on](images/gazetteer-on.avif)
 
 
 The **+Add WPs** (Edit WPs)  button enables mission edit mode (click on the map to create a WP, drag to move, right mouse button for properties). Graphical WP editing may be augmented by the table orientated [mission table view](mission-editor.md), which allows additional control (altitude, speed, special functions, for example [fly-by-home](Fly-By-Home-waypoints-(inav-4-new-feature).md) waypoints).
@@ -116,7 +116,7 @@ The "Active Mission" drop down supports {{ inav }} 4.0+ [multi-mission](inav-4.0
 
 There is a (blue "!" in the example) 'navigation safe' status icon. If this icon is shown (i.e. navigation is _unsafe_, then clicking on the item will provide more information:
 
-![navunsafe](images/nav-unsafe.png){: width="20%" }
+![navunsafe](images/nav-unsafe.avif){: width="20%" }
 
 The **Device** drop-down offers detected and pre-set (**Preferences**) devices for the FC / telemetry port. The device syntax is described the [Device and Protocol definition](mwp-multi-procotol.md) chapter.
 
@@ -168,4 +168,4 @@ Displays the firmware, version and build with API information, profile and fligh
 
 The green / red bars show gyro / acc / baro / mag / gps / sonar sensor status. If a required sensor fails, a map annotation will be displayed, together with an audible alarm (image from legacy version).
 
-![sensorfail](images/sensorfail.png){: width="40% "}
+![sensorfail](images/sensorfail.avif){: width="40% "}

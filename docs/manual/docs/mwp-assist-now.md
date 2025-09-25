@@ -48,7 +48,7 @@ Password: xxxxxxxxxxxxxx
 
 The UI is available from the File menu:
 
-![mwp assist](images/mwp-assist.png){: width="50%" }
+![mwp assist](images/mwp-assist.avif){: width="50%" }
 
 * The user can select the 'online" and "offline" data sets; for best effect both should be applied.
 * The 'Use Location' setting applies only to the "online" set and **its use is recommended**. If the home location (real or fake) is known, it will be used, otherwise the map centre is used. As the minimum precision used by AssistNow is 300km, home should be adequate for our needs.

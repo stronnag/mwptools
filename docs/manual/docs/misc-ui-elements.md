@@ -6,11 +6,11 @@ The "Edit > Preferences" menu provides a UI for some `gsetting` / `dconf` [setti
 
 ### General Preferences
 
-![genprefs](images/ui-prefs-1.png){: width="50%" }
+![genprefs](images/ui-prefs-1.avif){: width="50%" }
 
 ### Units Preferences
 
-![unitsprefs](images/ui-prefs-2.png){: width="50%" }
+![unitsprefs](images/ui-prefs-2.avif){: width="50%" }
 
 Unit preferences should be instantly reflected in the UI when 'Apply' is clicked.
 
@@ -18,17 +18,17 @@ Unit preferences should be instantly reflected in the UI when 'Apply' is clicked
 
 {{ mwp }} maintains a list of favourite places, from "View > Centre on Location" menu item.
 
-![places](images/ui-place-chooser.png){: width="30%" }
+![places](images/ui-place-chooser.avif){: width="30%" }
 
 The "Place" combo menu holds all places defined in `~/.config/mwp/places` (see the [configuration reference](mwp-Configuration.md)).
 
 For convenience, clicking the 'Editor ...' button will load the "Places Editor".
 
-![placesedit](images/places-editor-menu.png){: width="30%" }
+![placesedit](images/places-editor-menu.avif){: width="30%" }
 
 * New items are added with the **+** button.
 * Locations can be edited clicking the "Document Edit" icon at the end of the row.
-  ![placesedit](images/places-editor-1.png){: width="30%" }
+  ![placesedit](images/places-editor-1.avif){: width="30%" }
 
 * The context (right mouse button) menu:
     * Zoom to location : Zooms to the place
@@ -41,7 +41,7 @@ For convenience, clicking the 'Editor ...' button will load the "Places Editor".
 
 * Control-D : Enters distance measure mode. Click on the map to add more points to measure distance along a path. Press Control-D again to get the distance, with an option to continue to add points. The points may also be dragged.
 
-![measure](images/measure.png){: width="30%" }
+![measure](images/measure.avif){: width="30%" }
 
 In the image, we are measuring the distance between the take off home (brown icon) and the landing home (orange icon); the distance markers are the black/white circles. Ctrl-D has been pressed a second time to display the result.
 
@@ -53,7 +53,7 @@ In the image, we are measuring the distance between the take off home (brown ico
 
 Modern OS using `libadwaita` 1.8 or later get a searchable shortcut dialog that includes user-defined shortcuts.
 
-![adw18](images/mwp-adw18-shortcuts.png)
+![adw18](images/mwp-adw18-shortcuts.avif)
 
 ### Legacy Dialog
 
@@ -61,8 +61,8 @@ Older OS get the legacy dialog, which is split into two sections.
 
 #### Menu and Replay
 
-![shortcuts00](images/sc00.png){: width="60%" }
+![shortcuts00](images/sc00.avif){: width="60%" }
 
 #### Map and Tools
 
-![shortcuts01](images/sc01.png){: width="60%" }
+![shortcuts01](images/sc01.avif){: width="60%" }

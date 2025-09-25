@@ -8,4 +8,4 @@ It is possible to replay Ardupilot logs in the same way as one can replay blackb
 
 As the author does not have any (useful) AP logs, contributions are welcome.
 
-![Menu](images/mwp-aplog.png){: width="30%" }
+![Menu](images/mwp-aplog.avif){: width="30%" }

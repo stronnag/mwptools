@@ -66,7 +66,7 @@ So a minimal `sources.json` looks like:
 
 On starting **mwp** you should see a new map option "Black Tiles".
 
-![Black Map](images/black.png){: width="50%" }
+![Black Map](images/black.avif){: width="50%" }
 
 ## Custom Tile
 
@@ -78,10 +78,10 @@ It's also possible to have a custom tile (which does not have to be black). The 
 The full path is provided in the environment variable `MWP_BLACK_TILE`, e.g.
 
     # put this in e.g. ~/.bashrc to make it permanent
-    export MWP_BLACK_TILE=~/.config/mwp/mytile.png
+    export MWP_BLACK_TILE=~/.config/mwp/mytile.avif
 
 The environment variable may instead be added to [`cmdopts`](mwp-Configuration.md#cmdopts).
 
 For example:
 
-![Fly me to the Mars](images/user-tile.png){: width="50%" }
+![Fly me to the Mars](images/user-tile.avif){: width="50%" }

@@ -36,11 +36,11 @@ Note: Since mwp 7.32.?, mwp provides additional fields for the Autoland function
 
 {{ mwp }} now offers a `Safe Homes` menu option:
 
-![mwp safehome](images/mwp-safehome-menu.png){: width="25%" }
+![mwp safehome](images/mwp-safehome-menu.avif){: width="25%" }
 
 This will launch the `Safe Home` window:
 
-![mwp safehome](images/mwp-safehome-usage.png){: width="50%" }
+![mwp safehome](images/mwp-safehome-usage.avif){: width="50%" }
 
 From here it is possible to:
 
@@ -54,7 +54,7 @@ From here it is possible to:
 
 Clicking the "Edit" button at the end of row enables editing FWA parameters:
 
-![mwp safehome-edit](images/mwp-sh1.png){: width="50%" }
+![mwp safehome-edit](images/mwp-sh1.avif){: width="50%" }
 
 Note that editing functions are only available when the `Safe Homes` window is active; if the windows is dismissed with icons displayed, then the icons remain on the map, but are not editable.
 
@@ -77,7 +77,7 @@ If the name part is set to `-FC-`, then the safehomes will be loaded from the fl
 
 The image below shows a blackbox replay. Note that the flight home location (brown icon) is coincident with the pale orange safehome icon.
 
-![mwp safehomes replay](images/mwp-safehomes-replay.png){: width="50%" }
+![mwp safehomes replay](images/mwp-safehomes-replay.avif){: width="50%" }
 
 ### FW Approach (FWA) visualisation
 
@@ -92,11 +92,11 @@ In particular, the length of the "base leg / dog leg" is the **maximum** of:
 
 For example, in the first image the user had set `nav_fw_land_approach_length` to 150m (for a small, agile plane) but had accidentally left the `nav_fw_loiter_radius` at the default of `75m`. The excessive radius dominates and gives an unacceptable geometry:
 
-![fwa1](images/fwa-ex1.png)
+![fwa1](images/fwa-ex1.avif)
 
 Setting the radius to a more appropriate value for the model (40m) results in a much more acceptable geometry (still dominated by the loiter radius).
 
-![fwa2](images/fwa-ex2.png)
+![fwa2](images/fwa-ex2.avif)
 
 In summary, in order to display FWA accurately for either safe homes or missions, it is advisable to provide a CLI `diff` format file containing at a minimum, `set` values for `nav_fw_land_approach_length` and `nav_fw_loiter_radius`. For the above example:
 

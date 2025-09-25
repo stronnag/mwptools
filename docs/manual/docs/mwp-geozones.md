@@ -55,7 +55,7 @@ There are a number of runtime recommendations from the Geozone developer:
 
 {{ mwp }} adds a Geozones menu option, with suboptions:
 
-![mwp geozones](images/geozones_00.png){: width="50%" }
+![mwp geozones](images/geozones_00.avif){: width="50%" }
 
 Note that the **Save**, **Export**, **Clear**, **Download** and **Upload** options are not sensitive if no geozone is loaded. Once a geozone is loaded, some or all of these options will be enabled. The MSP options are only enabled if the FC offers `feature GEOZONE` with the INAV 8.0 `feature` value of `(1 << 4)`.
 
@@ -73,7 +73,7 @@ Note that if `feature GEOZONE` is present, {{ mwp }} will attempt to load Geozon
 !!! note "Edit UI Images"
 	The image immediately below represents the current Edit UI (it has the AMSL button); other Edit UI images are from an earlier instance without this button. The altitude values have no bearing on mwp's display of the Geozones, other than in the generated KML.
 
-![mwp geozones](images/geozones_01.png){: width="50%" }
+![mwp geozones](images/geozones_01.avif){: width="50%" }
 
 The icons along the top are:
 
@@ -85,23 +85,23 @@ The icons along the top are:
 
 If there is no Geozone loaded, the editor is as shown at the "new zone" state: the "Shape" item is enabled and a note explains how to proceed. Note that to create a circular zone, the radius must be non-zero. If the "Shape" item is set to "Polygon", then no radius is required to proceed.
 
-![mwp geozones](images/geozones_02.png){: width="50%" }
+![mwp geozones](images/geozones_02.avif){: width="50%" }
 
 Once the required details have been entered, pressing refresh draws the template shape. circle has a dragable centre and editable radius.
 
-![mwp geozones](images/geozones_03.png){: width="50%" }
+![mwp geozones](images/geozones_03.avif){: width="50%" }
 
 A polygon has 3 points (the mimimum), each of which can be dragged.
 
-![mwp geozones](images/geozones_04.png){: width="50%" }
+![mwp geozones](images/geozones_04.avif){: width="50%" }
 
 Additional points can be added immediately in front of an existing point from the right mouse menu.
 
-![mwp geozones](images/geozones_05.png){: width="50%" }
+![mwp geozones](images/geozones_05.avif){: width="50%" }
 
 With multiple zones loaded (or created), the user can switch between zones using the `<` and `>` icons.
 
-![mwp geozones](images/geozones_06.png){: width="50%" }
+![mwp geozones](images/geozones_06.avif){: width="50%" }
 
 ### Example validation
 
@@ -116,7 +116,7 @@ In the following image, from left to right
 
 Invalid zones are reported with the "Check Valdity" or "Upload to FC" options.
 
-![mwp geozones](images/geozones_10.png)
+![mwp geozones](images/geozones_10.avif)
 
 ## Zone Colours
 

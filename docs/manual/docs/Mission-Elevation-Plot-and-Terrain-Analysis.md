@@ -15,7 +15,7 @@ Prior to {{ inav }} 3.0, mission altitudes are relative to the HOME (arming) loc
 
 From of 2018-12-06, `mwp-plot-elevations` is integrated into the `mwp` application.
 
-![mwp integration](images/mwp-ta.png){: width="70%" }
+![mwp integration](images/mwp-ta.avif){: width="70%" }
 
 There is a [video tutorial](https://www.youtube.com/watch?v=oE3t5Asqhio).
 
@@ -28,7 +28,7 @@ There is a [video tutorial](https://www.youtube.com/watch?v=oE3t5Asqhio).
 
 Given the mission shown below:
 
-![Test Mission](images/west-field-mission.png){: width="50%" }
+![Test Mission](images/west-field-mission.avif){: width="50%" }
 
 and knowing that the land rises to the north and west, we can check that we do indeed have adequate clearance with the planned route and elevations:
 
@@ -79,7 +79,7 @@ The **`mwp-plot-elevations`** has **NO** dependency on {{ mwp }} or Linux / Free
 
 On all operating systems, the terrain graph is also plotted interactively, regardless of whether the `-p` (save SVG plot) option has been specified. The following shows the UI on Windows (it's pretty much the same on other OS).
 
-![Interactive UI](images/plot-elevations-windows.png){: width="50%" }
+![Interactive UI](images/plot-elevations-windows.avif){: width="50%" }
 
 ## Caveats
 
@@ -119,7 +119,7 @@ There is a more detailed analysis of the available DEMs [on the wiki](https://gi
 
 Many years ago, I took a GPS up South Barrule.
 
-![barrule](https://user-images.githubusercontent.com/158229/129704384-a91904b9-becc-435d-9c38-9bc0fa31563d.png){: width="40%" }
+![barrule](https://user-images.githubusercontent.com/158229/129704384-a91904b9-becc-435d-9c38-9bc0fa31563d.avif){: width="40%" }
 
 It reads 485m, this pretty much agrees with the OS (Survey) height (AMSL). So the real issue is with the DEM available online (either Bing or Google). The 'sea-level" height DEM reports **for this location** is c. 13m below Ordnance Survey AMSL value whilst the WGS84 ellipsoid value is 43m above the OS AMSL value.
 
@@ -188,7 +188,7 @@ Another contrived example ... create a mission in Google Earth (tied to ground),
 
 ### KMZ planned in Google Earth
 
-![Google Earth Mission Plan](images/perwick-ge.png){: width="60%" }
+![Google Earth Mission Plan](images/perwick-ge.avif){: width="60%" }
 
 ### Conversion tools
 
@@ -214,7 +214,7 @@ It's not yet perfect, we could be more aggressive in reaching just the clearance
 ## Climb and Dive Angle Report
 
 <figure markdown>
-![example mission](images/barrule-mission.png){: width="60%" }
+![example mission](images/barrule-mission.avif){: width="60%" }
 
 <figcaption>Mission used for climb /dive example</figcaption>
 </figure>
@@ -223,7 +223,7 @@ As of 2021-06, it's also possible to get climb and dive angles for the calculate
 
 The final result:
 
-![jump mission](images/mwp-plot-elevations-jump.png){: width="50%" }
+![jump mission](images/mwp-plot-elevations-jump.avif){: width="50%" }
 
 We also get a climb / dive report, currently to STDOUT and `$TMP/mwpmission-angles.txt` (tab separated for easy analysis).
 
@@ -253,10 +253,10 @@ We also get a climb / dive report, currently to STDOUT and `$TMP/mwpmission-angl
 
 If you run **mwp-plot-elevations** via **mwp**, the information is presented in a separate window.
 
-![cd-analysts](images/mwp-elev-cd-analysis.png){: width="30%" }
+![cd-analysts](images/mwp-elev-cd-analysis.avif){: width="30%" }
 
 **mwp** can also highlight any legs that exceed user-defined (not 0) climb and dive angle limits. However, it's up to you to work out the best solution.
 
-![cd-limits](images/climb-dive-indicators.png){: width="50%" }
+![cd-limits](images/climb-dive-indicators.avif){: width="50%" }
 
 The steep hill and valley at the start are just too much here; best to reroute.

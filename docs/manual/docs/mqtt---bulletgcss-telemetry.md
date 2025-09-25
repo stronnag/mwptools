@@ -67,4 +67,4 @@ More information on the [BulletGCSS website](https://bulletgcss.fpvsampa.com/) a
 
 See also [fl2mqtt](https://github.com/stronnag/bbl2kml), a tool to replay Blackbox and OpenTx logs as MQTT and [BulletGCSS mosquitto hosting guide](https://github.com/danarrib/BulletGCSS/wiki/Self-Hosting-a-MQTT-server--(broker)) for hosting your own MQTT broker.
 
-![mqtt-image](images/mqtt-replay.png){: width="80%" }
+![mqtt-image](images/mqtt-replay.avif){: width="80%" }

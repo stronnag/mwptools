@@ -192,11 +192,11 @@ See the [mwp's MQTT support](mqtt---bulletgcss-telemetry.md) article for a detai
 ### Overview
 
 There is a protocol drop-down that allows the user to select the in-use serial protocol.
-![dropdown0](images/proto_dropdown-1.png){: width="60%" }
+![dropdown0](images/proto_dropdown-1.avif){: width="60%" }
 
 Offering:
 
-![dropdown1](images/proto_dropdown-0.png){: width="40%" }
+![dropdown1](images/proto_dropdown-0.avif){: width="40%" }
 
 ### Usage
 
