@@ -4,15 +4,15 @@ _pkgname=mwptools
 _realname=mwptools
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=24.12.10.r1.d0011eda
+pkgver=24.12.05.r33.a2654dd6
 pkgrel=1
 pkgdesc='mission planner for INAV and MultiWii'
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
 url='https://github.com/stronnag/mwptools'
-source=("$_pkgname::git+$url#development")
+source=("$_pkgname::git+$url#wintest")
 license=('GPL-3.0-or-later')
-makedepends=('git' 
+makedepends=('git'
              "${MINGW_PACKAGE_PREFIX}-gcc"
              "${MINGW_PACKAGE_PREFIX}-binutils"
              "${MINGW_PACKAGE_PREFIX}-vala"
@@ -21,7 +21,6 @@ makedepends=('git'
 	     "${MINGW_PACKAGE_PREFIX}-blueprint-compiler")
 depends=("${MINGW_PACKAGE_PREFIX}-gtk4"
 	 "${MINGW_PACKAGE_PREFIX}-gstreamer"
-	 "${MINGW_PACKAGE_PREFIX}-gtk4-media-gstreamer"
 	 "${MINGW_PACKAGE_PREFIX}-cairo"
 	 "${MINGW_PACKAGE_PREFIX}-pango"
 	 "${MINGW_PACKAGE_PREFIX}-libxml2"
@@ -29,7 +28,12 @@ depends=("${MINGW_PACKAGE_PREFIX}-gtk4"
 	 "${MINGW_PACKAGE_PREFIX}-libshumate"
 	 "${MINGW_PACKAGE_PREFIX}-libadwaita"
 	 "${MINGW_PACKAGE_PREFIX}-libsoup3"
-	 "${MINGW_PACKAGE_PREFIX}-libsecret")
+	 "${MINGW_PACKAGE_PREFIX}-libsecret"
+	 "${MINGW-PACKAGE-PREFIX}-librsvg"
+	 "${MINGW-PACKAGE-PREFIX}-SDL2"
+	 "${MINGW-PACKAGE-PREFIX}-readline"
+	 "${MINGW-PACKAGE-PREFIX}-gst-plugins-base-libs"
+	)
 optdepends=('blackbox-tools-git: Replay Blackbox files (AUR)'
 	    "${MINGW_PACKAGE_PREFIX}-protobuf-c: enable protobuf-c for readsb/ADSB"
 	    "${MINGW_PACKAGE_PREFIX}-gnuplot: Mission Elevation plots"
