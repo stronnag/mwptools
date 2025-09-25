@@ -29,7 +29,7 @@ Then install dependencies.
    mingw-w64-ucrt-x86_64-libadwaita mingw-w64-ucrt-x86_64-libsecret mingw-w64-ucrt-x86_64-libsoup3 git \
    mingw-w64-ucrt-x86_64-vala mingw-w64-ucrt-x86_64-meson mingw-w64-ucrt-x86_64-go \
    mingw-w64-ucrt-x86_64-blueprint-compiler mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-gtk4-media-gstreamer mingw-w64-ucrt-x86_64-librsvg \
-   mingw-w64-ucrt-x86_64-SDL2 mingw-w64-ucrt-x86_64-readline mingw-w64-ucrt-x86_64-gst-plugins-base-libs
+   mingw-w64-ucrt-x86_64-SDL2 mingw-w64-ucrt-x86_64-readline
 ```
 
 Optional, but recommended:
@@ -54,15 +54,15 @@ There is also a `pacman` `PKGBUILD` file in the `docs/windows-pkg` directory. Yo
     ```
 * Now you can build the package:
     ```
-    makepkg-mingw -C -f
+	MINGW_ARCH=ucrt64 makepkg-mingw -C -f
     ```
-    This will generate a [Msys2](https://www.msys2.org/) packag named like (the name includes a git tag and commit id)  `mingw-w64-x86_64-mwptools-24.12.02.r76.c1e34843-1-any.pkg.tar.zst` which can be installed with `pacman`
+    This will generate a [Msys2](https://www.msys2.org/) package named like (the name includes a git tag and commit id)  `mingw-w64-x86_64-mwptools-24.12.02.r76.c1e34843-1-any.pkg.tar.zst` which can be installed with `pacman`
     ```
     pacman -U mingw-w64-x86_64-mwptools-24.12.02.r76.c1e34843-1-any.pkg.tar.zst
     ```
 * Note that you can build and install in one command:
     ```
-   makepkg-mingw -C -f -i
+   	MINGW_ARCH=ucrt64 mmakepkg-mingw -C -f -i
     ```
 After you've done this once, subsequently, after the repo has been updated, you can rerun the build / package generation by rerunning `makepkg-mingw` (and `pacman` to install) as required.
 
