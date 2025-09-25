@@ -49,10 +49,20 @@ In the image, we are measuring the distance between the take off home (brown ico
 
 ## Keyboard Shortcuts
 
-### Menu and Replay
+### Modern OS
+
+Modern OS using `libadwaita` 1.8 or later get a searchable shortcut dialog that includes user-defined shortcuts.
+
+![adw18](images/mwp-adw18-shortcuts.png)
+
+### Legacy Dialog
+
+Older OS get the legacy dialog, which is split into two sections.
+
+#### Menu and Replay
 
 ![shortcuts00](images/sc00.png){: width="60%" }
 
-### Map and Tools
+#### Map and Tools
 
 ![shortcuts01](images/sc01.png){: width="60%" }
