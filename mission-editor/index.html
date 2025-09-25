@@ -1748,18 +1748,18 @@
 <p>Please note that some of the images in this chapter are from the legacy version of <a href="https://github.com/stronnag/mwptools">mwp</a>.</p>
 <h2 id="map-features">Map Features<a class="headerlink" href="#map-features" title="Permanent link">#</a></h2>
 <p>Missions may be added on the map by enabling mission add mode:</p>
-<p><img alt="ui_edit" src="../images/wp-create-button.png" width="40%" /></p>
+<p><img alt="ui_edit" src="../images/wp-create-button.avif" width="40%" /></p>
 <p>This will:</p>
 <ul>
 <li>Display a notional home location (brown icon)</li>
 <li>Allow new WPs to be created by clicking on the map</li>
 </ul>
 <p>WPs have a context popup menu via right click on a WP icon</p>
-<p><img alt="ui_edit" src="../images/wp-edit-00.png" width="30%" /></p>
+<p><img alt="ui_edit" src="../images/wp-edit-00.avif" width="30%" /></p>
 <p>Almost all functions are available here, however some advanced functions, acting on multiple WP,  etc. requires the tabular mission editor.</p>
 <h3 id="edit-waypoint">Edit Waypoint<a class="headerlink" href="#edit-waypoint" title="Permanent link">#</a></h3>
 <p>The <strong>Edit Waypoint</strong> option opens an edit form for the current waypoint. The items displayed depend on the type of waypoint.</p>
-<p><img alt="ui_edit" src="../images/wp-edit-01.png" width="30%" /></p>
+<p><img alt="ui_edit" src="../images/wp-edit-01.avif" width="30%" /></p>
 <p>In this image, note:</p>
 <ul>
 <li>The Way Point type <code>WAYPOINT</code>.</li>
@@ -1777,14 +1777,14 @@
 </ul>
 <p>Multiple attributes may be set.</p>
 <p>If the AMSL button is toggled, <strong>and a valid planned home location</strong> is set, then the altitude will be adjusted. For the above example, if the AMSL box is cleared, the dialogue shows:</p>
-<p><img alt="ui_edit" src="../images/wpmenu-03.png" width="30%" /></p>
+<p><img alt="ui_edit" src="../images/wpmenu-03.avif" width="30%" /></p>
 <p>Note that the Altitude box has an orange border to show that the altitude has been automatically updated.</p>
 <p>If there is no planned home location, and the AMSL box is toggled, then the Altitude box assumes a red border to indicate to the user that manual intervention is required.</p>
-<p><img alt="ui_edit" src="../images/wpmenu-04.png" width="30%" /></p>
+<p><img alt="ui_edit" src="../images/wpmenu-04.avif" width="30%" /></p>
 <p>In the above image, a relative altitude of 16m has been toggled to absolute; there is no home position, so the altitude entry has a red border, as this is now below the absolute altitude of the terrain.</p>
 <p>Note also that this example has multiple option set (SET HEAD and JUMP).</p>
 <p>For a <code>LAND</code> WP, the FW Approach parameters are available.</p>
-<p><img alt="ui_edit" src="../images/wpmenu05.png" width="30%" /></p>
+<p><img alt="ui_edit" src="../images/wpmenu05.avif" width="30%" /></p>
 <h2 id="mission-wp-list">Mission WP List<a class="headerlink" href="#mission-wp-list" title="Permanent link">#</a></h2>
 <p>The Mission WP List may be invoked from the WP context menu.</p>
 <p>It provides the following functions:</p>
@@ -1796,7 +1796,7 @@
 <li><a href="../Mission-Elevation-Plot-and-Terrain-Analysis/">Terrain Analysis</a> and <a href="../mwp-los-tool/">Line of Sight Analysis</a>.</li>
 </ul>
 <p>There is a right mouse context menu, the availability of items depending on whether zero, one or multiple items are selected.</p>
-<p><img alt="tote_menu" src="../images/wp-edit-03.png" width="30%" /></p>
+<p><img alt="tote_menu" src="../images/wp-edit-03.avif" width="30%" /></p>
 <p>The <code>param3</code> value is presented as:</p>
 <ul>
 <li><code>R</code> : Relative Altitude</li>
@@ -1812,7 +1812,7 @@
 <p>Many of the operations described below are shown in the videos, which probably provide a clearer explanation that any textual description could. Note also that many of these (images and videos) are legacy, but the concepts are still valid.</p>
 <h4 id="add-shape">Add Shape<a class="headerlink" href="#add-shape" title="Permanent link">#</a></h4>
 <p>If a SET POI point is added to the mission, (there may also be other extant way-points), this option will display a dialogue to enter the number of points in a shape, the radial distance (from the SET POI to each point), an offset angle and the direction of rotation. i.e this defines a polygon around the POI.</p>
-<p><img alt="type" src="../images/add-shape.png" width="35%" /></p>
+<p><img alt="type" src="../images/add-shape.avif" width="35%" /></p>
 <ul>
 <li>The offset is relative to North. If you wanted the lines to be horizontal / vertical, specify an offset of 45° for a square.</li>
 <li>Shape points are appended to any extant mission points, and the shape tool may be invoked multiple times, for example to create 'concentric' circles.</li>
@@ -1820,7 +1820,7 @@
 </ul>
 <h4 id="location-updates">Location Updates<a class="headerlink" href="#location-updates" title="Permanent link">#</a></h4>
 <p>Bulk location updates may be applied to selected waypoints.</p>
-<p><img alt="mission_upd" src="../images/ui_mission_offset.png" width="30%" /></p>
+<p><img alt="mission_upd" src="../images/ui_mission_offset.avif" width="30%" /></p>
 <p>If an item if left black (or 0), then no adjustment is applied to that axis. Offsets are in metres, regardless of the user's preference distance unit.</p>
 <h4 id="speed-and-altitude-updates">Speed and Altitude updates<a class="headerlink" href="#speed-and-altitude-updates" title="Permanent link">#</a></h4>
 <p>Bulk speed and altitude updates may be applied to selected waypoints. The altitude update allows either relative (to home) to absolute (ASL) altitudes.</p>
@@ -1830,7 +1830,7 @@
 <p>The Clear Mission option clears the mission. There is no confirmation, so be sure you really want to do this.</p>
 <h3 id="uncommitted-changes">Uncommitted Changes<a class="headerlink" href="#uncommitted-changes" title="Permanent link">#</a></h3>
 <p>If <a href="https://github.com/stronnag/mwptools">mwp</a> detects uncommitted changes when opening a new mission / downloading from the FC / cleanly exiting the application, then the user is presented with the following dialogue.</p>
-<p><img alt="mconfirm" src="../images/m-confirm.png" width="20%" /></p>
+<p><img alt="mconfirm" src="../images/m-confirm.avif" width="20%" /></p>
 <ul>
 <li>Don't Save : The mission is not saved, the original action completes.</li>
 <li>Save : The user is presented with a Save Dialog to save the mission.</li>

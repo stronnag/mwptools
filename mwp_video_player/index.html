@@ -1830,7 +1830,7 @@
 <li>During Blackbox replay, to show the FPV recorded video during the replay.</li>
 </ul>
 <p>Video may be played in either a separate window, or in an embedded pane (FPV Mode).</p>
-<p><img alt="FPV View" src="../images/fpvmode/fpv-mode-analogue.png" width="30%" /></p>
+<p><img alt="FPV View" src="../images/fpvmode/fpv-mode-analogue.avif" width="30%" /></p>
 <h2 id="video-player-requirements">Video Player Requirements<a class="headerlink" href="#video-player-requirements" title="Permanent link">#</a></h2>
 <p>mwp uses the open source GStreamer API to provide video playing. As well as any decoders / formats etc. to support the input stream, there is runtime dependency on the <code>gstgtk4</code> Gstreamer plugin. This is available on modern operating systems and its package name is OS dependent, for example:</p>
 <ul>
@@ -1857,16 +1857,16 @@
 </div>
 <h2 id="live-stream-mode-gcs">Live stream mode (GCS)<a class="headerlink" href="#live-stream-mode-gcs" title="Permanent link">#</a></h2>
 <p>There is a <strong>Video Stream</strong> option under the view menu.</p>
-<p><img alt="View Menu" src="../images/mwp_vid_menu.png" width="30%" /></p>
+<p><img alt="View Menu" src="../images/mwp_vid_menu.avif" width="30%" /></p>
 <p>Selecting this option opens the source selection dialogue. Camera devices (i.e most webcams) will be auto-detected. There is also the option to enter a URI, which could be a <code>http</code>/<code>https</code>, <code>rtsp</code> or other standard streaming protocol, or even a file.</p>
-<p><img alt="Chooser" src="../images/recent-video.png" width="20%" /></p>
+<p><img alt="Chooser" src="../images/recent-video.avif" width="20%" /></p>
 <p>The selected source will then play in a separate window. This window will remain above the mwp application and can be resized, minimised and moved.</p>
 <p>In stream mode, there are minimal video controls; a play/pause button and volume control. Note the volume is that of the video, the overall volume is controlled by the system volume control.</p>
 <p>Up to 10 recent URIs are persisted. In order to access this list it is necessary to click the "expander" icon at the end of URI text entry box. The recent files list is stored in a text file <code>~/.config/mwp/recent-video.txt</code>. This file may be maintained with a text editor if required.</p>
 <p>In "FPV Mode", no controls are shown.</p>
 <h2 id="camera-capabilities">Camera Capabilities<a class="headerlink" href="#camera-capabilities" title="Permanent link">#</a></h2>
 <p>mwp requests camera capabilities from Gstreamer and presents them to the user when the "Settings" button clicked.</p>
-<p><img alt="settings" src="../images/mwp-video-options.png" /></p>
+<p><img alt="settings" src="../images/mwp-video-options.avif" /></p>
 <p>If a capability is selected, it is passed on to GStreamer verbatim and stored for future use.</p>
 <h2 id="os-specific">OS Specific<a class="headerlink" href="#os-specific" title="Permanent link">#</a></h2>
 <p>The following GStreamer video sources (at least) are supported:</p>

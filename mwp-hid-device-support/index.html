@@ -2272,19 +2272,19 @@ OpenTX Radiomaster Boxer Joystick Axes: 8 Buttons: 24
 <p>You should ensure that any manually invoked test <code>mwp-hid-server</code> is closed before using the HID function with mwp. It is not advisable to issue the <code>raw</code> command in the test environment, as your terminal may not handle the raw data with any elegance.</p>
 <h2 id="mwp-ui">mwp UI<a class="headerlink" href="#mwp-ui" title="Permanent link">#</a></h2>
 <p>HID support is selectable at run time via mwp's <code>Edit &gt; MSP RC Setting</code> menu option. Note, this option is only sensitive when the main serial port is closed, so you cannot change an open MSP session.</p>
-<p><img alt="settings" src="../images/mwp-rc-set.png" width="30%" /></p>
+<p><img alt="settings" src="../images/mwp-rc-set.avif" width="30%" /></p>
 <p>If enabled, <code>mwp-hid-server</code> is invoked with the provided mapping file. If you need to pass another option to <code>mwp-hid-server</code>  (for example <code>-f</code> for testing), this may be done using the environment variable <code>MWP_HIDOPT</code>, for example <code>MWP_HIDOPT=-f</code>.</p>
 <p>By default (if no mapping file has been previously set), the settings UI looks for the mapping file in the mwp configuration directory (<code>$XDG_CONFIG_HOME/mwp</code> i.e. <code>~/.config/mwp</code> on POSIX OS, <code>%LOCALAPPDATA%\mwp\</code> on Windows). The user may select any other suitable location in the file chooser..</p>
 <p>With mwp's HID / <code>MSP_SET_RAW_RC</code> enabled, when the <strong>main telemetry channel is started</strong>, the "stick display" icon will show in the bottom right of the map:</p>
-<p><img alt="SticksIcon" src="../images/mwp-rc-stick-icon.png" /></p>
+<p><img alt="SticksIcon" src="../images/mwp-rc-stick-icon.avif" /></p>
 <p>This may be expanded (click on the icon) to show the sticks.</p>
-<p><img alt="stick-open" src="../images/mwp-rc-stick-open.png" /></p>
+<p><img alt="stick-open" src="../images/mwp-rc-stick-open.avif" /></p>
 <p>This may be iconised again by right click.</p>
 <h3 id="channel-value-display">Channel value display<a class="headerlink" href="#channel-value-display" title="Permanent link">#</a></h3>
 <p>It is possible to have mwp display channel values (theme sensitive):</p>
-<p><img alt="show-channels light" src="../images/hid-light.png" /></p>
+<p><img alt="show-channels light" src="../images/hid-light.avif" /></p>
 <p>or</p>
-<p><img alt="show-channels dark" src="../images/hid-dark.png" /></p>
+<p><img alt="show-channels dark" src="../images/hid-dark.avif" /></p>
 <p>The user will have to add their own "hot key" / <a href="../mwp-Configuration/#keyboard-accelerators">keyboard accelerator</a> to active the "show-channels" action, for example:</p>
 <div class="highlight"><pre><span></span><code>### ~/.config/mwp/accels / %LOCALAPPDATA%\mwp\accels ###
 

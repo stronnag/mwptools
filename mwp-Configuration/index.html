@@ -2080,7 +2080,7 @@
 --dont-maximise
 #-S 8192
 # set the anonymous tile file.
-MWP_BLACK_TILE=/home/jrh/.config/mwp/mars.png
+MWP_BLACK_TILE=/home/jrh/.config/mwp/mars.avif
 </code></pre>
 <p>So here the only current, valid options are  <code>--rings 50,20 --dont-maximise</code>, and the <a href="#environment-variables">environment variable</a> MWP_BLACK_TILE is set (for <a href="../Black-Ops/#custom-tile">anonymous maps</a>).</p>
 <p>The environment is set before any GTK / UI calls are made.</p>
@@ -2125,7 +2125,7 @@ Password: *************************************************
       "max_zoom": 19,
       "tile_size": 256,
       "projection": "MERCATOR",
-      "uri_format": "http://map-proxy/mapproxy/tiles/1.0.0/opentopo/EPSG3857/{z}/{x}/{y}.png"
+      "uri_format": "http://map-proxy/mapproxy/tiles/1.0.0/opentopo/EPSG3857/{z}/{x}/{y}.avif"
   },
   {
       "id": "LandscapeMP",
@@ -2136,7 +2136,7 @@ Password: *************************************************
       "max_zoom": 19,
       "tile_size": 256,
       "projection": "MERCATOR",
-      "uri_format": "http://map-proxy/mapproxy/tiles/1.0.0/landscape/EPSG3857/{z}/{x}/{y}.png"
+      "uri_format": "http://map-proxy/mapproxy/tiles/1.0.0/landscape/EPSG3857/{z}/{x}/{y}.avif"
   },
   {
       "id": "CyclemapMP",
@@ -2147,7 +2147,7 @@ Password: *************************************************
       "max_zoom": 19,
       "tile_size": 256,
       "projection": "MERCATOR",
-      "uri_format": "http://map-proxy/mapproxy/tiles/1.0.0/cyclemap/EPSG3857/{z}/{x}/{y}.png"
+      "uri_format": "http://map-proxy/mapproxy/tiles/1.0.0/cyclemap/EPSG3857/{z}/{x}/{y}.avif"
   },
   {
       "id": "Black",
@@ -2184,7 +2184,7 @@ radar-devices &lt;control&gt;&lt;shift&gt;r
 win.vlegend &lt;control&gt;&lt;shift&gt;v
 </code></pre></div>
 <p>The first (non-comment) line adds a new accelerator, the second replaces the existing <code>&lt;control&gt;&lt;shift&gt;v</code> for toggle the ADSB altitude / colour legend.</p>
-<p>The list of recognised action names and accelerators (aka shortcuts) may be found in <a href="https://github.com/stronnag/mwptools/blob/5cdfa86c2b2300f971fff52a9ee11c3405540ffd/src/mwp/mwp-window.vala#L803">mwp-window.vala</a> and the <a href="https://github.com/stronnag/mwptools/blob/master/data/mwpmenu.blp">main menu definition</a>.</p>
+<p>The list of recognised action names and accelerators (aka shortcuts) may be found in <a href="https://github.com/stronnag/mwptools/blob/master/src/mwp/mwp-scwindow.vala">mwp-scwindow.vala</a> and the <a href="https://github.com/stronnag/mwptools/blob/master/data/mwpmenu.blp">main menu definition</a>.</p>
 <p>The accelerator key format is described in the <a href="https://docs.gtk.org/gtk4/func.accelerator_parse.html">Gtk Documentation</a>.</p>
 <h2 id="panel-settings">Panel settings<a class="headerlink" href="#panel-settings" title="Permanent link">#</a></h2>
 <p>See the <a href="../mwp-Gtk4-migration-guide/">migration guide</a> for information concerning:</p>
@@ -2217,11 +2217,11 @@ $ gsettings set org.stronnag.mwp log-save-path ~/flight-logs/
 <h4 id="dconf-editor">dconf-editor<a class="headerlink" href="#dconf-editor" title="Permanent link">#</a></h4>
 <p>This <em>may</em> not be installed by default, but should be available via the OS package manager / software centre.</p>
 <figure>
-<p><img alt="dconf editor" src="../images/dconf-0.png" width="50%" /></p>
+<p><img alt="dconf editor" src="../images/dconf-0.avif" width="50%" /></p>
 <figcaption>Initial dconf-editor showing all mwp settings</figcaption>
 </figure>
 <figure>
-<p><img alt="dconf editor" src="../images/dconf-1.png" width="50%" /></p>
+<p><img alt="dconf editor" src="../images/dconf-1.avif" width="50%" /></p>
 <figcaption>dconf-editor, editing a setting</figcaption>
 </figure>
 <h3 id="gsettings-description">Gsettings Description<a class="headerlink" href="#gsettings-description" title="Permanent link">#</a></h3>
