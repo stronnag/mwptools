@@ -125,3 +125,28 @@ If `sqlite-log-path` is not set, then the processed SQLite files are discarded w
 * The "Flight Statistics" dialog is updated whenever the replay is paused (or closed). It always shows details for  the whole flight rather than incremental  values.
 * Setting `MWP_PREFER_XLOG` has the effect of showing the sample number in the slider (as above image).
 * SQLite logs resulting from "Interactve Log" replay may be stored in the directory defined by the setting `sqlite-log-path`. Thus it only only necessary to perform the slow conversion once; after that logs are available for interactive replay immediately from the generated SQLite file.
+
+### Linking log replay with video playback
+
+mwp can link log replay with video replay. In order to link a video with log replay, it is encessary that the video is loaded **before** the log is opened for replay.
+
+When this condition is met, the log replay dialog gains three new controls:
+
+![logvideo](images/mwp-log-video-link.png)
+
+1. When the switch (1) is activated, the log display is driven by the video replay timestamp.
+2. When the button (2) is clicked, the video position is set from the log position.
+3. The text entry (3) defines the temporal relationship (in seconds) between the log and the video.
+  * When negative, the video starts before the log
+  * When positive, the log starts before the video
+
+There is a short YouTube video illustrating the use of this linkage function (note the video is just illustrative, it is not linked to the log temporarily or geographically.
+
+* The users moves the log replay to c. 57 seconds
+* The user clicks button (2) to synchronise the video to the logs
+* The user activates the switch (1) to drive the replay from the video
+
+* The user stops the video (space bar in FPV mode).
+* The user sets the replay to contain at elevated speed.
+
+<iframe width="1097" height="656" src="https://www.youtube.com/embed/0CYWYui7J0g" title="mwp log and video linkage" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>

@@ -69,6 +69,8 @@ plugins:
           text: Watch on Youtube
         - src: https://youtu.be/embed/pxWqm9QUlRk
           text: Watch on Youtube
+        - src: https://youtu.be/embed/0CYWYui7J0g
+          text: Watch on Youtube
 extra_css:
   - assets/extra.css
   - assets/pdf.css
