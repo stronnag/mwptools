@@ -32,7 +32,6 @@ depends=("${MINGW_PACKAGE_PREFIX}-gtk4"
 	 "${MINGW_PACKAGE_PREFIX}-librsvg"
 	 "${MINGW_PACKAGE_PREFIX}-SDL2"
 	 "${MINGW_PACKAGE_PREFIX}-readline"
-	 "${MINGW_PACKAGE_PREFIX}-gst-plugins-base-libs"
 	)
 optdepends=('blackbox-tools-git: Replay Blackbox files (AUR)'
 	    "${MINGW_PACKAGE_PREFIX}-protobuf-c: enable protobuf-c for readsb/ADSB"
