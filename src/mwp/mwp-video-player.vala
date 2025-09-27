@@ -80,6 +80,7 @@ namespace MwpVideo {
 		if(!MwpVideo.is_fallback) {
 			MwpVideo.playbin.seek_simple(Gst.Format.TIME, (Gst.SeekFlags.FLUSH|Gst.SeekFlags.KEY_UNIT), to);
 		} else {
+			to /= 1000; /** Microseconds FFS */
 			MwpVideo.mmf.seek(to);
 		}
 	}
@@ -191,7 +192,7 @@ namespace MwpVideo {
 			tid = Timeout.add(100, () => {
 					if(MwpVideo.is_fallback) {
 						current = ((Gtk.MediaStream)pt).timestamp;
-						set_current((int64)current);
+						set_current(((int64)current+500)*1000);
 					} else {
 						if(duration == Gst.CLOCK_TIME_NONE) {
 							if(playbin.query_duration( Gst.Format.TIME, out duration)) {

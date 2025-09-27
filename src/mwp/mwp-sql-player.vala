@@ -64,6 +64,13 @@ public class SQLSlider : Gtk.Window {
 
 	private int64 voffset; // nanoseconds (Gst unit)
 
+	~SQLSlider() {
+		if(cursig != 0) {
+			MwpVideo.player.disconnect(cursig);
+			cursig = 0;
+		}
+	}
+
 	public SQLSlider(string fn, int idx) {
         Mwp.xlog = Mwp.conf.logarmed;
         //Mwp.xaudio = Mwp.conf.audioarmed;
@@ -202,7 +209,9 @@ public class SQLSlider : Gtk.Window {
 						if(s) {
 							MwpVideo.set_playing(true);
 							cursig = MwpVideo.player.set_current.connect((t) => {
-									sp.jump_to_time(t-voffset);
+									if(sp != null) {
+										sp.jump_to_time(t-voffset);
+									}
 								});
 						} else {
 							if (cursig != 0) {
