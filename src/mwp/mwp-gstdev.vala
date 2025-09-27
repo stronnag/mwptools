@@ -167,7 +167,7 @@ namespace MwpCamera {
 				}
 			}
 		} catch (Error e) {
-			print("Regex: %s\n", e.message);
+			MWPLog.message("CAPS Regex: %s\n", e.message);
 		}
 	}
 
@@ -234,8 +234,8 @@ namespace MwpCamera {
 			ObjectClass ocl = (ObjectClass) type.class_ref ();
 			foreach (ParamSpec spec in ocl.list_properties ()) {
 				var typ = spec.value_type;
-				Value v0= Value(typ);
-				Value v1= Value(typ);
+				Value v0 = Value(typ);
+				Value v1 = Value(typ);
 				string name = spec.get_name();
 				bool ignored = false;
 				foreach (var ign in ignore) {
@@ -283,6 +283,7 @@ namespace MwpCamera {
 				dv.driver = ds.driver;
 				dv.launch_props = ds.launch_props;
 				dv.caps = ds.caps;
+				MWPLog.message("WINREP %s %s %s\n", dv.displayname, dv.driver, dv.launch_props );
 			}
 #endif
 		}
