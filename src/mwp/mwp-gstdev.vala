@@ -22,22 +22,48 @@ namespace MwpCamera {
 		return GLib.Path.build_filename(uc, ".cameras.v0.dict");
 	}
 
-	public void init() {
-		if (list == null) {
-			list = new SList<VideoDev?>();
-			cams =  new Cameras();
-			cams.setup_device_monitor();
-			Variant x = null;
-			try {
-				var fn = camera_dict_fn();
-				uint8 []data;
-				FileUtils.get_data(fn, out data);
-				var b = new Bytes(data);
-				x = new Variant.from_bytes(VariantType.VARDICT, b, true);
-				camdict = new  VariantDict(x);
-			} catch (Error e) {
-				camdict = new VariantDict();
+#if WINDOWS
+	public void wininit() {
+		list = new SList<VideoDev?>();
+		MWPLog.message("WINDOWS: Init camera fallback\n");
+		string cs = WinCam.get_cameras();
+		MWPLog.message("WINDOWS: Init camera fallback %p\n", cs);
+		if (cs != null) {
+			var parts = cs.split("\r");
+			foreach (var p in parts) {
+				MWPLog.message("WIN-FALLBACK: %s\n", p);
+				var cparts = p.split("\t");
+				VideoDev ds = {};
+				ds.caps = new Array<string>();
+				ds.displayname = cparts[0];
+				ds.devicename = cparts[0];
+				ds.driver = "ksvideosrc";
+				StringBuilder sb = new StringBuilder("device-name=\"");
+				sb.append(ds.displayname);
+				sb.append_c('"');
+				ds.launch_props = sb.str;
+				list.append(ds);
 			}
+		}
+	}
+#endif
+
+	public void init() {
+#if !WINDOWS
+		list = new SList<VideoDev?>();
+#endif
+		cams =  new Cameras();
+		cams.setup_device_monitor();
+		Variant x = null;
+		try {
+			var fn = camera_dict_fn();
+			uint8 []data;
+			FileUtils.get_data(fn, out data);
+			var b = new Bytes(data);
+			x = new Variant.from_bytes(VariantType.VARDICT, b, true);
+			camdict = new  VariantDict(x);
+		} catch (Error e) {
+			camdict = new VariantDict();
 		}
 	}
 
@@ -208,8 +234,8 @@ namespace MwpCamera {
 			ObjectClass ocl = (ObjectClass) type.class_ref ();
 			foreach (ParamSpec spec in ocl.list_properties ()) {
 				var typ = spec.value_type;
-				Value v0= new Value(typ);
-				Value v1= new Value(typ);
+				Value v0= Value(typ);
+				Value v1= Value(typ);
 				string name = spec.get_name();
 				bool ignored = false;
 				foreach (var ign in ignore) {
@@ -251,6 +277,14 @@ namespace MwpCamera {
 			if(dv == null) {
 				list.append(ds);
 			}
+#if WINDOWS
+			else {
+				dv.devicename = ds.devicename;
+				dv.driver = ds.driver;
+				dv.launch_props = ds.launch_props;
+				dv.caps = ds.caps;
+			}
+#endif
 		}
 
 		private void remove_list(VideoDev ds) {
@@ -292,33 +326,6 @@ namespace MwpCamera {
 					var ds =  get_node_info(d);
 					add_list(ds);
 				});
-#if WINDOWS
-			if(list.length() == 0) {
-				MWPLog.message("WINDOWS: Use camera fallback\n");
-				MainContext.@default().invoke(() => {
-						string cs = WinCam.get_cameras();
-						MWPLog.message("WINDOWS: Use camera fallback %p\n", cs);
-						if (cs != null) {
-							var parts = cs.split("\r");
-							foreach (var p in parts) {
-								MWPLog.message("WIN-FALLBACK: %s\n", p);
-								var cparts = p.split("\t");
-								VideoDev ds = {};
-								ds.caps = new Array<string>();
-								ds.displayname = cparts[0];
-								ds.devicename = cparts[0];
-								ds.driver = "ksvideosrc";
-								StringBuilder sb = new StringBuilder("device-name=\"");
-								sb.append(ds.displayname);
-								sb.append_c('"');
-								ds.launch_props = sb.str;
-								add_list(ds);
-							}
-						}
-						return false;
-					});
-			}
-#endif
 		}
 
 		public void setup_device_monitor () {

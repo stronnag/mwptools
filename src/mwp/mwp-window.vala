@@ -187,6 +187,7 @@ namespace Mwp {
 		public Window (Adw.Application app) {
             Object (application: app);
 
+			MwpCamera.init();
 			MwpCamera.cams.start_device_monitor();
 			MwpCss.init();
 

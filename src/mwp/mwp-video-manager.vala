@@ -101,12 +101,12 @@ namespace V4L2 {
 				webcam.sensitive = true;
 				webcam.active = true;
 				viddev_c.selected = 1;
-				//#if WINDOWS
+#if WINDOWS
 				if(MwpVideo.is_fallback) {
 					webcam.sensitive = false;
 					webcam.active = false;
 				}
-				//#endif
+#endif
 			}
 			urichk.active = !webcam.active;
 

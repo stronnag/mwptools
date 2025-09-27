@@ -46,6 +46,9 @@ int main (string[] args) {
 		return 0;
     }
 	Gst.init (ref args);
+#if WINDOWS
+	MwpCamera.wininit();
+#endif
     Mwp.user_args = sb.str;
 	var app = new Mwp.Application (s);
 	var ret = app.run (args);
