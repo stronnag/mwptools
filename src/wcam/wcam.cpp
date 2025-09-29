@@ -1,6 +1,5 @@
 //  g++ -o wcam.exe wcam.cpp -lole32 -loleaut32 -lstrmiids
 
-
 #include <windows.h>
 #include <dshow.h>
 #include <cstring>
@@ -32,14 +31,17 @@ char *to_utf8( wchar_t* wchars) {
   return lname;
 }
 
-void DisplayDeviceInformation(IEnumMoniker *pEnum, char *buf) {
-  char *rval = buf;
+int DisplayDeviceInformation(IEnumMoniker *pEnum, char ***buf, int *nlen) {
+  int ni = 0;
+  int nalloc = 16;
+  HRESULT hr = 0;
+  char **cbuf =  (char**)calloc(sizeof(char*), nalloc);
 
   IMoniker *pMoniker = NULL;
 
   while (pEnum->Next(1, &pMoniker, NULL) == S_OK) {
     IPropertyBag *pPropBag;
-    HRESULT hr = pMoniker->BindToStorage(0, 0, IID_PPV_ARGS(&pPropBag));
+    hr = pMoniker->BindToStorage(0, 0, IID_PPV_ARGS(&pPropBag));
     if (FAILED(hr)) {
       pMoniker->Release();
       continue;
@@ -53,47 +55,59 @@ void DisplayDeviceInformation(IEnumMoniker *pEnum, char *buf) {
     if (FAILED(hr)) {
       hr = pPropBag->Read(L"FriendlyName", &var, 0);
     }
-    if (SUCCEEDED(hr)) {
-      char* lname = to_utf8(var.bstrVal);
-      strcpy(rval, lname);
-      rval += strlen(lname);
-      *rval++ = '\t';
-      free(lname);
-      VariantClear(&var);
-    }
+    char *fname = NULL;
+    char *dname = NULL;
 
-    hr = pPropBag->Read(L"DevicePath", &var, 0);
     if (SUCCEEDED(hr)) {
-      char* lname = to_utf8(var.bstrVal);
-      strcpy(rval, lname);
-      rval += strlen(lname);
-      *rval++ = '\r';
-      free(lname);
+      fname = to_utf8(var.bstrVal);
       VariantClear(&var);
+      hr = pPropBag->Read(L"DevicePath", &var, 0);
+      if (SUCCEEDED(hr)) {
+	dname = to_utf8(var.bstrVal);
+	VariantClear(&var);
+	int len = strlen(fname)+strlen(dname)+2;
+	char *ostr = (char*)malloc(len);
+	char *p = ostr;
+	p = strcpy(p, fname);
+	p += strlen(fname);
+	*p++ = '\t';
+	strcpy(p, dname);
+	if(ni == nalloc) {
+	  nalloc += 16;
+	  cbuf = (char**)realloc(cbuf, (nalloc*sizeof(char*)));
+	}
+	cbuf[ni] = ostr;
+	ni++;
+      }
+      if(fname != NULL) {
+	free(fname);
+      }
+      if(dname != NULL) {
+	free(dname);
+      }
     }
     pPropBag->Release();
     pMoniker->Release();
   }
-  if(strlen(buf) > 0) {
-    *--rval= 0;
-  }
+
+  *buf = cbuf;
+  *nlen = ni;
+  return hr;
 }
 
-extern "C" char *get_cameras();
-
-char * get_cameras() {
+extern "C"  int get_cameras(char ***pcams, int *nlen);
+int get_cameras(char ***pcams, int*nlen) {
     HRESULT hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
-    char *cbuf = NULL;
-
+    *pcams = NULL;
+    *nlen = 0;
     if (SUCCEEDED(hr)) {
         IEnumMoniker *pEnum;
 	hr = EnumerateDevices(CLSID_VideoInputDeviceCategory, &pEnum);
         if (SUCCEEDED(hr)) {
-	  cbuf = (char *)calloc(sizeof(char), 32*1024);
-	  DisplayDeviceInformation(pEnum, cbuf);
+	  hr = DisplayDeviceInformation(pEnum, pcams, nlen);
 	  pEnum->Release();
         }
         CoUninitialize();
     }
-    return cbuf;
+    return hr;
 }
