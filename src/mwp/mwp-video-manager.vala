@@ -32,6 +32,7 @@ namespace V4L2 {
 
 		private RecentVideo cbox;
 		public Gtk.DropDown viddev_c;
+		private Gtk.MenuButton mb;
 
 		private GLib.Menu menu;
 		private GLib.SimpleActionGroup dg;
@@ -41,30 +42,35 @@ namespace V4L2 {
 		private void build_menu(string[] items, int nv) {
 			menu.remove_all();
 			int n = 0;
-			foreach (var m in items) {
-				var jn = n;
-				var s = "item%03d".printf(n);
-				var aq = new GLib.SimpleAction.stateful(s, null, (n == nv));
-				aq.change_state.connect((s) => {
-						if(webcam.sensitive) {
-							webcam.active = true;
-							urichk.active = !webcam.active;
-						}
-						aq.set_state (s);
-						var nm = menu.get_n_items();
-						for(int j = 0; j < nm; j++) {
-							if(j == jn)
-								continue;
-							var alabel = "item%03d".printf(j);
-							var ac = dg.lookup_action(alabel) as SimpleAction;
-							if (ac != null) {
-								ac.set_state(false);
+			if (items.length > 0) {
+				foreach (var m in items) {
+					var jn = n;
+					var s = "item%03d".printf(n);
+					var aq = new GLib.SimpleAction.stateful(s, null, (n == nv));
+					aq.change_state.connect((s) => {
+							if(webcam.sensitive) {
+								webcam.active = true;
+								urichk.active = !webcam.active;
 							}
-						}
-					});
-				dg.add_action(aq);
-				menu.append(m, "meta.%s".printf(s));
-				n++;
+							aq.set_state (s);
+							var nm = menu.get_n_items();
+							for(int j = 0; j < nm; j++) {
+								if(j == jn)
+									continue;
+								var alabel = "item%03d".printf(j);
+								var ac = dg.lookup_action(alabel) as SimpleAction;
+								if (ac != null) {
+									ac.set_state(false);
+								}
+							}
+						});
+					dg.add_action(aq);
+					menu.append(m, "meta.%s".printf(s));
+					n++;
+				}
+				mb.sensitive = true;
+			} else {
+				mb.sensitive = false;
 			}
 		}
 
@@ -114,7 +120,7 @@ namespace V4L2 {
 
 		public Window() {
 			menu = new GLib.Menu();
-			var mb = new Gtk.MenuButton();
+			mb = new Gtk.MenuButton();
 			mb.label = "Settings";
 			mb.menu_model = menu;
 			dg = new GLib.SimpleActionGroup();
