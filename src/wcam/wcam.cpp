@@ -6,6 +6,11 @@
 #include <string.h>
 #include <locale.h>
 
+extern "C" typedef struct {
+  char *dspname;
+  char *devname;
+} cam_dev_t;
+
 HRESULT EnumerateDevices(REFGUID category, IEnumMoniker **ppEnum) {
     HRESULT hr;
     ICreateDevEnum *pDevEnum = NULL;
@@ -31,11 +36,11 @@ char *to_utf8( wchar_t* wchars) {
   return lname;
 }
 
-int DisplayDeviceInformation(IEnumMoniker *pEnum, char ***buf, int *nlen) {
+cam_dev_t * DisplayDeviceInformation(IEnumMoniker *pEnum, int *res, int *nlen) {
   int ni = 0;
   int nalloc = 16;
   HRESULT hr = 0;
-  char **cbuf =  (char**)calloc(sizeof(char*), nalloc);
+  cam_dev_t *pcams =  (cam_dev_t *)calloc(sizeof(cam_dev_t), nalloc);
 
   IMoniker *pMoniker = NULL;
 
@@ -49,14 +54,14 @@ int DisplayDeviceInformation(IEnumMoniker *pEnum, char ***buf, int *nlen) {
 
     VARIANT var;
     VariantInit(&var);
+    char *fname = NULL;
+    char *dname = NULL;
 
     // Get description or friendly name.
     hr = pPropBag->Read(L"Description", &var, 0);
     if (FAILED(hr)) {
       hr = pPropBag->Read(L"FriendlyName", &var, 0);
     }
-    char *fname = NULL;
-    char *dname = NULL;
 
     if (SUCCEEDED(hr)) {
       fname = to_utf8(var.bstrVal);
@@ -65,49 +70,53 @@ int DisplayDeviceInformation(IEnumMoniker *pEnum, char ***buf, int *nlen) {
       if (SUCCEEDED(hr)) {
 	dname = to_utf8(var.bstrVal);
 	VariantClear(&var);
-	int len = strlen(fname)+strlen(dname)+2;
-	char *ostr = (char*)malloc(len);
-	char *p = ostr;
-	p = strcpy(p, fname);
-	p += strlen(fname);
-	*p++ = '\t';
-	strcpy(p, dname);
 	if(ni == nalloc) {
 	  nalloc += 16;
-	  cbuf = (char**)realloc(cbuf, (nalloc*sizeof(char*)));
+	  pcams = (cam_dev_t *)realloc(pcams, (nalloc*sizeof(cam_dev_t)));
 	}
-	cbuf[ni] = ostr;
+	pcams[ni].dspname = fname;
+	pcams[ni].devname = dname;
 	ni++;
-      }
-      if(fname != NULL) {
-	free(fname);
-      }
-      if(dname != NULL) {
-	free(dname);
       }
     }
     pPropBag->Release();
     pMoniker->Release();
   }
 
-  *buf = cbuf;
+  *res = hr;
   *nlen = ni;
-  return hr;
+  return pcams;
 }
 
-extern "C"  int get_cameras(char ***pcams, int *nlen);
-int get_cameras(char ***pcams, int*nlen) {
+extern "C"  cam_dev_t * get_cameras(int *res, int *nlen);
+cam_dev_t * get_cameras(int *res, int*nlen) {
     HRESULT hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
-    *pcams = NULL;
     *nlen = 0;
+    cam_dev_t * pcams = NULL;
     if (SUCCEEDED(hr)) {
         IEnumMoniker *pEnum;
 	hr = EnumerateDevices(CLSID_VideoInputDeviceCategory, &pEnum);
         if (SUCCEEDED(hr)) {
-	  hr = DisplayDeviceInformation(pEnum, pcams, nlen);
+	  pcams = DisplayDeviceInformation(pEnum, res, nlen);
 	  pEnum->Release();
         }
         CoUninitialize();
+    } else {
+      *res = hr;
     }
-    return hr;
+    return pcams;
 }
+
+extern "C" void cam_dev_destroy(cam_dev_t *c);
+void cam_dev_destroy(cam_dev_t *c) {
+  if (c != NULL) {
+    free(c->dspname);
+    free(c->devname);
+  }
+}
+
+ extern "C" void cam_dev_copy(cam_dev_t *s, cam_dev_t *d);
+ void cam_dev_copy(cam_dev_t *s, cam_dev_t *d) {
+  d->dspname = strdup(s->dspname);
+  d->devname = strdup(s->devname);
+ }
