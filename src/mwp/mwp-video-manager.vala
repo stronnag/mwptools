@@ -123,6 +123,7 @@ namespace V4L2 {
 			mb = new Gtk.MenuButton();
 			mb.label = "Settings";
 			mb.menu_model = menu;
+			mb.sensitive = false;
 			dg = new GLib.SimpleActionGroup();
 			insert_action_group("meta", dg);
 			sl = new Gtk.StringList({"(None)"});
