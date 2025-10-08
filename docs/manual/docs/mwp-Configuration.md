@@ -209,7 +209,7 @@ radar-devices <control><shift>r
 win.vlegend <control><shift>v
 ```
 
-The first (non-comment) line adds a new accelerator, the second replaces the existing `<control><shift>v` for toggle the ADSB altitude / colour legend.
+The (non-comment) lines adds new accelerators.
 
 The list of recognised action names and accelerators (aka shortcuts) may be found in [mwp-scwindow.vala](https://github.com/stronnag/mwptools/blob/master/src/mwp/mwp-scwindow.vala) and the [main menu definition](https://github.com/stronnag/mwptools/blob/master/data/mwpmenu.blp).
 
@@ -218,10 +218,7 @@ The accelerator key format is described in the [Gtk Documentation](https://docs.
 
 ## Panel settings
 
-See the [migration guide](mwp-Gtk4-migration-guide.md) for information concerning:
-
-* `~/.config/mwp/panel.conf`
-* `~/.config/mwp/.paned`
+See the [dock description](dock.md#side-bar-configuration) for information concerning `~/.config/mwp/.panel.conf` .
 
 ## Dconf / gsettings
 
