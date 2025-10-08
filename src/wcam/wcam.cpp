@@ -1,11 +1,15 @@
 //  g++ -o wcam.exe wcam.cpp -lole32 -loleaut32 -lstrmiids
 
-
 #include <windows.h>
 #include <dshow.h>
 #include <cstring>
 #include <string.h>
 #include <locale.h>
+
+extern "C" typedef struct {
+  char *dspname;
+  char *devname;
+} cam_dev_t;
 
 HRESULT EnumerateDevices(REFGUID category, IEnumMoniker **ppEnum) {
     HRESULT hr;
@@ -32,14 +36,17 @@ char *to_utf8( wchar_t* wchars) {
   return lname;
 }
 
-void DisplayDeviceInformation(IEnumMoniker *pEnum, char *buf) {
-  char *rval = buf;
+cam_dev_t * DisplayDeviceInformation(IEnumMoniker *pEnum, int *res, int *nlen) {
+  int ni = 0;
+  int nalloc = 16;
+  HRESULT hr = 0;
+  cam_dev_t *pcams =  (cam_dev_t *)calloc(sizeof(cam_dev_t), nalloc);
 
   IMoniker *pMoniker = NULL;
 
   while (pEnum->Next(1, &pMoniker, NULL) == S_OK) {
     IPropertyBag *pPropBag;
-    HRESULT hr = pMoniker->BindToStorage(0, 0, IID_PPV_ARGS(&pPropBag));
+    hr = pMoniker->BindToStorage(0, 0, IID_PPV_ARGS(&pPropBag));
     if (FAILED(hr)) {
       pMoniker->Release();
       continue;
@@ -47,53 +54,69 @@ void DisplayDeviceInformation(IEnumMoniker *pEnum, char *buf) {
 
     VARIANT var;
     VariantInit(&var);
+    char *fname = NULL;
+    char *dname = NULL;
 
     // Get description or friendly name.
     hr = pPropBag->Read(L"Description", &var, 0);
     if (FAILED(hr)) {
       hr = pPropBag->Read(L"FriendlyName", &var, 0);
     }
-    if (SUCCEEDED(hr)) {
-      char* lname = to_utf8(var.bstrVal);
-      strcpy(rval, lname);
-      rval += strlen(lname);
-      *rval++ = '\t';
-      free(lname);
-      VariantClear(&var);
-    }
 
-    hr = pPropBag->Read(L"DevicePath", &var, 0);
     if (SUCCEEDED(hr)) {
-      char* lname = to_utf8(var.bstrVal);
-      strcpy(rval, lname);
-      rval += strlen(lname);
-      *rval++ = '\r';
-      free(lname);
+      fname = to_utf8(var.bstrVal);
       VariantClear(&var);
+      hr = pPropBag->Read(L"DevicePath", &var, 0);
+      if (SUCCEEDED(hr)) {
+	dname = to_utf8(var.bstrVal);
+	VariantClear(&var);
+	if(ni == nalloc) {
+	  nalloc += 16;
+	  pcams = (cam_dev_t *)realloc(pcams, (nalloc*sizeof(cam_dev_t)));
+	}
+	pcams[ni].dspname = fname;
+	pcams[ni].devname = dname;
+	ni++;
+      }
     }
     pPropBag->Release();
     pMoniker->Release();
   }
-  if(strlen(buf) > 0) {
-    *--rval= 0;
-  }
+
+  *res = hr;
+  *nlen = ni;
+  return pcams;
 }
 
-extern "C" char *get_cameras();
-
-char * get_cameras() {
+extern "C"  cam_dev_t * get_cameras(int *res, int *nlen);
+cam_dev_t * get_cameras(int *res, int*nlen) {
     HRESULT hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
-    char *cbuf = NULL;
-
+    *nlen = 0;
+    cam_dev_t * pcams = NULL;
     if (SUCCEEDED(hr)) {
         IEnumMoniker *pEnum;
 	hr = EnumerateDevices(CLSID_VideoInputDeviceCategory, &pEnum);
         if (SUCCEEDED(hr)) {
-	  cbuf = (char *)calloc(sizeof(char), 32*1024);
-	  DisplayDeviceInformation(pEnum, cbuf);
+	  pcams = DisplayDeviceInformation(pEnum, res, nlen);
 	  pEnum->Release();
         }
         CoUninitialize();
+    } else {
+      *res = hr;
     }
-    return cbuf;
+    return pcams;
 }
+
+extern "C" void cam_dev_destroy(cam_dev_t *c);
+void cam_dev_destroy(cam_dev_t *c) {
+  if (c != NULL) {
+    free(c->dspname);
+    free(c->devname);
+  }
+}
+
+ extern "C" void cam_dev_copy(cam_dev_t *s, cam_dev_t *d);
+ void cam_dev_copy(cam_dev_t *s, cam_dev_t *d) {
+  d->dspname = strdup(s->dspname);
+  d->devname = strdup(s->devname);
+ }

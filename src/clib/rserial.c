@@ -272,13 +272,13 @@ int get_error_number() {
 #else
 #include <windows.h>
 #include <time.h>
+#include <glib.h>
 
 __attribute__ ((unused))
 static void show_error(DWORD errval) {
-  char errstr[1024];
-  FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, errval,
-                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), errstr, sizeof(errstr)-1, NULL);
-  fprintf(stderr, "Err: %s\n", errstr);
+  char* msg = g_win32_error_message (errval);
+  fprintf(stderr, "Err: %s\n", msg);
+  free(msg);
 }
 
 void flush_serial(int hfd) {
@@ -448,30 +448,16 @@ int get_error_number() {
   return (int)GetLastError();
 }
 
-char *get_error_text(int lerr, char *pBuf, size_t bufSize) {
+char *get_error_text(int lerr, char *pbuf, size_t bufSize) {
+  *pbuf = 0;
   if (lerr != ERROR_SUCCESS) {
-    DWORD retSize;
-    LPTSTR pTemp = NULL;
-    if (bufSize < 16) {
-      if (bufSize > 0) {
-	pBuf[0] = '\0';
-      }
-      return (pBuf);
-    }
-    retSize = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ARGUMENT_ARRAY, NULL, lerr, LANG_NEUTRAL, (LPTSTR)&pTemp, 0, NULL);
-    if (!retSize || pTemp == NULL) {
-      pBuf[0] = '\0';
-    } else {
-      char *s = pTemp + retSize -1;
-      while (s > pTemp && isspace((int)*s))
-	*s-- = 0;
-      sprintf(pBuf, "%s (0x%x)", pTemp, lerr);
-      LocalFree((HLOCAL)pTemp);
-    }
+    char* msg = g_win32_error_message (lerr);
+    sprintf(pbuf, "%s (0x%x)", msg, lerr);
+    free(msg);
   } else {
-    strcpy(pBuf, GENERR);
+    strcpy(pbuf, GENERR);
   }
-  return (pBuf);
+  return (pbuf);
 }
 
 void start_cpu_stats() {
