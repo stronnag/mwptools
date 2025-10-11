@@ -16,14 +16,14 @@ Neither simulator is built by default, it is necessary to:
 
 ```
 cd mwptools/src/samples/mwp-radar-sim
-make
-# or (install to $HOME/.local/bin)
 make prefix=~/.local
+# or
+ prefix=~/.local ninja
 ```
 
 Note:
 * It is necessary to have installed to the mwptools project in order to access the required libraries
-* The script assumes `$prefix` (default `/usr/local`) is the same as used to install mwptools.
+* The script assumes `$prefix` is the same as used to install mwptools.
 * Otherwise, you can set INCDIR, LIBDIR and VAPIDIR environment variables to take into account the installed locations.
 
 ## Usage
@@ -108,6 +108,7 @@ Application Options:
   -d, --device=name         device
   -c, --centre=lat,long     Centre position
   -m, --max-radar=256       number of radar slots
+  -M, --mav-version=2       Mavlink version
 ```
 
 ### sbs-player.rb
