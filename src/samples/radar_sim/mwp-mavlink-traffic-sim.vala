@@ -5,6 +5,7 @@ private const int MAXRADAR = 256;
 private static int baud = 115200;
 private static string dev;
 private static int  maxradar;
+private static int  mavvers = 2;
 private static string llstr = null;
 
 const OptionEntry[] options = {
@@ -12,6 +13,7 @@ const OptionEntry[] options = {
     { "device", 'd', 0, OptionArg.STRING, out dev, "device", "name"},
     { "centre", 'c', 0, OptionArg.STRING, out llstr, "Centre position", "lat,long"},
     { "max-radar", 'm', 0, OptionArg.INT, out maxradar, "number of radar slots", "256"},
+	{ "mav-version", 'M', 0, OptionArg.INT, out mavvers, "Mavlink version", "2"},
     {null}
 };
 
@@ -111,6 +113,11 @@ public class RadarSim : Object {
     private void open_serial() {
         msp = new MWSerial();
         msp.set_mode(MWSerial.Mode.SIM);
+		if(mavvers != 2) {
+			mavvers = 1;
+		}
+		msp.mavvid = (uint8)mavvers;
+
 		msp.open_async.begin(dev, baud,  (obj,res) => {
 				var ok = msp.open_async.end(res);
 				if (ok) {

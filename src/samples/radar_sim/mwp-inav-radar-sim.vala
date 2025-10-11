@@ -260,8 +260,12 @@ public class RadarSim : Object {
 									return Source.REMOVE;
 								});
 						});
-					msp.serial_event.connect((s,cmd,raw,len,xflags,errs) => {
-							handle_radar(cmd,raw,len,xflags,errs);
+
+					msp.serial_event.connect(() => {
+							MWSerial.INAVEvent? m;
+							while((m = msp.msgq.try_pop()) != null) {
+								handle_radar(m.cmd,m.raw,m.len,m.flags,m.err);
+							}
 						});
 					msp.send_command(Msp.Cmds.NAME, null, 0);
 				} else {

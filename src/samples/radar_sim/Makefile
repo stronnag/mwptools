@@ -1,5 +1,4 @@
-include ../../common.mk
-include ../../valaopts.mk
+include vala.mk
 
 APP=mwp-inav-radar-sim
 SRC=$(APP).vala

@@ -1,0 +1,13 @@
+## Sample "accels" (keyboard accelerators).
+## Copy this template to `~/.config/mwp/accels`
+## Add your own options or uncomment the examples below
+## see https://stronnag.github.io/mwptools/mwp-Configuration/#keyboard-accelerators
+## for more details
+##
+# radar-devices <control><shift>r
+# win.vlegend <control><shift>v
+# trackdump <control><shift>y
+# mtote <control><shift>t
+# usemsprc <control><shift>w
+# show-channels F2
+# modeswitch F12
