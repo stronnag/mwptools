@@ -111,7 +111,6 @@ nav:
       - 'mwp Gsettings' : mwpsettings.md
       - mwp-Power-and-screen-management.md
       - mwp-hid-device-support.md
-      - 'UBlox AssistNow' : mwp-assist-now.md
       - inav-4.0-multi-missions.md
       - mqtt---bulletgcss-telemetry.md
       - Support-for-inav-3.0-WP-features.md
@@ -126,4 +125,4 @@ extra:
     inav: "[INAV](https://github.com/iNavFlight/inav)"
     mwp: "[mwp](https://github.com/stronnag/mwptools)"
     bbl2kml: "[bbl2kml](https://github.com/stronnag/bbl2kml)"
-    impload: "[impload](https://github.com/stronnag/impload)"
+    impload: "[impload](https://codeberg.org/stronnag/impload)"

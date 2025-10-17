@@ -681,12 +681,6 @@
       <description>Whether to suppress desensitising of MSP action items when armed.</description>
     </key>
 
-    <key name="assist-key" type="s">
-      <summary>Ublox Assist now key</summary>
-      <default>""</default>
-      <description>Ublox Assist now key. Setting blank ('') disables, unless the API key is in the `libsecret` credential store.</description>
-    </key>
-
     <key name="mwxml-version" type="s">
       <summary>MultiMission XML version</summary>
       <default>""</default>

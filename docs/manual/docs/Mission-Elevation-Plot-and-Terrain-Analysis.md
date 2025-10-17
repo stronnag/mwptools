@@ -39,7 +39,7 @@ and knowing that the land rises to the north and west, we can check that we do i
 
 where:
 
-* `west_field.mission` is the MW-XML mission file (via [mwp](https://github.com/stronnag/mwptools), INAV configurator, [ezgui, mission planner for INAV] or [impload](https://github.com/stronnag/impload))
+* `west_field.mission` is the MW-XML mission file (via [mwp](https://github.com/stronnag/mwptools), INAV configurator, [ezgui, mission planner for INAV] or [impload](https://codeberg.org/stronnag/impload))
 * the `--home lat,lon` option defines the home position (which may also be set by the environment variable `MWP_HOME`), the command line having preference. Note that for modern {{ mwp }} generated mission files, this information is provided in the mission file.
 * The graphical output is `profile.svg`, via the `--plotfile` option.
 
@@ -184,7 +184,7 @@ As well as specifying options such as home location, clearance margin and RTH al
     # override clearance margin (20m), reduce RTH altitude (22m)
     $ mwp-plot-elevations --plotfile /tmp/mission.svg --output new_west_field.mission --margin 20 --rth-alt 22 nm_west_field.mission
 
-Another contrived example ... create a mission in Google Earth (tied to ground), save as KMZ, convert to MWXML mission file with [impload](https://github.com/stronnag/impload) (0 altitude). Use `mwp-plot-elevations.rb` to calculate a safe mission.
+Another contrived example ... create a mission in Google Earth (tied to ground), save as KMZ, convert to MWXML mission file with [impload](https://codeberg.org/stronnag/impload) (0 altitude). Use `mwp-plot-elevations.rb` to calculate a safe mission.
 
 ### KMZ planned in Google Earth
 

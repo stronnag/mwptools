@@ -873,12 +873,6 @@ namespace Mwp {
 			g.present();
 		}
 
-		private void do_assist() {
-			var a = Assist.Window.instance();
-			a.init();
-			a.present();
-		}
-
 		private void do_msprc() {
 			var m = new Msprc.Window();
 			m.present();
@@ -971,7 +965,6 @@ namespace Mwp {
 				{"areap", run_area_planner},
 				{"gps-stats", show_gps_stats},
 				{"vlegend", Gis.toggle_vlegend},
-				{"assistnow", do_assist},
 				{"trackdump", do_trackdump},
 				{"msprc", do_msprc},
 				{"show-channels", do_show_channels},

@@ -43,7 +43,6 @@ namespace Mwp {
 			schash.insert("win.gz-dl", "Download Geozones from FC");
 			schash.insert("win.gz-ul", "Upload Geozones to FC");
 			schash.insert("win.safe-homes", "Invoke Safe home dialog");
-			schash.insert("win.assistnow", "Invoke Assist Now dialog");
 			schash.insert("win.followme", "Invoke MSP Follow-me dialog");
 			schash.insert("win.msprc", "Show MSPRC dialog");
 			schash.insert("win.mwpset", "All settings dialog");

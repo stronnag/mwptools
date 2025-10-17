@@ -190,10 +190,6 @@ namespace Mwp {
 				run_queue();
 				break;
 
-			case Msp.Cmds.INAV_GPS_UBLOX_COMMAND:
-				Assist.Window.instance().show_error();
-				break;
-
 			case Msp.Cmds.ADSB_VEHICLE_LIST:
 				clear_poller_item(Msp.Cmds.ADSB_VEHICLE_LIST);
 				break;
@@ -440,7 +436,6 @@ namespace Mwp {
 						   (0 != (feature_mask & Msp.Feature.GPS)).to_string(),
 						   curf.to_string());
 
-			Assist.Window.instance().gps_available(true);
 			queue_cmd(Msp.Cmds.BLACKBOX_CONFIG,null,0);
 			break;
 
@@ -1445,10 +1440,6 @@ namespace Mwp {
 		case Msp.Cmds.RADAR_POS:
 		case Msp.Cmds.COMMON_SET_RADAR_POS:
 			MspRadar.process_inav_radar_pos(raw, len);
-			break;
-
-		case Msp.Cmds.INAV_GPS_UBLOX_COMMAND:
-			Assist.Window.instance().send_assist();
 			break;
 
 			//case Msp.Cmds.SET_RAW_RC:

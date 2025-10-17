@@ -111,7 +111,6 @@ public class MWPSettings : GLib.Object {
 	public uint mavlink_sysid {get; set; default=106;}
 	public int radar_alert_minspeed {get; set; default=10;}
 	public uint mission_icon_alpha {get; set; default=160;}
-	public string assist_key {get; set; default="";}
 	public bool no_poller_pause {get; set; default=false;}
 	public string mwxml_version {get; set; default="";}
 
@@ -248,7 +247,6 @@ public class MWPSettings : GLib.Object {
 		settings.bind("wp-spotlight", this, "wp-spotlight", SettingsBindFlags.DEFAULT);
 		settings.bind("wp-text-style", this, "wp-text", SettingsBindFlags.DEFAULT);
 		settings.bind("zone-detect", this, "zone-detect", SettingsBindFlags.DEFAULT);
-		settings.bind("assist-key", this, "assist-key", SettingsBindFlags.DEFAULT);
 		settings.bind("mission-icon-alpha", this, "mission-icon-alpha", SettingsBindFlags.DEFAULT);
 		settings.bind("msprc-enabled", this, "msprc-enabled", SettingsBindFlags.DEFAULT);
 		settings.bind("msprc-full-duplex", this, "msprc-full-duplex", SettingsBindFlags.DEFAULT);

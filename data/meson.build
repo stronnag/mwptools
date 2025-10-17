@@ -30,7 +30,6 @@ blpfiles = [
   'surveymenu.blp',
   'gps_stats_dialog.blp',
   'vas.blp',
-  'assistnow.blp',
   'radar_devices.blp',
   'mwpsetting.blp',
   'mwpsetedit.blp',

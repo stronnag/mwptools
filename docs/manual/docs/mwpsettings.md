@@ -6,7 +6,6 @@
 | alt-prefer-agl | Altitude / AGL Display | If true, where valid DEM is available for home and vehicle locations, AGL (Above Ground Level) will be shown in place of home relative altitude. | false |
 | armed-msp-placebo | Antidote to armed menus placebo | Whether to suppress desensitising of MSP action items when armed. | false |
 | arming-speak | Speak arming states | Whether to reporting arming state by audio | false |
-| assist-key | Ublox Assist now key | Ublox Assist now key. Setting blank ('') disables, unless the API key is in the `libsecret` credential store. | "" |
 | atexit | Something that is executed at exit | e.g. `gsettings set org.gnome.settings-daemon.plugins.power idle-dim true`. See also `manage-power` (and consider setting `manage-power` to `true` instead). | "" |
 | atstart | Something that is executed at startup | e.g. `gsettings set org.gnome.settings-daemon.plugins.power idle-dim false`. See also `manage-power` (and consider setting to true). | "" |
 | audio-on-arm | Start audio on arm | Option to start audio on arm (and stop on disarm) | true |
