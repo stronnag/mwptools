@@ -1,5 +1,6 @@
-mwptools revisited
-==================
+# Migrated to [codeberg.org](https://stronnag/codeberg.org/mwptools). This a read-only archive.
+
+## mwptools revisited
 
 "A mission planner for the rest of us"
 
