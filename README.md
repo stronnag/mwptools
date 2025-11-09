@@ -1,4 +1,4 @@
-# Migrated to [codeberg.org](https://stronnag/codeberg.org/mwptools). This a read-only archive.
+# Migrated to [codeberg.org](https://codeberg.org/stronnag/mwptools). This a read-only archive.
 
 ## mwptools revisited
 
